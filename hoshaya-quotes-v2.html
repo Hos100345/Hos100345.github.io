@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>×××©×¢×× ××× ×××× ×× - ××¦×¢××ª ××××¨ ×××××</title>
+  <title>הושעיה אמן בלונים - הצעות מחיר ומלאי</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -134,37 +134,37 @@
 <body>
   <div class="container">
     <div class="header">
-      <h1>ð ×××©×¢×× ××× ×××× ××</h1>
-      <p>×¢××¦×××× ×××ª× × ×©×××× | 050-5918734</p>
+      <h1>🎈 הושעיה אמן בלונים</h1>
+      <p>עיצובים בלתי נשכחים | 050-5918734</p>
     </div>
     
     <div class="tabs">
-      <button class="tab-btn active" data-tab="quotes">ð ××¦×¢×ª ××××¨</button>
-      <button class="tab-btn" data-tab="inventory">ð¦ ××××</button>
-      <button class="tab-btn" data-tab="chat">ð² ××××§ ×©×××</button>
-      <button class="tab-btn" data-tab="history">ð ×××¡×××¨××</button>
+      <button class="tab-btn active" data-tab="quotes">📋 הצעת מחיר</button>
+      <button class="tab-btn" data-tab="inventory">📦 מלאי</button>
+      <button class="tab-btn" data-tab="chat">📲 הדבק שיחה</button>
+      <button class="tab-btn" data-tab="history">📁 היסטוריה</button>
     </div>
     
     <!-- TAB: QUOTES -->
     <div id="quotes" class="tab-content active">
-      <h2>××¦××¨×ª ××¦×¢×ª ××××¨</h2>
+      <h2>יצירת הצעת מחיר</h2>
       
       <div class="price-table">
-        <strong>××××¨×× ××××¨:</strong><br>
-        ×©×××× (30/70/120âª) | ×××©××§ (800âª) | ×©×¢×¨ (600âª) | ××¨ ×××× ×× (800âª/×©×¢×)
+        <strong>מחירון מהיר:</strong><br>
+        שולחן (30/70/120₪) | חישוק (800₪) | שער (600₪) | בר בלונים (800₪/שעה)
       </div>
       
-      <input type="text" id="clientName" placeholder="×©× ×××§××" required>
-      <input type="tel" id="clientPhone" placeholder="×××¤××">
-      <input type="email" id="clientEmail" placeholder="××××××">
+      <input type="text" id="clientName" placeholder="שם הלקוח" required>
+      <input type="tel" id="clientPhone" placeholder="טלפון">
+      <input type="email" id="clientEmail" placeholder="אימייל">
       
-      <textarea id="quoteItems" placeholder="×¤×¨×× ××××× × (××××××: ×©×××× ××¡××¡× + ×××©××§ ×××× ××)" rows="4"></textarea>
+      <textarea id="quoteItems" placeholder="פרטי ההזמנה (לדוגמה: שולחן בסיסי + חישוק בלונים)" rows="4"></textarea>
       
-      <input type="number" id="quotePrice" placeholder="×¡××´× ××××¨ (âª)" min="0">
+      <input type="number" id="quotePrice" placeholder="סה״כ מחיר (₪)" min="0">
       
       <div style="display: flex; gap: 10px;">
-        <button onclick="saveQuote()">ð¾ ×©×××¨ ××¦×¢×</button>
-        <button onclick="downloadQuote()">ð¥ ×××¨×× PDF</button>
+        <button onclick="saveQuote()">💾 שמור הצעה</button>
+        <button onclick="downloadQuote()">📥 הוריד PDF</button>
       </div>
       
       <div id="quoteAlert" style="margin-top: 20px;"></div>
@@ -172,18 +172,18 @@
     
     <!-- TAB: INVENTORY -->
     <div id="inventory" class="tab-content">
-      <h2>× ×××× ××××</h2>
+      <h2>ניהול מלאי</h2>
       
       <select id="balloonType">
-        <option>×××¨ ×¡×× ××××</option>
-        <option>××§×¡</option>
-        <option>×××××¨</option>
-        <option>×××¦×¥</option>
-        <option>×¤×××¤××</option>
+        <option>בחר סוג בלון</option>
+        <option>טקס</option>
+        <option>מיילר</option>
+        <option>מוצץ</option>
+        <option>פומפום</option>
       </select>
       
       <select id="balloonSize">
-        <option>×××¨ ××××</option>
+        <option>בחר גודל</option>
         <option>9"</option>
         <option>11"</option>
         <option>12"</option>
@@ -192,13 +192,13 @@
         <option>18"</option>
       </select>
       
-      <input type="text" id="balloonColor" placeholder="×¦××¢">
-      <input type="number" id="balloonQty" placeholder="××××ª" min="0">
-      <input type="number" id="balloonMin" placeholder="××××ª ××× ×××× ×××ª×¨××" min="0">
+      <input type="text" id="balloonColor" placeholder="צבע">
+      <input type="number" id="balloonQty" placeholder="כמות" min="0">
+      <input type="number" id="balloonMin" placeholder="כמות מינימום להתראה" min="0">
       
       <div style="display: flex; gap: 10px;">
-        <button onclick="addInventory()">â ×××¡×£ ×××××ª</button>
-        <button onclick="exportInventory()">ð ×××¦× ×-Excel</button>
+        <button onclick="addInventory()">➕ הוסף לכמות</button>
+        <button onclick="exportInventory()">📊 ייצא ל-Excel</button>
       </div>
       
       <div id="inventoryList" style="margin-top: 30px;"></div>
@@ -206,30 +206,30 @@
     
     <!-- TAB: CHAT ANALYSIS -->
     <div id="chat" class="tab-content">
-      <h2>× ××ª×× ×©×××ª ×××××¡××¤</h2>
+      <h2>ניתוח שיחת וואטסאפ</h2>
       <p style="color: #666; font-size: 13px; margin-bottom: 15px;">
-        ××××§ ×× ×©××× ××××××¡××¤ ××× â AI ××××¥ ××ª ××¤×¨××× ×××× ×
+        הדבק כל שיחה מוואטסאפ כאן — AI יחלץ את הפרטים בחינם
       </p>
       
-      <textarea id="chatInput" placeholder="×××××:
-××§××: ×©×××, ×× × ×¦×¨×× ×¢××¦×× ×××¨××ª ×××× ×¨××©××
-×××©×¢××: ××× ×× ×©×× ×¦×¤××××?
-××§××: ×-100 ×× ×©××
+      <textarea id="chatInput" placeholder="דוגמה:
+לקוח: שלום, אני צריך עיצוב לברית ביום ראשון
+הושעיה: כמה אנשים צפויים?
+לקוח: כ-100 אנשים
 ..." rows="8"></textarea>
       
-      <button onclick="analyzeChat()">ð¤ × ×ª× ×¢× AI</button>
+      <button onclick="analyzeChat()">🤖 נתח עם AI</button>
       <div id="chatAlert" style="margin-top: 20px;"></div>
     </div>
     
     <!-- TAB: HISTORY -->
     <div id="history" class="tab-content">
-      <h2>×××¡×××¨×××ª ××¦×¢××ª ×××××</h2>
-      <p style="color: #666; font-size: 13px;">×× ×××××¢ × ×©××¨ ××××¡×§ ×©×× (localStorage)</p>
+      <h2>היסטוריית הצעות ומלאי</h2>
+      <p style="color: #666; font-size: 13px;">כל המידע נשמר בדיסק שלך (localStorage)</p>
       
       <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-        <button onclick="downloadHistory()">ð¥ ×××¨×× JSON</button>
-        <button onclick="uploadHistory()" style="background: #28a745;">ð¤ ××¢×× JSON</button>
-        <button onclick="clearHistory()" style="background: #dc3545;">ðï¸ ×××§ ×××</button>
+        <button onclick="downloadHistory()">📥 הוריד JSON</button>
+        <button onclick="uploadHistory()" style="background: #28a745;">📤 העלה JSON</button>
+        <button onclick="clearHistory()" style="background: #dc3545;">🗑️ מחק הכל</button>
       </div>
       
       <div id="historyList"></div>
@@ -264,7 +264,7 @@
       };
       
       if (!quote.clientName || !quote.items) {
-        showAlert('quoteAlert', '×× × ××× ××ª ×× ××©×××ª', 'error');
+        showAlert('quoteAlert', 'אנא מלא את כל השדות', 'error');
         return;
       }
       
@@ -273,7 +273,7 @@
       data.quotes.push(quote);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       
-      showAlert('quoteAlert', `â ××¦×¢× ××©× ${quote.clientName} × ×©××¨× ×××¦×××!`, 'success');
+      showAlert('quoteAlert', `✅ הצעה לשם ${quote.clientName} נשמרה בהצלחה!`, 'success');
       document.getElementById('clientName').value = '';
       document.getElementById('clientPhone').value = '';
       document.getElementById('clientEmail').value = '';
@@ -282,7 +282,7 @@
     }
     
     function downloadQuote() {
-      showAlert('quoteAlert', 'ð¥ ×××¨××ª PDF ×¢×××× ××¤××ª×× (××§×¨××)', 'info');
+      showAlert('quoteAlert', '📥 הורדת PDF עדיין בפיתוח (בקרוב)', 'info');
     }
     
     // ==================== INVENTORY ====================
@@ -293,8 +293,8 @@
       const qty = parseInt(document.getElementById('balloonQty').value) || 0;
       const min = parseInt(document.getElementById('balloonMin').value) || 0;
       
-      if (type === '×××¨ ×¡×× ××××' || size === '×××¨ ××××' || !color || qty <= 0) {
-        alert('×× × ××× ××ª ×× ××©×××ª');
+      if (type === 'בחר סוג בלון' || size === 'בחר גודל' || !color || qty <= 0) {
+        alert('אנא מלא את כל השדות');
         return;
       }
       
@@ -322,16 +322,16 @@
           <div class="inventory-item">
             <div>
               <strong>${item.type} ${item.size}</strong> - ${item.color}
-              <span style="color: #666;">(${item.qty} ××')</span>
+              <span style="color: #666;">(${item.qty} יח')</span>
             </div>
             <div style="text-align: left;">
-              <button onclick="deleteInventory(${item.id})" style="background: #dc3545; padding: 8px 12px; font-size: 12px;">×××§</button>
+              <button onclick="deleteInventory(${item.id})" style="background: #dc3545; padding: 8px 12px; font-size: 12px;">מחק</button>
             </div>
           </div>
         `)
         .join('');
       
-      document.getElementById('inventoryList').innerHTML = html || '<p style="color: #999;">××× ×¤×¨×××× ×××××</p>';
+      document.getElementById('inventoryList').innerHTML = html || '<p style="color: #999;">אין פריטים במלאי</p>';
     }
     
     function deleteInventory(id) {
@@ -343,7 +343,7 @@
     
     function exportInventory() {
       let data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"inventory":[]}');
-      const csvContent = "×¡××,××××,×¦××¢,××××ª,××× ××××,×ª××¨××\n" +
+      const csvContent = "סוג,גודל,צבע,כמות,מינימום,תאריך\n" +
         (data.inventory || [])
           .map(item => `${item.type},${item.size},${item.color},${item.qty},${item.min},${item.date}`)
           .join('\n');
@@ -359,28 +359,28 @@
     async function analyzeChat() {
       const chat = document.getElementById('chatInput').value;
       if (!chat.trim()) {
-        showAlert('chatAlert', '×× × ××××§ ×©×××', 'error');
+        showAlert('chatAlert', 'אנא הדבק שיחה', 'error');
         return;
       }
       
-      showAlert('chatAlert', 'ð ×× ×ª×...', 'info');
+      showAlert('chatAlert', '🔄 מנתח...', 'info');
       
       try {
         const res = await fetch(`${WORKER_URL}/gemini`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            prompt: `××ª× ×¢×××¨ ××¢××¦×× ×××¨××¢×× ×××× ××. ×× ×ª× ××ª ××©××× ×××× ××××¥:
-1. ×©× ×××§××
-2. ×¡×× ××××¨××¢
-3. ××¡×¤×¨ ×× ×©×× ×××©××¢×¨
-4. ×ª××¨×× ××××¨××¢
-5. ××××× ×ª×§×¦×× ×¨××©×× ×
+            prompt: `אתה עוזר בעיצוב אירועים בלונים. אנתח את השיחה הבאה וחלץ:
+1. שם הלקוח
+2. סוג האירוע
+3. מספר אנשים המשוער
+4. תאריך האירוע
+5. אומדן תקציב ראשוני
 
-×©×××:
+שיחה:
 ${chat}
 
-×ª× ××ª ××ª×©××× ××¤××¨×× JSON:
+תן את התשובה בפורמט JSON:
 {
   "clientName": "...",
   "eventType": "...",
@@ -394,12 +394,12 @@ ${chat}
         
         const result = await res.json();
         if (result.ok && result.text) {
-          showAlert('chatAlert', `â × ××ª×× ×××©××:<br><pre style="background: #f8f9fa; padding: 10px; border-radius: 6px; overflow-x: auto;">${result.text}</pre>`, 'success');
+          showAlert('chatAlert', `✅ ניתוח הושלם:<br><pre style="background: #f8f9fa; padding: 10px; border-radius: 6px; overflow-x: auto;">${result.text}</pre>`, 'success');
         } else {
-          showAlert('chatAlert', '×©×××× ×× ××ª××', 'error');
+          showAlert('chatAlert', 'שגיאה בניתוח', 'error');
         }
       } catch (e) {
-        showAlert('chatAlert', `â ×©××××: ${e.message}`, 'error');
+        showAlert('chatAlert', `❌ שגיאה: ${e.message}`, 'error');
       }
     }
     
@@ -425,9 +425,9 @@ ${chat}
             JSON.parse(reader.result);
             localStorage.setItem(STORAGE_KEY, reader.result);
             renderInventory();
-            showAlert('quoteAlert', 'â ×× ×ª×× ×× ×¢×××× × ×××¦×××', 'success');
+            showAlert('quoteAlert', '✅ הנתונים עודכנו בהצלחה', 'success');
           } catch {
-            alert('×§×××¥ ×× ×ª×§××');
+            alert('קובץ לא תקין');
           }
         };
         reader.readAsText(file);
@@ -436,10 +436,10 @@ ${chat}
     }
     
     function clearHistory() {
-      if (confirm('××× ××ª× ××××? ×¤×¢××× ×× ×× × ××ª× ×ª ××××××')) {
+      if (confirm('האם אתה בטוח? פעולה זו לא ניתנת לביטול')) {
         localStorage.removeItem(STORAGE_KEY);
         renderInventory();
-        showAlert('quoteAlert', 'ðï¸ ×× ×× ×ª×× ×× × ×××§×', 'success');
+        showAlert('quoteAlert', '🗑️ כל הנתונים נמחקו', 'success');
       }
     }
     
@@ -454,4 +454,4 @@ ${chat}
     renderInventory();
   </script>
 </body>
-        </html>
+  </html>
