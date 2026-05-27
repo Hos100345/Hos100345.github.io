@@ -238,7 +238,8 @@
   
   <script>
     const STORAGE_KEY = "hoshaya_data_v2";
-    const WORKER_URL = "https://hoshaya-worker.hoshaya.workers.dev";
+    const GEMINI_KEY = "AIzaSyC5nbKgYT0LOgWmMtnqA3WG_66Ylcn9mJU";
+    const GEMINI_URL = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`;
     
     // ==================== TAB SWITCHING ====================
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -366,11 +367,11 @@
       showAlert('chatAlert', '🔄 מנתח שיחה...', 'info');
 
       try {
-        const res = await fetch(`${WORKER_URL}/gemini`, {
+        const res = await fetch(GEMINI_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            prompt: `אתה עוזר בעיצוב אירועים בלונים. נתח את השיחה הבאה וחלץ את הפרטים הבאים:
+            contents: [{ parts: [{ text: `אתה עוזר בעיצוב אירועים בלונים. נתח את השיחה הבאה וחלץ את הפרטים הבאים:
 1. שם הלקוח
 2. סוג האירוע
 3. מספר אנשים משוער
@@ -388,18 +389,19 @@ ${chat}
   "date": "...",
   "estimatedBudget": 0,
   "notes": "..."
-}`
+}` }] }],
+            generationConfig: { temperature: 0.1 }
           })
         });
 
         const result = await res.json();
 
-        if (!result.ok || result.error) {
-          showAlert('chatAlert', `❌ שגיאה: ${result.error || 'תגובה לא תקינה מהשרת'}`, 'error');
+        if (result.error) {
+          showAlert('chatAlert', `❌ שגיאה: ${result.error.message}`, 'error');
           return;
         }
 
-        const text = result.text;
+        const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
         if (!text) {
           showAlert('chatAlert', '❌ לא התקבלה תשובה מה-AI', 'error');
           return;
