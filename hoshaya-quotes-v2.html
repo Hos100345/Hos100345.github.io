@@ -401,10 +401,8 @@
       showAlert('chatAlert', '🔄 מנתח שיחה...', 'info');
 
       try {
-        const isOAuth = !apiKey.startsWith('AIza');
-        const url = isOAuth ? GEMINI_URL : `${GEMINI_URL}?key=${apiKey}`;
-        const headers = { 'Content-Type': 'application/json' };
-        if (isOAuth) headers['Authorization'] = `Bearer ${apiKey}`;
+        const headers = { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey };
+        const url = apiKey.startsWith('AIza') ? `${GEMINI_URL}?key=${apiKey}` : GEMINI_URL;
 
         const res = await fetch(url, {
           method: 'POST',
@@ -440,7 +438,7 @@ ${chat}
         const result = await res.json();
 
         if (result.error) {
-          showAlert('chatAlert', `❌ שגיאת Gemini: ${result.error.message}`, 'error');
+          showAlert('chatAlert', `❌ שגיאת Gemini (${result.error.code}): ${result.error.message}<br><small>סטטוס HTTP: ${res.status}</small>`, 'error');
           return;
         }
 
