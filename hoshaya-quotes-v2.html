@@ -208,16 +208,28 @@
     <div id="chat" class="tab-content">
       <h2>ניתוח שיחת וואטסאפ</h2>
       <p style="color: #666; font-size: 13px; margin-bottom: 15px;">
-        הדבק כל שיחה מוואטסאפ כאן — AI יחלץ את הפרטים בחינם
+        הדבק כל שיחה מוואטסאפ כאן — AI יחלץ את הפרטים וימלא את הטופס אוטומטית
       </p>
-      
+
+      <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #dee2e6;">
+        <strong>⚙️ הגדרות Gemini AI</strong>
+        <p style="font-size: 12px; color: #666; margin: 5px 0 10px;">
+          מפתח API מ-<a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: #667eea;">Google AI Studio</a> (נשמר רק במכשיר שלך)
+        </p>
+        <div style="display: flex; gap: 10px;">
+          <input type="password" id="geminiApiKey" placeholder="הכנס מפתח API של Gemini..." style="margin-bottom: 0;">
+          <button onclick="saveApiKey()" style="background: #28a745; white-space: nowrap;">💾 שמור</button>
+        </div>
+        <div id="apiKeyStatus" style="margin-top: 8px; font-size: 12px;"></div>
+      </div>
+
       <textarea id="chatInput" placeholder="דוגמה:
 לקוח: שלום, אני צריך עיצוב לברית ביום ראשון
 הושעיה: כמה אנשים צפויים?
 לקוח: כ-100 אנשים
 ..." rows="8"></textarea>
-      
-      <button onclick="analyzeChat()">🤖 נתח עם AI</button>
+
+      <button onclick="analyzeChat()">🤖 נתח עם AI ומלא טופס</button>
       <div id="chatAlert" style="margin-top: 20px;"></div>
     </div>
     
@@ -237,8 +249,8 @@
   </div>
   
   <script>
-    const WORKER_URL = "https://hoshaya-worker.hoshaya.workers.dev";
     const STORAGE_KEY = "hoshaya_data_v2";
+    const GEMINI_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent";
     
     // ==================== TAB SWITCHING ====================
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -355,6 +367,23 @@
       link.click();
     }
     
+    // ==================== GEMINI API KEY ====================
+    function saveApiKey() {
+      const key = document.getElementById('geminiApiKey').value.trim();
+      if (!key) { return; }
+      localStorage.setItem('gemini_api_key', key);
+      document.getElementById('geminiApiKey').value = '';
+      document.getElementById('apiKeyStatus').innerHTML = '<span style="color: #28a745;">✅ מפתח נשמר בהצלחה</span>';
+    }
+
+    function initApiKeyStatus() {
+      const saved = localStorage.getItem('gemini_api_key');
+      if (saved) {
+        document.getElementById('geminiApiKey').placeholder = '🔑 מפתח שמור — הכנס חדש לעדכון';
+        document.getElementById('apiKeyStatus').innerHTML = '<span style="color: #28a745;">✅ מפתח API מוגדר</span>';
+      }
+    }
+
     // ==================== CHAT ANALYSIS ====================
     async function analyzeChat() {
       const chat = document.getElementById('chatInput').value;
@@ -362,25 +391,33 @@
         showAlert('chatAlert', 'אנא הדבק שיחה', 'error');
         return;
       }
-      
-      showAlert('chatAlert', '🔄 מנתח...', 'info');
-      
+
+      const apiKey = localStorage.getItem('gemini_api_key');
+      if (!apiKey) {
+        showAlert('chatAlert', '❌ אנא הגדר מפתח API של Gemini בהגדרות למעלה', 'error');
+        return;
+      }
+
+      showAlert('chatAlert', '🔄 מנתח שיחה...', 'info');
+
       try {
-        const res = await fetch(`${WORKER_URL}/gemini`, {
+        const res = await fetch(`${GEMINI_URL}?key=${apiKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            prompt: `אתה עוזר בעיצוב אירועים בלונים. אנתח את השיחה הבאה וחלץ:
+            contents: [{
+              parts: [{
+                text: `אתה עוזר בעיצוב אירועים בלונים. נתח את השיחה הבאה וחלץ את הפרטים הבאים:
 1. שם הלקוח
 2. סוג האירוע
-3. מספר אנשים המשוער
+3. מספר אנשים משוער
 4. תאריך האירוע
 5. אומדן תקציב ראשוני
 
 שיחה:
 ${chat}
 
-תן את התשובה בפורמט JSON:
+החזר JSON בלבד (ללא markdown, ללא \`\`\`json):
 {
   "clientName": "...",
   "eventType": "...",
@@ -389,15 +426,48 @@ ${chat}
   "estimatedBudget": 0,
   "notes": "..."
 }`
+              }]
+            }],
+            generationConfig: { temperature: 0.1 }
           })
         });
-        
+
         const result = await res.json();
-        if (result.ok && result.text) {
-          showAlert('chatAlert', `✅ ניתוח הושלם:<br><pre style="background: #f8f9fa; padding: 10px; border-radius: 6px; overflow-x: auto;">${result.text}</pre>`, 'success');
-        } else {
-          showAlert('chatAlert', 'שגיאה בניתוח', 'error');
+
+        if (result.error) {
+          showAlert('chatAlert', `❌ שגיאת Gemini: ${result.error.message}`, 'error');
+          return;
         }
+
+        const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!text) {
+          showAlert('chatAlert', '❌ לא התקבלה תשובה מה-AI', 'error');
+          return;
+        }
+
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+          showAlert('chatAlert', `✅ ניתוח הושלם:<br><pre style="background:#f8f9fa;padding:10px;border-radius:6px;overflow-x:auto;">${text}</pre>`, 'success');
+          return;
+        }
+
+        const data = JSON.parse(jsonMatch[0]);
+
+        // Autofill quote form
+        if (data.clientName) document.getElementById('clientName').value = data.clientName;
+        const lines = [];
+        if (data.eventType) lines.push(`סוג אירוע: ${data.eventType}`);
+        if (data.attendees) lines.push(`מספר אנשים: ${data.attendees}`);
+        if (data.date) lines.push(`תאריך: ${data.date}`);
+        if (data.notes) lines.push(`הערות: ${data.notes}`);
+        if (lines.length) document.getElementById('quoteItems').value = lines.join('\n');
+        if (data.estimatedBudget) document.getElementById('quotePrice').value = data.estimatedBudget;
+
+        showAlert('chatAlert', '✅ הטופס מולא אוטומטית — עבור ל"הצעת מחיר" לבדיקה', 'success');
+        // Switch to quotes tab
+        document.querySelector('[data-tab="quotes"]').click();
+        showAlert('quoteAlert', '✅ פרטים מולאו מהשיחה — בדוק ושמור', 'success');
+
       } catch (e) {
         showAlert('chatAlert', `❌ שגיאה: ${e.message}`, 'error');
       }
@@ -452,6 +522,7 @@ ${chat}
     
     // Initialize
     renderInventory();
+    initApiKeyStatus();
   </script>
 </body>
   </html>
