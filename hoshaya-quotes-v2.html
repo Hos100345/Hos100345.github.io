@@ -401,9 +401,14 @@
       showAlert('chatAlert', '🔄 מנתח שיחה...', 'info');
 
       try {
-        const res = await fetch(`${GEMINI_URL}?key=${apiKey}`, {
+        const isOAuth = !apiKey.startsWith('AIza');
+        const url = isOAuth ? GEMINI_URL : `${GEMINI_URL}?key=${apiKey}`;
+        const headers = { 'Content-Type': 'application/json' };
+        if (isOAuth) headers['Authorization'] = `Bearer ${apiKey}`;
+
+        const res = await fetch(url, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({
             contents: [{
               parts: [{
