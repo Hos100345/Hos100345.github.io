@@ -670,10 +670,35 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   line-height: 1.8;
   flex: 1;
 }
+.testimonial-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: auto;
+}
 .testimonial-name {
   font-weight: 700;
   font-size: 0.9rem;
   color: var(--purple-dark);
+}
+.screenshot-btn {
+  background: var(--purple-light);
+  color: var(--purple);
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 0.3rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+.screenshot-btn:hover {
+  background: var(--purple);
+  color: var(--white);
 }
 
 .testimonials-nav {

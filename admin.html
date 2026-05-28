@@ -3,782 +3,716 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ניהול גלריה — הושעיה אמן בלונים</title>
+  <title>ניהול אתר — הושעיה אמן בלונים</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --purple: #7C3AED;
-      --purple-light: #EDE9FE;
-      --pink: #EC4899;
-      --gold: #F59E0B;
-      --wa: #25D366;
-      --green: #10B981;
-      --red: #EF4444;
-      --bg: #F5F0FF;
-      --white: #FFFFFF;
-      --text: #1A1A2E;
-      --muted: #6B7280;
-      --border: #E5E7EB;
-      --radius: 1rem;
-      --shadow: 0 4px 24px rgba(0,0,0,.08);
+      --purple: #7C3AED; --purple-d: #5B21B6; --purple-l: #EDE9FE;
+      --green: #25D366; --red: #EF4444; --gold: #F59E0B;
+      --bg: #F5F0FF; --white: #fff; --text: #1A1A2E; --muted: #6B7280; --border: #E5E7EB;
+      --r: 1rem; --shadow: 0 4px 24px rgba(0,0,0,.08);
     }
+    body { font-family: 'Heebo', sans-serif; background: var(--bg); color: var(--text); direction: rtl; min-height: 100vh; }
 
-    html { font-size: 16px; }
-    body {
-      font-family: 'Heebo', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      direction: rtl;
-      min-height: 100vh;
-      padding-bottom: 4rem;
-    }
+    /* TOP */
+    .top { background: linear-gradient(135deg,#2D0A6E,#7C3AED); color: #fff; padding: 1.1rem 1.5rem; display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; }
+    .top img { width: 42px; height: 42px; border-radius: 50%; background: #fff; padding: 2px; object-fit: contain; flex-shrink: 0; }
+    .top h1 { font-size: 1.15rem; font-weight: 800; }
+    .top p  { font-size: .8rem; opacity: .75; }
+    .top a  { margin-inline-start: auto; background: rgba(255,255,255,.15); color: #fff; border-radius: 100px; padding: .4rem 1rem; font-size: .82rem; font-weight: 700; text-decoration: none; white-space: nowrap; transition: background .2s; }
+    .top a:hover { background: rgba(255,255,255,.25); }
 
-    /* ---- TOP BAR ---- */
-    .topbar {
-      background: linear-gradient(135deg, #2D0A6E, #7C3AED);
-      color: white;
-      padding: 1.25rem 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-    .topbar img { width: 44px; height: 44px; border-radius: 50%; background: white; padding: 2px; object-fit: contain; }
-    .topbar h1 { font-size: 1.2rem; font-weight: 800; }
-    .topbar span { font-size: 0.85rem; opacity: .75; }
-    .topbar-badge {
-      margin-inline-start: auto;
-      background: rgba(255,255,255,.15);
-      border-radius: 100px;
-      padding: 0.35rem 0.9rem;
-      font-size: 0.8rem;
-      font-weight: 600;
-    }
+    /* TABS */
+    .tabs { display: flex; background: var(--white); border-bottom: 2px solid var(--border); padding: 0 1rem; overflow-x: auto; gap: .25rem; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+    .tab { padding: 1rem 1.25rem; font-size: .95rem; font-weight: 700; color: var(--muted); cursor: pointer; border: none; background: none; border-bottom: 3px solid transparent; margin-bottom: -2px; white-space: nowrap; transition: all .2s; font-family: inherit; }
+    .tab:hover { color: var(--purple); }
+    .tab.active { color: var(--purple); border-bottom-color: var(--purple); }
 
-    .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.25rem; }
+    /* CONTENT */
+    .content { max-width: 900px; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
+    .panel { display: none; }
+    .panel.active { display: block; }
 
-    /* ---- CARDS ---- */
-    .card {
-      background: var(--white);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 1.75rem;
-      margin-bottom: 1.75rem;
-    }
-    .card-title {
-      font-size: 1.15rem;
-      font-weight: 800;
-      margin-bottom: 1.25rem;
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-    }
-    .card-title .icon { font-size: 1.4rem; }
+    /* CARD */
+    .card { background: var(--white); border-radius: var(--r); box-shadow: var(--shadow); padding: 1.5rem; margin-bottom: 1.25rem; }
+    .card-title { font-size: 1rem; font-weight: 800; margin-bottom: 1.1rem; display: flex; align-items: center; gap: .5rem; }
 
-    /* ---- STEPS ---- */
-    .steps {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-    .step {
-      display: flex;
-      gap: 0.75rem;
-      align-items: flex-start;
-      background: var(--bg);
-      border-radius: 0.75rem;
-      padding: 1rem;
-    }
-    .step-num {
-      width: 32px; height: 32px;
-      border-radius: 50%;
-      background: var(--purple);
-      color: white;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 800; font-size: 0.9rem;
-      flex-shrink: 0;
-    }
-    .step-text strong { display: block; font-size: 0.9rem; margin-bottom: 0.2rem; }
-    .step-text span { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+    /* HOW-TO box */
+    .howto { background: #FFFBEB; border: 1.5px solid #FDE68A; border-radius: .75rem; padding: 1rem 1.25rem; margin-bottom: 1.25rem; font-size: .88rem; line-height: 1.7; }
+    .howto strong { color: #92400E; display: block; margin-bottom: .35rem; font-size: .95rem; }
+    .howto ol { padding-inline-start: 1.25rem; }
+    .howto li { margin-bottom: .2rem; }
 
-    /* ---- ADD FORM ---- */
-    .form-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; }
-    .form-group { flex: 1; min-width: 200px; }
-    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--muted); }
-    .form-group input, .form-group select {
-      width: 100%;
-      padding: 0.7rem 1rem;
-      border: 2px solid var(--border);
-      border-radius: 0.6rem;
-      font-family: inherit;
-      font-size: 0.95rem;
-      background: var(--bg);
-      color: var(--text);
-      transition: border-color 0.2s;
+    /* FORM */
+    .fg { margin-bottom: .9rem; }
+    .fg label { display: block; font-size: .84rem; font-weight: 600; color: var(--muted); margin-bottom: .35rem; }
+    .fg input, .fg select, .fg textarea {
+      width: 100%; padding: .65rem 1rem; border: 2px solid var(--border);
+      border-radius: .6rem; font-family: inherit; font-size: .93rem;
+      background: var(--bg); color: var(--text); transition: border-color .2s;
       direction: ltr;
     }
-    .form-group select { direction: rtl; }
-    .form-group input:focus, .form-group select:focus {
-      outline: none;
-      border-color: var(--purple);
-    }
-    .form-group input.error { border-color: var(--red); }
+    .fg select, .fg textarea { direction: rtl; }
+    .fg input:focus, .fg select:focus, .fg textarea:focus { outline: none; border-color: var(--purple); }
+    .fg textarea { min-height: 90px; resize: vertical; }
+    .row { display: flex; gap: .75rem; flex-wrap: wrap; }
+    .row .fg { flex: 1; min-width: 180px; }
 
-    /* ---- PREVIEW ---- */
-    .preview-wrap {
-      display: none;
-      align-items: flex-start;
-      gap: 1.25rem;
-      background: var(--bg);
-      border-radius: 0.75rem;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      flex-wrap: wrap;
-    }
-    .preview-wrap.show { display: flex; }
-    .preview-img-wrap {
-      width: 120px; height: 120px;
-      border-radius: 0.6rem;
-      overflow: hidden;
-      background: var(--border);
-      flex-shrink: 0;
-      position: relative;
-    }
-    .preview-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
-    .preview-img-wrap .preview-spinner {
-      position: absolute; inset: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.5rem;
-      background: var(--purple-light);
-    }
-    .preview-details { flex: 1; min-width: 160px; }
-    .preview-details strong { font-size: 0.9rem; color: var(--purple); display: block; margin-bottom: 0.4rem; }
-    .preview-details code {
-      font-size: 0.75rem;
-      background: #F3F0FF;
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
-      word-break: break-all;
-      display: block;
-      direction: ltr;
-      text-align: left;
-      line-height: 1.5;
-      color: var(--muted);
-    }
-    .preview-error {
-      color: var(--red);
-      font-size: 0.85rem;
-      padding: 0.75rem 1rem;
-      background: #FEF2F2;
-      border-radius: 0.5rem;
-      width: 100%;
-    }
+    /* PREVIEW */
+    .preview { display: none; align-items: center; gap: 1rem; background: var(--bg); border-radius: .75rem; padding: .9rem 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .preview.show { display: flex; }
+    .preview-img { width: 90px; height: 90px; border-radius: .5rem; object-fit: cover; background: var(--border); flex-shrink: 0; }
+    .preview-info { flex: 1; font-size: .82rem; color: var(--muted); line-height: 1.6; }
+    .preview-info strong { color: var(--purple); display: block; }
+    .preview-err { width: 100%; background: #FEF2F2; color: #991B1B; padding: .65rem .9rem; border-radius: .5rem; font-size: .84rem; }
 
-    /* ---- BUTTONS ---- */
-    .btn {
-      display: inline-flex; align-items: center; gap: 0.5rem;
-      padding: 0.7rem 1.5rem;
-      border-radius: 100px;
-      font-weight: 700; font-size: 0.95rem;
-      cursor: pointer; border: none; font-family: inherit;
-      transition: all 0.2s;
-    }
-    .btn-primary { background: var(--purple); color: white; }
-    .btn-primary:hover { background: #6D28D9; transform: translateY(-1px); }
-    .btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-    .btn-success { background: var(--green); color: white; }
-    .btn-success:hover { filter: brightness(1.1); }
-    .btn-danger  { background: var(--red); color: white; padding: 0.4rem 0.9rem; font-size: 0.82rem; }
-    .btn-danger:hover { filter: brightness(1.1); }
-    .btn-ghost   { background: var(--bg); color: var(--purple); border: 2px solid var(--purple-light); }
-    .btn-ghost:hover { background: var(--purple-light); }
-    .btn-copy    { background: #1A1A2E; color: white; }
-    .btn-copy:hover { background: #2D2D5E; }
-    .btn-copy.copied { background: var(--green); }
+    /* BUTTONS */
+    .btn { display: inline-flex; align-items: center; gap: .45rem; padding: .65rem 1.4rem; border-radius: 100px; font-weight: 700; font-size: .92rem; cursor: pointer; border: none; font-family: inherit; transition: all .2s; }
+    .btn-p  { background: var(--purple); color: #fff; }
+    .btn-p:hover  { background: var(--purple-d); transform: translateY(-1px); }
+    .btn-p:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+    .btn-g  { background: var(--bg); color: var(--purple); border: 2px solid var(--purple-l); }
+    .btn-g:hover  { background: var(--purple-l); }
+    .btn-ok { background: #059669; color: #fff; }
+    .btn-ok:hover { filter: brightness(1.1); }
+    .btn-ok.done  { background: #10B981; }
+    .btn-del { background: none; border: none; color: var(--red); font-size: 1.1rem; cursor: pointer; padding: .2rem .4rem; border-radius: .3rem; transition: background .2s; }
+    .btn-del:hover { background: #FEE2E2; }
+    .btns { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: .5rem; }
 
-    /* ---- GALLERY GRID ---- */
-    .gallery-count {
-      font-size: 0.9rem;
-      color: var(--muted);
-      margin-bottom: 1rem;
-      font-weight: 600;
-    }
-    .gallery-count strong { color: var(--purple); }
+    /* GALLERY GRID */
+    .g-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px,1fr)); gap: .65rem; }
+    .g-item { position: relative; aspect-ratio: 1; border-radius: .6rem; overflow: hidden; box-shadow: var(--shadow); }
+    .g-item img { width: 100%; height: 100%; object-fit: cover; }
+    .g-item-info { position: absolute; inset: 0; background: linear-gradient(to top,rgba(0,0,0,.75),transparent 50%); display: flex; flex-direction: column; justify-content: flex-end; padding: .4rem; opacity: 0; transition: opacity .2s; }
+    .g-item:hover .g-item-info { opacity: 1; }
+    .g-badge { font-size: .68rem; font-weight: 700; color: #fff; background: var(--purple); border-radius: 100px; padding: .12rem .45rem; display: inline-block; margin-bottom: .2rem; }
+    .g-alt { font-size: .7rem; color: rgba(255,255,255,.9); }
+    .g-del { position: absolute; top: .35rem; left: .35rem; width: 26px; height: 26px; border-radius: 50%; background: rgba(239,68,68,.9); color: #fff; border: none; cursor: pointer; font-size: .8rem; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .2s; }
+    .g-item:hover .g-del { opacity: 1; }
 
-    .gallery-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 0.75rem;
-    }
-    .gallery-item {
-      position: relative;
-      background: var(--bg);
-      border-radius: 0.75rem;
-      overflow: hidden;
-      aspect-ratio: 1;
-      box-shadow: var(--shadow);
-      transition: transform 0.2s;
-    }
-    .gallery-item:hover { transform: scale(1.02); }
-    .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
-    .gallery-item-overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to top, rgba(0,0,0,.75) 0%, transparent 50%);
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      padding: 0.5rem;
-      opacity: 0;
-      transition: opacity 0.2s;
-    }
-    .gallery-item:hover .gallery-item-overlay { opacity: 1; }
-    .item-cat-badge {
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: white;
-      background: var(--purple);
-      border-radius: 100px;
-      padding: 0.15rem 0.5rem;
-      display: inline-block;
-      margin-bottom: 0.3rem;
-      align-self: flex-start;
-    }
-    .item-alt { font-size: 0.75rem; color: rgba(255,255,255,.9); line-height: 1.3; }
-    .item-delete {
-      position: absolute;
-      top: 0.5rem;
-      left: 0.5rem;
-      width: 28px; height: 28px;
-      border-radius: 50%;
-      background: rgba(239,68,68,.9);
-      color: white;
-      border: none;
-      cursor: pointer;
-      font-size: 0.85rem;
-      display: flex; align-items: center; justify-content: center;
-      opacity: 0;
-      transition: opacity 0.2s;
-      font-family: inherit;
-    }
-    .gallery-item:hover .item-delete { opacity: 1; }
-    .item-delete:hover { background: var(--red); transform: scale(1.1); }
+    /* TESTIMONIALS LIST */
+    .t-list { display: flex; flex-direction: column; gap: .75rem; }
+    .t-item { background: var(--bg); border-radius: .75rem; padding: .9rem 1rem; display: flex; align-items: flex-start; gap: .75rem; }
+    .t-item-body { flex: 1; min-width: 0; }
+    .t-name { font-weight: 700; font-size: .9rem; margin-bottom: .2rem; }
+    .t-text { font-size: .83rem; color: var(--muted); line-height: 1.55; white-space: pre-wrap; }
+    .t-screenshot { font-size: .78rem; color: var(--purple); margin-top: .3rem; display: flex; align-items: center; gap: .3rem; }
+    .t-screenshot img { width: 32px; height: 32px; border-radius: .3rem; object-fit: cover; }
+    .t-num { width: 30px; height: 30px; border-radius: 50%; background: var(--purple-l); color: var(--purple); font-size: .8rem; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
 
-    .empty-gallery {
-      text-align: center;
-      padding: 3rem;
-      color: var(--muted);
-    }
-    .empty-gallery .emoji { font-size: 3rem; margin-bottom: 0.5rem; }
+    /* VIDEO PREVIEW */
+    .yt-preview { position: relative; padding-top: 56.25%; border-radius: .75rem; overflow: hidden; margin-top: 1rem; display: none; }
+    .yt-preview.show { display: block; }
+    .yt-preview iframe { position: absolute; inset: 0; width: 100%; height: 100%; }
 
-    /* ---- EXPORT ---- */
-    .export-preview {
-      display: none;
-      margin-top: 1.25rem;
-    }
-    .export-preview.show { display: block; }
-    .export-label {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--muted);
-      margin-bottom: 0.5rem;
-    }
-    .code-block {
-      background: #1A1A2E;
-      color: #A5F3FC;
-      font-family: 'Courier New', monospace;
-      font-size: 0.82rem;
-      line-height: 1.6;
-      padding: 1.25rem;
-      border-radius: 0.75rem;
-      overflow-x: auto;
-      direction: ltr;
-      text-align: left;
-      max-height: 300px;
-      overflow-y: auto;
-      margin-bottom: 1rem;
-    }
+    /* EXPORT */
+    .export-box { display: none; margin-top: 1.25rem; }
+    .export-box.show { display: block; }
+    .code-block { background: #1A1A2E; color: #A5F3FC; font-family: 'Courier New', monospace; font-size: .78rem; line-height: 1.6; padding: 1.1rem; border-radius: .75rem; overflow: auto; direction: ltr; text-align: left; max-height: 260px; margin-bottom: .9rem; white-space: pre; }
+    .github-steps { background: #ECFDF5; border-radius: .75rem; padding: 1.1rem 1.25rem; margin-top: 1rem; }
+    .github-steps h3 { font-size: .9rem; color: #065F46; margin-bottom: .75rem; }
+    .github-steps ol { padding-inline-start: 1.25rem; font-size: .86rem; line-height: 2; }
+    .github-steps a { color: #7C3AED; font-weight: 700; }
+    .github-steps code { background: #D1FAE5; color: #065F46; padding: .1rem .35rem; border-radius: 3px; direction: ltr; display: inline-block; }
 
-    /* ---- INSTRUCTIONS ---- */
-    .instructions-steps {
-      counter-reset: istep;
-      list-style: none;
-    }
-    .instructions-steps li {
-      counter-increment: istep;
-      display: flex;
-      gap: 0.75rem;
-      align-items: flex-start;
-      padding: 0.75rem 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 0.9rem;
-    }
-    .instructions-steps li:last-child { border-bottom: none; }
-    .instructions-steps li::before {
-      content: counter(istep);
-      width: 26px; height: 26px;
-      border-radius: 50%;
-      background: var(--purple-light);
-      color: var(--purple);
-      font-weight: 800;
-      font-size: 0.8rem;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
-    .instructions-steps li a { color: var(--purple); font-weight: 600; }
-    .instructions-steps li code {
-      background: var(--purple-light);
-      color: var(--purple);
-      padding: 0.1rem 0.4rem;
-      border-radius: 4px;
-      font-size: 0.85em;
-      direction: ltr;
-      display: inline-block;
-    }
-
-    /* ---- ALERT ---- */
-    .alert {
-      padding: 0.75rem 1rem;
-      border-radius: 0.5rem;
-      font-size: 0.88rem;
-      margin-bottom: 1rem;
-      display: none;
-    }
+    /* ALERT */
+    .alert { padding: .7rem 1rem; border-radius: .5rem; font-size: .87rem; margin-bottom: 1rem; display: none; }
     .alert.show { display: block; }
-    .alert-success { background: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; }
-    .alert-error   { background: #FEF2F2; color: #991B1B; border: 1px solid #FECACA; }
+    .alert-ok  { background: #ECFDF5; color: #065F46; }
+    .alert-err { background: #FEF2F2; color: #991B1B; }
 
-    /* ---- CAT LABELS ---- */
-    .cat-label {
-      display: inline-block;
-      padding: 0.2rem 0.6rem;
-      border-radius: 100px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      background: var(--purple-light);
-      color: var(--purple);
-    }
+    /* EMPTY STATE */
+    .empty { text-align: center; padding: 2.5rem; color: var(--muted); }
+    .empty .e { font-size: 2.5rem; margin-bottom: .5rem; }
 
-    @media (max-width: 600px) {
-      .gallery-grid { grid-template-columns: repeat(3, 1fr); }
-      .form-row { flex-direction: column; }
+    @media (max-width: 500px) {
+      .g-grid { grid-template-columns: repeat(3,1fr); }
+      .row { flex-direction: column; }
     }
   </style>
 </head>
 <body>
 
-  <!-- TOP BAR -->
-  <div class="topbar">
-    <img src="https://images.cdn-files-a.com/uploads/6457286/400_filter_nobg_62af13d75c64a.jpg" alt="לוגו">
-    <div>
-      <h1>ניהול גלריה</h1>
-      <span>הושעיה אמן בלונים</span>
-    </div>
-    <div class="topbar-badge" id="badge-count">0 תמונות</div>
+<div class="top">
+  <img src="https://images.cdn-files-a.com/uploads/6457286/400_filter_nobg_62af13d75c64a.jpg" alt="לוגו">
+  <div>
+    <h1>ניהול אתר</h1>
+    <p>הושעיה אמן בלונים</p>
   </div>
+  <a href="https://hos100345.github.io" target="_blank">🌐 פתח אתר</a>
+</div>
 
-  <div class="container">
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('gallery',this)">🎈 גלריה</button>
+  <button class="tab" onclick="switchTab('video',this)">🎬 סרטון</button>
+  <button class="tab" onclick="switchTab('reviews',this)">⭐ המלצות</button>
+  <button class="tab" onclick="switchTab('export',this)">💾 שמור ועדכן</button>
+</div>
 
-    <!-- ALERT -->
-    <div class="alert alert-success" id="alert-success">✅ התמונה נוספה בהצלחה!</div>
-    <div class="alert alert-error"   id="alert-error">❌ <span id="alert-error-text">שגיאה</span></div>
+<div class="content">
 
-    <!-- STEP 1: HOW TO GET DRIVE LINK -->
-    <div class="card">
-      <div class="card-title"><span class="icon">📱</span> איך מוסיפים תמונה מגוגל דרייב?</div>
-      <div class="steps">
-        <div class="step">
-          <div class="step-num">1</div>
-          <div class="step-text">
-            <strong>שתף את התמונה</strong>
-            <span>בגוגל דרייב: לחץ ימני על התמונה ← "שתף" ← שנה ל"כל מי שיש לו קישור" ← "העתק קישור"</span>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-num">2</div>
-          <div class="step-text">
-            <strong>הדבק כאן למטה</strong>
-            <span>הדבק את הקישור בשדה הטקסט — המערכת תמיר אוטומטית לכתובת תמונה ישירה</span>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-num">3</div>
-          <div class="step-text">
-            <strong>יצוא ועדכון</strong>
-            <span>לאחר הוספת התמונות, לחץ "יצוא" — העתק את הקוד ועדכן את הקובץ בגיטהאב</span>
-          </div>
-        </div>
-      </div>
+  <!-- ALERT -->
+  <div class="alert alert-ok"  id="a-ok"></div>
+  <div class="alert alert-err" id="a-err"></div>
+
+  <!-- ===================================================
+       גלריה
+       =================================================== -->
+  <div class="panel active" id="panel-gallery">
+
+    <div class="howto">
+      <strong>📱 איך מוסיפים תמונה מגוגל דרייב?</strong>
+      <ol>
+        <li>בגוגל דרייב — לחץ ימני על התמונה ← <b>שתף</b></li>
+        <li>שנה ל-<b>"כל מי שיש לו קישור"</b> ← לחץ <b>העתק קישור</b></li>
+        <li>חזור לכאן והדבק בשדה למטה</li>
+      </ol>
     </div>
 
-    <!-- ADD IMAGE FORM -->
     <div class="card">
-      <div class="card-title"><span class="icon">➕</span> הוסף תמונה חדשה</div>
+      <div class="card-title"><span>➕</span> הוסף תמונה</div>
 
-      <div class="form-row">
-        <div class="form-group" style="flex: 2;">
-          <label>קישור לתמונה (גוגל דרייב או כל URL ישיר)</label>
-          <input type="text" id="input-url"
-                 placeholder="https://drive.google.com/file/d/..."
-                 autocomplete="off">
+      <div class="row">
+        <div class="fg" style="flex:2">
+          <label>קישור (גוגל דרייב או כל URL תמונה)</label>
+          <input type="text" id="g-url" placeholder="https://drive.google.com/file/d/...">
         </div>
-        <div class="form-group">
+        <div class="fg">
           <label>קטגוריה</label>
-          <select id="input-cat">
+          <select id="g-cat">
             <option value="events">עיצוב אירועים</option>
             <option value="workshops">סדנאות</option>
             <option value="characters">דמויות</option>
             <option value="hats">כתרים וכובעים</option>
           </select>
         </div>
-        <div class="form-group">
+        <div class="fg">
           <label>תיאור (אופציונלי)</label>
-          <input type="text" id="input-alt" placeholder="למשל: שער בלונים לחתונה">
+          <input type="text" id="g-alt" placeholder="שער בלונים לחתונה">
         </div>
       </div>
 
-      <!-- PREVIEW -->
-      <div class="preview-wrap" id="preview-wrap">
-        <div class="preview-img-wrap">
-          <div class="preview-spinner" id="preview-spinner">⏳</div>
-          <img id="preview-img" src="" alt="" style="display:none;">
+      <div class="preview" id="g-preview">
+        <img class="preview-img" id="g-prev-img" src="" alt="">
+        <div class="preview-info">
+          <strong id="g-prev-type"></strong>
+          <span id="g-prev-url"></span>
         </div>
-        <div class="preview-details">
-          <strong id="preview-type"></strong>
-          <code id="preview-url"></code>
-        </div>
-        <div class="preview-error" id="preview-error" style="display:none;"></div>
+        <div class="preview-err" id="g-prev-err" style="display:none"></div>
       </div>
 
-      <div style="display:flex; gap: 0.75rem; flex-wrap: wrap;">
-        <button class="btn btn-primary" id="btn-preview" onclick="handlePreview()">🔍 תצוגה מקדימה</button>
-        <button class="btn btn-success" id="btn-add" onclick="handleAdd()" disabled>✅ הוסף לגלריה</button>
+      <div class="btns">
+        <button class="btn btn-g" onclick="gPreview()">🔍 תצוגה מקדימה</button>
+        <button class="btn btn-ok" id="g-add-btn" onclick="gAdd()" disabled>✅ הוסף לגלריה</button>
       </div>
     </div>
 
-    <!-- CURRENT GALLERY -->
     <div class="card">
-      <div class="card-title"><span class="icon">🖼️</span> גלריה נוכחית</div>
-      <div class="gallery-count">סה"כ: <strong id="gallery-count-text">0</strong> תמונות</div>
-      <div class="gallery-grid" id="gallery-grid"></div>
+      <div class="card-title"><span>🖼️</span> תמונות בגלריה — <span id="g-count" style="color:var(--purple)">0</span></div>
+      <div class="g-grid" id="g-grid"></div>
+    </div>
+  </div>
+
+  <!-- ===================================================
+       סרטון
+       =================================================== -->
+  <div class="panel" id="panel-video">
+
+    <div class="howto">
+      <strong>🎬 איך מוסיפים סרטון יוטיוב?</strong>
+      <ol>
+        <li>פתח את הסרטון ביוטיוב</li>
+        <li>העתק את הכתובת מהדפדפן (לחץ על שורת הכתובת → Ctrl+C)</li>
+        <li>הדבק כאן למטה — המערכת תעדכן אוטומטית</li>
+      </ol>
     </div>
 
-    <!-- EXPORT -->
     <div class="card">
-      <div class="card-title"><span class="icon">💾</span> עדכון האתר</div>
-      <p style="font-size:.9rem; color:var(--muted); margin-bottom:1.25rem; line-height:1.7;">
-        לאחר שסיימת להוסיף תמונות — לחץ "יצוא" כדי לקבל את הקוד המעודכן.
-        העתק אותו ועדכן את הקובץ <code style="background:var(--purple-light);color:var(--purple);padding:.1rem .4rem;border-radius:4px;direction:ltr;display:inline-block;">js/gallery-data.js</code> ב-GitHub.
+      <div class="card-title"><span>▶️</span> קישור לסרטון</div>
+      <div class="fg">
+        <label>הדבק כתובת יוטיוב</label>
+        <input type="text" id="v-url"
+          placeholder="https://www.youtube.com/watch?v=... או https://youtu.be/..."
+          oninput="vPreview()">
+      </div>
+      <p id="v-status" style="font-size:.85rem;margin-top:.5rem;color:var(--muted);min-height:1.4em;"></p>
+      <div class="yt-preview" id="v-preview">
+        <iframe id="v-iframe" src="" frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen></iframe>
+      </div>
+      <div class="btns" style="margin-top:1rem;">
+        <button class="btn btn-ok" onclick="vSave()">✅ שמור סרטון</button>
+        <button class="btn btn-g"  onclick="vClear()">🗑️ הסר סרטון</button>
+      </div>
+    </div>
+
+    <div class="howto" style="background:#EFF6FF;border-color:#BFDBFE;">
+      <strong>📘 גם פייסבוק?</strong>
+      אם הסרטון בפייסבוק — הדבק את הכתובת בשדה "פייסבוק" למטה.
+      <div class="fg" style="margin-top:.75rem;margin-bottom:0;">
+        <label>קישור לסרטון פייסבוק (אופציונלי)</label>
+        <input type="text" id="v-fb" placeholder="https://www.facebook.com/..."
+          oninput="vFbChange()">
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================
+       המלצות
+       =================================================== -->
+  <div class="panel" id="panel-reviews">
+
+    <div class="howto">
+      <strong>💬 איך מוסיפים צילום מסך של שיחה?</strong>
+      <ol>
+        <li>צלם מסך של השיחה בוואטסאפ/פייסבוק</li>
+        <li>שמור את הצילום בגוגל דרייב</li>
+        <li>לחץ ימני → <b>שתף</b> → <b>"כל מי שיש לו קישור"</b> → <b>העתק קישור</b></li>
+        <li>הדבק בשדה "צילום מסך" בטופס למטה</li>
+      </ol>
+      בלחיצה על כפתור "📸 צילום מסך" באתר — הגולש יראה את צילום המסך. מומלץ להוסיף — זה מגביר אמון!
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span>➕</span> הוסף המלצה</div>
+
+      <div class="row">
+        <div class="fg">
+          <label>שם הלקוח</label>
+          <input type="text" id="r-name" placeholder="חנה כהן">
+        </div>
+        <div class="fg" style="flex:2">
+          <label>טקסט ההמלצה</label>
+          <textarea id="r-text" placeholder="הושעיה היה מדהים..."></textarea>
+        </div>
+      </div>
+
+      <div class="fg">
+        <label>📸 קישור לצילום מסך (אופציונלי — מגוגל דרייב)</label>
+        <input type="text" id="r-screenshot"
+          placeholder="https://drive.google.com/file/d/..."
+          oninput="rScreenshotPreview()">
+      </div>
+
+      <div class="preview" id="r-ss-preview">
+        <img class="preview-img" id="r-ss-img" src="" alt="">
+        <div class="preview-info">
+          <strong>✅ צילום מסך תקין</strong>
+          <span>יופיע כפתור "📸 צילום מסך" בכרטיס ההמלצה</span>
+        </div>
+        <div class="preview-err" id="r-ss-err" style="display:none"></div>
+      </div>
+
+      <div class="btns">
+        <button class="btn btn-ok" onclick="rAdd()">✅ הוסף המלצה</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span>⭐</span> רשימת המלצות — <span id="r-count" style="color:var(--purple)">0</span></div>
+      <div class="t-list" id="r-list"></div>
+    </div>
+  </div>
+
+  <!-- ===================================================
+       שמור ועדכן
+       =================================================== -->
+  <div class="panel" id="panel-export">
+
+    <div class="card">
+      <div class="card-title"><span>💾</span> יצוא ועדכון האתר</div>
+      <p style="font-size:.9rem;color:var(--muted);line-height:1.7;margin-bottom:1.25rem;">
+        לאחר שסיימת — לחץ "יצוא קוד" כדי לקבל את הקובץ המעודכן.
+        העתק ועדכן את הקובץ <code style="background:var(--purple-l);color:var(--purple);padding:.1rem .4rem;border-radius:4px;direction:ltr;display:inline-block">js/site-data.js</code> ב-GitHub.
       </p>
-      <button class="btn btn-primary" onclick="handleExport()">📤 יצוא קוד גלריה</button>
+      <button class="btn btn-p" onclick="doExport()">📤 יצוא קוד</button>
 
-      <div class="export-preview" id="export-preview">
-        <div class="export-label">הקוד המעודכן — העתק את כל הטקסט:</div>
-        <pre class="code-block" id="export-code"></pre>
-        <div style="display:flex; gap:.75rem; flex-wrap:wrap;">
-          <button class="btn btn-copy" id="btn-copy" onclick="copyCode()">📋 העתק קוד</button>
-          <button class="btn btn-ghost" onclick="showInstructions()">📖 הוראות עדכון ב-GitHub</button>
+      <div class="export-box" id="export-box">
+        <div style="font-size:.84rem;font-weight:600;color:var(--muted);margin-top:1.25rem;margin-bottom:.4rem;">
+          הקוד המעודכן — בחר הכל והעתק:
         </div>
-      </div>
-
-      <!-- GITHUB INSTRUCTIONS -->
-      <div id="github-instructions" style="display:none; margin-top:1.5rem;">
-        <div class="card-title" style="margin-bottom:1rem;"><span class="icon">📌</span> הוראות עדכון ב-GitHub</div>
-        <ol class="instructions-steps">
-          <li>פתח את הריפו בגיטהאב: <a href="https://github.com/Hos100345/Hos100345.github.io" target="_blank">github.com/Hos100345/Hos100345.github.io</a></li>
-          <li>לחץ על הקובץ <code>js/gallery-data.js</code></li>
-          <li>לחץ על סמל העיפרון ✏️ (Edit this file)</li>
-          <li>סמן את כל הטקסט בקובץ (Ctrl+A) ומחק</li>
-          <li>הדבק את הקוד שהעתקת (Ctrl+V)</li>
-          <li>גלול למטה ← לחץ "Commit changes" ← אשר</li>
-          <li>🎉 האתר יתעדכן תוך כדקה!</li>
-        </ol>
-        <div style="margin-top:1rem; padding:0.75rem 1rem; background:#FFF7ED; border-radius:.5rem; font-size:.85rem; color:#92400E;">
-          💡 <strong>טיפ:</strong> אם האתר עדיין מציג את הגרסה הישנה, לחץ Ctrl+F5 לריענון מוחלט.
+        <pre class="code-block" id="export-code"></pre>
+        <div class="btns">
+          <button class="btn btn-ok" id="copy-btn" onclick="doCopy()">📋 העתק הכל</button>
         </div>
       </div>
     </div>
 
-  </div><!-- /container -->
+    <div class="github-steps" id="gh-steps" style="display:none">
+      <h3>📌 שלבים לעדכון ב-GitHub</h3>
+      <ol>
+        <li>פתח: <a href="https://github.com/Hos100345/Hos100345.github.io/blob/main/js/site-data.js" target="_blank">github.com ← js/site-data.js</a></li>
+        <li>לחץ על עיפרון ✏️ (Edit this file)</li>
+        <li>לחץ <code>Ctrl+A</code> (בחר הכל) ← <code>Delete</code> (מחק)</li>
+        <li>לחץ <code>Ctrl+V</code> (הדבק את הקוד שהעתקת)</li>
+        <li>לחץ <b>Commit changes</b> ← אשר</li>
+        <li>✅ האתר יתעדכן תוך 30–60 שניות</li>
+      </ol>
+    </div>
 
-  <script>
-    /* =====================================================
-       DATA — synced with gallery-data.js defaults
-       ===================================================== */
-    const CAT_LABELS = {
-      events:     'עיצוב אירועים',
-      workshops:  'סדנאות',
-      characters: 'דמויות',
-      hats:       'כתרים וכובעים',
-    };
+  </div>
 
-    const DEFAULT_ITEMS = [
-      { src: "https://images.cdn-files-a.com/uploads/6457286/2000_62af187dc631b.jpg",  cat: "events",     alt: "עיצוב אירוע בלונים" },
-      { src: "https://images.cdn-files-a.com/uploads/6457286/2000_62b06d5e901f6.jpg",  cat: "events",     alt: "בלונים לאירוע" },
-      { src: "https://images.cdn-files-a.com/uploads/6457286/2000_62b06d5f03418.jpg",  cat: "characters", alt: "דמות מבלונים" },
-      { src: "https://images.cdn-files-a.com/uploads/6457286/2000_62b06d5f9f738.jpg",  cat: "workshops",  alt: "סדנת בלונים" },
-    ];
+</div><!-- /content -->
 
-    let gallery = loadGallery();
+<script>
+/* =====================================================
+   DATA — נטען מ-localStorage, ברירת מחדל מ-site-data.js
+   ===================================================== */
+const CAT = { events:'עיצוב אירועים', workshops:'סדנאות', characters:'דמויות', hats:'כתרים וכובעים' };
 
-    function loadGallery() {
-      try {
-        const saved = localStorage.getItem('hoshaya_gallery_v2');
-        if (saved) return JSON.parse(saved);
-      } catch(e) {}
-      return [...DEFAULT_ITEMS];
-    }
+const DEFAULTS = {
+  video: { youtubeId: "", facebookUrl: "" },
+  gallery: [
+    { src:"https://images.cdn-files-a.com/uploads/6457286/2000_62af187dc631b.jpg", cat:"events",     alt:"עיצוב אירוע בלונים" },
+    { src:"https://images.cdn-files-a.com/uploads/6457286/2000_62b06d5e901f6.jpg", cat:"events",     alt:"בלונים לאירוע" },
+    { src:"https://images.cdn-files-a.com/uploads/6457286/2000_62b06d5f03418.jpg", cat:"characters", alt:"דמות מבלונים" },
+    { src:"https://images.cdn-files-a.com/uploads/6457286/2000_62b06d5f9f738.jpg", cat:"workshops",  alt:"סדנת בלונים" }
+  ],
+  testimonials: [
+    { name:"חנה אור",             text:"הושעיה היה אצלנו בברית. הפך את האירוע להרבה יותר משמח ומיוחד. בעל גישה נהדרת לילדים. זורם וכמובן שמוכשר בעבודתו. ממליצה עליו בגדול!", screenshot:"" },
+    { name:"דוד לוין",             text:"מומלץ ביותר!! מקצוען ותותח", screenshot:"" },
+    { name:"אביאל כהן",           text:"הושעיה היקר היה פשוט מדהים!! איזה בלונים יפים זה פשוט העיף את החתונה באוויר!!! תודה תודה תודה", screenshot:"" },
+    { name:"אריה לייב שפירא",     text:"הושעיה היה מפעיל בלונים בחתונה שלנו, וזה היה מדהים. הגיע עם בלונים מוכנים מראש ועם המכונה להוסיף עוד. חוויה מדהימה, הילדים נהנו המבוגרים נהנו. הכל במקצועיות ורוחב לב, ממליצים בחום", screenshot:"" },
+    { name:"עינב צברי",           text:"הזמנו את הושעיה לעצב את הבת-מצווה. במקצועיות ומיומנות מדהימה המועדון הפך לאולם אירועים יפהפה. חילק כתרים מבלונים מעוצבים, שידרג את האירוע ברמות. ממליצה בחום!", screenshot:"" },
+    { name:"שירה כהן",            text:"תודה רבה! נהנינו מאוד! גם הקטנים וגם הגדולים!", screenshot:"" },
+    { name:"עידן יוסף וניצן ליבן",text:"תודה רבה על ערב בלתי נשכח, הבלונים שדרגו אותו מאוד בצבעם ובייחודם. כשרון מהמם וכולם מהקטנטנים ועד הגדולים נהנו מאוד", screenshot:"" },
+    { name:"משפחת ארביט",         text:"הבלונים שעשית היו מקסימים, כל הכבוד אתה מקצוען", screenshot:"" },
+    { name:"יגל ויסכה שרעבי",     text:"הושעיה המוכשר עשה לנו פשוט שמח בבר מצווה! מלא סבלנות, עשה מלא כובעים ודמויות לפי בקשות. ממליצים בחום!", screenshot:"" },
+    { name:"איתן ויפעת חובב",     text:"ממליצה בחום! שידרג לנו את הבר מצווה. הכל היה מוכן בזמן. מענה מהיר וזמינות. מחכים כבר לאירוע הבא!", screenshot:"" }
+  ]
+};
 
-    function saveGallery() {
-      localStorage.setItem('hoshaya_gallery_v2', JSON.stringify(gallery));
-      updateBadge();
-    }
+function load() {
+  try { const s = localStorage.getItem('hs_site_v3'); if (s) return JSON.parse(s); } catch(e) {}
+  return JSON.parse(JSON.stringify(DEFAULTS));
+}
+function save() { localStorage.setItem('hs_site_v3', JSON.stringify(D)); }
 
-    function updateBadge() {
-      document.getElementById('badge-count').textContent = gallery.length + ' תמונות';
-      document.getElementById('gallery-count-text').textContent = gallery.length;
-    }
+let D = load();
 
-    /* =====================================================
-       GOOGLE DRIVE URL CONVERSION
-       ===================================================== */
-    function convertUrl(raw) {
-      raw = raw.trim();
-      if (!raw) return null;
+/* =====================================================
+   TABS
+   ===================================================== */
+function switchTab(id, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  el.classList.add('active');
+  renderAll();
+}
 
-      // Already a non-Drive URL
-      if (!raw.includes('drive.google.com') && !raw.includes('docs.google.com')) {
-        // Validate it looks like a URL
-        if (raw.startsWith('http://') || raw.startsWith('https://')) return { url: raw, type: 'direct' };
-        return null;
-      }
+/* =====================================================
+   DRIVE URL CONVERSION
+   ===================================================== */
+function toDirect(raw) {
+  raw = (raw || '').trim();
+  if (!raw) return null;
+  if (!raw.includes('drive.google.com') && !raw.includes('docs.google.com')) {
+    return raw.startsWith('http') ? { url: raw, isDrive: false } : null;
+  }
+  const m = raw.match(/\/d\/([a-zA-Z0-9_-]{20,})/) || raw.match(/[?&]id=([a-zA-Z0-9_-]{20,})/);
+  if (!m) return null;
+  return { url: `https://lh3.googleusercontent.com/d/${m[1]}`, isDrive: true };
+}
 
-      // Extract file ID
-      let fileId = null;
+/* =====================================================
+   GALLERY
+   ===================================================== */
+let gPending = null;
 
-      // /file/d/FILE_ID/ or /d/FILE_ID
-      const m1 = raw.match(/\/d\/([a-zA-Z0-9_-]{20,})/);
-      if (m1) fileId = m1[1];
+function gPreview() {
+  const raw = document.getElementById('g-url').value;
+  const prev = document.getElementById('g-preview');
+  const img  = document.getElementById('g-prev-img');
+  const type = document.getElementById('g-prev-type');
+  const url  = document.getElementById('g-prev-url');
+  const err  = document.getElementById('g-prev-err');
+  const addBtn = document.getElementById('g-add-btn');
 
-      // ?id=FILE_ID or &id=FILE_ID
-      if (!fileId) {
-        const m2 = raw.match(/[?&]id=([a-zA-Z0-9_-]{20,})/);
-        if (m2) fileId = m2[1];
-      }
+  if (!raw.trim()) { alert('הכנס קישור לתמונה'); return; }
+  const r = toDirect(raw);
+  if (!r) { alert('לא ניתן לזהות את הקישור'); return; }
 
-      if (!fileId) return null;
+  gPending = r.url;
+  prev.classList.add('show');
+  img.style.display = 'none';
+  err.style.display = 'none';
+  addBtn.disabled = true;
+  type.textContent = r.isDrive ? '🔄 ממיר קישור גוגל דרייב...' : '🔗 קישור ישיר';
+  url.textContent = r.url;
 
-      // Use lh3 CDN URL — most reliable for images
-      return {
-        url: `https://lh3.googleusercontent.com/d/${fileId}`,
-        type: 'drive',
-        fileId,
-      };
-    }
+  const t = new Image();
+  t.onload = () => {
+    img.src = r.url;
+    img.style.display = 'block';
+    type.textContent = r.isDrive ? '✅ גוגל דרייב — ממומר לקישור ישיר' : '✅ קישור ישיר';
+    addBtn.disabled = false;
+  };
+  t.onerror = () => {
+    err.style.display = 'block';
+    err.innerHTML = `⚠️ לא ניתן לטעון את התמונה.<br>ודא שהתמונה שותפה: <b>"כל מי שיש לו קישור"</b><br><button onclick="gAdd(true)" style="margin-top:.4rem;background:var(--purple);color:#fff;border:none;padding:.3rem .8rem;border-radius:100px;cursor:pointer;font-family:inherit;font-weight:700">הוסף בכל זאת</button>`;
+    addBtn.disabled = false;
+  };
+  t.src = r.url;
+}
 
-    /* =====================================================
-       PREVIEW
-       ===================================================== */
-    let pendingUrl = null;
+function gAdd(force) {
+  if (!gPending) return;
+  const cat = document.getElementById('g-cat').value;
+  const alt = document.getElementById('g-alt').value.trim() || CAT[cat];
+  D.gallery.push({ src: gPending, cat, alt });
+  save(); renderGallery();
+  document.getElementById('g-url').value = '';
+  document.getElementById('g-alt').value = '';
+  document.getElementById('g-preview').classList.remove('show');
+  document.getElementById('g-add-btn').disabled = true;
+  gPending = null;
+  notify('ok', `✅ "${alt}" נוספה לגלריה`);
+}
 
-    function handlePreview() {
-      const raw = document.getElementById('input-url').value;
-      const previewWrap   = document.getElementById('preview-wrap');
-      const previewImg    = document.getElementById('preview-img');
-      const previewSpinner = document.getElementById('preview-spinner');
-      const previewType   = document.getElementById('preview-type');
-      const previewUrlEl  = document.getElementById('preview-url');
-      const previewError  = document.getElementById('preview-error');
-      const btnAdd        = document.getElementById('btn-add');
+function gDelete(i) {
+  if (!confirm(`למחוק את "${D.gallery[i].alt}"?`)) return;
+  D.gallery.splice(i, 1);
+  save(); renderGallery();
+}
 
-      if (!raw.trim()) {
-        showAlert('error', 'אנא הכנס קישור לתמונה');
-        return;
-      }
+function renderGallery() {
+  const grid = document.getElementById('g-grid');
+  document.getElementById('g-count').textContent = D.gallery.length;
+  if (!D.gallery.length) {
+    grid.innerHTML = '<div class="empty"><div class="e">🖼️</div><p>אין תמונות עדיין</p></div>';
+    return;
+  }
+  grid.innerHTML = D.gallery.map((it, i) => `
+    <div class="g-item">
+      <img src="${it.src}" alt="${it.alt}" loading="lazy"
+        onerror="this.style.opacity='.3'">
+      <div class="g-item-info">
+        <span class="g-badge">${CAT[it.cat] || it.cat}</span>
+        <span class="g-alt">${it.alt}</span>
+      </div>
+      <button class="g-del" onclick="gDelete(${i})" title="מחק">✕</button>
+    </div>
+  `).join('');
+}
 
-      const result = convertUrl(raw);
-      if (!result) {
-        showAlert('error', 'לא ניתן לזהות את הקישור. ודא שזה קישור שיתוף מגוגל דרייב או URL ישיר לתמונה.');
-        return;
-      }
+document.getElementById('g-url').addEventListener('keydown', e => { if (e.key === 'Enter') gPreview(); });
 
-      pendingUrl = result.url;
-      previewWrap.classList.add('show');
-      previewImg.style.display = 'none';
-      previewSpinner.style.display = 'flex';
-      previewError.style.display = 'none';
-      btnAdd.disabled = true;
+/* =====================================================
+   VIDEO
+   ===================================================== */
+function ytId(raw) {
+  if (!raw) return '';
+  raw = raw.trim();
+  const m = raw.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : '';
+}
 
-      previewType.textContent = result.type === 'drive' ? '✅ קישור גוגל דרייב — ממיר לכתובת ישירה' : '✅ קישור ישיר';
-      previewUrlEl.textContent = result.url;
+function vPreview() {
+  const raw = document.getElementById('v-url').value;
+  const id  = ytId(raw);
+  const status  = document.getElementById('v-status');
+  const preview = document.getElementById('v-preview');
+  const iframe  = document.getElementById('v-iframe');
 
-      // Try to load the image
-      const testImg = new Image();
-      testImg.onload = () => {
-        previewSpinner.style.display = 'none';
-        previewImg.src = result.url;
-        previewImg.style.display = 'block';
-        btnAdd.disabled = false;
-      };
-      testImg.onerror = () => {
-        previewSpinner.style.display = 'none';
-        previewError.style.display = 'block';
-        previewError.innerHTML = `
-          ⚠️ לא ניתן לטעון את התמונה.<br>
-          <strong>סיבה אפשרית:</strong> התמונה לא שותפה לציבור.<br>
-          <strong>פתרון:</strong> בגוגל דרייב: לחץ ימני ← "שתף" ← שנה ל"כל מי שיש לו קישור"<br>
-          <small style="color:var(--muted);">ניתן עדיין להוסיף ידנית אם אתה בטוח שהקישור נכון.</small>
-          <br><br>
-          <button onclick="forceAdd()" style="background:var(--purple);color:white;border:none;padding:.4rem .9rem;border-radius:100px;font-family:inherit;font-weight:600;cursor:pointer;font-size:.85rem;">הוסף בכל זאת</button>
-        `;
-        btnAdd.disabled = false;
-      };
-      testImg.src = result.url;
-    }
+  if (id) {
+    status.textContent = '✅ סרטון זוהה';
+    status.style.color = '#059669';
+    iframe.src = `https://www.youtube.com/embed/${id}?rel=0`;
+    preview.classList.add('show');
+  } else if (raw.trim()) {
+    status.textContent = '⚠️ לא ניתן לזהות סרטון יוטיוב';
+    status.style.color = 'var(--red)';
+    preview.classList.remove('show');
+  } else {
+    status.textContent = '';
+    preview.classList.remove('show');
+  }
+}
 
-    function forceAdd() {
-      handleAdd(true);
-    }
+function vSave() {
+  const raw = document.getElementById('v-url').value;
+  const id  = ytId(raw);
+  if (!id) { notify('err', '⚠️ לא זוהה סרטון יוטיוב. ודא שהקישור נכון.'); return; }
+  D.video.youtubeId = id;
+  D.video.facebookUrl = '';
+  save();
+  notify('ok', '✅ הסרטון נשמר');
+}
 
-    /* =====================================================
-       ADD TO GALLERY
-       ===================================================== */
-    function handleAdd(force = false) {
-      if (!pendingUrl) return;
+function vFbChange() {
+  D.video.facebookUrl = document.getElementById('v-fb').value.trim();
+  save();
+}
 
-      const catEl = document.getElementById('input-cat');
-      const altEl = document.getElementById('input-alt');
+function vClear() {
+  if (!confirm('להסיר את הסרטון?')) return;
+  D.video.youtubeId = '';
+  D.video.facebookUrl = '';
+  document.getElementById('v-url').value = '';
+  document.getElementById('v-fb').value = '';
+  document.getElementById('v-preview').classList.remove('show');
+  document.getElementById('v-status').textContent = '';
+  save();
+  notify('ok', '🗑️ הסרטון הוסר');
+}
 
-      const cat = catEl.value;
-      const alt = altEl.value.trim() || CAT_LABELS[cat];
+function renderVideo() {
+  const v = D.video;
+  document.getElementById('v-url').value = v.youtubeId
+    ? `https://www.youtube.com/watch?v=${v.youtubeId}` : '';
+  document.getElementById('v-fb').value = v.facebookUrl || '';
+  if (v.youtubeId) {
+    document.getElementById('v-iframe').src = `https://www.youtube.com/embed/${v.youtubeId}?rel=0`;
+    document.getElementById('v-preview').classList.add('show');
+    document.getElementById('v-status').textContent = '✅ סרטון פעיל';
+    document.getElementById('v-status').style.color = '#059669';
+  }
+}
 
-      gallery.push({ src: pendingUrl, cat, alt });
-      saveGallery();
-      renderGallery();
+/* =====================================================
+   TESTIMONIALS
+   ===================================================== */
+function rScreenshotPreview() {
+  const raw = document.getElementById('r-screenshot').value;
+  if (!raw.trim()) { document.getElementById('r-ss-preview').classList.remove('show'); return; }
+  const r = toDirect(raw);
+  if (!r) return;
+  const prev = document.getElementById('r-ss-preview');
+  const img  = document.getElementById('r-ss-img');
+  const err  = document.getElementById('r-ss-err');
+  prev.classList.add('show');
+  img.style.display = 'none';
+  err.style.display = 'none';
+  const t = new Image();
+  t.onload = () => { img.src = r.url; img.style.display = 'block'; };
+  t.onerror = () => { err.style.display = 'block'; err.textContent = '⚠️ לא ניתן לטעון. ודא שהתמונה שותפה לציבור.'; };
+  t.src = r.url;
+}
 
-      // Reset form
-      document.getElementById('input-url').value = '';
-      document.getElementById('input-alt').value = '';
-      document.getElementById('preview-wrap').classList.remove('show');
-      document.getElementById('btn-add').disabled = true;
-      pendingUrl = null;
+function rAdd() {
+  const name = document.getElementById('r-name').value.trim();
+  const text = document.getElementById('r-text').value.trim();
+  const ssRaw = document.getElementById('r-screenshot').value.trim();
+  if (!name || !text) { notify('err', 'נא למלא שם וטקסט'); return; }
+  const ss = ssRaw ? (toDirect(ssRaw)?.url || '') : '';
+  D.testimonials.push({ name, text, screenshot: ss });
+  save(); renderReviews();
+  document.getElementById('r-name').value = '';
+  document.getElementById('r-text').value = '';
+  document.getElementById('r-screenshot').value = '';
+  document.getElementById('r-ss-preview').classList.remove('show');
+  notify('ok', `✅ ההמלצה של "${name}" נוספה`);
+}
 
-      showAlert('success', `✅ "${alt}" נוספה בהצלחה לקטגוריה: ${CAT_LABELS[cat]}`);
-    }
+function rDelete(i) {
+  if (!confirm(`למחוק המלצה של "${D.testimonials[i].name}"?`)) return;
+  D.testimonials.splice(i, 1);
+  save(); renderReviews();
+}
 
-    /* =====================================================
-       RENDER GALLERY
-       ===================================================== */
-    function renderGallery() {
-      const grid = document.getElementById('gallery-grid');
-      updateBadge();
+function renderReviews() {
+  const list = document.getElementById('r-list');
+  document.getElementById('r-count').textContent = D.testimonials.length;
+  if (!D.testimonials.length) {
+    list.innerHTML = '<div class="empty"><div class="e">⭐</div><p>אין המלצות עדיין</p></div>';
+    return;
+  }
+  list.innerHTML = D.testimonials.map((t, i) => `
+    <div class="t-item">
+      <div class="t-num">${i + 1}</div>
+      <div class="t-item-body">
+        <div class="t-name">${t.name}</div>
+        <div class="t-text">${t.text}</div>
+        ${t.screenshot ? `<div class="t-screenshot"><img src="${t.screenshot}" alt=""> 📸 יש צילום מסך</div>` : ''}
+      </div>
+      <button class="btn-del" onclick="rDelete(${i})" title="מחק">🗑️</button>
+    </div>
+  `).join('');
+}
 
-      if (gallery.length === 0) {
-        grid.innerHTML = `
-          <div class="empty-gallery" style="grid-column:1/-1">
-            <div class="emoji">🖼️</div>
-            <p>הגלריה ריקה — הוסף את התמונה הראשונה!</p>
-          </div>`;
-        return;
-      }
+/* =====================================================
+   EXPORT
+   ===================================================== */
+function doExport() {
+  const gStr = D.gallery.map(it =>
+    `  { src: ${JSON.stringify(it.src)}, cat: ${JSON.stringify(it.cat)}, alt: ${JSON.stringify(it.alt)} }`
+  ).join(',\n');
 
-      grid.innerHTML = gallery.map((item, i) => `
-        <div class="gallery-item">
-          <img src="${item.src}" alt="${item.alt}" loading="lazy"
-               onerror="this.style.opacity='.3'; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🖼️</text></svg>'">
-          <div class="gallery-item-overlay">
-            <span class="item-cat-badge">${CAT_LABELS[item.cat] || item.cat}</span>
-            <span class="item-alt">${item.alt}</span>
-          </div>
-          <button class="item-delete" onclick="deleteItem(${i})" title="מחק תמונה">✕</button>
-        </div>
-      `).join('');
-    }
+  const tStr = D.testimonials.map(t =>
+    `  { name: ${JSON.stringify(t.name)}, text: ${JSON.stringify(t.text)}, screenshot: ${JSON.stringify(t.screenshot || '')} }`
+  ).join(',\n');
 
-    function deleteItem(index) {
-      if (!confirm(`למחוק את "${gallery[index].alt}"?`)) return;
-      gallery.splice(index, 1);
-      saveGallery();
-      renderGallery();
-    }
-
-    /* =====================================================
-       EXPORT
-       ===================================================== */
-    function handleExport() {
-      const items = gallery.map(item =>
-        `  {\n    src: ${JSON.stringify(item.src)},\n    cat: ${JSON.stringify(item.cat)},\n    alt: ${JSON.stringify(item.alt)}\n  }`
-      ).join(',\n');
-
-      const code = `// =====================================================
-// גלריה — ערוך קובץ זה להוספת תמונות
-// =====================================================
+  const code = `// =====================================================
+// כל תוכן האתר הניתן לעריכה — ערוך דרך admin.html
 // עודכן: ${new Date().toLocaleDateString('he-IL')} ${new Date().toLocaleTimeString('he-IL')}
 // =====================================================
 
-window.GALLERY_ITEMS = [
-${items}
-];`;
+window.SITE_DATA = {
 
-      document.getElementById('export-code').textContent = code;
-      document.getElementById('export-preview').classList.add('show');
-      document.getElementById('export-preview').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
+  video: {
+    youtubeId: ${JSON.stringify(D.video.youtubeId || '')},
+    facebookUrl: ${JSON.stringify(D.video.facebookUrl || '')}
+  },
 
-    function copyCode() {
-      const code = document.getElementById('export-code').textContent;
-      navigator.clipboard.writeText(code).then(() => {
-        const btn = document.getElementById('btn-copy');
-        btn.textContent = '✅ הועתק!';
-        btn.classList.add('copied');
-        setTimeout(() => {
-          btn.textContent = '📋 העתק קוד';
-          btn.classList.remove('copied');
-        }, 2500);
-      }).catch(() => {
-        // Fallback: select all text
-        const pre = document.getElementById('export-code');
-        const range = document.createRange();
-        range.selectNodeContents(pre);
-        window.getSelection().removeAllRanges();
-        window.getSelection().addRange(range);
-        showAlert('success', 'הטקסט נבחר — לחץ Ctrl+C להעתקה');
-      });
-    }
+  gallery: [
+${gStr}
+  ],
 
-    function showInstructions() {
-      const el = document.getElementById('github-instructions');
-      el.style.display = el.style.display === 'none' ? 'block' : 'none';
-    }
+  testimonials: [
+${tStr}
+  ]
+};`;
 
-    /* =====================================================
-       ALERT HELPERS
-       ===================================================== */
-    function showAlert(type, msg) {
-      const el = document.getElementById(type === 'success' ? 'alert-success' : 'alert-error');
-      if (type === 'error') document.getElementById('alert-error-text').textContent = msg;
-      else el.textContent = msg;
-      el.classList.add('show');
-      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      setTimeout(() => el.classList.remove('show'), 5000);
-    }
+  document.getElementById('export-code').textContent = code;
+  document.getElementById('export-box').classList.add('show');
+  document.getElementById('gh-steps').style.display = 'block';
+  document.getElementById('export-box').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
 
-    /* =====================================================
-       KEYBOARD SHORTCUT — Enter on URL input → Preview
-       ===================================================== */
-    document.getElementById('input-url').addEventListener('keydown', e => {
-      if (e.key === 'Enter') handlePreview();
-    });
+function doCopy() {
+  const code = document.getElementById('export-code').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = '✅ הועתק!';
+    btn.classList.add('done');
+    setTimeout(() => { btn.textContent = '📋 העתק הכל'; btn.classList.remove('done'); }, 3000);
+    notify('ok', '✅ הקוד הועתק — כעת עדכן ב-GitHub');
+  }).catch(() => {
+    const pre = document.getElementById('export-code');
+    const r = document.createRange();
+    r.selectNodeContents(pre);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(r);
+    notify('ok', '📋 הטקסט נבחר — לחץ Ctrl+C');
+  });
+}
 
-    /* =====================================================
-       INIT
-       ===================================================== */
-    renderGallery();
-  </script>
+/* =====================================================
+   NOTIFICATIONS
+   ===================================================== */
+function notify(type, msg) {
+  const el = document.getElementById(type === 'ok' ? 'a-ok' : 'a-err');
+  el.textContent = msg;
+  el.classList.add('show');
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  setTimeout(() => el.classList.remove('show'), 4500);
+}
+
+/* =====================================================
+   INIT
+   ===================================================== */
+function renderAll() {
+  renderGallery();
+  renderVideo();
+  renderReviews();
+}
+renderAll();
+</script>
 </body>
 </html>

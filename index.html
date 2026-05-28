@@ -137,39 +137,28 @@
           <h2 class="section-title reveal" id="video-title">צפו בעבודות שלנו</h2>
           <div class="section-line reveal"></div>
         </header>
-        <div class="video-placeholder reveal">
-          <div class="video-placeholder-inner">
-            <div class="video-play-icon" aria-hidden="true">▶</div>
-            <p class="video-placeholder-text">הוסיפו קישור לסרטון YouTube או Facebook</p>
-            <p class="video-placeholder-sub">ניתן לעדכן את קישור הסרטון בקובץ index.html</p>
-          </div>
-          <div class="video-social-links">
-            <a href="https://www.facebook.com/hoshaya1"
-               class="btn btn-facebook" target="_blank" rel="noopener noreferrer">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
-              צפו בדף הפייסבוק
-            </a>
-            <a href="https://www.instagram.com/hoshaya_balonim/"
-               class="btn btn-instagram" target="_blank" rel="noopener noreferrer">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-              עקבו באינסטגרם
-            </a>
+        <!-- video-content: JS מחליף ל-iframe אם יש סרטון ב-site-data.js -->
+        <div id="video-content">
+          <div class="video-placeholder reveal">
+            <div class="video-placeholder-inner">
+              <div class="video-play-icon" aria-hidden="true">▶</div>
+              <p class="video-placeholder-text">הוסיפו סרטון YouTube דרך admin.html</p>
+              <p class="video-placeholder-sub">פתחו admin.html ← לשונית "סרטון" ← הדביקו קישור יוטיוב</p>
+            </div>
+            <div class="video-social-links">
+              <a href="https://www.facebook.com/hoshaya1"
+                 class="btn btn-facebook" target="_blank" rel="noopener noreferrer">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+                צפו בדף הפייסבוק
+              </a>
+              <a href="https://www.instagram.com/hoshaya_balonim/"
+                 class="btn btn-instagram" target="_blank" rel="noopener noreferrer">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                עקבו באינסטגרם
+              </a>
+            </div>
           </div>
         </div>
-
-        <!-- כשיש קישור לסרטון, הסירו את ה-placeholder למעלה ופתחו את ה-iframe הזה: -->
-        <!--
-        <div class="video-wrap reveal">
-          <iframe
-            src="https://www.youtube.com/embed/VIDEO_ID_HERE"
-            title="הושעיה אמן בלונים"
-            frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen
-            loading="lazy">
-          </iframe>
-        </div>
-        -->
       </div>
     </section>
 
@@ -327,7 +316,7 @@
     <span class="wa-float-label">שלחו הודעה</span>
   </a>
 
-  <script src="js/gallery-data.js"></script>
+  <script src="js/site-data.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>
