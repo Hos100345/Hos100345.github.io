@@ -55,13 +55,10 @@ document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
      cat  = קטגוריה: events | workshops | characters | hats
      alt  = טקסט תיאור (חשוב לנגישות ו-SEO)
    ===================================================== */
-const galleryItems = [
-  { src: 'https://images.cdn-files-a.com/uploads/6457286/2000_62af187dc631b.jpg',  cat: 'events',     alt: 'עיצוב אירוע בלונים' },
-  { src: 'https://images.cdn-files-a.com/uploads/6457286/2000_62b06d5e901f6.jpg',  cat: 'events',     alt: 'בלונים לאירוע' },
-  { src: 'https://images.cdn-files-a.com/uploads/6457286/2000_62b06d5f03418.jpg',  cat: 'characters', alt: 'דמות מבלונים' },
-  { src: 'https://images.cdn-files-a.com/uploads/6457286/2000_62b06d5f9f738.jpg',  cat: 'workshops',  alt: 'סדנת בלונים' },
-  /* ← הוסיפו כאן עוד תמונות מהאתר הישן */
-];
+// Gallery data loaded from js/gallery-data.js — edit that file to add images
+const galleryItems = (window.GALLERY_ITEMS && window.GALLERY_ITEMS.length)
+  ? window.GALLERY_ITEMS
+  : [];
 
 const catLabels = {
   events:     'עיצוב אירועים',
