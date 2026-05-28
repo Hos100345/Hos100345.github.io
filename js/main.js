@@ -248,6 +248,25 @@ track.addEventListener('touchend', e => {
 }, { passive: true });
 
 /* =====================================================
+   SERVICE TILES → GALLERY FILTER
+   ===================================================== */
+document.querySelectorAll('.service-tile[data-gallery-cat]').forEach(tile => {
+  tile.addEventListener('click', () => {
+    const cat = tile.dataset.galleryCat;
+    document.getElementById('gallery').scrollIntoView({ behavior: 'smooth' });
+    setTimeout(() => {
+      const btn = document.querySelector(`.gfilter[data-cat="${cat}"]`);
+      if (btn) btn.click();
+    }, 600);
+  });
+  tile.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') tile.click();
+  });
+  tile.setAttribute('tabindex', '0');
+  tile.setAttribute('role', 'button');
+});
+
+/* =====================================================
    SMOOTH SCROLL
    ===================================================== */
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {

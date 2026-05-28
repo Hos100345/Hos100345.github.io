@@ -7,10 +7,13 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
+  --blue:         #2563EB;
+  --blue-dark:    #1D4ED8;
+  --blue-light:   #DBEAFE;
+  --indigo:       #4338CA;
   --purple:       #7C3AED;
   --purple-dark:  #5B21B6;
   --purple-light: #EDE9FE;
-  --pink:         #EC4899;
   --gold:         #F59E0B;
   --wa:           #25D366;
   --wa-dark:      #1DA851;
@@ -19,9 +22,9 @@
   --ig-end:       #833AB4;
 
   --bg:           #FAFAF8;
-  --bg-alt:       #F5F0FF;
+  --bg-alt:       #EFF6FF;
   --white:        #FFFFFF;
-  --text:         #1A1A2E;
+  --text:         #0F172A;
   --muted:        #6B7280;
   --border:       #E5E7EB;
 
@@ -116,6 +119,20 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   transform: translateY(-2px);
 }
 
+.btn-hero-phone {
+  background: var(--white);
+  color: var(--blue);
+  font-weight: 700;
+  font-size: 1.05rem;
+  padding: 0.9rem 2rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,.2);
+}
+.btn-hero-phone:hover, .btn-hero-phone:focus-visible {
+  background: var(--blue-light);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 28px rgba(0,0,0,.28);
+}
+
 .btn-facebook {
   background: var(--fb);
   color: var(--white);
@@ -139,12 +156,13 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   top: 0;
   z-index: 1000;
   height: var(--nav-h);
-  background: transparent;
+  background: linear-gradient(to bottom, rgba(0,0,30,.45), transparent);
   transition: background var(--transition), box-shadow var(--transition), transform var(--transition);
 }
 .site-header.scrolled {
-  background: rgba(255,255,255,.96);
-  backdrop-filter: blur(12px);
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   box-shadow: 0 2px 16px rgba(0,0,0,.08);
 }
 .site-header.hidden  { transform: translateY(-100%); }
@@ -227,7 +245,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   border-bottom: 1px solid var(--border);
   transition: color var(--transition);
 }
-.nav-link:hover { color: var(--purple); }
+.nav-link:hover { color: var(--blue); }
 .nav-cta {
   margin-top: 1rem;
   color: var(--wa);
@@ -254,7 +272,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   }
   .site-header.scrolled .nav-link { color: var(--text); }
   .nav-link:hover { color: var(--white); background: rgba(255,255,255,.15); }
-  .site-header.scrolled .nav-link:hover { color: var(--purple); background: var(--purple-light); }
+  .site-header.scrolled .nav-link:hover { color: var(--blue); background: var(--blue-light); }
   .nav-cta { color: var(--wa); margin-top: 0; }
   .site-header.scrolled .nav-cta { color: var(--wa); }
 }
@@ -270,10 +288,10 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   justify-content: center;
   overflow: hidden;
   background: linear-gradient(145deg,
-    #2D0A6E 0%,
-    #6B21E8 35%,
-    #C026D3 65%,
-    #F59E0B 100%
+    #0F1035 0%,
+    #1E3A8A 28%,
+    #3730A3 58%,
+    #7C3AED 100%
   );
   padding-block: calc(var(--nav-h) + 3rem) 4rem;
 }
@@ -392,7 +410,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .section-line {
   width: 56px;
   height: 4px;
-  background: linear-gradient(90deg, var(--purple), var(--pink));
+  background: linear-gradient(90deg, var(--blue), var(--purple));
   border-radius: var(--radius-pill);
   margin-inline: auto;
   margin-top: 0.6rem;
@@ -420,11 +438,16 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .about-lead {
   font-size: 1.15rem;
   font-weight: 600;
-  color: var(--purple-dark);
+  color: var(--indigo);
   margin-bottom: 1rem;
 }
 .about-text p { margin-bottom: 1rem; color: var(--muted); }
 .about-text p:last-of-type { margin-bottom: 1.5rem; }
+.about-tip {
+  font-size: .88rem;
+  color: var(--blue);
+  font-weight: 500;
+}
 
 .services-grid {
   display: grid;
@@ -448,15 +471,23 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   align-items: center;
   gap: 0.5rem;
   padding: 1.25rem 0.75rem;
-  background: var(--white);
+  background: rgba(255,255,255,.78);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,.9);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  box-shadow: 0 4px 20px rgba(37,99,235,.1);
   font-size: 0.9rem;
   font-weight: 600;
   text-align: center;
-  transition: transform var(--transition), box-shadow var(--transition);
+  cursor: pointer;
+  transition: transform var(--transition), box-shadow var(--transition), background var(--transition);
 }
-.service-tile:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+.service-tile:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(67,56,202,.18);
+  background: rgba(255,255,255,.95);
+}
 .service-icon { font-size: 2rem; line-height: 1; }
 
 /* =====================================================
@@ -481,7 +512,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   border-radius: var(--radius);
   overflow: hidden;
   box-shadow: var(--shadow-lg);
-  background: linear-gradient(135deg, #2D0A6E, #7C3AED, #C026D3);
+  background: linear-gradient(135deg, #0F1035, #1E3A8A, #4338CA, #7C3AED);
   padding: 3rem 2rem;
   text-align: center;
   color: var(--white);
@@ -523,12 +554,12 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   border: 2px solid var(--border);
   transition: all var(--transition);
 }
-.gfilter:hover { border-color: var(--purple); color: var(--purple); }
+.gfilter:hover { border-color: var(--blue); color: var(--blue); }
 .gfilter.active {
-  background: var(--purple);
+  background: linear-gradient(135deg, var(--blue), var(--indigo));
   color: var(--white);
-  border-color: var(--purple);
-  box-shadow: 0 4px 14px rgba(124,58,237,.35);
+  border-color: var(--blue);
+  box-shadow: 0 4px 14px rgba(37,99,235,.35);
 }
 
 .gallery-grid {
@@ -546,7 +577,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   border-radius: var(--radius-sm);
   overflow: hidden;
   cursor: pointer;
-  background: var(--purple-light);
+  background: var(--blue-light);
   transition: transform var(--transition), box-shadow var(--transition);
 }
 .gallery-item:hover { transform: scale(1.03); box-shadow: var(--shadow-lg); z-index: 1; }
@@ -561,7 +592,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .gallery-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(44,0,100,.7) 0%, transparent 55%);
+  background: linear-gradient(to top, rgba(15,16,53,.75) 0%, transparent 55%);
   display: flex;
   align-items: flex-end;
   padding: 0.6rem;
@@ -644,7 +675,10 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 
 .testimonial-card {
   flex: 0 0 100%;
-  background: var(--white);
+  background: rgba(255,255,255,.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,.9);
   border-radius: var(--radius);
   padding: 1.75rem;
   box-shadow: var(--shadow);
@@ -681,11 +715,11 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .testimonial-name {
   font-weight: 700;
   font-size: 0.9rem;
-  color: var(--purple-dark);
+  color: var(--indigo);
 }
 .screenshot-btn {
-  background: var(--purple-light);
-  color: var(--purple);
+  background: var(--blue-light);
+  color: var(--blue);
   border: none;
   border-radius: var(--radius-pill);
   padding: 0.3rem 0.8rem;
@@ -697,7 +731,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   white-space: nowrap;
 }
 .screenshot-btn:hover {
-  background: var(--purple);
+  background: var(--blue);
   color: var(--white);
 }
 
@@ -715,7 +749,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   border-radius: 50%;
   background: var(--white);
   border: 2px solid var(--border);
-  color: var(--purple);
+  color: var(--blue);
   font-size: 1.5rem;
   display: flex;
   align-items: center;
@@ -723,7 +757,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   transition: all var(--transition);
   box-shadow: var(--shadow);
 }
-.tnav-btn:hover { background: var(--purple); color: var(--white); border-color: var(--purple); }
+.tnav-btn:hover { background: var(--blue); color: var(--white); border-color: var(--blue); }
 
 .tdots {
   display: flex;
@@ -739,7 +773,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   transition: all var(--transition);
 }
 .tdot.active {
-  background: var(--purple);
+  background: var(--blue);
   transform: scale(1.25);
 }
 
@@ -772,7 +806,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .contact-card:not(.contact-card-static):hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
-  border-color: var(--purple-light);
+  border-color: var(--blue-light);
 }
 .contact-card-wa { border-color: rgba(37,211,102,.25); }
 .contact-card-wa:hover { border-color: var(--wa) !important; }
@@ -782,12 +816,12 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: var(--purple-light);
+  background: var(--blue-light);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: var(--purple);
+  color: var(--blue);
 }
 .contact-card-wa .contact-card-icon { background: rgba(37,211,102,.12); color: var(--wa); }
 
@@ -856,7 +890,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   height: 48px;
   border-radius: 50%;
   object-fit: contain;
-  background: rgba(255,255,255,.1);
+  background: var(--white);
   padding: 3px;
 }
 .footer-text p { font-size: 0.9rem; }
@@ -878,7 +912,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   color: rgba(255,255,255,.8);
   transition: all var(--transition);
 }
-.footer-links a:hover { background: var(--purple); color: var(--white); transform: translateY(-2px); }
+.footer-links a:hover { background: var(--blue); color: var(--white); transform: translateY(-2px); }
 
 /* =====================================================
    FLOATING WHATSAPP
@@ -919,7 +953,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
    FOCUS / ACCESSIBILITY
    ===================================================== */
 :focus-visible {
-  outline: 3px solid var(--purple);
+  outline: 3px solid var(--blue);
   outline-offset: 3px;
   border-radius: 4px;
 }
