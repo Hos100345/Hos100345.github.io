@@ -46,7 +46,13 @@ html {
 
 body {
   font-family: 'Heebo', 'Segoe UI', Tahoma, sans-serif;
-  background: var(--bg);
+  background:
+    radial-gradient(ellipse 70% 55% at  8%  8%, rgba(37,99,235,.13)  0%, transparent 55%),
+    radial-gradient(ellipse 60% 60% at 92% 15%, rgba(124,58,237,.11) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 50% at 50% 95%, rgba(67,56,202,.09)  0%, transparent 55%),
+    radial-gradient(ellipse 55% 55% at 85% 70%, rgba(37,99,235,.07)  0%, transparent 50%),
+    #F0F4FF;
+  background-attachment: fixed;
   color: var(--text);
   line-height: 1.7;
   direction: rtl;
@@ -156,14 +162,18 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   top: 0;
   z-index: 1000;
   height: var(--nav-h);
-  background: linear-gradient(to bottom, rgba(0,0,30,.45), transparent);
-  transition: background var(--transition), box-shadow var(--transition), transform var(--transition);
+  background: rgba(10,15,60,.28);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255,255,255,.1);
+  transition: background var(--transition), box-shadow var(--transition), transform var(--transition), border-color var(--transition);
 }
 .site-header.scrolled {
-  background: rgba(255,255,255,.92);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 2px 16px rgba(0,0,0,.08);
+  background: rgba(255,255,255,.88);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid rgba(37,99,235,.12);
+  box-shadow: 0 2px 20px rgba(0,0,0,.08);
 }
 .site-header.hidden  { transform: translateY(-100%); }
 .site-header.visible { transform: translateY(0); }
@@ -394,8 +404,9 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
    ===================================================== */
 .section {
   padding-block: 5rem;
+  background: rgba(240,244,255,.5);
 }
-.section-alt { background: var(--bg-alt); }
+.section-alt { background: rgba(219,234,254,.45); }
 
 .section-header {
   text-align: center;
@@ -797,11 +808,13 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   align-items: center;
   gap: 1rem;
   padding: 1.25rem 1.5rem;
-  background: var(--white);
+  background: rgba(255,255,255,.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   transition: transform var(--transition), box-shadow var(--transition);
-  border: 2px solid transparent;
+  border: 1.5px solid rgba(255,255,255,.85);
 }
 .contact-card:not(.contact-card-static):hover {
   transform: translateY(-4px);
@@ -810,6 +823,9 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 }
 .contact-card-wa { border-color: rgba(37,211,102,.25); }
 .contact-card-wa:hover { border-color: var(--wa) !important; }
+.contact-card-google { border-color: rgba(251,188,5,.3); }
+.contact-card-google:hover { border-color: #FBBC05 !important; }
+.contact-card-google .contact-card-icon { background: rgba(251,188,5,.12); color: #EA4335; }
 .contact-card-static { cursor: default; }
 
 .contact-card-icon {
@@ -839,7 +855,10 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   gap: 0.75rem;
   flex-wrap: wrap;
   padding: 1.25rem 1.5rem;
-  background: var(--white);
+  background: rgba(255,255,255,.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1.5px solid rgba(255,255,255,.85);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
 }
