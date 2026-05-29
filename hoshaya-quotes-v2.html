@@ -211,6 +211,14 @@
         הדבק כל שיחה מוואטסאפ כאן — AI יחלץ את הפרטים וימלא את הטופס אוטומטית
       </p>
 
+      <div id="groqKeySetup" style="background:#f8f9fa;padding:12px;border-radius:8px;margin-bottom:15px;border:1px solid #dee2e6;display:none;">
+        <strong>🔑 הכנס מפתח Groq</strong> <span style="font-size:12px;color:#666;">(פעם אחת בלבד)</span>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <input type="password" id="groqKeyInput" placeholder="gsk_..." style="margin-bottom:0;">
+          <button onclick="saveGroqKey()" style="background:#28a745;white-space:nowrap;">שמור</button>
+        </div>
+      </div>
+
       <textarea id="chatInput" placeholder="דוגמה:
 לקוח: שלום, אני צריך עיצוב לברית ביום ראשון
 הושעיה: כמה אנשים צפויים?
@@ -238,7 +246,7 @@
   
   <script>
     const STORAGE_KEY = "hoshaya_data_v2";
-    const WORKER_URL = "https://hoshaya-worker.hoshaya.workers.dev";
+    const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
     
     // ==================== TAB SWITCHING ====================
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -355,6 +363,21 @@
       link.click();
     }
     
+    // ==================== GROQ KEY ====================
+    function saveGroqKey() {
+      const key = document.getElementById('groqKeyInput').value.trim();
+      if (!key) return;
+      localStorage.setItem('groq_api_key', key);
+      document.getElementById('groqKeySetup').style.display = 'none';
+      showAlert('chatAlert', '✅ מפתח נשמר!', 'success');
+    }
+
+    function initGroqKey() {
+      if (!localStorage.getItem('groq_api_key')) {
+        document.getElementById('groqKeySetup').style.display = 'block';
+      }
+    }
+
     // ==================== CHAT ANALYSIS ====================
     async function analyzeChat() {
       const chat = document.getElementById('chatInput').value;
@@ -363,14 +386,27 @@
         return;
       }
 
+      const groqKey = localStorage.getItem('groq_api_key');
+      if (!groqKey) {
+        document.getElementById('groqKeySetup').style.display = 'block';
+        showAlert('chatAlert', '❌ אנא הכנס מפתח Groq למעלה', 'error');
+        return;
+      }
+
       showAlert('chatAlert', '🔄 מנתח שיחה...', 'info');
 
       try {
-        const res = await fetch(`${WORKER_URL}/gemini`, {
+        const res = await fetch(GROQ_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${groqKey}`
+          },
           body: JSON.stringify({
-            prompt: `אתה עוזר בעיצוב אירועים בלונים. נתח את השיחה הבאה וחלץ את הפרטים הבאים:
+            model: 'llama-3.1-8b-instant',
+            messages: [{
+              role: 'user',
+              content: `אתה עוזר בעיצוב אירועים בלונים. נתח את השיחה הבאה וחלץ את הפרטים:
 1. שם הלקוח
 2. סוג האירוע
 3. מספר אנשים משוער
@@ -389,17 +425,19 @@ ${chat}
   "estimatedBudget": 0,
   "notes": "..."
 }`
+            }],
+            temperature: 0.1
           })
         });
 
         const result = await res.json();
 
-        if (!result.ok || result.error) {
-          showAlert('chatAlert', `❌ שגיאה: ${result.error || 'שגיאה בשרת'}`, 'error');
+        if (result.error) {
+          showAlert('chatAlert', `❌ שגיאה: ${result.error.message}`, 'error');
           return;
         }
 
-        const text = result.text;
+        const text = result.choices?.[0]?.message?.content;
         if (!text) {
           showAlert('chatAlert', '❌ לא התקבלה תשובה מה-AI', 'error');
           return;
@@ -482,6 +520,7 @@ ${chat}
     
     // Initialize
     renderInventory();
+    initGroqKey();
   </script>
 </body>
   </html>
