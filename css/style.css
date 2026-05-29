@@ -162,18 +162,21 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   top: 0;
   z-index: 1000;
   height: var(--nav-h);
-  background: rgba(10,15,60,.28);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(8,12,55,.48);
+  /* אין backdrop-filter כאן — כדי שתפריט הנייד (position:fixed) יכסה את כל המסך */
   border-bottom: 1px solid rgba(255,255,255,.1);
   transition: background var(--transition), box-shadow var(--transition), transform var(--transition), border-color var(--transition);
 }
-.site-header.scrolled {
-  background: rgba(255,255,255,.88);
+.site-header.scrolled:not(.nav-open) {
+  background: rgba(255,255,255,.92);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border-bottom: 1px solid rgba(37,99,235,.12);
   box-shadow: 0 2px 20px rgba(0,0,0,.08);
+}
+.site-header.scrolled.nav-open {
+  background: rgba(255,255,255,.92);
+  /* אין backdrop-filter כשהתפריט פתוח */
 }
 .site-header.hidden  { transform: translateY(-100%); }
 .site-header.visible { transform: translateY(0); }
@@ -238,12 +241,16 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   flex-direction: column;
   gap: 0;
   position: fixed;
-  inset: 0;
   top: var(--nav-h);
-  background: rgba(255,255,255,.98);
-  backdrop-filter: blur(16px);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255,255,255,.97);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   padding: 2rem 1.5rem;
-  z-index: 999;
+  z-index: 1100;
+  overflow-y: auto;
 }
 .nav-links.open { display: flex; }
 
