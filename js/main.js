@@ -193,7 +193,7 @@ function buildCategoryCards() {
   const cards = document.getElementById('gallery-cat-cards');
   if (!cards) return;
   const images = SD.gallery || [];
-  const order = ['events', 'characters', 'bar', 'workshops'];
+  const order = ['events', 'bar', 'characters', 'workshops'];
 
   cards.innerHTML = order.map(cat => {
     const catImgs = images.filter(i => i.cat === cat);
