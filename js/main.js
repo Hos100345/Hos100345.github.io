@@ -130,41 +130,71 @@ lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightb
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 
 /* =====================================================
-   GALLERY
+   GALLERY — lazy paginated render (18 per page)
    ===================================================== */
 const galleryGrid = document.getElementById('gallery-grid');
+const GAL_PAGE_SIZE = 18;
+let galCat  = null;
+let galPage = 0;
 
-function buildGallery() {
-  const items = SD.gallery || [];
-  if (!items.length) {
-    galleryGrid.innerHTML = '<p style="text-align:center;color:#6B7280;padding:2rem;">הגלריה ריקה — הוסף תמונות דרך admin.html</p>';
-    return;
-  }
-  galleryGrid.innerHTML = items.map(item => `
-    <div class="gallery-item" data-cat="${item.cat}" role="button" tabindex="0" aria-label="הגדל: ${item.alt}">
-      <img src="${item.src}" alt="${item.alt}" loading="lazy">
-      <div class="gallery-overlay" aria-hidden="true">
-        <span>${catLabels[item.cat] || item.alt}</span>
-      </div>
-    </div>
-  `).join('');
-
-  galleryGrid.querySelectorAll('.gallery-item').forEach(el => {
-    const img = el.querySelector('img');
-    el.addEventListener('click',   () => openLightbox(img.src, img.alt));
-    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') openLightbox(img.src, img.alt); });
-  });
+function makeGalleryItem(item) {
+  const div = document.createElement('div');
+  div.className = 'gallery-item';
+  div.dataset.cat = item.cat;
+  div.setAttribute('role', 'button');
+  div.setAttribute('tabindex', '0');
+  div.setAttribute('aria-label', `הגדל: ${item.alt}`);
+  div.innerHTML = `
+    <img src="${item.src}" alt="${item.alt}" loading="lazy">
+    <div class="gallery-overlay" aria-hidden="true"><span>${catLabels[item.cat] || item.alt}</span></div>`;
+  const img = div.querySelector('img');
+  div.addEventListener('click',   () => openLightbox(img.src, img.alt));
+  div.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') openLightbox(img.src, img.alt); });
+  return div;
 }
-buildGallery();
+
+function loadGalleryPage() {
+  const all      = SD.gallery || [];
+  const filtered = galCat === 'all' ? all : all.filter(i => i.cat === galCat);
+  const start    = galPage * GAL_PAGE_SIZE;
+
+  filtered.slice(start, start + GAL_PAGE_SIZE).forEach(item => {
+    galleryGrid.appendChild(makeGalleryItem(item));
+  });
+
+  let moreBtn = document.getElementById('gallery-more-btn');
+  const remaining = filtered.length - start - GAL_PAGE_SIZE;
+  if (remaining > 0) {
+    if (!moreBtn) {
+      moreBtn = document.createElement('button');
+      moreBtn.id = 'gallery-more-btn';
+      moreBtn.className = 'gallery-more-btn';
+      moreBtn.addEventListener('click', () => { galPage++; loadGalleryPage(); });
+      galleryGrid.insertAdjacentElement('afterend', moreBtn);
+    }
+    moreBtn.textContent = `הצג עוד תמונות (${remaining} נותרו)`;
+  } else if (moreBtn) {
+    moreBtn.remove();
+  }
+}
+
+// Gallery starts closed — show prompt
+galleryGrid.innerHTML = '<p class="gallery-placeholder">בחרו קטגוריה לצפייה בתמונות ↑</p>';
 
 document.querySelectorAll('.gfilter').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.gfilter').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    const cat = btn.dataset.cat;
-    document.querySelectorAll('.gallery-item').forEach(item => {
-      item.classList.toggle('hidden', cat !== 'all' && item.dataset.cat !== cat);
-    });
+    galCat  = btn.dataset.cat;
+    galPage = 0;
+    galleryGrid.innerHTML = '';
+    const moreBtn = document.getElementById('gallery-more-btn');
+    if (moreBtn) moreBtn.remove();
+    if (!(SD.gallery || []).length) {
+      galleryGrid.innerHTML = '<p style="text-align:center;color:#6B7280;padding:2rem;">הגלריה ריקה — הוסף תמונות דרך admin.html</p>';
+      return;
+    }
+    loadGalleryPage();
   });
 });
 
