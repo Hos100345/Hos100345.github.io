@@ -9,11 +9,12 @@ window.SITE_DATA = {
   // דוגמה: https://www.youtube.com/watch?v=dQw4w9WgXcQ  →  youtubeId: "dQw4w9WgXcQ"
   video: {
     youtubeId: "",
-    facebookUrl: ""
+    facebookUrl: "",
+    driveId: "1qcyM2-WmYC8-0kE1jJeYnqGGoChd0Gyc"
   },
 
   // ── גלריה ──────────────────────────────────────────
-  // cat: events | workshops | characters | hats
+  // cat: events | workshops | characters | bar
   gallery: [
     // ── עיצוב אירועים ──
     { src: "https://lh3.googleusercontent.com/d/17Y2wTaAQDy6B_9I_2BIkfSDvF4oh_XT8", cat: "events",     alt: "עיצוב אירוע בלונים" },
@@ -65,15 +66,15 @@ window.SITE_DATA = {
     { src: "https://lh3.googleusercontent.com/d/1l_SGm50l6exu1hWJYLTHSZnjWDAFvupY", cat: "events",     alt: "עיצוב בלונים" },
     { src: "https://lh3.googleusercontent.com/d/19NDodVR4gCbUSXR8mDIGCSl1ySFDv2RE", cat: "events",     alt: "בלונים לאירוע" },
     { src: "https://lh3.googleusercontent.com/d/1KVqY6r9UBZr0knDPeWSNwa0n4_ZEZEU9", cat: "events",     alt: "עיצוב אירוע" },
-    // ── דמויות ובר בלונים ──
-    { src: "https://lh3.googleusercontent.com/d/1PsEWzu4sjG4jJSbLhijK8XJI48kKczBf", cat: "characters", alt: "בר בלונים — דמויות" },
-    { src: "https://lh3.googleusercontent.com/d/1EmGgb_GKr4lDqUKjIjPXLj1GRLkC9xF3", cat: "characters", alt: "בר בלונים" },
-    { src: "https://lh3.googleusercontent.com/d/1pnXx_uEd3dTVu7S5AhBO2yvUYqtQSaAx", cat: "characters", alt: "דמות מבלונים" },
-    { src: "https://lh3.googleusercontent.com/d/1fj6R07b3iDhJlMUWxWnG4UYiuH1NNV2f", cat: "characters", alt: "בר בלונים מקצועי" },
-    { src: "https://lh3.googleusercontent.com/d/1nIVIf0M9qmCqDejaOuD60nftpxsXbjVc", cat: "characters", alt: "דמות בלונים" },
-    { src: "https://lh3.googleusercontent.com/d/1bHOvmxVj2dTUVEv-Wykv2d3Ev3Sd2PDo", cat: "characters", alt: "בר בלונים" },
-    { src: "https://lh3.googleusercontent.com/d/1dhkAOVhpkEf09nXfzv_60NU7RXs3PVw-", cat: "characters", alt: "דמות מבלונים" },
-    { src: "https://lh3.googleusercontent.com/d/15L9qLOKMS5FyhNpsRRl7efhVvKDyWk8X", cat: "characters", alt: "בר בלונים — עבודת אמן" },
+    // ── בר בלונים ודמויות ──
+    { src: "https://lh3.googleusercontent.com/d/1PsEWzu4sjG4jJSbLhijK8XJI48kKczBf", cat: "bar", alt: "בר בלונים — דמויות" },
+    { src: "https://lh3.googleusercontent.com/d/1EmGgb_GKr4lDqUKjIjPXLj1GRLkC9xF3", cat: "bar", alt: "בר בלונים" },
+    { src: "https://lh3.googleusercontent.com/d/1pnXx_uEd3dTVu7S5AhBO2yvUYqtQSaAx", cat: "bar", alt: "בר בלונים — דמות" },
+    { src: "https://lh3.googleusercontent.com/d/1fj6R07b3iDhJlMUWxWnG4UYiuH1NNV2f", cat: "bar", alt: "בר בלונים מקצועי" },
+    { src: "https://lh3.googleusercontent.com/d/1nIVIf0M9qmCqDejaOuD60nftpxsXbjVc", cat: "bar", alt: "בר בלונים — דמות" },
+    { src: "https://lh3.googleusercontent.com/d/1bHOvmxVj2dTUVEv-Wykv2d3Ev3Sd2PDo", cat: "bar", alt: "בר בלונים" },
+    { src: "https://lh3.googleusercontent.com/d/1dhkAOVhpkEf09nXfzv_60NU7RXs3PVw-", cat: "bar", alt: "בר בלונים — עבודה מיוחדת" },
+    { src: "https://lh3.googleusercontent.com/d/15L9qLOKMS5FyhNpsRRl7efhVvKDyWk8X", cat: "bar", alt: "בר בלונים — עבודת אמן" },
     { src: "https://lh3.googleusercontent.com/d/1608Ha5Ug_wz0V9qqWV4G4Uk0bHAedVdw", cat: "characters", alt: "דמות מבלונים" },
     { src: "https://lh3.googleusercontent.com/d/1pgOGe6ogDAXcl3tYbR1MEqkcpO1P42Kn", cat: "characters", alt: "דמות בלונים מיוחדת" },
     { src: "https://lh3.googleusercontent.com/d/159mA1L8BrH624yCBK1hC-BZCkndKBCQG", cat: "characters", alt: "דמות מבלונים" },

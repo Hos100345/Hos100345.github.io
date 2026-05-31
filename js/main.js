@@ -9,7 +9,7 @@ const catLabels = {
   events:     'עיצוב אירועים',
   workshops:  'סדנאות',
   characters: 'דמויות',
-  hats:       'כתרים וכובעים',
+  bar:        'בר בלונים ודמויות',
 };
 
 /* =====================================================
@@ -82,6 +82,14 @@ function renderVideo() {
         <iframe src="https://www.facebook.com/plugins/video.php?href=${enc}&width=1200&show_text=false&appId"
                 title="הושעיה אמן בלונים" frameborder="0" scrolling="no"
                 allowfullscreen loading="lazy"></iframe>
+      </div>`;
+    revealObserver.observe(container.querySelector('.reveal'));
+  } else if (v.driveId && v.driveId.trim()) {
+    container.innerHTML = `
+      <div class="video-wrap reveal">
+        <iframe src="https://drive.google.com/file/d/${v.driveId.trim()}/preview"
+                title="הושעיה אמן בלונים — סרטון תדמית" frameborder="0"
+                allow="autoplay" allowfullscreen loading="lazy"></iframe>
       </div>`;
     revealObserver.observe(container.querySelector('.reveal'));
   }
