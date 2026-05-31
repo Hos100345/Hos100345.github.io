@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>הושעיה אמן בלונים - הצעות מחיר ומלאי</title>
+  <title>הושעיה אמן בלונים - הצעות מחיר</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -13,7 +13,6 @@
       padding: 20px;
       color: #333;
     }
-    
     .container {
       max-width: 900px;
       margin: 0 auto;
@@ -22,112 +21,192 @@
       box-shadow: 0 10px 40px rgba(0,0,0,0.2);
       overflow: hidden;
     }
-    
     .header {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
-      padding: 30px;
+      padding: 25px 30px;
       text-align: center;
     }
-    
-    .header h1 { font-size: 28px; margin-bottom: 8px; }
-    .header p { font-size: 14px; opacity: 0.9; }
-    
+    .header h1 { font-size: 26px; margin-bottom: 5px; }
+    .header p { font-size: 13px; opacity: 0.9; }
     .tabs {
       display: flex;
       border-bottom: 2px solid #eee;
       background: #f8f9fa;
     }
-    
     .tab-btn {
       flex: 1;
-      padding: 15px;
+      padding: 14px 8px;
       background: none;
       border: none;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 500;
       cursor: pointer;
       color: #666;
       transition: all 0.3s;
       border-bottom: 3px solid transparent;
     }
-    
     .tab-btn.active {
       color: #667eea;
       border-bottom-color: #667eea;
       background: white;
     }
-    
-    .tab-content {
-      display: none;
-      padding: 30px;
-    }
-    
+    .tab-content { display: none; padding: 25px 30px; }
     .tab-content.active { display: block; }
-    
     input, textarea, select {
       width: 100%;
-      padding: 10px;
-      margin-bottom: 15px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
       border: 1px solid #ddd;
       border-radius: 6px;
       font-size: 14px;
       font-family: inherit;
+      direction: rtl;
     }
-    
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
     button {
       background: #667eea;
       color: white;
-      padding: 12px 24px;
+      padding: 10px 20px;
       border: none;
       border-radius: 6px;
       cursor: pointer;
       font-size: 14px;
-      transition: all 0.3s;
+      font-family: inherit;
+      transition: all 0.2s;
     }
-    
-    button:hover { background: #5568d3; }
-    
+    button:hover { background: #5568d3; transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+    .btn-green { background: #28a745; }
+    .btn-green:hover { background: #218838; }
+    .btn-red { background: #dc3545; }
+    .btn-red:hover { background: #c82333; }
+    .btn-wa { background: #25D366; }
+    .btn-wa:hover { background: #1ebe5d; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
     .alert {
-      padding: 15px;
-      margin-bottom: 20px;
+      padding: 12px 15px;
+      margin-top: 15px;
       border-radius: 6px;
       font-size: 13px;
     }
-    
     .alert.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
     .alert.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
     .alert.info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
-    
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    
-    th, td {
-      padding: 12px;
-      text-align: right;
-      border-bottom: 1px solid #eee;
-    }
-    
-    th { background: #f8f9fa; font-weight: 600; color: #333; }
-    
-    .price-table {
+    .section-box {
       background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
       padding: 15px;
-      border-radius: 6px;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
     }
-    
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 12px;
+    }
+    /* Pricing catalog */
+    .price-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 8px;
+    }
+    .price-item {
+      background: white;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .price-item:hover { border-color: #667eea; background: #f0f2ff; }
+    .price-item .item-name { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+    .price-item .item-price { font-size: 12px; color: #667eea; }
+    .price-item .item-qty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .price-item .qty-btn {
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      font-size: 14px;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform: none;
+    }
+    .price-item .qty-btn:hover { background: #5568d3; transform: none; }
+    .price-item .qty-num { font-size: 14px; font-weight: 600; min-width: 20px; }
+    /* Quote summary */
+    .quote-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+      font-size: 13px;
+    }
+    .quote-total {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0 0;
+      font-size: 16px;
+      font-weight: 700;
+      color: #667eea;
+    }
+    /* History */
+    .history-card {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+    .history-card .hc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 6px;
+    }
+    .history-card .hc-name { font-weight: 600; font-size: 15px; }
+    .history-card .hc-price { color: #667eea; font-weight: 700; font-size: 15px; }
+    .history-card .hc-meta { font-size: 12px; color: #666; }
+    /* Inventory */
     .inventory-item {
       background: #f8f9fa;
       padding: 12px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       border-radius: 6px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px 12px; text-align: right; border-bottom: 1px solid #eee; font-size: 13px; }
+    th { background: #f8f9fa; font-weight: 600; color: #333; }
+    .key-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #28a745;
+      margin-bottom: 10px;
     }
   </style>
 </head>
@@ -137,263 +216,461 @@
       <h1>🎈 הושעיה אמן בלונים</h1>
       <p>עיצובים בלתי נשכחים | 050-5918734</p>
     </div>
-    
+
     <div class="tabs">
       <button class="tab-btn active" data-tab="quotes">📋 הצעת מחיר</button>
       <button class="tab-btn" data-tab="inventory">📦 מלאי</button>
       <button class="tab-btn" data-tab="chat">📲 הדבק שיחה</button>
       <button class="tab-btn" data-tab="history">📁 היסטוריה</button>
     </div>
-    
+
     <!-- TAB: QUOTES -->
     <div id="quotes" class="tab-content active">
-      <h2>יצירת הצעת מחיר</h2>
-      
-      <div class="price-table">
-        <strong>מחירון מהיר:</strong><br>
-        שולחן (30/70/120₪) | חישוק (800₪) | שער (600₪) | בר בלונים (800₪/שעה)
-      </div>
-      
-      <input type="text" id="clientName" placeholder="שם הלקוח" required>
-      <input type="tel" id="clientPhone" placeholder="טלפון">
-      <input type="email" id="clientEmail" placeholder="אימייל">
-      
-      <textarea id="quoteItems" placeholder="פרטי ההזמנה (לדוגמה: שולחן בסיסי + חישוק בלונים)" rows="4"></textarea>
-      
-      <input type="number" id="quotePrice" placeholder="סה״כ מחיר (₪)" min="0">
-      
-      <div style="display: flex; gap: 10px;">
-        <button onclick="saveQuote()">💾 שמור הצעה</button>
-        <button onclick="downloadQuote()">📥 הוריד PDF</button>
-      </div>
-      
-      <div id="quoteAlert" style="margin-top: 20px;"></div>
-    </div>
-    
-    <!-- TAB: INVENTORY -->
-    <div id="inventory" class="tab-content">
-      <h2>ניהול מלאי</h2>
-      
-      <select id="balloonType">
-        <option>בחר סוג בלון</option>
-        <option>טקס</option>
-        <option>מיילר</option>
-        <option>מוצץ</option>
-        <option>פומפום</option>
-      </select>
-      
-      <select id="balloonSize">
-        <option>בחר גודל</option>
-        <option>9"</option>
-        <option>11"</option>
-        <option>12"</option>
-        <option>14"</option>
-        <option>16"</option>
-        <option>18"</option>
-      </select>
-      
-      <input type="text" id="balloonColor" placeholder="צבע">
-      <input type="number" id="balloonQty" placeholder="כמות" min="0">
-      <input type="number" id="balloonMin" placeholder="כמות מינימום להתראה" min="0">
-      
-      <div style="display: flex; gap: 10px;">
-        <button onclick="addInventory()">➕ הוסף לכמות</button>
-        <button onclick="exportInventory()">📊 ייצא ל-Excel</button>
-      </div>
-      
-      <div id="inventoryList" style="margin-top: 30px;"></div>
-    </div>
-    
-    <!-- TAB: CHAT ANALYSIS -->
-    <div id="chat" class="tab-content">
-      <h2>ניתוח שיחת וואטסאפ</h2>
-      <p style="color: #666; font-size: 13px; margin-bottom: 15px;">
-        הדבק כל שיחה מוואטסאפ כאן — AI יחלץ את הפרטים וימלא את הטופס אוטומטית
-      </p>
+      <h2 style="margin-bottom:20px;">יצירת הצעת מחיר</h2>
 
-      <div id="groqKeySetup" style="background:#f8f9fa;padding:12px;border-radius:8px;margin-bottom:15px;border:1px solid #dee2e6;display:none;">
-        <strong>🔑 הכנס מפתח Groq</strong> <span style="font-size:12px;color:#666;">(פעם אחת בלבד)</span>
-        <div style="display:flex;gap:8px;margin-top:8px;">
-          <input type="password" id="groqKeyInput" placeholder="gsk_..." style="margin-bottom:0;">
-          <button onclick="saveGroqKey()" style="background:#28a745;white-space:nowrap;">שמור</button>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <input type="text" id="clientName" placeholder="שם הלקוח *">
+        <input type="tel" id="clientPhone" placeholder="טלפון">
+      </div>
+      <input type="email" id="clientEmail" placeholder="אימייל (אופציונלי)">
+      <input type="text" id="eventType" placeholder="סוג האירוע (ברית, בר מצווה, יום הולדת...)">
+      <input type="date" id="eventDate" style="margin-bottom:12px;">
+
+      <!-- Pricing catalog -->
+      <div class="section-box">
+        <div class="section-title">בחר פריטים ממחירון:</div>
+        <div class="price-grid" id="priceGrid"></div>
+      </div>
+
+      <!-- Custom item -->
+      <div class="section-box">
+        <div class="section-title">הוסף פריט מותאם:</div>
+        <div style="display:flex;gap:8px;align-items:flex-start;">
+          <input type="text" id="customItemName" placeholder="תיאור הפריט" style="margin-bottom:0;flex:3;">
+          <input type="number" id="customItemPrice" placeholder="מחיר ₪" style="margin-bottom:0;flex:1;" min="0">
+          <button onclick="addCustomItem()" class="btn-green" style="white-space:nowrap;">הוסף</button>
         </div>
       </div>
 
-      <textarea id="chatInput" placeholder="דוגמה:
+      <!-- Summary -->
+      <div class="section-box" id="quoteSummaryBox" style="display:none;">
+        <div class="section-title">סיכום הצעה:</div>
+        <div id="quoteSummaryLines"></div>
+        <div class="quote-total">
+          <span>סה"כ:</span>
+          <span id="quoteTotalDisplay">₪0</span>
+        </div>
+      </div>
+
+      <input type="number" id="quotePrice" placeholder="מחיר סופי (ניתן לשנות) ₪" min="0">
+      <textarea id="quoteNotes" placeholder="הערות נוספות..." rows="2"></textarea>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button onclick="saveQuote()" class="btn-green">💾 שמור הצעה</button>
+        <button onclick="sendWhatsApp()" class="btn-wa">📲 שלח ב-WhatsApp</button>
+      </div>
+      <div id="quoteAlert"></div>
+    </div>
+
+    <!-- TAB: INVENTORY -->
+    <div id="inventory" class="tab-content">
+      <h2 style="margin-bottom:20px;">ניהול מלאי</h2>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <select id="balloonType">
+          <option value="">סוג בלון</option>
+          <option>טקס</option>
+          <option>מיילר</option>
+          <option>מוצץ</option>
+          <option>פומפום</option>
+        </select>
+        <select id="balloonSize">
+          <option value="">גודל</option>
+          <option>9"</option><option>11"</option><option>12"</option>
+          <option>14"</option><option>16"</option><option>18"</option>
+        </select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+        <input type="text" id="balloonColor" placeholder="צבע">
+        <input type="number" id="balloonQty" placeholder="כמות" min="0">
+        <input type="number" id="balloonMin" placeholder="מינימום לאזהרה" min="0">
+      </div>
+
+      <div style="display:flex;gap:10px;margin-bottom:20px;">
+        <button onclick="addInventory()" class="btn-green">➕ הוסף</button>
+        <button onclick="exportInventory()">📊 ייצא CSV</button>
+      </div>
+
+      <div id="inventoryList"></div>
+    </div>
+
+    <!-- TAB: CHAT ANALYSIS -->
+    <div id="chat" class="tab-content">
+      <h2 style="margin-bottom:8px;">ניתוח שיחת וואטסאפ</h2>
+      <p style="color:#666;font-size:13px;margin-bottom:15px;">
+        הדבק שיחה מוואטסאפ — AI יחלץ את הפרטים וימלא את הטופס אוטומטית
+      </p>
+
+      <div id="groqKeySetup" style="background:#fff3cd;padding:14px;border-radius:8px;margin-bottom:15px;border:1px solid #ffc107;display:none;">
+        <strong>🔑 הכנס מפתח Groq API</strong>
+        <p style="font-size:12px;color:#666;margin:6px 0 10px;">
+          ניתן לקבל מפתח חינם ב-<strong>console.groq.com</strong> → API Keys
+        </p>
+        <div style="display:flex;gap:8px;">
+          <input type="password" id="groqKeyInput" placeholder="gsk_..." style="margin-bottom:0;">
+          <button onclick="saveGroqKey()" class="btn-green" style="white-space:nowrap;">שמור</button>
+        </div>
+      </div>
+
+      <div id="groqKeyActive" style="display:none;" class="key-status">
+        <span>✅ Groq AI מוגדר</span>
+        <button onclick="resetGroqKey()" class="btn-sm" style="background:#6c757d;">שנה מפתח</button>
+      </div>
+
+      <textarea id="chatInput" placeholder="הדבק שיחת וואטסאפ כאן...
+
+דוגמה:
 לקוח: שלום, אני צריך עיצוב לברית ביום ראשון
 הושעיה: כמה אנשים צפויים?
 לקוח: כ-100 אנשים
-..." rows="8"></textarea>
+הושעיה: מה התקציב?
+לקוח: עד 1500 שקל" rows="10"></textarea>
 
-      <button onclick="analyzeChat()">🤖 נתח עם AI ומלא טופס</button>
-      <div id="chatAlert" style="margin-top: 20px;"></div>
+      <button onclick="analyzeChat()" style="width:100%;">🤖 נתח עם AI ומלא טופס אוטומטית</button>
+      <div id="chatAlert"></div>
     </div>
-    
+
     <!-- TAB: HISTORY -->
     <div id="history" class="tab-content">
-      <h2>היסטוריית הצעות ומלאי</h2>
-      <p style="color: #666; font-size: 13px;">כל המידע נשמר בדיסק שלך (localStorage)</p>
-      
-      <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-        <button onclick="downloadHistory()">📥 הוריד JSON</button>
-        <button onclick="uploadHistory()" style="background: #28a745;">📤 העלה JSON</button>
-        <button onclick="clearHistory()" style="background: #dc3545;">🗑️ מחק הכל</button>
+      <h2 style="margin-bottom:15px;">היסטוריית הצעות</h2>
+
+      <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+        <button onclick="downloadHistory()">📥 גיבוי JSON</button>
+        <button onclick="uploadHistory()" class="btn-green">📤 שחזר JSON</button>
+        <button onclick="clearHistory()" class="btn-red">🗑️ מחק הכל</button>
       </div>
-      
+
       <div id="historyList"></div>
     </div>
   </div>
-  
+
   <script>
     const STORAGE_KEY = "hoshaya_data_v2";
     const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
-    
-    // ==================== TAB SWITCHING ====================
+
+    // Pricing catalog definition
+    const CATALOG = [
+      { id: 'table_basic',   name: 'שולחן בסיסי',   price: 30,  unit: 'שולחן' },
+      { id: 'table_mid',     name: 'שולחן בינוני',   price: 70,  unit: 'שולחן' },
+      { id: 'table_fancy',   name: 'שולחן מפואר',    price: 120, unit: 'שולחן' },
+      { id: 'hoop',          name: 'חישוק בלונים',   price: 800, unit: 'חישוק' },
+      { id: 'gate',          name: 'שער בלונים',     price: 600, unit: 'שער'   },
+      { id: 'bar',           name: 'בר בלונים',      price: 800, unit: 'שעה'   },
+      { id: 'column',        name: 'עמוד בלונים',    price: 350, unit: 'עמוד'  },
+      { id: 'ceiling',       name: 'עיצוב תקרה',     price: 500, unit: 'יח׳'   },
+    ];
+
+    // Quantities state for catalog items
+    const qtyMap = {};
+    CATALOG.forEach(item => { qtyMap[item.id] = 0; });
+
+    // Custom items list
+    let customItems = [];
+
+    // ==================== TABS ====================
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         btn.classList.add('active');
         document.getElementById(btn.dataset.tab).classList.add('active');
+        if (btn.dataset.tab === 'history') renderHistory();
       });
     });
-    
-    // ==================== QUOTES ====================
+
+    // ==================== PRICE CATALOG ====================
+    function renderPriceGrid() {
+      const grid = document.getElementById('priceGrid');
+      grid.innerHTML = CATALOG.map(item => `
+        <div class="price-item" id="pi_${item.id}">
+          <div class="item-name">${item.name}</div>
+          <div class="item-price">₪${item.price} / ${item.unit}</div>
+          <div class="item-qty">
+            <button class="qty-btn" onclick="changeQty('${item.id}', -1)">−</button>
+            <span class="qty-num" id="qty_${item.id}">${qtyMap[item.id]}</span>
+            <button class="qty-btn" onclick="changeQty('${item.id}', +1)">+</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function changeQty(id, delta) {
+      qtyMap[id] = Math.max(0, (qtyMap[id] || 0) + delta);
+      document.getElementById(`qty_${id}`).textContent = qtyMap[id];
+      const el = document.getElementById(`pi_${id}`);
+      el.style.borderColor = qtyMap[id] > 0 ? '#667eea' : '';
+      el.style.background = qtyMap[id] > 0 ? '#f0f2ff' : '';
+      updateQuoteSummary();
+    }
+
+    function addCustomItem() {
+      const name = document.getElementById('customItemName').value.trim();
+      const price = parseFloat(document.getElementById('customItemPrice').value) || 0;
+      if (!name) { alert('הכנס תיאור פריט'); return; }
+      customItems.push({ name, price, id: Date.now() });
+      document.getElementById('customItemName').value = '';
+      document.getElementById('customItemPrice').value = '';
+      updateQuoteSummary();
+    }
+
+    function updateQuoteSummary() {
+      const lines = [];
+      let total = 0;
+
+      CATALOG.forEach(item => {
+        if (qtyMap[item.id] > 0) {
+          const subtotal = qtyMap[item.id] * item.price;
+          lines.push({ label: `${item.name} × ${qtyMap[item.id]}`, price: subtotal });
+          total += subtotal;
+        }
+      });
+
+      customItems.forEach(item => {
+        lines.push({ label: item.name, price: item.price, customId: item.id });
+        total += item.price;
+      });
+
+      const box = document.getElementById('quoteSummaryBox');
+      if (lines.length === 0) {
+        box.style.display = 'none';
+        return;
+      }
+
+      box.style.display = 'block';
+      document.getElementById('quoteSummaryLines').innerHTML = lines.map(l => `
+        <div class="quote-line">
+          <span>${l.label}</span>
+          <span style="display:flex;align-items:center;gap:8px;">
+            <span style="color:#333;font-weight:500;">₪${l.price.toLocaleString()}</span>
+            ${l.customId ? `<button class="btn-sm btn-red" onclick="removeCustomItem(${l.customId})">✕</button>` : ''}
+          </span>
+        </div>
+      `).join('');
+      document.getElementById('quoteTotalDisplay').textContent = `₪${total.toLocaleString()}`;
+      document.getElementById('quotePrice').value = total;
+    }
+
+    function removeCustomItem(id) {
+      customItems = customItems.filter(i => i.id !== id);
+      updateQuoteSummary();
+    }
+
+    function buildItemsText() {
+      const lines = [];
+      CATALOG.forEach(item => {
+        if (qtyMap[item.id] > 0) lines.push(`${item.name} × ${qtyMap[item.id]} = ₪${qtyMap[item.id] * item.price}`);
+      });
+      customItems.forEach(item => {
+        lines.push(`${item.name}${item.price > 0 ? ' = ₪' + item.price : ''}`);
+      });
+      return lines.join('\n');
+    }
+
+    // ==================== SAVE QUOTE ====================
     function saveQuote() {
+      const clientName = document.getElementById('clientName').value.trim();
+      const clientPhone = document.getElementById('clientPhone').value.trim();
+      const clientEmail = document.getElementById('clientEmail').value.trim();
+      const eventType = document.getElementById('eventType').value.trim();
+      const eventDate = document.getElementById('eventDate').value;
+      const price = parseFloat(document.getElementById('quotePrice').value) || 0;
+      const notes = document.getElementById('quoteNotes').value.trim();
+      const items = buildItemsText();
+
+      if (!clientName) {
+        showAlert('quoteAlert', '❌ אנא הכנס שם לקוח', 'error');
+        return;
+      }
+
       const quote = {
         id: Date.now(),
-        clientName: document.getElementById('clientName').value,
-        clientPhone: document.getElementById('clientPhone').value,
-        clientEmail: document.getElementById('clientEmail').value,
-        items: document.getElementById('quoteItems').value,
-        price: parseFloat(document.getElementById('quotePrice').value) || 0,
+        clientName, clientPhone, clientEmail,
+        eventType, eventDate, items, price, notes,
         date: new Date().toLocaleDateString('he-IL'),
         type: 'quote'
       };
-      
-      if (!quote.clientName || !quote.items) {
-        showAlert('quoteAlert', 'אנא מלא את כל השדות', 'error');
-        return;
-      }
-      
-      let data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"quotes":[]}');
+
+      let data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"quotes":[],"inventory":[]}');
       data.quotes = data.quotes || [];
-      data.quotes.push(quote);
+      data.quotes.unshift(quote);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      
-      showAlert('quoteAlert', `✅ הצעה לשם ${quote.clientName} נשמרה בהצלחה!`, 'success');
-      document.getElementById('clientName').value = '';
-      document.getElementById('clientPhone').value = '';
-      document.getElementById('clientEmail').value = '';
-      document.getElementById('quoteItems').value = '';
-      document.getElementById('quotePrice').value = '';
+
+      showAlert('quoteAlert', `✅ הצעה לשם ${clientName} נשמרה!`, 'success');
+      resetQuoteForm();
     }
-    
-    function downloadQuote() {
-      showAlert('quoteAlert', '📥 הורדת PDF עדיין בפיתוח (בקרוב)', 'info');
+
+    function resetQuoteForm() {
+      ['clientName','clientPhone','clientEmail','eventType','eventDate','quotePrice','quoteNotes']
+        .forEach(id => { document.getElementById(id).value = ''; });
+      CATALOG.forEach(item => { qtyMap[item.id] = 0; });
+      customItems = [];
+      renderPriceGrid();
+      updateQuoteSummary();
     }
-    
+
+    function sendWhatsApp() {
+      const name = document.getElementById('clientName').value.trim();
+      const phone = document.getElementById('clientPhone').value.trim().replace(/\D/g, '');
+      const price = document.getElementById('quotePrice').value;
+      const eventType = document.getElementById('eventType').value.trim();
+      const eventDate = document.getElementById('eventDate').value;
+      const notes = document.getElementById('quoteNotes').value.trim();
+      const items = buildItemsText();
+
+      if (!name) { showAlert('quoteAlert', '❌ אנא הכנס שם לקוח תחילה', 'error'); return; }
+
+      let msg = `שלום ${name}! 🎈\n\nהצעת מחיר מהושעיה אמן בלונים:\n`;
+      if (eventType) msg += `אירוע: ${eventType}\n`;
+      if (eventDate) msg += `תאריך: ${new Date(eventDate).toLocaleDateString('he-IL')}\n`;
+      if (items) msg += `\n${items}\n`;
+      if (price) msg += `\nסה"כ: ₪${parseFloat(price).toLocaleString()}\n`;
+      if (notes) msg += `\nהערות: ${notes}\n`;
+      msg += `\nלפרטים נוספים: 050-5918734`;
+
+      const encoded = encodeURIComponent(msg);
+      const intlPhone = phone.startsWith('0') ? '972' + phone.slice(1) : phone;
+      const url = intlPhone
+        ? `https://wa.me/${intlPhone}?text=${encoded}`
+        : `https://wa.me/?text=${encoded}`;
+
+      window.open(url, '_blank');
+    }
+
     // ==================== INVENTORY ====================
     function addInventory() {
       const type = document.getElementById('balloonType').value;
       const size = document.getElementById('balloonSize').value;
-      const color = document.getElementById('balloonColor').value;
+      const color = document.getElementById('balloonColor').value.trim();
       const qty = parseInt(document.getElementById('balloonQty').value) || 0;
       const min = parseInt(document.getElementById('balloonMin').value) || 0;
-      
-      if (type === 'בחר סוג בלון' || size === 'בחר גודל' || !color || qty <= 0) {
+
+      if (!type || !size || !color || qty <= 0) {
         alert('אנא מלא את כל השדות');
         return;
       }
-      
-      const item = {
-        id: Date.now(),
-        type, size, color, qty, min,
-        date: new Date().toLocaleDateString('he-IL'),
-        type_record: 'inventory'
-      };
-      
-      let data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"inventory":[]}');
+
+      const item = { id: Date.now(), type, size, color, qty, min, date: new Date().toLocaleDateString('he-IL') };
+      let data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"quotes":[],"inventory":[]}');
       data.inventory = data.inventory || [];
-      data.inventory.push(item);
+
+      // Merge with existing same type/size/color
+      const existing = data.inventory.find(i => i.type === type && i.size === size && i.color === color);
+      if (existing) {
+        existing.qty += qty;
+      } else {
+        data.inventory.push(item);
+      }
+
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      
       renderInventory();
       document.getElementById('balloonQty').value = '';
     }
-    
+
     function renderInventory() {
-      let data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"inventory":[]}');
-      const html = (data.inventory || [])
-        .sort((a,b) => new Date(b.date) - new Date(a.date))
-        .map(item => `
-          <div class="inventory-item">
-            <div>
-              <strong>${item.type} ${item.size}</strong> - ${item.color}
-              <span style="color: #666;">(${item.qty} יח')</span>
-            </div>
-            <div style="text-align: left;">
-              <button onclick="deleteInventory(${item.id})" style="background: #dc3545; padding: 8px 12px; font-size: 12px;">מחק</button>
-            </div>
-          </div>
-        `)
-        .join('');
-      
-      document.getElementById('inventoryList').innerHTML = html || '<p style="color: #999;">אין פריטים במלאי</p>';
+      let data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"quotes":[],"inventory":[]}');
+      const items = data.inventory || [];
+
+      if (items.length === 0) {
+        document.getElementById('inventoryList').innerHTML = '<p style="color:#999;text-align:center;padding:20px;">אין פריטים במלאי</p>';
+        return;
+      }
+
+      document.getElementById('inventoryList').innerHTML = `
+        <table>
+          <thead><tr><th>סוג</th><th>גודל</th><th>צבע</th><th>כמות</th><th>מינ׳</th><th></th></tr></thead>
+          <tbody>
+            ${items.map(item => `
+              <tr style="${item.min > 0 && item.qty <= item.min ? 'background:#fff3cd;' : ''}">
+                <td>${item.type}</td>
+                <td>${item.size}</td>
+                <td>${item.color}</td>
+                <td><strong>${item.qty}</strong></td>
+                <td style="color:#999;">${item.min || '-'}</td>
+                <td><button class="btn-sm btn-red" onclick="deleteInventory(${item.id})">מחק</button></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        <div style="margin-top:10px;text-align:left;">
+          <button onclick="exportInventory()">📊 ייצא CSV</button>
+        </div>
+      `;
     }
-    
+
     function deleteInventory(id) {
-      let data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"inventory":[]}');
-      data.inventory = (data.inventory || []).filter(item => item.id !== id);
+      let data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"quotes":[],"inventory":[]}');
+      data.inventory = (data.inventory || []).filter(i => i.id !== id);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       renderInventory();
     }
-    
+
     function exportInventory() {
       let data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"inventory":[]}');
-      const csvContent = "סוג,גודל,צבע,כמות,מינימום,תאריך\n" +
-        (data.inventory || [])
-          .map(item => `${item.type},${item.size},${item.color},${item.qty},${item.min},${item.date}`)
-          .join('\n');
-      
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `hoshaya-inventory-${new Date().toISOString().split('T')[0]}.csv`;
-      link.click();
+      const csv = "סוג,גודל,צבע,כמות,מינימום\n" +
+        (data.inventory || []).map(i => `${i.type},${i.size},${i.color},${i.qty},${i.min}`).join('\n');
+      const blob = new Blob(["﻿" + csv], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `מלאי-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
     }
-    
+
     // ==================== GROQ KEY ====================
     function saveGroqKey() {
       const key = document.getElementById('groqKeyInput').value.trim();
-      if (!key) return;
+      if (!key || !key.startsWith('gsk_')) {
+        showAlert('chatAlert', '❌ מפתח לא תקין (צריך להתחיל ב-gsk_)', 'error');
+        return;
+      }
       localStorage.setItem('groq_api_key', key);
+      document.getElementById('groqKeyInput').value = '';
       document.getElementById('groqKeySetup').style.display = 'none';
-      showAlert('chatAlert', '✅ מפתח נשמר!', 'success');
+      document.getElementById('groqKeyActive').style.display = 'flex';
+      showAlert('chatAlert', '✅ מפתח Groq נשמר!', 'success');
+    }
+
+    function resetGroqKey() {
+      localStorage.removeItem('groq_api_key');
+      document.getElementById('groqKeyActive').style.display = 'none';
+      document.getElementById('groqKeySetup').style.display = 'block';
     }
 
     function initGroqKey() {
-      if (!localStorage.getItem('groq_api_key')) {
+      if (localStorage.getItem('groq_api_key')) {
+        document.getElementById('groqKeyActive').style.display = 'flex';
+      } else {
         document.getElementById('groqKeySetup').style.display = 'block';
       }
     }
 
     // ==================== CHAT ANALYSIS ====================
     async function analyzeChat() {
-      const chat = document.getElementById('chatInput').value;
-      if (!chat.trim()) {
-        showAlert('chatAlert', 'אנא הדבק שיחה', 'error');
+      const chat = document.getElementById('chatInput').value.trim();
+      if (!chat) {
+        showAlert('chatAlert', '❌ אנא הדבק שיחת וואטסאפ', 'error');
         return;
       }
 
       const groqKey = localStorage.getItem('groq_api_key');
       if (!groqKey) {
         document.getElementById('groqKeySetup').style.display = 'block';
-        showAlert('chatAlert', '❌ אנא הכנס מפתח Groq למעלה', 'error');
+        showAlert('chatAlert', '❌ אנא הכנס מפתח Groq', 'error');
         return;
       }
 
-      showAlert('chatAlert', '🔄 מנתח שיחה...', 'info');
+      showAlert('chatAlert', '🔄 מנתח שיחה עם AI...', 'info');
+
+      const catalogList = CATALOG.map(c => `${c.name} (${c.price}₪ לכל ${c.unit})`).join(', ');
 
       try {
         const res = await fetch(GROQ_URL, {
@@ -405,35 +682,37 @@
           body: JSON.stringify({
             model: 'llama-3.1-8b-instant',
             messages: [{
+              role: 'system',
+              content: `אתה עוזר לעסק עיצוב בלונים בישראל בשם "הושעיה אמן בלונים".
+המחירון הקיים: ${catalogList}.
+תפקידך: לנתח שיחת וואטסאפ ולחלץ מידע להצעת מחיר.
+החזר JSON בלבד, ללא מלל נוסף, ללא markdown.`
+            }, {
               role: 'user',
-              content: `אתה עוזר בעיצוב אירועים בלונים. נתח את השיחה הבאה וחלץ את הפרטים:
-1. שם הלקוח
-2. סוג האירוע
-3. מספר אנשים משוער
-4. תאריך האירוע
-5. אומדן תקציב ראשוני
+              content: `נתח את השיחה הבאה וחזור עם JSON:
+{
+  "clientName": "שם הלקוח (string)",
+  "clientPhone": "טלפון אם מוזכר (string)",
+  "eventType": "סוג האירוע (string)",
+  "eventDate": "תאריך בפורמט YYYY-MM-DD אם מוזכר (string)",
+  "attendees": "מספר משתתפים (number)",
+  "estimatedBudget": "תקציב משוער בשקלים (number)",
+  "items": "פרטי עיצוב מבוקשים (string)",
+  "notes": "הערות חשובות נוספות (string)"
+}
 
 שיחה:
-${chat}
-
-החזר JSON בלבד (ללא markdown, ללא \`\`\`json):
-{
-  "clientName": "...",
-  "eventType": "...",
-  "attendees": 0,
-  "date": "...",
-  "estimatedBudget": 0,
-  "notes": "..."
-}`
+${chat}`
             }],
-            temperature: 0.1
+            temperature: 0.1,
+            max_tokens: 500
           })
         });
 
         const result = await res.json();
 
         if (result.error) {
-          showAlert('chatAlert', `❌ שגיאה: ${result.error.message}`, 'error');
+          showAlert('chatAlert', `❌ שגיאת API: ${result.error.message}`, 'error');
           return;
         }
 
@@ -443,49 +722,119 @@ ${chat}
           return;
         }
 
+        // Extract JSON from response
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (!jsonMatch) {
-          showAlert('chatAlert', `✅ ניתוח הושלם:<br><pre style="background:#f8f9fa;padding:10px;border-radius:6px;overflow-x:auto;">${text}</pre>`, 'success');
+          showAlert('chatAlert', `⚠️ AI לא החזיר JSON תקין:<br><pre style="background:#f8f9fa;padding:10px;border-radius:6px;font-size:12px;overflow-x:auto;">${text}</pre>`, 'error');
           return;
         }
 
-        const data = JSON.parse(jsonMatch[0]);
+        let data;
+        try {
+          data = JSON.parse(jsonMatch[0]);
+        } catch {
+          showAlert('chatAlert', '❌ שגיאה בפענוח JSON מה-AI', 'error');
+          return;
+        }
 
-        // Autofill quote form
+        // Autofill the form
         if (data.clientName) document.getElementById('clientName').value = data.clientName;
-        const lines = [];
-        if (data.eventType) lines.push(`סוג אירוע: ${data.eventType}`);
-        if (data.attendees) lines.push(`מספר אנשים: ${data.attendees}`);
-        if (data.date) lines.push(`תאריך: ${data.date}`);
-        if (data.notes) lines.push(`הערות: ${data.notes}`);
-        if (lines.length) document.getElementById('quoteItems').value = lines.join('\n');
+        if (data.clientPhone) document.getElementById('clientPhone').value = data.clientPhone;
+        if (data.eventType) document.getElementById('eventType').value = data.eventType;
+        if (data.eventDate && /^\d{4}-\d{2}-\d{2}$/.test(data.eventDate)) {
+          document.getElementById('eventDate').value = data.eventDate;
+        }
         if (data.estimatedBudget) document.getElementById('quotePrice').value = data.estimatedBudget;
 
-        showAlert('chatAlert', '✅ הטופס מולא אוטומטית — עבור ל"הצעת מחיר" לבדיקה', 'success');
-        // Switch to quotes tab
-        document.querySelector('[data-tab="quotes"]').click();
-        showAlert('quoteAlert', '✅ פרטים מולאו מהשיחה — בדוק ושמור', 'success');
+        const notesParts = [];
+        if (data.attendees) notesParts.push(`משתתפים: ${data.attendees}`);
+        if (data.items) notesParts.push(data.items);
+        if (data.notes) notesParts.push(data.notes);
+        if (notesParts.length) document.getElementById('quoteNotes').value = notesParts.join('\n');
+
+        showAlert('chatAlert', '✅ הטופס מולא! עובר ל"הצעת מחיר"...', 'success');
+
+        setTimeout(() => {
+          document.querySelector('[data-tab="quotes"]').click();
+          showAlert('quoteAlert', '✅ פרטים מהשיחה מולאו — בדוק, הוסף פריטים ושמור', 'success');
+        }, 800);
 
       } catch (e) {
-        showAlert('chatAlert', `❌ שגיאה: ${e.message}`, 'error');
+        showAlert('chatAlert', `❌ שגיאת רשת: ${e.message}`, 'error');
       }
     }
-    
+
     // ==================== HISTORY ====================
+    function renderHistory() {
+      let data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"quotes":[]}');
+      const quotes = data.quotes || [];
+
+      if (quotes.length === 0) {
+        document.getElementById('historyList').innerHTML = '<p style="color:#999;text-align:center;padding:20px;">אין הצעות מחיר שמורות</p>';
+        return;
+      }
+
+      document.getElementById('historyList').innerHTML = quotes.map(q => `
+        <div class="history-card">
+          <div class="hc-header">
+            <div>
+              <div class="hc-name">${q.clientName}</div>
+              <div class="hc-meta">${q.date}${q.eventType ? ' | ' + q.eventType : ''}${q.eventDate ? ' | ' + new Date(q.eventDate).toLocaleDateString('he-IL') : ''}</div>
+            </div>
+            <div class="hc-price">₪${(q.price || 0).toLocaleString()}</div>
+          </div>
+          ${q.items ? `<div style="font-size:12px;color:#555;white-space:pre-line;margin-top:6px;">${q.items}</div>` : ''}
+          ${q.notes ? `<div style="font-size:12px;color:#888;margin-top:4px;font-style:italic;">${q.notes}</div>` : ''}
+          <div style="margin-top:10px;display:flex;gap:8px;">
+            <button class="btn-sm btn-wa" onclick="resendQuoteWA(${q.id})">📲 WhatsApp</button>
+            <button class="btn-sm btn-red" onclick="deleteQuote(${q.id})">מחק</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function resendQuoteWA(id) {
+      let data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"quotes":[]}');
+      const q = (data.quotes || []).find(q => q.id === id);
+      if (!q) return;
+
+      const phone = (q.clientPhone || '').replace(/\D/g, '');
+      let msg = `שלום ${q.clientName}! 🎈\n\nהצעת מחיר מהושעיה אמן בלונים:\n`;
+      if (q.eventType) msg += `אירוע: ${q.eventType}\n`;
+      if (q.eventDate) msg += `תאריך: ${new Date(q.eventDate).toLocaleDateString('he-IL')}\n`;
+      if (q.items) msg += `\n${q.items}\n`;
+      if (q.price) msg += `\nסה"כ: ₪${q.price.toLocaleString()}\n`;
+      if (q.notes) msg += `\nהערות: ${q.notes}\n`;
+      msg += `\nלפרטים נוספים: 050-5918734`;
+
+      const encoded = encodeURIComponent(msg);
+      const intlPhone = phone.startsWith('0') ? '972' + phone.slice(1) : phone;
+      const url = intlPhone ? `https://wa.me/${intlPhone}?text=${encoded}` : `https://wa.me/?text=${encoded}`;
+      window.open(url, '_blank');
+    }
+
+    function deleteQuote(id) {
+      if (!confirm('למחוק הצעה זו?')) return;
+      let data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"quotes":[]}');
+      data.quotes = (data.quotes || []).filter(q => q.id !== id);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      renderHistory();
+    }
+
     function downloadHistory() {
       const data = localStorage.getItem(STORAGE_KEY) || '{}';
       const blob = new Blob([data], { type: 'application/json' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `hoshaya-backup-${new Date().toISOString().split('T')[0]}.json`;
-      link.click();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `גיבוי-הושעיה-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
     }
-    
+
     function uploadHistory() {
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = '.json';
-      input.onchange = (e) => {
+      input.onchange = e => {
         const file = e.target.files[0];
         const reader = new FileReader();
         reader.onload = () => {
@@ -493,34 +842,34 @@ ${chat}
             JSON.parse(reader.result);
             localStorage.setItem(STORAGE_KEY, reader.result);
             renderInventory();
-            showAlert('quoteAlert', '✅ הנתונים עודכנו בהצלחה', 'success');
-          } catch {
-            alert('קובץ לא תקין');
-          }
+            renderHistory();
+            alert('✅ נתונים שוחזרו בהצלחה');
+          } catch { alert('קובץ לא תקין'); }
         };
         reader.readAsText(file);
       };
       input.click();
     }
-    
+
     function clearHistory() {
-      if (confirm('האם אתה בטוח? פעולה זו לא ניתנת לביטול')) {
+      if (confirm('למחוק את כל הנתונים? (לא ניתן לשחזר)')) {
         localStorage.removeItem(STORAGE_KEY);
         renderInventory();
-        showAlert('quoteAlert', '🗑️ כל הנתונים נמחקו', 'success');
+        renderHistory();
       }
     }
-    
+
     // ==================== HELPERS ====================
     function showAlert(elementId, message, type) {
       const el = document.getElementById(elementId);
       if (!el) return;
       el.innerHTML = `<div class="alert ${type}">${message}</div>`;
     }
-    
+
     // Initialize
+    renderPriceGrid();
     renderInventory();
     initGroqKey();
   </script>
 </body>
-  </html>
+</html>
