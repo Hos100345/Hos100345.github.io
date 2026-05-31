@@ -188,7 +188,10 @@ function buildTestimonials() {
       <div class="stars" aria-label="דירוג 5 כוכבים">★★★★★</div>
       <p class="testimonial-text">"${t.text}"</p>
       <div class="testimonial-footer">
-        <p class="testimonial-name">— ${t.name}</p>
+        <div class="testimonial-author">
+          ${t.photo ? `<img src="${t.photo}" alt="${t.name}" class="testimonial-avatar" loading="lazy">` : ''}
+          <p class="testimonial-name">— ${t.name}</p>
+        </div>
         ${t.screenshot ? `<button class="screenshot-btn" onclick="openLightbox('${t.screenshot}','המלצה מ-${t.name}')">📸 צילום מסך</button>` : ''}
       </div>
     </div>

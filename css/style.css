@@ -730,6 +730,20 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   gap: 0.5rem;
   margin-top: auto;
 }
+.testimonial-author {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+.testimonial-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--blue-light);
+  flex-shrink: 0;
+  background: var(--blue-light);
+}
 .testimonial-name {
   font-weight: 700;
   font-size: 0.9rem;

@@ -293,6 +293,22 @@
       </div>
 
       <div class="fg">
+        <label>🖼️ תמונת פרופיל של הממליץ (אופציונלי — מגוגל דרייב)</label>
+        <input type="text" id="r-photo"
+          placeholder="https://drive.google.com/file/d/..."
+          oninput="rPhotoPreview()">
+      </div>
+
+      <div class="preview" id="r-photo-preview">
+        <img class="preview-img" id="r-photo-img" src="" alt="" style="border-radius:50%;width:70px;height:70px;">
+        <div class="preview-info">
+          <strong>✅ תמונת פרופיל תקינה</strong>
+          <span>תופיע כתמונה עגולה ליד שם הממליץ</span>
+        </div>
+        <div class="preview-err" id="r-photo-err" style="display:none"></div>
+      </div>
+
+      <div class="fg">
         <label>📸 קישור לצילום מסך (אופציונלי — מגוגל דרייב)</label>
         <input type="text" id="r-screenshot"
           placeholder="https://drive.google.com/file/d/..."
@@ -374,16 +390,16 @@ const DEFAULTS = {
     { src:"https://images.cdn-files-a.com/uploads/6457286/2000_62b06d5f9f738.jpg", cat:"workshops",  alt:"סדנת בלונים" }
   ],
   testimonials: [
-    { name:"חנה אור",             text:"הושעיה היה אצלנו בברית. הפך את האירוע להרבה יותר משמח ומיוחד. בעל גישה נהדרת לילדים. זורם וכמובן שמוכשר בעבודתו. ממליצה עליו בגדול!", screenshot:"" },
-    { name:"דוד לוין",             text:"מומלץ ביותר!! מקצוען ותותח", screenshot:"" },
-    { name:"אביאל כהן",           text:"הושעיה היקר היה פשוט מדהים!! איזה בלונים יפים זה פשוט העיף את החתונה באוויר!!! תודה תודה תודה", screenshot:"" },
-    { name:"אריה לייב שפירא",     text:"הושעיה היה מפעיל בלונים בחתונה שלנו, וזה היה מדהים. הגיע עם בלונים מוכנים מראש ועם המכונה להוסיף עוד. חוויה מדהימה, הילדים נהנו המבוגרים נהנו. הכל במקצועיות ורוחב לב, ממליצים בחום", screenshot:"" },
-    { name:"עינב צברי",           text:"הזמנו את הושעיה לעצב את הבת-מצווה. במקצועיות ומיומנות מדהימה המועדון הפך לאולם אירועים יפהפה. חילק כתרים מבלונים מעוצבים, שידרג את האירוע ברמות. ממליצה בחום!", screenshot:"" },
-    { name:"שירה כהן",            text:"תודה רבה! נהנינו מאוד! גם הקטנים וגם הגדולים!", screenshot:"" },
-    { name:"עידן יוסף וניצן ליבן",text:"תודה רבה על ערב בלתי נשכח, הבלונים שדרגו אותו מאוד בצבעם ובייחודם. כשרון מהמם וכולם מהקטנטנים ועד הגדולים נהנו מאוד", screenshot:"" },
-    { name:"משפחת ארביט",         text:"הבלונים שעשית היו מקסימים, כל הכבוד אתה מקצוען", screenshot:"" },
-    { name:"יגל ויסכה שרעבי",     text:"הושעיה המוכשר עשה לנו פשוט שמח בבר מצווה! מלא סבלנות, עשה מלא כובעים ודמויות לפי בקשות. ממליצים בחום!", screenshot:"" },
-    { name:"איתן ויפעת חובב",     text:"ממליצה בחום! שידרג לנו את הבר מצווה. הכל היה מוכן בזמן. מענה מהיר וזמינות. מחכים כבר לאירוע הבא!", screenshot:"" }
+    { name:"חנה אור",             text:"הושעיה היה אצלנו בברית. הפך את האירוע להרבה יותר משמח ומיוחד. בעל גישה נהדרת לילדים. זורם וכמובן שמוכשר בעבודתו. ממליצה עליו בגדול!", photo:"", screenshot:"" },
+    { name:"דוד לוין",             text:"מומלץ ביותר!! מקצוען ותותח", photo:"", screenshot:"" },
+    { name:"אביאל כהן",           text:"הושעיה היקר היה פשוט מדהים!! איזה בלונים יפים זה פשוט העיף את החתונה באוויר!!! תודה תודה תודה", photo:"", screenshot:"" },
+    { name:"אריה לייב שפירא",     text:"הושעיה היה מפעיל בלונים בחתונה שלנו, וזה היה מדהים. הגיע עם בלונים מוכנים מראש ועם המכונה להוסיף עוד. חוויה מדהימה, הילדים נהנו המבוגרים נהנו. הכל במקצועיות ורוחב לב, ממליצים בחום", photo:"", screenshot:"" },
+    { name:"עינב צברי",           text:"הזמנו את הושעיה לעצב את הבת-מצווה. במקצועיות ומיומנות מדהימה המועדון הפך לאולם אירועים יפהפה. חילק כתרים מבלונים מעוצבים, שידרג את האירוע ברמות. ממליצה בחום!", photo:"", screenshot:"" },
+    { name:"שירה כהן",            text:"תודה רבה! נהנינו מאוד! גם הקטנים וגם הגדולים!", photo:"", screenshot:"" },
+    { name:"עידן יוסף וניצן ליבן",text:"תודה רבה על ערב בלתי נשכח, הבלונים שדרגו אותו מאוד בצבעם ובייחודם. כשרון מהמם וכולם מהקטנטנים ועד הגדולים נהנו מאוד", photo:"", screenshot:"" },
+    { name:"משפחת ארביט",         text:"הבלונים שעשית היו מקסימים, כל הכבוד אתה מקצוען", photo:"", screenshot:"" },
+    { name:"יגל ויסכה שרעבי",     text:"הושעיה המוכשר עשה לנו פשוט שמח בבר מצווה! מלא סבלנות, עשה מלא כובעים ודמויות לפי בקשות. ממליצים בחום!", photo:"", screenshot:"" },
+    { name:"איתן ויפעת חובב",     text:"ממליצה בחום! שידרג לנו את הבר מצווה. הכל היה מוכן בזמן. מענה מהיר וזמינות. מחכים כבר לאירוע הבא!", photo:"", screenshot:"" }
   ]
 };
 
@@ -595,17 +611,38 @@ function rScreenshotPreview() {
   t.src = r.url;
 }
 
+function rPhotoPreview() {
+  const raw = document.getElementById('r-photo').value;
+  if (!raw.trim()) { document.getElementById('r-photo-preview').classList.remove('show'); return; }
+  const r = toDirect(raw);
+  if (!r) return;
+  const prev = document.getElementById('r-photo-preview');
+  const img  = document.getElementById('r-photo-img');
+  const err  = document.getElementById('r-photo-err');
+  prev.classList.add('show');
+  img.style.display = 'none';
+  err.style.display = 'none';
+  const t = new Image();
+  t.onload = () => { img.src = r.url; img.style.display = 'block'; };
+  t.onerror = () => { err.style.display = 'block'; err.textContent = '⚠️ לא ניתן לטעון. ודא שהתמונה שותפה לציבור.'; };
+  t.src = r.url;
+}
+
 function rAdd() {
-  const name = document.getElementById('r-name').value.trim();
-  const text = document.getElementById('r-text').value.trim();
-  const ssRaw = document.getElementById('r-screenshot').value.trim();
+  const name   = document.getElementById('r-name').value.trim();
+  const text   = document.getElementById('r-text').value.trim();
+  const phRaw  = document.getElementById('r-photo').value.trim();
+  const ssRaw  = document.getElementById('r-screenshot').value.trim();
   if (!name || !text) { notify('err', 'נא למלא שם וטקסט'); return; }
-  const ss = ssRaw ? (toDirect(ssRaw)?.url || '') : '';
-  D.testimonials.push({ name, text, screenshot: ss });
+  const photo = phRaw ? (toDirect(phRaw)?.url || '') : '';
+  const ss    = ssRaw ? (toDirect(ssRaw)?.url || '') : '';
+  D.testimonials.push({ name, text, photo, screenshot: ss });
   save(); renderReviews();
   document.getElementById('r-name').value = '';
   document.getElementById('r-text').value = '';
+  document.getElementById('r-photo').value = '';
   document.getElementById('r-screenshot').value = '';
+  document.getElementById('r-photo-preview').classList.remove('show');
   document.getElementById('r-ss-preview').classList.remove('show');
   notify('ok', `✅ ההמלצה של "${name}" נוספה`);
 }
@@ -625,7 +662,9 @@ function renderReviews() {
   }
   list.innerHTML = D.testimonials.map((t, i) => `
     <div class="t-item">
-      <div class="t-num">${i + 1}</div>
+      ${t.photo
+        ? `<img src="${t.photo}" alt="${t.name}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid #DBEAFE;">`
+        : `<div class="t-num">${i + 1}</div>`}
       <div class="t-item-body">
         <div class="t-name">${t.name}</div>
         <div class="t-text">${t.text}</div>
@@ -645,7 +684,7 @@ function doExport() {
   ).join(',\n');
 
   const tStr = D.testimonials.map(t =>
-    `  { name: ${JSON.stringify(t.name)}, text: ${JSON.stringify(t.text)}, screenshot: ${JSON.stringify(t.screenshot || '')} }`
+    `  { name: ${JSON.stringify(t.name)}, text: ${JSON.stringify(t.text)}, photo: ${JSON.stringify(t.photo || '')}, screenshot: ${JSON.stringify(t.screenshot || '')} }`
   ).join(',\n');
 
   const code = `// =====================================================
