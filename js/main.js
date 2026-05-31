@@ -310,6 +310,40 @@ document.querySelectorAll('.service-tile[data-gallery-cat]').forEach(tile => {
 });
 
 /* =====================================================
+   WORKS IMAGE STRIP
+   ===================================================== */
+function buildWorksStrip() {
+  const images = SD.gallery || [];
+  if (!images.length) return;
+
+  const trackA = document.getElementById('works-strip-track-a');
+  const trackB = document.getElementById('works-strip-track-b');
+  if (!trackA || !trackB) return;
+
+  // Pick a varied selection: up to 18 images, mixing categories
+  const picked = [];
+  const cats = ['events', 'bar', 'characters', 'workshops'];
+  cats.forEach(cat => {
+    images.filter(i => i.cat === cat).slice(0, 5).forEach(i => picked.push(i));
+  });
+  const strip = picked.slice(0, 20);
+
+  const makeImg = item => {
+    const img = document.createElement('img');
+    img.src = item.src;
+    img.alt = item.alt;
+    img.loading = 'lazy';
+    img.className = 'works-strip-img';
+    img.addEventListener('click', () => openLightbox(img.src, img.alt));
+    return img;
+  };
+
+  strip.forEach(item => trackA.appendChild(makeImg(item)));
+  strip.forEach(item => trackB.appendChild(makeImg(item)));
+}
+buildWorksStrip();
+
+/* =====================================================
    SMOOTH SCROLL
    ===================================================== */
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {

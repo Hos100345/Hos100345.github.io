@@ -1017,6 +1017,219 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 }
 
 /* =====================================================
+   WORKS IMAGE STRIP
+   ===================================================== */
+.works-strip {
+  overflow: hidden;
+  padding-block: 2rem;
+  background: rgba(15, 16, 53, 0.04);
+  border-top: 1px solid rgba(37,99,235,.08);
+  border-bottom: 1px solid rgba(37,99,235,.08);
+  position: relative;
+}
+
+.works-strip::before,
+.works-strip::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100px;
+  z-index: 2;
+  pointer-events: none;
+}
+.works-strip::before {
+  right: 0;
+  background: linear-gradient(to left, var(--bg), transparent);
+}
+.works-strip::after {
+  left: 0;
+  background: linear-gradient(to right, var(--bg), transparent);
+}
+
+.works-strip-inner {
+  display: flex;
+  gap: 1rem;
+  animation: stripScroll 45s linear infinite;
+  width: max-content;
+}
+
+.works-strip-inner:hover {
+  animation-play-state: paused;
+}
+
+.works-strip-track {
+  display: flex;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.works-strip-img {
+  width: 170px;
+  height: 170px;
+  border-radius: var(--radius);
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(0,0,0,.12);
+  transition: transform var(--transition), box-shadow var(--transition);
+  cursor: pointer;
+}
+
+.works-strip-img:hover {
+  transform: scale(1.06) translateY(-4px);
+  box-shadow: 0 10px 32px rgba(37,99,235,.28);
+}
+
+@keyframes stripScroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@media (max-width: 600px) {
+  .works-strip-img { width: 130px; height: 130px; }
+}
+
+/* =====================================================
+   NAV — BALLOON LINK
+   ===================================================== */
+.nav-balloon {
+  color: var(--gold) !important;
+}
+.site-header.scrolled .nav-balloon { color: #D97706 !important; }
+.nav-balloon:hover { background: rgba(245,158,11,.15) !important; }
+
+/* =====================================================
+   BALLOON HERO BUTTON
+   ===================================================== */
+.btn-balloon-hero {
+  background: linear-gradient(135deg, #F59E0B 0%, #EF4444 100%);
+  color: var(--white);
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 0.9rem 1.75rem;
+  box-shadow: 0 4px 20px rgba(245,158,11,.45);
+  animation: balloonPulse 3.5s ease-in-out infinite;
+}
+.btn-balloon-hero:hover, .btn-balloon-hero:focus-visible {
+  filter: brightness(1.1);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(245,158,11,.6);
+  animation: none;
+}
+
+@keyframes balloonPulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(245,158,11,.45); }
+  50%       { box-shadow: 0 4px 30px rgba(245,158,11,.75), 0 0 0 6px rgba(245,158,11,.12); }
+}
+
+/* =====================================================
+   BALLOON SERVICE CTA SECTION
+   ===================================================== */
+.balloon-service-section {
+  background: transparent;
+}
+
+.balloon-cta-card {
+  position: relative;
+  background: linear-gradient(135deg,
+    #0F1035 0%,
+    #1E3A8A 35%,
+    #3730A3 65%,
+    #7C3AED 100%
+  );
+  border-radius: 1.5rem;
+  padding: 3.5rem 2rem;
+  text-align: center;
+  color: var(--white);
+  overflow: hidden;
+  box-shadow: 0 12px 48px rgba(37,99,235,.35);
+}
+
+.balloon-cta-bubbles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+.bcta-b {
+  position: absolute;
+  font-size: 2.5rem;
+  opacity: 0.18;
+  animation: bctaFloat 8s ease-in-out infinite;
+}
+.bcta-b1 { top: 10%; right: 8%;  animation-delay: 0s;    font-size: 3rem; }
+.bcta-b2 { top: 60%; right: 5%;  animation-delay: -2s;   font-size: 2rem; }
+.bcta-b3 { bottom: 15%; left: 8%; animation-delay: -4s;  font-size: 3.5rem; }
+.bcta-b4 { top: 20%; left: 5%;   animation-delay: -1s;   font-size: 2.2rem; }
+.bcta-b5 { bottom: 30%; right: 25%; animation-delay: -6s; font-size: 2rem; }
+
+@keyframes bctaFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%       { transform: translateY(-16px) rotate(8deg); }
+}
+
+.balloon-cta-body {
+  position: relative;
+  z-index: 1;
+  max-width: 580px;
+  margin-inline: auto;
+}
+
+.balloon-cta-badge {
+  display: inline-block;
+  background: rgba(245,158,11,.25);
+  border: 1px solid rgba(245,158,11,.5);
+  color: #FCD34D;
+  border-radius: var(--radius-pill);
+  padding: 0.3rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 1.25rem;
+  text-transform: uppercase;
+}
+
+.balloon-cta-title {
+  font-size: clamp(1.8rem, 4.5vw, 3rem);
+  font-weight: 900;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+  text-shadow: 0 2px 16px rgba(0,0,0,.25);
+}
+
+.balloon-cta-desc {
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
+  color: rgba(255,255,255,.85);
+  margin-bottom: 2.25rem;
+  line-height: 1.7;
+}
+
+.btn-balloon-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: linear-gradient(135deg, #F59E0B, #EF4444);
+  color: var(--white);
+  font-weight: 800;
+  font-size: 1.1rem;
+  padding: 1rem 2.5rem;
+  border-radius: var(--radius-pill);
+  box-shadow: 0 6px 28px rgba(245,158,11,.5);
+  transition: all var(--transition);
+  border: none;
+}
+.btn-balloon-cta:hover, .btn-balloon-cta:focus-visible {
+  filter: brightness(1.1);
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 10px 40px rgba(245,158,11,.65);
+}
+
+@media (min-width: 640px) {
+  .balloon-cta-card { padding: 4.5rem 3rem; }
+}
+
+/* =====================================================
    FOCUS / ACCESSIBILITY
    ===================================================== */
 :focus-visible {
