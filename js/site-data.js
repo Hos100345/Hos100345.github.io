@@ -15,6 +15,7 @@ window.SITE_DATA = {
   // ── גלריה ──────────────────────────────────────────
   // cat: events | workshops | characters | hats
   gallery: [
+    { src: "https://lh3.googleusercontent.com/d/1PsEWzu4sjG4jJSbLhijK8XJI48kKczBf",   cat: "characters", alt: "דמות מבלונים — עבודת אמן" },
     { src: "https://images.cdn-files-a.com/uploads/6457286/2000_62af187dc631b.jpg",  cat: "events",     alt: "עיצוב אירוע בלונים" },
     { src: "https://images.cdn-files-a.com/uploads/6457286/2000_62b06d5e901f6.jpg",  cat: "events",     alt: "בלונים לאירוע" },
     { src: "https://images.cdn-files-a.com/uploads/6457286/2000_62b06d5f03418.jpg",  cat: "characters", alt: "דמות מבלונים" },
