@@ -14,7 +14,9 @@ window.SITE_DATA = {
   },
 
   // ── גלריה ──────────────────────────────────────────
-  // cat: events | workshops | characters | bar
+  // cat (תיקיות ראשיות):  events | workshops | bar | characters | rooms | satisfied
+  // cat (תת-קטגוריות):    arch | numbers | centerpieces | photocorner | garlands |
+  //                        printing | hoop | hats | frame | column | bar-chars | event-chars
   gallery: [
     // ── עיצוב אירועים ──
     { src: "https://lh3.googleusercontent.com/d/17Y2wTaAQDy6B_9I_2BIkfSDvF4oh_XT8", cat: "events",     alt: "עיצוב אירוע בלונים" },

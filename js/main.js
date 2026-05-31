@@ -6,10 +6,24 @@
 const SD = window.SITE_DATA || { video: {}, gallery: [], testimonials: [] };
 
 const catLabels = {
-  events:     'עיצוב אירועים',
-  workshops:  'סדנאות',
-  characters: 'דמויות',
-  bar:        'בר בלונים ודמויות',
+  events:      'עיצוב אירועים',
+  workshops:   'סדנאות',
+  bar:         'בר בלונים ודמויות',
+  characters:  'דמויות',
+  rooms:       'עיצוב חדרים',
+  satisfied:   'לקוחות מרוצים',
+  arch:        'קשת',
+  numbers:     'מספרים',
+  centerpieces:'מרכזי שולחן',
+  photocorner: 'פינת צילום',
+  garlands:    'הגרטלים',
+  printing:    'הדפסה על בלונים',
+  hoop:        'חישוק',
+  hats:        'כתבים / כובעים מבלונים',
+  frame:       'מסגרת',
+  column:      'עמוד',
+  'bar-chars': 'דמויות של בר בלונים',
+  'event-chars':'דמויות של עיצוב אירועים',
 };
 
 /* =====================================================
@@ -183,17 +197,37 @@ galleryGrid.innerHTML = '<p class="gallery-placeholder">בחרו קטגוריה 
 
 /* GALLERY CATEGORY CARDS */
 const catConfig = {
-  events:     { label: 'עיצוב אירועים',  icon: '🎈' },
-  characters: { label: 'כתרים ודמויות', icon: '👑' },
-  bar:        { label: 'בר בלונים',      icon: '🎊' },
-  workshops:  { label: 'סדנאות בלונים',  icon: '🎭' },
+  // ── תיקיות ראשיות ──
+  events:       { label: 'עיצוב אירועים',           icon: '🎈' },
+  workshops:    { label: 'סדנאות',                  icon: '🎪' },
+  bar:          { label: 'בר בלונים ודמויות',        icon: '🎪' },
+  characters:   { label: 'דמויות',                  icon: '🤡' },
+  rooms:        { label: 'עיצוב חדרים',              icon: '🏠' },
+  satisfied:    { label: 'לקוחות מרוצים',            icon: '😊' },
+  // ── תת-קטגוריות ──
+  arch:         { label: 'קשת',                     icon: '🌈' },
+  numbers:      { label: 'מספרים',                  icon: '🔢' },
+  centerpieces: { label: 'מרכזי שולחן',             icon: '🌸' },
+  photocorner:  { label: 'פינת צילום',               icon: '📸' },
+  garlands:     { label: 'הגרטלים',                 icon: '🌿' },
+  printing:     { label: 'הדפסה על בלונים',          icon: '🖨️' },
+  hoop:         { label: 'חישוק',                   icon: '⭕' },
+  hats:         { label: 'כתבים / כובעים מבלונים',  icon: '🎩' },
+  frame:        { label: 'מסגרת',                   icon: '🖼️' },
+  column:       { label: 'עמוד',                    icon: '🏛️' },
+  'bar-chars':  { label: 'דמויות של בר בלונים',     icon: '🎊' },
+  'event-chars':{ label: 'דמויות של עיצוב אירועים', icon: '🎭' },
 };
 
 function buildCategoryCards() {
   const cards = document.getElementById('gallery-cat-cards');
   if (!cards) return;
   const images = SD.gallery || [];
-  const order = ['events', 'bar', 'characters', 'workshops'];
+  const order = [
+    'events','workshops','bar','characters','rooms','satisfied',
+    'arch','numbers','centerpieces','photocorner','garlands',
+    'printing','hoop','hats','frame','column','bar-chars','event-chars'
+  ];
 
   cards.innerHTML = order.map(cat => {
     const catImgs = images.filter(i => i.cat === cat);
