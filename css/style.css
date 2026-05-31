@@ -771,6 +771,20 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   flex-shrink: 0;
   background: var(--blue-light);
 }
+.testimonial-avatar-initials {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--white);
+  flex-shrink: 0;
+  letter-spacing: -0.02em;
+  box-shadow: 0 2px 8px rgba(0,0,0,.15);
+}
 .testimonial-name {
   font-weight: 700;
   font-size: 0.9rem;
@@ -1228,6 +1242,135 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 @media (min-width: 640px) {
   .balloon-cta-card { padding: 4.5rem 3rem; }
 }
+
+/* =====================================================
+   GALLERY CATEGORY CARDS
+   ===================================================== */
+.gallery-cat-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+@media (min-width: 640px) {
+  .gallery-cat-cards { grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
+}
+@media (min-width: 900px) {
+  .gallery-cat-cards { grid-template-columns: repeat(4, 1fr); }
+}
+
+.gcat-card {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  border-radius: var(--radius);
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  border: none;
+  transition: transform var(--transition), box-shadow var(--transition);
+  background: var(--blue-light);
+}
+.gcat-card:hover, .gcat-card:focus-visible {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: var(--shadow-lg);
+  outline: none;
+}
+.gcat-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s var(--transition);
+}
+.gcat-card:hover .gcat-card-img,
+.gcat-card:focus-visible .gcat-card-img {
+  transform: scale(1.08);
+}
+.gcat-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(15,16,53,.88) 0%,
+    rgba(15,16,53,.35) 48%,
+    transparent 75%
+  );
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 1.25rem;
+  gap: 0.25rem;
+}
+.gcat-card-icon {
+  font-size: 1.6rem;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,.3));
+}
+.gcat-card-name {
+  color: var(--white);
+  font-weight: 800;
+  font-size: clamp(0.95rem, 2vw, 1.15rem);
+  text-shadow: 0 1px 6px rgba(0,0,0,.4);
+}
+.gcat-card-count {
+  color: rgba(255,255,255,.75);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+.gcat-card-cta {
+  position: absolute;
+  top: 0.9rem;
+  left: 0.9rem;
+  background: rgba(37,99,235,.85);
+  color: var(--white);
+  border-radius: var(--radius-pill);
+  padding: 0.28rem 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: all var(--transition);
+  backdrop-filter: blur(4px);
+  font-family: inherit;
+}
+.gcat-card:hover .gcat-card-cta,
+.gcat-card:focus-visible .gcat-card-cta {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Browse nav (back button + filters row) */
+.gallery-browse-nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.gallery-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.2rem;
+  background: var(--white);
+  border: 2px solid var(--blue-light);
+  border-radius: var(--radius-pill);
+  color: var(--blue);
+  font-weight: 700;
+  font-size: 0.88rem;
+  transition: all var(--transition);
+  cursor: pointer;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+.gallery-back-btn:hover, .gallery-back-btn:focus-visible {
+  background: var(--blue);
+  color: var(--white);
+  border-color: var(--blue);
+  outline: none;
+}
+.gallery-back-btn svg { transform: scaleX(-1); }
 
 /* =====================================================
    FOCUS / ACCESSIBILITY

@@ -181,21 +181,79 @@ function loadGalleryPage() {
 // Gallery starts closed — show prompt
 galleryGrid.innerHTML = '<p class="gallery-placeholder">בחרו קטגוריה לצפייה בתמונות ↑</p>';
 
-document.querySelectorAll('.gfilter').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.gfilter').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    galCat  = btn.dataset.cat;
-    galPage = 0;
-    galleryGrid.innerHTML = '';
-    const moreBtn = document.getElementById('gallery-more-btn');
-    if (moreBtn) moreBtn.remove();
-    if (!(SD.gallery || []).length) {
-      galleryGrid.innerHTML = '<p style="text-align:center;color:#6B7280;padding:2rem;">הגלריה ריקה — הוסף תמונות דרך admin.html</p>';
-      return;
-    }
-    loadGalleryPage();
+/* GALLERY CATEGORY CARDS */
+const catConfig = {
+  events:     { label: 'עיצוב אירועים',  icon: '🎈' },
+  characters: { label: 'כתרים ודמויות', icon: '👑' },
+  bar:        { label: 'בר בלונים',      icon: '🎊' },
+  workshops:  { label: 'סדנאות בלונים',  icon: '🎭' },
+};
+
+function buildCategoryCards() {
+  const cards = document.getElementById('gallery-cat-cards');
+  if (!cards) return;
+  const images = SD.gallery || [];
+  const order = ['events', 'characters', 'bar', 'workshops'];
+
+  cards.innerHTML = order.map(cat => {
+    const catImgs = images.filter(i => i.cat === cat);
+    if (!catImgs.length) return '';
+    const thumb = catImgs[Math.floor(Math.random() * Math.min(catImgs.length, 8))];
+    const cfg = catConfig[cat] || { label: cat, icon: '📷' };
+    return `
+      <button class="gcat-card" data-cat="${cat}" tabindex="0">
+        <img src="${thumb.src}" alt="${cfg.label}" class="gcat-card-img" loading="lazy">
+        <div class="gcat-card-overlay">
+          <span class="gcat-card-cta">צפו עכשיו</span>
+          <span class="gcat-card-icon">${cfg.icon}</span>
+          <span class="gcat-card-name">${cfg.label}</span>
+          <span class="gcat-card-count">${catImgs.length} תמונות</span>
+        </div>
+      </button>`;
+  }).join('');
+
+  cards.querySelectorAll('.gcat-card').forEach(card => {
+    card.addEventListener('click', () => openGalleryBrowse(card.dataset.cat));
+    card.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openGalleryBrowse(card.dataset.cat); }
+    });
   });
+}
+
+function openGalleryBrowse(cat) {
+  document.getElementById('gallery-cat-cards').hidden = true;
+  const browse = document.getElementById('gallery-browse');
+  browse.hidden = false;
+  setGalleryFilter(cat);
+  document.getElementById('gallery-sub').textContent = catConfig[cat]?.label || 'גלריה';
+}
+
+function closeGalleryBrowse() {
+  document.getElementById('gallery-cat-cards').hidden = false;
+  document.getElementById('gallery-browse').hidden = true;
+  document.getElementById('gallery-sub').textContent = 'בחרו קטגוריה לצפייה';
+}
+
+function setGalleryFilter(cat) {
+  document.querySelectorAll('.gfilter').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
+  galCat  = cat;
+  galPage = 0;
+  galleryGrid.innerHTML = '';
+  const moreBtn = document.getElementById('gallery-more-btn');
+  if (moreBtn) moreBtn.remove();
+  if (!(SD.gallery || []).length) {
+    galleryGrid.innerHTML = '<p style="text-align:center;color:#6B7280;padding:2rem;">הגלריה ריקה — הוסף תמונות דרך admin.html</p>';
+    return;
+  }
+  loadGalleryPage();
+}
+
+buildCategoryCards();
+
+document.getElementById('gallery-back-btn')?.addEventListener('click', closeGalleryBrowse);
+
+document.querySelectorAll('.gfilter').forEach(btn => {
+  btn.addEventListener('click', () => setGalleryFilter(btn.dataset.cat));
 });
 
 /* =====================================================
@@ -219,21 +277,35 @@ function totalSlides() {
   return Math.ceil((SD.testimonials || []).length / cardsPerView);
 }
 
+const avatarColors = ['#2563EB','#7C3AED','#0891B2','#059669','#D97706','#DC2626','#DB2777','#4338CA'];
+function avatarColor(name) {
+  let h = 0;
+  for (const c of name) h = (h * 31 + c.charCodeAt(0)) & 0xFFFFFF;
+  return avatarColors[h % avatarColors.length];
+}
+function initials(name) {
+  return name.trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('');
+}
+
 function buildTestimonials() {
   const list = SD.testimonials || [];
-  track.innerHTML = list.map(t => `
+  track.innerHTML = list.map(t => {
+    const avatar = t.photo
+      ? `<img src="${t.photo}" alt="${t.name}" class="testimonial-avatar" loading="lazy">`
+      : `<span class="testimonial-avatar-initials" style="background:${avatarColor(t.name)}" aria-hidden="true">${initials(t.name)}</span>`;
+    return `
     <div class="testimonial-card" role="article">
       <div class="stars" aria-label="דירוג 5 כוכבים">★★★★★</div>
       <p class="testimonial-text">"${t.text}"</p>
       <div class="testimonial-footer">
         <div class="testimonial-author">
-          ${t.photo ? `<img src="${t.photo}" alt="${t.name}" class="testimonial-avatar" loading="lazy">` : ''}
+          ${avatar}
           <p class="testimonial-name">— ${t.name}</p>
         </div>
         ${t.screenshot ? `<button class="screenshot-btn" onclick="openLightbox('${t.screenshot}','המלצה מ-${t.name}')">📸 צילום מסך</button>` : ''}
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 function buildDots() {
@@ -297,10 +369,7 @@ document.querySelectorAll('.service-tile[data-gallery-cat]').forEach(tile => {
   tile.addEventListener('click', () => {
     const cat = tile.dataset.galleryCat;
     document.getElementById('gallery').scrollIntoView({ behavior: 'smooth' });
-    setTimeout(() => {
-      const btn = document.querySelector(`.gfilter[data-cat="${cat}"]`);
-      if (btn) btn.click();
-    }, 600);
+    setTimeout(() => openGalleryBrowse(cat), 600);
   });
   tile.addEventListener('keydown', e => {
     if (e.key === 'Enter' || e.key === ' ') tile.click();
