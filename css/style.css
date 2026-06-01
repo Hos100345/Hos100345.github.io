@@ -1095,16 +1095,20 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .works-strip-inner {
   display: flex;
   gap: 1rem;
-  justify-content: center;
-  padding-inline: 1rem;
-  transition: opacity 0.4s ease;
+  animation: stripScroll 40s linear infinite;
+  width: max-content;
 }
-.works-strip-inner.fading { opacity: 0; }
+.works-strip-inner:hover { animation-play-state: paused; }
+
+.works-strip-track {
+  display: flex;
+  gap: 1rem;
+  flex-shrink: 0;
+}
 
 .works-strip-img {
-  width: calc((100% - 6rem) / 6);
-  min-width: 110px;
-  aspect-ratio: 1;
+  width: 160px;
+  height: 160px;
   border-radius: var(--radius);
   object-fit: cover;
   flex-shrink: 0;
@@ -1117,8 +1121,13 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   box-shadow: 0 10px 32px rgba(37,99,235,.28);
 }
 
+@keyframes stripScroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
 @media (max-width: 600px) {
-  .works-strip-img { min-width: 80px; }
+  .works-strip-img { width: 120px; height: 120px; }
 }
 
 /* =====================================================
