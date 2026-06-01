@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>מחולל משחק דובל | Dobble Card Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <style>
+    :root {
+      --blue:        #2563EB;
+      --blue-dark:   #1D4ED8;
+      --blue-light:  #DBEAFE;
+      --indigo:      #4338CA;
+      --purple:      #7C3AED;
+      --purple-dark: #5B21B6;
+      --purple-light:#EDE9FE;
+      --gold:        #F59E0B;
+      --gold-light:  #FEF3C7;
+      --green:       #059669;
+      --red:         #DC2626;
+      --bg:          #FAFAF8;
+      --white:       #FFFFFF;
+      --text:        #0F172A;
+      --muted:       #6B7280;
+      --border:      #E5E7EB;
+      --radius:      1rem;
+      --radius-sm:   0.5rem;
+      --shadow:      0 4px 24px rgba(0,0,0,.08);
+      --shadow-lg:   0 8px 40px rgba(0,0,0,.14);
+      --transition:  0.3s cubic-bezier(.4,0,.2,1);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Heebo', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      direction: rtl;
+    }
+
+    /* ── HEADER ── */
+    .app-header {
+      background: linear-gradient(135deg, var(--indigo) 0%, var(--purple) 100%);
+      color: white;
+      padding: 1.25rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      box-shadow: var(--shadow-lg);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .back-btn {
+      color: rgba(255,255,255,.85);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: color var(--transition);
+      flex-shrink: 0;
+    }
+    .back-btn:hover { color: white; }
+    .header-title { flex: 1; }
+    .header-title h1 { font-size: 1.55rem; font-weight: 900; line-height: 1.2; }
+    .header-subtitle { font-size: 0.82rem; opacity: 0.75; margin-top: 0.15rem; }
+
+    /* ── LAYOUT ── */
+    #app { max-width: 1080px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+
+    .step { display: none; }
+    .step.active { display: block; animation: fadeIn 0.35s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+    .card-box {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    /* ── SECTION TITLES ── */
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--indigo);
+      margin-bottom: 0.4rem;
+    }
+    .section-sub {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+
+    /* ── UPLOAD ZONE ── */
+    .upload-zone {
+      border: 2.5px dashed var(--indigo);
+      border-radius: var(--radius);
+      padding: 3rem 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all var(--transition);
+      background: var(--purple-light);
+      user-select: none;
+    }
+    .upload-zone:hover,
+    .upload-zone.drag-over {
+      background: var(--blue-light);
+      border-color: var(--blue);
+      transform: scale(1.015);
+      box-shadow: var(--shadow);
+    }
+    .upload-icon { font-size: 3.5rem; margin-bottom: 0.75rem; line-height: 1; }
+    .upload-zone h2 { font-size: 1.35rem; font-weight: 800; color: var(--indigo); margin-bottom: 0.4rem; }
+    .upload-zone p  { color: var(--muted); font-size: 0.9rem; }
+    .upload-hint { margin-top: 0.5rem; font-size: 0.78rem; opacity: 0.7; }
+
+    /* ── INFO TABLE ── */
+    .info-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+    .info-table th,
+    .info-table td {
+      padding: 0.6rem 1rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .info-table th {
+      background: var(--blue-light);
+      color: var(--indigo);
+      font-weight: 700;
+    }
+    .info-table tr.highlight td {
+      background: #fefce8;
+      font-weight: 700;
+      color: #92400e;
+    }
+    .info-table tbody tr:last-child td { border-bottom: none; }
+
+    /* ── VALIDATION MSG ── */
+    .msg {
+      padding: 1rem 1.25rem;
+      border-radius: var(--radius-sm);
+      margin: 1rem 0;
+      font-size: 0.92rem;
+      line-height: 1.65;
+    }
+    .msg.ok    { background: #d1fae5; color: #065f46; border-right: 4px solid #10b981; }
+    .msg.warn  { background: var(--gold-light); color: #92400e; border-right: 4px solid var(--gold); }
+    .msg.error { background: #fee2e2; color: #991b1b; border-right: 4px solid var(--red); }
+
+    /* ── THUMBNAILS ── */
+    .thumb-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    .thumb-item {
+      aspect-ratio: 1;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      border: 2px solid var(--border);
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .thumb-item img { width: 100%; height: 100%; object-fit: contain; }
+    .thumb-more {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.7rem 1.6rem;
+      border-radius: 100px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      font-family: 'Heebo', sans-serif;
+      cursor: pointer;
+      border: none;
+      transition: all var(--transition);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+    .btn-primary { background: linear-gradient(135deg, var(--blue), var(--indigo)); color: white; }
+    .btn-primary:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(67,56,202,.35); }
+    .btn-success { background: linear-gradient(135deg, #059669, #10b981); color: white; }
+    .btn-success:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16,185,129,.35); }
+    .btn-gold { background: linear-gradient(135deg, #d97706, var(--gold)); color: white; }
+    .btn-gold:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(245,158,11,.35); }
+    .btn-outline {
+      background: transparent;
+      border: 2px solid var(--indigo);
+      color: var(--indigo);
+    }
+    .btn-outline:not(:disabled):hover { background: var(--indigo); color: white; }
+    .btn-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1.5rem; align-items: center; }
+
+    /* ── PROGRESS ── */
+    .progress-wrap { margin: 1.25rem 0; }
+    .progress-label { font-size: 0.85rem; color: var(--muted); margin-bottom: 0.4rem; }
+    .progress-bar-bg { background: var(--border); border-radius: 100px; height: 8px; overflow: hidden; }
+    .progress-bar    { height: 100%; background: linear-gradient(90deg, var(--blue), var(--purple)); border-radius: 100px; transition: width 0.25s ease; width: 0%; }
+
+    /* ── STATS ── */
+    .stats-row { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    .stat-chip {
+      background: var(--blue-light);
+      color: var(--indigo);
+      padding: 0.35rem 0.9rem;
+      border-radius: 100px;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    /* ── TEST MODE ── */
+    .test-banner {
+      background: linear-gradient(135deg, var(--blue-light), var(--purple-light));
+      border: 1.5px solid var(--indigo);
+      border-radius: var(--radius-sm);
+      padding: 0.85rem 1.1rem;
+      font-size: 0.88rem;
+      color: var(--indigo);
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    /* ── MATCH RESULT ── */
+    .match-result {
+      display: none;
+      background: var(--gold-light);
+      border: 2px solid var(--gold);
+      border-radius: var(--radius);
+      padding: 1rem 1.5rem;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    .match-result.visible { display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; justify-content: center; }
+    .match-text { font-weight: 700; color: #92400e; font-size: 0.95rem; }
+    #match-canvas { border-radius: 50%; box-shadow: var(--shadow); flex-shrink: 0; }
+
+    /* ── CARDS GRID ── */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+    .card-wrap {
+      cursor: pointer;
+      border-radius: 50%;
+      aspect-ratio: 1;
+      border: 3px solid transparent;
+      transition: all var(--transition);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+    .card-wrap canvas { width: 100%; height: 100%; display: block; }
+    .card-wrap:hover { transform: scale(1.06); box-shadow: var(--shadow-lg); }
+    .card-wrap.sel-1 { border-color: var(--blue);   box-shadow: 0 0 0 5px rgba(37,99,235,.25); }
+    .card-wrap.sel-2 { border-color: var(--purple); box-shadow: 0 0 0 5px rgba(124,58,237,.25); }
+
+    /* ── SPINNER ── */
+    .spinner {
+      display: inline-block;
+      width: 17px; height: 17px;
+      border: 2.5px solid rgba(255,255,255,.35);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.65s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      .app-header { flex-wrap: wrap; gap: 0.5rem; padding: 1rem; }
+      #app { padding: 1rem 0.75rem 3rem; }
+      .card-box { padding: 1.25rem; }
+      .cards-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+      .upload-zone { padding: 2rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     HEADER
+══════════════════════════════════════════════ -->
+<header class="app-header">
+  <a href="index.html" class="back-btn">→ חזרה לאתר</a>
+  <div class="header-title">
+    <h1>🎯 מחולל משחק דובל</h1>
+    <div class="header-subtitle">Dobble / Spot It! Card Generator · מבוסס על מישור השלכתי סופי (Finite Projective Plane)</div>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════════
+     APP
+══════════════════════════════════════════════ -->
+<main id="app">
+
+  <!-- ▸ STEP 1: UPLOAD -->
+  <section id="step-upload" class="step active">
+    <div class="card-box">
+      <h2 class="section-title">שלב 1 — העלאת סמלים</h2>
+      <p class="section-sub">העלה/י תמונות של הסמלים שיופיעו על הקלפים. מומלץ PNG/SVG עם רקע שקוף.</p>
+
+      <div class="upload-zone" id="upload-zone">
+        <div class="upload-icon">🖼️</div>
+        <h2>גרור/י תמונות לכאן</h2>
+        <p>או לחץ/י לבחירת קבצים</p>
+        <p class="upload-hint">PNG · JPG · SVG · WebP · ניתן לבחור מספר קבצים בבת-אחת</p>
+        <input type="file" id="file-input" multiple accept="image/*" style="display:none">
+      </div>
+    </div>
+
+    <div class="card-box">
+      <h2 class="section-title">כמה תמונות להעלות?</h2>
+      <p class="section-sub">בחר/י גודל משחק לפי הטבלה. כל קלף יכיל מספר קבוע של סמלים, ובכל זוג קלפים יהיה <strong>בדיוק סמל אחד משותף</strong>.</p>
+      <table class="info-table">
+        <thead>
+          <tr>
+            <th>תמונות נדרשות</th>
+            <th>סמלים לקלף</th>
+            <th>מספר קלפים</th>
+            <th>מתאים ל…</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>7</td><td>3</td><td>7</td><td>ילדים קטנים</td></tr>
+          <tr><td>13</td><td>4</td><td>13</td><td>ילדים 6+</td></tr>
+          <tr><td>21</td><td>5</td><td>21</td><td>משפחה</td></tr>
+          <tr><td>31</td><td>6</td><td>31</td><td>בינוני–קשה</td></tr>
+          <tr class="highlight"><td>57</td><td>8</td><td>57</td><td>⭐ דובל סטנדרטי</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ▸ STEP 2: VALIDATE -->
+  <section id="step-validate" class="step">
+    <div class="card-box">
+      <h2 class="section-title">שלב 2 — אימות קונפיגורציה</h2>
+
+      <div id="validation-msg" class="msg ok"></div>
+      <div class="thumb-grid" id="thumb-grid"></div>
+
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="goToStep('step-upload')">← חזרה להעלאה</button>
+        <button class="btn btn-primary" id="btn-generate" disabled>🎲 צור קלפים</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ▸ STEP 3: PREVIEW -->
+  <section id="step-preview" class="step">
+    <div class="card-box">
+      <h2 class="section-title">שלב 3 — תצוגה מקדימה וייצוא</h2>
+
+      <!-- Progress -->
+      <div id="gen-progress">
+        <div class="progress-label" id="progress-label">טוען תמונות…</div>
+        <div class="progress-bar-bg"><div class="progress-bar" id="progress-bar"></div></div>
+      </div>
+
+      <!-- Content (shown after generation) -->
+      <div id="preview-content" style="display:none">
+        <div class="stats-row" id="stats-row"></div>
+
+        <div class="test-banner">
+          🔍 <strong>מצב בדיקה:</strong> לחץ/י על שני קלפים שונים כדי לאתר את הסמל המשותף
+        </div>
+
+        <div class="match-result" id="match-result">
+          <canvas id="match-canvas" width="100" height="100"></canvas>
+          <div class="match-text" id="match-text"></div>
+        </div>
+
+        <div class="cards-grid" id="cards-grid"></div>
+
+        <div class="btn-row" style="margin-top:2rem">
+          <button class="btn btn-success" id="btn-export-pdf">📄 ייצוא PDF (A4)</button>
+          <button class="btn btn-gold"    id="btn-export-zip">🗜️ ייצוא PNG (ZIP)</button>
+          <button class="btn btn-outline" id="btn-restart">🔄 התחל מחדש</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ══════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+// ────────────────────────────────────────────────
+// CONSTANTS
+// ────────────────────────────────────────────────
+const VALID_ORDERS = [
+  { q: 2, total:  7, symbolsPerCard: 3 },
+  { q: 3, total: 13, symbolsPerCard: 4 },
+  { q: 4, total: 21, symbolsPerCard: 5 },
+  { q: 5, total: 31, symbolsPerCard: 6 },
+  { q: 7, total: 57, symbolsPerCard: 8 },
+];
+
+const CARD_SIZE = 500; // canvas pixels
+
+// ────────────────────────────────────────────────
+// GF(4) ARITHMETIC  (irreducible poly x²+x+1 over GF(2))
+// ────────────────────────────────────────────────
+function gf4Add(a, b) { return a ^ b; }
+function gf4Mul(a, b) {
+  if (a === 0 || b === 0) return 0;
+  if (a === 1) return b;
+  if (b === 1) return a;
+  const a1 = (a >> 1) & 1, a0 = a & 1;
+  const b1 = (b >> 1) & 1, b0 = b & 1;
+  const r1 = ((a1 & b1) ^ (a1 & b0) ^ (a0 & b1)) & 1;
+  const r0 = ((a1 & b1) ^ (a0 & b0)) & 1;
+  return (r1 << 1) | r0;
+}
+
+function gfOps(q) {
+  if (q === 4) return { add: gf4Add, mul: gf4Mul };
+  return { add: (a, b) => (a + b) % q, mul: (a, b) => (a * b) % q };
+}
+
+// ────────────────────────────────────────────────
+// MATH ENGINE
+// ────────────────────────────────────────────────
+function findBestOrder(n) {
+  let best = null;
+  for (const o of VALID_ORDERS) if (o.total <= n) best = o;
+  return best;
+}
+function findNextOrder(n) {
+  for (const o of VALID_ORDERS) if (o.total > n) return o;
+  return null;
+}
+
+function generateDeck(q) {
+  const { add, mul } = gfOps(q);
+  const deck = [];
+
+  // Card 0: anchor / "line at infinity"
+  deck.push(Array.from({ length: q + 1 }, (_, i) => i));
+
+  // Slope cards: q×q
+  for (let s = 0; s < q; s++) {
+    for (let i = 0; i < q; i++) {
+      const card = [s + 1];
+      for (let x = 0; x < q; x++) {
+        card.push(q + 1 + x * q + add(mul(s, x), i));
+      }
+      deck.push(card);
+    }
+  }
+
+  // Vertical cards: q
+  for (let v = 0; v < q; v++) {
+    const card = [0];
+    for (let y = 0; y < q; y++) card.push(q + 1 + v * q + y);
+    deck.push(card);
+  }
+
+  return deck;
+}
+
+// ────────────────────────────────────────────────
+// SEEDED DETERMINISTIC RANDOM
+// ────────────────────────────────────────────────
+function seededRand(seed) {
+  seed = Math.imul(seed ^ (seed >>> 16), 0x45d9f3b);
+  seed = Math.imul(seed ^ (seed >>> 16), 0x45d9f3b);
+  seed = seed ^ (seed >>> 16);
+  return (seed >>> 0) / 0x100000000;
+}
+
+// ────────────────────────────────────────────────
+// LAYOUT GENERATOR  (shuffle + transforms, deterministic)
+// ────────────────────────────────────────────────
+function buildLayouts(deck) {
+  return deck.map((symbols, ci) => {
+    const shuffled = [...symbols];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(seededRand(ci * 1000 + i) * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    const transforms = shuffled.map((_, si) => ({
+      scale:    0.82 + seededRand(ci * 500 + si) * 0.36,
+      rotation: seededRand(ci * 300 + si + 17) * Math.PI * 2,
+    }));
+    return { symbols: shuffled, transforms };
+  });
+}
+
+// ────────────────────────────────────────────────
+// SYMBOL POSITION TEMPLATES
+// r = card radius in canvas pixels
+// Returns array of { x, y, halfSize }
+// ────────────────────────────────────────────────
+function symbolPositions(count, cx, cy, r) {
+  const pts = [];
+  const push = (x, y, hs) => pts.push({ x, y, halfSize: hs });
+
+  if (count === 3) {
+    const rr = r * 0.56, hs = r * 0.34;
+    for (let i = 0; i < 3; i++) {
+      const a = (i * 2 * Math.PI / 3) - Math.PI / 2;
+      push(cx + rr * Math.cos(a), cy + rr * Math.sin(a), hs);
+    }
+  } else if (count === 4) {
+    push(cx, cy, r * 0.30);
+    const rr = r * 0.60, hs = r * 0.28;
+    for (let i = 0; i < 3; i++) {
+      const a = (i * 2 * Math.PI / 3) - Math.PI / 2;
+      push(cx + rr * Math.cos(a), cy + rr * Math.sin(a), hs);
+    }
+  } else if (count === 5) {
+    push(cx, cy, r * 0.27);
+    const rr = r * 0.60, hs = r * 0.25;
+    for (let i = 0; i < 4; i++) {
+      const a = (i * 2 * Math.PI / 4) - Math.PI / 4;
+      push(cx + rr * Math.cos(a), cy + rr * Math.sin(a), hs);
+    }
+  } else if (count === 6) {
+    push(cx, cy, r * 0.24);
+    const rr = r * 0.60, hs = r * 0.23;
+    for (let i = 0; i < 5; i++) {
+      const a = (i * 2 * Math.PI / 5) - Math.PI / 2;
+      push(cx + rr * Math.cos(a), cy + rr * Math.sin(a), hs);
+    }
+  } else {
+    // 8 symbols: center + inner 3 + outer 4
+    push(cx, cy, r * 0.20);
+    const ri = r * 0.38, hsi = r * 0.19;
+    for (let i = 0; i < 3; i++) {
+      const a = (i * 2 * Math.PI / 3);
+      push(cx + ri * Math.cos(a), cy + ri * Math.sin(a), hsi);
+    }
+    const ro = r * 0.72, hso = r * 0.18;
+    for (let i = 0; i < 4; i++) {
+      const a = (i * 2 * Math.PI / 4) - Math.PI / 4;
+      push(cx + ro * Math.cos(a), cy + ro * Math.sin(a), hso);
+    }
+  }
+  return pts;
+}
+
+// ────────────────────────────────────────────────
+// CARD RENDERER
+// ────────────────────────────────────────────────
+function drawCard(canvas, layout, imgEls, highlightIdx = -1) {
+  const ctx  = canvas.getContext('2d');
+  const size = canvas.width;
+  const cx   = size / 2, cy = size / 2;
+  const r    = size / 2 - 7;
+
+  ctx.clearRect(0, 0, size, size);
+
+  // Clip to circle
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.clip();
+  ctx.fillStyle = '#FFFEF5';
+  ctx.fillRect(0, 0, size, size);
+  ctx.restore();
+
+  // Outer border
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.strokeStyle = '#4338CA';
+  ctx.lineWidth = size * 0.022;
+  ctx.stroke();
+
+  // Subtle inner ring
+  ctx.beginPath();
+  ctx.arc(cx, cy, r - size * 0.016, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(67,56,202,0.10)';
+  ctx.lineWidth = size * 0.007;
+  ctx.stroke();
+
+  const positions = symbolPositions(layout.symbols.length, cx, cy, r);
+
+  for (let i = 0; i < layout.symbols.length; i++) {
+    const symIdx = layout.symbols[i];
+    const pos    = positions[i];
+    const t      = layout.transforms[i];
+    const img    = imgEls[symIdx];
+    if (!img) continue;
+
+    const isHit  = symIdx === highlightIdx;
+    const ds     = pos.halfSize * t.scale * 2;
+
+    ctx.save();
+    ctx.translate(pos.x, pos.y);
+    ctx.rotate(t.rotation);
+
+    if (isHit) {
+      ctx.shadowColor = '#F59E0B';
+      ctx.shadowBlur  = size * 0.07;
+      ctx.beginPath();
+      ctx.arc(0, 0, pos.halfSize * t.scale * 1.3, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(253,224,71,0.30)';
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+
+    ctx.drawImage(img, -ds / 2, -ds / 2, ds, ds);
+    ctx.restore();
+  }
+}
+
+// ────────────────────────────────────────────────
+// STATE
+// ────────────────────────────────────────────────
+let uploadedImages = [];
+let currentOrder   = null;
+let deck           = [];
+let deckLayouts    = [];
+let cardCanvases   = [];
+let imageElements  = [];
+let testSelected   = [];
+
+// ────────────────────────────────────────────────
+// NAVIGATION
+// ────────────────────────────────────────────────
+function goToStep(id) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function resetAll() {
+  uploadedImages.forEach(im => URL.revokeObjectURL(im.url));
+  uploadedImages = []; currentOrder = null; deck = []; deckLayouts = [];
+  cardCanvases = []; imageElements = []; testSelected = [];
+  document.getElementById('cards-grid').innerHTML = '';
+  document.getElementById('file-input').value    = '';
+  document.getElementById('match-result').classList.remove('visible');
+  document.getElementById('preview-content').style.display = 'none';
+  document.getElementById('gen-progress').style.display    = 'block';
+  goToStep('step-upload');
+}
+
+document.getElementById('btn-restart').addEventListener('click', resetAll);
+
+// ────────────────────────────────────────────────
+// FILE UPLOAD
+// ────────────────────────────────────────────────
+const uploadZone = document.getElementById('upload-zone');
+const fileInput  = document.getElementById('file-input');
+
+uploadZone.addEventListener('click', () => fileInput.click());
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+uploadZone.addEventListener('dragleave', ()  => uploadZone.classList.remove('drag-over'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('drag-over');
+  handleFiles(e.dataTransfer.files);
+});
+fileInput.addEventListener('change', e => handleFiles(e.target.files));
+
+function handleFiles(files) {
+  const imgs = Array.from(files).filter(f => f.type.startsWith('image/'));
+  if (!imgs.length) { alert('נא לבחור קבצי תמונה (PNG, JPG, SVG, WebP)'); return; }
+  uploadedImages.forEach(im => URL.revokeObjectURL(im.url));
+  uploadedImages = imgs.map(f => ({ name: f.name, url: URL.createObjectURL(f) }));
+  showValidation();
+}
+
+// ────────────────────────────────────────────────
+// VALIDATION STEP
+// ────────────────────────────────────────────────
+function showValidation() {
+  const n    = uploadedImages.length;
+  const best = findBestOrder(n);
+  const next = findNextOrder(n);
+  const msgEl = document.getElementById('validation-msg');
+  const btnGen = document.getElementById('btn-generate');
+
+  if (!best) {
+    msgEl.className = 'msg error';
+    msgEl.innerHTML = `העלת <strong>${n} תמונות</strong>. נדרשות לפחות <strong>7 תמונות</strong> כדי ליצור משחק. אנא הוסף עוד תמונות.`;
+    btnGen.disabled = true;
+    currentOrder = null;
+  } else {
+    currentOrder = best;
+    let html = '';
+    if (n === best.total) {
+      msgEl.className = 'msg ok';
+      html = `✅ <strong>מצוין!</strong> העלת בדיוק <strong>${n} תמונות</strong>. ניצור <strong>${best.total} קלפים</strong>, ${best.symbolsPerCard} סמלים לקלף.`;
+    } else {
+      msgEl.className = 'msg warn';
+      html = `⚠️ העלת <strong>${n} תמונות</strong>. נשתמש ב-<strong>${best.total} הראשונות</strong> — ${best.total} קלפים, ${best.symbolsPerCard} סמלים לקלף.`;
+      if (next) html += `<br>💡 כדי לקבל <strong>${next.total} קלפים</strong> (${next.symbolsPerCard} סמלים), הוסף/י עוד ${next.total - n} תמונות (סה"כ ${next.total}).`;
+    }
+    msgEl.innerHTML = html;
+    btnGen.disabled = false;
+  }
+
+  // Thumbnails
+  const grid = document.getElementById('thumb-grid');
+  grid.innerHTML = '';
+  const show = Math.min(n, 32);
+  for (let i = 0; i < show; i++) {
+    const d = document.createElement('div');
+    d.className = 'thumb-item';
+    const img = document.createElement('img');
+    img.src = uploadedImages[i].url;
+    img.alt = uploadedImages[i].name;
+    d.appendChild(img);
+    grid.appendChild(d);
+  }
+  if (n > show) {
+    const d = document.createElement('div');
+    d.className = 'thumb-item thumb-more';
+    d.textContent = `+${n - show}`;
+    grid.appendChild(d);
+  }
+
+  goToStep('step-validate');
+}
+
+// ────────────────────────────────────────────────
+// GENERATION
+// ────────────────────────────────────────────────
+async function loadImage(url) {
+  return new Promise((res, rej) => {
+    const img = new Image();
+    img.onload  = () => res(img);
+    img.onerror = rej;
+    img.src = url;
+  });
+}
+
+function setProgress(pct, label) {
+  document.getElementById('progress-bar').style.width   = pct + '%';
+  document.getElementById('progress-label').textContent = label;
+}
+
+document.getElementById('btn-generate').addEventListener('click', async () => {
+  if (!currentOrder) return;
+  goToStep('step-preview');
+
+  document.getElementById('gen-progress').style.display    = 'block';
+  document.getElementById('preview-content').style.display = 'none';
+  document.getElementById('match-result').classList.remove('visible');
+  setProgress(5, 'מחשב קלפים…');
+
+  // 1. Generate deck matrix
+  deck = generateDeck(currentOrder.q);
+  deckLayouts = buildLayouts(deck);
+  setProgress(15, 'טוען תמונות…');
+
+  // 2. Load images
+  const subset = uploadedImages.slice(0, currentOrder.total);
+  try {
+    imageElements = await Promise.all(subset.map(im => loadImage(im.url)));
+  } catch {
+    alert('שגיאה בטעינת חלק מהתמונות. ודא שכל הקבצים תקינים.');
+    goToStep('step-validate');
+    return;
+  }
+  setProgress(35, 'מצייר קלפים…');
+
+  // 3. Render cards
+  cardCanvases = [];
+  testSelected = [];
+  const grid = document.getElementById('cards-grid');
+  grid.innerHTML = '';
+
+  for (let i = 0; i < deck.length; i++) {
+    const canvas = document.createElement('canvas');
+    canvas.width  = CARD_SIZE;
+    canvas.height = CARD_SIZE;
+    drawCard(canvas, deckLayouts[i], imageElements);
+    cardCanvases.push(canvas);
+
+    const wrap = document.createElement('div');
+    wrap.className    = 'card-wrap';
+    wrap.dataset.idx  = i;
+    wrap.appendChild(canvas);
+    wrap.addEventListener('click', () => handleCardClick(i));
+    grid.appendChild(wrap);
+
+    const pct = 35 + Math.round(65 * (i + 1) / deck.length);
+    setProgress(pct, `מצייר קלף ${i + 1} מתוך ${deck.length}…`);
+    if (i % 6 === 5) await new Promise(r => setTimeout(r, 0));
+  }
+
+  // 4. Stats
+  document.getElementById('stats-row').innerHTML =
+    `<span class="stat-chip">🃏 ${deck.length} קלפים</span>
+     <span class="stat-chip">🔣 ${currentOrder.symbolsPerCard} סמלים לקלף</span>
+     <span class="stat-chip">🖼️ ${currentOrder.total} תמונות</span>
+     <span class="stat-chip">📐 q = ${currentOrder.q}</span>`;
+
+  document.getElementById('gen-progress').style.display    = 'none';
+  document.getElementById('preview-content').style.display = 'block';
+});
+
+// ────────────────────────────────────────────────
+// TEST MODE
+// ────────────────────────────────────────────────
+function handleCardClick(idx) {
+  const matchEl = document.getElementById('match-result');
+
+  // Toggle off
+  if (testSelected.includes(idx)) {
+    testSelected = testSelected.filter(i => i !== idx);
+    document.querySelector(`.card-wrap[data-idx="${idx}"]`).className = 'card-wrap';
+    if (testSelected.length < 2) matchEl.classList.remove('visible');
+    if (testSelected.length === 1) {
+      const prev = testSelected[0];
+      drawCard(cardCanvases[prev], deckLayouts[prev], imageElements);
+    }
+    return;
+  }
+
+  // Reset if already 2 selected
+  if (testSelected.length === 2) {
+    testSelected.forEach(i => {
+      document.querySelector(`.card-wrap[data-idx="${i}"]`).className = 'card-wrap';
+      drawCard(cardCanvases[i], deckLayouts[i], imageElements);
+    });
+    testSelected = [];
+    matchEl.classList.remove('visible');
+  }
+
+  testSelected.push(idx);
+  const cls = testSelected.length === 1 ? 'sel-1' : 'sel-2';
+  document.querySelector(`.card-wrap[data-idx="${idx}"]`).className = `card-wrap ${cls}`;
+
+  if (testSelected.length === 2) {
+    const [c1, c2] = testSelected;
+    const common = deck[c1].filter(s => deck[c2].includes(s));
+
+    if (common.length === 1) {
+      const sym = common[0];
+      document.getElementById('match-text').innerHTML =
+        `✅ הסמל המשותף: <strong>#${sym + 1}</strong><br>${uploadedImages[sym]?.name || ''}`;
+
+      // Mini canvas
+      const mc  = document.getElementById('match-canvas');
+      const mct = mc.getContext('2d');
+      mct.clearRect(0, 0, 100, 100);
+      mct.beginPath(); mct.arc(50, 50, 47, 0, Math.PI * 2);
+      mct.fillStyle = '#FEF9C3'; mct.fill();
+      mct.strokeStyle = '#F59E0B'; mct.lineWidth = 4; mct.stroke();
+      if (imageElements[sym]) mct.drawImage(imageElements[sym], 10, 10, 80, 80);
+
+      matchEl.classList.add('visible');
+
+      // Highlight matching symbol on both cards
+      [c1, c2].forEach(ci => drawCard(cardCanvases[ci], deckLayouts[ci], imageElements, sym));
+    }
+  }
+}
+
+// ────────────────────────────────────────────────
+// EXPORT: PDF
+// ────────────────────────────────────────────────
+document.getElementById('btn-export-pdf').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-export-pdf');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> מייצר PDF…';
+
+  await new Promise(r => setTimeout(r, 30));
+
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+  const cols  = 2, rows = 3;
+  const diam  = 80;
+  const pageW = 210, pageH = 297;
+  const gapX  = (pageW - cols * diam) / (cols + 1);
+  const gapY  = (pageH - rows * diam) / (rows + 1);
+
+  const expCanvas = document.createElement('canvas');
+  expCanvas.width = expCanvas.height = CARD_SIZE;
+
+  for (let i = 0; i < deck.length; i++) {
+    const page = Math.floor(i / (cols * rows));
+    const pos  = i % (cols * rows);
+    const col  = pos % cols;
+    const row  = Math.floor(pos / cols);
+
+    if (i > 0 && pos === 0) pdf.addPage();
+
+    const x = gapX + col * (diam + gapX);
+    const y = gapY + row * (diam + gapY);
+
+    drawCard(expCanvas, deckLayouts[i], imageElements);
+    const dataUrl = expCanvas.toDataURL('image/png', 1.0);
+    pdf.addImage(dataUrl, 'PNG', x, y, diam, diam);
+
+    if (i % 4 === 3) await new Promise(r => setTimeout(r, 0));
+  }
+
+  pdf.save(`dobble-${currentOrder.total}cards.pdf`);
+
+  btn.disabled = false;
+  btn.innerHTML = '📄 ייצוא PDF (A4)';
+});
+
+// ────────────────────────────────────────────────
+// EXPORT: ZIP of PNGs
+// ────────────────────────────────────────────────
+document.getElementById('btn-export-zip').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-export-zip');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> מייצר ZIP…';
+
+  await new Promise(r => setTimeout(r, 30));
+
+  const zip    = new JSZip();
+  const folder = zip.folder('dobble-cards');
+
+  for (let i = 0; i < cardCanvases.length; i++) {
+    const base64 = cardCanvases[i].toDataURL('image/png', 1.0).split(',')[1];
+    folder.file(`card-${String(i + 1).padStart(3, '0')}.png`, base64, { base64: true });
+    if (i % 8 === 7) await new Promise(r => setTimeout(r, 0));
+  }
+
+  const blob = await zip.generateAsync({ type: 'blob' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = `dobble-${currentOrder.total}cards.zip`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+
+  btn.disabled = false;
+  btn.innerHTML = '🗜️ ייצוא PNG (ZIP)';
+});
+</script>
+
+</body>
+</html>
