@@ -729,7 +729,7 @@ document.querySelectorAll('.rb').forEach(b=>{
     updatePaperPrev();
   });
 });
-document.getElementById('chk-crop').addEventListener('change',e=>S.crop=e.target.checked);
+document.getElementById('chk-crop').addEventListener('change',e=>{S.crop=e.target.checked;updatePaperPrev();});
 
 function getLayout(){
   if(S.fmt==='zip')return{cols:1,rows:1,cardMm:0};
@@ -745,7 +745,7 @@ function updatePaperPrev(){
   const cs=isA4?18:22;
   let cells='';for(let i=0;i<perPage;i++)cells+=`<div style="width:${cs}px;height:${cs}px" class="${S.shape==='circle'?'pc':'ps'}"></div>`;
   pp.innerHTML=`<div class="paper-mini" style="width:${pw}px;height:${ph}px"><div class="paper-inner" style="grid-template-columns:repeat(${cols},1fr);grid-template-rows:repeat(${rows},1fr)">${cells}</div></div>
-    <div class="paper-info">${S.sz.toUpperCase()} · ${cols}×${rows}=${perPage} קלפים/עמוד<br>${cardMm}mm${S.crop?' · סימני חיתוך':''}<br><strong>${pages}</strong> דף${pages!==1?'ים':''}</div>`;
+    <div class="paper-info">${S.sz.toUpperCase()} · ${cols}×${rows}=${perPage} קלפים/עמוד<br>${cardMm}mm${S.crop?' · סימני חיתוך':''}<br><strong>${pages}</strong> ${pages!==1?'דפים':'דף'}</div>`;
 }
 
 // ══ EXPORT ══
