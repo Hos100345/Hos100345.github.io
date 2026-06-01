@@ -349,8 +349,33 @@ track.addEventListener('touchend', e => {
 }, { passive: true });
 
 /* =====================================================
-   SERVICE TILES → GALLERY FILTER
+   SERVICE TILES — inject gallery image + link to gallery filter
    ===================================================== */
+(function buildServiceTileImages() {
+  const images = SD.gallery || [];
+  document.querySelectorAll('.service-tile[data-gallery-cat]').forEach((tile, idx) => {
+    const cat = tile.dataset.galleryCat;
+    const catImgs = images.filter(i => i.cat === cat);
+    if (!catImgs.length) return;
+
+    const pick = catImgs[(idx * 7) % catImgs.length];
+
+    const img = document.createElement('img');
+    img.src = pick.src;
+    img.alt = '';
+    img.className = 'service-tile-img';
+    img.loading = 'lazy';
+    img.setAttribute('aria-hidden', 'true');
+
+    const body = document.createElement('div');
+    body.className = 'service-tile-body';
+    [...tile.children].forEach(child => body.appendChild(child));
+
+    tile.appendChild(img);
+    tile.appendChild(body);
+  });
+})();
+
 document.querySelectorAll('.service-tile[data-gallery-cat]').forEach(tile => {
   tile.addEventListener('click', () => {
     const cat = tile.dataset.galleryCat;

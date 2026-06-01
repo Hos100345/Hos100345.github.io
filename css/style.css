@@ -484,14 +484,15 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 }
 
 .service-tile {
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  padding: 1.25rem 0.75rem;
-  background: rgba(255,255,255,.78);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  justify-content: flex-end;
+  min-height: 160px;
+  padding: 0;
+  background: #1e3a8a;
   border: 1px solid rgba(255,255,255,.9);
   border-radius: var(--radius);
   box-shadow: 0 4px 20px rgba(37,99,235,.1);
@@ -499,12 +500,42 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   font-weight: 600;
   text-align: center;
   cursor: pointer;
-  transition: transform var(--transition), box-shadow var(--transition), background var(--transition);
+  transition: transform var(--transition), box-shadow var(--transition);
 }
 .service-tile:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 32px rgba(67,56,202,.18);
-  background: rgba(255,255,255,.95);
+  box-shadow: 0 8px 32px rgba(67,56,202,.28);
+}
+.service-tile-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.82;
+  transition: transform 0.45s ease, opacity 0.3s;
+}
+.service-tile:hover .service-tile-img {
+  transform: scale(1.07);
+  opacity: 1;
+}
+.service-tile-body {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  padding: 0.7rem 0.6rem;
+  background: linear-gradient(to top, rgba(0,0,0,.72) 0%, rgba(0,0,0,.08) 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+.service-tile-body .service-icon { font-size: 1.4rem; }
+.service-tile-body span:last-child {
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-shadow: 0 1px 6px rgba(0,0,0,.6);
 }
 .service-icon { font-size: 2rem; line-height: 1; }
 
