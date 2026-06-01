@@ -390,40 +390,24 @@ document.querySelectorAll('.service-tile[data-gallery-cat]').forEach(tile => {
 });
 
 /* =====================================================
-   WORKS IMAGE STRIP — 6 images scroll, swap group each loop
+   WORKS IMAGE STRIP — continuous right-to-left scroll
    ===================================================== */
 function buildWorksStrip() {
   const images = SD.gallery || [];
   if (!images.length) return;
 
-  const inner  = document.querySelector('.works-strip-inner');
   const trackA = document.getElementById('works-strip-track-a');
   const trackB = document.getElementById('works-strip-track-b');
-  if (!inner || !trackA || !trackB) return;
+  if (!trackA || !trackB) return;
 
-  // Build pool: 2 images per category
-  const cats = [
-    'events','characters','centerpieces','bar','arch','hats',
-    'column','workshops','numbers','printing','hoop','garlands',
-    'rooms','bar-chars','event-chars','frame','satisfied'
-  ];
-  const pool = [];
-  cats.forEach((cat, idx) => {
-    const c = images.filter(i => i.cat === cat);
-    if (c.length) pool.push(c[idx % c.length]);
-    if (c.length > 1) pool.push(c[(idx + 3) % c.length]);
+  // One image from each of the 6 main categories only — fast to load
+  const strip = [];
+  ['events','bar','characters','workshops','rooms','satisfied'].forEach(cat => {
+    const found = images.find(i => i.cat === cat);
+    if (found) strip.push(found);
   });
 
-  let groupIdx = 0;
-
-  function getGroup() {
-    const g = [];
-    for (let i = 0; i < 6; i++) g.push(pool[(groupIdx * 6 + i) % pool.length]);
-    groupIdx++;
-    return g;
-  }
-
-  function makeImg(item) {
+  const makeImg = item => {
     const img = document.createElement('img');
     img.src = item.src;
     img.alt = item.alt;
@@ -431,22 +415,13 @@ function buildWorksStrip() {
     img.className = 'works-strip-img';
     img.addEventListener('click', () => openLightbox(img.src, img.alt));
     img.addEventListener('error', () => {
-      const fallback = images[Math.floor(Math.random() * images.length)];
-      img.src = fallback.src;
-      img.alt = fallback.alt;
+      const fallback = images.find(i => i.src !== img.src);
+      if (fallback) { img.src = fallback.src; img.alt = fallback.alt; }
     });
     return img;
-  }
+  };
 
-  function renderGroup() {
-    const group = getGroup();
-    trackA.innerHTML = '';
-    trackB.innerHTML = '';
-    group.forEach(item => { trackA.appendChild(makeImg(item)); trackB.appendChild(makeImg(item)); });
-  }
-
-  renderGroup();
-  inner.addEventListener('animationiteration', renderGroup);
+  strip.forEach(item => { trackA.appendChild(makeImg(item)); trackB.appendChild(makeImg(item)); });
 }
 buildWorksStrip();
 
