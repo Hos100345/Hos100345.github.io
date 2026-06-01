@@ -1094,6 +1094,9 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 
 .works-strip-inner {
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  direction: ltr;
   gap: 1rem;
   animation: stripScroll 22s linear infinite;
   width: max-content;
@@ -1102,6 +1105,8 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 
 .works-strip-track {
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   gap: 1rem;
   flex-shrink: 0;
 }
