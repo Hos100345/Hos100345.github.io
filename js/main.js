@@ -400,13 +400,17 @@ function buildWorksStrip() {
   const trackB = document.getElementById('works-strip-track-b');
   if (!trackA || !trackB) return;
 
-  // Pick a varied selection: up to 18 images, mixing categories
+  // Pick a varied selection from all categories
   const picked = [];
-  const cats = ['events', 'bar', 'characters', 'workshops'];
+  const cats = [
+    'events','characters','centerpieces','bar','arch','hats',
+    'column','workshops','numbers','printing','hoop','garlands',
+    'rooms','bar-chars','event-chars','frame','satisfied'
+  ];
   cats.forEach(cat => {
-    images.filter(i => i.cat === cat).slice(0, 5).forEach(i => picked.push(i));
+    images.filter(i => i.cat === cat).slice(0, 4).forEach(i => picked.push(i));
   });
-  const strip = picked.slice(0, 20);
+  const strip = picked.slice(0, 60);
 
   const makeImg = item => {
     const img = document.createElement('img');
