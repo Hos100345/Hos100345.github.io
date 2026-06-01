@@ -5,958 +5,809 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>מחולל משחק דובל | Dobble Card Generator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
-    :root {
-      --blue:        #2563EB;
-      --blue-dark:   #1D4ED8;
-      --blue-light:  #DBEAFE;
-      --indigo:      #4338CA;
-      --purple:      #7C3AED;
-      --purple-dark: #5B21B6;
-      --purple-light:#EDE9FE;
-      --gold:        #F59E0B;
-      --gold-light:  #FEF3C7;
-      --green:       #059669;
-      --red:         #DC2626;
-      --bg:          #FAFAF8;
-      --white:       #FFFFFF;
-      --text:        #0F172A;
-      --muted:       #6B7280;
-      --border:      #E5E7EB;
-      --radius:      1rem;
-      --radius-sm:   0.5rem;
-      --shadow:      0 4px 24px rgba(0,0,0,.08);
-      --shadow-lg:   0 8px 40px rgba(0,0,0,.14);
-      --transition:  0.3s cubic-bezier(.4,0,.2,1);
+    :root{
+      --blue:#2563EB;--blue-light:#DBEAFE;--indigo:#4338CA;
+      --purple:#7C3AED;--purple-light:#EDE9FE;
+      --gold:#F59E0B;--gold-light:#FEF3C7;
+      --green:#059669;
+      --bg:#FAFAF8;--white:#fff;--text:#0F172A;--muted:#6B7280;--border:#E5E7EB;
+      --r:1rem;--rs:.5rem;--sh:0 4px 24px rgba(0,0,0,.08);--shl:0 8px 40px rgba(0,0,0,.14);
+      --tr:.25s cubic-bezier(.4,0,.2,1);
     }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: 'Heebo', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      direction: rtl;
-    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;direction:rtl}
 
     /* ── HEADER ── */
-    .app-header {
-      background: linear-gradient(135deg, var(--indigo) 0%, var(--purple) 100%);
-      color: white;
-      padding: 1.25rem 2rem;
-      display: flex;
-      align-items: center;
-      gap: 1.5rem;
-      box-shadow: var(--shadow-lg);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    .back-btn {
-      color: rgba(255,255,255,.85);
-      text-decoration: none;
-      font-size: 0.9rem;
-      font-weight: 600;
-      white-space: nowrap;
-      transition: color var(--transition);
-      flex-shrink: 0;
-    }
-    .back-btn:hover { color: white; }
-    .header-title { flex: 1; }
-    .header-title h1 { font-size: 1.55rem; font-weight: 900; line-height: 1.2; }
-    .header-subtitle { font-size: 0.82rem; opacity: 0.75; margin-top: 0.15rem; }
+    .hdr{background:linear-gradient(135deg,var(--indigo),var(--purple));color:#fff;height:60px;display:flex;align-items:center;padding:0 1.5rem;gap:1.25rem;box-shadow:var(--shl);position:sticky;top:0;z-index:200}
+    .hdr-back{color:rgba(255,255,255,.8);text-decoration:none;font-size:.85rem;font-weight:600;white-space:nowrap;flex-shrink:0}
+    .hdr-back:hover{color:#fff}
+    .hdr-title{flex:1}
+    .hdr-title h1{font-size:1.35rem;font-weight:900;line-height:1.2}
+    .hdr-title .sub{font-size:.72rem;opacity:.7}
+    .step-ind{display:flex;align-items:center;gap:0}
+    .si{display:flex;align-items:center;gap:.35rem;padding:.25rem .65rem;border-radius:100px;font-size:.78rem;font-weight:700;color:rgba(255,255,255,.45);transition:all var(--tr)}
+    .si .n{width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:.65rem;flex-shrink:0}
+    .si.active{color:#fff;background:rgba(255,255,255,.18)}
+    .si.active .n{background:#fff;color:var(--indigo)}
+    .si.done .n{background:rgba(255,255,255,.45);color:#fff}
+    .si-sep{width:16px;height:2px;background:rgba(255,255,255,.18)}
 
-    /* ── LAYOUT ── */
-    #app { max-width: 1080px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+    /* ── WRAP / SCREENS ── */
+    #wrap{max-width:1080px;margin:0 auto;padding:1.75rem 1.25rem 5rem}
+    .scr{display:none}
+    .scr.on{display:block;animation:fu .28s ease}
+    @keyframes fu{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
 
-    .step { display: none; }
-    .step.active { display: block; animation: fadeIn 0.35s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-
-    .card-box {
-      background: var(--white);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 2rem;
-      margin-bottom: 1.5rem;
-    }
-
-    /* ── SECTION TITLES ── */
-    .section-title {
-      font-size: 1.25rem;
-      font-weight: 800;
-      color: var(--indigo);
-      margin-bottom: 0.4rem;
-    }
-    .section-sub {
-      font-size: 0.9rem;
-      color: var(--muted);
-      margin-bottom: 1.5rem;
-      line-height: 1.6;
-    }
+    /* ── BOX ── */
+    .box{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);padding:1.6rem;margin-bottom:1.2rem}
+    .box-h{font-size:1.1rem;font-weight:800;color:var(--indigo);margin-bottom:.3rem}
+    .box-s{font-size:.875rem;color:var(--muted);margin-bottom:1.2rem;line-height:1.6}
 
     /* ── UPLOAD ZONE ── */
-    .upload-zone {
-      border: 2.5px dashed var(--indigo);
-      border-radius: var(--radius);
-      padding: 3rem 2rem;
-      text-align: center;
-      cursor: pointer;
-      transition: all var(--transition);
-      background: var(--purple-light);
-      user-select: none;
-    }
-    .upload-zone:hover,
-    .upload-zone.drag-over {
-      background: var(--blue-light);
-      border-color: var(--blue);
-      transform: scale(1.015);
-      box-shadow: var(--shadow);
-    }
-    .upload-icon { font-size: 3.5rem; margin-bottom: 0.75rem; line-height: 1; }
-    .upload-zone h2 { font-size: 1.35rem; font-weight: 800; color: var(--indigo); margin-bottom: 0.4rem; }
-    .upload-zone p  { color: var(--muted); font-size: 0.9rem; }
-    .upload-hint { margin-top: 0.5rem; font-size: 0.78rem; opacity: 0.7; }
+    .uz{border:2.5px dashed var(--indigo);border-radius:var(--r);padding:2.25rem 1.75rem;text-align:center;cursor:pointer;transition:all var(--tr);background:var(--purple-light);user-select:none}
+    .uz:hover,.uz.over{background:var(--blue-light);border-color:var(--blue);transform:scale(1.012)}
+    .uz-ico{font-size:2.75rem;margin-bottom:.5rem;line-height:1}
+    .uz-t{font-size:1.2rem;font-weight:800;color:var(--indigo);margin-bottom:.25rem}
+    .uz-s{font-size:.875rem;color:var(--muted)}
+    .uz-hint{font-size:.73rem;color:var(--muted);opacity:.65;margin-top:.3rem}
 
-    /* ── INFO TABLE ── */
-    .info-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.9rem;
-      margin-top: 0.5rem;
-    }
-    .info-table th,
-    .info-table td {
-      padding: 0.6rem 1rem;
-      text-align: center;
-      border-bottom: 1px solid var(--border);
-    }
-    .info-table th {
-      background: var(--blue-light);
-      color: var(--indigo);
-      font-weight: 700;
-    }
-    .info-table tr.highlight td {
-      background: #fefce8;
-      font-weight: 700;
-      color: #92400e;
-    }
-    .info-table tbody tr:last-child td { border-bottom: none; }
+    /* ── COUNTER STRIP ── */
+    .cstrip{display:none;align-items:center;gap:.85rem;background:var(--blue-light);border-radius:var(--rs);padding:.65rem 1.1rem;margin-top:.9rem;font-weight:700;color:var(--indigo);font-size:.9rem}
+    .cstrip.on{display:flex}
+    .cnum{font-size:1.35rem;font-weight:900}
+    .trow{display:flex;gap:.35rem;overflow:hidden;height:38px;align-items:center}
+    .tsm{width:36px;height:36px;border-radius:5px;border:1.5px solid var(--border);background:#fff;object-fit:contain;flex-shrink:0}
+    .tmore{font-size:.72rem;font-weight:700;color:var(--muted);white-space:nowrap}
+    .chg-btn{margin-right:auto;font-size:.78rem;color:var(--indigo);cursor:pointer;text-decoration:underline;background:none;border:none;font-family:inherit;font-weight:600}
 
-    /* ── VALIDATION MSG ── */
-    .msg {
-      padding: 1rem 1.25rem;
-      border-radius: var(--radius-sm);
-      margin: 1rem 0;
-      font-size: 0.92rem;
-      line-height: 1.65;
-    }
-    .msg.ok    { background: #d1fae5; color: #065f46; border-right: 4px solid #10b981; }
-    .msg.warn  { background: var(--gold-light); color: #92400e; border-right: 4px solid var(--gold); }
-    .msg.error { background: #fee2e2; color: #991b1b; border-right: 4px solid var(--red); }
+    /* ── RECOMMENDATION ── */
+    .rec{display:none;background:var(--gold-light);border:1.5px solid #fcd34d;border-radius:var(--r);padding:1.1rem;margin-top:.9rem}
+    .rec.on{display:block}
+    .rec-t{font-size:.9rem;font-weight:700;color:#78350f;margin-bottom:.7rem;line-height:1.55}
+    .rec-opts{display:flex;gap:.65rem;flex-wrap:wrap}
+    .ropt{flex:1;min-width:160px;border:2px solid #fcd34d;border-radius:var(--rs);padding:.75rem .9rem;cursor:pointer;background:#fff;transition:all var(--tr);position:relative}
+    .ropt:hover{border-color:var(--indigo)}
+    .ropt.sel{border-color:var(--indigo);background:var(--purple-light)}
+    .ropt-h{font-size:.95rem;font-weight:800;color:var(--indigo);margin-bottom:.15rem}
+    .ropt-s{font-size:.78rem;color:var(--muted)}
+    .ropt-b{position:absolute;top:-8px;left:8px;background:var(--gold);color:#fff;font-size:.65rem;font-weight:700;padding:.1rem .45rem;border-radius:100px}
+    .ropt.dim{opacity:.55;cursor:default}
+    .ropt.dim:hover{border-color:#fcd34d}
 
-    /* ── THUMBNAILS ── */
-    .thumb-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-      gap: 0.5rem;
-      margin-top: 1rem;
-    }
-    .thumb-item {
-      aspect-ratio: 1;
-      border-radius: var(--radius-sm);
-      overflow: hidden;
-      border: 2px solid var(--border);
-      background: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .thumb-item img { width: 100%; height: 100%; object-fit: contain; }
-    .thumb-more {
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: var(--muted);
-    }
+    /* ── SHAPE TOGGLE ── */
+    .shape-row{display:flex;align-items:center;gap:.85rem;margin-top:1.1rem}
+    .shape-lbl{font-size:.875rem;font-weight:700}
+    .shape-grp{display:flex;border:2px solid var(--border);border-radius:100px;overflow:hidden}
+    .sbt{padding:.4rem 1rem;font-size:.85rem;font-weight:700;font-family:inherit;background:transparent;border:none;cursor:pointer;color:var(--muted);transition:all var(--tr)}
+    .sbt.on{background:var(--indigo);color:#fff}
 
     /* ── BUTTONS ── */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.45rem;
-      padding: 0.7rem 1.6rem;
-      border-radius: 100px;
-      font-size: 0.95rem;
-      font-weight: 700;
-      font-family: 'Heebo', sans-serif;
-      cursor: pointer;
-      border: none;
-      transition: all var(--transition);
-      text-decoration: none;
-      white-space: nowrap;
-    }
-    .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
-    .btn-primary { background: linear-gradient(135deg, var(--blue), var(--indigo)); color: white; }
-    .btn-primary:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(67,56,202,.35); }
-    .btn-success { background: linear-gradient(135deg, #059669, #10b981); color: white; }
-    .btn-success:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16,185,129,.35); }
-    .btn-gold { background: linear-gradient(135deg, #d97706, var(--gold)); color: white; }
-    .btn-gold:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(245,158,11,.35); }
-    .btn-outline {
-      background: transparent;
-      border: 2px solid var(--indigo);
-      color: var(--indigo);
-    }
-    .btn-outline:not(:disabled):hover { background: var(--indigo); color: white; }
-    .btn-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1.5rem; align-items: center; }
+    .btn{display:inline-flex;align-items:center;gap:.4rem;padding:.7rem 1.6rem;border-radius:100px;font-size:.9rem;font-weight:700;font-family:inherit;cursor:pointer;border:none;transition:all var(--tr);white-space:nowrap;text-decoration:none}
+    .btn:disabled{opacity:.38;cursor:not-allowed!important;transform:none!important;box-shadow:none!important}
+    .btn-cta{background:linear-gradient(135deg,var(--gold),#d97706);color:#fff;font-size:1.05rem;padding:.8rem 2.25rem}
+    .btn-cta:not(:disabled):hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(245,158,11,.38)}
+    .btn-pri{background:linear-gradient(135deg,var(--blue),var(--indigo));color:#fff}
+    .btn-pri:not(:disabled):hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(67,56,202,.35)}
+    .btn-ok{background:linear-gradient(135deg,#059669,#10b981);color:#fff}
+    .btn-ok:not(:disabled):hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(16,185,129,.35)}
+    .btn-pur{background:linear-gradient(135deg,var(--purple),var(--indigo));color:#fff}
+    .btn-pur:not(:disabled):hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(124,58,237,.35)}
+    .btn-out{background:transparent;border:2px solid var(--indigo);color:var(--indigo)}
+    .btn-out:not(:disabled):hover{background:var(--indigo);color:#fff}
+    .btn-ghost{background:transparent;border:2px solid var(--border);color:var(--muted)}
+    .btn-ghost:not(:disabled):hover{border-color:var(--indigo);color:var(--indigo)}
+    .brow{display:flex;gap:.65rem;flex-wrap:wrap;align-items:center;margin-top:1.35rem}
 
     /* ── PROGRESS ── */
-    .progress-wrap { margin: 1.25rem 0; }
-    .progress-label { font-size: 0.85rem; color: var(--muted); margin-bottom: 0.4rem; }
-    .progress-bar-bg { background: var(--border); border-radius: 100px; height: 8px; overflow: hidden; }
-    .progress-bar    { height: 100%; background: linear-gradient(90deg, var(--blue), var(--purple)); border-radius: 100px; transition: width 0.25s ease; width: 0%; }
+    .prog-lbl{font-size:.8rem;color:var(--muted);margin-bottom:.35rem}
+    .prog-bg{background:var(--border);border-radius:100px;height:7px;overflow:hidden}
+    .prog-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--purple));border-radius:100px;transition:width .2s;width:0%}
 
-    /* ── STATS ── */
-    .stats-row { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
-    .stat-chip {
-      background: var(--blue-light);
-      color: var(--indigo);
-      padding: 0.35rem 0.9rem;
-      border-radius: 100px;
-      font-size: 0.85rem;
-      font-weight: 700;
-    }
+    /* ── SCREEN 2 LAYOUT ── */
+    .prev-layout{display:grid;grid-template-columns:210px 1fr;gap:1.1rem;align-items:start}
+    .sidebar{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);padding:1.1rem;position:sticky;top:72px}
+    .sb-sec{margin-bottom:1.1rem;padding-bottom:1.1rem;border-bottom:1px solid var(--border)}
+    .sb-sec:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
+    .sb-t{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.65rem}
+    .stat-row{display:flex;justify-content:space-between;align-items:center;font-size:.82rem;padding:.22rem 0}
+    .stat-v{font-weight:700;color:var(--indigo)}
+    .sl-row{margin-bottom:.75rem}
+    .sl-lbl{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);margin-bottom:.28rem}
+    .sl-lbl strong{color:var(--indigo)}
+    input[type=range]{width:100%;height:4px;-webkit-appearance:none;appearance:none;background:var(--border);border-radius:2px;outline:none;cursor:pointer;direction:ltr}
+    input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--indigo);cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+    input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--indigo);cursor:pointer;border:none}
 
-    /* ── TEST MODE ── */
-    .test-banner {
-      background: linear-gradient(135deg, var(--blue-light), var(--purple-light));
-      border: 1.5px solid var(--indigo);
-      border-radius: var(--radius-sm);
-      padding: 0.85rem 1.1rem;
-      font-size: 0.88rem;
-      color: var(--indigo);
-      font-weight: 600;
-      margin-bottom: 1rem;
-    }
+    /* ── GEN OVERLAY ── */
+    .gen-ov{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);padding:2rem}
 
-    /* ── MATCH RESULT ── */
-    .match-result {
-      display: none;
-      background: var(--gold-light);
-      border: 2px solid var(--gold);
-      border-radius: var(--radius);
-      padding: 1rem 1.5rem;
-      margin-bottom: 1rem;
-      text-align: center;
-    }
-    .match-result.visible { display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; justify-content: center; }
-    .match-text { font-weight: 700; color: #92400e; font-size: 0.95rem; }
-    #match-canvas { border-radius: 50%; box-shadow: var(--shadow); flex-shrink: 0; }
+    /* ── CARDS AREA ── */
+    .cards-main{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);padding:1.25rem}
+    .vfy-banner{background:linear-gradient(135deg,var(--blue-light),var(--purple-light));border:1.5px solid var(--indigo);border-radius:var(--rs);padding:.65rem 1rem;font-size:.83rem;color:var(--indigo);font-weight:600;margin-bottom:.9rem}
+    .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:.8rem}
+    .cw{cursor:pointer;border-radius:50%;aspect-ratio:1;border:3px solid transparent;transition:all var(--tr);box-shadow:var(--sh);overflow:hidden}
+    .cards-grid.sq .cw{border-radius:11px}
+    .cw canvas{width:100%;height:100%;display:block}
+    .cw:hover{transform:scale(1.07);box-shadow:var(--shl)}
+    .cw.s1{border-color:var(--blue);box-shadow:0 0 0 5px rgba(37,99,235,.2)}
+    .cw.s2{border-color:var(--purple);box-shadow:0 0 0 5px rgba(124,58,237,.2)}
 
-    /* ── CARDS GRID ── */
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 1rem;
-      margin-top: 0.5rem;
-    }
-    .card-wrap {
-      cursor: pointer;
-      border-radius: 50%;
-      aspect-ratio: 1;
-      border: 3px solid transparent;
-      transition: all var(--transition);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-      position: relative;
-    }
-    .card-wrap canvas { width: 100%; height: 100%; display: block; }
-    .card-wrap:hover { transform: scale(1.06); box-shadow: var(--shadow-lg); }
-    .card-wrap.sel-1 { border-color: var(--blue);   box-shadow: 0 0 0 5px rgba(37,99,235,.25); }
-    .card-wrap.sel-2 { border-color: var(--purple); box-shadow: 0 0 0 5px rgba(124,58,237,.25); }
+    /* ── VERIFY MODAL ── */
+    .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:500;display:flex;align-items:center;justify-content:center;padding:1rem}
+    .modal-bg[hidden]{display:none}
+    .modal-card{background:#fff;border-radius:var(--r);box-shadow:var(--shl);max-width:760px;width:100%;padding:1.6rem;animation:fu .2s ease}
+    .modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem}
+    .modal-title{font-size:1.05rem;font-weight:800;color:var(--indigo)}
+    .modal-x{background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--muted);line-height:1;padding:.2rem}
+    .modal-x:hover{color:var(--text)}
+    .modal-body{display:grid;grid-template-columns:1fr auto 1fr;gap:.85rem;align-items:center}
+    .mcw{text-align:center}
+    .mcw canvas{width:210px;height:210px;border-radius:50%;box-shadow:var(--sh)}
+    .mcw.sq canvas{border-radius:11px}
+    .mc-lbl{font-size:.75rem;font-weight:700;color:var(--muted);margin-top:.45rem}
+    .mc-mid{text-align:center}
+    .mc-ico{font-size:1.75rem;margin-bottom:.4rem}
+    .mc-sym-canvas{display:block;margin:0 auto .4rem;border-radius:50%;box-shadow:var(--sh)}
+    .mc-txt{font-size:.78rem;font-weight:700;color:#92400e;background:var(--gold-light);padding:.3rem .65rem;border-radius:100px;display:inline-block;max-width:140px;word-break:break-all;line-height:1.4}
+
+    /* ── SCREEN 3: EXPORT ── */
+    .exp-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem}
+    .og-t{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.55rem}
+    .og{margin-bottom:1.1rem}
+    .radio-row{display:flex;gap:.5rem;flex-wrap:wrap}
+    .rb{padding:.45rem 1rem;border-radius:100px;border:2px solid var(--border);background:#fff;font-size:.875rem;font-weight:700;font-family:inherit;cursor:pointer;transition:all var(--tr);color:var(--muted)}
+    .rb.on{border-color:var(--indigo);background:var(--purple-light);color:var(--indigo)}
+    .tog-row{display:flex;align-items:center;gap:.65rem;margin-top:.4rem}
+    .tswitch{position:relative;width:40px;height:22px;flex-shrink:0}
+    .tswitch input{opacity:0;width:0;height:0;position:absolute}
+    .tslider{position:absolute;inset:0;background:var(--border);border-radius:100px;cursor:pointer;transition:background var(--tr)}
+    .tslider::before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform var(--tr);box-shadow:0 1px 3px rgba(0,0,0,.2)}
+    .tswitch input:checked+.tslider{background:var(--indigo)}
+    .tswitch input:checked+.tslider::before{transform:translateX(18px)}
+    .tog-lbl{font-size:.875rem;font-weight:600}
+    .paper-prev{background:var(--bg);border-radius:var(--rs);padding:.9rem;text-align:center;min-height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem}
+    .paper-mini{display:inline-block;background:#fff;border:1.5px solid var(--border);border-radius:3px;box-shadow:var(--sh)}
+    .paper-inner{display:flex;flex-wrap:wrap;gap:2px;padding:4px;align-content:flex-start}
+    .pc{background:var(--blue-light);border:1.5px solid var(--indigo);border-radius:50%}
+    .ps{background:var(--blue-light);border:1.5px solid var(--indigo);border-radius:2px}
+    .paper-info{font-size:.75rem;color:var(--muted);line-height:1.55;text-align:center}
+    .exp-prog{display:none;margin-top:1.1rem}
+    .exp-prog.on{display:block}
+    .dl-area{display:none;margin-top:1.1rem;align-items:center;gap:.65rem;flex-wrap:wrap}
+    .dl-area.on{display:flex}
 
     /* ── SPINNER ── */
-    .spinner {
-      display: inline-block;
-      width: 17px; height: 17px;
-      border: 2.5px solid rgba(255,255,255,.35);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 0.65s linear infinite;
-      flex-shrink: 0;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .spin{display:inline-block;width:15px;height:15px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .6s linear infinite}
+    @keyframes sp{to{transform:rotate(360deg)}}
+
+    /* ── TABLE ── */
+    .ref-table{width:100%;border-collapse:collapse;font-size:.875rem}
+    .ref-table th{padding:.5rem .9rem;text-align:center;background:var(--blue-light);color:var(--indigo);font-weight:700;border-bottom:1px solid var(--border)}
+    .ref-table td{padding:.5rem .9rem;text-align:center;border-bottom:1px solid var(--border)}
+    .ref-table tr:last-child td{border-bottom:none;background:#fefce8;font-weight:700;color:#92400e}
 
     /* ── RESPONSIVE ── */
-    @media (max-width: 600px) {
-      .app-header { flex-wrap: wrap; gap: 0.5rem; padding: 1rem; }
-      #app { padding: 1rem 0.75rem 3rem; }
-      .card-box { padding: 1.25rem; }
-      .cards-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
-      .upload-zone { padding: 2rem 1rem; }
+    @media(max-width:680px){
+      .hdr{padding:0 .9rem}.step-ind{display:none}
+      #wrap{padding:1rem .75rem 4rem}
+      .prev-layout{grid-template-columns:1fr}.sidebar{position:static}
+      .exp-grid{grid-template-columns:1fr}
+      .modal-body{grid-template-columns:1fr}
+      .mcw canvas{width:150px;height:150px}
     }
   </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════════
-     HEADER
-══════════════════════════════════════════════ -->
-<header class="app-header">
-  <a href="index.html" class="back-btn">→ חזרה לאתר</a>
-  <div class="header-title">
+<!-- HEADER -->
+<header class="hdr">
+  <a href="index.html" class="hdr-back">→ האתר</a>
+  <div class="hdr-title">
     <h1>🎯 מחולל משחק דובל</h1>
-    <div class="header-subtitle">Dobble / Spot It! Card Generator · מבוסס על מישור השלכתי סופי (Finite Projective Plane)</div>
+    <div class="sub">Dobble / Spot It! · Finite Projective Plane</div>
   </div>
+  <nav class="step-ind">
+    <div class="si active" id="si1"><span class="n">1</span>העלאה</div>
+    <div class="si-sep"></div>
+    <div class="si" id="si2"><span class="n">2</span>עריכה</div>
+    <div class="si-sep"></div>
+    <div class="si" id="si3"><span class="n">3</span>ייצוא</div>
+  </nav>
 </header>
 
-<!-- ══════════════════════════════════════════════
-     APP
-══════════════════════════════════════════════ -->
-<main id="app">
+<div id="wrap">
 
-  <!-- ▸ STEP 1: UPLOAD -->
-  <section id="step-upload" class="step active">
-    <div class="card-box">
-      <h2 class="section-title">שלב 1 — העלאת סמלים</h2>
-      <p class="section-sub">העלה/י תמונות של הסמלים שיופיעו על הקלפים. מומלץ PNG/SVG עם רקע שקוף.</p>
+<!-- ══ SCREEN 1: UPLOAD ══ -->
+<section id="s1" class="scr on">
+  <div class="box">
+    <h2 class="box-h">העלאת סמלים</h2>
+    <p class="box-s">גרור/י תמונות של הסמלים לקלפים. מומלץ PNG/SVG עם רקע שקוף.</p>
 
-      <div class="upload-zone" id="upload-zone">
-        <div class="upload-icon">🖼️</div>
-        <h2>גרור/י תמונות לכאן</h2>
-        <p>או לחץ/י לבחירת קבצים</p>
-        <p class="upload-hint">PNG · JPG · SVG · WebP · ניתן לבחור מספר קבצים בבת-אחת</p>
-        <input type="file" id="file-input" multiple accept="image/*" style="display:none">
+    <div class="uz" id="uz">
+      <div class="uz-ico">🖼️</div>
+      <div class="uz-t">גרור/י תמונות לכאן</div>
+      <div class="uz-s">או לחץ/י לבחירת קבצים</div>
+      <div class="uz-hint">PNG · JPG · SVG · WebP · ניתן לבחור מספר קבצים</div>
+      <input type="file" id="fi" multiple accept="image/*" style="display:none">
+    </div>
+
+    <div class="cstrip" id="cstrip">
+      <span>הועלו</span>
+      <span class="cnum" id="cnum">0</span>
+      <span>תמונות</span>
+      <div class="trow" id="trow"></div>
+      <button class="chg-btn" id="chg-btn">שנה תמונות</button>
+    </div>
+
+    <div class="rec" id="rec">
+      <div class="rec-t" id="rec-t"></div>
+      <div class="rec-opts" id="rec-opts"></div>
+    </div>
+
+    <div class="shape-row">
+      <span class="shape-lbl">צורת קלף:</span>
+      <div class="shape-grp" id="shp">
+        <button class="sbt on" data-s="circle">⭕ עגול</button>
+        <button class="sbt"    data-s="square">⬜ מרובע</button>
       </div>
     </div>
 
-    <div class="card-box">
-      <h2 class="section-title">כמה תמונות להעלות?</h2>
-      <p class="section-sub">בחר/י גודל משחק לפי הטבלה. כל קלף יכיל מספר קבוע של סמלים, ובכל זוג קלפים יהיה <strong>בדיוק סמל אחד משותף</strong>.</p>
-      <table class="info-table">
-        <thead>
-          <tr>
-            <th>תמונות נדרשות</th>
-            <th>סמלים לקלף</th>
-            <th>מספר קלפים</th>
-            <th>מתאים ל…</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td>7</td><td>3</td><td>7</td><td>ילדים קטנים</td></tr>
-          <tr><td>13</td><td>4</td><td>13</td><td>ילדים 6+</td></tr>
-          <tr><td>21</td><td>5</td><td>21</td><td>משפחה</td></tr>
-          <tr><td>31</td><td>6</td><td>31</td><td>בינוני–קשה</td></tr>
-          <tr class="highlight"><td>57</td><td>8</td><td>57</td><td>⭐ דובל סטנדרטי</td></tr>
-        </tbody>
-      </table>
+    <div class="brow" style="justify-content:flex-end">
+      <button class="btn btn-cta" id="btn-create" disabled>ייצר את המשחק שלי ✨</button>
     </div>
-  </section>
+  </div>
 
-  <!-- ▸ STEP 2: VALIDATE -->
-  <section id="step-validate" class="step">
-    <div class="card-box">
-      <h2 class="section-title">שלב 2 — אימות קונפיגורציה</h2>
+  <div class="box">
+    <h2 class="box-h">גדלים אפשריים</h2>
+    <table class="ref-table">
+      <thead><tr><th>תמונות</th><th>סמלים/קלף</th><th>קלפים</th><th>מתאים ל…</th></tr></thead>
+      <tbody>
+        <tr><td>7</td><td>3</td><td>7</td><td>ילדים קטנים</td></tr>
+        <tr><td>13</td><td>4</td><td>13</td><td>ילדים 6+</td></tr>
+        <tr><td>21</td><td>5</td><td>21</td><td>משפחה</td></tr>
+        <tr><td>31</td><td>6</td><td>31</td><td>בינוני–קשה</td></tr>
+        <tr><td>57</td><td>8</td><td>57</td><td>⭐ דובל סטנדרטי</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
 
-      <div id="validation-msg" class="msg ok"></div>
-      <div class="thumb-grid" id="thumb-grid"></div>
+<!-- ══ SCREEN 2: PREVIEW ══ -->
+<section id="s2" class="scr">
+  <div id="gen-ov" class="gen-ov" style="display:none">
+    <div class="prog-lbl" id="gen-lbl">מחשב…</div>
+    <div class="prog-bg"><div class="prog-fill" id="gen-bar"></div></div>
+  </div>
 
-      <div class="btn-row">
-        <button class="btn btn-outline" onclick="goToStep('step-upload')">← חזרה להעלאה</button>
-        <button class="btn btn-primary" id="btn-generate" disabled>🎲 צור קלפים</button>
-      </div>
-    </div>
-  </section>
+  <div id="prev-wrap" style="display:none">
+    <div class="prev-layout">
 
-  <!-- ▸ STEP 3: PREVIEW -->
-  <section id="step-preview" class="step">
-    <div class="card-box">
-      <h2 class="section-title">שלב 3 — תצוגה מקדימה וייצוא</h2>
-
-      <!-- Progress -->
-      <div id="gen-progress">
-        <div class="progress-label" id="progress-label">טוען תמונות…</div>
-        <div class="progress-bar-bg"><div class="progress-bar" id="progress-bar"></div></div>
-      </div>
-
-      <!-- Content (shown after generation) -->
-      <div id="preview-content" style="display:none">
-        <div class="stats-row" id="stats-row"></div>
-
-        <div class="test-banner">
-          🔍 <strong>מצב בדיקה:</strong> לחץ/י על שני קלפים שונים כדי לאתר את הסמל המשותף
+      <aside class="sidebar">
+        <div class="sb-sec">
+          <div class="sb-t">נתוני המשחק</div>
+          <div id="sb-stats"></div>
         </div>
-
-        <div class="match-result" id="match-result">
-          <canvas id="match-canvas" width="100" height="100"></canvas>
-          <div class="match-text" id="match-text"></div>
+        <div class="sb-sec">
+          <div class="sb-t">גודל סמלים</div>
+          <div class="sl-row">
+            <div class="sl-lbl"><span>מינימום</span><strong id="lbl-mn">70%</strong></div>
+            <input type="range" id="sl-mn" min="50" max="100" value="70" step="5">
+          </div>
+          <div class="sl-row">
+            <div class="sl-lbl"><span>מקסימום</span><strong id="lbl-mx">130%</strong></div>
+            <input type="range" id="sl-mx" min="100" max="150" value="130" step="5">
+          </div>
         </div>
+        <div class="sb-sec">
+          <div class="sb-t">פעולות</div>
+          <button class="btn btn-pur" id="btn-reshuffle" style="width:100%;justify-content:center;margin-bottom:.5rem">🔀 ערבב מחדש</button>
+          <button class="btn btn-ghost" id="btn-b1" style="width:100%;justify-content:center;font-size:.82rem">← חזרה להעלאה</button>
+        </div>
+        <div class="sb-sec">
+          <button class="btn btn-ok" id="btn-goexp" style="width:100%;justify-content:center">ייצא / הדפס →</button>
+        </div>
+      </aside>
 
-        <div class="cards-grid" id="cards-grid"></div>
+      <div class="cards-main">
+        <div class="vfy-banner">🔍 <strong>בדיקת אלגוריתם:</strong> לחץ/י על שני קלפים — הסמל המשותף היחיד יסומן אוטומטית</div>
+        <div class="cards-grid" id="cgrid"></div>
+      </div>
 
-        <div class="btn-row" style="margin-top:2rem">
-          <button class="btn btn-success" id="btn-export-pdf">📄 ייצוא PDF (A4)</button>
-          <button class="btn btn-gold"    id="btn-export-zip">🗜️ ייצוא PNG (ZIP)</button>
-          <button class="btn btn-outline" id="btn-restart">🔄 התחל מחדש</button>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SCREEN 3: EXPORT ══ -->
+<section id="s3" class="scr">
+  <div class="box">
+    <h2 class="box-h">ייצוא וידפוס</h2>
+    <p class="box-s">בחר/י פורמט ואפשרויות הדפסה ואז לחץ/י על יצירת הקובץ.</p>
+
+    <div class="exp-grid">
+      <div>
+        <div class="og">
+          <div class="og-t">פורמט קובץ</div>
+          <div class="radio-row">
+            <button class="rb on" data-g="fmt" data-v="pdf">📄 PDF להדפסה</button>
+            <button class="rb"    data-g="fmt" data-v="zip">🗜️ PNG (ZIP)</button>
+          </div>
+        </div>
+        <div class="og" id="pdf-sz-og">
+          <div class="og-t">גודל דף</div>
+          <div class="radio-row">
+            <button class="rb on" data-g="sz" data-v="a4">A4</button>
+            <button class="rb"    data-g="sz" data-v="a3">A3</button>
+          </div>
+        </div>
+        <div class="og" id="crop-og">
+          <div class="tog-row">
+            <label class="tswitch"><input type="checkbox" id="chk-crop" checked><span class="tslider"></span></label>
+            <span class="tog-lbl">סימני חיתוך (Crop Marks)</span>
+          </div>
         </div>
       </div>
+      <div>
+        <div class="og-t">תצוגה מקדימה</div>
+        <div class="paper-prev" id="pprev"></div>
+      </div>
     </div>
-  </section>
 
-</main>
+    <div class="brow">
+      <button class="btn btn-pri" id="btn-doexp">⚙️ צור וייצא קבצים</button>
+      <button class="btn btn-ghost" id="btn-b2">← חזרה לעריכה</button>
+    </div>
 
-<!-- ══════════════════════════════════════════════
-     JAVASCRIPT
-══════════════════════════════════════════════ -->
+    <div class="exp-prog" id="exp-prog">
+      <div class="prog-lbl" id="exp-lbl">מייצר…</div>
+      <div class="prog-bg"><div class="prog-fill" id="exp-bar"></div></div>
+    </div>
+
+    <div class="dl-area" id="dl-area">
+      <span style="font-size:.875rem;color:var(--green);font-weight:700">✅ הקובץ מוכן!</span>
+      <a class="btn btn-ok" id="dl-link" href="#" download>📥 הורד קובץ משחק</a>
+    </div>
+  </div>
+</section>
+
+</div><!-- /wrap -->
+
+<!-- VERIFY MODAL -->
+<div class="modal-bg" id="vmodal" hidden>
+  <div class="modal-card">
+    <div class="modal-hdr">
+      <div class="modal-title">🔍 בדיקת זוג קלפים</div>
+      <button class="modal-x" id="modal-x">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="mcw" id="mcw1"><canvas id="mc1" width="280" height="280"></canvas><div class="mc-lbl">קלף א</div></div>
+      <div class="mc-mid">
+        <div class="mc-ico">⟺</div>
+        <canvas class="mc-sym-canvas" id="mc-sym" width="80" height="80"></canvas>
+        <div class="mc-txt" id="mc-txt">—</div>
+      </div>
+      <div class="mcw" id="mcw2"><canvas id="mc2" width="280" height="280"></canvas><div class="mc-lbl">קלף ב</div></div>
+    </div>
+  </div>
+</div>
+
 <script>
 'use strict';
 
-// ────────────────────────────────────────────────
-// CONSTANTS
-// ────────────────────────────────────────────────
-const VALID_ORDERS = [
-  { q: 2, total:  7, symbolsPerCard: 3 },
-  { q: 3, total: 13, symbolsPerCard: 4 },
-  { q: 4, total: 21, symbolsPerCard: 5 },
-  { q: 5, total: 31, symbolsPerCard: 6 },
-  { q: 7, total: 57, symbolsPerCard: 8 },
-];
+// ══ MATH ══
+const ORDERS=[{q:2,total:7,spc:3},{q:3,total:13,spc:4},{q:4,total:21,spc:5},{q:5,total:31,spc:6},{q:7,total:57,spc:8}];
+const CARD_PX=500;
 
-const CARD_SIZE = 500; // canvas pixels
-
-// ────────────────────────────────────────────────
-// GF(4) ARITHMETIC  (irreducible poly x²+x+1 over GF(2))
-// ────────────────────────────────────────────────
-function gf4Add(a, b) { return a ^ b; }
-function gf4Mul(a, b) {
-  if (a === 0 || b === 0) return 0;
-  if (a === 1) return b;
-  if (b === 1) return a;
-  const a1 = (a >> 1) & 1, a0 = a & 1;
-  const b1 = (b >> 1) & 1, b0 = b & 1;
-  const r1 = ((a1 & b1) ^ (a1 & b0) ^ (a0 & b1)) & 1;
-  const r0 = ((a1 & b1) ^ (a0 & b0)) & 1;
-  return (r1 << 1) | r0;
+function gf4a(a,b){return a^b}
+function gf4m(a,b){
+  if(!a||!b)return 0;if(a===1)return b;if(b===1)return a;
+  const a1=(a>>1)&1,a0=a&1,b1=(b>>1)&1,b0=b&1;
+  return((((a1&b1)^(a1&b0)^(a0&b1))&1)<<1)|(((a1&b1)^(a0&b0))&1);
 }
+function gfOps(q){return q===4?{a:gf4a,m:gf4m}:{a:(a,b)=>(a+b)%q,m:(a,b)=>(a*b)%q}}
 
-function gfOps(q) {
-  if (q === 4) return { add: gf4Add, mul: gf4Mul };
-  return { add: (a, b) => (a + b) % q, mul: (a, b) => (a * b) % q };
-}
-
-// ────────────────────────────────────────────────
-// MATH ENGINE
-// ────────────────────────────────────────────────
-function findBestOrder(n) {
-  let best = null;
-  for (const o of VALID_ORDERS) if (o.total <= n) best = o;
-  return best;
-}
-function findNextOrder(n) {
-  for (const o of VALID_ORDERS) if (o.total > n) return o;
-  return null;
-}
-
-function generateDeck(q) {
-  const { add, mul } = gfOps(q);
-  const deck = [];
-
-  // Card 0: anchor / "line at infinity"
-  deck.push(Array.from({ length: q + 1 }, (_, i) => i));
-
-  // Slope cards: q×q
-  for (let s = 0; s < q; s++) {
-    for (let i = 0; i < q; i++) {
-      const card = [s + 1];
-      for (let x = 0; x < q; x++) {
-        card.push(q + 1 + x * q + add(mul(s, x), i));
-      }
-      deck.push(card);
-    }
+function genDeck(q){
+  const{a,m}=gfOps(q),D=[];
+  D.push(Array.from({length:q+1},(_,i)=>i));
+  for(let s=0;s<q;s++)for(let i=0;i<q;i++){
+    const c=[s+1];for(let x=0;x<q;x++)c.push(q+1+x*q+a(m(s,x),i));D.push(c);
   }
+  for(let v=0;v<q;v++){const c=[0];for(let y=0;y<q;y++)c.push(q+1+v*q+y);D.push(c);}
+  return D;
+}
+function bestOrder(n){let b=null;for(const o of ORDERS)if(o.total<=n)b=o;return b}
+function nextOrder(n){for(const o of ORDERS)if(o.total>n)return o;return null}
 
-  // Vertical cards: q
-  for (let v = 0; v < q; v++) {
-    const card = [0];
-    for (let y = 0; y < q; y++) card.push(q + 1 + v * q + y);
-    deck.push(card);
-  }
-
-  return deck;
+// ══ SEEDED RANDOM ══
+function sr(seed){
+  seed=Math.imul(seed^(seed>>>16),0x45d9f3b);
+  seed=Math.imul(seed^(seed>>>16),0x45d9f3b);
+  return((seed^(seed>>>16))>>>0)/0x100000000;
 }
 
-// ────────────────────────────────────────────────
-// SEEDED DETERMINISTIC RANDOM
-// ────────────────────────────────────────────────
-function seededRand(seed) {
-  seed = Math.imul(seed ^ (seed >>> 16), 0x45d9f3b);
-  seed = Math.imul(seed ^ (seed >>> 16), 0x45d9f3b);
-  seed = seed ^ (seed >>> 16);
-  return (seed >>> 0) / 0x100000000;
-}
-
-// ────────────────────────────────────────────────
-// LAYOUT GENERATOR  (shuffle + transforms, deterministic)
-// ────────────────────────────────────────────────
-function buildLayouts(deck) {
-  return deck.map((symbols, ci) => {
-    const shuffled = [...symbols];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(seededRand(ci * 1000 + i) * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    const transforms = shuffled.map((_, si) => ({
-      scale:    0.82 + seededRand(ci * 500 + si) * 0.36,
-      rotation: seededRand(ci * 300 + si + 17) * Math.PI * 2,
-    }));
-    return { symbols: shuffled, transforms };
+// ══ LAYOUTS ══
+function buildLayouts(deck,seed,sMin,sMax){
+  const range=sMax-sMin;
+  return deck.map((syms,ci)=>{
+    const base=seed*10000+ci;
+    const sh=[...syms];
+    for(let i=sh.length-1;i>0;i--){const j=Math.floor(sr(base*100+i)*(i+1));[sh[i],sh[j]]=[sh[j],sh[i]];}
+    const tr=sh.map((_,si)=>({sc:sMin+sr(base*200+si*7)*range,ro:sr(base*300+si*13+7)*Math.PI*2}));
+    return{syms:sh,tr};
   });
 }
 
-// ────────────────────────────────────────────────
-// SYMBOL POSITION TEMPLATES
-// r = card radius in canvas pixels
-// Returns array of { x, y, halfSize }
-// ────────────────────────────────────────────────
-function symbolPositions(count, cx, cy, r) {
-  const pts = [];
-  const push = (x, y, hs) => pts.push({ x, y, halfSize: hs });
-
-  if (count === 3) {
-    const rr = r * 0.56, hs = r * 0.34;
-    for (let i = 0; i < 3; i++) {
-      const a = (i * 2 * Math.PI / 3) - Math.PI / 2;
-      push(cx + rr * Math.cos(a), cy + rr * Math.sin(a), hs);
-    }
-  } else if (count === 4) {
-    push(cx, cy, r * 0.30);
-    const rr = r * 0.60, hs = r * 0.28;
-    for (let i = 0; i < 3; i++) {
-      const a = (i * 2 * Math.PI / 3) - Math.PI / 2;
-      push(cx + rr * Math.cos(a), cy + rr * Math.sin(a), hs);
-    }
-  } else if (count === 5) {
-    push(cx, cy, r * 0.27);
-    const rr = r * 0.60, hs = r * 0.25;
-    for (let i = 0; i < 4; i++) {
-      const a = (i * 2 * Math.PI / 4) - Math.PI / 4;
-      push(cx + rr * Math.cos(a), cy + rr * Math.sin(a), hs);
-    }
-  } else if (count === 6) {
-    push(cx, cy, r * 0.24);
-    const rr = r * 0.60, hs = r * 0.23;
-    for (let i = 0; i < 5; i++) {
-      const a = (i * 2 * Math.PI / 5) - Math.PI / 2;
-      push(cx + rr * Math.cos(a), cy + rr * Math.sin(a), hs);
-    }
-  } else {
-    // 8 symbols: center + inner 3 + outer 4
-    push(cx, cy, r * 0.20);
-    const ri = r * 0.38, hsi = r * 0.19;
-    for (let i = 0; i < 3; i++) {
-      const a = (i * 2 * Math.PI / 3);
-      push(cx + ri * Math.cos(a), cy + ri * Math.sin(a), hsi);
-    }
-    const ro = r * 0.72, hso = r * 0.18;
-    for (let i = 0; i < 4; i++) {
-      const a = (i * 2 * Math.PI / 4) - Math.PI / 4;
-      push(cx + ro * Math.cos(a), cy + ro * Math.sin(a), hso);
-    }
+// ══ SYMBOL POSITIONS ══
+function symPos(n,cx,cy,r){
+  const P=[],p=(x,y,hs)=>P.push({x,y,hs});
+  if(n===3){
+    const rr=r*.56,hs=r*.34;for(let i=0;i<3;i++){const a=i*2*Math.PI/3-Math.PI/2;p(cx+rr*Math.cos(a),cy+rr*Math.sin(a),hs);}
+  }else if(n===4){
+    p(cx,cy,r*.30);const rr=r*.60,hs=r*.28;for(let i=0;i<3;i++){const a=i*2*Math.PI/3-Math.PI/2;p(cx+rr*Math.cos(a),cy+rr*Math.sin(a),hs);}
+  }else if(n===5){
+    p(cx,cy,r*.27);const rr=r*.60,hs=r*.25;for(let i=0;i<4;i++){const a=i*Math.PI/2-Math.PI/4;p(cx+rr*Math.cos(a),cy+rr*Math.sin(a),hs);}
+  }else if(n===6){
+    p(cx,cy,r*.24);const rr=r*.60,hs=r*.23;for(let i=0;i<5;i++){const a=i*2*Math.PI/5-Math.PI/2;p(cx+rr*Math.cos(a),cy+rr*Math.sin(a),hs);}
+  }else{
+    p(cx,cy,r*.20);
+    const ri=r*.38,hsi=r*.19;for(let i=0;i<3;i++){const a=i*2*Math.PI/3;p(cx+ri*Math.cos(a),cy+ri*Math.sin(a),hsi);}
+    const ro=r*.72,hso=r*.18;for(let i=0;i<4;i++){const a=i*Math.PI/2-Math.PI/4;p(cx+ro*Math.cos(a),cy+ro*Math.sin(a),hso);}
   }
-  return pts;
+  return P;
 }
 
-// ────────────────────────────────────────────────
-// CARD RENDERER
-// ────────────────────────────────────────────────
-function drawCard(canvas, layout, imgEls, highlightIdx = -1) {
-  const ctx  = canvas.getContext('2d');
-  const size = canvas.width;
-  const cx   = size / 2, cy = size / 2;
-  const r    = size / 2 - 7;
+// ══ DRAW CARD ══
+function rrect(ctx,x,y,w,h,cr){
+  ctx.moveTo(x+cr,y);ctx.lineTo(x+w-cr,y);ctx.arcTo(x+w,y,x+w,y+cr,cr);
+  ctx.lineTo(x+w,y+h-cr);ctx.arcTo(x+w,y+h,x+w-cr,y+h,cr);
+  ctx.lineTo(x+cr,y+h);ctx.arcTo(x,y+h,x,y+h-cr,cr);
+  ctx.lineTo(x,y+cr);ctx.arcTo(x,y,x+cr,y,cr);ctx.closePath();
+}
 
-  ctx.clearRect(0, 0, size, size);
+function drawCard(canvas,layout,imgs,shape,hitIdx){
+  hitIdx=hitIdx==null?-1:hitIdx;
+  const ctx=canvas.getContext('2d'),sz=canvas.width,cx=sz/2,cy=sz/2,r=sz/2-7;
+  ctx.clearRect(0,0,sz,sz);
+  const isC=shape==='circle';
+  const sq=r*1.88,sqx=cx-sq/2,sqy=cy-sq/2,sqcr=sq*.09;
 
-  // Clip to circle
-  ctx.save();
+  ctx.save();ctx.beginPath();
+  if(isC)ctx.arc(cx,cy,r,0,Math.PI*2);else rrect(ctx,sqx,sqy,sq,sq,sqcr);
+  ctx.clip();ctx.fillStyle='#FFFEF5';ctx.fillRect(0,0,sz,sz);ctx.restore();
+
   ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, Math.PI * 2);
-  ctx.clip();
-  ctx.fillStyle = '#FFFEF5';
-  ctx.fillRect(0, 0, size, size);
-  ctx.restore();
+  if(isC)ctx.arc(cx,cy,r,0,Math.PI*2);else rrect(ctx,sqx,sqy,sq,sq,sqcr);
+  ctx.strokeStyle='#4338CA';ctx.lineWidth=sz*.021;ctx.stroke();
 
-  // Outer border
   ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, Math.PI * 2);
-  ctx.strokeStyle = '#4338CA';
-  ctx.lineWidth = size * 0.022;
-  ctx.stroke();
+  if(isC)ctx.arc(cx,cy,r-sz*.016,0,Math.PI*2);else rrect(ctx,sqx+sz*.013,sqy+sz*.013,sq-sz*.026,sq-sz*.026,sqcr*.8);
+  ctx.strokeStyle='rgba(67,56,202,.09)';ctx.lineWidth=sz*.006;ctx.stroke();
 
-  // Subtle inner ring
-  ctx.beginPath();
-  ctx.arc(cx, cy, r - size * 0.016, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(67,56,202,0.10)';
-  ctx.lineWidth = size * 0.007;
-  ctx.stroke();
-
-  const positions = symbolPositions(layout.symbols.length, cx, cy, r);
-
-  for (let i = 0; i < layout.symbols.length; i++) {
-    const symIdx = layout.symbols[i];
-    const pos    = positions[i];
-    const t      = layout.transforms[i];
-    const img    = imgEls[symIdx];
-    if (!img) continue;
-
-    const isHit  = symIdx === highlightIdx;
-    const ds     = pos.halfSize * t.scale * 2;
-
-    ctx.save();
-    ctx.translate(pos.x, pos.y);
-    ctx.rotate(t.rotation);
-
-    if (isHit) {
-      ctx.shadowColor = '#F59E0B';
-      ctx.shadowBlur  = size * 0.07;
-      ctx.beginPath();
-      ctx.arc(0, 0, pos.halfSize * t.scale * 1.3, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(253,224,71,0.30)';
-      ctx.fill();
-      ctx.shadowBlur = 0;
+  const pos=symPos(layout.syms.length,cx,cy,r);
+  for(let i=0;i<layout.syms.length;i++){
+    const si=layout.syms[i],pp=pos[i],t=layout.tr[i],img=imgs[si];
+    if(!img)continue;
+    const hit=si===hitIdx,ds=pp.hs*t.sc*2;
+    ctx.save();ctx.translate(pp.x,pp.y);ctx.rotate(t.ro);
+    if(hit){
+      ctx.shadowColor='#F59E0B';ctx.shadowBlur=sz*.07;
+      ctx.beginPath();ctx.arc(0,0,pp.hs*t.sc*1.35,0,Math.PI*2);
+      ctx.fillStyle='rgba(253,224,71,.28)';ctx.fill();ctx.shadowBlur=0;
     }
-
-    ctx.drawImage(img, -ds / 2, -ds / 2, ds, ds);
+    ctx.drawImage(img,-ds/2,-ds/2,ds,ds);
     ctx.restore();
   }
 }
 
-// ────────────────────────────────────────────────
-// STATE
-// ────────────────────────────────────────────────
-let uploadedImages = [];
-let currentOrder   = null;
-let deck           = [];
-let deckLayouts    = [];
-let cardCanvases   = [];
-let imageElements  = [];
-let testSelected   = [];
+// ══ STATE ══
+const S={
+  imgs:[],order:null,deck:[],layouts:[],imgEls:[],canvases:[],
+  shape:'circle',sMin:.70,sMax:1.30,seed:1,
+  sel:[],
+  fmt:'pdf',sz:'a4',crop:true,
+};
 
-// ────────────────────────────────────────────────
-// NAVIGATION
-// ────────────────────────────────────────────────
-function goToStep(id) {
-  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-
-function resetAll() {
-  uploadedImages.forEach(im => URL.revokeObjectURL(im.url));
-  uploadedImages = []; currentOrder = null; deck = []; deckLayouts = [];
-  cardCanvases = []; imageElements = []; testSelected = [];
-  document.getElementById('cards-grid').innerHTML = '';
-  document.getElementById('file-input').value    = '';
-  document.getElementById('match-result').classList.remove('visible');
-  document.getElementById('preview-content').style.display = 'none';
-  document.getElementById('gen-progress').style.display    = 'block';
-  goToStep('step-upload');
-}
-
-document.getElementById('btn-restart').addEventListener('click', resetAll);
-
-// ────────────────────────────────────────────────
-// FILE UPLOAD
-// ────────────────────────────────────────────────
-const uploadZone = document.getElementById('upload-zone');
-const fileInput  = document.getElementById('file-input');
-
-uploadZone.addEventListener('click', () => fileInput.click());
-uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
-uploadZone.addEventListener('dragleave', ()  => uploadZone.classList.remove('drag-over'));
-uploadZone.addEventListener('drop', e => {
-  e.preventDefault();
-  uploadZone.classList.remove('drag-over');
-  handleFiles(e.dataTransfer.files);
-});
-fileInput.addEventListener('change', e => handleFiles(e.target.files));
-
-function handleFiles(files) {
-  const imgs = Array.from(files).filter(f => f.type.startsWith('image/'));
-  if (!imgs.length) { alert('נא לבחור קבצי תמונה (PNG, JPG, SVG, WebP)'); return; }
-  uploadedImages.forEach(im => URL.revokeObjectURL(im.url));
-  uploadedImages = imgs.map(f => ({ name: f.name, url: URL.createObjectURL(f) }));
-  showValidation();
-}
-
-// ────────────────────────────────────────────────
-// VALIDATION STEP
-// ────────────────────────────────────────────────
-function showValidation() {
-  const n    = uploadedImages.length;
-  const best = findBestOrder(n);
-  const next = findNextOrder(n);
-  const msgEl = document.getElementById('validation-msg');
-  const btnGen = document.getElementById('btn-generate');
-
-  if (!best) {
-    msgEl.className = 'msg error';
-    msgEl.innerHTML = `העלת <strong>${n} תמונות</strong>. נדרשות לפחות <strong>7 תמונות</strong> כדי ליצור משחק. אנא הוסף עוד תמונות.`;
-    btnGen.disabled = true;
-    currentOrder = null;
-  } else {
-    currentOrder = best;
-    let html = '';
-    if (n === best.total) {
-      msgEl.className = 'msg ok';
-      html = `✅ <strong>מצוין!</strong> העלת בדיוק <strong>${n} תמונות</strong>. ניצור <strong>${best.total} קלפים</strong>, ${best.symbolsPerCard} סמלים לקלף.`;
-    } else {
-      msgEl.className = 'msg warn';
-      html = `⚠️ העלת <strong>${n} תמונות</strong>. נשתמש ב-<strong>${best.total} הראשונות</strong> — ${best.total} קלפים, ${best.symbolsPerCard} סמלים לקלף.`;
-      if (next) html += `<br>💡 כדי לקבל <strong>${next.total} קלפים</strong> (${next.symbolsPerCard} סמלים), הוסף/י עוד ${next.total - n} תמונות (סה"כ ${next.total}).`;
-    }
-    msgEl.innerHTML = html;
-    btnGen.disabled = false;
-  }
-
-  // Thumbnails
-  const grid = document.getElementById('thumb-grid');
-  grid.innerHTML = '';
-  const show = Math.min(n, 32);
-  for (let i = 0; i < show; i++) {
-    const d = document.createElement('div');
-    d.className = 'thumb-item';
-    const img = document.createElement('img');
-    img.src = uploadedImages[i].url;
-    img.alt = uploadedImages[i].name;
-    d.appendChild(img);
-    grid.appendChild(d);
-  }
-  if (n > show) {
-    const d = document.createElement('div');
-    d.className = 'thumb-item thumb-more';
-    d.textContent = `+${n - show}`;
-    grid.appendChild(d);
-  }
-
-  goToStep('step-validate');
-}
-
-// ────────────────────────────────────────────────
-// GENERATION
-// ────────────────────────────────────────────────
-async function loadImage(url) {
-  return new Promise((res, rej) => {
-    const img = new Image();
-    img.onload  = () => res(img);
-    img.onerror = rej;
-    img.src = url;
+// ══ NAV ══
+function goScr(n){
+  [1,2,3].forEach(i=>{
+    document.getElementById('s'+i).classList.toggle('on',i===n);
+    const si=document.getElementById('si'+i);
+    si.classList.toggle('active',i===n);
+    si.classList.toggle('done',i<n);
   });
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
-function setProgress(pct, label) {
-  document.getElementById('progress-bar').style.width   = pct + '%';
-  document.getElementById('progress-label').textContent = label;
+// ══ UPLOAD ══
+const uz=document.getElementById('uz'),fi=document.getElementById('fi');
+uz.addEventListener('click',()=>fi.click());
+uz.addEventListener('dragover',e=>{e.preventDefault();uz.classList.add('over');});
+uz.addEventListener('dragleave',()=>uz.classList.remove('over'));
+uz.addEventListener('drop',e=>{e.preventDefault();uz.classList.remove('over');handleFiles(e.dataTransfer.files);});
+fi.addEventListener('change',e=>handleFiles(e.target.files));
+document.getElementById('chg-btn').addEventListener('click',()=>fi.click());
+
+function handleFiles(files){
+  const imgs=Array.from(files).filter(f=>f.type.startsWith('image/'));
+  if(!imgs.length){alert('נא לבחור קבצי תמונה (PNG, JPG, SVG, WebP)');return;}
+  S.imgs.forEach(im=>URL.revokeObjectURL(im.url));
+  S.imgs=imgs.map(f=>({name:f.name,url:URL.createObjectURL(f)}));
+  showRec();
 }
 
-document.getElementById('btn-generate').addEventListener('click', async () => {
-  if (!currentOrder) return;
-  goToStep('step-preview');
+function showRec(){
+  const n=S.imgs.length,best=bestOrder(n),nxt=nextOrder(n);
+  document.getElementById('cnum').textContent=n;
+  const tr=document.getElementById('trow');tr.innerHTML='';
+  const show=Math.min(n,7);
+  for(let i=0;i<show;i++){const img=document.createElement('img');img.className='tsm';img.src=S.imgs[i].url;tr.appendChild(img);}
+  if(n>show){const sp=document.createElement('span');sp.className='tmore';sp.textContent=`+${n-show}`;tr.appendChild(sp);}
+  document.getElementById('cstrip').classList.add('on');
 
-  document.getElementById('gen-progress').style.display    = 'block';
-  document.getElementById('preview-content').style.display = 'none';
-  document.getElementById('match-result').classList.remove('visible');
-  setProgress(5, 'מחשב קלפים…');
+  const rec=document.getElementById('rec'),recT=document.getElementById('rec-t'),recO=document.getElementById('rec-opts');
+  recO.innerHTML='';
 
-  // 1. Generate deck matrix
-  deck = generateDeck(currentOrder.q);
-  deckLayouts = buildLayouts(deck);
-  setProgress(15, 'טוען תמונות…');
+  if(!best){
+    rec.classList.add('on');
+    recT.innerHTML=`⚠️ נדרשות לפחות <strong>7 תמונות</strong>. העלית ${n} — אנא הוסף עוד ${7-n}.`;
+    document.getElementById('btn-create').disabled=true;
+    S.order=null;return;
+  }
+  rec.classList.add('on');
+  recT.innerHTML=`💡 <strong>המלצה מתמטית:</strong> העלית <strong>${n} תמונות</strong>. כדי ליצור משחק מושלם, באפשרותך:`;
 
-  // 2. Load images
-  const subset = uploadedImages.slice(0, currentOrder.total);
-  try {
-    imageElements = await Promise.all(subset.map(im => loadImage(im.url)));
-  } catch {
-    alert('שגיאה בטעינת חלק מהתמונות. ודא שכל הקבצים תקינים.');
-    goToStep('step-validate');
+  const addOpt=(ord,sel)=>{
+    const need=ord.total-n;
+    const d=document.createElement('div');
+    d.className='ropt'+(sel?' sel':'')+(need>0?' dim':'');
+    d.dataset.total=ord.total;
+    const badge=need<=0?'מדויק ✓':`הוסף ${need} תמונות`;
+    d.innerHTML=`<div class="ropt-h">${ord.total} קלפים</div><div class="ropt-s">${ord.spc} סמלים לקלף</div><div class="ropt-b">${badge}</div>`;
+    if(need<=0){
+      d.addEventListener('click',()=>{
+        S.order=ORDERS.find(o=>o.total===+d.dataset.total);
+        document.querySelectorAll('.ropt').forEach(el=>el.classList.remove('sel'));
+        d.classList.add('sel');
+      });
+    }
+    recO.appendChild(d);
+  };
+
+  addOpt(best,true);
+  if(nxt)addOpt(nxt,false);
+  S.order=best;
+  document.getElementById('btn-create').disabled=false;
+}
+
+// ══ SHAPE ══
+document.getElementById('shp').addEventListener('click',e=>{
+  const b=e.target.closest('.sbt');if(!b)return;
+  document.querySelectorAll('.sbt').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');S.shape=b.dataset.s;
+});
+
+// ══ SLIDERS ══
+const slMn=document.getElementById('sl-mn'),slMx=document.getElementById('sl-mx');
+const lblMn=document.getElementById('lbl-mn'),lblMx=document.getElementById('lbl-mx');
+slMn.addEventListener('input',()=>{S.sMin=+slMn.value/100;lblMn.textContent=slMn.value+'%';});
+slMx.addEventListener('input',()=>{S.sMax=+slMx.value/100;lblMx.textContent=slMx.value+'%';});
+slMn.addEventListener('change',()=>renderAll());
+slMx.addEventListener('change',()=>renderAll());
+
+// ══ GENERATE ══
+document.getElementById('btn-create').addEventListener('click',generate);
+
+async function generate(){
+  if(!S.order)return;
+  goScr(2);
+  document.getElementById('gen-ov').style.display='block';
+  document.getElementById('prev-wrap').style.display='none';
+  const setp=(p,t)=>{document.getElementById('gen-bar').style.width=p+'%';document.getElementById('gen-lbl').textContent=t;};
+  setp(5,'מחשב מטריצת קלפים…');
+  S.deck=genDeck(S.order.q);
+  S.seed=Math.floor(Math.random()*90000)+10000;
+  S.layouts=buildLayouts(S.deck,S.seed,S.sMin,S.sMax);
+  setp(15,'טוען תמונות…');
+  try{S.imgEls=await Promise.all(S.imgs.slice(0,S.order.total).map(im=>loadImg(im.url)));}
+  catch{alert('שגיאה בטעינת תמונות.');return;}
+  setp(35,'מצייר קלפים…');
+  S.canvases=[];S.sel=[];
+  const grid=document.getElementById('cgrid');
+  grid.innerHTML='';grid.className='cards-grid'+(S.shape==='square'?' sq':'');
+  for(let i=0;i<S.deck.length;i++){
+    const c=document.createElement('canvas');c.width=c.height=CARD_PX;
+    drawCard(c,S.layouts[i],S.imgEls,S.shape);S.canvases.push(c);
+    const w=document.createElement('div');w.className='cw';w.dataset.i=i;w.appendChild(c);
+    w.addEventListener('click',()=>onCardClick(i));grid.appendChild(w);
+    setp(35+Math.round(65*(i+1)/S.deck.length),`מצייר קלף ${i+1}/${S.deck.length}…`);
+    if(i%6===5)await tick();
+  }
+  document.getElementById('sb-stats').innerHTML=
+    `<div class="stat-row"><span>קלפים</span><span class="stat-v">${S.deck.length}</span></div>
+     <div class="stat-row"><span>סמלים/קלף</span><span class="stat-v">${S.order.spc}</span></div>
+     <div class="stat-row"><span>תמונות</span><span class="stat-v">${S.order.total}</span></div>
+     <div class="stat-row"><span>סדר (q)</span><span class="stat-v">${S.order.q}</span></div>`;
+  document.getElementById('gen-ov').style.display='none';
+  document.getElementById('prev-wrap').style.display='block';
+}
+
+async function renderAll(){
+  S.layouts=buildLayouts(S.deck,S.seed,S.sMin,S.sMax);
+  const grid=document.getElementById('cgrid');
+  grid.className='cards-grid'+(S.shape==='square'?' sq':'');
+  for(let i=0;i<S.deck.length;i++){
+    drawCard(S.canvases[i],S.layouts[i],S.imgEls,S.shape);
+    if(i%8===7)await tick();
+  }
+}
+
+// ══ RESHUFFLE ══
+document.getElementById('btn-reshuffle').addEventListener('click',async()=>{
+  const btn=document.getElementById('btn-reshuffle');
+  btn.disabled=true;btn.innerHTML='<span class="spin"></span> מערבב…';
+  S.seed=Math.floor(Math.random()*90000)+10000;
+  await renderAll();
+  btn.disabled=false;btn.innerHTML='🔀 ערבב מחדש';
+});
+
+// ══ CARD CLICK / VERIFY ══
+function onCardClick(idx){
+  if(S.sel.includes(idx)){
+    S.sel=S.sel.filter(i=>i!==idx);
+    document.querySelector(`.cw[data-i="${idx}"]`).className='cw';
     return;
   }
-  setProgress(35, 'מצייר קלפים…');
-
-  // 3. Render cards
-  cardCanvases = [];
-  testSelected = [];
-  const grid = document.getElementById('cards-grid');
-  grid.innerHTML = '';
-
-  for (let i = 0; i < deck.length; i++) {
-    const canvas = document.createElement('canvas');
-    canvas.width  = CARD_SIZE;
-    canvas.height = CARD_SIZE;
-    drawCard(canvas, deckLayouts[i], imageElements);
-    cardCanvases.push(canvas);
-
-    const wrap = document.createElement('div');
-    wrap.className    = 'card-wrap';
-    wrap.dataset.idx  = i;
-    wrap.appendChild(canvas);
-    wrap.addEventListener('click', () => handleCardClick(i));
-    grid.appendChild(wrap);
-
-    const pct = 35 + Math.round(65 * (i + 1) / deck.length);
-    setProgress(pct, `מצייר קלף ${i + 1} מתוך ${deck.length}…`);
-    if (i % 6 === 5) await new Promise(r => setTimeout(r, 0));
+  if(S.sel.length===2){
+    S.sel.forEach(i=>document.querySelector(`.cw[data-i="${i}"]`).className='cw');
+    S.sel=[];
   }
-
-  // 4. Stats
-  document.getElementById('stats-row').innerHTML =
-    `<span class="stat-chip">🃏 ${deck.length} קלפים</span>
-     <span class="stat-chip">🔣 ${currentOrder.symbolsPerCard} סמלים לקלף</span>
-     <span class="stat-chip">🖼️ ${currentOrder.total} תמונות</span>
-     <span class="stat-chip">📐 q = ${currentOrder.q}</span>`;
-
-  document.getElementById('gen-progress').style.display    = 'none';
-  document.getElementById('preview-content').style.display = 'block';
-});
-
-// ────────────────────────────────────────────────
-// TEST MODE
-// ────────────────────────────────────────────────
-function handleCardClick(idx) {
-  const matchEl = document.getElementById('match-result');
-
-  // Toggle off
-  if (testSelected.includes(idx)) {
-    testSelected = testSelected.filter(i => i !== idx);
-    document.querySelector(`.card-wrap[data-idx="${idx}"]`).className = 'card-wrap';
-    if (testSelected.length < 2) matchEl.classList.remove('visible');
-    if (testSelected.length === 1) {
-      const prev = testSelected[0];
-      drawCard(cardCanvases[prev], deckLayouts[prev], imageElements);
-    }
-    return;
-  }
-
-  // Reset if already 2 selected
-  if (testSelected.length === 2) {
-    testSelected.forEach(i => {
-      document.querySelector(`.card-wrap[data-idx="${i}"]`).className = 'card-wrap';
-      drawCard(cardCanvases[i], deckLayouts[i], imageElements);
-    });
-    testSelected = [];
-    matchEl.classList.remove('visible');
-  }
-
-  testSelected.push(idx);
-  const cls = testSelected.length === 1 ? 'sel-1' : 'sel-2';
-  document.querySelector(`.card-wrap[data-idx="${idx}"]`).className = `card-wrap ${cls}`;
-
-  if (testSelected.length === 2) {
-    const [c1, c2] = testSelected;
-    const common = deck[c1].filter(s => deck[c2].includes(s));
-
-    if (common.length === 1) {
-      const sym = common[0];
-      document.getElementById('match-text').innerHTML =
-        `✅ הסמל המשותף: <strong>#${sym + 1}</strong><br>${uploadedImages[sym]?.name || ''}`;
-
-      // Mini canvas
-      const mc  = document.getElementById('match-canvas');
-      const mct = mc.getContext('2d');
-      mct.clearRect(0, 0, 100, 100);
-      mct.beginPath(); mct.arc(50, 50, 47, 0, Math.PI * 2);
-      mct.fillStyle = '#FEF9C3'; mct.fill();
-      mct.strokeStyle = '#F59E0B'; mct.lineWidth = 4; mct.stroke();
-      if (imageElements[sym]) mct.drawImage(imageElements[sym], 10, 10, 80, 80);
-
-      matchEl.classList.add('visible');
-
-      // Highlight matching symbol on both cards
-      [c1, c2].forEach(ci => drawCard(cardCanvases[ci], deckLayouts[ci], imageElements, sym));
-    }
-  }
+  S.sel.push(idx);
+  document.querySelector(`.cw[data-i="${idx}"]`).className='cw '+(S.sel.length===1?'s1':'s2');
+  if(S.sel.length===2)openVerify(S.sel[0],S.sel[1]);
 }
 
-// ────────────────────────────────────────────────
-// EXPORT: PDF
-// ────────────────────────────────────────────────
-document.getElementById('btn-export-pdf').addEventListener('click', async () => {
-  const btn = document.getElementById('btn-export-pdf');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> מייצר PDF…';
-
-  await new Promise(r => setTimeout(r, 30));
-
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-
-  const cols  = 2, rows = 3;
-  const diam  = 80;
-  const pageW = 210, pageH = 297;
-  const gapX  = (pageW - cols * diam) / (cols + 1);
-  const gapY  = (pageH - rows * diam) / (rows + 1);
-
-  const expCanvas = document.createElement('canvas');
-  expCanvas.width = expCanvas.height = CARD_SIZE;
-
-  for (let i = 0; i < deck.length; i++) {
-    const page = Math.floor(i / (cols * rows));
-    const pos  = i % (cols * rows);
-    const col  = pos % cols;
-    const row  = Math.floor(pos / cols);
-
-    if (i > 0 && pos === 0) pdf.addPage();
-
-    const x = gapX + col * (diam + gapX);
-    const y = gapY + row * (diam + gapY);
-
-    drawCard(expCanvas, deckLayouts[i], imageElements);
-    const dataUrl = expCanvas.toDataURL('image/png', 1.0);
-    pdf.addImage(dataUrl, 'PNG', x, y, diam, diam);
-
-    if (i % 4 === 3) await new Promise(r => setTimeout(r, 0));
+function openVerify(c1,c2){
+  const common=S.deck[c1].filter(s=>S.deck[c2].includes(s));
+  const sym=common.length===1?common[0]:-1;
+  const mc1=document.getElementById('mc1'),mc2=document.getElementById('mc2');
+  mc1.width=mc1.height=280;mc2.width=mc2.height=280;
+  drawCard(mc1,S.layouts[c1],S.imgEls,S.shape,sym);
+  drawCard(mc2,S.layouts[c2],S.imgEls,S.shape,sym);
+  document.getElementById('mcw1').className='mcw'+(S.shape==='square'?' sq':'');
+  document.getElementById('mcw2').className='mcw'+(S.shape==='square'?' sq':'');
+  const mcs=document.getElementById('mc-sym'),mct=mcs.getContext('2d');
+  mct.clearRect(0,0,80,80);
+  if(sym>=0&&S.imgEls[sym]){
+    mct.beginPath();mct.arc(40,40,37,0,Math.PI*2);mct.fillStyle='#FEF9C3';mct.fill();
+    mct.strokeStyle='#F59E0B';mct.lineWidth=3;mct.stroke();
+    mct.drawImage(S.imgEls[sym],8,8,64,64);
   }
+  document.getElementById('mc-txt').textContent=sym>=0?`#${sym+1} · ${S.imgs[sym]?.name||''}`:'—';
+  document.getElementById('vmodal').hidden=false;
+}
 
-  pdf.save(`dobble-${currentOrder.total}cards.pdf`);
+document.getElementById('modal-x').addEventListener('click',closeModal);
+document.getElementById('vmodal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
+function closeModal(){
+  document.getElementById('vmodal').hidden=true;
+  S.sel.forEach(i=>document.querySelector(`.cw[data-i="${i}"]`).className='cw');
+  S.sel=[];
+}
 
-  btn.disabled = false;
-  btn.innerHTML = '📄 ייצוא PDF (A4)';
+// ══ BACK / NAV ══
+document.getElementById('btn-b1').addEventListener('click',()=>{goScr(1);resetState();});
+document.getElementById('btn-b2').addEventListener('click',()=>{goScr(2);resetExport();});
+document.getElementById('btn-goexp').addEventListener('click',()=>{updatePaperPrev();goScr(3);});
+
+function resetState(){
+  S.imgs.forEach(im=>URL.revokeObjectURL(im.url));
+  Object.assign(S,{imgs:[],order:null,deck:[],layouts:[],imgEls:[],canvases:[],sel:[],seed:1});
+  fi.value='';
+  document.getElementById('cstrip').classList.remove('on');
+  document.getElementById('rec').classList.remove('on');
+  document.getElementById('btn-create').disabled=true;
+  document.getElementById('cgrid').innerHTML='';
+  document.getElementById('prev-wrap').style.display='none';
+  document.getElementById('gen-ov').style.display='none';
+}
+function resetExport(){
+  document.getElementById('exp-prog').classList.remove('on');
+  document.getElementById('dl-area').classList.remove('on');
+}
+
+// ══ EXPORT OPTIONS ══
+document.querySelectorAll('.rb').forEach(b=>{
+  b.addEventListener('click',()=>{
+    const g=b.dataset.g;
+    document.querySelectorAll(`.rb[data-g="${g}"]`).forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    if(g==='fmt'){S.fmt=b.dataset.v;const pdf=S.fmt==='pdf';document.getElementById('pdf-sz-og').style.display=pdf?'':'none';document.getElementById('crop-og').style.display=pdf?'':'none';}
+    else if(g==='sz')S.sz=b.dataset.v;
+    updatePaperPrev();
+  });
 });
+document.getElementById('chk-crop').addEventListener('change',e=>S.crop=e.target.checked);
 
-// ────────────────────────────────────────────────
-// EXPORT: ZIP of PNGs
-// ────────────────────────────────────────────────
-document.getElementById('btn-export-zip').addEventListener('click', async () => {
-  const btn = document.getElementById('btn-export-zip');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> מייצר ZIP…';
+function getLayout(){
+  if(S.fmt==='zip')return{cols:1,rows:1,cardMm:0};
+  return S.sz==='a4'?{cols:2,rows:3,cardMm:75}:{cols:3,rows:4,cardMm:75};
+}
 
-  await new Promise(r => setTimeout(r, 30));
+function updatePaperPrev(){
+  const pp=document.getElementById('pprev');
+  if(S.fmt==='zip'){pp.innerHTML=`<div class="paper-info">קבצי PNG נפרדים<br><strong>${S.deck.length||'–'}</strong> קבצים בסה"כ</div>`;return;}
+  const{cols,rows,cardMm}=getLayout();
+  const perPage=cols*rows,pages=S.deck.length?Math.ceil(S.deck.length/perPage):1;
+  const isA4=S.sz==='a4';const pw=isA4?88:124,ph=isA4?124:88;
+  const cs=isA4?18:22;
+  let cells='';for(let i=0;i<perPage;i++)cells+=`<div style="width:${cs}px;height:${cs}px" class="${S.shape==='circle'?'pc':'ps'}"></div>`;
+  pp.innerHTML=`<div class="paper-mini" style="width:${pw}px;height:${ph}px"><div class="paper-inner">${cells}</div></div>
+    <div class="paper-info">${S.sz.toUpperCase()} · ${cols}×${rows}=${perPage} קלפים/עמוד<br>${cardMm}mm${S.crop?' · סימני חיתוך':''}<br><strong>${pages}</strong> עמוד${pages!==1?'ות':''}</div>`;
+}
 
-  const zip    = new JSZip();
-  const folder = zip.folder('dobble-cards');
+// ══ EXPORT ══
+document.getElementById('btn-doexp').addEventListener('click',doExport);
 
-  for (let i = 0; i < cardCanvases.length; i++) {
-    const base64 = cardCanvases[i].toDataURL('image/png', 1.0).split(',')[1];
-    folder.file(`card-${String(i + 1).padStart(3, '0')}.png`, base64, { base64: true });
-    if (i % 8 === 7) await new Promise(r => setTimeout(r, 0));
+async function doExport(){
+  resetExport();
+  document.getElementById('exp-prog').classList.add('on');
+  const setp=(p,t)=>{document.getElementById('exp-bar').style.width=p+'%';document.getElementById('exp-lbl').textContent=t;};
+  setp(3,'מתחיל…');await tick();
+  if(S.fmt==='pdf')await expPDF(setp);else await expZIP(setp);
+}
+
+async function expPDF(setp){
+  const{jsPDF}=window.jspdf;
+  const{cols,rows,cardMm}=getLayout();
+  const isA4=S.sz==='a4',pW=isA4?210:297,pH=isA4?297:420,perPage=cols*rows;
+  const gX=(pW-cols*cardMm)/(cols+1),gY=(pH-rows*cardMm)/(rows+1);
+  const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:S.sz});
+  const tmp=document.createElement('canvas');tmp.width=tmp.height=CARD_PX;
+  const cg=2,cl=4;
+  for(let i=0;i<S.deck.length;i++){
+    const pos=i%perPage,col=pos%cols,row=Math.floor(pos/cols);
+    if(i>0&&pos===0)pdf.addPage();
+    const x=gX+col*(cardMm+gX),y=gY+row*(cardMm+gY),d=cardMm;
+    drawCard(tmp,S.layouts[i],S.imgEls,S.shape);
+    pdf.addImage(tmp.toDataURL('image/png',1),'PNG',x,y,d,d);
+    if(S.crop){
+      pdf.setDrawColor(0);pdf.setLineWidth(.25);
+      pdf.line(x-cg-cl,y,x-cg,y);pdf.line(x,y-cg-cl,x,y-cg);
+      pdf.line(x+d+cg,y,x+d+cg+cl,y);pdf.line(x+d,y-cg-cl,x+d,y-cg);
+      pdf.line(x-cg-cl,y+d,x-cg,y+d);pdf.line(x,y+d+cg,x,y+d+cg+cl);
+      pdf.line(x+d+cg,y+d,x+d+cg+cl,y+d);pdf.line(x+d,y+d+cg,x+d,y+d+cg+cl);
+    }
+    setp(3+Math.round(92*(i+1)/S.deck.length),`עמוד ${Math.floor(i/perPage)+1} — קלף ${(i%perPage)+1}/${perPage}…`);
+    if(i%3===2)await tick();
   }
+  setp(98,'שומר…');
+  const blob=pdf.output('blob'),url=URL.createObjectURL(blob);
+  const lnk=document.getElementById('dl-link');
+  lnk.href=url;lnk.download=`dobble-${S.order.total}cards-${S.sz.toUpperCase()}.pdf`;
+  document.getElementById('dl-area').classList.add('on');
+  setp(100,'✅ מוכן!');
+}
 
-  const blob = await zip.generateAsync({ type: 'blob' });
-  const a    = document.createElement('a');
-  a.href     = URL.createObjectURL(blob);
-  a.download = `dobble-${currentOrder.total}cards.zip`;
-  a.click();
-  URL.revokeObjectURL(a.href);
+async function expZIP(setp){
+  const zip=new JSZip(),folder=zip.folder('dobble-cards');
+  for(let i=0;i<S.canvases.length;i++){
+    folder.file(`card-${String(i+1).padStart(3,'0')}.png`,S.canvases[i].toDataURL('image/png',1).split(',')[1],{base64:true});
+    setp(3+Math.round(82*(i+1)/S.canvases.length),`קלף ${i+1}/${S.canvases.length}…`);
+    if(i%8===7)await tick();
+  }
+  setp(90,'אורז קבצים…');
+  const blob=await zip.generateAsync({type:'blob'}),url=URL.createObjectURL(blob);
+  const lnk=document.getElementById('dl-link');lnk.href=url;lnk.download=`dobble-${S.order.total}cards.zip`;
+  document.getElementById('dl-area').classList.add('on');
+  setp(100,'✅ מוכן!');
+}
 
-  btn.disabled = false;
-  btn.innerHTML = '🗜️ ייצוא PNG (ZIP)';
-});
+// ══ UTILS ══
+function loadImg(url){return new Promise((r,j)=>{const i=new Image();i.onload=()=>r(i);i.onerror=j;i.src=url;});}
+function tick(){return new Promise(r=>setTimeout(r,0));}
 </script>
-
 </body>
 </html>
