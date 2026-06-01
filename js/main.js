@@ -400,11 +400,18 @@ function buildWorksStrip() {
   const trackB = document.getElementById('works-strip-track-b');
   if (!trackA || !trackB) return;
 
-  // One image from each of the 6 main categories only — fast to load
+  // 2 images per category — enough to fill any screen width seamlessly
+  const cats = [
+    'events','characters','bar','workshops','centerpieces','arch',
+    'hats','rooms','numbers','printing','hoop','garlands',
+    'column','bar-chars','event-chars','satisfied','frame'
+  ];
   const strip = [];
-  ['events','bar','characters','workshops','rooms','satisfied'].forEach(cat => {
-    const found = images.find(i => i.cat === cat);
-    if (found) strip.push(found);
+  cats.forEach((cat, idx) => {
+    const c = images.filter(i => i.cat === cat);
+    if (!c.length) return;
+    strip.push(c[idx % c.length]);
+    if (c.length > 1) strip.push(c[(idx + 5) % c.length]);
   });
 
   const makeImg = item => {
