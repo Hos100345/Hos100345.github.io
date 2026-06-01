@@ -390,41 +390,58 @@ document.querySelectorAll('.service-tile[data-gallery-cat]').forEach(tile => {
 });
 
 /* =====================================================
-   WORKS IMAGE STRIP
+   WORKS IMAGE STRIP — 6 random images, swap every 5s
    ===================================================== */
 function buildWorksStrip() {
   const images = SD.gallery || [];
   if (!images.length) return;
 
+  const inner = document.querySelector('.works-strip-inner');
   const trackA = document.getElementById('works-strip-track-a');
-  const trackB = document.getElementById('works-strip-track-b');
-  if (!trackA || !trackB) return;
+  if (!inner || !trackA) return;
 
-  // One image per category — lightweight, all categories represented
-  const cats = [
-    'events','characters','centerpieces','bar','arch','hats',
-    'column','workshops','numbers','printing','hoop','garlands',
-    'rooms','bar-chars','event-chars','frame','satisfied'
-  ];
-  const picked = cats.map((cat, idx) => {
-    const catImgs = images.filter(i => i.cat === cat);
-    if (!catImgs.length) return null;
-    return catImgs[idx % catImgs.length];
-  }).filter(Boolean);
-  const strip = picked;
+  document.getElementById('works-strip-track-b')?.remove();
 
-  const makeImg = item => {
-    const img = document.createElement('img');
-    img.src = item.src;
-    img.alt = item.alt;
-    img.loading = 'lazy';
-    img.className = 'works-strip-img';
-    img.addEventListener('click', () => openLightbox(img.src, img.alt));
-    return img;
-  };
+  let lastPicked = new Set();
 
-  strip.forEach(item => trackA.appendChild(makeImg(item)));
-  strip.forEach(item => trackB.appendChild(makeImg(item)));
+  function pickRandom6() {
+    const available = images
+      .map((img, i) => ({ img, i }))
+      .filter(({ i }) => !lastPicked.has(i));
+    const pool = available.length >= 6 ? available : images.map((img, i) => ({ img, i }));
+    const result = [];
+    const usedIdx = new Set();
+    const copy = [...pool];
+    while (result.length < 6 && copy.length) {
+      const r = Math.floor(Math.random() * copy.length);
+      const { img, i } = copy.splice(r, 1)[0];
+      result.push(img);
+      usedIdx.add(i);
+    }
+    lastPicked = usedIdx;
+    return result;
+  }
+
+  function render(items) {
+    trackA.innerHTML = '';
+    items.forEach(item => {
+      const img = document.createElement('img');
+      img.src = item.src;
+      img.alt = item.alt;
+      img.loading = 'lazy';
+      img.className = 'works-strip-img';
+      img.addEventListener('click', () => openLightbox(img.src, img.alt));
+      trackA.appendChild(img);
+    });
+  }
+
+  function cycle() {
+    inner.classList.add('fading');
+    setTimeout(() => { render(pickRandom6()); inner.classList.remove('fading'); }, 400);
+  }
+
+  render(pickRandom6());
+  setInterval(cycle, 5000);
 }
 buildWorksStrip();
 
