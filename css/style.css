@@ -1098,7 +1098,8 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   flex-wrap: nowrap;
   direction: ltr;
   gap: 1rem;
-  animation: stripScroll 22s linear infinite;
+  animation: stripScroll 35s linear infinite;
+  animation-play-state: paused;
   width: max-content;
 }
 .works-strip-inner:hover { animation-play-state: paused; }

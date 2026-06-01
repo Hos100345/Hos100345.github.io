@@ -400,19 +400,17 @@ function buildWorksStrip() {
   const trackB = document.getElementById('works-strip-track-b');
   if (!trackA || !trackB) return;
 
-  // 2 images per category — enough to fill any screen width seamlessly
+  // 12 images — one per main category, fast to load
   const cats = [
-    'events','characters','bar','workshops','centerpieces','arch',
-    'hats','rooms','numbers','printing','hoop','garlands',
-    'column','bar-chars','event-chars','satisfied','frame'
+    'events','characters','bar','workshops','centerpieces',
+    'arch','hats','column','printing','hoop','garlands','rooms'
   ];
-  const strip = [];
-  cats.forEach((cat, idx) => {
+  const strip = cats.map((cat, idx) => {
     const c = images.filter(i => i.cat === cat);
-    if (!c.length) return;
-    strip.push(c[idx % c.length]);
-    if (c.length > 1) strip.push(c[(idx + 5) % c.length]);
-  });
+    return c.length ? c[idx % c.length] : null;
+  }).filter(Boolean);
+
+  const inner = document.querySelector('.works-strip-inner');
 
   const makeImg = item => {
     const img = document.createElement('img');
@@ -422,13 +420,23 @@ function buildWorksStrip() {
     img.className = 'works-strip-img';
     img.addEventListener('click', () => openLightbox(img.src, img.alt));
     img.addEventListener('error', () => {
-      const fallback = images.find(i => i.src !== img.src);
-      if (fallback) { img.src = fallback.src; img.alt = fallback.alt; }
+      const fallback = images[Math.floor(Math.random() * images.length)];
+      img.src = fallback.src;
+      img.alt = fallback.alt;
     });
     return img;
   };
 
   strip.forEach(item => { trackA.appendChild(makeImg(item)); trackB.appendChild(makeImg(item)); });
+
+  // Start animation only after at least half of track A images have loaded
+  let loaded = 0;
+  const needed = Math.ceil(strip.length * 0.6);
+  const start = () => { if (++loaded >= needed && inner) inner.style.animationPlayState = 'running'; };
+  trackA.querySelectorAll('img').forEach(img => {
+    if (img.complete) start();
+    else { img.addEventListener('load', start); img.addEventListener('error', start); }
+  });
 }
 buildWorksStrip();
 
