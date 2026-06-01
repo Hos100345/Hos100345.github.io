@@ -192,8 +192,7 @@ function loadGalleryPage() {
   }
 }
 
-// Gallery starts closed — show prompt
-galleryGrid.innerHTML = '<p class="gallery-placeholder">בחרו קטגוריה לצפייה בתמונות ↑</p>';
+setGalleryFilter('all');
 
 /* GALLERY CATEGORY CARDS */
 const catConfig = {
@@ -219,53 +218,10 @@ const catConfig = {
   'event-chars':{ label: 'דמויות של עיצוב אירועים', icon: '🎭' },
 };
 
-function buildCategoryCards() {
-  const cards = document.getElementById('gallery-cat-cards');
-  if (!cards) return;
-  const images = SD.gallery || [];
-  const order = [
-    'events','workshops','bar','characters','rooms','satisfied',
-    'arch','numbers','centerpieces','photocorner','garlands',
-    'printing','hoop','hats','frame','column','bar-chars','event-chars'
-  ];
-
-  cards.innerHTML = order.map(cat => {
-    const catImgs = images.filter(i => i.cat === cat);
-    if (!catImgs.length) return '';
-    const thumb = catImgs[Math.floor(Math.random() * Math.min(catImgs.length, 8))];
-    const cfg = catConfig[cat] || { label: cat, icon: '📷' };
-    return `
-      <button class="gcat-card" data-cat="${cat}" tabindex="0">
-        <img src="${thumb.src}" alt="${cfg.label}" class="gcat-card-img" loading="lazy">
-        <div class="gcat-card-overlay">
-          <span class="gcat-card-cta">צפו עכשיו</span>
-          <span class="gcat-card-icon">${cfg.icon}</span>
-          <span class="gcat-card-name">${cfg.label}</span>
-          <span class="gcat-card-count">${catImgs.length} תמונות</span>
-        </div>
-      </button>`;
-  }).join('');
-
-  cards.querySelectorAll('.gcat-card').forEach(card => {
-    card.addEventListener('click', () => openGalleryBrowse(card.dataset.cat));
-    card.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openGalleryBrowse(card.dataset.cat); }
-    });
-  });
-}
 
 function openGalleryBrowse(cat) {
-  document.getElementById('gallery-cat-cards').hidden = true;
-  const browse = document.getElementById('gallery-browse');
-  browse.hidden = false;
   setGalleryFilter(cat);
   document.getElementById('gallery-sub').textContent = catConfig[cat]?.label || 'גלריה';
-}
-
-function closeGalleryBrowse() {
-  document.getElementById('gallery-cat-cards').hidden = false;
-  document.getElementById('gallery-browse').hidden = true;
-  document.getElementById('gallery-sub').textContent = 'בחרו קטגוריה לצפייה';
 }
 
 function setGalleryFilter(cat) {
@@ -281,10 +237,6 @@ function setGalleryFilter(cat) {
   }
   loadGalleryPage();
 }
-
-buildCategoryCards();
-
-document.getElementById('gallery-back-btn')?.addEventListener('click', closeGalleryBrowse);
 
 document.querySelectorAll('.gfilter').forEach(btn => {
   btn.addEventListener('click', () => setGalleryFilter(btn.dataset.cat));
