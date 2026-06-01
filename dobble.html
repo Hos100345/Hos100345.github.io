@@ -171,7 +171,7 @@
     .tog-lbl{font-size:.875rem;font-weight:600}
     .paper-prev{background:var(--bg);border-radius:var(--rs);padding:.9rem;text-align:center;min-height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem}
     .paper-mini{display:inline-block;background:#fff;border:1.5px solid var(--border);border-radius:3px;box-shadow:var(--sh)}
-    .paper-inner{display:flex;flex-wrap:wrap;gap:2px;padding:4px;align-content:flex-start}
+    .paper-inner{display:grid;gap:3px;padding:5px;place-items:center;place-content:center;width:100%;height:100%;box-sizing:border-box}
     .pc{background:var(--blue-light);border:1.5px solid var(--indigo);border-radius:50%}
     .ps{background:var(--blue-light);border:1.5px solid var(--indigo);border-radius:2px}
     .paper-info{font-size:.75rem;color:var(--muted);line-height:1.55;text-align:center}
@@ -744,8 +744,8 @@ function updatePaperPrev(){
   const isA4=S.sz==='a4';const pw=isA4?88:124,ph=isA4?124:88;
   const cs=isA4?18:22;
   let cells='';for(let i=0;i<perPage;i++)cells+=`<div style="width:${cs}px;height:${cs}px" class="${S.shape==='circle'?'pc':'ps'}"></div>`;
-  pp.innerHTML=`<div class="paper-mini" style="width:${pw}px;height:${ph}px"><div class="paper-inner">${cells}</div></div>
-    <div class="paper-info">${S.sz.toUpperCase()} · ${cols}×${rows}=${perPage} קלפים/עמוד<br>${cardMm}mm${S.crop?' · סימני חיתוך':''}<br><strong>${pages}</strong> עמוד${pages!==1?'ות':''}</div>`;
+  pp.innerHTML=`<div class="paper-mini" style="width:${pw}px;height:${ph}px"><div class="paper-inner" style="grid-template-columns:repeat(${cols},1fr);grid-template-rows:repeat(${rows},1fr)">${cells}</div></div>
+    <div class="paper-info">${S.sz.toUpperCase()} · ${cols}×${rows}=${perPage} קלפים/עמוד<br>${cardMm}mm${S.crop?' · סימני חיתוך':''}<br><strong>${pages}</strong> דף${pages!==1?'ים':''}</div>`;
 }
 
 // ══ EXPORT ══
@@ -756,10 +756,17 @@ async function doExport(){
   document.getElementById('exp-prog').classList.add('on');
   const setp=(p,t)=>{document.getElementById('exp-bar').style.width=p+'%';document.getElementById('exp-lbl').textContent=t;};
   setp(3,'מתחיל…');await tick();
-  if(S.fmt==='pdf')await expPDF(setp);else await expZIP(setp);
+  try{
+    if(S.fmt==='pdf')await expPDF(setp);else await expZIP(setp);
+  }catch(err){
+    document.getElementById('exp-prog').classList.remove('on');
+    const msg=err.message||String(err);
+    alert(`שגיאה בייצוא:\n${msg}\n\nודא שהדף נטען עם חיבור לאינטרנט (נדרש jsPDF / JSZip).`);
+  }
 }
 
 async function expPDF(setp){
+  if(!window.jspdf?.jsPDF)throw new Error('ספריית jsPDF לא נטענה — נדרש חיבור לאינטרנט');
   const{jsPDF}=window.jspdf;
   const{cols,rows,cardMm}=getLayout();
   const isA4=S.sz==='a4',pW=isA4?210:297,pH=isA4?297:420,perPage=cols*rows;
@@ -792,6 +799,7 @@ async function expPDF(setp){
 }
 
 async function expZIP(setp){
+  if(typeof JSZip==='undefined')throw new Error('ספריית JSZip לא נטענה — נדרש חיבור לאינטרנט');
   const zip=new JSZip(),folder=zip.folder('dobble-cards');
   for(let i=0;i<S.canvases.length;i++){
     folder.file(`card-${String(i+1).padStart(3,'0')}.png`,S.canvases[i].toDataURL('image/png',1).split(',')[1],{base64:true});
