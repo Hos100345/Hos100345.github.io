@@ -418,7 +418,7 @@ function buildWorksStrip() {
     const img = document.createElement('img');
     img.src = item.src;
     img.alt = item.alt;
-    img.loading = 'lazy';
+    img.loading = 'eager';
     img.className = 'works-strip-img';
     img.addEventListener('click', () => openLightbox(img.src, img.alt));
     img.addEventListener('error', () => {
