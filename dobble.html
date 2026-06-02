@@ -158,9 +158,12 @@
     .exp-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem}
     .og-t{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.55rem}
     .og{margin-bottom:1.1rem}
-    .radio-row{display:flex;gap:.5rem;flex-wrap:wrap}
-    .rb{padding:.45rem 1rem;border-radius:100px;border:2px solid var(--border);background:#fff;font-size:.875rem;font-weight:700;font-family:inherit;cursor:pointer;transition:all var(--tr);color:var(--muted)}
-    .rb.on{border-color:var(--indigo);background:var(--purple-light);color:var(--indigo)}
+    .lm-grid{display:grid;grid-template-columns:1fr 1fr;gap:.45rem;margin-top:.2rem}
+    .lmb{padding:.55rem .7rem;border-radius:var(--rs);border:2px solid var(--border);background:#fff;font-size:.8rem;font-weight:700;font-family:inherit;cursor:pointer;transition:all var(--tr);color:var(--muted);text-align:center;line-height:1.4}
+    .lmb small{font-weight:400;font-size:.7rem;display:block;margin-top:.15rem;opacity:.75}
+    .lmb.on{border-color:var(--indigo);background:var(--purple-light);color:var(--indigo)}
+    .lmb.on small{opacity:1}
+    .lmb:hover:not(.on){border-color:var(--blue);color:var(--blue)}
     .tog-row{display:flex;align-items:center;gap:.65rem;margin-top:.4rem}
     .tswitch{position:relative;width:40px;height:22px;flex-shrink:0}
     .tswitch input{opacity:0;width:0;height:0;position:absolute}
@@ -169,11 +172,7 @@
     .tswitch input:checked+.tslider{background:var(--indigo)}
     .tswitch input:checked+.tslider::before{transform:translateX(18px)}
     .tog-lbl{font-size:.875rem;font-weight:600}
-    .paper-prev{background:var(--bg);border-radius:var(--rs);padding:.9rem;text-align:center;min-height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem}
-    .paper-mini{display:inline-block;background:#fff;border:1.5px solid var(--border);border-radius:3px;box-shadow:var(--sh)}
-    .paper-inner{display:grid;gap:3px;padding:5px;place-items:center;place-content:center;width:100%;height:100%;box-sizing:border-box}
-    .pc{background:var(--blue-light);border:1.5px solid var(--indigo);border-radius:50%}
-    .ps{background:var(--blue-light);border:1.5px solid var(--indigo);border-radius:2px}
+    .paper-prev{background:var(--bg);border-radius:var(--rs);padding:.9rem;text-align:center;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem}
     .paper-info{font-size:.75rem;color:var(--muted);line-height:1.55;text-align:center}
     .exp-prog{display:none;margin-top:1.1rem}
     .exp-prog.on{display:block}
@@ -325,39 +324,49 @@
 <section id="s3" class="scr">
   <div class="box">
     <h2 class="box-h">ייצוא וידפוס</h2>
-    <p class="box-s">בחר/י פורמט ואפשרויות הדפסה ואז לחץ/י על יצירת הקובץ.</p>
+    <p class="box-s">בחר/י פריסה ואפשרויות הדפסה, ואז לחץ/י על הפקת הקובץ.</p>
 
     <div class="exp-grid">
       <div>
         <div class="og">
-          <div class="og-t">פורמט קובץ</div>
-          <div class="radio-row">
-            <button class="rb on" data-g="fmt" data-v="pdf">📄 PDF להדפסה</button>
-            <button class="rb"    data-g="fmt" data-v="zip">🗜️ PNG (ZIP)</button>
+          <div class="og-t">פריסת הדפסה (A4)</div>
+          <div class="lm-grid">
+            <button class="lmb on" data-lm="standard">📐 סטנדרטית<small>4 קלפים/דף · 85mm</small></button>
+            <button class="lmb" data-lm="expanded">📋 מורחבת<small>2 קלפים/דף · 110mm</small></button>
+            <button class="lmb" data-lm="giant">🃏 קלף ענק<small>1 קלף/דף · 170mm</small></button>
+            <button class="lmb" data-lm="zerowaste">🔵 צפיפות מקסימלית<small>Hexagonal Packing</small></button>
           </div>
         </div>
-        <div class="og" id="pdf-sz-og">
-          <div class="og-t">גודל דף</div>
-          <div class="radio-row">
-            <button class="rb on" data-g="sz" data-v="a4">A4</button>
-            <button class="rb"    data-g="sz" data-v="a3">A3</button>
-          </div>
+        <div class="og" id="zw-og" style="display:none">
+          <div class="sl-lbl"><span>קוטר קלף</span><strong id="lbl-diam">85mm</strong></div>
+          <input type="range" id="sl-diam" min="40" max="120" value="85" step="5">
         </div>
-        <div class="og" id="crop-og">
+        <div class="og">
           <div class="tog-row">
             <label class="tswitch"><input type="checkbox" id="chk-crop" checked><span class="tslider"></span></label>
             <span class="tog-lbl">סימני חיתוך (Crop Marks)</span>
           </div>
         </div>
+        <div class="og">
+          <div class="tog-row">
+            <label class="tswitch"><input type="checkbox" id="chk-sil"><span class="tslider"></span></label>
+            <span class="tog-lbl">מצב Silhouette Cameo ✂️</span>
+          </div>
+        </div>
       </div>
       <div>
-        <div class="og-t">תצוגה מקדימה</div>
-        <div class="paper-prev" id="pprev"></div>
+        <div class="og-t">תצוגה מקדימה (A4)</div>
+        <div class="paper-prev" id="pprev">
+          <canvas id="prev-canvas" width="120" height="170" style="border:1.5px solid var(--border);border-radius:3px;box-shadow:var(--sh)"></canvas>
+          <div class="paper-info" id="prev-info"></div>
+        </div>
       </div>
     </div>
 
     <div class="brow">
-      <button class="btn btn-pri" id="btn-doexp">⚙️ צור וייצא קבצים</button>
+      <button class="btn btn-pri" id="btn-doexp">⚙️ צור PDF</button>
+      <button class="btn btn-out" id="btn-dozip">🗜️ צור ZIP (PNG)</button>
+      <button class="btn btn-ok" id="btn-dodxf" style="display:none">✂️ ייצא DXF לחיתוך</button>
       <button class="btn btn-ghost" id="btn-b2">← חזרה לעריכה</button>
     </div>
 
@@ -368,7 +377,7 @@
 
     <div class="dl-area" id="dl-area">
       <span style="font-size:.875rem;color:var(--green);font-weight:700">✅ הקובץ מוכן!</span>
-      <a class="btn btn-ok" id="dl-link" href="#" download>📥 הורד קובץ משחק</a>
+      <a class="btn btn-ok" id="dl-link" href="#" download>📥 הורד קובץ</a>
     </div>
   </div>
 </section>
@@ -400,6 +409,7 @@
 // ══ MATH ══
 const ORDERS=[{q:2,total:7,spc:3},{q:3,total:13,spc:4},{q:4,total:21,spc:5},{q:5,total:31,spc:6},{q:7,total:57,spc:8}];
 const CARD_PX=500;
+const A4_W=210,A4_H=297;
 
 function gf4a(a,b){return a^b}
 function gf4m(a,b){
@@ -507,7 +517,10 @@ const S={
   imgs:[],order:null,deck:[],layouts:[],imgEls:[],canvases:[],
   shape:'circle',sMin:.70,sMax:1.30,seed:1,
   sel:[],
-  fmt:'pdf',sz:'a4',crop:true,
+  layoutMode:'standard',
+  zeroWasteDiam:85,
+  crop:true,
+  isSilhouette:false,
 };
 
 // ══ NAV ══
@@ -718,82 +731,159 @@ function resetExport(){
   document.getElementById('dl-area').classList.remove('on');
 }
 
+// ══ LAYOUT ENGINE ══
+function layoutEngine(){
+  const mode=S.layoutMode;
+  const d=mode==='zerowaste'?S.zeroWasteDiam:mode==='giant'?170:mode==='expanded'?110:85;
+  const r=d/2,positions=[];
+  if(mode==='giant'){
+    positions.push({x:105,y:148.5});
+  }else if(mode==='expanded'){
+    positions.push({x:105,y:75},{x:105,y:215});
+  }else if(mode==='standard'){
+    const mX=(A4_W-2*d)/3,mY=(A4_H-2*d)/3;
+    for(let row=0;row<2;row++)for(let col=0;col<2;col++)
+      positions.push({x:mX+col*(d+mX)+r,y:mY+row*(d+mY)+r});
+  }else{
+    const rh=r*Math.sqrt(3);
+    let rowIdx=0;
+    for(let y=r;y<=A4_H-r+0.01;y+=rh,rowIdx++){
+      const startX=(rowIdx%2===0)?r:2*r;
+      for(let x=startX;x<=A4_W-r+0.01;x+=2*r)
+        positions.push({x,y});
+    }
+  }
+  return{positions,cardMm:d};
+}
+
+// ══ PAPER PREVIEW ══
+function updatePaperPrev(){
+  const{positions,cardMm}=layoutEngine();
+  const perPage=positions.length;
+  const pages=S.deck.length?Math.ceil(S.deck.length/perPage):1;
+  const cv=document.getElementById('prev-canvas');
+  const cx=cv.getContext('2d');
+  cx.clearRect(0,0,120,170);
+  cx.fillStyle='#fff';cx.strokeStyle='#d1d5db';cx.lineWidth=1;
+  cx.fillRect(0,0,120,170);cx.strokeRect(.5,.5,119,169);
+  const sc=120/210;
+  cx.fillStyle=S.shape==='circle'?'#DBEAFE':'#EDE9FE';
+  cx.strokeStyle='#4338CA';cx.lineWidth=1;
+  for(const{x,y}of positions){
+    const px=x*sc,py=y*sc,pr=cardMm/2*sc;
+    cx.beginPath();
+    if(S.shape==='circle')cx.arc(px,py,pr,0,Math.PI*2);
+    else cx.rect(px-pr,py-pr,pr*2,pr*2);
+    cx.fill();cx.stroke();
+  }
+  if(S.isSilhouette){
+    cx.fillStyle='#000';
+    const ms=5*sc,m=3*sc;
+    cx.fillRect(m,m,ms,ms);
+    cx.fillRect(120-m-ms,m,ms,ms);
+    cx.fillRect(m,170-m-ms,ms,ms);
+  }
+  if(S.crop){
+    cx.strokeStyle='rgba(0,0,0,.25)';cx.lineWidth=.5;cx.setLineDash([2,2]);
+    for(const{x,y}of positions){
+      const px=x*sc,py=y*sc,pr=cardMm/2*sc+2;
+      cx.beginPath();
+      if(S.shape==='circle')cx.arc(px,py,pr,0,Math.PI*2);
+      else cx.rect(px-pr,py-pr,pr*2,pr*2);
+      cx.stroke();
+    }
+    cx.setLineDash([]);
+  }
+  document.getElementById('prev-info').textContent=
+    `A4 · ${perPage} קלפים/עמוד · ${cardMm}mm · ${pages} ${pages!==1?'דפים':'דף'}`;
+}
+
 // ══ EXPORT OPTIONS ══
-document.querySelectorAll('.rb').forEach(b=>{
+document.querySelectorAll('.lmb').forEach(b=>{
   b.addEventListener('click',()=>{
-    const g=b.dataset.g;
-    document.querySelectorAll(`.rb[data-g="${g}"]`).forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.lmb').forEach(x=>x.classList.remove('on'));
     b.classList.add('on');
-    if(g==='fmt'){S.fmt=b.dataset.v;const pdf=S.fmt==='pdf';document.getElementById('pdf-sz-og').style.display=pdf?'':'none';document.getElementById('crop-og').style.display=pdf?'':'none';}
-    else if(g==='sz')S.sz=b.dataset.v;
+    S.layoutMode=b.dataset.lm;
+    document.getElementById('zw-og').style.display=S.layoutMode==='zerowaste'?'block':'none';
+    resetExport();
     updatePaperPrev();
   });
 });
+const slDiam=document.getElementById('sl-diam');
+const lblDiam=document.getElementById('lbl-diam');
+slDiam.addEventListener('input',()=>{S.zeroWasteDiam=+slDiam.value;lblDiam.textContent=slDiam.value+'mm';updatePaperPrev();});
 document.getElementById('chk-crop').addEventListener('change',e=>{S.crop=e.target.checked;updatePaperPrev();});
-
-function getLayout(){
-  if(S.fmt==='zip')return{cols:1,rows:1,cardMm:0};
-  return S.sz==='a4'?{cols:2,rows:3,cardMm:75}:{cols:3,rows:4,cardMm:75};
-}
-
-function updatePaperPrev(){
-  const pp=document.getElementById('pprev');
-  if(S.fmt==='zip'){pp.innerHTML=`<div class="paper-info">קבצי PNG נפרדים<br><strong>${S.deck.length||'–'}</strong> קבצים בסה"כ</div>`;return;}
-  const{cols,rows,cardMm}=getLayout();
-  const perPage=cols*rows,pages=S.deck.length?Math.ceil(S.deck.length/perPage):1;
-  const isA4=S.sz==='a4';const pw=isA4?88:124,ph=isA4?124:88;
-  const cs=isA4?18:22;
-  let cells='';for(let i=0;i<perPage;i++)cells+=`<div style="width:${cs}px;height:${cs}px" class="${S.shape==='circle'?'pc':'ps'}"></div>`;
-  pp.innerHTML=`<div class="paper-mini" style="width:${pw}px;height:${ph}px"><div class="paper-inner" style="grid-template-columns:repeat(${cols},1fr);grid-template-rows:repeat(${rows},1fr)">${cells}</div></div>
-    <div class="paper-info">${S.sz.toUpperCase()} · ${cols}×${rows}=${perPage} קלפים/עמוד<br>${cardMm}mm${S.crop?' · סימני חיתוך':''}<br><strong>${pages}</strong> ${pages!==1?'דפים':'דף'}</div>`;
-}
+document.getElementById('chk-sil').addEventListener('change',e=>{
+  S.isSilhouette=e.target.checked;
+  document.getElementById('btn-dodxf').style.display=S.isSilhouette?'':'none';
+  resetExport();
+  updatePaperPrev();
+});
 
 // ══ EXPORT ══
-document.getElementById('btn-doexp').addEventListener('click',doExport);
+document.getElementById('btn-doexp').addEventListener('click',()=>doExport('pdf'));
+document.getElementById('btn-dozip').addEventListener('click',()=>doExport('zip'));
+document.getElementById('btn-dodxf').addEventListener('click',()=>doExport('dxf'));
 
-async function doExport(){
+async function doExport(type){
   resetExport();
   document.getElementById('exp-prog').classList.add('on');
   const setp=(p,t)=>{document.getElementById('exp-bar').style.width=p+'%';document.getElementById('exp-lbl').textContent=t;};
   setp(3,'מתחיל…');await tick();
   try{
-    if(S.fmt==='pdf')await expPDF(setp);else await expZIP(setp);
+    if(type==='pdf')await expPDF(setp);
+    else if(type==='zip')await expZIP(setp);
+    else await expDXF(setp);
   }catch(err){
     document.getElementById('exp-prog').classList.remove('on');
-    const msg=err.message||String(err);
-    alert(`שגיאה בייצוא:\n${msg}\n\nודא שהדף נטען עם חיבור לאינטרנט (נדרש jsPDF / JSZip).`);
+    alert(`שגיאה בייצוא:\n${err.message||err}\n\nודא שהדף נטען עם חיבור לאינטרנט (נדרש jsPDF / JSZip).`);
   }
 }
 
 async function expPDF(setp){
   if(!window.jspdf?.jsPDF)throw new Error('ספריית jsPDF לא נטענה — נדרש חיבור לאינטרנט');
   const{jsPDF}=window.jspdf;
-  const{cols,rows,cardMm}=getLayout();
-  const isA4=S.sz==='a4',pW=isA4?210:297,pH=isA4?297:420,perPage=cols*rows;
-  const gX=(pW-cols*cardMm)/(cols+1),gY=(pH-rows*cardMm)/(rows+1);
-  const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:S.sz});
+  const{positions,cardMm}=layoutEngine();
+  const perPage=positions.length;
+  const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
   const tmp=document.createElement('canvas');tmp.width=tmp.height=CARD_PX;
-  const cg=2,cl=4;
+
+  const addRegMarks=()=>{
+    if(!S.isSilhouette)return;
+    const ms=6,m=5,arm=15;
+    pdf.setFillColor(0,0,0);
+    pdf.rect(m,m,ms,ms,'F');
+    pdf.setDrawColor(0);pdf.setLineWidth(.3);
+    pdf.line(m+ms,m,m+ms+arm,m);pdf.line(m,m+ms,m,m+ms+arm);
+    pdf.rect(210-m-ms,m,ms,ms,'F');
+    pdf.line(210-m-ms,m,210-m-ms-arm,m);pdf.line(210-m,m+ms,210-m,m+ms+arm);
+    pdf.rect(m,297-m-ms,ms,ms,'F');
+    pdf.line(m+ms,297-m,m+ms+arm,297-m);pdf.line(m,297-m-ms,m,297-m-ms-arm);
+  };
+
   for(let i=0;i<S.deck.length;i++){
-    const pos=i%perPage,col=pos%cols,row=Math.floor(pos/cols);
+    const pos=i%perPage;
     if(i>0&&pos===0)pdf.addPage();
-    const x=gX+col*(cardMm+gX),y=gY+row*(cardMm+gY),d=cardMm;
+    if(pos===0)addRegMarks();
+    const{x,y}=positions[pos];
+    const d=cardMm;
     drawCard(tmp,S.layouts[i],S.imgEls,S.shape);
-    pdf.addImage(tmp.toDataURL('image/png',1),'PNG',x,y,d,d);
-    if(S.crop){
+    pdf.addImage(tmp.toDataURL('image/png',1),'PNG',x-d/2,y-d/2,d,d);
+    if(S.crop&&!S.isSilhouette){
+      const cg=2,cl=4,lx=x-d/2,ly=y-d/2;
       pdf.setDrawColor(0);pdf.setLineWidth(.25);
-      pdf.line(x-cg-cl,y,x-cg,y);pdf.line(x,y-cg-cl,x,y-cg);
-      pdf.line(x+d+cg,y,x+d+cg+cl,y);pdf.line(x+d,y-cg-cl,x+d,y-cg);
-      pdf.line(x-cg-cl,y+d,x-cg,y+d);pdf.line(x,y+d+cg,x,y+d+cg+cl);
-      pdf.line(x+d+cg,y+d,x+d+cg+cl,y+d);pdf.line(x+d,y+d+cg,x+d,y+d+cg+cl);
+      pdf.line(lx-cg-cl,ly,lx-cg,ly);pdf.line(lx,ly-cg-cl,lx,ly-cg);
+      pdf.line(lx+d+cg,ly,lx+d+cg+cl,ly);pdf.line(lx+d,ly-cg-cl,lx+d,ly-cg);
+      pdf.line(lx-cg-cl,ly+d,lx-cg,ly+d);pdf.line(lx,ly+d+cg,lx,ly+d+cg+cl);
+      pdf.line(lx+d+cg,ly+d,lx+d+cg+cl,ly+d);pdf.line(lx+d,ly+d+cg,lx+d,ly+d+cg+cl);
     }
-    setp(3+Math.round(92*(i+1)/S.deck.length),`עמוד ${Math.floor(i/perPage)+1} — קלף ${(i%perPage)+1}/${perPage}…`);
+    setp(3+Math.round(92*(i+1)/S.deck.length),`עמוד ${Math.floor(i/perPage)+1} — קלף ${pos+1}/${perPage}…`);
     if(i%3===2)await tick();
   }
   setp(98,'שומר…');
   const blob=pdf.output('blob'),url=URL.createObjectURL(blob);
   const lnk=document.getElementById('dl-link');
-  lnk.href=url;lnk.download=`dobble-${S.order.total}cards-${S.sz.toUpperCase()}.pdf`;
+  lnk.href=url;lnk.download=`dobble-${S.order.total}cards-${S.layoutMode}.pdf`;
   document.getElementById('dl-area').classList.add('on');
   setp(100,'✅ מוכן!');
 }
@@ -801,9 +891,11 @@ async function expPDF(setp){
 async function expZIP(setp){
   if(typeof JSZip==='undefined')throw new Error('ספריית JSZip לא נטענה — נדרש חיבור לאינטרנט');
   const zip=new JSZip(),folder=zip.folder('dobble-cards');
-  for(let i=0;i<S.canvases.length;i++){
-    folder.file(`card-${String(i+1).padStart(3,'0')}.png`,S.canvases[i].toDataURL('image/png',1).split(',')[1],{base64:true});
-    setp(3+Math.round(82*(i+1)/S.canvases.length),`קלף ${i+1}/${S.canvases.length}…`);
+  const tmp=document.createElement('canvas');tmp.width=tmp.height=CARD_PX;
+  for(let i=0;i<S.deck.length;i++){
+    drawCard(tmp,S.layouts[i],S.imgEls,S.shape);
+    folder.file(`card-${String(i+1).padStart(3,'0')}.png`,tmp.toDataURL('image/png',1).split(',')[1],{base64:true});
+    setp(3+Math.round(82*(i+1)/S.deck.length),`קלף ${i+1}/${S.deck.length}…`);
     if(i%8===7)await tick();
   }
   setp(90,'אורז קבצים…');
@@ -813,8 +905,59 @@ async function expZIP(setp){
   setp(100,'✅ מוכן!');
 }
 
+function generateDXF(){
+  const{positions,cardMm}=layoutEngine();
+  const H=A4_H;
+  let dxf='0\nSECTION\n2\nHEADER\n9\n$ACADVER\n1\nAC1009\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n';
+  for(const{x,y}of positions){
+    const dy=H-y;
+    if(S.shape==='circle'){
+      dxf+=`0\nCIRCLE\n8\n0\n10\n${x.toFixed(4)}\n20\n${dy.toFixed(4)}\n30\n0\n40\n${(cardMm/2).toFixed(4)}\n`;
+    }else{
+      const s=cardMm,hx=x-s/2,hy=dy-s/2;
+      dxf+=`0\nLWPOLYLINE\n8\n0\n90\n4\n70\n1\n`;
+      dxf+=`10\n${hx.toFixed(4)}\n20\n${hy.toFixed(4)}\n`;
+      dxf+=`10\n${(hx+s).toFixed(4)}\n20\n${hy.toFixed(4)}\n`;
+      dxf+=`10\n${(hx+s).toFixed(4)}\n20\n${(hy+s).toFixed(4)}\n`;
+      dxf+=`10\n${hx.toFixed(4)}\n20\n${(hy+s).toFixed(4)}\n`;
+    }
+  }
+  if(S.isSilhouette){
+    const regPts=[{x:8,y:H-8},{x:202,y:H-8},{x:8,y:8}];
+    for(const{x,y}of regPts)
+      dxf+=`0\nCIRCLE\n8\nREGMARK\n10\n${x}\n20\n${y}\n30\n0\n40\n3\n`;
+  }
+  dxf+='0\nENDSEC\n0\nEOF\n';
+  return dxf;
+}
+
+async function expDXF(setp){
+  setp(50,'מייצר קובץ DXF…');await tick();
+  const dxf=generateDXF();
+  const blob=new Blob([dxf],{type:'application/dxf'});
+  const url=URL.createObjectURL(blob);
+  const lnk=document.getElementById('dl-link');
+  lnk.href=url;lnk.download=`dobble-${S.order.total}cards-cutlines.dxf`;
+  document.getElementById('dl-area').classList.add('on');
+  setp(100,'✅ מוכן!');
+}
+
 // ══ UTILS ══
-function loadImg(url){return new Promise((r,j)=>{const i=new Image();i.onload=()=>r(i);i.onerror=j;i.src=url;});}
+const IMG_PX=400;
+function loadImg(url){
+  return new Promise((res,rej)=>{
+    const img=new Image();
+    img.onload=()=>{
+      if(typeof createImageBitmap==='function'){
+        createImageBitmap(img,{resizeWidth:IMG_PX,resizeHeight:IMG_PX,resizeQuality:'high'}).then(res,rej);
+      }else{
+        const c=document.createElement('canvas');c.width=c.height=IMG_PX;
+        c.getContext('2d').drawImage(img,0,0,IMG_PX,IMG_PX);res(c);
+      }
+    };
+    img.onerror=rej;img.src=url;
+  });
+}
 function tick(){return new Promise(r=>setTimeout(r,0));}
 </script>
 </body>
