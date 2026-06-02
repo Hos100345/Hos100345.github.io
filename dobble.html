@@ -640,8 +640,9 @@ function renderGallery(){
   S.assets.forEach(a=>{
     const item=document.createElement('div');
     item.className='g-item'+(a.type==='crop'?' crop':'');
-    const thumb=a.thumb.cloneNode(true);
-    item.appendChild(thumb);
+    const thumbCv=document.createElement('canvas');thumbCv.width=thumbCv.height=72;
+    thumbCv.getContext('2d').drawImage(a.imgEl,0,0,72,72);
+    item.appendChild(thumbCv);
     const del=document.createElement('button');del.className='g-del';del.textContent='×';del.title='הסר';
     del.addEventListener('click',()=>removeAsset(a.id));
     item.appendChild(del);
@@ -1111,7 +1112,10 @@ function setupCropCanvas(){
   const cv=oldCv.cloneNode(false);
   oldCv.replaceWith(cv);
   const maxW=Math.min(wrap.clientWidth||700,700);
-  const scale=Math.min(1,maxW/CM.srcImg.naturalWidth);
+  const maxH=400;
+  const scaleW=maxW/CM.srcImg.naturalWidth;
+  const scaleH=maxH/CM.srcImg.naturalHeight;
+  const scale=Math.min(scaleW,scaleH);
   CM.dispW=Math.round(CM.srcImg.naturalWidth*scale);
   CM.dispH=Math.round(CM.srcImg.naturalHeight*scale);
   cv.width=CM.dispW;cv.height=CM.dispH;
@@ -1221,8 +1225,9 @@ function renderModalCrops(){
   CM.crops.forEach(c=>{
     const wrap=document.createElement('div');
     wrap.className='crop-thumb'+(c.shape==='rounded_square'?' sq':'');
-    const thumb=c.thumb.cloneNode(true);thumb.style.cssText='width:60px;height:60px;';
-    wrap.appendChild(thumb);
+    const thumbCv=document.createElement('canvas');thumbCv.width=thumbCv.height=60;
+    thumbCv.getContext('2d').drawImage(c.thumb,0,0,60,60);
+    wrap.appendChild(thumbCv);
     const del=document.createElement('button');del.className='crop-del';del.textContent='×';
     del.addEventListener('click',()=>{CM.crops=CM.crops.filter(x=>x.id!==c.id);renderModalCrops();redrawCropCanvas();updateCropAddBtn();});
     wrap.appendChild(del);
