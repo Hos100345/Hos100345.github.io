@@ -786,6 +786,12 @@ function resetState(){
   document.getElementById('cgrid').innerHTML='';
   document.getElementById('prev-wrap').style.display='none';
   document.getElementById('gen-ov').style.display='none';
+  // Reset extractor state
+  Object.assign(EX,{srcImg:null,crops:[],idSeq:0,dragging:false});
+  document.getElementById('uz-src').style.display='';
+  document.getElementById('extractor-ui').style.display='none';
+  document.getElementById('btn-convert').disabled=true;
+  fiSrc.value='';
 }
 function resetExport(){
   document.getElementById('exp-prog').classList.remove('on');
@@ -1051,7 +1057,10 @@ function loadSrcImage(file){
 
 function setupExtractorCanvas(){
   const wrap=document.getElementById('canvas-wrap');
-  const cv=document.getElementById('src-canvas');
+  // Replace canvas element to clear any previously-attached event listeners
+  const oldCv=document.getElementById('src-canvas');
+  const cv=oldCv.cloneNode(false);
+  oldCv.replaceWith(cv);
   const maxW=wrap.clientWidth||700;
   const scale=Math.min(1,maxW/EX.srcImg.naturalWidth);
   EX.dispW=Math.round(EX.srcImg.naturalWidth*scale);
