@@ -154,12 +154,14 @@
     .mc-sym-canvas{display:block;margin:0 auto .4rem;border-radius:50%;box-shadow:var(--sh)}
     .mc-txt{font-size:.78rem;font-weight:700;color:#92400e;background:var(--gold-light);padding:.3rem .65rem;border-radius:100px;display:inline-block;max-width:140px;word-break:break-all;line-height:1.4}
 
+    /* ── V5: UNIFIED ASSETS ── */
+    .upload-methods-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:.75rem}
+    .upload-method{display:flex;flex-direction:column;gap:.5rem}
+    .assets-bar{background:var(--blue-light);border-radius:var(--rs);padding:.75rem 1rem;margin-top:.9rem}
+    .assets-strip{display:flex;gap:.35rem;flex-wrap:wrap;min-height:44px;align-items:center;margin-top:.35rem}
+
     /* ── V4: EXTRACTOR ── */
-    .mode-row{display:flex;align-items:center;gap:.85rem;margin-top:1.1rem;margin-bottom:.5rem}
-    .mode-grp{display:flex;border:2px solid var(--border);border-radius:100px;overflow:hidden}
-    .mbt{padding:.4rem 1.1rem;font-size:.85rem;font-weight:700;font-family:inherit;background:transparent;border:none;cursor:pointer;color:var(--muted);transition:all var(--tr)}
-    .mbt.on{background:var(--indigo);color:#fff}
-    .ext-wrap{margin-top:.9rem}
+    .ext-wrap{margin-top:.5rem}
     .tool-row{display:flex;align-items:center;gap:.85rem;margin-bottom:.65rem}
     .canvas-wrap{position:relative;border-radius:var(--rs);box-shadow:var(--sh);cursor:crosshair;background:#f1f5f9;line-height:0;overflow:hidden;user-select:none}
     #src-canvas{display:block;max-width:100%;border-radius:var(--rs)}
@@ -212,6 +214,7 @@
       #wrap{padding:1rem .75rem 4rem}
       .prev-layout{grid-template-columns:1fr}.sidebar{position:static}
       .exp-grid{grid-template-columns:1fr}
+      .upload-methods-grid{grid-template-columns:1fr}
       .modal-body{grid-template-columns:1fr}
       .mcw canvas{width:150px;height:150px}
     }
@@ -241,62 +244,61 @@
 <section id="s1" class="scr on">
   <div class="box">
     <h2 class="box-h">העלאת סמלים</h2>
-    <p class="box-s">גרור/י תמונות של הסמלים לקלפים. מומלץ PNG/SVG עם רקע שקוף.</p>
+    <p class="box-s">גרור/י תמונות של הסמלים לקלפים, או הפק/י סמלים ישירות מתמונה גדולה. מומלץ PNG/SVG עם רקע שקוף.</p>
 
-    <!-- ── Mode toggle ── -->
-    <div class="mode-row">
-      <span class="shape-lbl">מצב העלאה:</span>
-      <div class="mode-grp">
-        <button class="mbt on" data-m="files">📁 קבצים בודדים</button>
-        <button class="mbt" data-m="extract">✂️ הפקה מתמונה</button>
-      </div>
-    </div>
+    <!-- ── UNIFIED: Both upload methods side by side ── -->
+    <div class="upload-methods-grid">
 
-    <!-- ── FILES MODE ── -->
-    <div id="files-panel">
-    <div class="uz" id="uz">
-      <div class="uz-ico">🖼️</div>
-      <div class="uz-t">גרור/י תמונות לכאן</div>
-      <div class="uz-s">או לחץ/י לבחירת קבצים</div>
-      <div class="uz-hint">PNG · JPG · SVG · WebP · ניתן לבחור מספר קבצים</div>
-      <input type="file" id="fi" multiple accept="image/*" style="display:none">
-    </div>
-    </div>
-
-    <!-- ── EXTRACT MODE (V4) ── -->
-    <div id="extract-panel" style="display:none" class="ext-wrap">
-      <div class="uz" id="uz-src">
-        <div class="uz-ico">🗂️</div>
-        <div class="uz-t">גרור/י תמונה גדולה לכאן</div>
-        <div class="uz-s">גיליון סמלים, עמוד קליפארט, אלבום וכדומה</div>
-        <div class="uz-hint">PNG · JPG · WebP</div>
-        <input type="file" id="fi-src" accept="image/png,image/jpeg,image/webp" style="display:none">
-      </div>
-      <div id="extractor-ui" style="display:none">
-        <div class="tool-row" style="margin-top:.75rem">
-          <span class="shape-lbl">כלי חיתוך:</span>
-          <div class="shape-grp" id="ext-tool-grp">
-            <button class="sbt on" data-tool="circle">⭕ עיגול</button>
-            <button class="sbt" data-tool="rounded_square">⬜ מרובע מעוגל</button>
+      <!-- FILES -->
+      <div class="upload-method">
+        <div class="og-t">📁 קבצים בודדים</div>
+        <div id="files-panel">
+          <div class="uz" id="uz">
+            <div class="uz-ico">🖼️</div>
+            <div class="uz-t">גרור/י תמונות לכאן</div>
+            <div class="uz-s">או לחץ/י לבחירת קבצים</div>
+            <div class="uz-hint">PNG · JPG · SVG · WebP</div>
+            <input type="file" id="fi" multiple accept="image/*" style="display:none">
           </div>
-          <span class="ext-info">גרור/י על התמונה לסימון אזורים</span>
         </div>
-        <div class="canvas-wrap" id="canvas-wrap">
-          <canvas id="src-canvas"></canvas>
-        </div>
-        <div class="crops-strip" id="crops-strip">
-          <span class="ext-empty">לחץ/י וגרור/י על התמונה לבחירת סמלים</span>
-        </div>
-        <div class="ext-info" id="ext-count-lbl">0 סמלים נבחרו</div>
       </div>
-    </div>
 
-    <div class="cstrip" id="cstrip">
-      <span>הועלו</span>
-      <span class="cnum" id="cnum">0</span>
-      <span>תמונות</span>
-      <div class="trow" id="trow"></div>
-      <button class="chg-btn" id="chg-btn">שנה תמונות</button>
+      <!-- EXTRACTOR -->
+      <div class="upload-method">
+        <div class="og-t">✂️ הפקה מתמונה גדולה</div>
+        <div id="extract-panel" class="ext-wrap">
+          <div class="uz" id="uz-src">
+            <div class="uz-ico">🗂️</div>
+            <div class="uz-t">גרור/י תמונה גדולה לכאן</div>
+            <div class="uz-s">גיליון סמלים, עמוד קליפארט, אלבום וכדומה</div>
+            <div class="uz-hint">PNG · JPG · WebP</div>
+            <input type="file" id="fi-src" accept="image/png,image/jpeg,image/webp" style="display:none">
+          </div>
+          <div id="extractor-ui" style="display:none">
+            <div class="tool-row" style="margin-top:.75rem">
+              <span class="shape-lbl">כלי חיתוך:</span>
+              <div class="shape-grp" id="ext-tool-grp">
+                <button class="sbt on" data-tool="circle">⭕ עיגול</button>
+                <button class="sbt" data-tool="rounded_square">⬜ מרובע מעוגל</button>
+              </div>
+            </div>
+            <div class="canvas-wrap" id="canvas-wrap">
+              <canvas id="src-canvas"></canvas>
+            </div>
+            <div class="crops-strip" id="crops-strip">
+              <span class="ext-empty">לחץ/י וגרור/י על התמונה לבחירת סמלים</span>
+            </div>
+            <div class="ext-info" id="ext-count-lbl">0 סמלים נבחרו</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /upload-methods-grid -->
+
+    <!-- ── ASSETS BAR ── -->
+    <div id="assets-bar" class="assets-bar" style="display:none">
+      <div class="og-t">📦 מאגר נכסים (<span id="assets-count">0</span>)</div>
+      <div class="assets-strip" id="assets-strip"></div>
     </div>
 
     <div class="rec" id="rec">
@@ -314,7 +316,7 @@
 
     <div class="brow" style="justify-content:flex-end">
       <button class="btn btn-ok" id="btn-convert" style="display:none" disabled>✂️ המר נכסים ידניים למשחק</button>
-      <button class="btn btn-cta" id="btn-create" disabled>ייצר את המשחק שלי ✨</button>
+      <button class="btn btn-cta" id="btn-create" disabled>ייצר משחק מ-0 נכסים ✨</button>
     </div>
   </div>
 
@@ -387,17 +389,21 @@
     <div class="exp-grid">
       <div>
         <div class="og">
-          <div class="og-t">פריסת הדפסה (A4)</div>
-          <div class="lm-grid">
-            <button class="lmb on" data-lm="standard">📐 סטנדרטית<small>4 קלפים/דף · 85mm</small></button>
-            <button class="lmb" data-lm="expanded">📋 מורחבת<small>2 קלפים/דף · 110mm</small></button>
-            <button class="lmb" data-lm="giant">🃏 קלף ענק<small>1 קלף/דף · 170mm</small></button>
-            <button class="lmb" data-lm="zerowaste">🔵 צפיפות מקסימלית<small>Hexagonal Packing</small></button>
-          </div>
+          <div class="og-t">גודל קלף</div>
+          <div class="sl-lbl"><span>קוטר</span><strong id="lbl-card-size">85mm</strong></div>
+          <input type="range" id="sl-card-size" min="40" max="170" value="85" step="1">
         </div>
-        <div class="og" id="zw-og" style="display:none">
-          <div class="sl-lbl"><span>קוטר קלף</span><strong id="lbl-diam">85mm</strong></div>
-          <input type="range" id="sl-diam" min="40" max="120" value="85" step="5">
+        <div class="og">
+          <div class="og-t">מרווח בין קלפים</div>
+          <div class="sl-lbl"><span>0 = צפיפות מקסימלית (Hex)</span><strong id="lbl-spacing">5mm</strong></div>
+          <input type="range" id="sl-spacing" min="0" max="20" value="5" step="1">
+        </div>
+        <div class="og">
+          <div class="og-t">נקודת מוצא</div>
+          <div class="shape-grp" id="startpos-grp">
+            <button class="sbt on" data-sp="center">⊙ מרכז</button>
+            <button class="sbt" data-sp="topleft">↖ פינה עליונה</button>
+          </div>
         </div>
         <div class="og">
           <div class="tog-row">
@@ -575,8 +581,9 @@ const S={
   imgs:[],order:null,deck:[],layouts:[],imgEls:[],canvases:[],
   shape:'circle',sMin:.70,sMax:1.30,seed:1,
   sel:[],
-  layoutMode:'standard',
-  zeroWasteDiam:85,
+  cardSizeMm:85,
+  spacingMm:5,
+  startPos:'center',
   crop:true,
   isSilhouette:false,
   preloaded:false,
@@ -600,7 +607,7 @@ uz.addEventListener('dragover',e=>{e.preventDefault();uz.classList.add('over');}
 uz.addEventListener('dragleave',()=>uz.classList.remove('over'));
 uz.addEventListener('drop',e=>{e.preventDefault();uz.classList.remove('over');handleFiles(e.dataTransfer.files);});
 fi.addEventListener('change',e=>handleFiles(e.target.files));
-document.getElementById('chg-btn').addEventListener('click',()=>fi.click());
+// chg-btn removed in V5 (unified upload)
 
 function handleFiles(files){
   const imgs=Array.from(files).filter(f=>f.type.startsWith('image/'));
@@ -612,12 +619,8 @@ function handleFiles(files){
 
 function showRec(){
   const n=S.imgs.length,best=bestOrder(n),nxt=nextOrder(n);
-  document.getElementById('cnum').textContent=n;
-  const tr=document.getElementById('trow');tr.innerHTML='';
-  const show=Math.min(n,7);
-  for(let i=0;i<show;i++){const img=document.createElement('img');img.className='tsm';img.src=S.imgs[i].url;tr.appendChild(img);}
-  if(n>show){const sp=document.createElement('span');sp.className='tmore';sp.textContent=`+${n-show}`;tr.appendChild(sp);}
-  document.getElementById('cstrip').classList.add('on');
+  updateAssetsBar();
+  document.getElementById('btn-create').textContent=`ייצר משחק מ-${n} נכסים ✨`;
 
   const rec=document.getElementById('rec'),recT=document.getElementById('rec-t'),recO=document.getElementById('rec-opts');
   recO.innerHTML='';
@@ -780,9 +783,9 @@ function resetState(){
   S.imgs.forEach(im=>URL.revokeObjectURL(im.url));
   Object.assign(S,{imgs:[],order:null,deck:[],layouts:[],imgEls:[],canvases:[],sel:[],seed:1,preloaded:false});
   fi.value='';
-  document.getElementById('cstrip').classList.remove('on');
   document.getElementById('rec').classList.remove('on');
   document.getElementById('btn-create').disabled=true;
+  document.getElementById('btn-create').textContent='ייצר משחק מ-0 נכסים ✨';
   document.getElementById('cgrid').innerHTML='';
   document.getElementById('prev-wrap').style.display='none';
   document.getElementById('gen-ov').style.display='none';
@@ -790,37 +793,59 @@ function resetState(){
   Object.assign(EX,{srcImg:null,crops:[],idSeq:0,dragging:false});
   document.getElementById('uz-src').style.display='';
   document.getElementById('extractor-ui').style.display='none';
+  document.getElementById('btn-convert').style.display='none';
   document.getElementById('btn-convert').disabled=true;
   fiSrc.value='';
+  // Reset assets bar
+  document.getElementById('assets-bar').style.display='none';
+  document.getElementById('assets-strip').innerHTML='';
+  document.getElementById('assets-count').textContent='0';
 }
 function resetExport(){
   document.getElementById('exp-prog').classList.remove('on');
   document.getElementById('dl-area').classList.remove('on');
 }
 
-// ══ LAYOUT ENGINE ══
+// ══ LAYOUT ENGINE (V5 Parametric) ══
+function inNoPrintZone(pos,r){
+  const safe=25;
+  return(pos.x-r<safe&&pos.y-r<safe)||
+         (pos.x+r>A4_W-safe&&pos.y-r<safe)||
+         (pos.x-r<safe&&pos.y+r>A4_H-safe);
+}
+
 function layoutEngine(){
-  const mode=S.layoutMode;
-  const d=mode==='zerowaste'?S.zeroWasteDiam:mode==='giant'?170:mode==='expanded'?110:85;
-  const r=d/2,positions=[];
-  if(mode==='giant'){
-    positions.push({x:105,y:148.5});
-  }else if(mode==='expanded'){
-    positions.push({x:105,y:75},{x:105,y:215});
-  }else if(mode==='standard'){
-    const mX=(A4_W-2*d)/3,mY=(A4_H-2*d)/3;
-    for(let row=0;row<2;row++)for(let col=0;col<2;col++)
-      positions.push({x:mX+col*(d+mX)+r,y:mY+row*(d+mY)+r});
-  }else{
-    const rh=r*Math.sqrt(3);
+  const d=S.cardSizeMm,r=d/2,gap=S.spacingMm;
+  const off=S.isSilhouette?15:5;
+  const positions=[];
+  if(gap===0){
+    const rowH=r*Math.sqrt(3);
     let rowIdx=0;
-    for(let y=r;y<=A4_H-r+0.01;y+=rh,rowIdx++){
-      const startX=(rowIdx%2===0)?r:2*r;
-      for(let x=startX;x<=A4_W-r+0.01;x+=2*r)
+    for(let y=off+r;y<=A4_H-off-r+0.01;y+=rowH,rowIdx++){
+      const startX=(rowIdx%2===0)?off+r:off+2*r;
+      for(let x=startX;x<=A4_W-off-r+0.01;x+=2*r)
         positions.push({x,y});
     }
+  }else{
+    const step=d+gap;
+    if(S.startPos==='center'){
+      const cols=Math.max(1,Math.floor((A4_W-2*off+gap)/step));
+      const rows=Math.max(1,Math.floor((A4_H-2*off+gap)/step));
+      const totalW=cols*d+(cols-1)*gap;
+      const totalH=rows*d+(rows-1)*gap;
+      const ox=(A4_W-totalW)/2+r;
+      const oy=(A4_H-totalH)/2+r;
+      for(let row=0;row<rows;row++)
+        for(let col=0;col<cols;col++)
+          positions.push({x:ox+col*step,y:oy+row*step});
+    }else{
+      for(let y=off+r;y<=A4_H-off-r+0.01;y+=step)
+        for(let x=off+r;x<=A4_W-off-r+0.01;x+=step)
+          positions.push({x,y});
+    }
   }
-  return{positions,cardMm:d};
+  const filtered=S.isSilhouette?positions.filter(p=>!inNoPrintZone(p,r)):positions;
+  return{positions:filtered,cardMm:d};
 }
 
 // ══ PAPER PREVIEW ══
@@ -844,11 +869,16 @@ function updatePaperPrev(){
     cx.fill();cx.stroke();
   }
   if(S.isSilhouette){
-    cx.fillStyle='#000';
-    const ms=5*sc,m=3*sc;
-    cx.fillRect(m,m,ms,ms);
-    cx.fillRect(120-m-ms,m,ms,ms);
-    cx.fillRect(m,170-m-ms,ms,ms);
+    const off2=10*sc,ms2=6*sc,arm2=20*sc,lw=0.5;
+    // TL: filled square
+    cx.fillStyle='#000';cx.fillRect(off2,off2,ms2,ms2);
+    // TR: L-shape
+    cx.strokeStyle='#000';cx.lineWidth=lw;cx.setLineDash([]);
+    cx.beginPath();cx.moveTo(120-off2,off2);cx.lineTo(120-off2-arm2,off2);cx.stroke();
+    cx.beginPath();cx.moveTo(120-off2,off2);cx.lineTo(120-off2,off2+arm2);cx.stroke();
+    // BL: L-shape
+    cx.beginPath();cx.moveTo(off2,170-off2);cx.lineTo(off2+arm2,170-off2);cx.stroke();
+    cx.beginPath();cx.moveTo(off2,170-off2);cx.lineTo(off2,170-off2-arm2);cx.stroke();
   }
   if(S.crop){
     cx.strokeStyle='rgba(0,0,0,.25)';cx.lineWidth=.5;cx.setLineDash([2,2]);
@@ -861,24 +891,29 @@ function updatePaperPrev(){
     }
     cx.setLineDash([]);
   }
+  const spacingLabel=S.spacingMm===0?'hex':S.spacingMm+'mm';
   document.getElementById('prev-info').textContent=
-    `A4 · ${perPage} קלפים/עמוד · ${cardMm}mm · ${pages} ${pages!==1?'דפים':'דף'}`;
+    `A4 · ${perPage} קלפים/עמוד · ${cardMm}mm · מרווח ${spacingLabel} · ${pages} ${pages!==1?'דפים':'דף'}`;
 }
 
-// ══ EXPORT OPTIONS ══
-document.querySelectorAll('.lmb').forEach(b=>{
-  b.addEventListener('click',()=>{
-    document.querySelectorAll('.lmb').forEach(x=>x.classList.remove('on'));
-    b.classList.add('on');
-    S.layoutMode=b.dataset.lm;
-    document.getElementById('zw-og').style.display=S.layoutMode==='zerowaste'?'block':'none';
-    resetExport();
-    updatePaperPrev();
-  });
+// ══ EXPORT OPTIONS (V5 Parametric) ══
+const slCardSize=document.getElementById('sl-card-size');
+const lblCardSize=document.getElementById('lbl-card-size');
+slCardSize.addEventListener('input',()=>{S.cardSizeMm=+slCardSize.value;lblCardSize.textContent=slCardSize.value+'mm';updatePaperPrev();});
+slCardSize.addEventListener('change',resetExport);
+
+const slSpacing=document.getElementById('sl-spacing');
+const lblSpacing=document.getElementById('lbl-spacing');
+slSpacing.addEventListener('input',()=>{S.spacingMm=+slSpacing.value;lblSpacing.textContent=slSpacing.value+'mm';updatePaperPrev();});
+slSpacing.addEventListener('change',resetExport);
+
+document.getElementById('startpos-grp').addEventListener('click',e=>{
+  const b=e.target.closest('.sbt');if(!b)return;
+  document.querySelectorAll('#startpos-grp .sbt').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');S.startPos=b.dataset.sp;
+  resetExport();updatePaperPrev();
 });
-const slDiam=document.getElementById('sl-diam');
-const lblDiam=document.getElementById('lbl-diam');
-slDiam.addEventListener('input',()=>{S.zeroWasteDiam=+slDiam.value;lblDiam.textContent=slDiam.value+'mm';updatePaperPrev();});
+
 document.getElementById('chk-crop').addEventListener('change',e=>{S.crop=e.target.checked;updatePaperPrev();});
 document.getElementById('chk-sil').addEventListener('change',e=>{
   S.isSilhouette=e.target.checked;
@@ -917,15 +952,20 @@ async function expPDF(setp){
 
   const addRegMarks=()=>{
     if(!S.isSilhouette)return;
-    const ms=6,m=5,arm=15;
+    const off=10,ms=6,arm=20,lw=0.5;
+    // Top-Left: filled black square only
     pdf.setFillColor(0,0,0);
-    pdf.rect(m,m,ms,ms,'F');
-    pdf.setDrawColor(0);pdf.setLineWidth(.3);
-    pdf.line(m+ms,m,m+ms+arm,m);pdf.line(m,m+ms,m,m+ms+arm);
-    pdf.rect(210-m-ms,m,ms,ms,'F');
-    pdf.line(210-m-ms,m,210-m-ms-arm,m);pdf.line(210-m,m+ms,210-m,m+ms+arm);
-    pdf.rect(m,297-m-ms,ms,ms,'F');
-    pdf.line(m+ms,297-m,m+ms+arm,297-m);pdf.line(m,297-m-ms,m,297-m-ms-arm);
+    pdf.rect(off,off,ms,ms,'F');
+    // Top-Right: L-shape lines only
+    pdf.setDrawColor(0);pdf.setLineWidth(lw);
+    const trx=A4_W-off,try_=off;
+    pdf.line(trx,try_,trx-arm,try_);
+    pdf.line(trx,try_,trx,try_+arm);
+    // Bottom-Left: L-shape lines only
+    const blx=off,bly=A4_H-off;
+    pdf.line(blx,bly,blx+arm,bly);
+    pdf.line(blx,bly,blx,bly-arm);
+    // Bottom-Right: empty
   };
 
   for(let i=0;i<S.deck.length;i++){
@@ -950,7 +990,7 @@ async function expPDF(setp){
   setp(98,'שומר…');
   const blob=pdf.output('blob'),url=URL.createObjectURL(blob);
   const lnk=document.getElementById('dl-link');
-  lnk.href=url;lnk.download=`dobble-${S.order.total}cards-${S.layoutMode}.pdf`;
+  lnk.href=url;lnk.download=`dobble-${S.order.total}cards-${S.cardSizeMm}mm.pdf`;
   document.getElementById('dl-area').classList.add('on');
   setp(100,'✅ מוכן!');
 }
@@ -1019,19 +1059,6 @@ const EX={
   dispW:1,dispH:1,   // display canvas dimensions
   idSeq:0,
 };
-
-// Mode toggle
-document.querySelectorAll('.mbt').forEach(b=>{
-  b.addEventListener('click',()=>{
-    document.querySelectorAll('.mbt').forEach(x=>x.classList.remove('on'));
-    b.classList.add('on');
-    const m=b.dataset.m;
-    document.getElementById('files-panel').style.display=m==='files'?'':'none';
-    document.getElementById('extract-panel').style.display=m==='extract'?'':'none';
-    document.getElementById('btn-convert').style.display=m==='extract'?'':'none';
-    document.getElementById('btn-create').style.display=m==='files'?'':'none';
-  });
-});
 
 // Source image upload
 const uzSrc=document.getElementById('uz-src'),fiSrc=document.getElementById('fi-src');
@@ -1183,7 +1210,8 @@ function renderCropsStrip(){
   strip.innerHTML='';
   if(!EX.crops.length){
     strip.innerHTML='<span class="ext-empty">לחץ/י וגרור/י על התמונה לבחירת סמלים</span>';
-    lbl.textContent='0 סמלים נבחרו';return;
+    lbl.textContent='0 סמלים נבחרו';
+    updateAssetsBar();return;
   }
   EX.crops.forEach(c=>{
     const wrap=document.createElement('div');
@@ -1198,10 +1226,12 @@ function renderCropsStrip(){
     strip.appendChild(wrap);
   });
   lbl.textContent=`${EX.crops.length} סמלים נבחרו`;
+  updateAssetsBar();
 }
 
 function updateConvertBtn(){
   const btn=document.getElementById('btn-convert');
+  btn.style.display=EX.crops.length>0?'':'none';
   btn.disabled=EX.crops.length<7;
   btn.title=EX.crops.length<7?`נדרשים לפחות 7 סמלים (יש ${EX.crops.length})`:'';
 }
@@ -1223,26 +1253,42 @@ document.getElementById('btn-convert').addEventListener('click',async()=>{
   S.imgEls=EX.crops.slice(0,best.total).map(c=>extractSymbolFull(EX.srcImg,c));
   S.preloaded=true;
   // Update rec UI
-  document.getElementById('cnum').textContent=EX.crops.length;
-  document.getElementById('cstrip').classList.add('on');
   document.getElementById('btn-create').disabled=false;
-  document.getElementById('btn-create').style.display='';
+  document.getElementById('btn-create').textContent=`ייצר משחק מ-${EX.crops.length} נכסים ✨`;
   document.getElementById('btn-convert').style.display='none';
-  // Populate trow
-  const tr=document.getElementById('trow');tr.innerHTML='';
-  const show=Math.min(EX.crops.length,7);
-  for(let i=0;i<show;i++){
-    const th=EX.crops[i].thumb.cloneNode(true);
-    th.className='tsm';th.style.cssText='width:36px;height:36px;border-radius:5px;border:1.5px solid #E5E7EB;object-fit:contain;flex-shrink:0;';
-    tr.appendChild(th);
-  }
-  if(EX.crops.length>show){const sp=document.createElement('span');sp.className='tmore';sp.textContent=`+${EX.crops.length-show}`;tr.appendChild(sp);}
+  updateAssetsBar();
   // Show recommendation
   const rec=document.getElementById('rec'),recT=document.getElementById('rec-t'),recO=document.getElementById('rec-opts');
   recO.innerHTML='';rec.classList.add('on');
   recT.innerHTML=`✂️ <strong>הופקו ${EX.crops.length} סמלים</strong>. נבחרה אוטומטית אפשרות ${best.total} קלפים (${best.spc} סמלים/קלף).`;
   generate();
 });
+
+// ══ ASSETS BAR ══
+function updateAssetsBar(){
+  const bar=document.getElementById('assets-bar');
+  const strip=document.getElementById('assets-strip');
+  const countEl=document.getElementById('assets-count');
+  const srcImgs=S.imgs;
+  const srcCrops=EX.crops;
+  const total=srcImgs.length||srcCrops.length;
+  if(!total){bar.style.display='none';return;}
+  bar.style.display='block';
+  countEl.textContent=total;
+  strip.innerHTML='';
+  const show=Math.min(total,14);
+  if(srcImgs.length){
+    for(let i=0;i<show;i++){
+      const img=document.createElement('img');img.src=srcImgs[i].url;img.className='tsm';strip.appendChild(img);
+    }
+  }else{
+    for(let i=0;i<show;i++){
+      const th=srcCrops[i].thumb.cloneNode(true);
+      th.style.cssText='width:36px;height:36px;border-radius:5px;flex-shrink:0;';strip.appendChild(th);
+    }
+  }
+  if(total>show){const sp=document.createElement('span');sp.className='tmore';sp.textContent=`+${total-show}`;strip.appendChild(sp);}
+}
 
 // ══ UTILS ══
 const IMG_PX=400;
