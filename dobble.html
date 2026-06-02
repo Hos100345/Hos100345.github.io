@@ -154,6 +154,23 @@
     .mc-sym-canvas{display:block;margin:0 auto .4rem;border-radius:50%;box-shadow:var(--sh)}
     .mc-txt{font-size:.78rem;font-weight:700;color:#92400e;background:var(--gold-light);padding:.3rem .65rem;border-radius:100px;display:inline-block;max-width:140px;word-break:break-all;line-height:1.4}
 
+    /* ── V4: EXTRACTOR ── */
+    .mode-row{display:flex;align-items:center;gap:.85rem;margin-top:1.1rem;margin-bottom:.5rem}
+    .mode-grp{display:flex;border:2px solid var(--border);border-radius:100px;overflow:hidden}
+    .mbt{padding:.4rem 1.1rem;font-size:.85rem;font-weight:700;font-family:inherit;background:transparent;border:none;cursor:pointer;color:var(--muted);transition:all var(--tr)}
+    .mbt.on{background:var(--indigo);color:#fff}
+    .ext-wrap{margin-top:.9rem}
+    .tool-row{display:flex;align-items:center;gap:.85rem;margin-bottom:.65rem}
+    .canvas-wrap{position:relative;border-radius:var(--rs);box-shadow:var(--sh);cursor:crosshair;background:#f1f5f9;line-height:0;overflow:hidden;user-select:none}
+    #src-canvas{display:block;max-width:100%;border-radius:var(--rs)}
+    .crops-strip{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.75rem;padding:.65rem;background:var(--bg);border-radius:var(--rs);min-height:64px;align-items:flex-start}
+    .crop-thumb{position:relative;flex-shrink:0}
+    .crop-thumb canvas{border:2px solid var(--indigo);box-shadow:var(--sh);display:block;border-radius:50%}
+    .crop-thumb.sq canvas{border-radius:8px}
+    .crop-del{position:absolute;top:-5px;inset-inline-start:-5px;width:18px;height:18px;background:#ef4444;color:#fff;border-radius:50%;font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;line-height:1;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+    .ext-info{font-size:.78rem;color:var(--muted);margin-top:.35rem;line-height:1.55}
+    .ext-empty{color:var(--muted);font-size:.82rem;padding:.5rem}
+
     /* ── SCREEN 3: EXPORT ── */
     .exp-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem}
     .og-t{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.55rem}
@@ -226,12 +243,52 @@
     <h2 class="box-h">העלאת סמלים</h2>
     <p class="box-s">גרור/י תמונות של הסמלים לקלפים. מומלץ PNG/SVG עם רקע שקוף.</p>
 
+    <!-- ── Mode toggle ── -->
+    <div class="mode-row">
+      <span class="shape-lbl">מצב העלאה:</span>
+      <div class="mode-grp">
+        <button class="mbt on" data-m="files">📁 קבצים בודדים</button>
+        <button class="mbt" data-m="extract">✂️ הפקה מתמונה</button>
+      </div>
+    </div>
+
+    <!-- ── FILES MODE ── -->
+    <div id="files-panel">
     <div class="uz" id="uz">
       <div class="uz-ico">🖼️</div>
       <div class="uz-t">גרור/י תמונות לכאן</div>
       <div class="uz-s">או לחץ/י לבחירת קבצים</div>
       <div class="uz-hint">PNG · JPG · SVG · WebP · ניתן לבחור מספר קבצים</div>
       <input type="file" id="fi" multiple accept="image/*" style="display:none">
+    </div>
+    </div>
+
+    <!-- ── EXTRACT MODE (V4) ── -->
+    <div id="extract-panel" style="display:none" class="ext-wrap">
+      <div class="uz" id="uz-src">
+        <div class="uz-ico">🗂️</div>
+        <div class="uz-t">גרור/י תמונה גדולה לכאן</div>
+        <div class="uz-s">גיליון סמלים, עמוד קליפארט, אלבום וכדומה</div>
+        <div class="uz-hint">PNG · JPG · WebP</div>
+        <input type="file" id="fi-src" accept="image/png,image/jpeg,image/webp" style="display:none">
+      </div>
+      <div id="extractor-ui" style="display:none">
+        <div class="tool-row" style="margin-top:.75rem">
+          <span class="shape-lbl">כלי חיתוך:</span>
+          <div class="shape-grp" id="ext-tool-grp">
+            <button class="sbt on" data-tool="circle">⭕ עיגול</button>
+            <button class="sbt" data-tool="rounded_square">⬜ מרובע מעוגל</button>
+          </div>
+          <span class="ext-info">גרור/י על התמונה לסימון אזורים</span>
+        </div>
+        <div class="canvas-wrap" id="canvas-wrap">
+          <canvas id="src-canvas"></canvas>
+        </div>
+        <div class="crops-strip" id="crops-strip">
+          <span class="ext-empty">לחץ/י וגרור/י על התמונה לבחירת סמלים</span>
+        </div>
+        <div class="ext-info" id="ext-count-lbl">0 סמלים נבחרו</div>
+      </div>
     </div>
 
     <div class="cstrip" id="cstrip">
@@ -256,6 +313,7 @@
     </div>
 
     <div class="brow" style="justify-content:flex-end">
+      <button class="btn btn-ok" id="btn-convert" style="display:none" disabled>✂️ המר נכסים ידניים למשחק</button>
       <button class="btn btn-cta" id="btn-create" disabled>ייצר את המשחק שלי ✨</button>
     </div>
   </div>
@@ -521,6 +579,7 @@ const S={
   zeroWasteDiam:85,
   crop:true,
   isSilhouette:false,
+  preloaded:false,
 };
 
 // ══ NAV ══
@@ -624,8 +683,10 @@ async function generate(){
   S.seed=Math.floor(Math.random()*90000)+10000;
   S.layouts=buildLayouts(S.deck,S.seed,S.sMin,S.sMax);
   setp(15,'טוען תמונות…');
-  try{S.imgEls=await Promise.all(S.imgs.slice(0,S.order.total).map(im=>loadImg(im.url)));}
-  catch{alert('שגיאה בטעינת תמונות.');return;}
+  if(!S.preloaded){
+    try{S.imgEls=await Promise.all(S.imgs.slice(0,S.order.total).map(im=>loadImg(im.url)));}
+    catch{alert('שגיאה בטעינת תמונות.');return;}
+  }
   setp(35,'מצייר קלפים…');
   S.canvases=[];S.sel=[];
   const grid=document.getElementById('cgrid');
@@ -717,7 +778,7 @@ document.getElementById('btn-goexp').addEventListener('click',()=>{updatePaperPr
 
 function resetState(){
   S.imgs.forEach(im=>URL.revokeObjectURL(im.url));
-  Object.assign(S,{imgs:[],order:null,deck:[],layouts:[],imgEls:[],canvases:[],sel:[],seed:1});
+  Object.assign(S,{imgs:[],order:null,deck:[],layouts:[],imgEls:[],canvases:[],sel:[],seed:1,preloaded:false});
   fi.value='';
   document.getElementById('cstrip').classList.remove('on');
   document.getElementById('rec').classList.remove('on');
@@ -941,6 +1002,238 @@ async function expDXF(setp){
   document.getElementById('dl-area').classList.add('on');
   setp(100,'✅ מוכן!');
 }
+
+// ══ V4: SYMBOL EXTRACTOR ══
+const EX={
+  srcImg:null,       // HTMLImageElement
+  crops:[],          // [{id,shape,x,y,w,h,thumb}] in display-canvas coords
+  tool:'circle',
+  dragging:false,
+  drag:{sx:0,sy:0,ex:0,ey:0},
+  dispW:1,dispH:1,   // display canvas dimensions
+  idSeq:0,
+};
+
+// Mode toggle
+document.querySelectorAll('.mbt').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.mbt').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    const m=b.dataset.m;
+    document.getElementById('files-panel').style.display=m==='files'?'':'none';
+    document.getElementById('extract-panel').style.display=m==='extract'?'':'none';
+    document.getElementById('btn-convert').style.display=m==='extract'?'':'none';
+    document.getElementById('btn-create').style.display=m==='files'?'':'none';
+  });
+});
+
+// Source image upload
+const uzSrc=document.getElementById('uz-src'),fiSrc=document.getElementById('fi-src');
+uzSrc.addEventListener('click',()=>fiSrc.click());
+uzSrc.addEventListener('dragover',e=>{e.preventDefault();uzSrc.classList.add('over');});
+uzSrc.addEventListener('dragleave',()=>uzSrc.classList.remove('over'));
+uzSrc.addEventListener('drop',e=>{e.preventDefault();uzSrc.classList.remove('over');if(e.dataTransfer.files[0])loadSrcImage(e.dataTransfer.files[0]);});
+fiSrc.addEventListener('change',e=>{if(e.target.files[0])loadSrcImage(e.target.files[0]);});
+
+function loadSrcImage(file){
+  const url=URL.createObjectURL(file);
+  const img=new Image();
+  img.onload=()=>{
+    EX.srcImg=img;EX.crops=[];EX.idSeq=0;
+    document.getElementById('uz-src').style.display='none';
+    document.getElementById('extractor-ui').style.display='block';
+    setupExtractorCanvas();
+    renderCropsStrip();
+    updateConvertBtn();
+  };
+  img.src=url;
+}
+
+function setupExtractorCanvas(){
+  const wrap=document.getElementById('canvas-wrap');
+  const cv=document.getElementById('src-canvas');
+  const maxW=wrap.clientWidth||700;
+  const scale=Math.min(1,maxW/EX.srcImg.naturalWidth);
+  EX.dispW=Math.round(EX.srcImg.naturalWidth*scale);
+  EX.dispH=Math.round(EX.srcImg.naturalHeight*scale);
+  cv.width=EX.dispW;cv.height=EX.dispH;
+  redrawExtractor();
+  cv.addEventListener('mousedown',onExtractStart);
+  cv.addEventListener('mousemove',onExtractMove);
+  cv.addEventListener('mouseup',onExtractEnd);
+  cv.addEventListener('mouseleave',onExtractEnd);
+  cv.addEventListener('touchstart',e=>{e.preventDefault();const t=e.touches[0];const r=cv.getBoundingClientRect();onExtractStart({offsetX:t.clientX-r.left,offsetY:t.clientY-r.top});},{passive:false});
+  cv.addEventListener('touchmove',e=>{e.preventDefault();const t=e.touches[0];const r=cv.getBoundingClientRect();onExtractMove({offsetX:t.clientX-r.left,offsetY:t.clientY-r.top});},{passive:false});
+  cv.addEventListener('touchend',e=>{e.preventDefault();onExtractEnd();},{passive:false});
+}
+
+function onExtractStart(e){EX.dragging=true;EX.drag.sx=e.offsetX;EX.drag.sy=e.offsetY;EX.drag.ex=e.offsetX;EX.drag.ey=e.offsetY;}
+function onExtractMove(e){if(!EX.dragging)return;EX.drag.ex=e.offsetX;EX.drag.ey=e.offsetY;redrawExtractor();}
+function onExtractEnd(){
+  if(!EX.dragging)return;EX.dragging=false;
+  const{sx,sy,ex,ey}=EX.drag;
+  const x=Math.min(sx,ex),y=Math.min(sy,ey),w=Math.abs(ex-sx),h=Math.abs(ey-sy);
+  if(w>10&&h>10){
+    const sz=Math.max(w,h);
+    const cx=x+(w-sz)/2,cy=y+(h-sz)/2;
+    const thumb=extractSymbol(EX.srcImg,{shape:EX.tool,x:cx,y:cy,w:sz,h:sz});
+    EX.crops.push({id:++EX.idSeq,shape:EX.tool,x:cx,y:cy,w:sz,h:sz,thumb});
+    renderCropsStrip();updateConvertBtn();
+  }
+  redrawExtractor();
+}
+
+function redrawExtractor(){
+  const cv=document.getElementById('src-canvas');
+  const ctx=cv.getContext('2d');
+  ctx.clearRect(0,0,EX.dispW,EX.dispH);
+  ctx.drawImage(EX.srcImg,0,0,EX.dispW,EX.dispH);
+  // Dim overlay
+  ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(0,0,EX.dispW,EX.dispH);
+  // Show existing crops as clear windows
+  EX.crops.forEach(c=>{
+    ctx.save();ctx.globalCompositeOperation='destination-out';
+    ctx.beginPath();drawCropShape(ctx,c.x,c.y,c.w,c.h,c.shape);
+    ctx.fillStyle='rgba(0,0,0,1)';ctx.fill();ctx.restore();
+    // Border
+    ctx.save();ctx.strokeStyle='#4338CA';ctx.lineWidth=2;
+    ctx.beginPath();drawCropShape(ctx,c.x,c.y,c.w,c.h,c.shape);ctx.stroke();ctx.restore();
+  });
+  // Current drag
+  if(EX.dragging){
+    const{sx,sy,ex,ey}=EX.drag;
+    const x=Math.min(sx,ex),y=Math.min(sy,ey),w=Math.abs(ex-sx),h=Math.abs(ey-sy);
+    if(w>4&&h>4){
+      const sz=Math.max(w,h);const cx=x+(w-sz)/2,cy=y+(h-sz)/2;
+      ctx.save();ctx.globalCompositeOperation='destination-out';
+      ctx.beginPath();drawCropShape(ctx,cx,cy,sz,sz,EX.tool);
+      ctx.fillStyle='rgba(0,0,0,.7)';ctx.fill();ctx.restore();
+      ctx.save();ctx.strokeStyle='#F59E0B';ctx.lineWidth=2.5;ctx.setLineDash([5,3]);
+      ctx.beginPath();drawCropShape(ctx,cx,cy,sz,sz,EX.tool);ctx.stroke();ctx.restore();
+    }
+  }
+}
+
+function drawCropShape(ctx,x,y,w,h,shape){
+  if(shape==='circle'){
+    ctx.arc(x+w/2,y+h/2,w/2,0,Math.PI*2);
+  }else{
+    const r=Math.min(w,h)*.1;
+    ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+    ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+    ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();
+  }
+}
+
+function extractSymbol(srcImg,crop){
+  const SZ=80;
+  const cv=document.createElement('canvas');cv.width=cv.height=SZ;
+  const ctx=cv.getContext('2d');
+  const scX=srcImg.naturalWidth/EX.dispW,scY=srcImg.naturalHeight/EX.dispH;
+  ctx.clearRect(0,0,SZ,SZ);
+  ctx.beginPath();
+  if(crop.shape==='circle'){
+    ctx.arc(SZ/2,SZ/2,SZ/2,0,Math.PI*2);
+  }else{
+    const r=SZ*.1;
+    ctx.moveTo(r,0);ctx.lineTo(SZ-r,0);ctx.quadraticCurveTo(SZ,0,SZ,r);
+    ctx.lineTo(SZ,SZ-r);ctx.quadraticCurveTo(SZ,SZ,SZ-r,SZ);
+    ctx.lineTo(r,SZ);ctx.quadraticCurveTo(0,SZ,0,SZ-r);
+    ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.closePath();
+  }
+  ctx.clip();
+  ctx.drawImage(srcImg,crop.x*scX,crop.y*scY,crop.w*scX,crop.h*scY,0,0,SZ,SZ);
+  return cv;
+}
+
+function extractSymbolFull(srcImg,crop){
+  const SZ=IMG_PX;
+  const cv=document.createElement('canvas');cv.width=cv.height=SZ;
+  const ctx=cv.getContext('2d');
+  const scX=srcImg.naturalWidth/EX.dispW,scY=srcImg.naturalHeight/EX.dispH;
+  ctx.clearRect(0,0,SZ,SZ);
+  ctx.beginPath();
+  if(crop.shape==='circle'){
+    ctx.arc(SZ/2,SZ/2,SZ/2,0,Math.PI*2);
+  }else{
+    const r=SZ*.1;
+    ctx.moveTo(r,0);ctx.lineTo(SZ-r,0);ctx.quadraticCurveTo(SZ,0,SZ,r);
+    ctx.lineTo(SZ,SZ-r);ctx.quadraticCurveTo(SZ,SZ,SZ-r,SZ);
+    ctx.lineTo(r,SZ);ctx.quadraticCurveTo(0,SZ,0,SZ-r);
+    ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.closePath();
+  }
+  ctx.clip();
+  ctx.drawImage(srcImg,crop.x*scX,crop.y*scY,crop.w*scX,crop.h*scY,0,0,SZ,SZ);
+  return cv;
+}
+
+function renderCropsStrip(){
+  const strip=document.getElementById('crops-strip');
+  const lbl=document.getElementById('ext-count-lbl');
+  strip.innerHTML='';
+  if(!EX.crops.length){
+    strip.innerHTML='<span class="ext-empty">לחץ/י וגרור/י על התמונה לבחירת סמלים</span>';
+    lbl.textContent='0 סמלים נבחרו';return;
+  }
+  EX.crops.forEach(c=>{
+    const wrap=document.createElement('div');
+    wrap.className='crop-thumb'+(c.shape==='rounded_square'?' sq':'');
+    const thumb=c.thumb.cloneNode(true);
+    thumb.style.cssText='width:60px;height:60px;';
+    wrap.appendChild(thumb);
+    const del=document.createElement('button');del.className='crop-del';del.textContent='×';
+    del.title='הסר סמל';
+    del.addEventListener('click',()=>{EX.crops=EX.crops.filter(x=>x.id!==c.id);renderCropsStrip();redrawExtractor();updateConvertBtn();});
+    wrap.appendChild(del);
+    strip.appendChild(wrap);
+  });
+  lbl.textContent=`${EX.crops.length} סמלים נבחרו`;
+}
+
+function updateConvertBtn(){
+  const btn=document.getElementById('btn-convert');
+  btn.disabled=EX.crops.length<7;
+  btn.title=EX.crops.length<7?`נדרשים לפחות 7 סמלים (יש ${EX.crops.length})`:'';
+}
+
+// Tool toggle for extractor
+document.getElementById('ext-tool-grp').addEventListener('click',e=>{
+  const b=e.target.closest('.sbt');if(!b)return;
+  document.querySelectorAll('#ext-tool-grp .sbt').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');EX.tool=b.dataset.tool;
+});
+
+// Convert button
+document.getElementById('btn-convert').addEventListener('click',async()=>{
+  if(EX.crops.length<7)return;
+  const best=bestOrder(EX.crops.length);
+  if(!best){alert('נדרשות לפחות 7 תמונות.');return;}
+  S.order=best;
+  S.imgs=EX.crops.slice(0,best.total).map((c,i)=>({name:`סמל ${i+1}`,url:''}));
+  S.imgEls=EX.crops.slice(0,best.total).map(c=>extractSymbolFull(EX.srcImg,c));
+  S.preloaded=true;
+  // Update rec UI
+  document.getElementById('cnum').textContent=EX.crops.length;
+  document.getElementById('cstrip').classList.add('on');
+  document.getElementById('btn-create').disabled=false;
+  document.getElementById('btn-create').style.display='';
+  document.getElementById('btn-convert').style.display='none';
+  // Populate trow
+  const tr=document.getElementById('trow');tr.innerHTML='';
+  const show=Math.min(EX.crops.length,7);
+  for(let i=0;i<show;i++){
+    const th=EX.crops[i].thumb.cloneNode(true);
+    th.className='tsm';th.style.cssText='width:36px;height:36px;border-radius:5px;border:1.5px solid #E5E7EB;object-fit:contain;flex-shrink:0;';
+    tr.appendChild(th);
+  }
+  if(EX.crops.length>show){const sp=document.createElement('span');sp.className='tmore';sp.textContent=`+${EX.crops.length-show}`;tr.appendChild(sp);}
+  // Show recommendation
+  const rec=document.getElementById('rec'),recT=document.getElementById('rec-t'),recO=document.getElementById('rec-opts');
+  recO.innerHTML='';rec.classList.add('on');
+  recT.innerHTML=`✂️ <strong>הופקו ${EX.crops.length} סמלים</strong>. נבחרה אוטומטית אפשרות ${best.total} קלפים (${best.spc} סמלים/קלף).`;
+  generate();
+});
 
 // ══ UTILS ══
 const IMG_PX=400;
