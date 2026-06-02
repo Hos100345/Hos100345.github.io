@@ -154,13 +154,20 @@
     .mc-sym-canvas{display:block;margin:0 auto .4rem;border-radius:50%;box-shadow:var(--sh)}
     .mc-txt{font-size:.78rem;font-weight:700;color:#92400e;background:var(--gold-light);padding:.3rem .65rem;border-radius:100px;display:inline-block;max-width:140px;word-break:break-all;line-height:1.4}
 
-    /* ── V5: UNIFIED ASSETS ── */
-    .upload-methods-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:.75rem}
-    .upload-method{display:flex;flex-direction:column;gap:.5rem}
-    .assets-bar{background:var(--blue-light);border-radius:var(--rs);padding:.75rem 1rem;margin-top:.9rem}
-    .assets-strip{display:flex;gap:.35rem;flex-wrap:wrap;min-height:44px;align-items:center;margin-top:.35rem}
+    /* ── V7: INLINE GALLERY ── */
+    .gallery{margin-top:.9rem}
+    .gallery-hdr{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap;margin-bottom:.45rem}
+    .gallery-count{font-size:.85rem;font-weight:700;color:var(--indigo)}
+    .under-lim{font-size:.78rem;color:#92400e;background:var(--gold-light);padding:.2rem .6rem;border-radius:100px}
+    .gallery-grid{display:flex;gap:.6rem;flex-wrap:wrap;padding:.65rem;background:var(--bg);border-radius:var(--rs);min-height:70px;align-items:flex-start}
+    .g-item{position:relative;flex-shrink:0;width:72px;text-align:center}
+    .g-item canvas{width:72px;height:72px;border-radius:6px;display:block;border:2px solid var(--border);box-shadow:var(--sh)}
+    .g-item.crop canvas{border-radius:50%;border-color:var(--indigo)}
+    .g-del{position:absolute;top:-5px;inset-inline-end:-5px;width:18px;height:18px;background:#ef4444;color:#fff;border-radius:50%;font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;line-height:1;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+    .g-edit{position:absolute;bottom:-5px;inset-inline-end:-5px;width:20px;height:20px;background:var(--indigo);color:#fff;border-radius:50%;font-size:.72rem;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;line-height:1;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+    .g-name{font-size:.58rem;color:var(--muted);margin-top:.2rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:72px}
 
-    /* ── V4: EXTRACTOR ── */
+    /* ── V4: EXTRACTOR (used in crop modal) ── */
     .ext-wrap{margin-top:.5rem}
     .tool-row{display:flex;align-items:center;gap:.85rem;margin-bottom:.65rem}
     .canvas-wrap{position:relative;border-radius:var(--rs);box-shadow:var(--sh);cursor:crosshair;background:#f1f5f9;line-height:0;overflow:hidden;user-select:none}
@@ -244,61 +251,25 @@
 <section id="s1" class="scr on">
   <div class="box">
     <h2 class="box-h">העלאת סמלים</h2>
-    <p class="box-s">גרור/י תמונות של הסמלים לקלפים, או הפק/י סמלים ישירות מתמונה גדולה. מומלץ PNG/SVG עם רקע שקוף.</p>
+    <p class="box-s">גרור/י תמונות לכאן — כל העלאה נוספת מצטברת למאגר. לחץ/י ✂ על תמונה כדי להפיק ממנה סמלים נוספים.</p>
 
-    <!-- ── UNIFIED: Both upload methods side by side ── -->
-    <div class="upload-methods-grid">
+    <!-- ── Single Upload Component ── -->
+    <div class="uz" id="uz">
+      <div class="uz-ico">🖼️</div>
+      <div class="uz-t">גרור/י תמונות לכאן</div>
+      <div class="uz-s">או לחץ/י לבחירת קבצים · כל העלאה מצטברת למאגר</div>
+      <div class="uz-hint">PNG · JPG · SVG · WebP · ניתן לבחור מספר קבצים</div>
+      <input type="file" id="fi" multiple accept="image/*" style="display:none">
+    </div>
 
-      <!-- FILES -->
-      <div class="upload-method">
-        <div class="og-t">📁 קבצים בודדים</div>
-        <div id="files-panel">
-          <div class="uz" id="uz">
-            <div class="uz-ico">🖼️</div>
-            <div class="uz-t">גרור/י תמונות לכאן</div>
-            <div class="uz-s">או לחץ/י לבחירת קבצים</div>
-            <div class="uz-hint">PNG · JPG · SVG · WebP</div>
-            <input type="file" id="fi" multiple accept="image/*" style="display:none">
-          </div>
-        </div>
+    <!-- ── Inline Active Gallery ── -->
+    <div id="gallery" class="gallery" style="display:none">
+      <div class="gallery-hdr">
+        <div class="og-t">📦 מאגר נכסים</div>
+        <span class="gallery-count" id="gallery-count">0 נכסים</span>
+        <span class="under-lim" id="under-lim" style="display:none"></span>
       </div>
-
-      <!-- EXTRACTOR -->
-      <div class="upload-method">
-        <div class="og-t">✂️ הפקה מתמונה גדולה</div>
-        <div id="extract-panel" class="ext-wrap">
-          <div class="uz" id="uz-src">
-            <div class="uz-ico">🗂️</div>
-            <div class="uz-t">גרור/י תמונה גדולה לכאן</div>
-            <div class="uz-s">גיליון סמלים, עמוד קליפארט, אלבום וכדומה</div>
-            <div class="uz-hint">PNG · JPG · WebP</div>
-            <input type="file" id="fi-src" accept="image/png,image/jpeg,image/webp" style="display:none">
-          </div>
-          <div id="extractor-ui" style="display:none">
-            <div class="tool-row" style="margin-top:.75rem">
-              <span class="shape-lbl">כלי חיתוך:</span>
-              <div class="shape-grp" id="ext-tool-grp">
-                <button class="sbt on" data-tool="circle">⭕ עיגול</button>
-                <button class="sbt" data-tool="rounded_square">⬜ מרובע מעוגל</button>
-              </div>
-            </div>
-            <div class="canvas-wrap" id="canvas-wrap">
-              <canvas id="src-canvas"></canvas>
-            </div>
-            <div class="crops-strip" id="crops-strip">
-              <span class="ext-empty">לחץ/י וגרור/י על התמונה לבחירת סמלים</span>
-            </div>
-            <div class="ext-info" id="ext-count-lbl">0 סמלים נבחרו</div>
-          </div>
-        </div>
-      </div>
-
-    </div><!-- /upload-methods-grid -->
-
-    <!-- ── ASSETS BAR ── -->
-    <div id="assets-bar" class="assets-bar" style="display:none">
-      <div class="og-t">📦 מאגר נכסים (<span id="assets-count">0</span>)</div>
-      <div class="assets-strip" id="assets-strip"></div>
+      <div class="gallery-grid" id="gallery-grid"></div>
     </div>
 
     <div class="rec" id="rec">
@@ -315,7 +286,6 @@
     </div>
 
     <div class="brow" style="justify-content:flex-end">
-      <button class="btn btn-ok" id="btn-convert" style="display:none" disabled>✂️ המר נכסים ידניים למשחק</button>
       <button class="btn btn-cta" id="btn-create" disabled>ייצר משחק מ-0 נכסים ✨</button>
     </div>
   </div>
@@ -467,6 +437,35 @@
   </div>
 </div>
 
+<!-- CROP MODAL -->
+<div class="modal-bg" id="crop-modal" hidden>
+  <div class="modal-card" style="max-width:820px;width:95%">
+    <div class="modal-hdr">
+      <div class="modal-title">✂️ הפקת סמלים מתמונה</div>
+      <button class="modal-x" id="crop-modal-x">✕</button>
+    </div>
+    <div class="tool-row" style="margin-bottom:.65rem">
+      <span class="shape-lbl">כלי חיתוך:</span>
+      <div class="shape-grp" id="modal-tool-grp">
+        <button class="sbt on" data-tool="circle">⭕ עיגול</button>
+        <button class="sbt" data-tool="rounded_square">⬜ מרובע מעוגל</button>
+      </div>
+      <span class="ext-info" style="flex:1">גרור/י על התמונה לסימון</span>
+    </div>
+    <div class="canvas-wrap" id="modal-canvas-wrap">
+      <canvas id="modal-src-canvas"></canvas>
+    </div>
+    <div class="crops-strip" id="modal-crops-strip">
+      <span class="ext-empty">לחץ/י וגרור/י על התמונה לבחירת סמלים</span>
+    </div>
+    <div class="ext-info" id="modal-crop-count">0 סמלים נבחרו</div>
+    <div class="brow" style="justify-content:flex-end;margin-top:.65rem">
+      <button class="btn btn-ghost" id="btn-crop-cancel">ביטול</button>
+      <button class="btn btn-ok" id="btn-crop-add" disabled>✅ הוסף למאגר</button>
+    </div>
+  </div>
+</div>
+
 <script>
 'use strict';
 
@@ -578,15 +577,19 @@ function drawCard(canvas,layout,imgs,shape,hitIdx){
 
 // ══ STATE ══
 const S={
-  imgs:[],order:null,deck:[],layouts:[],imgEls:[],canvases:[],
+  assets:[],
+  order:null,deck:[],layouts:[],imgEls:[],canvases:[],
   shape:'circle',sMin:.70,sMax:1.30,seed:1,
   sel:[],
-  cardSizeMm:85,
-  spacingMm:5,
-  startPos:'center',
-  crop:true,
-  isSilhouette:false,
-  preloaded:false,
+  cardSizeMm:85,spacingMm:5,startPos:'center',
+  crop:true,isSilhouette:false,
+  idSeq:0,
+};
+
+const CM={
+  srcImg:null,assetId:null,crops:[],tool:'circle',
+  dragging:false,drag:{sx:0,sy:0,ex:0,ey:0},
+  dispW:1,dispH:1,idSeq:0,
 };
 
 // ══ NAV ══
@@ -600,40 +603,76 @@ function goScr(n){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-// ══ UPLOAD ══
+// ══ UPLOAD (Append Mode) ══
 const uz=document.getElementById('uz'),fi=document.getElementById('fi');
 uz.addEventListener('click',()=>fi.click());
 uz.addEventListener('dragover',e=>{e.preventDefault();uz.classList.add('over');});
 uz.addEventListener('dragleave',()=>uz.classList.remove('over'));
-uz.addEventListener('drop',e=>{e.preventDefault();uz.classList.remove('over');handleFiles(e.dataTransfer.files);});
-fi.addEventListener('change',e=>handleFiles(e.target.files));
-// chg-btn removed in V5 (unified upload)
+uz.addEventListener('drop',e=>{e.preventDefault();uz.classList.remove('over');addFiles(e.dataTransfer.files);});
+fi.addEventListener('change',e=>{addFiles(e.target.files);fi.value='';});
 
-function handleFiles(files){
+async function addFiles(files){
   const imgs=Array.from(files).filter(f=>f.type.startsWith('image/'));
   if(!imgs.length){alert('נא לבחור קבצי תמונה (PNG, JPG, SVG, WebP)');return;}
-  S.imgs.forEach(im=>URL.revokeObjectURL(im.url));
-  S.imgs=imgs.map(f=>({name:f.name,url:URL.createObjectURL(f)}));
-  showRec();
+  for(const f of imgs){
+    const url=URL.createObjectURL(f);
+    try{
+      const imgEl=await loadImg(url);
+      const thumb=makeThumb(imgEl);
+      S.assets.push({id:++S.idSeq,type:'image',name:f.name,url,thumb,imgEl});
+    }catch{URL.revokeObjectURL(url);}
+  }
+  renderGallery();updateCounter();
 }
 
-function showRec(){
-  const n=S.imgs.length,best=bestOrder(n),nxt=nextOrder(n);
-  updateAssetsBar();
-  document.getElementById('btn-create').textContent=`ייצר משחק מ-${n} נכסים ✨`;
+function makeThumb(imgEl){
+  const c=document.createElement('canvas');c.width=c.height=72;
+  c.getContext('2d').drawImage(imgEl,0,0,72,72);
+  return c;
+}
 
+function renderGallery(){
+  const grid=document.getElementById('gallery-grid');
+  const gallery=document.getElementById('gallery');
+  grid.innerHTML='';
+  if(!S.assets.length){gallery.style.display='none';return;}
+  gallery.style.display='';
+  S.assets.forEach(a=>{
+    const item=document.createElement('div');
+    item.className='g-item'+(a.type==='crop'?' crop':'');
+    const thumb=a.thumb.cloneNode(true);
+    item.appendChild(thumb);
+    const del=document.createElement('button');del.className='g-del';del.textContent='×';del.title='הסר';
+    del.addEventListener('click',()=>removeAsset(a.id));
+    item.appendChild(del);
+    if(a.type==='image'){
+      const edit=document.createElement('button');edit.className='g-edit';edit.textContent='✂';edit.title='הפק סמלים';
+      edit.addEventListener('click',()=>openCropModal(a.id));
+      item.appendChild(edit);
+    }
+    const nm=document.createElement('div');nm.className='g-name';nm.textContent=a.name;
+    item.appendChild(nm);
+    grid.appendChild(item);
+  });
+}
+
+function updateCounter(){
+  const n=S.assets.length;
+  document.getElementById('gallery-count').textContent=`${n} נכסים`;
+  const ulEl=document.getElementById('under-lim');
+  const best=bestOrder(n),nxt=nextOrder(n);
+  if(n>0&&!best){ulEl.style.display='';ulEl.textContent=`נדרשות לפחות 7 — הוסף עוד ${7-n}`;}
+  else ulEl.style.display='none';
   const rec=document.getElementById('rec'),recT=document.getElementById('rec-t'),recO=document.getElementById('rec-opts');
   recO.innerHTML='';
-
-  if(!best){
-    rec.classList.add('on');
-    recT.innerHTML=`⚠️ נדרשות לפחות <strong>7 תמונות</strong>. העלית ${n} — אנא הוסף עוד ${7-n}.`;
-    document.getElementById('btn-create').disabled=true;
-    S.order=null;return;
-  }
+  document.getElementById('btn-create').textContent=`ייצר משחק מ-${n} נכסים ✨`;
+  if(!n){rec.classList.remove('on');S.order=null;document.getElementById('btn-create').disabled=true;return;}
   rec.classList.add('on');
-  recT.innerHTML=`💡 <strong>המלצה מתמטית:</strong> העלית <strong>${n} תמונות</strong>. כדי ליצור משחק מושלם, באפשרותך:`;
-
+  if(!best){
+    recT.innerHTML=`⚠️ נדרשות לפחות <strong>7 תמונות</strong>. העלית ${n} — אנא הוסף עוד ${7-n}.`;
+    S.order=null;document.getElementById('btn-create').disabled=true;return;
+  }
+  recT.innerHTML=`💡 <strong>המלצה מתמטית:</strong> העלית <strong>${n} נכסים</strong>. כדי ליצור משחק מושלם, באפשרותך:`;
   const addOpt=(ord,sel)=>{
     const need=ord.total-n;
     const d=document.createElement('div');
@@ -650,17 +689,27 @@ function showRec(){
     }
     recO.appendChild(d);
   };
-
   addOpt(best,true);
   if(nxt)addOpt(nxt,false);
   S.order=best;
   document.getElementById('btn-create').disabled=false;
 }
 
+function removeAsset(id){
+  const a=S.assets.find(x=>x.id===id);
+  if(!a)return;
+  if(a.type==='image'){
+    URL.revokeObjectURL(a.url);
+    S.assets=S.assets.filter(x=>!(x.type==='crop'&&x.srcAssetId===id));
+  }
+  S.assets=S.assets.filter(x=>x.id!==id);
+  renderGallery();updateCounter();
+}
+
 // ══ SHAPE ══
 document.getElementById('shp').addEventListener('click',e=>{
   const b=e.target.closest('.sbt');if(!b)return;
-  document.querySelectorAll('.sbt').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('#shp .sbt').forEach(x=>x.classList.remove('on'));
   b.classList.add('on');S.shape=b.dataset.s;
 });
 
@@ -685,11 +734,8 @@ async function generate(){
   S.deck=genDeck(S.order.q);
   S.seed=Math.floor(Math.random()*90000)+10000;
   S.layouts=buildLayouts(S.deck,S.seed,S.sMin,S.sMax);
-  setp(15,'טוען תמונות…');
-  if(!S.preloaded){
-    try{S.imgEls=await Promise.all(S.imgs.slice(0,S.order.total).map(im=>loadImg(im.url)));}
-    catch{alert('שגיאה בטעינת תמונות.');return;}
-  }
+  setp(15,'מכין תמונות…');
+  S.imgEls=S.assets.slice(0,S.order.total).map(a=>a.imgEl);
   setp(35,'מצייר קלפים…');
   S.canvases=[];S.sel=[];
   const grid=document.getElementById('cgrid');
@@ -762,7 +808,7 @@ function openVerify(c1,c2){
     mct.strokeStyle='#F59E0B';mct.lineWidth=3;mct.stroke();
     mct.drawImage(S.imgEls[sym],8,8,64,64);
   }
-  document.getElementById('mc-txt').textContent=sym>=0?`#${sym+1} · ${S.imgs[sym]?.name||''}`:'—';
+  document.getElementById('mc-txt').textContent=sym>=0?`#${sym+1} · ${S.assets[sym]?.name||''}`:'—';
   document.getElementById('vmodal').hidden=false;
 }
 
@@ -780,8 +826,8 @@ document.getElementById('btn-b2').addEventListener('click',()=>{goScr(2);resetEx
 document.getElementById('btn-goexp').addEventListener('click',()=>{updatePaperPrev();goScr(3);});
 
 function resetState(){
-  S.imgs.forEach(im=>URL.revokeObjectURL(im.url));
-  Object.assign(S,{imgs:[],order:null,deck:[],layouts:[],imgEls:[],canvases:[],sel:[],seed:1,preloaded:false});
+  S.assets.forEach(a=>{if(a.type==='image')URL.revokeObjectURL(a.url);});
+  Object.assign(S,{assets:[],order:null,deck:[],layouts:[],imgEls:[],canvases:[],sel:[],seed:1,idSeq:0});
   fi.value='';
   document.getElementById('rec').classList.remove('on');
   document.getElementById('btn-create').disabled=true;
@@ -789,17 +835,10 @@ function resetState(){
   document.getElementById('cgrid').innerHTML='';
   document.getElementById('prev-wrap').style.display='none';
   document.getElementById('gen-ov').style.display='none';
-  // Reset extractor state
-  Object.assign(EX,{srcImg:null,crops:[],idSeq:0,dragging:false});
-  document.getElementById('uz-src').style.display='';
-  document.getElementById('extractor-ui').style.display='none';
-  document.getElementById('btn-convert').style.display='none';
-  document.getElementById('btn-convert').disabled=true;
-  fiSrc.value='';
-  // Reset assets bar
-  document.getElementById('assets-bar').style.display='none';
-  document.getElementById('assets-strip').innerHTML='';
-  document.getElementById('assets-count').textContent='0';
+  document.getElementById('gallery').style.display='none';
+  document.getElementById('gallery-grid').innerHTML='';
+  document.getElementById('gallery-count').textContent='0 נכסים';
+  document.getElementById('under-lim').style.display='none';
 }
 function resetExport(){
   document.getElementById('exp-prog').classList.remove('on');
@@ -1049,103 +1088,84 @@ async function expDXF(setp){
   setp(100,'✅ מוכן!');
 }
 
-// ══ V4: SYMBOL EXTRACTOR ══
-const EX={
-  srcImg:null,       // HTMLImageElement
-  crops:[],          // [{id,shape,x,y,w,h,thumb}] in display-canvas coords
-  tool:'circle',
-  dragging:false,
-  drag:{sx:0,sy:0,ex:0,ey:0},
-  dispW:1,dispH:1,   // display canvas dimensions
-  idSeq:0,
-};
-
-// Source image upload
-const uzSrc=document.getElementById('uz-src'),fiSrc=document.getElementById('fi-src');
-uzSrc.addEventListener('click',()=>fiSrc.click());
-uzSrc.addEventListener('dragover',e=>{e.preventDefault();uzSrc.classList.add('over');});
-uzSrc.addEventListener('dragleave',()=>uzSrc.classList.remove('over'));
-uzSrc.addEventListener('drop',e=>{e.preventDefault();uzSrc.classList.remove('over');if(e.dataTransfer.files[0])loadSrcImage(e.dataTransfer.files[0]);});
-fiSrc.addEventListener('change',e=>{if(e.target.files[0])loadSrcImage(e.target.files[0]);});
-
-function loadSrcImage(file){
-  const url=URL.createObjectURL(file);
+// ══ CROP MODAL ══
+function openCropModal(assetId){
+  const asset=S.assets.find(a=>a.id===assetId);
+  if(!asset||asset.type!=='image')return;
+  CM.assetId=assetId;CM.crops=[];CM.idSeq=0;CM.tool='circle';CM.dragging=false;
   const img=new Image();
   img.onload=()=>{
-    EX.srcImg=img;EX.crops=[];EX.idSeq=0;
-    document.getElementById('uz-src').style.display='none';
-    document.getElementById('extractor-ui').style.display='block';
-    setupExtractorCanvas();
-    renderCropsStrip();
-    updateConvertBtn();
+    CM.srcImg=img;
+    document.getElementById('crop-modal').hidden=false;
+    document.querySelectorAll('#modal-tool-grp .sbt').forEach((b,i)=>{b.classList.toggle('on',i===0);});
+    setupCropCanvas();
+    renderModalCrops();
+    updateCropAddBtn();
   };
-  img.src=url;
+  img.src=asset.url;
 }
 
-function setupExtractorCanvas(){
-  const wrap=document.getElementById('canvas-wrap');
-  // Replace canvas element to clear any previously-attached event listeners
-  const oldCv=document.getElementById('src-canvas');
+function setupCropCanvas(){
+  const wrap=document.getElementById('modal-canvas-wrap');
+  const oldCv=document.getElementById('modal-src-canvas');
   const cv=oldCv.cloneNode(false);
   oldCv.replaceWith(cv);
-  const maxW=wrap.clientWidth||700;
-  const scale=Math.min(1,maxW/EX.srcImg.naturalWidth);
-  EX.dispW=Math.round(EX.srcImg.naturalWidth*scale);
-  EX.dispH=Math.round(EX.srcImg.naturalHeight*scale);
-  cv.width=EX.dispW;cv.height=EX.dispH;
-  redrawExtractor();
-  cv.addEventListener('mousedown',onExtractStart);
-  cv.addEventListener('mousemove',onExtractMove);
-  cv.addEventListener('mouseup',onExtractEnd);
-  cv.addEventListener('mouseleave',onExtractEnd);
-  cv.addEventListener('touchstart',e=>{e.preventDefault();const t=e.touches[0];const r=cv.getBoundingClientRect();onExtractStart({offsetX:t.clientX-r.left,offsetY:t.clientY-r.top});},{passive:false});
-  cv.addEventListener('touchmove',e=>{e.preventDefault();const t=e.touches[0];const r=cv.getBoundingClientRect();onExtractMove({offsetX:t.clientX-r.left,offsetY:t.clientY-r.top});},{passive:false});
-  cv.addEventListener('touchend',e=>{e.preventDefault();onExtractEnd();},{passive:false});
+  const maxW=Math.min(wrap.clientWidth||700,700);
+  const scale=Math.min(1,maxW/CM.srcImg.naturalWidth);
+  CM.dispW=Math.round(CM.srcImg.naturalWidth*scale);
+  CM.dispH=Math.round(CM.srcImg.naturalHeight*scale);
+  cv.width=CM.dispW;cv.height=CM.dispH;
+  cv.style.maxWidth='100%';
+  redrawCropCanvas();
+  cv.addEventListener('mousedown',onCropStart);
+  cv.addEventListener('mousemove',onCropMove);
+  cv.addEventListener('mouseup',onCropEnd);
+  cv.addEventListener('mouseleave',onCropEnd);
+  cv.addEventListener('touchstart',e=>{e.preventDefault();const t=e.touches[0];const r=cv.getBoundingClientRect();onCropStart({offsetX:t.clientX-r.left,offsetY:t.clientY-r.top});},{passive:false});
+  cv.addEventListener('touchmove',e=>{e.preventDefault();const t=e.touches[0];const r=cv.getBoundingClientRect();onCropMove({offsetX:t.clientX-r.left,offsetY:t.clientY-r.top});},{passive:false});
+  cv.addEventListener('touchend',e=>{e.preventDefault();onCropEnd();},{passive:false});
 }
 
-function onExtractStart(e){EX.dragging=true;EX.drag.sx=e.offsetX;EX.drag.sy=e.offsetY;EX.drag.ex=e.offsetX;EX.drag.ey=e.offsetY;}
-function onExtractMove(e){if(!EX.dragging)return;EX.drag.ex=e.offsetX;EX.drag.ey=e.offsetY;redrawExtractor();}
-function onExtractEnd(){
-  if(!EX.dragging)return;EX.dragging=false;
-  const{sx,sy,ex,ey}=EX.drag;
+function onCropStart(e){CM.dragging=true;CM.drag.sx=e.offsetX;CM.drag.sy=e.offsetY;CM.drag.ex=e.offsetX;CM.drag.ey=e.offsetY;}
+function onCropMove(e){if(!CM.dragging)return;CM.drag.ex=e.offsetX;CM.drag.ey=e.offsetY;redrawCropCanvas();}
+function onCropEnd(){
+  if(!CM.dragging)return;CM.dragging=false;
+  const{sx,sy,ex,ey}=CM.drag;
   const x=Math.min(sx,ex),y=Math.min(sy,ey),w=Math.abs(ex-sx),h=Math.abs(ey-sy);
   if(w>10&&h>10){
     const sz=Math.max(w,h);
     const cx=x+(w-sz)/2,cy=y+(h-sz)/2;
-    const thumb=extractSymbol(EX.srcImg,{shape:EX.tool,x:cx,y:cy,w:sz,h:sz});
-    EX.crops.push({id:++EX.idSeq,shape:EX.tool,x:cx,y:cy,w:sz,h:sz,thumb});
-    renderCropsStrip();updateConvertBtn();
+    const thumb=cropExtractThumb(CM.srcImg,{shape:CM.tool,x:cx,y:cy,w:sz,h:sz});
+    CM.crops.push({id:++CM.idSeq,shape:CM.tool,x:cx,y:cy,w:sz,h:sz,thumb});
+    renderModalCrops();updateCropAddBtn();
   }
-  redrawExtractor();
+  redrawCropCanvas();
 }
 
-function redrawExtractor(){
-  const cv=document.getElementById('src-canvas');
+function redrawCropCanvas(){
+  const cv=document.getElementById('modal-src-canvas');
+  if(!cv||!CM.srcImg)return;
   const ctx=cv.getContext('2d');
-  ctx.clearRect(0,0,EX.dispW,EX.dispH);
-  ctx.drawImage(EX.srcImg,0,0,EX.dispW,EX.dispH);
-  // Dim overlay
-  ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(0,0,EX.dispW,EX.dispH);
-  // Show existing crops as clear windows
-  EX.crops.forEach(c=>{
+  ctx.clearRect(0,0,CM.dispW,CM.dispH);
+  ctx.drawImage(CM.srcImg,0,0,CM.dispW,CM.dispH);
+  ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(0,0,CM.dispW,CM.dispH);
+  CM.crops.forEach(c=>{
     ctx.save();ctx.globalCompositeOperation='destination-out';
     ctx.beginPath();drawCropShape(ctx,c.x,c.y,c.w,c.h,c.shape);
     ctx.fillStyle='rgba(0,0,0,1)';ctx.fill();ctx.restore();
-    // Border
     ctx.save();ctx.strokeStyle='#4338CA';ctx.lineWidth=2;
     ctx.beginPath();drawCropShape(ctx,c.x,c.y,c.w,c.h,c.shape);ctx.stroke();ctx.restore();
   });
-  // Current drag
-  if(EX.dragging){
-    const{sx,sy,ex,ey}=EX.drag;
+  if(CM.dragging){
+    const{sx,sy,ex,ey}=CM.drag;
     const x=Math.min(sx,ex),y=Math.min(sy,ey),w=Math.abs(ex-sx),h=Math.abs(ey-sy);
     if(w>4&&h>4){
       const sz=Math.max(w,h);const cx=x+(w-sz)/2,cy=y+(h-sz)/2;
       ctx.save();ctx.globalCompositeOperation='destination-out';
-      ctx.beginPath();drawCropShape(ctx,cx,cy,sz,sz,EX.tool);
+      ctx.beginPath();drawCropShape(ctx,cx,cy,sz,sz,CM.tool);
       ctx.fillStyle='rgba(0,0,0,.7)';ctx.fill();ctx.restore();
       ctx.save();ctx.strokeStyle='#F59E0B';ctx.lineWidth=2.5;ctx.setLineDash([5,3]);
-      ctx.beginPath();drawCropShape(ctx,cx,cy,sz,sz,EX.tool);ctx.stroke();ctx.restore();
+      ctx.beginPath();drawCropShape(ctx,cx,cy,sz,sz,CM.tool);ctx.stroke();ctx.restore();
     }
   }
 }
@@ -1162,133 +1182,86 @@ function drawCropShape(ctx,x,y,w,h,shape){
   }
 }
 
-function extractSymbol(srcImg,crop){
-  const SZ=80;
+function cropExtractThumb(srcImg,crop){
+  const SZ=72;
   const cv=document.createElement('canvas');cv.width=cv.height=SZ;
   const ctx=cv.getContext('2d');
-  const scX=srcImg.naturalWidth/EX.dispW,scY=srcImg.naturalHeight/EX.dispH;
+  const scX=srcImg.naturalWidth/CM.dispW,scY=srcImg.naturalHeight/CM.dispH;
   ctx.clearRect(0,0,SZ,SZ);
   ctx.beginPath();
-  if(crop.shape==='circle'){
-    ctx.arc(SZ/2,SZ/2,SZ/2,0,Math.PI*2);
-  }else{
-    const r=SZ*.1;
-    ctx.moveTo(r,0);ctx.lineTo(SZ-r,0);ctx.quadraticCurveTo(SZ,0,SZ,r);
-    ctx.lineTo(SZ,SZ-r);ctx.quadraticCurveTo(SZ,SZ,SZ-r,SZ);
-    ctx.lineTo(r,SZ);ctx.quadraticCurveTo(0,SZ,0,SZ-r);
-    ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.closePath();
-  }
+  if(crop.shape==='circle'){ctx.arc(SZ/2,SZ/2,SZ/2,0,Math.PI*2);}
+  else{const r=SZ*.1;ctx.moveTo(r,0);ctx.lineTo(SZ-r,0);ctx.quadraticCurveTo(SZ,0,SZ,r);ctx.lineTo(SZ,SZ-r);ctx.quadraticCurveTo(SZ,SZ,SZ-r,SZ);ctx.lineTo(r,SZ);ctx.quadraticCurveTo(0,SZ,0,SZ-r);ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.closePath();}
   ctx.clip();
   ctx.drawImage(srcImg,crop.x*scX,crop.y*scY,crop.w*scX,crop.h*scY,0,0,SZ,SZ);
   return cv;
 }
 
-function extractSymbolFull(srcImg,crop){
+function cropExtractFull(srcImg,crop){
   const SZ=IMG_PX;
   const cv=document.createElement('canvas');cv.width=cv.height=SZ;
   const ctx=cv.getContext('2d');
-  const scX=srcImg.naturalWidth/EX.dispW,scY=srcImg.naturalHeight/EX.dispH;
+  const scX=srcImg.naturalWidth/CM.dispW,scY=srcImg.naturalHeight/CM.dispH;
   ctx.clearRect(0,0,SZ,SZ);
   ctx.beginPath();
-  if(crop.shape==='circle'){
-    ctx.arc(SZ/2,SZ/2,SZ/2,0,Math.PI*2);
-  }else{
-    const r=SZ*.1;
-    ctx.moveTo(r,0);ctx.lineTo(SZ-r,0);ctx.quadraticCurveTo(SZ,0,SZ,r);
-    ctx.lineTo(SZ,SZ-r);ctx.quadraticCurveTo(SZ,SZ,SZ-r,SZ);
-    ctx.lineTo(r,SZ);ctx.quadraticCurveTo(0,SZ,0,SZ-r);
-    ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.closePath();
-  }
+  if(crop.shape==='circle'){ctx.arc(SZ/2,SZ/2,SZ/2,0,Math.PI*2);}
+  else{const r=SZ*.1;ctx.moveTo(r,0);ctx.lineTo(SZ-r,0);ctx.quadraticCurveTo(SZ,0,SZ,r);ctx.lineTo(SZ,SZ-r);ctx.quadraticCurveTo(SZ,SZ,SZ-r,SZ);ctx.lineTo(r,SZ);ctx.quadraticCurveTo(0,SZ,0,SZ-r);ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.closePath();}
   ctx.clip();
   ctx.drawImage(srcImg,crop.x*scX,crop.y*scY,crop.w*scX,crop.h*scY,0,0,SZ,SZ);
   return cv;
 }
 
-function renderCropsStrip(){
-  const strip=document.getElementById('crops-strip');
-  const lbl=document.getElementById('ext-count-lbl');
+function renderModalCrops(){
+  const strip=document.getElementById('modal-crops-strip');
+  const countEl=document.getElementById('modal-crop-count');
   strip.innerHTML='';
-  if(!EX.crops.length){
+  if(!CM.crops.length){
     strip.innerHTML='<span class="ext-empty">לחץ/י וגרור/י על התמונה לבחירת סמלים</span>';
-    lbl.textContent='0 סמלים נבחרו';
-    updateAssetsBar();return;
+    countEl.textContent='0 סמלים נבחרו';return;
   }
-  EX.crops.forEach(c=>{
+  CM.crops.forEach(c=>{
     const wrap=document.createElement('div');
     wrap.className='crop-thumb'+(c.shape==='rounded_square'?' sq':'');
-    const thumb=c.thumb.cloneNode(true);
-    thumb.style.cssText='width:60px;height:60px;';
+    const thumb=c.thumb.cloneNode(true);thumb.style.cssText='width:60px;height:60px;';
     wrap.appendChild(thumb);
     const del=document.createElement('button');del.className='crop-del';del.textContent='×';
-    del.title='הסר סמל';
-    del.addEventListener('click',()=>{EX.crops=EX.crops.filter(x=>x.id!==c.id);renderCropsStrip();redrawExtractor();updateConvertBtn();});
+    del.addEventListener('click',()=>{CM.crops=CM.crops.filter(x=>x.id!==c.id);renderModalCrops();redrawCropCanvas();updateCropAddBtn();});
     wrap.appendChild(del);
     strip.appendChild(wrap);
   });
-  lbl.textContent=`${EX.crops.length} סמלים נבחרו`;
-  updateAssetsBar();
+  countEl.textContent=`${CM.crops.length} סמלים נבחרו`;
 }
 
-function updateConvertBtn(){
-  const btn=document.getElementById('btn-convert');
-  btn.style.display=EX.crops.length>0?'':'none';
-  btn.disabled=EX.crops.length<7;
-  btn.title=EX.crops.length<7?`נדרשים לפחות 7 סמלים (יש ${EX.crops.length})`:'';
+function updateCropAddBtn(){
+  document.getElementById('btn-crop-add').disabled=CM.crops.length===0;
 }
 
-// Tool toggle for extractor
-document.getElementById('ext-tool-grp').addEventListener('click',e=>{
+function closeCropModal(){
+  document.getElementById('crop-modal').hidden=true;
+  CM.srcImg=null;CM.crops=[];CM.dragging=false;
+}
+
+document.getElementById('modal-tool-grp').addEventListener('click',e=>{
   const b=e.target.closest('.sbt');if(!b)return;
-  document.querySelectorAll('#ext-tool-grp .sbt').forEach(x=>x.classList.remove('on'));
-  b.classList.add('on');EX.tool=b.dataset.tool;
+  document.querySelectorAll('#modal-tool-grp .sbt').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');CM.tool=b.dataset.tool;
 });
 
-// Convert button
-document.getElementById('btn-convert').addEventListener('click',async()=>{
-  if(EX.crops.length<7)return;
-  const best=bestOrder(EX.crops.length);
-  if(!best){alert('נדרשות לפחות 7 תמונות.');return;}
-  S.order=best;
-  S.imgs=EX.crops.slice(0,best.total).map((c,i)=>({name:`סמל ${i+1}`,url:''}));
-  S.imgEls=EX.crops.slice(0,best.total).map(c=>extractSymbolFull(EX.srcImg,c));
-  S.preloaded=true;
-  // Update rec UI
-  document.getElementById('btn-create').disabled=false;
-  document.getElementById('btn-create').textContent=`ייצר משחק מ-${EX.crops.length} נכסים ✨`;
-  document.getElementById('btn-convert').style.display='none';
-  updateAssetsBar();
-  // Show recommendation
-  const rec=document.getElementById('rec'),recT=document.getElementById('rec-t'),recO=document.getElementById('rec-opts');
-  recO.innerHTML='';rec.classList.add('on');
-  recT.innerHTML=`✂️ <strong>הופקו ${EX.crops.length} סמלים</strong>. נבחרה אוטומטית אפשרות ${best.total} קלפים (${best.spc} סמלים/קלף).`;
-  generate();
-});
+document.getElementById('crop-modal-x').addEventListener('click',closeCropModal);
+document.getElementById('btn-crop-cancel').addEventListener('click',closeCropModal);
+document.getElementById('crop-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeCropModal();});
 
-// ══ ASSETS BAR ══
-function updateAssetsBar(){
-  const bar=document.getElementById('assets-bar');
-  const strip=document.getElementById('assets-strip');
-  const countEl=document.getElementById('assets-count');
-  const srcImgs=S.imgs;
-  const srcCrops=EX.crops;
-  const total=srcImgs.length||srcCrops.length;
-  if(!total){bar.style.display='none';return;}
-  bar.style.display='block';
-  countEl.textContent=total;
-  strip.innerHTML='';
-  const show=Math.min(total,14);
-  if(srcImgs.length){
-    for(let i=0;i<show;i++){
-      const img=document.createElement('img');img.src=srcImgs[i].url;img.className='tsm';strip.appendChild(img);
-    }
-  }else{
-    for(let i=0;i<show;i++){
-      const th=srcCrops[i].thumb.cloneNode(true);
-      th.style.cssText='width:36px;height:36px;border-radius:5px;flex-shrink:0;';strip.appendChild(th);
-    }
-  }
-  if(total>show){const sp=document.createElement('span');sp.className='tmore';sp.textContent=`+${total-show}`;strip.appendChild(sp);}
-}
+document.getElementById('btn-crop-add').addEventListener('click',()=>{
+  if(!CM.crops.length)return;
+  const asset=S.assets.find(a=>a.id===CM.assetId);
+  const srcName=asset?asset.name.replace(/\.[^.]+$/,''):'תמונה';
+  CM.crops.forEach((c,i)=>{
+    const fullEl=cropExtractFull(CM.srcImg,c);
+    const thumb=cropExtractThumb(CM.srcImg,c);
+    S.assets.push({id:++S.idSeq,type:'crop',name:`${srcName} #${i+1}`,url:'',thumb,imgEl:fullEl,srcAssetId:CM.assetId});
+  });
+  closeCropModal();
+  renderGallery();updateCounter();
+});
 
 // ══ UTILS ══
 const IMG_PX=400;
