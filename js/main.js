@@ -6,10 +6,24 @@
 const SD = window.SITE_DATA || { video: {}, gallery: [], testimonials: [] };
 
 const catLabels = {
-  events:     'עיצוב אירועים',
-  workshops:  'סדנאות',
-  characters: 'דמויות',
-  hats:       'כתרים וכובעים',
+  events:      'עיצוב אירועים',
+  workshops:   'סדנאות',
+  bar:         'בר בלונים ודמויות',
+  characters:  'דמויות',
+  rooms:       'עיצוב חדרים',
+  satisfied:   'לקוחות מרוצים',
+  arch:        'קשת',
+  numbers:     'מספרים',
+  centerpieces:'מרכזי שולחן',
+  photocorner: 'פינת צילום',
+  garlands:    'גירלנדות',
+  printing:    'הדפסה על בלונים',
+  hoop:        'חישוק',
+  hats:        'כתבים / כובעים מבלונים',
+  frame:       'מסגרת',
+  column:      'עמוד',
+  'bar-chars': 'דמויות של בר בלונים',
+  'event-chars':'דמויות של עיצוב אירועים',
 };
 
 /* =====================================================
@@ -23,12 +37,14 @@ navToggle.addEventListener('click', () => {
   const open = navLinks.classList.toggle('open');
   navToggle.setAttribute('aria-expanded', String(open));
   document.body.style.overflow = open ? 'hidden' : '';
+  header.classList.toggle('nav-open', open);
 });
 navLinks.querySelectorAll('.nav-link').forEach(link => {
   link.addEventListener('click', () => {
     navLinks.classList.remove('open');
     navToggle.setAttribute('aria-expanded', 'false');
     document.body.style.overflow = '';
+    header.classList.remove('nav-open');
   });
 });
 
@@ -82,6 +98,14 @@ function renderVideo() {
                 allowfullscreen loading="lazy"></iframe>
       </div>`;
     revealObserver.observe(container.querySelector('.reveal'));
+  } else if (v.driveId && v.driveId.trim()) {
+    container.innerHTML = `
+      <div class="video-wrap reveal">
+        <iframe src="https://drive.google.com/file/d/${v.driveId.trim()}/preview"
+                title="הושעיה אמן בלונים — סרטון תדמית" frameborder="0"
+                allow="autoplay" allowfullscreen loading="lazy"></iframe>
+      </div>`;
+    revealObserver.observe(container.querySelector('.reveal'));
   }
   // אם ריק — ה-placeholder מ-HTML נשאר
 }
@@ -120,42 +144,102 @@ lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightb
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 
 /* =====================================================
-   GALLERY
+   GALLERY — lazy paginated render (18 per page)
    ===================================================== */
 const galleryGrid = document.getElementById('gallery-grid');
+const GAL_PAGE_SIZE = 18;
+let galCat  = null;
+let galPage = 0;
 
-function buildGallery() {
-  const items = SD.gallery || [];
-  if (!items.length) {
+function makeGalleryItem(item) {
+  const div = document.createElement('div');
+  div.className = 'gallery-item';
+  div.dataset.cat = item.cat;
+  div.setAttribute('role', 'button');
+  div.setAttribute('tabindex', '0');
+  div.setAttribute('aria-label', `הגדל: ${item.alt}`);
+  div.innerHTML = `
+    <img src="${item.src}" alt="${item.alt}" loading="lazy">
+    <div class="gallery-overlay" aria-hidden="true"><span>${catLabels[item.cat] || item.alt}</span></div>`;
+  const img = div.querySelector('img');
+  div.addEventListener('click',   () => openLightbox(img.src, img.alt));
+  div.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') openLightbox(img.src, img.alt); });
+  return div;
+}
+
+function loadGalleryPage() {
+  const all      = SD.gallery || [];
+  const filtered = galCat === 'all' ? all : all.filter(i => i.cat === galCat);
+  const start    = galPage * GAL_PAGE_SIZE;
+
+  filtered.slice(start, start + GAL_PAGE_SIZE).forEach(item => {
+    galleryGrid.appendChild(makeGalleryItem(item));
+  });
+
+  let moreBtn = document.getElementById('gallery-more-btn');
+  const remaining = filtered.length - start - GAL_PAGE_SIZE;
+  if (remaining > 0) {
+    if (!moreBtn) {
+      moreBtn = document.createElement('button');
+      moreBtn.id = 'gallery-more-btn';
+      moreBtn.className = 'gallery-more-btn';
+      moreBtn.addEventListener('click', () => { galPage++; loadGalleryPage(); });
+      galleryGrid.insertAdjacentElement('afterend', moreBtn);
+    }
+    moreBtn.textContent = `הצג עוד תמונות (${remaining} נותרו)`;
+  } else if (moreBtn) {
+    moreBtn.remove();
+  }
+}
+
+setGalleryFilter('all');
+
+/* GALLERY CATEGORY CARDS */
+const catConfig = {
+  // ── תיקיות ראשיות ──
+  events:       { label: 'עיצוב אירועים',           icon: '🎈' },
+  workshops:    { label: 'סדנאות',                  icon: '🎪' },
+  bar:          { label: 'בר בלונים ודמויות',        icon: '🎪' },
+  characters:   { label: 'דמויות',                  icon: '🤡' },
+  rooms:        { label: 'עיצוב חדרים',              icon: '🏠' },
+  satisfied:    { label: 'לקוחות מרוצים',            icon: '😊' },
+  // ── תת-קטגוריות ──
+  arch:         { label: 'קשת',                     icon: '🌈' },
+  numbers:      { label: 'מספרים',                  icon: '🔢' },
+  centerpieces: { label: 'מרכזי שולחן',             icon: '🌸' },
+  photocorner:  { label: 'פינת צילום',               icon: '📸' },
+  garlands:     { label: 'גירלנדות',                icon: '🌿' },
+  printing:     { label: 'הדפסה על בלונים',          icon: '🖨️' },
+  hoop:         { label: 'חישוק',                   icon: '⭕' },
+  hats:         { label: 'כתבים / כובעים מבלונים',  icon: '🎩' },
+  frame:        { label: 'מסגרת',                   icon: '🖼️' },
+  column:       { label: 'עמוד',                    icon: '🏛️' },
+  'bar-chars':  { label: 'דמויות של בר בלונים',     icon: '🎊' },
+  'event-chars':{ label: 'דמויות של עיצוב אירועים', icon: '🎭' },
+};
+
+
+function openGalleryBrowse(cat) {
+  setGalleryFilter(cat);
+  document.getElementById('gallery-sub').textContent = catConfig[cat]?.label || 'גלריה';
+}
+
+function setGalleryFilter(cat) {
+  document.querySelectorAll('.gfilter').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
+  galCat  = cat;
+  galPage = 0;
+  galleryGrid.innerHTML = '';
+  const moreBtn = document.getElementById('gallery-more-btn');
+  if (moreBtn) moreBtn.remove();
+  if (!(SD.gallery || []).length) {
     galleryGrid.innerHTML = '<p style="text-align:center;color:#6B7280;padding:2rem;">הגלריה ריקה — הוסף תמונות דרך admin.html</p>';
     return;
   }
-  galleryGrid.innerHTML = items.map(item => `
-    <div class="gallery-item" data-cat="${item.cat}" role="button" tabindex="0" aria-label="הגדל: ${item.alt}">
-      <img src="${item.src}" alt="${item.alt}" loading="lazy">
-      <div class="gallery-overlay" aria-hidden="true">
-        <span>${catLabels[item.cat] || item.alt}</span>
-      </div>
-    </div>
-  `).join('');
-
-  galleryGrid.querySelectorAll('.gallery-item').forEach(el => {
-    const img = el.querySelector('img');
-    el.addEventListener('click',   () => openLightbox(img.src, img.alt));
-    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') openLightbox(img.src, img.alt); });
-  });
+  loadGalleryPage();
 }
-buildGallery();
 
 document.querySelectorAll('.gfilter').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.gfilter').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    const cat = btn.dataset.cat;
-    document.querySelectorAll('.gallery-item').forEach(item => {
-      item.classList.toggle('hidden', cat !== 'all' && item.dataset.cat !== cat);
-    });
-  });
+  btn.addEventListener('click', () => setGalleryFilter(btn.dataset.cat));
 });
 
 /* =====================================================
@@ -179,18 +263,35 @@ function totalSlides() {
   return Math.ceil((SD.testimonials || []).length / cardsPerView);
 }
 
+const avatarColors = ['#2563EB','#7C3AED','#0891B2','#059669','#D97706','#DC2626','#DB2777','#4338CA'];
+function avatarColor(name) {
+  let h = 0;
+  for (const c of name) h = (h * 31 + c.charCodeAt(0)) & 0xFFFFFF;
+  return avatarColors[h % avatarColors.length];
+}
+function initials(name) {
+  return name.trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('');
+}
+
 function buildTestimonials() {
   const list = SD.testimonials || [];
-  track.innerHTML = list.map(t => `
+  track.innerHTML = list.map(t => {
+    const avatar = t.photo
+      ? `<img src="${t.photo}" alt="${t.name}" class="testimonial-avatar" loading="lazy">`
+      : `<span class="testimonial-avatar-initials" style="background:${avatarColor(t.name)}" aria-hidden="true">${initials(t.name)}</span>`;
+    return `
     <div class="testimonial-card" role="article">
       <div class="stars" aria-label="דירוג 5 כוכבים">★★★★★</div>
       <p class="testimonial-text">"${t.text}"</p>
       <div class="testimonial-footer">
-        <p class="testimonial-name">— ${t.name}</p>
+        <div class="testimonial-author">
+          ${avatar}
+          <p class="testimonial-name">— ${t.name}</p>
+        </div>
         ${t.screenshot ? `<button class="screenshot-btn" onclick="openLightbox('${t.screenshot}','המלצה מ-${t.name}')">📸 צילום מסך</button>` : ''}
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 function buildDots() {
@@ -248,16 +349,38 @@ track.addEventListener('touchend', e => {
 }, { passive: true });
 
 /* =====================================================
-   SERVICE TILES → GALLERY FILTER
+   SERVICE TILES — inject gallery image + link to gallery filter
    ===================================================== */
+(function buildServiceTileImages() {
+  const images = SD.gallery || [];
+  document.querySelectorAll('.service-tile[data-gallery-cat]').forEach((tile, idx) => {
+    const cat = tile.dataset.galleryCat;
+    const catImgs = images.filter(i => i.cat === cat);
+    if (!catImgs.length) return;
+
+    const pick = catImgs[(idx * 7) % catImgs.length];
+
+    const img = document.createElement('img');
+    img.src = pick.src;
+    img.alt = '';
+    img.className = 'service-tile-img';
+    img.loading = 'lazy';
+    img.setAttribute('aria-hidden', 'true');
+
+    const body = document.createElement('div');
+    body.className = 'service-tile-body';
+    [...tile.children].forEach(child => body.appendChild(child));
+
+    tile.appendChild(img);
+    tile.appendChild(body);
+  });
+})();
+
 document.querySelectorAll('.service-tile[data-gallery-cat]').forEach(tile => {
   tile.addEventListener('click', () => {
     const cat = tile.dataset.galleryCat;
     document.getElementById('gallery').scrollIntoView({ behavior: 'smooth' });
-    setTimeout(() => {
-      const btn = document.querySelector(`.gfilter[data-cat="${cat}"]`);
-      if (btn) btn.click();
-    }, 600);
+    setTimeout(() => openGalleryBrowse(cat), 600);
   });
   tile.addEventListener('keydown', e => {
     if (e.key === 'Enter' || e.key === ' ') tile.click();
@@ -265,6 +388,57 @@ document.querySelectorAll('.service-tile[data-gallery-cat]').forEach(tile => {
   tile.setAttribute('tabindex', '0');
   tile.setAttribute('role', 'button');
 });
+
+/* =====================================================
+   WORKS IMAGE STRIP — continuous right-to-left scroll
+   ===================================================== */
+function buildWorksStrip() {
+  const images = SD.gallery || [];
+  if (!images.length) return;
+
+  const trackA = document.getElementById('works-strip-track-a');
+  const trackB = document.getElementById('works-strip-track-b');
+  if (!trackA || !trackB) return;
+
+  // 12 images — one per main category, fast to load
+  const cats = [
+    'events','characters','bar','workshops','centerpieces',
+    'arch','hats','column','printing','hoop','garlands','rooms'
+  ];
+  const strip = cats.map((cat, idx) => {
+    const c = images.filter(i => i.cat === cat);
+    return c.length ? c[idx % c.length] : null;
+  }).filter(Boolean);
+
+  const inner = document.querySelector('.works-strip-inner');
+
+  const makeImg = item => {
+    const img = document.createElement('img');
+    img.src = item.src;
+    img.alt = item.alt;
+    img.loading = 'eager';
+    img.className = 'works-strip-img';
+    img.addEventListener('click', () => openLightbox(img.src, img.alt));
+    img.addEventListener('error', () => {
+      const fallback = images[Math.floor(Math.random() * images.length)];
+      img.src = fallback.src;
+      img.alt = fallback.alt;
+    });
+    return img;
+  };
+
+  strip.forEach(item => { trackA.appendChild(makeImg(item)); trackB.appendChild(makeImg(item)); });
+
+  // Start animation only after at least half of track A images have loaded
+  let loaded = 0;
+  const needed = Math.ceil(strip.length * 0.6);
+  const start = () => { if (++loaded >= needed && inner) inner.style.animationPlayState = 'running'; };
+  trackA.querySelectorAll('img').forEach(img => {
+    if (img.complete) start();
+    else { img.addEventListener('load', start); img.addEventListener('error', start); }
+  });
+}
+buildWorksStrip();
 
 /* =====================================================
    SMOOTH SCROLL

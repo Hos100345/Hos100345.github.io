@@ -234,7 +234,13 @@
       </div>
       <input type="email" id="clientEmail" placeholder="אימייל (אופציונלי)">
       <input type="text" id="eventType" placeholder="סוג האירוע (ברית, בר מצווה, יום הולדת...)">
-      <input type="date" id="eventDate" style="margin-bottom:12px;">
+      <div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:12px;">
+        <div style="flex:1;">
+          <input type="text" id="eventDateHeb" placeholder="תאריך עברי: כ׳ תשרי תשפ״ה" style="margin-bottom:4px;">
+          <div id="eventDateDisplay" style="font-size:12px;color:#667eea;min-height:1.2em;padding-right:4px;"></div>
+        </div>
+        <input type="date" id="eventDate" style="flex:1;margin-bottom:0;">
+      </div>
 
       <!-- Pricing catalog -->
       <div class="section-box">
@@ -354,6 +360,7 @@
     </div>
   </div>
 
+  <script src="js/hebrew-date.js"></script>
   <script>
     const STORAGE_KEY = "hoshaya_data_v2";
     const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
@@ -531,7 +538,10 @@
 
       let msg = `שלום ${name}! 🎈\n\nהצעת מחיר מהושעיה אמן בלונים:\n`;
       if (eventType) msg += `אירוע: ${eventType}\n`;
-      if (eventDate) msg += `תאריך: ${new Date(eventDate).toLocaleDateString('he-IL')}\n`;
+      const hebDate = document.getElementById('eventDateHeb')?.value?.trim();
+      if (hebDate)   msg += `תאריך: ${hebDate}`;
+      if (eventDate) msg += (hebDate ? ` (${new Date(eventDate).toLocaleDateString('he-IL')})` : `תאריך: ${new Date(eventDate).toLocaleDateString('he-IL')}`) + '\n';
+      else if (hebDate) msg += '\n';
       if (items) msg += `\n${items}\n`;
       if (price) msg += `\nסה"כ: ₪${parseFloat(price).toLocaleString()}\n`;
       if (notes) msg += `\nהערות: ${notes}\n`;
@@ -870,6 +880,7 @@ ${chat}`
     renderPriceGrid();
     renderInventory();
     initGroqKey();
+    initHebrewDate('eventDateHeb', 'eventDate', 'eventDateDisplay');
   </script>
 </body>
 </html>
