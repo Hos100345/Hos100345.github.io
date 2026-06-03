@@ -163,6 +163,8 @@
     .g-item{position:relative;flex-shrink:0;width:72px;text-align:center}
     .g-item canvas{width:72px;height:72px;border-radius:6px;display:block;border:2px solid var(--border);box-shadow:var(--sh)}
     .g-item.crop canvas{border-radius:50%;border-color:var(--indigo)}
+    .g-item.source canvas{border-style:dashed;border-color:#f59e0b;opacity:.7}
+    .g-source-lbl{font-size:.6rem;color:#92400e;background:#fef3c7;border-radius:4px;padding:1px 4px;margin-top:2px;display:inline-block}
     .g-del{position:absolute;top:-5px;inset-inline-end:-5px;width:18px;height:18px;background:#ef4444;color:#fff;border-radius:50%;font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;line-height:1;box-shadow:0 1px 3px rgba(0,0,0,.25)}
     .g-edit{position:absolute;bottom:-5px;inset-inline-end:-5px;width:20px;height:20px;background:var(--indigo);color:#fff;border-radius:50%;font-size:.72rem;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;line-height:1;box-shadow:0 1px 3px rgba(0,0,0,.25)}
     .g-name{font-size:.58rem;color:var(--muted);margin-top:.2rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:72px}
@@ -639,7 +641,7 @@ function renderGallery(){
   gallery.style.display='';
   S.assets.forEach(a=>{
     const item=document.createElement('div');
-    item.className='g-item'+(a.type==='crop'?' crop':'');
+    item.className='g-item'+(a.type==='crop'?' crop':a.isCropSource?' source':'');
     const thumbCv=document.createElement('canvas');thumbCv.width=thumbCv.height=72;
     thumbCv.getContext('2d').drawImage(a.imgEl,0,0,72,72);
     item.appendChild(thumbCv);
@@ -653,13 +655,18 @@ function renderGallery(){
     }
     const nm=document.createElement('div');nm.className='g-name';nm.textContent=a.name;
     item.appendChild(nm);
+    if(a.isCropSource){
+      const lbl=document.createElement('div');lbl.className='g-source-lbl';lbl.textContent='מקור';
+      item.appendChild(lbl);
+    }
     grid.appendChild(item);
   });
 }
 
 function updateCounter(){
-  const n=S.assets.length;
-  document.getElementById('gallery-count').textContent=`${n} נכסים`;
+  const n=S.assets.filter(a=>!a.isCropSource).length;
+  const nSrc=S.assets.filter(a=>a.isCropSource).length;
+  document.getElementById('gallery-count').textContent=nSrc?`${n} סמלים · ${nSrc} מקורות`:`${n} סמלים`;
   const ulEl=document.getElementById('under-lim');
   const best=bestOrder(n),nxt=nextOrder(n);
   if(n>0&&!best){ulEl.style.display='';ulEl.textContent=`נדרשות לפחות 7 — הוסף עוד ${7-n}`;}
@@ -736,7 +743,7 @@ async function generate(){
   S.seed=Math.floor(Math.random()*90000)+10000;
   S.layouts=buildLayouts(S.deck,S.seed,S.sMin,S.sMax);
   setp(15,'מכין תמונות…');
-  S.imgEls=S.assets.slice(0,S.order.total).map(a=>a.imgEl);
+  S.imgEls=S.assets.filter(a=>!a.isCropSource).slice(0,S.order.total).map(a=>a.imgEl);
   setp(35,'מצייר קלפים…');
   S.canvases=[];S.sel=[];
   const grid=document.getElementById('cgrid');
@@ -1266,7 +1273,7 @@ document.getElementById('btn-crop-add').addEventListener('click',()=>{
     const thumb=cropExtractThumb(CM.srcImg,c);
     S.assets.push({id:++S.idSeq,type:'crop',name:`${srcName} #${i+1}`,url:'',thumb,imgEl:fullEl,srcAssetId:srcId});
   });
-  if(asset){URL.revokeObjectURL(asset.url);S.assets=S.assets.filter(x=>x.id!==srcId);}
+  if(asset) asset.isCropSource=true;
   closeCropModal();
   renderGallery();updateCounter();
 });
