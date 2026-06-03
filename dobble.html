@@ -614,17 +614,30 @@ uz.addEventListener('drop',e=>{e.preventDefault();uz.classList.remove('over');ad
 fi.addEventListener('change',e=>{addFiles(e.target.files);fi.value='';});
 
 async function addFiles(files){
-  const imgs=Array.from(files).filter(f=>f.type.startsWith('image/'));
+  const imgs=Array.from(files).filter(f=>f.type.startsWith('image/')||/\.(heic|heif|avif)$/i.test(f.name));
   if(!imgs.length){alert('נא לבחור קבצי תמונה (PNG, JPG, SVG, WebP)');return;}
+  let failed=0;
   for(const f of imgs){
     const url=URL.createObjectURL(f);
     try{
-      const imgEl=await loadImg(url);
+      const imgEl=await loadImgFile(f,url);
       const thumb=makeThumb(imgEl);
       S.assets.push({id:++S.idSeq,type:'image',name:f.name,url,thumb,imgEl});
       renderGallery();updateCounter();
-    }catch(e){URL.revokeObjectURL(url);console.warn('loadImg failed for',f.name,e);}
+    }catch(e){URL.revokeObjectURL(url);failed++;console.warn('upload failed:',f.name,e?.message||e);}
   }
+  if(failed)alert(`${failed} תמונות לא נטענו. ייתכן שהפורמט לא נתמך.`);
+}
+
+async function loadImgFile(f,url){
+  // Try createImageBitmap directly on the Blob — skips full-res HTMLImageElement decode,
+  // handles HEIC/Live Photos via OS decoder, avoids memory pressure on mobile
+  if(typeof createImageBitmap==='function'){
+    try{return await createImageBitmap(f,{resizeWidth:IMG_PX,resizeHeight:IMG_PX,resizeQuality:'high'});}
+    catch{}
+  }
+  // Fallback: via HTMLImageElement + blob URL
+  return loadImg(url);
 }
 
 function makeThumb(imgEl){
