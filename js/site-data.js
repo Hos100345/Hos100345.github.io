@@ -361,7 +361,25 @@ window.SITE_DATA = {
     { src: "https://lh3.googleusercontent.com/d/1pl2pDg3kUhtYAykbDF5YqcKty-DkhGdF", cat: "characters",   alt: "דמות מבלונים" },
     { src: "https://lh3.googleusercontent.com/d/1pSKMl8DnZCF7717Gdpn2n-26k2VwcuNl", cat: "characters",   alt: "דמות מבלונים" },
     { src: "https://lh3.googleusercontent.com/d/1pQ-PpdTeG4moM7BwONJWGRFd4Li6d6E4", cat: "characters",   alt: "דמות מבלונים" },
-    { src: "https://lh3.googleusercontent.com/d/1ooIHpO4HHbQ_Kx5LqgVGgATiOTT-ApmT", cat: "characters",   alt: "דמות מבלונים" }
+    { src: "https://lh3.googleusercontent.com/d/1ooIHpO4HHbQ_Kx5LqgVGgATiOTT-ApmT", cat: "characters",   alt: "דמות מבלונים" },
+    // ── כתבים / כובעים — נוסף מדרייב ──
+    { src: "https://lh3.googleusercontent.com/d/1s-IygxdbnYHGxlGC09TAkYary3kvjzY_", cat: "hats",         alt: "כובע בלונים" },
+    // ── עיצוב אירועים ──
+    { src: "https://lh3.googleusercontent.com/d/1v4hKj5YWct_CobyA8Nqv-jqLg88gD_O2", cat: "events",       alt: "עיצוב אירוע" },
+    { src: "https://lh3.googleusercontent.com/d/1LCvpu_BRKdNFMoP9PjaULLwCYGPORrKs", cat: "events",       alt: "עיצוב אירוע" },
+    { src: "https://lh3.googleusercontent.com/d/1FJEWNK-IUhFDsUr0JcegoN7rk10xwuAY", cat: "events",       alt: "עיצוב אירוע" },
+    { src: "https://lh3.googleusercontent.com/d/13H9lf07eiRyDz6LhUTklRsrmpO3TZDfX", cat: "events",       alt: "עיצוב אירוע" },
+    { src: "https://lh3.googleusercontent.com/d/15Qt9x_f09OoXQboewtUNCaEGlsBXLbt_", cat: "events",       alt: "עיצוב אירוע" },
+    { src: "https://lh3.googleusercontent.com/d/1_fXw4zhJJopyS_rlT_AQ_JJftMuLoOkS", cat: "events",       alt: "עיצוב אירוע" },
+    { src: "https://lh3.googleusercontent.com/d/1v5ztWPKjXsJRl8puw8zlg92L81AXhkaY", cat: "events",       alt: "עיצוב אירוע" },
+    { src: "https://lh3.googleusercontent.com/d/1t_ODCjZmQ9Hqju6PT-7kROxB1LXYTkQ5", cat: "events",       alt: "עיצוב אירוע" },
+    { src: "https://lh3.googleusercontent.com/d/1BEMpaRX3bqHWVm3j9o2A6_rQRCcRDdMK", cat: "events",       alt: "עיצוב אירוע" },
+    { src: "https://lh3.googleusercontent.com/d/1ySYw4saTAiGmvMinjNDIKUmmHcki90U4", cat: "events",       alt: "עיצוב אירוע" },
+    { src: "https://lh3.googleusercontent.com/d/1aM_odqMXBSWxrHxWn_VakAYIg663TMXs", cat: "events",       alt: "עיצוב אירוע" },
+    { src: "https://lh3.googleusercontent.com/d/14acZyz8_kPO29NvrdHkl07NnkooOtAbg", cat: "events",       alt: "עיצוב אירוע" },
+    { src: "https://lh3.googleusercontent.com/d/1EydnrsMRzYgUW-OSsg2_UqsfGtVIp403", cat: "events",       alt: "עיצוב אירוע" },
+    { src: "https://lh3.googleusercontent.com/d/11fP-Mny7A5OsuIO4H8buJ63P5eAprPe2", cat: "events",       alt: "עיצוב אירוע" },
+    { src: "https://lh3.googleusercontent.com/d/1q-v0shiatucGGEhlQElLfufxBzav99UX", cat: "events",       alt: "עיצוב אירוע" }
   ],
 
   // ── המלצות ─────────────────────────────────────────
