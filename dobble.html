@@ -1097,21 +1097,19 @@ async function expDXF(setp){
 }
 
 // ══ CROP MODAL ══
+function imgNatW(el){return el.naturalWidth||el.width;}
+function imgNatH(el){return el.naturalHeight||el.height;}
+
 function openCropModal(assetId){
   const asset=S.assets.find(a=>a.id===assetId);
   if(!asset||asset.type!=='image')return;
-  CM.assetId=assetId;CM.crops=[];CM.idSeq=0;CM.tool='circle';CM.dragging=false;CM.srcImg=null;
-  const img=new Image();
-  img.onload=()=>{
-    CM.srcImg=img;
-    document.getElementById('crop-modal').hidden=false;
-    document.querySelectorAll('#modal-tool-grp .sbt').forEach((b,i)=>{b.classList.toggle('on',i===0);});
-    setupCropCanvas();
-    renderModalCrops();
-    updateCropAddBtn();
-  };
-  img.onerror=()=>{alert('שגיאה בטעינת התמונה לחיתוך');};
-  img.src=asset.url;
+  CM.assetId=assetId;CM.crops=[];CM.idSeq=0;CM.tool='circle';CM.dragging=false;
+  CM.srcImg=asset.imgEl;
+  document.getElementById('crop-modal').hidden=false;
+  document.querySelectorAll('#modal-tool-grp .sbt').forEach((b,i)=>{b.classList.toggle('on',i===0);});
+  setupCropCanvas();
+  renderModalCrops();
+  updateCropAddBtn();
 }
 
 function setupCropCanvas(){
@@ -1121,11 +1119,11 @@ function setupCropCanvas(){
   oldCv.replaceWith(cv);
   const maxW=Math.min(wrap.clientWidth||700,700);
   const maxH=400;
-  const scaleW=maxW/CM.srcImg.naturalWidth;
-  const scaleH=maxH/CM.srcImg.naturalHeight;
+  const scaleW=maxW/imgNatW(CM.srcImg);
+  const scaleH=maxH/imgNatH(CM.srcImg);
   const scale=Math.min(scaleW,scaleH);
-  CM.dispW=Math.round(CM.srcImg.naturalWidth*scale);
-  CM.dispH=Math.round(CM.srcImg.naturalHeight*scale);
+  CM.dispW=Math.round(imgNatW(CM.srcImg)*scale);
+  CM.dispH=Math.round(imgNatH(CM.srcImg)*scale);
   cv.width=CM.dispW;cv.height=CM.dispH;
   cv.style.maxWidth='100%';
   redrawCropCanvas();
@@ -1198,7 +1196,7 @@ function cropExtractThumb(srcImg,crop){
   const SZ=72;
   const cv=document.createElement('canvas');cv.width=cv.height=SZ;
   const ctx=cv.getContext('2d');
-  const scX=srcImg.naturalWidth/CM.dispW,scY=srcImg.naturalHeight/CM.dispH;
+  const scX=imgNatW(srcImg)/CM.dispW,scY=imgNatH(srcImg)/CM.dispH;
   ctx.clearRect(0,0,SZ,SZ);
   ctx.beginPath();
   if(crop.shape==='circle'){ctx.arc(SZ/2,SZ/2,SZ/2,0,Math.PI*2);}
@@ -1212,7 +1210,7 @@ function cropExtractFull(srcImg,crop){
   const SZ=IMG_PX;
   const cv=document.createElement('canvas');cv.width=cv.height=SZ;
   const ctx=cv.getContext('2d');
-  const scX=srcImg.naturalWidth/CM.dispW,scY=srcImg.naturalHeight/CM.dispH;
+  const scX=imgNatW(srcImg)/CM.dispW,scY=imgNatH(srcImg)/CM.dispH;
   ctx.clearRect(0,0,SZ,SZ);
   ctx.beginPath();
   if(crop.shape==='circle'){ctx.arc(SZ/2,SZ/2,SZ/2,0,Math.PI*2);}
