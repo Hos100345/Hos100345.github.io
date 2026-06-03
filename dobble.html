@@ -1093,7 +1093,7 @@ async function expDXF(setp){
 function openCropModal(assetId){
   const asset=S.assets.find(a=>a.id===assetId);
   if(!asset||asset.type!=='image')return;
-  CM.assetId=assetId;CM.crops=[];CM.idSeq=0;CM.tool='circle';CM.dragging=false;
+  CM.assetId=assetId;CM.crops=[];CM.idSeq=0;CM.tool='circle';CM.dragging=false;CM.srcImg=null;
   const img=new Image();
   img.onload=()=>{
     CM.srcImg=img;
@@ -1103,6 +1103,7 @@ function openCropModal(assetId){
     renderModalCrops();
     updateCropAddBtn();
   };
+  img.onerror=()=>{alert('שגיאה בטעינת התמונה לחיתוך');};
   img.src=asset.url;
 }
 
@@ -1242,7 +1243,7 @@ function updateCropAddBtn(){
 
 function closeCropModal(){
   document.getElementById('crop-modal').hidden=true;
-  CM.srcImg=null;CM.crops=[];CM.dragging=false;
+  CM.srcImg=null;CM.crops=[];CM.dragging=false;CM.assetId=null;
 }
 
 document.getElementById('modal-tool-grp').addEventListener('click',e=>{
@@ -1259,11 +1260,13 @@ document.getElementById('btn-crop-add').addEventListener('click',()=>{
   if(!CM.crops.length)return;
   const asset=S.assets.find(a=>a.id===CM.assetId);
   const srcName=asset?asset.name.replace(/\.[^.]+$/,''):'תמונה';
+  const srcId=CM.assetId;
   CM.crops.forEach((c,i)=>{
     const fullEl=cropExtractFull(CM.srcImg,c);
     const thumb=cropExtractThumb(CM.srcImg,c);
-    S.assets.push({id:++S.idSeq,type:'crop',name:`${srcName} #${i+1}`,url:'',thumb,imgEl:fullEl,srcAssetId:CM.assetId});
+    S.assets.push({id:++S.idSeq,type:'crop',name:`${srcName} #${i+1}`,url:'',thumb,imgEl:fullEl,srcAssetId:srcId});
   });
+  if(asset){URL.revokeObjectURL(asset.url);S.assets=S.assets.filter(x=>x.id!==srcId);}
   closeCropModal();
   renderGallery();updateCounter();
 });
