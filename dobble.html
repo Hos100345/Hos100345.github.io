@@ -622,9 +622,9 @@ async function addFiles(files){
       const imgEl=await loadImg(url);
       const thumb=makeThumb(imgEl);
       S.assets.push({id:++S.idSeq,type:'image',name:f.name,url,thumb,imgEl});
-    }catch{URL.revokeObjectURL(url);}
+      renderGallery();updateCounter();
+    }catch(e){URL.revokeObjectURL(url);console.warn('loadImg failed for',f.name,e);}
   }
-  renderGallery();updateCounter();
 }
 
 function makeThumb(imgEl){
@@ -1282,11 +1282,19 @@ function loadImg(url){
   return new Promise((res,rej)=>{
     const img=new Image();
     img.onload=()=>{
+      const fallback=()=>{
+        try{
+          const c=document.createElement('canvas');c.width=c.height=IMG_PX;
+          c.getContext('2d').drawImage(img,0,0,IMG_PX,IMG_PX);res(c);
+        }catch(e){rej(e);}
+      };
       if(typeof createImageBitmap==='function'){
-        createImageBitmap(img,{resizeWidth:IMG_PX,resizeHeight:IMG_PX,resizeQuality:'high'}).then(res,rej);
+        try{
+          createImageBitmap(img,{resizeWidth:IMG_PX,resizeHeight:IMG_PX,resizeQuality:'high'})
+            .then(res,fallback);
+        }catch{fallback();}
       }else{
-        const c=document.createElement('canvas');c.width=c.height=IMG_PX;
-        c.getContext('2d').drawImage(img,0,0,IMG_PX,IMG_PX);res(c);
+        fallback();
       }
     };
     img.onerror=rej;img.src=url;
