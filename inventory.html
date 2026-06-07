@@ -185,6 +185,23 @@
     .fpill.active { background: var(--blue); color: #fff; border-color: var(--blue); }
     .fpill:hover:not(.active) { background: var(--blue-light); border-color: var(--blue-border); color: var(--blue); }
 
+    .subcat-row {
+      display: flex; align-items: center; gap: .5rem;
+      padding-top: .6rem; margin-top: .5rem;
+      border-top: 1px dashed var(--gray-200); flex-wrap: wrap;
+    }
+    .subcat-label {
+      font-size: .75rem; font-weight: 700;
+      color: var(--gray-500); white-space: nowrap; flex-shrink: 0;
+    }
+    .fpill.sub { border-color: var(--gray-300); color: var(--gray-700); }
+    .fpill.sub.active {
+      background: var(--gray-700); color: #fff; border-color: var(--gray-700);
+    }
+    .fpill.sub:hover:not(.active) {
+      background: var(--gray-100); border-color: var(--gray-400);
+    }
+
     /* ── Table ── */
     .table-wrap { overflow-x: auto; padding: .875rem; padding-bottom: 5rem; }
 
@@ -470,6 +487,10 @@ function json(obj) {
         </button>
       </div>
       <div class="filter-pills" id="cat-pills"></div>
+      <div class="subcat-row hidden" id="subcat-row">
+        <div class="subcat-label">תת-קטגוריה:</div>
+        <div class="filter-pills" id="sub-pills"></div>
+      </div>
     </div>
 
     <!-- Table -->
@@ -506,6 +527,7 @@ let cfg          = null;   // { apiUrl, secretKey }
 let allItems     = [];     // raw rows from sheet
 let changes      = new Map(); // id → newQuantity
 let activeCat    = 'all';
+let activeSubCat = 'all';
 let searchQ      = '';
 let criticalOnly = false;
 
@@ -588,12 +610,53 @@ function buildCatPills() {
     btn.dataset.cat = cat;
     btn.textContent = cat === 'all' ? 'הכל' : cat;
     btn.onclick = () => {
-      activeCat = cat;
+      activeCat    = cat;
+      activeSubCat = 'all';
       wrap.querySelectorAll('.fpill').forEach(b =>
         b.classList.toggle('active', b.dataset.cat === cat));
+      buildSubPills();
       render();
     };
     wrap.appendChild(btn);
+  });
+  buildSubPills();
+}
+
+function buildSubPills() {
+  const subcatRow  = $('subcat-row');
+  const subWrap    = $('sub-pills');
+  subWrap.innerHTML = '';
+
+  if (activeCat === 'all') {
+    subcatRow.classList.add('hidden');
+    return;
+  }
+
+  const subs = ['all', ...new Set(
+    allItems
+      .filter(i => i['קטגוריה'] === activeCat)
+      .map(i => i['תת_קטגוריה'])
+      .filter(Boolean)
+  )];
+
+  if (subs.length <= 2) { // only 'all' + 1 sub → no need to show
+    subcatRow.classList.add('hidden');
+    return;
+  }
+
+  subcatRow.classList.remove('hidden');
+  subs.forEach(sub => {
+    const btn = document.createElement('button');
+    btn.className = 'fpill sub' + (sub === activeSubCat ? ' active' : '');
+    btn.dataset.sub = sub;
+    btn.textContent = sub === 'all' ? 'הכל' : sub;
+    btn.onclick = () => {
+      activeSubCat = sub;
+      subWrap.querySelectorAll('.fpill').forEach(b =>
+        b.classList.toggle('active', b.dataset.sub === sub));
+      render();
+    };
+    subWrap.appendChild(btn);
   });
 }
 
@@ -630,6 +693,7 @@ function render() {
 
   const visible = allItems.filter(item => {
     if (activeCat !== 'all' && item['קטגוריה'] !== activeCat) return false;
+    if (activeSubCat !== 'all' && item['תת_קטגוריה'] !== activeSubCat) return false;
     if (criticalOnly) {
       const cur = changes.has(item['ID']) ? changes.get(item['ID']) : item['כמות_במלאי'];
       if (stockStatus(cur, item['כמות_מינימום']) !== 'critical') return false;
