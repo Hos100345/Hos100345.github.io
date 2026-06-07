@@ -524,16 +524,17 @@ const tbody        = $('tbody');
 /* ══════════════════════════════════════════════════
    Init
 ══════════════════════════════════════════════════ */
+const DEFAULT_CFG = {
+  apiUrl:    'https://script.google.com/macros/s/AKfycbxmcK7YOE3lXQmi-zFfUuzAOpvDMoW8QyXsqGEv7bgE/exec',
+  secretKey: 'balonim2026'
+};
+
 function init() {
   const stored = localStorage.getItem(CFG_KEY);
-  if (stored) {
-    cfg = JSON.parse(stored);
-    $('inp-url').value = cfg.apiUrl  || '';
-    $('inp-key').value = cfg.secretKey || '';
-    loadData();
-  } else {
-    showState('empty');
-  }
+  cfg = stored ? JSON.parse(stored) : DEFAULT_CFG;
+  $('inp-url').value = cfg.apiUrl    || '';
+  $('inp-key').value = cfg.secretKey || '';
+  loadData();
 }
 
 /* ══════════════════════════════════════════════════
