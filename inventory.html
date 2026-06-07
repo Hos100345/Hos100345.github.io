@@ -201,6 +201,13 @@
     .fpill.sub:hover:not(.active) {
       background: var(--gray-100); border-color: var(--gray-400);
     }
+    .fpill.size { border-color: #c4b5fd; color: #7c3aed; }
+    .fpill.size.active {
+      background: #7c3aed; color: #fff; border-color: #7c3aed;
+    }
+    .fpill.size:hover:not(.active) {
+      background: #f5f3ff; border-color: #a78bfa;
+    }
 
     /* ── Table ── */
     .table-wrap { overflow-x: auto; padding: .875rem; padding-bottom: 5rem; }
@@ -491,6 +498,10 @@ function json(obj) {
         <div class="subcat-label">תת-קטגוריה:</div>
         <div class="filter-pills" id="sub-pills"></div>
       </div>
+      <div class="subcat-row hidden" id="size-row">
+        <div class="subcat-label">גודל:</div>
+        <div class="filter-pills" id="size-pills"></div>
+      </div>
     </div>
 
     <!-- Table -->
@@ -527,7 +538,8 @@ let cfg          = null;   // { apiUrl, secretKey }
 let allItems     = [];     // raw rows from sheet
 let changes      = new Map(); // id → newQuantity
 let activeCat    = 'all';
-let activeSubCat = 'all';
+let activeSubCat  = 'all';
+let activeSizeFilter = 'all';
 let searchQ      = '';
 let criticalOnly = false;
 
@@ -610,11 +622,13 @@ function buildCatPills() {
     btn.dataset.cat = cat;
     btn.textContent = cat === 'all' ? 'הכל' : cat;
     btn.onclick = () => {
-      activeCat    = cat;
-      activeSubCat = 'all';
+      activeCat        = cat;
+      activeSubCat     = 'all';
+      activeSizeFilter = 'all';
       wrap.querySelectorAll('.fpill').forEach(b =>
         b.classList.toggle('active', b.dataset.cat === cat));
       buildSubPills();
+      buildSizePills();
       render();
     };
     wrap.appendChild(btn);
@@ -651,12 +665,52 @@ function buildSubPills() {
     btn.dataset.sub = sub;
     btn.textContent = sub === 'all' ? 'הכל' : sub;
     btn.onclick = () => {
-      activeSubCat = sub;
+      activeSubCat     = sub;
+      activeSizeFilter = 'all';
       subWrap.querySelectorAll('.fpill').forEach(b =>
         b.classList.toggle('active', b.dataset.sub === sub));
+      buildSizePills();
       render();
     };
     subWrap.appendChild(btn);
+  });
+}
+
+function buildSizePills() {
+  const sizeRow  = $('size-row');
+  const sizeWrap = $('size-pills');
+  sizeWrap.innerHTML = '';
+
+  if (activeCat === 'all' || activeSubCat === 'all') {
+    sizeRow.classList.add('hidden');
+    return;
+  }
+
+  const sizes = ['all', ...new Set(
+    allItems
+      .filter(i => i['קטגוריה'] === activeCat && i['תת_קטגוריה'] === activeSubCat)
+      .map(i => i['גודל'])
+      .filter(Boolean)
+  )];
+
+  if (sizes.length <= 2) {
+    sizeRow.classList.add('hidden');
+    return;
+  }
+
+  sizeRow.classList.remove('hidden');
+  sizes.forEach(size => {
+    const btn = document.createElement('button');
+    btn.className = 'fpill size' + (size === activeSizeFilter ? ' active' : '');
+    btn.dataset.size = size;
+    btn.textContent = size === 'all' ? 'הכל' : size;
+    btn.onclick = () => {
+      activeSizeFilter = size;
+      sizeWrap.querySelectorAll('.fpill').forEach(b =>
+        b.classList.toggle('active', b.dataset.size === size));
+      render();
+    };
+    sizeWrap.appendChild(btn);
   });
 }
 
@@ -694,6 +748,7 @@ function render() {
   const visible = allItems.filter(item => {
     if (activeCat !== 'all' && item['קטגוריה'] !== activeCat) return false;
     if (activeSubCat !== 'all' && item['תת_קטגוריה'] !== activeSubCat) return false;
+    if (activeSizeFilter !== 'all' && item['גודל'] !== activeSizeFilter) return false;
     if (criticalOnly) {
       const cur = changes.has(item['ID']) ? changes.get(item['ID']) : item['כמות_במלאי'];
       if (stockStatus(cur, item['כמות_מינימום']) !== 'critical') return false;
