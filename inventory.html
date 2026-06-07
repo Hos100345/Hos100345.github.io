@@ -246,14 +246,41 @@
     .cb-materials { background: #f5f3ff; color: #7c3aed; }
 
     .stock-input {
-      width: 76px; padding: .35rem .5rem;
-      border: 1.5px solid var(--gray-200); border-radius: 6px;
+      width: 60px; padding: .35rem .25rem;
+      border: 1.5px solid var(--gray-200); border-radius: 0;
       font-family: inherit; font-size: .9rem; font-weight: 700;
       text-align: center; color: var(--gray-900);
       transition: border-color .15s, background .15s;
     }
     .stock-input:focus { outline: none; border-color: var(--blue); }
     .stock-input.changed { border-color: var(--blue); background: var(--blue-light); }
+
+    .qty-ctrl { display: inline-flex; align-items: center; }
+    .qty-btn {
+      width: 26px; height: 32px; flex-shrink: 0;
+      border: 1.5px solid var(--gray-200); background: var(--gray-50);
+      cursor: pointer; font-size: 1.1rem; font-weight: 700;
+      color: var(--gray-600); font-family: inherit;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .12s; line-height: 1; padding: 0;
+    }
+    .qty-btn:first-child { border-radius: 6px 0 0 6px; border-left: 1.5px solid var(--gray-200); }
+    .qty-btn:last-child  { border-radius: 0 6px 6px 0; border-right: 1.5px solid var(--gray-200); }
+    .qty-btn:hover { background: var(--blue-light); color: var(--blue); border-color: var(--blue-border); }
+    .qty-btn:active { background: var(--blue); color: #fff; }
+
+    /* Add-item modal form */
+    .add-form-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: .75rem;
+    }
+    .add-form-grid .full { grid-column: 1 / -1; }
+    .form-select {
+      width: 100%; padding: .575rem .875rem;
+      border: 1.5px solid var(--gray-200); border-radius: var(--radius);
+      font-family: inherit; font-size: .875rem; color: var(--gray-900);
+      background: white; transition: border-color .15s;
+    }
+    .form-select:focus { outline: none; border-color: var(--blue); }
 
     .status-dot {
       display: inline-block; width: 10px; height: 10px; border-radius: 50%;
@@ -433,6 +460,55 @@ function json(obj) {
   </button>
 </div>
 
+<!-- ===== ADD ITEM MODAL ===== -->
+<div class="modal-overlay hidden" id="add-modal">
+  <div class="modal">
+    <div class="modal-title">➕ הוספת פריט חדש</div>
+    <div class="add-form-grid">
+      <div class="form-group full">
+        <label class="form-label" for="add-cat">קטגוריה</label>
+        <select id="add-cat" class="form-select"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="add-subcat">תת-קטגוריה</label>
+        <input type="text" id="add-subcat" class="form-input" placeholder="לדוג' רגיל / 260Q">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="add-size">גודל</label>
+        <input type="text" id="add-size" class="form-input" placeholder='לדוג' 12 אינץ׳'>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="add-color">צבע</label>
+        <input type="text" id="add-color" class="form-input" placeholder="לדוג' אדום 015">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="add-item-name">שם פריט / תיאור</label>
+        <input type="text" id="add-item-name" class="form-input" placeholder="אופציונלי">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="add-stock">כמות במלאי</label>
+        <input type="number" id="add-stock" class="form-input" value="0" min="0" style="direction:ltr">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="add-min">כמות מינימום</label>
+        <input type="number" id="add-min" class="form-input" value="5" min="0" style="direction:ltr">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="add-supplier">ספק</label>
+        <input type="text" id="add-supplier" class="form-input" placeholder="אופציונלי">
+      </div>
+      <div class="form-group full">
+        <label class="form-label" for="add-notes">הערות</label>
+        <input type="text" id="add-notes" class="form-input" placeholder="אופציונלי">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="btn-submit-add" style="flex:1">הוסף לגיליון</button>
+      <button class="btn btn-ghost"   id="btn-close-add">ביטול</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== HEADER ===== -->
 <header class="app-header">
   <a href="index.html" class="header-brand">
@@ -446,6 +522,10 @@ function json(obj) {
     <button class="btn btn-ghost" id="btn-refresh" title="טען מחדש מ-Sheets">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
       <span class="hide-sm">רענן</span>
+    </button>
+    <button class="btn btn-primary" id="btn-add-item">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span class="hide-sm">הוסף פריט</span>
     </button>
     <button class="btn btn-ghost" id="btn-settings" title="הגדרות חיבור">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
@@ -784,9 +864,13 @@ function render() {
         <span class="cat-badge ${catClass(item['קטגוריה'])}">${item['קטגוריה']}</span>
       </td>
       <td>
-        <input type="number" class="stock-input${isChg ? ' changed' : ''}"
-               value="${curQty}" min="0"
-               data-id="${id}" data-orig="${origQty}">
+        <div class="qty-ctrl">
+          <button class="qty-btn" data-action="dec" data-id="${id}">−</button>
+          <input type="number" class="stock-input${isChg ? ' changed' : ''}"
+                 value="${curQty}" min="0"
+                 data-id="${id}" data-orig="${origQty}">
+          <button class="qty-btn" data-action="inc" data-id="${id}">+</button>
+        </div>
       </td>
       <td style="color:var(--gray-500);font-size:.82rem;font-weight:600">${minQty || '—'}</td>
       <td>
@@ -798,8 +882,16 @@ function render() {
       </td>
     `;
 
-    tr.querySelector('.stock-input').addEventListener('change', function () {
-      onStockChange(this, item);
+    const input = tr.querySelector('.stock-input');
+    input.addEventListener('change', function () { onStockChange(this, item); });
+
+    tr.querySelectorAll('.qty-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const delta = btn.dataset.action === 'inc' ? 1 : -1;
+        const cur = parseInt(input.value, 10) || 0;
+        input.value = Math.max(0, cur + delta);
+        onStockChange(input, item);
+      });
     });
 
     tbody.appendChild(tr);
@@ -958,6 +1050,80 @@ $('btn-critical-filter').addEventListener('click', function () {
     ? 'background:var(--red);color:#fff;border-color:var(--red)'
     : '';
   render();
+});
+
+/* ══════════════════════════════════════════════════
+   Add item
+══════════════════════════════════════════════════ */
+function openAddModal() {
+  const modal = $('add-modal');
+  // Populate category select
+  const sel = $('add-cat');
+  sel.innerHTML = '';
+  const cats = [...new Set(allItems.map(i => i['קטגוריה']).filter(Boolean))];
+  cats.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = opt.textContent = c;
+    sel.appendChild(opt);
+  });
+  // Clear fields
+  ['add-subcat','add-size','add-color','add-item-name','add-supplier','add-notes'].forEach(id => { $(id).value = ''; });
+  $('add-stock').value = 0;
+  $('add-min').value   = 5;
+  modal.classList.remove('hidden');
+}
+
+async function submitAddItem() {
+  const btn = $('btn-submit-add');
+  const cat = $('add-cat').value.trim();
+  if (!cat) { showToast('נא לבחור קטגוריה', 'err'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'שומר…';
+
+  const newItem = {
+    'קטגוריה':      cat,
+    'תת_קטגוריה':   $('add-subcat').value.trim(),
+    'גודל':          $('add-size').value.trim(),
+    'צבע':           $('add-color').value.trim(),
+    'פריט':          $('add-item-name').value.trim(),
+    'כמות_במלאי':   parseInt($('add-stock').value, 10) || 0,
+    'כמות_מינימום': parseInt($('add-min').value, 10)   || 0,
+    'ספק':           $('add-supplier').value.trim(),
+    'יח_בחבילה':    '',
+    'מחיר_אחרון':   '',
+    'הערות':         $('add-notes').value.trim(),
+  };
+
+  try {
+    const res = await fetch(cfg.apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+      body: JSON.stringify({ key: cfg.secretKey, action: 'add', item: newItem })
+    });
+    const result = await res.json();
+    if (result.error) throw new Error(result.error);
+
+    newItem['ID'] = result.id || ('INV-' + Date.now());
+    allItems.push(newItem);
+    buildCatPills();
+    render();
+    refreshStats();
+    $('add-modal').classList.add('hidden');
+    showToast('✅ פריט ' + newItem['ID'] + ' נוסף בהצלחה', 'ok');
+  } catch (err) {
+    showToast('שגיאה: ' + err.message, 'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'הוסף לגיליון';
+  }
+}
+
+$('btn-add-item').onclick    = openAddModal;
+$('btn-close-add').onclick   = () => $('add-modal').classList.add('hidden');
+$('btn-submit-add').onclick  = submitAddItem;
+$('add-modal').addEventListener('click', e => {
+  if (e.target === $('add-modal')) $('add-modal').classList.add('hidden');
 });
 
 // Copy Apps Script code
