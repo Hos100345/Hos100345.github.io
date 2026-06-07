@@ -906,10 +906,18 @@ function closeModal(){
 }
 
 // ══ BACK / NAV ══
-document.getElementById('btn-b1').addEventListener('click',()=>{goScr(1);resetState();});
+document.getElementById('btn-b1').addEventListener('click',()=>{goScr(1);resetGenerated();});
 document.getElementById('btn-b2').addEventListener('click',()=>{goScr(2);resetExport();});
 document.getElementById('btn-goexp').addEventListener('click',()=>{updatePaperPrev();goScr(3);});
 
+function resetGenerated(){
+  Object.assign(S,{order:null,deck:[],layouts:[],imgEls:[],canvases:[],sel:[]});
+  document.getElementById('cgrid').innerHTML='';
+  document.getElementById('prev-wrap').style.display='none';
+  document.getElementById('gen-ov').style.display='none';
+  // Re-render gallery so user sees their uploads
+  renderGallery();updateCounter();
+}
 function resetState(){
   S.assets.forEach(a=>{if(a.type==='image')URL.revokeObjectURL(a.url);});
   Object.assign(S,{assets:[],order:null,deck:[],layouts:[],imgEls:[],canvases:[],sel:[],seed:1,idSeq:0});
@@ -1471,13 +1479,22 @@ document.getElementById('modal-tool-grp').addEventListener('click',e=>{
   document.querySelectorAll('#modal-tool-grp .sbt').forEach(x=>x.classList.remove('on'));
   b.classList.add('on');CM.tool=b.dataset.tool;
 });
+function refreshCropThumbs(){
+  if(!CM.srcImg||!CM.crops.length)return;
+  CM.crops.forEach(c=>{c.thumb=cropExtractThumb(CM.srcImg,c);});
+  renderModalCrops();
+}
+let _rmbgTimer=0;
 document.getElementById('ck-rmbg').addEventListener('change',function(){
   const row=document.getElementById('rmbg-tol-row');
   row.hidden=!this.checked;
   if(!row.hidden)row.style.display='flex';
+  refreshCropThumbs();
 });
 document.getElementById('rng-rmbg-tol').addEventListener('input',function(){
   document.getElementById('rmbg-tol-val').textContent=this.value;
+  clearTimeout(_rmbgTimer);
+  _rmbgTimer=setTimeout(refreshCropThumbs,120);
 });
 
 document.getElementById('crop-modal-x').addEventListener('click',closeCropModal);
