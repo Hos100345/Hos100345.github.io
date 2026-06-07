@@ -323,6 +323,13 @@
           <div id="sb-stats"></div>
         </div>
         <div class="sb-sec">
+          <div class="sb-t">סידור סמלים</div>
+          <div class="shape-grp" id="layout-mode-grp" style="width:100%">
+            <button class="sbt on" data-lm="scatter" style="flex:1">🔀 מפוזר</button>
+            <button class="sbt" data-lm="peripheral" style="flex:1">⭕ היקפי</button>
+          </div>
+        </div>
+        <div class="sb-sec">
           <div class="sb-t">גודל סמלים</div>
           <div class="sl-row">
             <div class="sl-lbl"><span>מינימום</span><strong id="lbl-mn">70%</strong></div>
@@ -517,6 +524,7 @@ function buildLayouts(deck,seed,sMin,sMax){
 
 // ══ SYMBOL POSITIONS ══
 function symPos(n,cx,cy,r){
+  if(S.layoutMode==='peripheral') return symPosPeriph(n,cx,cy,r);
   const P=[],p=(x,y,hs)=>P.push({x,y,hs});
   if(n===3){
     const rr=r*.56,hs=r*.34;for(let i=0;i<3;i++){const a=i*2*Math.PI/3-Math.PI/2;p(cx+rr*Math.cos(a),cy+rr*Math.sin(a),hs);}
@@ -531,6 +539,15 @@ function symPos(n,cx,cy,r){
     const ri=r*.38,hsi=r*.19;for(let i=0;i<3;i++){const a=i*2*Math.PI/3;p(cx+ri*Math.cos(a),cy+ri*Math.sin(a),hsi);}
     const ro=r*.72,hso=r*.18;for(let i=0;i<4;i++){const a=i*Math.PI/2-Math.PI/4;p(cx+ro*Math.cos(a),cy+ro*Math.sin(a),hso);}
   }
+  return P;
+}
+
+function symPosPeriph(n,cx,cy,r){
+  // All symbols on one ring — evenly spaced, sized so neighbours don't overlap
+  const cfg={3:{rr:.52,hs:.36},4:{rr:.57,hs:.30},5:{rr:.61,hs:.26},6:{rr:.64,hs:.23},8:{rr:.68,hs:.20}};
+  const{rr,hs}=cfg[n]||{rr:.65,hs:.20};
+  const P=[],ringR=r*rr,hsz=r*hs;
+  for(let i=0;i<n;i++){const a=i*2*Math.PI/n-Math.PI/2;P.push({x:cx+ringR*Math.cos(a),y:cy+ringR*Math.sin(a),hs:hsz});}
   return P;
 }
 
@@ -581,7 +598,7 @@ function drawCard(canvas,layout,imgs,shape,hitIdx){
 const S={
   assets:[],
   order:null,deck:[],layouts:[],imgEls:[],canvases:[],
-  shape:'circle',sMin:.70,sMax:1.30,seed:1,
+  shape:'circle',sMin:.70,sMax:1.30,seed:1,layoutMode:'scatter',
   sel:[],
   cardSizeMm:85,spacingMm:5,startPos:'center',
   crop:true,isSilhouette:false,
@@ -732,6 +749,13 @@ document.getElementById('shp').addEventListener('click',e=>{
   const b=e.target.closest('.sbt');if(!b)return;
   document.querySelectorAll('#shp .sbt').forEach(x=>x.classList.remove('on'));
   b.classList.add('on');S.shape=b.dataset.s;
+});
+
+document.getElementById('layout-mode-grp').addEventListener('click',e=>{
+  const b=e.target.closest('.sbt');if(!b)return;
+  document.querySelectorAll('#layout-mode-grp .sbt').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');S.layoutMode=b.dataset.lm;
+  S.canvases.forEach((c,i)=>drawCard(c,S.layouts[i],S.imgEls,S.shape));
 });
 
 // ══ SLIDERS ══
