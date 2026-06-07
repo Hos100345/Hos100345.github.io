@@ -488,10 +488,17 @@
         <button class="sbt on" data-tool="circle">⭕ עיגול</button>
         <button class="sbt" data-tool="rounded_square">⬜ מרובע מעוגל</button>
       </div>
-      <label class="tool-row" style="gap:.45rem;cursor:pointer;flex-shrink:0">
-        <input type="checkbox" id="ck-rmbg" style="width:16px;height:16px;accent-color:var(--indigo)">
-        <span style="font-size:.85rem;font-weight:700;color:var(--indigo)">✨ הסר רקע</span>
-      </label>
+      <div style="display:flex;flex-direction:column;gap:.3rem;flex-shrink:0">
+        <label class="tool-row" style="gap:.45rem;cursor:pointer">
+          <input type="checkbox" id="ck-rmbg" style="width:16px;height:16px;accent-color:var(--indigo)">
+          <span style="font-size:.85rem;font-weight:700;color:var(--indigo)">✨ הסר רקע</span>
+        </label>
+        <div id="rmbg-tol-row" hidden style="display:flex;align-items:center;gap:.4rem;padding-right:.2rem">
+          <span style="font-size:.75rem;color:#6b7280;white-space:nowrap">רגישות:</span>
+          <input type="range" id="rng-rmbg-tol" min="5" max="80" value="35" style="flex:1;min-width:70px;accent-color:var(--indigo)">
+          <span id="rmbg-tol-val" style="font-size:.78rem;color:var(--indigo);font-weight:700;width:2em;text-align:left">35</span>
+        </div>
+      </div>
     </div>
     <div class="canvas-wrap" id="modal-canvas-wrap">
       <canvas id="modal-src-canvas"></canvas>
@@ -641,6 +648,7 @@ const CM={
   srcImg:null,assetId:null,crops:[],tool:'circle',
   dragging:false,drag:{sx:0,sy:0,ex:0,ey:0},
   dispW:1,dispH:1,idSeq:0,
+  selId:null,editMode:null,editHandle:null,editOrig:null,
 };
 
 // ══ NAV ══
@@ -1173,6 +1181,7 @@ function openCropModal(assetId){
   const asset=S.assets.find(a=>a.id===assetId);
   if(!asset||asset.type!=='image')return;
   CM.assetId=assetId;CM.crops=[];CM.idSeq=0;CM.tool='circle';CM.dragging=false;
+  CM.selId=null;CM.editMode=null;CM.editHandle=null;CM.editOrig=null;
   CM.srcImg=asset.imgEl;
   document.getElementById('crop-modal').hidden=false;
   document.querySelectorAll('#modal-tool-grp .sbt').forEach((b,i)=>{b.classList.toggle('on',i===0);});
@@ -1195,30 +1204,101 @@ function setupCropCanvas(){
   CM.dispH=Math.round(imgNatH(CM.srcImg)*scale);
   cv.width=CM.dispW;cv.height=CM.dispH;
   cv.style.maxWidth='100%';
+  cv.style.cursor='crosshair';
   redrawCropCanvas();
   cv.addEventListener('mousedown',onCropStart);
   cv.addEventListener('mousemove',onCropMove);
   cv.addEventListener('mouseup',onCropEnd);
-  cv.addEventListener('mouseleave',onCropEnd);
-  cv.addEventListener('touchstart',e=>{e.preventDefault();const t=e.touches[0];const r=cv.getBoundingClientRect();onCropStart({offsetX:t.clientX-r.left,offsetY:t.clientY-r.top});},{passive:false});
-  cv.addEventListener('touchmove',e=>{e.preventDefault();const t=e.touches[0];const r=cv.getBoundingClientRect();onCropMove({offsetX:t.clientX-r.left,offsetY:t.clientY-r.top});},{passive:false});
+  cv.addEventListener('mouseleave',()=>{if(!CM.dragging)document.getElementById('modal-src-canvas').style.cursor='crosshair';});
+  cv.addEventListener('touchstart',e=>{e.preventDefault();const t=e.touches[0];const r=cv.getBoundingClientRect();onCropStart({offsetX:(t.clientX-r.left)*(cv.width/r.width),offsetY:(t.clientY-r.top)*(cv.height/r.height)});},{passive:false});
+  cv.addEventListener('touchmove',e=>{e.preventDefault();const t=e.touches[0];const r=cv.getBoundingClientRect();onCropMove({offsetX:(t.clientX-r.left)*(cv.width/r.width),offsetY:(t.clientY-r.top)*(cv.height/r.height)});},{passive:false});
   cv.addEventListener('touchend',e=>{e.preventDefault();onCropEnd();},{passive:false});
 }
 
-function onCropStart(e){CM.dragging=true;CM.drag.sx=e.offsetX;CM.drag.sy=e.offsetY;CM.drag.ex=e.offsetX;CM.drag.ey=e.offsetY;}
-function onCropMove(e){if(!CM.dragging)return;CM.drag.ex=e.offsetX;CM.drag.ey=e.offsetY;redrawCropCanvas();}
-function onCropEnd(){
-  if(!CM.dragging)return;CM.dragging=false;
-  const{sx,sy,ex,ey}=CM.drag;
-  const x=Math.min(sx,ex),y=Math.min(sy,ey),w=Math.abs(ex-sx),h=Math.abs(ey-sy);
-  if(w>10&&h>10){
-    const sz=Math.max(w,h);
-    const cx=x+(w-sz)/2,cy=y+(h-sz)/2;
-    const thumb=cropExtractThumb(CM.srcImg,{shape:CM.tool,x:cx,y:cy,w:sz,h:sz});
-    CM.crops.push({id:++CM.idSeq,shape:CM.tool,x:cx,y:cy,w:sz,h:sz,thumb});
-    renderModalCrops();updateCropAddBtn();
+// ── hit testing ──
+function cropHandles(c){return[['nw',c.x,c.y],['ne',c.x+c.w,c.y],['sw',c.x,c.y+c.h],['se',c.x+c.w,c.y+c.h]];}
+function pointInCrop(px,py,c){
+  if(c.shape==='circle'){const dx=px-(c.x+c.w/2),dy=py-(c.y+c.h/2);return dx*dx+dy*dy<=(c.w/2)*(c.w/2);}
+  return px>=c.x&&px<=c.x+c.w&&py>=c.y&&py<=c.y+c.h;
+}
+function hitTestCrops(x,y){
+  for(const c of [...CM.crops].reverse()){
+    for(const[h,hx,hy]of cropHandles(c)){const d=Math.hypot(x-hx,y-hy);if(d<=9)return{c,h};}
+  }
+  for(const c of [...CM.crops].reverse()){if(pointInCrop(x,y,c))return{c,h:null};}
+  return null;
+}
+function setCropCursor(x,y){
+  const cv=document.getElementById('modal-src-canvas');if(!cv)return;
+  const hit=hitTestCrops(x,y);
+  if(!hit){cv.style.cursor='crosshair';return;}
+  const cmap={nw:'nw-resize',ne:'ne-resize',sw:'sw-resize',se:'se-resize'};
+  cv.style.cursor=hit.h?cmap[hit.h]:'move';
+}
+
+function onCropStart(e){
+  const x=e.offsetX,y=e.offsetY;
+  const hit=hitTestCrops(x,y);
+  if(hit){
+    CM.selId=hit.c.id;
+    CM.editOrig={...hit.c};
+    CM.drag={sx:x,sy:y,ex:x,ey:y};
+    CM.dragging=true;
+    CM.editMode=hit.h?'resize':'move';
+    CM.editHandle=hit.h;
+  }else{
+    CM.selId=null;CM.editMode='draw';CM.editHandle=null;CM.editOrig=null;
+    CM.drag={sx:x,sy:y,ex:x,ey:y};CM.dragging=true;
   }
   redrawCropCanvas();
+}
+
+function onCropMove(e){
+  const x=e.offsetX,y=e.offsetY;
+  if(!CM.dragging){setCropCursor(x,y);return;}
+  CM.drag.ex=x;CM.drag.ey=y;
+  if(CM.editMode==='move'){
+    const c=CM.crops.find(c=>c.id===CM.selId);
+    if(c){c.x=CM.editOrig.x+(x-CM.drag.sx);c.y=CM.editOrig.y+(y-CM.drag.sy);}
+  }else if(CM.editMode==='resize'){
+    const c=CM.crops.find(c=>c.id===CM.selId);const o=CM.editOrig;
+    if(c&&o){
+      let sz,nx,ny;
+      switch(CM.editHandle){
+        case'se':sz=Math.max(20,Math.max(x-o.x,y-o.y));nx=o.x;ny=o.y;break;
+        case'nw':sz=Math.max(20,Math.max((o.x+o.w)-x,(o.y+o.h)-y));nx=(o.x+o.w)-sz;ny=(o.y+o.h)-sz;break;
+        case'ne':sz=Math.max(20,Math.max(x-o.x,(o.y+o.h)-y));nx=o.x;ny=(o.y+o.h)-sz;break;
+        case'sw':sz=Math.max(20,Math.max((o.x+o.w)-x,y-o.y));nx=(o.x+o.w)-sz;ny=o.y;break;
+      }
+      c.w=c.h=sz;c.x=nx;c.y=ny;
+    }
+  }
+  redrawCropCanvas();
+}
+
+function onCropEnd(){
+  if(!CM.dragging)return;
+  CM.dragging=false;
+  if(CM.editMode==='draw'){
+    const{sx,sy,ex,ey}=CM.drag;
+    const dw=Math.abs(ex-sx),dh=Math.abs(ey-sy);
+    if(dw>10&&dh>10){
+      const sz=Math.max(dw,dh);
+      const cx=Math.min(sx,ex)+(dw-sz)/2,cy=Math.min(sy,ey)+(dh-sz)/2;
+      const newC={id:++CM.idSeq,shape:CM.tool,x:cx,y:cy,w:sz,h:sz};
+      newC.thumb=cropExtractThumb(CM.srcImg,newC);
+      CM.crops.push(newC);
+      CM.selId=newC.id;
+    }
+  }else if(CM.editMode==='move'||CM.editMode==='resize'){
+    // Update thumb after edit
+    const c=CM.crops.find(c=>c.id===CM.selId);
+    if(c)c.thumb=cropExtractThumb(CM.srcImg,c);
+  }
+  CM.editMode=null;CM.editHandle=null;CM.editOrig=null;
+  renderModalCrops();updateCropAddBtn();
+  redrawCropCanvas();
+  setCropCursor(CM.drag.ex,CM.drag.ey);
 }
 
 function redrawCropCanvas(){
@@ -1229,17 +1309,30 @@ function redrawCropCanvas(){
   ctx.drawImage(CM.srcImg,0,0,CM.dispW,CM.dispH);
   ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(0,0,CM.dispW,CM.dispH);
   CM.crops.forEach(c=>{
+    const isSel=c.id===CM.selId;
     ctx.save();ctx.globalCompositeOperation='destination-out';
     ctx.beginPath();drawCropShape(ctx,c.x,c.y,c.w,c.h,c.shape);
     ctx.fillStyle='rgba(0,0,0,1)';ctx.fill();ctx.restore();
-    ctx.save();ctx.strokeStyle='#4338CA';ctx.lineWidth=2;
+    ctx.save();
+    ctx.strokeStyle=isSel?'#F59E0B':'#4338CA';
+    ctx.lineWidth=isSel?2.5:2;
+    if(isSel)ctx.setLineDash([]);
     ctx.beginPath();drawCropShape(ctx,c.x,c.y,c.w,c.h,c.shape);ctx.stroke();ctx.restore();
+    // Draw resize handles for selected crop
+    if(isSel){
+      cropHandles(c).forEach(([,hx,hy])=>{
+        ctx.save();ctx.beginPath();ctx.arc(hx,hy,6,0,Math.PI*2);
+        ctx.fillStyle='#fff';ctx.fill();
+        ctx.strokeStyle='#4338CA';ctx.lineWidth=2;ctx.stroke();ctx.restore();
+      });
+    }
   });
-  if(CM.dragging){
+  // Draw preview while drawing new
+  if(CM.dragging&&CM.editMode==='draw'){
     const{sx,sy,ex,ey}=CM.drag;
-    const x=Math.min(sx,ex),y=Math.min(sy,ey),w=Math.abs(ex-sx),h=Math.abs(ey-sy);
-    if(w>4&&h>4){
-      const sz=Math.max(w,h);const cx=x+(w-sz)/2,cy=y+(h-sz)/2;
+    const dw=Math.abs(ex-sx),dh=Math.abs(ey-sy);
+    if(dw>4&&dh>4){
+      const sz=Math.max(dw,dh);const cx=Math.min(sx,ex)+(dw-sz)/2,cy=Math.min(sy,ey)+(dh-sz)/2;
       ctx.save();ctx.globalCompositeOperation='destination-out';
       ctx.beginPath();drawCropShape(ctx,cx,cy,sz,sz,CM.tool);
       ctx.fillStyle='rgba(0,0,0,.7)';ctx.fill();ctx.restore();
@@ -1299,6 +1392,8 @@ function removeBackground(cv,tolerance){
   ctx.putImageData(id,0,0);
 }
 
+function getRmbgTol(){return parseInt(document.getElementById('rng-rmbg-tol')?.value||35);}
+
 function cropExtractThumb(srcImg,crop){
   const SZ=72;
   const scX=imgNatW(srcImg)/CM.dispW,scY=imgNatH(srcImg)/CM.dispH;
@@ -1306,7 +1401,7 @@ function cropExtractThumb(srcImg,crop){
   if(rmBg){
     const tmp=document.createElement('canvas');tmp.width=tmp.height=SZ;
     tmp.getContext('2d').drawImage(srcImg,crop.x*scX,crop.y*scY,crop.w*scX,crop.h*scY,0,0,SZ,SZ);
-    removeBackground(tmp);
+    removeBackground(tmp,getRmbgTol());
     const cv=document.createElement('canvas');cv.width=cv.height=SZ;
     const ctx=cv.getContext('2d');ctx.clearRect(0,0,SZ,SZ);
     _clipShape(ctx,SZ,crop.shape);ctx.drawImage(tmp,0,0);
@@ -1326,7 +1421,7 @@ function cropExtractFull(srcImg,crop){
   if(rmBg){
     const tmp=document.createElement('canvas');tmp.width=tmp.height=SZ;
     tmp.getContext('2d').drawImage(srcImg,crop.x*scX,crop.y*scY,crop.w*scX,crop.h*scY,0,0,SZ,SZ);
-    removeBackground(tmp);
+    removeBackground(tmp,getRmbgTol());
     const cv=document.createElement('canvas');cv.width=cv.height=SZ;
     const ctx=cv.getContext('2d');ctx.clearRect(0,0,SZ,SZ);
     _clipShape(ctx,SZ,crop.shape);ctx.drawImage(tmp,0,0);
@@ -1368,12 +1463,21 @@ function updateCropAddBtn(){
 function closeCropModal(){
   document.getElementById('crop-modal').hidden=true;
   CM.srcImg=null;CM.crops=[];CM.dragging=false;CM.assetId=null;
+  CM.selId=null;CM.editMode=null;CM.editHandle=null;CM.editOrig=null;
 }
 
 document.getElementById('modal-tool-grp').addEventListener('click',e=>{
   const b=e.target.closest('.sbt');if(!b)return;
   document.querySelectorAll('#modal-tool-grp .sbt').forEach(x=>x.classList.remove('on'));
   b.classList.add('on');CM.tool=b.dataset.tool;
+});
+document.getElementById('ck-rmbg').addEventListener('change',function(){
+  const row=document.getElementById('rmbg-tol-row');
+  row.hidden=!this.checked;
+  if(!row.hidden)row.style.display='flex';
+});
+document.getElementById('rng-rmbg-tol').addEventListener('input',function(){
+  document.getElementById('rmbg-tol-val').textContent=this.value;
 });
 
 document.getElementById('crop-modal-x').addEventListener('click',closeCropModal);
