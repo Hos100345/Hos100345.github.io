@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ניהול מלאי — הושעיה אמן בלונים</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue: #2563EB;
+      --blue-dark: #1d4ed8;
+      --blue-light: #eff6ff;
+      --blue-border: #bfdbfe;
+      --green: #22c55e;
+      --green-bg: #f0fdf4;
+      --amber: #f59e0b;
+      --amber-bg: #fffbeb;
+      --red: #ef4444;
+      --red-bg: #fef2f2;
+      --gray-50: #f8fafc;
+      --gray-100: #f1f5f9;
+      --gray-200: #e2e8f0;
+      --gray-300: #cbd5e1;
+      --gray-400: #94a3b8;
+      --gray-500: #64748b;
+      --gray-600: #475569;
+      --gray-700: #334155;
+      --gray-900: #0f172a;
+      --radius: 8px;
+      --radius-lg: 12px;
+      --shadow: 0 1px 3px 0 rgb(0 0 0/.1),0 1px 2px -1px rgb(0 0 0/.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0/.1),0 4px 6px -4px rgb(0 0 0/.1);
+    }
+
+    body {
+      font-family: 'Heebo', sans-serif;
+      background: var(--gray-50);
+      color: var(--gray-900);
+      min-height: 100vh;
+    }
+
+    .hidden { display: none !important; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: .5rem;
+      padding: .55rem 1.1rem; border-radius: var(--radius);
+      font-family: inherit; font-size: .875rem; font-weight: 600;
+      cursor: pointer; border: none; transition: all .15s;
+      text-decoration: none; white-space: nowrap;
+    }
+    .btn-primary  { background: var(--blue); color: #fff; }
+    .btn-primary:hover { background: var(--blue-dark); }
+    .btn-success  { background: var(--green); color: #fff; }
+    .btn-success:hover { background: #16a34a; }
+    .btn-ghost {
+      background: transparent; color: var(--gray-600);
+      border: 1.5px solid var(--gray-200);
+    }
+    .btn-ghost:hover { background: var(--gray-100); }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(15,23,42,.75);
+      z-index: 1000; display: flex;
+      align-items: center; justify-content: center; padding: 1rem;
+    }
+    .modal {
+      background: #fff; border-radius: var(--radius-lg);
+      padding: 1.75rem; width: 100%; max-width: 540px;
+      box-shadow: var(--shadow-lg); max-height: 90vh; overflow-y: auto;
+    }
+    .modal-title { font-size: 1.125rem; font-weight: 800; margin-bottom: 1.25rem; }
+
+    .setup-card {
+      background: var(--blue-light); border: 1.5px solid var(--blue-border);
+      border-radius: var(--radius); padding: 1rem; margin-bottom: 1.25rem;
+      font-size: .82rem; color: var(--blue-dark);
+    }
+    .setup-card h4 { font-weight: 700; margin-bottom: .5rem; font-size: .875rem; }
+    .setup-card ol { padding-right: 1.25rem; line-height: 1.9; }
+
+    .code-wrap {
+      position: relative; margin-top: .75rem;
+    }
+    .code-block {
+      background: var(--gray-900); color: #a5f3fc;
+      padding: .875rem; border-radius: 6px;
+      font-family: monospace; font-size: .75rem;
+      white-space: pre; overflow-x: auto;
+      direction: ltr; text-align: left; max-height: 220px;
+    }
+    .copy-btn {
+      position: absolute; top: .4rem; right: .4rem;
+      background: rgba(255,255,255,.12); color: #fff;
+      border: none; border-radius: 4px; padding: .25rem .6rem;
+      font-size: .72rem; cursor: pointer; font-family: inherit;
+      transition: background .15s;
+    }
+    .copy-btn:hover { background: rgba(255,255,255,.25); }
+
+    .form-group { margin-bottom: 1rem; }
+    .form-label {
+      display: block; font-size: .82rem; font-weight: 700;
+      color: var(--gray-700); margin-bottom: .35rem;
+    }
+    .form-input {
+      width: 100%; padding: .575rem .875rem;
+      border: 1.5px solid var(--gray-200); border-radius: var(--radius);
+      font-family: inherit; font-size: .875rem; color: var(--gray-900);
+      direction: ltr; text-align: left; transition: border-color .15s;
+    }
+    .form-input:focus { outline: none; border-color: var(--blue); }
+    .form-hint { font-size: .75rem; color: var(--gray-500); margin-top: .25rem; }
+    .modal-actions { display: flex; gap: .75rem; margin-top: 1.5rem; }
+
+    /* ── Header ── */
+    .app-header {
+      background: #fff; border-bottom: 1px solid var(--gray-200);
+      padding: 0 1rem; height: 56px;
+      display: flex; align-items: center; gap: .75rem;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 1px 2px rgb(0 0 0/.05);
+    }
+    .header-brand {
+      display: flex; align-items: center; gap: .5rem;
+      font-weight: 700; font-size: .9rem;
+      color: var(--gray-900); text-decoration: none; flex-shrink: 0;
+    }
+    .header-brand img {
+      width: 30px; height: 30px; border-radius: 50%; object-fit: cover;
+    }
+    .header-divider {
+      height: 20px; width: 1px; background: var(--gray-200); flex-shrink: 0;
+    }
+    .header-page-title { font-weight: 700; color: var(--blue); font-size: .95rem; }
+    .header-spacer { flex: 1; }
+    .header-actions { display: flex; align-items: center; gap: .5rem; }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      background: #fff; border-bottom: 1px solid var(--gray-200);
+      padding: .625rem 1rem; display: flex; align-items: center;
+      gap: .5rem; flex-wrap: wrap;
+    }
+    .stat-chip {
+      display: inline-flex; align-items: center; gap: .3rem;
+      padding: .2rem .7rem; border-radius: 100px;
+      font-size: .78rem; font-weight: 700;
+    }
+    .sc-total    { background: var(--gray-100); color: var(--gray-700); }
+    .sc-ok       { background: var(--green-bg); color: #16a34a; }
+    .sc-low      { background: var(--amber-bg); color: #d97706; }
+    .sc-critical { background: var(--red-bg); color: #dc2626; }
+    .sc-changed  { background: var(--blue-light); color: var(--blue); }
+    .stats-sync { margin-right: auto; font-size: .78rem; color: var(--gray-400); }
+
+    /* ── Filters ── */
+    .filters-bar {
+      background: #fff; border-bottom: 1px solid var(--gray-200);
+      padding: .75rem 1rem;
+    }
+    .search-row { display: flex; gap: .625rem; margin-bottom: .625rem; align-items: center; }
+    .search-input {
+      flex: 1; padding: .5rem .875rem;
+      border: 1.5px solid var(--gray-200); border-radius: var(--radius);
+      font-family: inherit; font-size: .875rem; direction: rtl;
+      transition: border-color .15s;
+    }
+    .search-input:focus { outline: none; border-color: var(--blue); }
+    .filter-pills { display: flex; flex-wrap: wrap; gap: .4rem; }
+    .fpill {
+      padding: .2rem .75rem; border-radius: 100px; font-size: .78rem;
+      font-weight: 600; cursor: pointer;
+      border: 1.5px solid var(--gray-200);
+      background: #fff; color: var(--gray-600);
+      transition: all .15s; font-family: inherit;
+    }
+    .fpill.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+    .fpill:hover:not(.active) { background: var(--blue-light); border-color: var(--blue-border); color: var(--blue); }
+
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; padding: .875rem; padding-bottom: 5rem; }
+
+    table {
+      width: 100%; border-collapse: collapse;
+      background: #fff; border-radius: var(--radius-lg);
+      box-shadow: var(--shadow); overflow: hidden; font-size: .875rem;
+    }
+    thead { background: var(--gray-50); border-bottom: 2px solid var(--gray-200); }
+    th {
+      padding: .625rem 1rem; text-align: right;
+      font-weight: 700; color: var(--gray-600); font-size: .78rem;
+      text-transform: uppercase; letter-spacing: .03em; white-space: nowrap;
+    }
+    tr { border-bottom: 1px solid var(--gray-100); transition: background .1s; }
+    tr:last-child { border-bottom: none; }
+    tr:hover { background: var(--gray-50); }
+    tr.row-changed { background: #eff6ff; }
+    tr.row-changed:hover { background: #dbeafe; }
+    td { padding: .5rem 1rem; vertical-align: middle; }
+
+    .td-id { font-family: monospace; font-size: .72rem; color: var(--gray-400); }
+    .td-main { font-weight: 600; color: var(--gray-900); font-size: .875rem; }
+    .td-sub { font-size: .75rem; color: var(--gray-500); margin-top: .1rem; }
+
+    .cat-badge {
+      display: inline-flex; align-items: center;
+      padding: .15rem .5rem; border-radius: 4px;
+      font-size: .72rem; font-weight: 700; white-space: nowrap;
+    }
+    .cb-latex     { background: #fce7f3; color: #be185d; }
+    .cb-mylar     { background: #e0f2fe; color: #0369a1; }
+    .cb-sausage   { background: #fef3c7; color: #d97706; }
+    .cb-helium    { background: var(--green-bg); color: #16a34a; }
+    .cb-materials { background: #f5f3ff; color: #7c3aed; }
+
+    .stock-input {
+      width: 76px; padding: .35rem .5rem;
+      border: 1.5px solid var(--gray-200); border-radius: 6px;
+      font-family: inherit; font-size: .9rem; font-weight: 700;
+      text-align: center; color: var(--gray-900);
+      transition: border-color .15s, background .15s;
+    }
+    .stock-input:focus { outline: none; border-color: var(--blue); }
+    .stock-input.changed { border-color: var(--blue); background: var(--blue-light); }
+
+    .status-dot {
+      display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+    }
+    .dot-ok       { background: var(--green); }
+    .dot-low      { background: var(--amber); }
+    .dot-critical { background: var(--red); box-shadow: 0 0 0 3px rgba(239,68,68,.2); }
+
+    .no-results {
+      text-align: center; padding: 3rem 1rem;
+      color: var(--gray-500); font-size: .9rem;
+    }
+
+    /* ── Loading ── */
+    .loading-state {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 5rem 1rem; gap: 1rem;
+    }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--gray-200);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin .75s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Empty state ── */
+    .empty-state {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 5rem 1rem; gap: .75rem; text-align: center;
+    }
+    .empty-icon { font-size: 3rem; }
+    .empty-title { font-size: 1.1rem; font-weight: 800; }
+    .empty-sub { color: var(--gray-500); font-size: .9rem; margin-bottom: .5rem; }
+
+    /* ── Save bar ── */
+    .save-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: #fff; border-top: 1px solid var(--gray-200);
+      padding: .75rem 1.25rem;
+      display: flex; align-items: center; gap: .875rem;
+      box-shadow: 0 -4px 16px rgb(0 0 0/.08);
+      z-index: 200;
+      transform: translateY(100%); transition: transform .25s ease;
+    }
+    .save-bar.visible { transform: translateY(0); }
+    .save-bar-text { flex: 1; font-size: .875rem; color: var(--gray-600); }
+    .save-bar-text strong { color: var(--blue); }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 5rem; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--gray-900); color: #fff;
+      padding: .75rem 1.5rem; border-radius: var(--radius);
+      font-size: .875rem; font-weight: 500;
+      z-index: 600; opacity: 0; transition: opacity .25s, transform .25s;
+      pointer-events: none; white-space: nowrap; max-width: 90vw;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.toast-ok  { background: #16a34a; }
+    .toast.toast-err { background: var(--red); }
+
+    /* ── Mobile ── */
+    @media (max-width: 640px) {
+      .hide-sm { display: none !important; }
+      .table-wrap { padding: .5rem .5rem 5rem; }
+      td, th { padding: .45rem .625rem; }
+      .stock-input { width: 64px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== CONFIG MODAL ===== -->
+<div class="modal-overlay" id="config-modal">
+  <div class="modal">
+    <div class="modal-title">⚙️ חיבור לגיליון Google Sheets</div>
+
+    <div class="setup-card">
+      <h4>שלב 1 — הוסף Apps Script לגיליון</h4>
+      <ol>
+        <li>פתח את הגיליון ← <strong>תוספות ← Apps Script</strong></li>
+        <li>מחק את הקוד הקיים והדבק את הקוד למטה</li>
+        <li>שנה את <code>SECRET_KEY</code> לסיסמה שתבחר</li>
+        <li>שנה את <code>SHEET_NAME</code> לשם הגיליון (לרוב <code>גיליון1</code>)</li>
+        <li>שמור ← <strong>פרס (Deploy) ← New deployment</strong></li>
+        <li>Type: <strong>Web app</strong> | Execute as: <strong>Me</strong> | Access: <strong>Anyone</strong></li>
+        <li>העתק את כתובת ה-Web app URL</li>
+      </ol>
+      <div class="code-wrap">
+        <pre class="code-block" id="script-code">/* ═══ הגדרות — שנה כאן ═══ */
+const SECRET_KEY = 'YOUR_SECRET_HERE'; // ← שנה לסיסמה שלך
+const SHEET_NAME = 'גיליון1';          // ← שם הגיליון
+
+/* ═══ קריאת נתונים (GET) ═══ */
+function doGet(e) {
+  if (e.parameter.key !== SECRET_KEY)
+    return json({ error: 'Unauthorized' });
+  const sheet = SpreadsheetApp.getActiveSpreadsheet()
+    .getSheetByName(SHEET_NAME);
+  const data  = sheet.getDataRange().getValues();
+  const hdrs  = data[0].map(h => h.toString().trim());
+  const rows  = data.slice(1)
+    .filter(r => r[0])
+    .map(r => Object.fromEntries(hdrs.map((h, i) => [h, r[i]])));
+  return json({ data: rows });
+}
+
+/* ═══ עדכון כמויות (POST) ═══ */
+function doPost(e) {
+  const params = JSON.parse(e.postData.contents);
+  if (params.key !== SECRET_KEY)
+    return json({ error: 'Unauthorized' });
+  const sheet   = SpreadsheetApp.getActiveSpreadsheet()
+    .getSheetByName(SHEET_NAME);
+  const data    = sheet.getDataRange().getValues();
+  const hdrs    = data[0].map(h => h.toString().trim());
+  const idCol   = hdrs.indexOf('ID');
+  const stkCol  = hdrs.indexOf('כמות_במלאי') + 1;
+  let updated   = 0;
+  for (const upd of params.updates) {
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][idCol]) === String(upd.id)) {
+        sheet.getRange(i + 1, stkCol).setValue(upd.quantity);
+        updated++;
+        break;
+      }
+    }
+  }
+  return json({ success: true, updated });
+}
+
+function json(obj) {
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}</pre>
+        <button class="copy-btn" id="copy-script-btn">העתק קוד</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="inp-url">כתובת Web App (Apps Script URL)</label>
+      <input type="url" id="inp-url" class="form-input"
+             placeholder="https://script.google.com/macros/s/.../exec"
+             autocomplete="off" spellcheck="false">
+      <div class="form-hint">הכתובת שקיבלת אחרי הפריסה</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="inp-key">מפתח סודי (SECRET_KEY)</label>
+      <input type="password" id="inp-key" class="form-input"
+             placeholder="הסיסמה שהגדרת בקוד"
+             autocomplete="new-password">
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="btn-save-config" style="flex:1">שמור והתחל</button>
+      <button class="btn btn-ghost"   id="btn-close-config">ביטול</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TOAST ===== -->
+<div class="toast" id="toast" aria-live="polite"></div>
+
+<!-- ===== SAVE BAR ===== -->
+<div class="save-bar" id="save-bar">
+  <span class="save-bar-text">יש <strong id="change-count">0</strong> שינויים שלא נשמרו</span>
+  <button class="btn btn-ghost"    id="btn-discard">בטל הכל</button>
+  <button class="btn btn-success"  id="btn-save">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+    שמור ב-Sheets
+  </button>
+</div>
+
+<!-- ===== HEADER ===== -->
+<header class="app-header">
+  <a href="index.html" class="header-brand">
+    <img src="images/logo.jpg" alt="לוגו" onerror="this.style.display='none'">
+    <span class="hide-sm">הושעיה אמן בלונים</span>
+  </a>
+  <div class="header-divider hide-sm"></div>
+  <span class="header-page-title">ניהול מלאי</span>
+  <div class="header-spacer"></div>
+  <div class="header-actions">
+    <button class="btn btn-ghost" id="btn-refresh" title="טען מחדש מ-Sheets">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+      <span class="hide-sm">רענן</span>
+    </button>
+    <button class="btn btn-ghost" id="btn-settings" title="הגדרות חיבור">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      הגדרות
+    </button>
+  </div>
+</header>
+
+<!-- ===== MAIN ===== -->
+<main id="main">
+
+  <!-- No config -->
+  <div class="empty-state" id="state-empty">
+    <div class="empty-icon">🔗</div>
+    <div class="empty-title">טרם הוגדר חיבור לגיליון</div>
+    <div class="empty-sub">הגדר Apps Script פעם אחת ותוכל לנהל את המלאי ישירות מהאתר</div>
+    <button class="btn btn-primary" id="btn-setup">הגדר עכשיו</button>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state hidden" id="state-loading">
+    <div class="spinner"></div>
+    <div style="color:var(--gray-500);font-size:.9rem">טוען נתוני מלאי מ-Google Sheets…</div>
+  </div>
+
+  <!-- Data view -->
+  <div class="hidden" id="state-data">
+
+    <!-- Stats -->
+    <div class="stats-bar">
+      <span class="stat-chip sc-total">📦 <span id="s-total">0</span> פריטים</span>
+      <span class="stat-chip sc-ok">🟢 <span id="s-ok">0</span> תקין</span>
+      <span class="stat-chip sc-low">🟡 <span id="s-low">0</span> נמוך</span>
+      <span class="stat-chip sc-critical">🔴 <span id="s-critical">0</span> קריטי</span>
+      <span class="stat-chip sc-changed hidden" id="chip-changed">✏️ <span id="s-changed">0</span> שונו</span>
+      <span class="stats-sync" id="sync-label">לא עודכן</span>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-bar">
+      <div class="search-row">
+        <input type="search" class="search-input" id="search-input"
+               placeholder="🔍  חיפוש לפי צבע, מוצר, מזהה…">
+        <button class="btn btn-ghost" id="btn-critical-filter" style="flex-shrink:0">
+          🔴 קריטי בלבד
+        </button>
+      </div>
+      <div class="filter-pills" id="cat-pills"></div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="hide-sm">מזהה</th>
+            <th>פריט</th>
+            <th class="hide-sm">קטגוריה</th>
+            <th>מלאי</th>
+            <th>מינ'</th>
+            <th>סטטוס</th>
+            <th class="hide-sm">הערות</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="no-results hidden" id="no-results">
+        <div style="font-size:2rem;margin-bottom:.5rem">🔍</div>
+        לא נמצאו פריטים תואמים
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+/* ══════════════════════════════════════════════════
+   State
+══════════════════════════════════════════════════ */
+const CFG_KEY = 'inv_cfg_v1';
+let cfg          = null;   // { apiUrl, secretKey }
+let allItems     = [];     // raw rows from sheet
+let changes      = new Map(); // id → newQuantity
+let activeCat    = 'all';
+let searchQ      = '';
+let criticalOnly = false;
+
+/* ══════════════════════════════════════════════════
+   DOM refs
+══════════════════════════════════════════════════ */
+const $  = id => document.getElementById(id);
+const configModal  = $('config-modal');
+const stateEmpty   = $('state-empty');
+const stateLoading = $('state-loading');
+const stateData    = $('state-data');
+const saveBar      = $('save-bar');
+const toastEl      = $('toast');
+const tbody        = $('tbody');
+
+/* ══════════════════════════════════════════════════
+   Init
+══════════════════════════════════════════════════ */
+const DEFAULT_CFG = {
+  apiUrl:    'https://script.google.com/macros/s/AKfycbxmcK7YOE3lXQmi-zFfUuzAOpvDMoW8QyXsqGEv7bgE/exec',
+  secretKey: 'balonim2026'
+};
+
+function init() {
+  const stored = localStorage.getItem(CFG_KEY);
+  cfg = stored ? JSON.parse(stored) : DEFAULT_CFG;
+  $('inp-url').value = cfg.apiUrl    || '';
+  $('inp-key').value = cfg.secretKey || '';
+  loadData();
+}
+
+/* ══════════════════════════════════════════════════
+   State helpers
+══════════════════════════════════════════════════ */
+function showState(s) {
+  stateEmpty.classList.add('hidden');
+  stateLoading.classList.add('hidden');
+  stateData.classList.add('hidden');
+  if (s === 'empty')   stateEmpty.classList.remove('hidden');
+  if (s === 'loading') stateLoading.classList.remove('hidden');
+  if (s === 'data')    stateData.classList.remove('hidden');
+}
+
+/* ══════════════════════════════════════════════════
+   Fetch data
+══════════════════════════════════════════════════ */
+async function loadData() {
+  if (!cfg?.apiUrl) return;
+  showState('loading');
+  try {
+    const url = `${cfg.apiUrl}?key=${encodeURIComponent(cfg.secretKey)}&t=${Date.now()}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const body = await res.json();
+    if (body.error) throw new Error(body.error);
+    allItems = body.data || [];
+    changes.clear();
+    buildCatPills();
+    render();
+    refreshStats();
+    updateSaveBar();
+    $('sync-label').textContent = 'עודכן: ' + new Date().toLocaleTimeString('he-IL');
+    showState('data');
+  } catch (err) {
+    showToast('שגיאה בטעינה: ' + err.message, 'err');
+    showState('empty');
+  }
+}
+
+/* ══════════════════════════════════════════════════
+   Category pills
+══════════════════════════════════════════════════ */
+function buildCatPills() {
+  const cats = ['all', ...new Set(allItems.map(i => i['קטגוריה']).filter(Boolean))];
+  const wrap = $('cat-pills');
+  wrap.innerHTML = '';
+  cats.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'fpill' + (cat === activeCat ? ' active' : '');
+    btn.dataset.cat = cat;
+    btn.textContent = cat === 'all' ? 'הכל' : cat;
+    btn.onclick = () => {
+      activeCat = cat;
+      wrap.querySelectorAll('.fpill').forEach(b =>
+        b.classList.toggle('active', b.dataset.cat === cat));
+      render();
+    };
+    wrap.appendChild(btn);
+  });
+}
+
+/* ══════════════════════════════════════════════════
+   Helpers
+══════════════════════════════════════════════════ */
+function stockStatus(cur, mn) {
+  cur = Number(cur) || 0;
+  mn  = Number(mn)  || 0;
+  if (mn === 0) return 'ok';
+  if (cur === 0 || cur < mn) return 'critical';
+  if (cur < mn * 2) return 'low';
+  return 'ok';
+}
+
+function catClass(cat) {
+  if (cat === 'בלוני לטקס')  return 'cb-latex';
+  if (cat === 'בלוני מיילר') return 'cb-mylar';
+  if (cat === 'בלוני נקניק') return 'cb-sausage';
+  if (cat === 'הליום וגז')   return 'cb-helium';
+  return 'cb-materials';
+}
+
+function itemLabel(item) {
+  return [item['תת_קטגוריה'], item['גודל'], item['צבע'], item['פריט']]
+    .filter(Boolean).join(' · ');
+}
+
+/* ══════════════════════════════════════════════════
+   Render table
+══════════════════════════════════════════════════ */
+function render() {
+  const q = searchQ.toLowerCase();
+
+  const visible = allItems.filter(item => {
+    if (activeCat !== 'all' && item['קטגוריה'] !== activeCat) return false;
+    if (criticalOnly) {
+      const cur = changes.has(item['ID']) ? changes.get(item['ID']) : item['כמות_במלאי'];
+      if (stockStatus(cur, item['כמות_מינימום']) !== 'critical') return false;
+    }
+    if (q) {
+      const hay = [item['ID'], item['קטגוריה'], item['תת_קטגוריה'],
+                   item['גודל'], item['צבע'], item['פריט']].join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  $('no-results').classList.toggle('hidden', visible.length > 0);
+  tbody.innerHTML = '';
+
+  visible.forEach(item => {
+    const id       = item['ID'];
+    const origQty  = Number(item['כמות_במלאי']) || 0;
+    const curQty   = changes.has(id) ? changes.get(id) : origQty;
+    const minQty   = Number(item['כמות_מינימום']) || 0;
+    const status   = stockStatus(curQty, minQty);
+    const isChg    = changes.has(id);
+
+    const tr = document.createElement('tr');
+    if (isChg) tr.classList.add('row-changed');
+
+    tr.innerHTML = `
+      <td class="td-id hide-sm">${id}</td>
+      <td>
+        <div class="td-main">${itemLabel(item)}</div>
+      </td>
+      <td class="hide-sm">
+        <span class="cat-badge ${catClass(item['קטגוריה'])}">${item['קטגוריה']}</span>
+      </td>
+      <td>
+        <input type="number" class="stock-input${isChg ? ' changed' : ''}"
+               value="${curQty}" min="0"
+               data-id="${id}" data-orig="${origQty}">
+      </td>
+      <td style="color:var(--gray-500);font-size:.82rem;font-weight:600">${minQty || '—'}</td>
+      <td>
+        <span class="status-dot dot-${status}"
+              title="${status === 'ok' ? 'תקין' : status === 'low' ? 'נמוך' : 'קריטי!'}"></span>
+      </td>
+      <td class="hide-sm" style="font-size:.78rem;color:var(--gray-500)">
+        ${item['הערות'] || ''}
+      </td>
+    `;
+
+    tr.querySelector('.stock-input').addEventListener('change', function () {
+      onStockChange(this, item);
+    });
+
+    tbody.appendChild(tr);
+  });
+}
+
+function onStockChange(input, item) {
+  const id  = item['ID'];
+  const val = parseInt(input.value, 10);
+  const orig = Number(item['כמות_במלאי']) || 0;
+
+  if (isNaN(val) || val < 0) {
+    input.value = changes.has(id) ? changes.get(id) : orig;
+    return;
+  }
+
+  if (val === orig) {
+    changes.delete(id);
+  } else {
+    changes.set(id, val);
+  }
+
+  input.classList.toggle('changed', changes.has(id));
+  input.closest('tr').classList.toggle('row-changed', changes.has(id));
+
+  refreshStats();
+  updateSaveBar();
+}
+
+/* ══════════════════════════════════════════════════
+   Stats
+══════════════════════════════════════════════════ */
+function refreshStats() {
+  let ok = 0, low = 0, crit = 0;
+  allItems.forEach(item => {
+    const id  = item['ID'];
+    const cur = changes.has(id) ? changes.get(id) : item['כמות_במלאי'];
+    const st  = stockStatus(cur, item['כמות_מינימום']);
+    if (st === 'ok') ok++;
+    else if (st === 'low') low++;
+    else crit++;
+  });
+  $('s-total').textContent    = allItems.length;
+  $('s-ok').textContent       = ok;
+  $('s-low').textContent      = low;
+  $('s-critical').textContent = crit;
+  $('s-changed').textContent  = changes.size;
+  $('chip-changed').classList.toggle('hidden', changes.size === 0);
+}
+
+/* ══════════════════════════════════════════════════
+   Save bar
+══════════════════════════════════════════════════ */
+function updateSaveBar() {
+  $('change-count').textContent = changes.size;
+  saveBar.classList.toggle('visible', changes.size > 0);
+}
+
+/* ══════════════════════════════════════════════════
+   Save to Sheets
+══════════════════════════════════════════════════ */
+async function saveChanges() {
+  if (!changes.size) return;
+  const btn = $('btn-save');
+  btn.disabled = true;
+  btn.textContent = 'שומר…';
+
+  const updates = Array.from(changes.entries()).map(([id, quantity]) => ({ id, quantity }));
+
+  try {
+    const res = await fetch(cfg.apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+      body: JSON.stringify({ key: cfg.secretKey, updates })
+    });
+    const result = await res.json();
+    if (result.error) throw new Error(result.error);
+
+    // apply to local data
+    changes.forEach((qty, id) => {
+      const item = allItems.find(i => i['ID'] === id);
+      if (item) item['כמות_במלאי'] = qty;
+    });
+    changes.clear();
+
+    render();
+    refreshStats();
+    updateSaveBar();
+    $('sync-label').textContent = 'שמור: ' + new Date().toLocaleTimeString('he-IL');
+    showToast(`✅ ${result.updated ?? updates.length} פריטים עודכנו בגיליון`, 'ok');
+  } catch (err) {
+    showToast('שגיאה בשמירה: ' + err.message, 'err');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      שמור ב-Sheets`;
+  }
+}
+
+function discardChanges() {
+  changes.clear();
+  render();
+  refreshStats();
+  updateSaveBar();
+  showToast('השינויים בוטלו', '');
+}
+
+/* ══════════════════════════════════════════════════
+   Toast
+══════════════════════════════════════════════════ */
+let toastTimer;
+function showToast(msg, type = '') {
+  toastEl.textContent = msg;
+  toastEl.className   = 'toast show' + (type ? ' toast-' + type : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toastEl.className = 'toast'; }, 3200);
+}
+
+/* ══════════════════════════════════════════════════
+   Event wiring
+══════════════════════════════════════════════════ */
+$('btn-setup').onclick    = () => configModal.classList.remove('hidden');
+$('btn-settings').onclick = () => configModal.classList.remove('hidden');
+$('btn-refresh').onclick  = loadData;
+$('btn-save').onclick     = saveChanges;
+$('btn-discard').onclick  = discardChanges;
+
+$('btn-close-config').onclick = () => {
+  if (cfg) configModal.classList.add('hidden');
+};
+
+configModal.addEventListener('click', e => {
+  if (e.target === configModal && cfg) configModal.classList.add('hidden');
+});
+
+$('btn-save-config').onclick = () => {
+  const url = $('inp-url').value.trim();
+  const key = $('inp-key').value.trim();
+  if (!url) { showToast('נא להזין כתובת Apps Script', 'err'); return; }
+  if (!key) { showToast('נא להזין מפתח סודי', 'err');         return; }
+  cfg = { apiUrl: url, secretKey: key };
+  localStorage.setItem(CFG_KEY, JSON.stringify(cfg));
+  configModal.classList.add('hidden');
+  loadData();
+};
+
+$('search-input').addEventListener('input', e => {
+  searchQ = e.target.value.trim();
+  render();
+});
+
+$('btn-critical-filter').addEventListener('click', function () {
+  criticalOnly = !criticalOnly;
+  this.style.cssText = criticalOnly
+    ? 'background:var(--red);color:#fff;border-color:var(--red)'
+    : '';
+  render();
+});
+
+// Copy Apps Script code
+$('copy-script-btn').onclick = async function () {
+  try {
+    await navigator.clipboard.writeText($('script-code').textContent);
+    this.textContent = '✓ הועתק!';
+    setTimeout(() => { this.textContent = 'העתק קוד'; }, 2000);
+  } catch {
+    this.textContent = 'שגיאה';
+  }
+};
+
+// Start
+init();
+</script>
+</body>
+</html>
