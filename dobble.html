@@ -1085,20 +1085,12 @@ async function expPDF(setp){
 
   const addRegMarks=()=>{
     if(!S.isSilhouette)return;
-    const off=10,ms=6,arm=20,lw=0.5;
-    // Top-Left: filled black square only
+    // Silhouette Cameo print+cut: 3 solid black squares the optical sensor can detect
+    const ms=6,off=7; // 6mm square, 7mm from page edge
     pdf.setFillColor(0,0,0);
-    pdf.rect(off,off,ms,ms,'F');
-    // Top-Right: L-shape lines only
-    pdf.setDrawColor(0);pdf.setLineWidth(lw);
-    const trx=A4_W-off,try_=off;
-    pdf.line(trx,try_,trx-arm,try_);
-    pdf.line(trx,try_,trx,try_+arm);
-    // Bottom-Left: L-shape lines only
-    const blx=off,bly=A4_H-off;
-    pdf.line(blx,bly,blx+arm,bly);
-    pdf.line(blx,bly,blx,bly-arm);
-    // Bottom-Right: empty
+    pdf.rect(off,off,ms,ms,'F');                          // Top-Left
+    pdf.rect(A4_W-off-ms,off,ms,ms,'F');                  // Top-Right
+    pdf.rect(off,A4_H-off-ms,ms,ms,'F');                  // Bottom-Left
   };
 
   for(let i=0;i<S.deck.length;i++){
@@ -1163,9 +1155,14 @@ function generateDXF(){
     }
   }
   if(S.isSilhouette){
-    const regPts=[{x:8,y:H-8},{x:202,y:H-8},{x:8,y:8}];
-    for(const{x,y}of regPts)
-      dxf+=`0\nCIRCLE\n8\nREGMARK\n10\n${x}\n20\n${y}\n30\n0\n40\n3\n`;
+    // 6mm squares matching PDF registration marks positions (DXF Y is flipped)
+    const ms=6,off=7;
+    const regPts=[[off,H-off-ms],[A4_W-off-ms,H-off-ms],[off,off]]; // TL,TR,BL in DXF coords
+    for(const[rx,ry]of regPts){
+      dxf+=`0\nLWPOLYLINE\n8\nREGMARK\n90\n4\n70\n1\n`;
+      dxf+=`10\n${rx}\n20\n${ry}\n10\n${rx+ms}\n20\n${ry}\n`;
+      dxf+=`10\n${rx+ms}\n20\n${ry+ms}\n10\n${rx}\n20\n${ry+ms}\n`;
+    }
   }
   dxf+='0\nENDSEC\n0\nEOF\n';
   return dxf;
