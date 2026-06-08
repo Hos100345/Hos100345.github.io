@@ -935,7 +935,9 @@ function resetState(){
   document.getElementById('gallery-count').textContent='0 נכסים';
   document.getElementById('under-lim').style.display='none';
 }
+let _exportUrl=null;
 function resetExport(){
+  if(_exportUrl){URL.revokeObjectURL(_exportUrl);_exportUrl=null;}
   document.getElementById('exp-prog').classList.remove('on');
   document.getElementById('dl-area').classList.remove('on');
 }
@@ -1082,6 +1084,7 @@ async function expPDF(setp){
   const{jsPDF}=window.jspdf;
   const{positions,cardMm}=layoutEngine();
   const perPage=positions.length;
+  if(!perPage){alert('גודל הקלף גדול מדי לדף A4 — אין מקום אף לקלף אחד.\nהקטן את גודל הקלף ונסה שוב.');return;}
   const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
   const tmp=document.createElement('canvas');tmp.width=tmp.height=CARD_PX;
 
@@ -1124,9 +1127,11 @@ async function expPDF(setp){
     if(i%3===2)await tick();
   }
   setp(98,'שומר…');
-  const blob=pdf.output('blob'),url=URL.createObjectURL(blob);
+  const blob=pdf.output('blob');
+  if(_exportUrl)URL.revokeObjectURL(_exportUrl);
+  _exportUrl=URL.createObjectURL(blob);
   const lnk=document.getElementById('dl-link');
-  lnk.href=url;lnk.download=`dobble-${S.order.total}cards-${S.cardSizeMm}mm.pdf`;
+  lnk.href=_exportUrl;lnk.download=`dobble-${S.order.total}cards-${S.cardSizeMm}mm.pdf`;
   document.getElementById('dl-area').classList.add('on');
   setp(100,'✅ מוכן!');
 }
@@ -1142,8 +1147,10 @@ async function expZIP(setp){
     if(i%8===7)await tick();
   }
   setp(90,'אורז קבצים…');
-  const blob=await zip.generateAsync({type:'blob'}),url=URL.createObjectURL(blob);
-  const lnk=document.getElementById('dl-link');lnk.href=url;lnk.download=`dobble-${S.order.total}cards.zip`;
+  const blob=await zip.generateAsync({type:'blob'});
+  if(_exportUrl)URL.revokeObjectURL(_exportUrl);
+  _exportUrl=URL.createObjectURL(blob);
+  const lnk=document.getElementById('dl-link');lnk.href=_exportUrl;lnk.download=`dobble-${S.order.total}cards.zip`;
   document.getElementById('dl-area').classList.add('on');
   setp(100,'✅ מוכן!');
 }
@@ -1190,9 +1197,10 @@ async function expDXF(setp){
   setp(50,'מייצר קובץ DXF…');await tick();
   const dxf=generateDXF();
   const blob=new Blob([dxf],{type:'application/dxf'});
-  const url=URL.createObjectURL(blob);
+  if(_exportUrl)URL.revokeObjectURL(_exportUrl);
+  _exportUrl=URL.createObjectURL(blob);
   const lnk=document.getElementById('dl-link');
-  lnk.href=url;lnk.download=`dobble-${S.order.total}cards-cutlines.dxf`;
+  lnk.href=_exportUrl;lnk.download=`dobble-${S.order.total}cards-cutlines.dxf`;
   document.getElementById('dl-area').classList.add('on');
   setp(100,'✅ מוכן!');
 }
@@ -1224,8 +1232,8 @@ function setupCropCanvas(){
   const scaleW=maxW/imgNatW(CM.srcImg);
   const scaleH=maxH/imgNatH(CM.srcImg);
   const scale=Math.min(scaleW,scaleH);
-  CM.dispW=Math.round(imgNatW(CM.srcImg)*scale);
-  CM.dispH=Math.round(imgNatH(CM.srcImg)*scale);
+  CM.dispW=Math.max(1,Math.round(imgNatW(CM.srcImg)*scale));
+  CM.dispH=Math.max(1,Math.round(imgNatH(CM.srcImg)*scale));
   cv.width=CM.dispW;cv.height=CM.dispH;
   cv.style.maxWidth='100%';
   cv.style.cursor='crosshair';
@@ -1396,6 +1404,7 @@ function removeBackground(cv,tolerance){
   let br=0,bg=0,bb=0,cnt=0;
   corners.forEach(([x,y])=>{const i=(y*W+x)*4;if(d[i+3]>128){br+=d[i];bg+=d[i+1];bb+=d[i+2];cnt++;}});
   if(cnt){br=Math.round(br/cnt);bg=Math.round(bg/cnt);bb=Math.round(bb/cnt);}
+  else{br=255;bg=255;bb=255;}  // all corners transparent → assume white background
   function dist(i){const dr=d[i]-br,dg=d[i+1]-bg,db=d[i+2]-bb;return Math.sqrt(dr*dr+dg*dg+db*db);}
   const visited=new Uint8Array(W*H);
   const queue=[];
