@@ -1003,12 +1003,17 @@ function updatePaperPrev(){
     cx.fill();cx.stroke();
   }
   if(S.isSilhouette){
-    // Match PDF: 3 solid 6mm squares at 7mm from edge
-    const off2=7*sc,ms2=6*sc;
+    // Silhouette Type 1: TL=filled square, TR=L-lines, BL=L-lines, BR=empty
+    const off2=10*sc,ms2=6*sc,arm2=20*sc;
     cx.fillStyle='#000';
-    cx.fillRect(off2,off2,ms2,ms2);                  // Top-Left
-    cx.fillRect(120-off2-ms2,off2,ms2,ms2);           // Top-Right
-    cx.fillRect(off2,170-off2-ms2,ms2,ms2);           // Bottom-Left
+    cx.fillRect(off2,off2,ms2,ms2);
+    cx.strokeStyle='#000';cx.lineWidth=0.7;cx.setLineDash([]);
+    // Top-Right L
+    cx.beginPath();cx.moveTo(120-off2,off2);cx.lineTo(120-off2-arm2,off2);cx.stroke();
+    cx.beginPath();cx.moveTo(120-off2,off2);cx.lineTo(120-off2,off2+arm2);cx.stroke();
+    // Bottom-Left L
+    cx.beginPath();cx.moveTo(off2,170-off2);cx.lineTo(off2+arm2,170-off2);cx.stroke();
+    cx.beginPath();cx.moveTo(off2,170-off2);cx.lineTo(off2,170-off2-arm2);cx.stroke();
   }
   if(S.crop){
     cx.strokeStyle='rgba(0,0,0,.25)';cx.lineWidth=.5;cx.setLineDash([2,2]);
@@ -1082,12 +1087,21 @@ async function expPDF(setp){
 
   const addRegMarks=()=>{
     if(!S.isSilhouette)return;
-    // Silhouette Cameo print+cut: 3 solid black squares the optical sensor can detect
-    const ms=6,off=7; // 6mm square, 7mm from page edge
+    // Silhouette Cameo Type 1 registration marks (official spec):
+    // Top-Left  : filled black square
+    // Top-Right : L-shape lines (no fill)
+    // Bottom-Left: L-shape lines (no fill)
+    // Bottom-Right: empty
+    const off=10,ms=6,arm=20,lw=0.5;
     pdf.setFillColor(0,0,0);
-    pdf.rect(off,off,ms,ms,'F');                          // Top-Left
-    pdf.rect(A4_W-off-ms,off,ms,ms,'F');                  // Top-Right
-    pdf.rect(off,A4_H-off-ms,ms,ms,'F');                  // Bottom-Left
+    pdf.rect(off,off,ms,ms,'F');
+    pdf.setDrawColor(0);pdf.setLineWidth(lw);
+    // Top-Right L
+    pdf.line(A4_W-off,off,A4_W-off-arm,off);
+    pdf.line(A4_W-off,off,A4_W-off,off+arm);
+    // Bottom-Left L
+    pdf.line(off,A4_H-off,off+arm,A4_H-off);
+    pdf.line(off,A4_H-off,off,A4_H-off-arm);
   };
 
   for(let i=0;i<S.deck.length;i++){
@@ -1152,14 +1166,21 @@ function generateDXF(){
     }
   }
   if(S.isSilhouette){
-    // 6mm squares matching PDF registration marks positions (DXF Y is flipped)
-    const ms=6,off=7;
-    const regPts=[[off,H-off-ms],[A4_W-off-ms,H-off-ms],[off,off]]; // TL,TR,BL in DXF coords
-    for(const[rx,ry]of regPts){
-      dxf+=`0\nLWPOLYLINE\n8\nREGMARK\n90\n4\n70\n1\n`;
-      dxf+=`10\n${rx}\n20\n${ry}\n10\n${rx+ms}\n20\n${ry}\n`;
-      dxf+=`10\n${rx+ms}\n20\n${ry+ms}\n10\n${rx}\n20\n${ry+ms}\n`;
-    }
+    // Silhouette Type 1 in DXF (Y axis flipped: DXF Y = A4_H - PDF_Y)
+    const off=10,ms=6,arm=20;
+    // TL: filled square → LWPOLYLINE on REGMARK layer
+    const tlx=off,tly=H-off-ms;
+    dxf+=`0\nLWPOLYLINE\n8\nREGMARK\n90\n4\n70\n1\n`;
+    dxf+=`10\n${tlx}\n20\n${tly}\n10\n${tlx+ms}\n20\n${tly}\n`;
+    dxf+=`10\n${tlx+ms}\n20\n${tly+ms}\n10\n${tlx}\n20\n${tly+ms}\n`;
+    // TR: L-lines
+    const trx=A4_W-off,try_=H-off;
+    dxf+=`0\nLINE\n8\nREGMARK\n10\n${trx}\n20\n${try_}\n11\n${trx-arm}\n21\n${try_}\n`;
+    dxf+=`0\nLINE\n8\nREGMARK\n10\n${trx}\n20\n${try_}\n11\n${trx}\n21\n${try_-arm}\n`;
+    // BL: L-lines
+    const blx=off,bly=off;
+    dxf+=`0\nLINE\n8\nREGMARK\n10\n${blx}\n20\n${bly}\n11\n${blx+arm}\n21\n${bly}\n`;
+    dxf+=`0\nLINE\n8\nREGMARK\n10\n${blx}\n20\n${bly}\n11\n${blx}\n21\n${bly+arm}\n`;
   }
   dxf+='0\nENDSEC\n0\nEOF\n';
   return dxf;
