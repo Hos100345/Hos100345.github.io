@@ -894,7 +894,8 @@ function openVerify(c1,c2){
     mct.strokeStyle='#F59E0B';mct.lineWidth=3;mct.stroke();
     mct.drawImage(S.imgEls[sym],8,8,64,64);
   }
-  document.getElementById('mc-txt').textContent=sym>=0?`#${sym+1} · ${S.assets[sym]?.name||''}`:'—';
+  const symAsset=sym>=0?S.assets.find(a=>a.imgEl===S.imgEls[sym]):null;
+  document.getElementById('mc-txt').textContent=sym>=0?`#${sym+1} · ${symAsset?.name||''}`:'—';
   document.getElementById('vmodal').hidden=false;
 }
 
@@ -913,10 +914,10 @@ document.getElementById('btn-goexp').addEventListener('click',()=>{updatePaperPr
 
 function resetGenerated(){
   Object.assign(S,{order:null,deck:[],layouts:[],imgEls:[],canvases:[],sel:[]});
+  document.getElementById('vmodal').hidden=true;
   document.getElementById('cgrid').innerHTML='';
   document.getElementById('prev-wrap').style.display='none';
   document.getElementById('gen-ov').style.display='none';
-  // Re-render gallery so user sees their uploads
   renderGallery();updateCounter();
 }
 function resetState(){
@@ -1002,16 +1003,12 @@ function updatePaperPrev(){
     cx.fill();cx.stroke();
   }
   if(S.isSilhouette){
-    const off2=10*sc,ms2=6*sc,arm2=20*sc,lw=0.5;
-    // TL: filled square
-    cx.fillStyle='#000';cx.fillRect(off2,off2,ms2,ms2);
-    // TR: L-shape
-    cx.strokeStyle='#000';cx.lineWidth=lw;cx.setLineDash([]);
-    cx.beginPath();cx.moveTo(120-off2,off2);cx.lineTo(120-off2-arm2,off2);cx.stroke();
-    cx.beginPath();cx.moveTo(120-off2,off2);cx.lineTo(120-off2,off2+arm2);cx.stroke();
-    // BL: L-shape
-    cx.beginPath();cx.moveTo(off2,170-off2);cx.lineTo(off2+arm2,170-off2);cx.stroke();
-    cx.beginPath();cx.moveTo(off2,170-off2);cx.lineTo(off2,170-off2-arm2);cx.stroke();
+    // Match PDF: 3 solid 6mm squares at 7mm from edge
+    const off2=7*sc,ms2=6*sc;
+    cx.fillStyle='#000';
+    cx.fillRect(off2,off2,ms2,ms2);                  // Top-Left
+    cx.fillRect(120-off2-ms2,off2,ms2,ms2);           // Top-Right
+    cx.fillRect(off2,170-off2-ms2,ms2,ms2);           // Bottom-Left
   }
   if(S.crop){
     cx.strokeStyle='rgba(0,0,0,.25)';cx.lineWidth=.5;cx.setLineDash([2,2]);
