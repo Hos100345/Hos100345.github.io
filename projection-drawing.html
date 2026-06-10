@@ -257,13 +257,13 @@ function loadTFHandpose(){
   function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
   const C1='https://cdn.jsdelivr.net/npm/',C2='https://unpkg.com/';
   const TF='@tensorflow/tfjs@4.17.0/dist/tf.min.js';
-  const HPD='@tensorflow-models/hand-pose-detection@2.0.1/dist/hand-pose-detection.min.js';
+  const HPD='@tensorflow-models/hand-pose-detection@2.0.1/dist/hand-pose-detection.js';
   loadScript(C1+TF)
     .catch(()=>{msgEl.textContent='CDN חלופי...';return loadScript(C2+TF);})
     .then(()=>{msgEl.textContent='טוען זיהוי יד (2/3)...';return loadScript(C1+HPD).catch(()=>loadScript(C2+HPD));})
     .then(async()=>{
       msgEl.textContent='מאתחל WebGL (3/3)...';
-      await tf.setBackend('webgl');await tf.ready();
+      const webglOk=await tf.setBackend('webgl');if(!webglOk)await tf.setBackend('cpu');await tf.ready();
       dbSet('dbMp','WebGL ✓','ok');await initDetector();
     })
     .catch(e=>{console.error('TF load:',e);msgEl.textContent='⚠️ שגיאה בטעינה – בדוק אינטרנט';dbSet('dbMp','שגיאה','err');});
