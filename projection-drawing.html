@@ -110,7 +110,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
   <canvas id="debugCanvas"></canvas>
   <div id="fingerDot"></div>
 
-  <!-- debug panel -->
   <div id="debugPanel">
     📷 מצלמה: <span id="dbCam" class="warn">ממתין</span><br>
     🤖 MediaPipe: <span id="dbMp" class="warn">ממתין</span><br>
@@ -141,10 +140,10 @@ const CALIB_LABELS=['שמאל-עליון','ימין-עליון','ימין-תחת
 const GUIDE=[{tx:'10%',ty:'10%'},{tx:'90%',ty:'10%'},{tx:'90%',ty:'90%'},{tx:'10%',ty:'90%'}];
 
 let appMode='static', calibPoints=[], homography=null;
-let drawing=false, lastPt=null;
+let drawing=false, lastPt=null, smoothPt=null;
 let curColor=COLORS[0], brushSz=8, alphaVal=0.9;
 let drawCtx, debugCtx, fingerDotEl, videoEl;
-let hands=null, rafId=null;
+let hands=null, rafId=null, mpBase=null;
 let debugVisible=true;
 
 // ── utils ──
@@ -159,11 +158,8 @@ function toast(msg,ms=2200){
 }
 function dbSet(id,text,cls){
   const el=document.getElementById(id);if(!el)return;
-  el.textContent=text;
-  el.className=cls||'';
+  el.textContent=text;el.className=cls||'';
 }
-
-// reliable mobile tap
 function onTap(el,fn){
   let touched=false;
   el.addEventListener('touchend',e=>{e.preventDefault();touched=true;fn();},{passive:false});
@@ -186,7 +182,7 @@ COLORS.forEach(c=>{
 document.getElementById('brushSize').addEventListener('input',e=>brushSz=+e.target.value);
 document.getElementById('opacity').addEventListener('input',e=>alphaVal=e.target.value/100);
 
-// ── mode screen ──
+// ── buttons ──
 onTap(document.getElementById('btnStatic'),()=>{appMode='static';startCalibration();});
 onTap(document.getElementById('btnDynamic2'),()=>{appMode='dynamic';startCalibration();});
 onTap(document.getElementById('btnMode'),()=>{stopTracking();showScreen('screenMode');});
@@ -216,11 +212,9 @@ function startCalibration(){
   updateCalibUI();
   const vid=document.getElementById('calibVideo');
   if(vid._stream)vid._stream.getTracks().forEach(t=>t.stop());
-  const tryGet=(constraints)=>navigator.mediaDevices.getUserMedia({video:constraints})
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}}})
+    .catch(()=>navigator.mediaDevices.getUserMedia({video:true}))
     .then(s=>{vid.srcObject=s;vid._stream=s;})
-    .catch(err=>err);
-  tryGet({facingMode:'environment',width:{ideal:1280},height:{ideal:720}})
-    .then(r=>{if(r instanceof Error)return tryGet({width:{ideal:1280},height:{ideal:720}});})
     .catch(()=>toast('לא ניתן לגשת למצלמה'));
 
   const zone=document.getElementById('calibTapZone');
@@ -285,8 +279,10 @@ onTap(document.getElementById('calibBtn'),()=>{
 });
 
 // ── homography ──
+// FIX: direction was inverted. We need: finger position (camera/screen space,
+// inside the tapped quad) → full canvas [0,1]. So src = tapped corners, dst = unit square.
 function computeHomography(){
-  homography=getDLTHomography([{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:0,y:1}],calibPoints);
+  homography=getDLTHomography(calibPoints,[{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:0,y:1}]);
 }
 function getDLTHomography(src,dst){
   const A=[];
@@ -314,12 +310,26 @@ function applyH(h,px,py){
 }
 
 // ── draw screen ──
+function resizeCanvases(){
+  const dc=document.getElementById('drawCanvas'),de=document.getElementById('debugCanvas');
+  const W=window.innerWidth,H=window.innerHeight;
+  // FIX: mobile address-bar show/hide fires resize and wiped the drawing.
+  // Only resize when dimensions actually changed, and preserve content.
+  if(dc.width===W&&dc.height===H)return;
+  const keep=document.createElement('canvas');
+  keep.width=dc.width||1;keep.height=dc.height||1;
+  keep.getContext('2d').drawImage(dc,0,0);
+  dc.width=de.width=W;dc.height=de.height=H;
+  dc.getContext('2d').drawImage(keep,0,0,W,H);
+}
+window.addEventListener('resize',()=>{if(drawCtx)resizeCanvases();});
+
 function startDrawingScreen(){
   showScreen('screenDraw');
   const dc=document.getElementById('drawCanvas'),de=document.getElementById('debugCanvas');
+  dc.width=de.width=window.innerWidth;
+  dc.height=de.height=window.innerHeight;
   fingerDotEl=document.getElementById('fingerDot');
-  function resize(){dc.width=de.width=window.innerWidth;dc.height=de.height=window.innerHeight;}
-  resize();window.addEventListener('resize',resize);
   drawCtx=dc.getContext('2d');debugCtx=de.getContext('2d');
   videoEl=document.getElementById('camPreview');
   loadMediaPipe();
@@ -332,17 +342,16 @@ function loadMediaPipe(){
   msgEl.textContent='טוען MediaPipe Hands...';
   dbSet('dbMp','טוען...','warn');
 
-  if(window.Hands){msgEl.textContent='מאתחל...';initHands();return;}
+  if(window.Hands&&mpBase){msgEl.textContent='מאתחל...';initHands();return;}
 
   function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
 
-  // Try jsdelivr, then unpkg as fallback
-  const tryLoad=(base)=>loadScript(base+'hands.js');
-  const CDN1='https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/';
-  const CDN2='https://unpkg.com/@mediapipe/hands@0.4/';
+  const CDN1='https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/';
+  const CDN2='https://unpkg.com/@mediapipe/hands@0.4.1646424915/';
 
-  tryLoad(CDN1)
-    .catch(()=>{msgEl.textContent='מנסה CDN חלופי...';return tryLoad(CDN2);})
+  // FIX: remember which CDN worked so locateFile loads model files from the same one
+  loadScript(CDN1+'hands.js').then(()=>{mpBase=CDN1;})
+    .catch(()=>{msgEl.textContent='מנסה CDN חלופי...';return loadScript(CDN2+'hands.js').then(()=>{mpBase=CDN2;});})
     .then(()=>{
       msgEl.textContent='מאתחל זיהוי יד...';
       dbSet('dbMp','נטען ✓','ok');
@@ -351,32 +360,32 @@ function loadMediaPipe(){
     .catch(()=>{
       msgEl.textContent='⚠️ MediaPipe לא נטען – בדוק אינטרנט';
       dbSet('dbMp','שגיאה','err');
-      loadingEl.classList.add('hidden');
     });
 }
 
 function initHands(){
-  const locateBase='https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/';
-  hands=new Hands({locateFile:f=>locateBase+f});
+  hands=new Hands({locateFile:f=>mpBase+f});
   hands.setOptions({maxNumHands:1,modelComplexity:1,minDetectionConfidence:0.6,minTrackingConfidence:0.5});
   hands.onResults(onHandResults);
 
-  // KEY FIX: do NOT use Camera utility – start camera ourselves then use RAF
   const tryGet=c=>navigator.mediaDevices.getUserMedia({video:c});
   dbSet('dbCam','פותח...','warn');
 
   tryGet({facingMode:'environment',width:{ideal:640},height:{ideal:480}})
     .catch(()=>tryGet({facingMode:'user',width:{ideal:640},height:{ideal:480}}))
-    .catch(()=>tryGet({width:{ideal:640},height:{ideal:480}}))
+    .catch(()=>tryGet(true))
     .then(stream=>{
       videoEl.srcObject=stream;videoEl._stream=stream;
       dbSet('dbCam','פעיל ✓','ok');
-      videoEl.addEventListener('loadedmetadata',()=>{
+      const ready=()=>{
         videoEl.play().catch(()=>{});
         document.getElementById('loading').classList.add('hidden');
         dbSet('dbMp','פעיל ✓','ok');
         startRAF();
-      },{once:true});
+      };
+      // FIX: if metadata already loaded the event never fires – check readyState
+      if(videoEl.readyState>=1)ready();
+      else videoEl.addEventListener('loadedmetadata',ready,{once:true});
     })
     .catch(()=>{
       dbSet('dbCam','שגיאה','err');
@@ -384,8 +393,8 @@ function initHands(){
     });
 }
 
-// RAF loop – sends each frame to MediaPipe (no Camera utility conflict)
 function startRAF(){
+  if(rafId)cancelAnimationFrame(rafId);
   let busy=false;
   async function loop(){
     rafId=requestAnimationFrame(loop);
@@ -403,7 +412,7 @@ function onHandResults(results){
   debugCtx.clearRect(0,0,W,H);
 
   if(!results.multiHandLandmarks||!results.multiHandLandmarks.length){
-    drawing=false;lastPt=null;
+    drawing=false;lastPt=null;smoothPt=null;
     fingerDotEl.style.display='none';
     dbSet('dbHand','לא מזוהה','err');
     dbSet('dbGest','—');
@@ -413,22 +422,31 @@ function onHandResults(results){
   const lm=results.multiHandLandmarks[0];
   dbSet('dbHand','מזוהה ✓','ok');
 
-  // Index fingertip (8), un-mirror X
+  const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+  const wrist=lm[0];
+
+  // FIX: better gesture logic.
+  // Draw = pointing gesture (index extended, middle folded) OR pinch.
+  // Open palm / fist = stop. Old check (tip.y < pip.y) was true almost always.
+  const idxExt=dist(lm[8],wrist)>dist(lm[6],wrist)*1.1;
+  const midExt=dist(lm[12],wrist)>dist(lm[10],wrist)*1.1;
+  const pinch=dist(lm[4],lm[8])<0.06;
+  const shouldDraw=pinch||(idxExt&&!midExt);
+
+  dbSet('dbGest',shouldDraw?(pinch?'🤏 צביטה':'☝️ מצביע')+' – מצייר':'✋ עצור',shouldDraw?'ok':'');
+
+  // un-mirror X to screen space (same space as tapped calib points)
   const fx=1-lm[8].x, fy=lm[8].y;
 
-  // Gesture: index finger extended = draw
-  // Tip (8) higher than DIP (7) higher than PIP (6) — lower Y = higher on screen
-  const indexUp = lm[8].y < lm[6].y;
-  // Also support pinch (thumb tip 4 close to index tip 8)
-  const pinchDist=Math.hypot(lm[4].x-lm[8].x,lm[4].y-lm[8].y);
-  const pinching=pinchDist<0.08;
-  const shouldDraw=indexUp||pinching;
+  // map through homography (tapped quad → full canvas)
+  let nx=fx,ny=fy;
+  if(homography){const m=applyH(homography,fx,fy);nx=m.x;ny=m.y;}
+  let cx=nx*W,cy=ny*H;
 
-  dbSet('dbGest',shouldDraw?'✏️ מצייר':'✋ עצור',shouldDraw?'ok':'');
-
-  // Map through homography
-  let cx=fx*W,cy=fy*H;
-  if(homography){const m=applyH(homography,fx,fy);cx=m.x*W;cy=m.y*H;}
+  // FIX: exponential smoothing to remove jitter
+  if(!smoothPt)smoothPt={x:cx,y:cy};
+  else{smoothPt.x+=(cx-smoothPt.x)*0.45;smoothPt.y+=(cy-smoothPt.y)*0.45;}
+  cx=smoothPt.x;cy=smoothPt.y;
 
   fingerDotEl.style.display='block';
   fingerDotEl.style.left=cx+'px';
@@ -469,6 +487,7 @@ function stopTracking(){
   if(rafId){cancelAnimationFrame(rafId);rafId=null;}
   if(videoEl&&videoEl._stream)videoEl._stream.getTracks().forEach(t=>t.stop());
   if(hands){hands.close();hands=null;}
+  smoothPt=null;drawing=false;lastPt=null;
 }
 </script>
 </body>
