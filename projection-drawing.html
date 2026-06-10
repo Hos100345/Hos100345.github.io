@@ -9,8 +9,6 @@
 body{background:#1a1a2e;color:#eee;font-family:'Segoe UI',Arial,sans-serif;overflow:hidden;touch-action:none;user-select:none}
 .screen{display:none;width:100vw;height:100vh}
 .screen.active{display:flex;flex-direction:column}
-
-/* MODE */
 #screenMode{align-items:center;justify-content:center;gap:26px;background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460)}
 #screenMode h1{font-size:2em;color:#e94560;text-shadow:0 0 20px #e9456088}
 #screenMode>p{color:#aaa;font-size:1.05em}
@@ -20,8 +18,6 @@ body{background:#1a1a2e;color:#eee;font-family:'Segoe UI',Arial,sans-serif;overf
 .mode-card .icon{font-size:2.6em;margin-bottom:10px}
 .mode-card h2{font-size:1em;margin-bottom:6px;color:#e94560}
 .mode-card p{font-size:.8em;color:#aaa;line-height:1.4}
-
-/* CALIB */
 #screenCalib{background:#000;position:relative}
 #calibVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.45;transform:scaleX(-1)}
 #calibTapZone{position:absolute;inset:0;z-index:9;cursor:crosshair}
@@ -33,57 +29,47 @@ body{background:#1a1a2e;color:#eee;font-family:'Segoe UI',Arial,sans-serif;overf
 @keyframes pulse{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.28)}}
 #calibInstructions{position:absolute;top:14px;left:50%;transform:translateX(-50%);background:#000d;color:#fff;padding:10px 16px;border-radius:12px;font-size:.93em;text-align:center;z-index:11;max-width:88vw;pointer-events:none}
 #calibBar{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:12;display:flex;gap:12px}
-#calibUndo{padding:12px 20px;background:#333;color:#ccc;border:none;border-radius:50px;font-size:.95em;cursor:pointer;display:none}
-#calibBtn{padding:12px 30px;background:#e94560;color:#fff;border:none;border-radius:50px;font-size:1em;cursor:pointer;display:none}
-
-/* DRAW */
+#calibUndo{padding:14px 22px;background:#333;color:#ccc;border:none;border-radius:50px;font-size:1em;cursor:pointer;display:none}
+#calibBtn{padding:14px 32px;background:#e94560;color:#fff;border:none;border-radius:50px;font-size:1.05em;cursor:pointer;display:none}
 #screenDraw{background:#000;position:relative}
-#camPreview{position:absolute;bottom:130px;left:10px;width:120px;height:90px;object-fit:cover;transform:scaleX(-1);opacity:.7;border-radius:8px;border:2px solid #333;z-index:5;pointer-events:none}
+#camPreview{position:absolute;bottom:185px;left:10px;width:110px;height:82px;object-fit:cover;transform:scaleX(-1);opacity:.7;border-radius:8px;border:2px solid #333;z-index:5;pointer-events:none}
 #drawCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
 #debugCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3;opacity:.7}
-
-/* DEBUG PANEL */
-#debugPanel{position:fixed;top:10px;right:10px;z-index:30;background:#000c;padding:8px 12px;border-radius:10px;font-size:.72em;color:#aaa;line-height:1.8;pointer-events:none}
+#debugPanel{position:fixed;top:10px;right:10px;z-index:30;background:#000c;padding:8px 12px;border-radius:10px;font-size:.72em;color:#aaa;line-height:1.9;pointer-events:none}
 #debugPanel .ok{color:#00ff88}
 #debugPanel .err{color:#ff2d55}
 #debugPanel .warn{color:#ffcc00}
-
-#toolbar{position:fixed;bottom:0;left:0;right:0;z-index:20;background:#000b;backdrop-filter:blur(10px);padding:10px 12px 18px;display:flex;flex-direction:column;gap:9px}
-.tb-row{display:flex;align-items:center;gap:9px;overflow-x:auto}
+#toolbar{position:fixed;bottom:0;left:0;right:0;z-index:20;background:#000d;backdrop-filter:blur(14px);padding:10px 14px;padding-bottom:max(18px,env(safe-area-inset-bottom,18px));display:flex;flex-direction:column;gap:10px;border-top:1px solid #ffffff18}
+.tb-row{display:flex;align-items:center;gap:10px;overflow-x:auto}
 .tb-row::-webkit-scrollbar{display:none}
-.color-swatch{width:34px;height:34px;border-radius:50%;border:3px solid transparent;cursor:pointer;flex-shrink:0;transition:transform .2s}
-.color-swatch.selected{border-color:#fff;transform:scale(1.2)}
-.tb-label{font-size:.7em;color:#999;white-space:nowrap;flex-shrink:0}
-input[type=range]{-webkit-appearance:none;height:6px;border-radius:3px;background:#444;flex:1;min-width:50px}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#e94560;cursor:pointer}
-#sense{min-width:45px;max-width:90px}
+.color-swatch{width:40px;height:40px;border-radius:50%;border:3px solid transparent;cursor:pointer;flex-shrink:0;transition:transform .18s}
+.color-swatch.selected{border-color:#fff;transform:scale(1.22)}
+.tb-label{font-size:.78em;color:#aaa;white-space:nowrap;flex-shrink:0}
+input[type=range]{-webkit-appearance:none;height:8px;border-radius:4px;background:#444;flex:1;min-width:50px;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:#e94560;cursor:pointer;box-shadow:0 0 4px #0008}
+#sense{min-width:44px;max-width:80px}
 #sense::-webkit-slider-thumb{background:#ffcc00}
-.tb-btn{padding:8px 12px;border:none;border-radius:20px;font-size:.8em;cursor:pointer;flex-shrink:0;font-weight:bold}
-#btnClear{background:#e94560;color:#fff}
-#btnSave{background:#00c896;color:#fff}
-#btnMode{background:#333;color:#aaa}
-#btnDebug{background:#0f3460;color:#7bb;font-size:.7em}
-
-#fingerDot{position:fixed;width:24px;height:24px;border-radius:50%;border:3px solid #fff;background:transparent;pointer-events:none;z-index:40;transform:translate(-50%,-50%);transition:background .08s;display:none}
+.tb-btn{min-height:54px;padding:10px 18px;border:none;border-radius:28px;font-size:1em;cursor:pointer;flex-shrink:0;font-weight:bold;display:flex;align-items:center;gap:6px}
+#btnClear{background:#e94560;color:#fff;flex:1}
+#btnSave{background:#00c896;color:#fff;flex:1}
+#btnMode{background:#2a2a4a;color:#ccc;flex:1}
+#btnDebug{background:#0f3460;color:#7bb;min-width:54px;justify-content:center}
+#fingerDot{position:fixed;width:30px;height:30px;border-radius:50%;border:3px solid #fff;background:transparent;pointer-events:none;z-index:40;transform:translate(-50%,-50%);transition:background .08s;display:none}
 #fingerDot.drawing{background:#ff2d5588;border-color:#ff2d55}
-
-#toast{position:fixed;bottom:145px;left:50%;transform:translateX(-50%);background:#000d;color:#fff;padding:9px 18px;border-radius:20px;font-size:.9em;z-index:50;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+#toast{position:fixed;bottom:210px;left:50%;transform:translateX(-50%);background:#000d;color:#fff;padding:9px 20px;border-radius:20px;font-size:.9em;z-index:50;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
 #toast.show{opacity:1}
-
 #loading{position:fixed;inset:0;background:#000e;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;gap:14px}
 #loading.hidden{display:none}
+#loadingMsg{font-size:.95em;color:#aaa;text-align:center;max-width:80vw}
 .spinner{width:46px;height:46px;border:4px solid #333;border-top-color:#e94560;border-radius:50%;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
-
 <div id="loading" class="hidden">
   <div class="spinner"></div>
   <p id="loadingMsg">טוען...</p>
 </div>
-
-<!-- MODE -->
 <div id="screenMode" class="screen active">
   <h1>🎨 ציור באוויר</h1>
   <p>בחר מצב עבודה</p>
@@ -92,8 +78,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
     <div class="mode-card" id="btnDynamic2"><div class="icon">🔄</div><h2>מצב דינמי</h2><p>המצלמה יכולה לזוז. כיול אוטומטי.</p></div>
   </div>
 </div>
-
-<!-- CALIB -->
 <div id="screenCalib" class="screen">
   <video id="calibVideo" autoplay playsinline muted></video>
   <div id="calibTapZone"></div>
@@ -104,21 +88,17 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
     <button id="calibBtn">✅ אישור – התחל ציור</button>
   </div>
 </div>
-
-<!-- DRAW -->
 <div id="screenDraw" class="screen">
   <video id="camPreview" autoplay playsinline muted></video>
   <canvas id="drawCanvas"></canvas>
   <canvas id="debugCanvas"></canvas>
   <div id="fingerDot"></div>
-
   <div id="debugPanel">
     📷 מצלמה: <span id="dbCam" class="warn">ממתין</span><br>
-    🤖 MediaPipe: <span id="dbMp" class="warn">ממתין</span><br>
+    🤖 TF.js: <span id="dbMp" class="warn">ממתין</span><br>
     ✋ יד: <span id="dbHand" class="err">לא מזוהה</span><br>
     🤏 מחווה: <span id="dbGest">—</span>
   </div>
-
   <div id="toolbar">
     <div class="tb-row" id="colorRow"></div>
     <div class="tb-row">
@@ -128,6 +108,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
       <input type="range" id="opacity" min="10" max="100" value="90">
       <span class="tb-label">רגישות</span>
       <input type="range" id="sense" min="1" max="100" value="50">
+    </div>
+    <div class="tb-row">
       <button class="tb-btn" id="btnClear">🗑 מחק</button>
       <button class="tb-btn" id="btnSave">💾 שמור</button>
       <button class="tb-btn" id="btnMode">⚙ מצב</button>
@@ -135,93 +117,53 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
     </div>
   </div>
 </div>
-
 <div id="toast"></div>
-
 <script>
 const COLORS=['#ff2d55','#ff9500','#ffcc00','#4cd964','#5ac8fa','#007aff','#af52de','#ffffff','#000000','#8e8e93'];
 const CALIB_LABELS=['שמאל-עליון','ימין-עליון','ימין-תחתון','שמאל-תחתון'];
 const GUIDE=[{tx:'10%',ty:'10%'},{tx:'90%',ty:'10%'},{tx:'90%',ty:'90%'},{tx:'10%',ty:'90%'}];
+let appMode='static',calibPoints=[],homography=null;
+let drawing=false,lastPt=null,smoothPt=null;
+let curColor=COLORS[0],brushSz=8,alphaVal=0.9,senseVal=0.5;
+let drawCtx,debugCtx,fingerDotEl,videoEl;
+let detector=null,rafId=null,debugVisible=true;
 
-let appMode='static', calibPoints=[], homography=null;
-let drawing=false, lastPt=null, smoothPt=null;
-let curColor=COLORS[0], brushSz=8, alphaVal=0.9, senseVal=0.5;
-let drawCtx, debugCtx, fingerDotEl, videoEl;
-let hands=null, rafId=null, mpBase=null;
-let debugVisible=true;
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function toast(msg,ms=2200){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),ms);}
+function dbSet(id,text,cls){const el=document.getElementById(id);if(!el)return;el.textContent=text;el.className=cls||'';}
+function onTap(el,fn){let touched=false;el.addEventListener('touchend',e=>{e.preventDefault();touched=true;fn();},{passive:false});el.addEventListener('click',()=>{if(touched){touched=false;return;}fn();});}
 
-// ── utils ──
-function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-function toast(msg,ms=2200){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),ms);
-}
-function dbSet(id,text,cls){
-  const el=document.getElementById(id);if(!el)return;
-  el.textContent=text;el.className=cls||'';
-}
-function onTap(el,fn){
-  let touched=false;
-  el.addEventListener('touchend',e=>{e.preventDefault();touched=true;fn();},{passive:false});
-  el.addEventListener('click',()=>{if(touched){touched=false;return;}fn();});
-}
-
-// ── colors ──
 const colorRow=document.getElementById('colorRow');
 COLORS.forEach(c=>{
   const s=document.createElement('div');
   s.className='color-swatch'+(c===curColor?' selected':'');
   s.style.background=c;
-  onTap(s,()=>{
-    curColor=c;
-    colorRow.querySelectorAll('.color-swatch').forEach(el=>el.classList.remove('selected'));
-    s.classList.add('selected');
-  });
+  onTap(s,()=>{curColor=c;colorRow.querySelectorAll('.color-swatch').forEach(el=>el.classList.remove('selected'));s.classList.add('selected');});
   colorRow.appendChild(s);
 });
 document.getElementById('brushSize').addEventListener('input',e=>brushSz=+e.target.value);
 document.getElementById('opacity').addEventListener('input',e=>alphaVal=e.target.value/100);
 document.getElementById('sense').addEventListener('input',e=>senseVal=e.target.value/100);
 
-// ── buttons ──
 onTap(document.getElementById('btnStatic'),()=>{appMode='static';startCalibration();});
 onTap(document.getElementById('btnDynamic2'),()=>{appMode='dynamic';startCalibration();});
 onTap(document.getElementById('btnMode'),()=>{stopTracking();showScreen('screenMode');});
-onTap(document.getElementById('btnDebug'),()=>{
-  debugVisible=!debugVisible;
-  document.getElementById('debugPanel').style.display=debugVisible?'block':'none';
-});
-onTap(document.getElementById('btnClear'),()=>{
-  const c=document.getElementById('drawCanvas');
-  drawCtx.clearRect(0,0,c.width,c.height);toast('הקנבס נוקה!');
-});
+onTap(document.getElementById('btnDebug'),()=>{debugVisible=!debugVisible;document.getElementById('debugPanel').style.display=debugVisible?'block':'none';});
+onTap(document.getElementById('btnClear'),()=>{drawCtx.clearRect(0,0,document.getElementById('drawCanvas').width,document.getElementById('drawCanvas').height);toast('הקנבס נוקה!');});
 onTap(document.getElementById('btnSave'),()=>{
   const c=document.getElementById('drawCanvas');
   const tmp=document.createElement('canvas');tmp.width=c.width;tmp.height=c.height;
   const tx=tmp.getContext('2d');tx.fillStyle='#000';tx.fillRect(0,0,tmp.width,tmp.height);tx.drawImage(c,0,0);
-  tmp.toBlob(blob=>{
-    const url=URL.createObjectURL(blob);const a=document.createElement('a');
-    a.href=url;a.download='drawing-'+Date.now()+'.png';a.click();
-    setTimeout(()=>URL.revokeObjectURL(url),5000);toast('התמונה נשמרה! 🎉');
-  },'image/png');
+  tmp.toBlob(blob=>{const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='drawing-'+Date.now()+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),5000);toast('התמונה נשמרה! 🎉');},'image/png');
 });
 
-// ── calibration ──
 function startCalibration(){
-  showScreen('screenCalib');
-  calibPoints=[];
-  updateCalibUI();
+  showScreen('screenCalib');calibPoints=[];updateCalibUI();
   const vid=document.getElementById('calibVideo');
   if(vid._stream)vid._stream.getTracks().forEach(t=>t.stop());
   navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}}})
     .catch(()=>navigator.mediaDevices.getUserMedia({video:true}))
-    .then(s=>{vid.srcObject=s;vid._stream=s;})
-    .catch(()=>toast('לא ניתן לגשת למצלמה'));
-
+    .then(s=>{vid.srcObject=s;vid._stream=s;}).catch(()=>toast('לא ניתן לגשת למצלמה'));
   const zone=document.getElementById('calibTapZone');
   if(zone._rm){zone._rm();zone._rm=null;}
   zone.style.pointerEvents='auto';
@@ -232,49 +174,31 @@ function startCalibration(){
   zone.addEventListener('click',clickH);
   zone._rm=()=>{zone.removeEventListener('touchend',touchH);zone.removeEventListener('click',clickH);};
 }
-
 function handleZoneTap(e){
   if(calibPoints.length>=4)return;
   const zone=document.getElementById('calibTapZone');
   const rect=zone.getBoundingClientRect();
   const x=(e.clientX??e.pageX)-rect.left,y=(e.clientY??e.pageY)-rect.top;
-  calibPoints.push({x:x/rect.width,y:y/rect.height});
-  updateCalibUI();
+  calibPoints.push({x:x/rect.width,y:y/rect.height});updateCalibUI();
 }
-
 function updateCalibUI(){
-  const container=document.getElementById('calibPoints');
-  container.innerHTML='';
+  const container=document.getElementById('calibPoints');container.innerHTML='';
   GUIDE.forEach((pos,i)=>{
     const d=document.createElement('div');
     d.className='calib-dot '+(i<calibPoints.length?'done':i===calibPoints.length?'active':'pending');
     d.style.left=i<calibPoints.length?(calibPoints[i].x*100)+'%':pos.tx;
-    d.style.top =i<calibPoints.length?(calibPoints[i].y*100)+'%':pos.ty;
-    d.textContent=i+1;
-    container.appendChild(d);
+    d.style.top=i<calibPoints.length?(calibPoints[i].y*100)+'%':pos.ty;
+    d.textContent=i+1;container.appendChild(d);
   });
   const ins=document.getElementById('calibInstructions');
-  if(calibPoints.length<4)
-    ins.innerHTML=`לחץ על <strong>פינה ${calibPoints.length+1} (${CALIB_LABELS[calibPoints.length]})</strong> של מסגרת ההקרנה`;
-  else
-    ins.textContent='✅ כל 4 הפינות סומנו! לחץ אישור.';
+  if(calibPoints.length<4) ins.innerHTML=`לחץ על <strong>פינה ${calibPoints.length+1} (${CALIB_LABELS[calibPoints.length]})</strong> של מסגרת ההקרנה`;
+  else ins.textContent='✅ כל 4 הפינות סומנו! לחץ אישור.';
   document.getElementById('calibUndo').style.display=calibPoints.length>0?'block':'none';
-  const btn=document.getElementById('calibBtn');
-  const zone=document.getElementById('calibTapZone');
-  if(calibPoints.length===4){
-    btn.style.display='block';
-    zone.style.pointerEvents='none';
-    computeHomography();
-  }else{
-    btn.style.display='none';
-    zone.style.pointerEvents='auto';
-  }
+  const btn=document.getElementById('calibBtn'),zone=document.getElementById('calibTapZone');
+  if(calibPoints.length===4){btn.style.display='block';zone.style.pointerEvents='none';computeHomography();}
+  else{btn.style.display='none';zone.style.pointerEvents='auto';}
 }
-
-onTap(document.getElementById('calibUndo'),()=>{
-  if(calibPoints.length===0)return;
-  calibPoints.pop();updateCalibUI();
-});
+onTap(document.getElementById('calibUndo'),()=>{if(calibPoints.length===0)return;calibPoints.pop();updateCalibUI();});
 onTap(document.getElementById('calibBtn'),()=>{
   const vid=document.getElementById('calibVideo');
   if(vid._stream)vid._stream.getTracks().forEach(t=>t.stop());
@@ -283,16 +207,12 @@ onTap(document.getElementById('calibBtn'),()=>{
   startDrawingScreen();
 });
 
-// ── homography: tapped quad → full canvas ──
-function computeHomography(){
-  homography=getDLTHomography(calibPoints,[{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:0,y:1}]);
-}
+function computeHomography(){homography=getDLTHomography(calibPoints,[{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:0,y:1}]);}
 function getDLTHomography(src,dst){
   const A=[];
   for(let i=0;i<4;i++){
     const sx=src[i].x,sy=src[i].y,dx=dst[i].x,dy=dst[i].y;
-    A.push([-sx,-sy,-1,0,0,0,dx*sx,dx*sy,dx]);
-    A.push([0,0,0,-sx,-sy,-1,dy*sx,dy*sy,dy]);
+    A.push([-sx,-sy,-1,0,0,0,dx*sx,dx*sy,dx]);A.push([0,0,0,-sx,-sy,-1,dy*sx,dy*sy,dy]);
   }
   return solveDLT(A);
 }
@@ -307,18 +227,13 @@ function solveDLT(A){
   }
   const h=M.map((row,i)=>b[i]/row[i]);h.push(1);return h;
 }
-function applyH(h,px,py){
-  const w=h[6]*px+h[7]*py+h[8];
-  return{x:(h[0]*px+h[1]*py+h[2])/w,y:(h[3]*px+h[4]*py+h[5])/w};
-}
+function applyH(h,px,py){const w=h[6]*px+h[7]*py+h[8];return{x:(h[0]*px+h[1]*py+h[2])/w,y:(h[3]*px+h[4]*py+h[5])/w};}
 
-// ── draw screen ──
 function resizeCanvases(){
   const dc=document.getElementById('drawCanvas'),de=document.getElementById('debugCanvas');
   const W=window.innerWidth,H=window.innerHeight;
   if(dc.width===W&&dc.height===H)return;
-  const keep=document.createElement('canvas');
-  keep.width=dc.width||1;keep.height=dc.height||1;
+  const keep=document.createElement('canvas');keep.width=dc.width||1;keep.height=dc.height||1;
   keep.getContext('2d').drawImage(dc,0,0);
   dc.width=de.width=W;dc.height=de.height=H;
   dc.getContext('2d').drawImage(keep,0,0,W,H);
@@ -328,164 +243,117 @@ window.addEventListener('resize',()=>{if(drawCtx)resizeCanvases();});
 function startDrawingScreen(){
   showScreen('screenDraw');
   const dc=document.getElementById('drawCanvas'),de=document.getElementById('debugCanvas');
-  dc.width=de.width=window.innerWidth;
-  dc.height=de.height=window.innerHeight;
+  dc.width=de.width=window.innerWidth;dc.height=de.height=window.innerHeight;
   fingerDotEl=document.getElementById('fingerDot');
   drawCtx=dc.getContext('2d');debugCtx=de.getContext('2d');
   videoEl=document.getElementById('camPreview');
-  loadMediaPipe();
+  loadTFHandpose();
 }
 
-// ── MediaPipe ──
-function loadMediaPipe(){
+function loadTFHandpose(){
   const loadingEl=document.getElementById('loading'),msgEl=document.getElementById('loadingMsg');
-  loadingEl.classList.remove('hidden');
-  msgEl.textContent='טוען MediaPipe Hands...';
+  loadingEl.classList.remove('hidden');msgEl.textContent='טוען TF.js (1/3)...';
   dbSet('dbMp','טוען...','warn');
-
-  if(window.Hands&&mpBase){msgEl.textContent='מאתחל...';initHands();return;}
-
   function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
-
-  const CDN1='https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/';
-  const CDN2='https://unpkg.com/@mediapipe/hands@0.4.1646424915/';
-
-  loadScript(CDN1+'hands.js').then(()=>{mpBase=CDN1;})
-    .catch(()=>{msgEl.textContent='מנסה CDN חלופי...';return loadScript(CDN2+'hands.js').then(()=>{mpBase=CDN2;});})
-    .then(()=>{
-      msgEl.textContent='מאתחל זיהוי יד...';
-      dbSet('dbMp','נטען ✓','ok');
-      initHands();
+  const C1='https://cdn.jsdelivr.net/npm/',C2='https://unpkg.com/';
+  const TF='@tensorflow/tfjs@4.17.0/dist/tf.min.js';
+  const HPD='@tensorflow-models/hand-pose-detection@2.0.1/dist/hand-pose-detection.js';
+  loadScript(C1+TF)
+    .catch(()=>{msgEl.textContent='CDN חלופי...';return loadScript(C2+TF);})
+    .then(()=>{msgEl.textContent='טוען זיהוי יד (2/3)...';return loadScript(C1+HPD).catch(()=>loadScript(C2+HPD));})
+    .then(async()=>{
+      msgEl.textContent='מאתחל WebGL (3/3)...';
+      const webglOk=await tf.setBackend('webgl');if(!webglOk)await tf.setBackend('cpu');await tf.ready();
+      dbSet('dbMp','WebGL ✓','ok');await initDetector();
     })
-    .catch(()=>{
-      msgEl.textContent='⚠️ MediaPipe לא נטען – בדוק אינטרנט';
-      dbSet('dbMp','שגיאה','err');
-    });
+    .catch(e=>{console.error('TF load:',e);msgEl.textContent='⚠️ שגיאה בטעינה – בדוק אינטרנט';dbSet('dbMp','שגיאה','err');});
 }
 
-function initHands(){
-  hands=new Hands({locateFile:f=>mpBase+f});
-  hands.setOptions({maxNumHands:1,modelComplexity:1,minDetectionConfidence:0.6,minTrackingConfidence:0.5});
-  hands.onResults(onHandResults);
+async function initDetector(){
+  const msgEl=document.getElementById('loadingMsg');
+  try{
+    msgEl.textContent='טוען מודל יד...';
+    detector=await handPoseDetection.createDetector(handPoseDetection.SupportedModels.MediaPipeHands,{runtime:'tfjs',modelType:'lite',maxHands:1});
+    dbSet('dbMp','מודל ✓','ok');await openCamera();
+  }catch(e){console.error('Detector:',e);dbSet('dbMp','שגיאה','err');document.getElementById('loadingMsg').textContent='⚠️ שגיאת מודל: '+e.message;}
+}
 
-  const tryGet=c=>navigator.mediaDevices.getUserMedia({video:c});
-  dbSet('dbCam','פותח...','warn');
-
-  tryGet({facingMode:'environment',width:{ideal:640},height:{ideal:480}})
-    .catch(()=>tryGet({facingMode:'user',width:{ideal:640},height:{ideal:480}}))
-    .catch(()=>tryGet(true))
-    .then(stream=>{
-      videoEl.srcObject=stream;videoEl._stream=stream;
-      dbSet('dbCam','פעיל ✓','ok');
-      const ready=()=>{
-        videoEl.play().catch(()=>{});
-        document.getElementById('loading').classList.add('hidden');
-        dbSet('dbMp','פעיל ✓','ok');
-        startRAF();
-      };
-      if(videoEl.readyState>=1)ready();
-      else videoEl.addEventListener('loadedmetadata',ready,{once:true});
-    })
-    .catch(()=>{
-      dbSet('dbCam','שגיאה','err');
-      document.getElementById('loadingMsg').textContent='⚠️ לא ניתן לגשת למצלמה';
-    });
+async function openCamera(){
+  const msgEl=document.getElementById('loadingMsg');
+  dbSet('dbCam','פותח...','warn');msgEl.textContent='פותח מצלמה...';
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:640},height:{ideal:480}}})
+      .catch(()=>navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}}))
+      .catch(()=>navigator.mediaDevices.getUserMedia({video:true}));
+    videoEl.srcObject=stream;videoEl._stream=stream;
+    dbSet('dbCam','פעיל ✓','ok');
+    await new Promise(res=>{if(videoEl.readyState>=1){res();return;}videoEl.addEventListener('loadedmetadata',res,{once:true});});
+    await videoEl.play().catch(()=>{});
+    document.getElementById('loading').classList.add('hidden');startRAF();
+  }catch(e){dbSet('dbCam','שגיאה','err');msgEl.textContent='⚠️ אין גישה למצלמה';}
 }
 
 function startRAF(){
-  if(rafId)cancelAnimationFrame(rafId);
-  let busy=false;
+  if(rafId)cancelAnimationFrame(rafId);let busy=false;
   async function loop(){
     rafId=requestAnimationFrame(loop);
-    if(busy||!hands||videoEl.readyState<2)return;
+    if(busy||!detector||videoEl.readyState<2)return;
     busy=true;
-    try{await hands.send({image:videoEl});}catch(e){}
+    try{const results=await detector.estimateHands(videoEl,{flipHorizontal:true});onHandResults(results);}catch(e){}
     busy=false;
   }
   rafId=requestAnimationFrame(loop);
 }
 
-// ── hand results ──
 function onHandResults(results){
   const W=window.innerWidth,H=window.innerHeight;
   debugCtx.clearRect(0,0,W,H);
-
-  if(!results.multiHandLandmarks||!results.multiHandLandmarks.length){
-    drawing=false;lastPt=null;smoothPt=null;
-    fingerDotEl.style.display='none';
-    dbSet('dbHand','לא מזוהה','err');
-    dbSet('dbGest','—');
-    return;
+  if(!results||!results.length){
+    drawing=false;lastPt=null;smoothPt=null;fingerDotEl.style.display='none';
+    dbSet('dbHand','לא מזוהה','err');dbSet('dbGest','—');return;
   }
-
-  const lm=results.multiHandLandmarks[0];
+  const kp=results[0].keypoints;
+  const vW=videoEl.videoWidth||640,vH=videoEl.videoHeight||480;
   dbSet('dbHand','מזוהה ✓','ok');
-
+  const lm=kp.map(k=>({x:k.x/vW,y:k.y/vH}));
   const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
   const wrist=lm[0];
-
-  // Sensitivity slider controls how easy it is to trigger drawing:
-  // high sense → larger pinch threshold + lower extension ratio (easier)
-  // low sense  → stricter thresholds (fewer false positives)
-  const pinchTh=0.03+senseVal*0.07;        // 0.03 – 0.10
-  const extRatio=1.3-senseVal*0.4;          // 1.3 – 0.9
-
+  const pinchTh=0.03+senseVal*0.07,extRatio=1.3-senseVal*0.4;
   const idxExt=dist(lm[8],wrist)>dist(lm[6],wrist)*extRatio;
   const midExt=dist(lm[12],wrist)>dist(lm[10],wrist)*extRatio;
   const pinch=dist(lm[4],lm[8])<pinchTh;
   const shouldDraw=pinch||(idxExt&&!midExt);
-
   dbSet('dbGest',shouldDraw?(pinch?'🤏 צביטה':'☝️ מצביע')+' – מצייר':'✋ עצור',shouldDraw?'ok':'');
-
-  const fx=1-lm[8].x, fy=lm[8].y;
-
+  const fx=lm[8].x,fy=lm[8].y;
   let nx=fx,ny=fy;
   if(homography){const m=applyH(homography,fx,fy);nx=m.x;ny=m.y;}
   let cx=nx*W,cy=ny*H;
-
   if(!smoothPt)smoothPt={x:cx,y:cy};
   else{smoothPt.x+=(cx-smoothPt.x)*0.45;smoothPt.y+=(cy-smoothPt.y)*0.45;}
   cx=smoothPt.x;cy=smoothPt.y;
-
-  fingerDotEl.style.display='block';
-  fingerDotEl.style.left=cx+'px';
-  fingerDotEl.style.top=cy+'px';
-  fingerDotEl.className=shouldDraw?'drawing':'';
-
+  fingerDotEl.style.display='block';fingerDotEl.style.left=cx+'px';fingerDotEl.style.top=cy+'px';fingerDotEl.className=shouldDraw?'drawing':'';
   drawSkeleton(lm,W,H);
-
   if(shouldDraw){
     if(!drawing){drawing=true;lastPt={x:cx,y:cy};}
-    drawCtx.strokeStyle=hexRgba(curColor,alphaVal);
-    drawCtx.lineWidth=brushSz;drawCtx.lineCap='round';drawCtx.lineJoin='round';
+    drawCtx.strokeStyle=hexRgba(curColor,alphaVal);drawCtx.lineWidth=brushSz;drawCtx.lineCap='round';drawCtx.lineJoin='round';
     drawCtx.beginPath();drawCtx.moveTo(lastPt.x,lastPt.y);drawCtx.lineTo(cx,cy);drawCtx.stroke();
     lastPt={x:cx,y:cy};
   }else{drawing=false;lastPt=null;}
 }
 
 function drawSkeleton(lm,W,H){
-  const C=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],
-           [9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
+  const C=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
   debugCtx.strokeStyle='rgba(0,255,136,0.5)';debugCtx.lineWidth=1.5;
-  C.forEach(([a,b])=>{
-    debugCtx.beginPath();
-    debugCtx.moveTo((1-lm[a].x)*W,lm[a].y*H);
-    debugCtx.lineTo((1-lm[b].x)*W,lm[b].y*H);
-    debugCtx.stroke();
-  });
-  debugCtx.fillStyle='#ff2d55';
-  debugCtx.beginPath();debugCtx.arc((1-lm[8].x)*W,lm[8].y*H,7,0,Math.PI*2);debugCtx.fill();
+  C.forEach(([a,b])=>{debugCtx.beginPath();debugCtx.moveTo(lm[a].x*W,lm[a].y*H);debugCtx.lineTo(lm[b].x*W,lm[b].y*H);debugCtx.stroke();});
+  debugCtx.fillStyle='#ff2d55';debugCtx.beginPath();debugCtx.arc(lm[8].x*W,lm[8].y*H,8,0,Math.PI*2);debugCtx.fill();
 }
 
-function hexRgba(hex,a){
-  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
-  return `rgba(${r},${g},${b},${a})`;
-}
+function hexRgba(hex,a){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return `rgba(${r},${g},${b},${a})`;}
 
 function stopTracking(){
   if(rafId){cancelAnimationFrame(rafId);rafId=null;}
   if(videoEl&&videoEl._stream)videoEl._stream.getTracks().forEach(t=>t.stop());
-  if(hands){hands.close();hands=null;}
+  if(detector){try{detector.dispose();}catch(e){}detector=null;}
   smoothPt=null;drawing=false;lastPt=null;
 }
 </script>
