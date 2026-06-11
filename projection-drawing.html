@@ -19,7 +19,7 @@ body{background:#1a1a2e;color:#eee;font-family:'Segoe UI',Arial,sans-serif;overf
 .mode-card h2{font-size:1em;margin-bottom:6px;color:#e94560}
 .mode-card p{font-size:.8em;color:#aaa;line-height:1.4}
 #screenCalib{background:#000;position:relative}
-#calibVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.45;transform:scaleX(-1)}
+#calibVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.45}
 #calibTapZone{position:absolute;inset:0;z-index:9;cursor:crosshair}
 #calibPoints{position:absolute;inset:0;z-index:10;pointer-events:none}
 .calib-dot{position:absolute;width:44px;height:44px;border-radius:50%;border:3px solid #fff;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:15px;color:#fff}
@@ -32,13 +32,17 @@ body{background:#1a1a2e;color:#eee;font-family:'Segoe UI',Arial,sans-serif;overf
 #calibUndo{padding:14px 22px;background:#333;color:#ccc;border:none;border-radius:50px;font-size:1em;cursor:pointer;display:none}
 #calibBtn{padding:14px 32px;background:#e94560;color:#fff;border:none;border-radius:50px;font-size:1.05em;cursor:pointer;display:none}
 #screenDraw{background:#000;position:relative}
-#camPreview{position:absolute;bottom:185px;left:10px;width:110px;height:82px;object-fit:cover;transform:scaleX(-1);opacity:.7;border-radius:8px;border:2px solid #333;z-index:5;pointer-events:none}
+#camPreview{position:absolute;bottom:185px;left:10px;width:110px;height:82px;object-fit:cover;opacity:.7;border-radius:8px;border:2px solid #333;z-index:5;pointer-events:none}
 #drawCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
 #debugCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3;opacity:.7}
-#debugPanel{position:fixed;top:10px;right:10px;z-index:30;background:#000c;padding:8px 12px;border-radius:10px;font-size:.72em;color:#aaa;line-height:1.9;pointer-events:none}
+#debugPanel{position:fixed;top:10px;right:10px;z-index:30;background:#000d;padding:10px 12px;border-radius:12px;font-size:.72em;color:#aaa;line-height:1.9;pointer-events:auto;min-width:160px}
 #debugPanel .ok{color:#00ff88}
 #debugPanel .err{color:#ff2d55}
 #debugPanel .warn{color:#ffcc00}
+.dbtn{background:#1a2a4a;color:#ccc;border:1px solid #334;border-radius:8px;padding:5px 10px;font-size:.78em;cursor:pointer;white-space:nowrap}
+.dbtn:active,.dbtn.on{background:#e94560;color:#fff;border-color:#e94560}
+.dbtn.on{background:#00c896;border-color:#00c896}
+#dbCtrl{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px solid #334}
 #toolbar{position:fixed;bottom:0;left:0;right:0;z-index:20;background:#000d;backdrop-filter:blur(14px);padding:10px 14px;padding-bottom:max(18px,env(safe-area-inset-bottom,18px));display:flex;flex-direction:column;gap:10px;border-top:1px solid #ffffff18}
 .tb-row{display:flex;align-items:center;gap:10px;overflow-x:auto}
 .tb-row::-webkit-scrollbar{display:none}
@@ -61,6 +65,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 #loading{position:fixed;inset:0;background:#000e;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;gap:14px}
 #loading.hidden{display:none}
 #loadingMsg{font-size:.95em;color:#aaa;text-align:center;max-width:80vw}
+#btnRetry{display:none;margin-top:8px;padding:10px 24px;background:#e94560;color:#fff;border:none;border-radius:24px;font-size:1em;cursor:pointer}
 .spinner{width:46px;height:46px;border:4px solid #333;border-top-color:#e94560;border-radius:50%;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 </style>
@@ -69,6 +74,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 <div id="loading" class="hidden">
   <div class="spinner"></div>
   <p id="loadingMsg">טוען...</p>
+  <button id="btnRetry">נסה שוב</button>
 </div>
 <div id="screenMode" class="screen active">
   <h1>🎨 ציור באוויר</h1>
@@ -94,10 +100,15 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
   <canvas id="debugCanvas"></canvas>
   <div id="fingerDot"></div>
   <div id="debugPanel">
-    📷 מצלמה: <span id="dbCam" class="warn">ממתין</span><br>
-    🤖 TF.js: <span id="dbMp" class="warn">ממתין</span><br>
-    ✋ יד: <span id="dbHand" class="err">לא מזוהה</span><br>
-    🤏 מחווה: <span id="dbGest">—</span>
+    📷 <span id="dbCam" class="warn">ממתין</span><br>
+    🤖 <span id="dbMp" class="warn">ממתין</span><br>
+    ✋ <span id="dbHand" class="err">לא מזוהה</span><br>
+    🤏 <span id="dbGest">—</span>
+    <div id="dbCtrl">
+      <button class="dbtn" id="btnFlip">↔ הפוך</button>
+      <button class="dbtn" id="btnSwitchCam">📷 החלף</button>
+      <button class="dbtn" id="btnDetectMode">🖐 יד</button>
+    </div>
   </div>
   <div id="toolbar">
     <div class="tb-row" id="colorRow"></div>
@@ -122,25 +133,23 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 const COLORS=['#ff2d55','#ff9500','#ffcc00','#4cd964','#5ac8fa','#007aff','#af52de','#ffffff','#000000','#8e8e93'];
 const CALIB_LABELS=['שמאל-עליון','ימין-עליון','ימין-תחתון','שמאל-תחתון'];
 const GUIDE=[{tx:'10%',ty:'10%'},{tx:'90%',ty:'10%'},{tx:'90%',ty:'90%'},{tx:'10%',ty:'90%'}];
+
 let appMode='static',calibPoints=[],homography=null;
 let drawing=false,lastPt=null,smoothPt=null;
 let curColor=COLORS[0],brushSz=8,alphaVal=0.9,senseVal=0.65;
 let drawCtx,debugCtx,fingerDotEl,videoEl;
 let detector=null,rafId=null,debugVisible=true;
+let flipH=false,camList=[],camIdx=0,detectMode='hand';
+let colorCanvas=null,colorCtx=null;
 
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
-function toast(msg,ms=2200){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),ms);}
+function toast(msg,ms=2500){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),ms);}
 function dbSet(id,text,cls){const el=document.getElementById(id);if(!el)return;el.textContent=text;el.className=cls||'';}
 function onTap(el,fn){let touched=false;el.addEventListener('touchend',e=>{e.preventDefault();touched=true;fn();},{passive:false});el.addEventListener('click',()=>{if(touched){touched=false;return;}fn();});}
 
+// colors
 const colorRow=document.getElementById('colorRow');
-COLORS.forEach(c=>{
-  const s=document.createElement('div');
-  s.className='color-swatch'+(c===curColor?' selected':'');
-  s.style.background=c;
-  onTap(s,()=>{curColor=c;colorRow.querySelectorAll('.color-swatch').forEach(el=>el.classList.remove('selected'));s.classList.add('selected');});
-  colorRow.appendChild(s);
-});
+COLORS.forEach(c=>{const s=document.createElement('div');s.className='color-swatch'+(c===curColor?' selected':'');s.style.background=c;onTap(s,()=>{curColor=c;colorRow.querySelectorAll('.color-swatch').forEach(el=>el.classList.remove('selected'));s.classList.add('selected');});colorRow.appendChild(s);});
 document.getElementById('brushSize').addEventListener('input',e=>brushSz=+e.target.value);
 document.getElementById('opacity').addEventListener('input',e=>alphaVal=e.target.value/100);
 document.getElementById('sense').addEventListener('input',e=>senseVal=e.target.value/100);
@@ -151,19 +160,58 @@ onTap(document.getElementById('btnMode'),()=>{stopTracking();showScreen('screenM
 onTap(document.getElementById('btnDebug'),()=>{debugVisible=!debugVisible;document.getElementById('debugPanel').style.display=debugVisible?'block':'none';});
 onTap(document.getElementById('btnClear'),()=>{drawCtx.clearRect(0,0,document.getElementById('drawCanvas').width,document.getElementById('drawCanvas').height);toast('הקנבס נוקה!');});
 onTap(document.getElementById('btnSave'),()=>{
-  const c=document.getElementById('drawCanvas');
-  const tmp=document.createElement('canvas');tmp.width=c.width;tmp.height=c.height;
+  const c=document.getElementById('drawCanvas');const tmp=document.createElement('canvas');tmp.width=c.width;tmp.height=c.height;
   const tx=tmp.getContext('2d');tx.fillStyle='#000';tx.fillRect(0,0,tmp.width,tmp.height);tx.drawImage(c,0,0);
   tmp.toBlob(blob=>{const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='drawing-'+Date.now()+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),5000);toast('התמונה נשמרה! 🎉');},'image/png');
 });
 
+// debug panel buttons
+onTap(document.getElementById('btnFlip'),()=>{
+  flipH=!flipH;
+  document.getElementById('btnFlip').classList.toggle('on',flipH);
+  applyFlipCSS();
+  toast(flipH?'ציר X הופך ✓':'ציר X רגיל');
+});
+onTap(document.getElementById('btnSwitchCam'),async()=>{
+  if(!camList.length){try{const devs=await navigator.mediaDevices.enumerateDevices();camList=devs.filter(d=>d.kind==='videoinput');}catch(e){}}
+  if(camList.length<=1){toast('רק מצלמה אחת זמינה');return;}
+  camIdx=(camIdx+1)%camList.length;
+  if(videoEl&&videoEl._stream)videoEl._stream.getTracks().forEach(t=>t.stop());
+  toast('מחליף מצלמה...');
+  await openCamera(camList[camIdx].deviceId);
+});
+onTap(document.getElementById('btnDetectMode'),()=>{
+  detectMode=detectMode==='hand'?'color':'hand';
+  document.getElementById('btnDetectMode').textContent=detectMode==='hand'?'🖐 יד':'🔴 סמן';
+  document.getElementById('btnDetectMode').classList.toggle('on',detectMode==='color');
+  toast(detectMode==='hand'?'מצב: זיהוי יד':'מצב: סמן אדום');
+});
+onTap(document.getElementById('btnRetry'),()=>{document.getElementById('btnRetry').style.display='none';loadTFHandpose();});
+
+function applyFlipCSS(){
+  const t=flipH?'scaleX(-1)':'';
+  if(videoEl)videoEl.style.transform=t;
+}
+
+// calibration
 function startCalibration(){
   showScreen('screenCalib');calibPoints=[];updateCalibUI();
   const vid=document.getElementById('calibVideo');
   if(vid._stream)vid._stream.getTracks().forEach(t=>t.stop());
+  // calibration video: NO CSS mirror – shows raw camera feed
+  // This ensures tap coords match TF.js coords (both in raw frame space)
+  vid.style.transform='';
   navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}}})
     .catch(()=>navigator.mediaDevices.getUserMedia({video:true}))
-    .then(s=>{vid.srcObject=s;vid._stream=s;}).catch(()=>toast('לא ניתן לגשת למצלמה'));
+    .then(s=>{
+      vid.srcObject=s;vid._stream=s;
+      // auto-detect facing mode and set flipH
+      const track=s.getVideoTracks()[0];
+      const settings=track.getSettings&&track.getSettings()||{};
+      flipH=(settings.facingMode==='user');
+      document.getElementById('btnFlip').classList.toggle('on',flipH);
+    })
+    .catch(()=>toast('לא ניתן לגשת למצלמה'));
   const zone=document.getElementById('calibTapZone');
   if(zone._rm){zone._rm();zone._rm=null;}
   zone.style.pointerEvents='auto';
@@ -176,8 +224,7 @@ function startCalibration(){
 }
 function handleZoneTap(e){
   if(calibPoints.length>=4)return;
-  const zone=document.getElementById('calibTapZone');
-  const rect=zone.getBoundingClientRect();
+  const zone=document.getElementById('calibTapZone');const rect=zone.getBoundingClientRect();
   const x=(e.clientX??e.pageX)-rect.left,y=(e.clientY??e.pageY)-rect.top;
   calibPoints.push({x:x/rect.width,y:y/rect.height});updateCalibUI();
 }
@@ -191,7 +238,7 @@ function updateCalibUI(){
     d.textContent=i+1;container.appendChild(d);
   });
   const ins=document.getElementById('calibInstructions');
-  if(calibPoints.length<4) ins.innerHTML=`לחץ על <strong>פינה ${calibPoints.length+1} (${CALIB_LABELS[calibPoints.length]})</strong> של מסגרת ההקרנה`;
+  if(calibPoints.length<4)ins.innerHTML=`לחץ על <strong>פינה ${calibPoints.length+1} (${CALIB_LABELS[calibPoints.length]})</strong> של מסגרת ההקרנה`;
   else ins.textContent='✅ כל 4 הפינות סומנו! לחץ אישור.';
   document.getElementById('calibUndo').style.display=calibPoints.length>0?'block':'none';
   const btn=document.getElementById('calibBtn'),zone=document.getElementById('calibTapZone');
@@ -207,13 +254,11 @@ onTap(document.getElementById('calibBtn'),()=>{
   startDrawingScreen();
 });
 
+// homography
 function computeHomography(){homography=getDLTHomography(calibPoints,[{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:0,y:1}]);}
 function getDLTHomography(src,dst){
   const A=[];
-  for(let i=0;i<4;i++){
-    const sx=src[i].x,sy=src[i].y,dx=dst[i].x,dy=dst[i].y;
-    A.push([-sx,-sy,-1,0,0,0,dx*sx,dx*sy,dx]);A.push([0,0,0,-sx,-sy,-1,dy*sx,dy*sy,dy]);
-  }
+  for(let i=0;i<4;i++){const sx=src[i].x,sy=src[i].y,dx=dst[i].x,dy=dst[i].y;A.push([-sx,-sy,-1,0,0,0,dx*sx,dx*sy,dx]);A.push([0,0,0,-sx,-sy,-1,dy*sx,dy*sy,dy]);}
   return solveDLT(A);
 }
 function solveDLT(A){
@@ -229,6 +274,7 @@ function solveDLT(A){
 }
 function applyH(h,px,py){const w=h[6]*px+h[7]*py+h[8];return{x:(h[0]*px+h[1]*py+h[2])/w,y:(h[3]*px+h[4]*py+h[5])/w};}
 
+// canvas resize
 function resizeCanvases(){
   const dc=document.getElementById('drawCanvas'),de=document.getElementById('debugCanvas');
   const W=window.innerWidth,H=window.innerHeight;
@@ -247,59 +293,109 @@ function startDrawingScreen(){
   fingerDotEl=document.getElementById('fingerDot');
   drawCtx=dc.getContext('2d');debugCtx=de.getContext('2d');
   videoEl=document.getElementById('camPreview');
-  loadTFHandpose();
+  applyFlipCSS();
+  // Open camera first (fast), then load TF.js in background
+  openCamera();
 }
 
-function loadTFHandpose(){
+// Camera open (accepts optional deviceId for camera switching)
+async function openCamera(deviceId){
   const loadingEl=document.getElementById('loading'),msgEl=document.getElementById('loadingMsg');
-  loadingEl.classList.remove('hidden');msgEl.textContent='טוען TF.js (1/3)...';
+  loadingEl.classList.remove('hidden');msgEl.textContent='פותח מצלמה...';
+  document.getElementById('btnRetry').style.display='none';
+  dbSet('dbCam','פותח...','warn');
+  try{
+    let constraints;
+    if(deviceId){
+      constraints={video:{deviceId:{exact:deviceId},width:{ideal:640},height:{ideal:480}}};
+    }else{
+      constraints={video:{facingMode:'environment',width:{ideal:640},height:{ideal:480}}};
+    }
+    const stream=await navigator.mediaDevices.getUserMedia(constraints)
+      .catch(()=>navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}}))
+      .catch(()=>navigator.mediaDevices.getUserMedia({video:true}));
+    videoEl.srcObject=stream;videoEl._stream=stream;
+    // Auto-detect flip based on facing mode
+    const track=stream.getVideoTracks()[0];
+    const settings=track.getSettings&&track.getSettings()||{};
+    if(!deviceId){
+      flipH=(settings.facingMode==='user');
+      document.getElementById('btnFlip').classList.toggle('on',flipH);
+      applyFlipCSS();
+    }
+    // Enumerate cameras after getting permission
+    try{const devs=await navigator.mediaDevices.enumerateDevices();camList=devs.filter(d=>d.kind==='videoinput');}catch(e){}
+    dbSet('dbCam','פעיל ✓','ok');
+    await new Promise(res=>{if(videoEl.readyState>=1){res();return;}videoEl.addEventListener('loadedmetadata',res,{once:true});});
+    await videoEl.play().catch(()=>{});
+    loadingEl.classList.add('hidden');
+    startRAF();
+    // Load TF.js in background (hand mode)
+    loadTFHandpose();
+  }catch(e){
+    dbSet('dbCam','שגיאה','err');
+    msgEl.textContent='⚠️ לא ניתן לגשת למצלמה. בדוק הרשאות ו-HTTPS.';
+    document.getElementById('btnRetry').style.display='block';
+  }
+}
+
+// TF.js HandPose (WebGL – no WASM)
+function loadTFHandpose(){
+  if(window.handPoseDetection&&detector){return;}// already loaded
+  const msgEl=document.getElementById('loadingMsg');
   dbSet('dbMp','טוען...','warn');
   function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
   const C1='https://cdn.jsdelivr.net/npm/',C2='https://unpkg.com/';
   const TF='@tensorflow/tfjs@4.17.0/dist/tf.min.js';
   const HPD='@tensorflow-models/hand-pose-detection@2.0.1/dist/hand-pose-detection.js';
   loadScript(C1+TF)
-    .catch(()=>{msgEl.textContent='CDN חלופי...';return loadScript(C2+TF);})
-    .then(()=>{msgEl.textContent='טוען זיהוי יד (2/3)...';return loadScript(C1+HPD).catch(()=>loadScript(C2+HPD));})
+    .catch(()=>loadScript(C2+TF))
+    .then(()=>loadScript(C1+HPD).catch(()=>loadScript(C2+HPD)))
     .then(async()=>{
-      msgEl.textContent='מאתחל WebGL (3/3)...';
-      const webglOk=await tf.setBackend('webgl');if(!webglOk)await tf.setBackend('cpu');await tf.ready();
-      dbSet('dbMp','WebGL ✓','ok');await initDetector();
+      const ok=await tf.setBackend('webgl');if(!ok)await tf.setBackend('cpu');
+      await tf.ready();
+      dbSet('dbMp','WebGL ✓','ok');
+      detector=await handPoseDetection.createDetector(handPoseDetection.SupportedModels.MediaPipeHands,{runtime:'tfjs',modelType:'lite',maxHands:1});
+      dbSet('dbMp','מודל ✓','ok');
     })
-    .catch(e=>{console.error('TF load:',e);msgEl.textContent='⚠️ שגיאה בטעינה – בדוק אינטרנט';dbSet('dbMp','שגיאה','err');});
+    .catch(e=>{console.error('TF:',e);dbSet('dbMp','שגיאה','err');});
 }
 
-async function initDetector(){
-  const msgEl=document.getElementById('loadingMsg');
-  try{
-    msgEl.textContent='טוען מודל יד...';
-    detector=await handPoseDetection.createDetector(handPoseDetection.SupportedModels.MediaPipeHands,{runtime:'tfjs',modelType:'lite',maxHands:1});
-    dbSet('dbMp','מודל ✓','ok');await openCamera();
-  }catch(e){console.error('Detector:',e);dbSet('dbMp','שגיאה','err');document.getElementById('loadingMsg').textContent='⚠️ שגיאת מודל: '+e.message;}
-}
-
-async function openCamera(){
-  const msgEl=document.getElementById('loadingMsg');
-  dbSet('dbCam','פותח...','warn');msgEl.textContent='פותח מצלמה...';
-  try{
-    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:640},height:{ideal:480}}})
-      .catch(()=>navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}}))
-      .catch(()=>navigator.mediaDevices.getUserMedia({video:true}));
-    videoEl.srcObject=stream;videoEl._stream=stream;
-    dbSet('dbCam','פעיל ✓','ok');
-    await new Promise(res=>{if(videoEl.readyState>=1){res();return;}videoEl.addEventListener('loadedmetadata',res,{once:true});});
-    await videoEl.play().catch(()=>{});
-    document.getElementById('loading').classList.add('hidden');startRAF();
-  }catch(e){dbSet('dbCam','שגיאה','err');msgEl.textContent='⚠️ אין גישה למצלמה';}
+// Color marker tracking (track brightest red blob)
+function trackByColor(video){
+  const vW=video.videoWidth||320,vH=video.videoHeight||240;
+  const sw=Math.floor(vW/3),sh=Math.floor(vH/3);
+  if(!colorCanvas){colorCanvas=document.createElement('canvas');colorCtx=colorCanvas.getContext('2d',{willReadFrequently:true});}
+  colorCanvas.width=sw;colorCanvas.height=sh;
+  colorCtx.drawImage(video,0,0,sw,sh);
+  const d=colorCtx.getImageData(0,0,sw,sh).data;
+  let sx=0,sy=0,n=0;
+  for(let i=0;i<d.length;i+=4){
+    const r=d[i],g=d[i+1],b=d[i+2];
+    if(r>180&&g<90&&b<90){const px=(i/4)%sw,py=Math.floor((i/4)/sw);sx+=px;sy+=py;n++;}
+  }
+  if(n<30)return null;
+  let x=sx/n/sw,y=sy/n/sh;
+  if(flipH)x=1-x;
+  return{x,y};
 }
 
 function startRAF(){
   if(rafId)cancelAnimationFrame(rafId);let busy=false;
   async function loop(){
     rafId=requestAnimationFrame(loop);
-    if(busy||!detector||videoEl.readyState<2)return;
+    if(busy||videoEl.readyState<2)return;
     busy=true;
-    try{const results=await detector.estimateHands(videoEl,{flipHorizontal:true});onHandResults(results);}catch(e){}
+    try{
+      if(detectMode==='color'){
+        onDrawResult(trackByColor(videoEl),true);
+      }else if(detector){
+        const results=await detector.estimateHands(videoEl,{flipHorizontal:flipH});
+        onHandResults(results);
+      }else{
+        dbSet('dbHand','ממתין למודל...','warn');
+      }
+    }catch(e){}
     busy=false;
   }
   rafId=requestAnimationFrame(loop);
@@ -315,6 +411,7 @@ function onHandResults(results){
   const kp=results[0].keypoints;
   const vW=videoEl.videoWidth||640,vH=videoEl.videoHeight||480;
   dbSet('dbHand','מזוהה ✓','ok');
+  // Normalize; TF.js already applied flipH internally via flipHorizontal param
   const lm=kp.map(k=>({x:k.x/vW,y:k.y/vH}));
   const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
   const wrist=lm[0];
@@ -322,18 +419,24 @@ function onHandResults(results){
   const idxExt=dist(lm[8],wrist)>dist(lm[6],wrist)*extRatio;
   const allClosed=dist(lm[8],wrist)<dist(lm[5],wrist)*1.1&&dist(lm[12],wrist)<dist(lm[9],wrist)*1.1;
   const pinch=dist(lm[4],lm[8])<pinchTh;
-  // Draw whenever index is extended OR pinch – stop only on closed fist
   const shouldDraw=(idxExt||pinch)&&!allClosed;
-  dbSet('dbGest',shouldDraw?(pinch?'🤏 צביטה':'☝️ מצביע')+' – מצייר':'✊ עצור (אגרוף)',shouldDraw?'ok':'');
-  const fx=lm[8].x,fy=lm[8].y;
-  let nx=fx,ny=fy;
-  if(homography){const m=applyH(homography,fx,fy);nx=m.x;ny=m.y;}
+  dbSet('dbGest',shouldDraw?(pinch?'🤏 צביטה':'☝️ מצביע')+' – מצייר':'✊ עצור',shouldDraw?'ok':'');
+  drawSkeleton(lm,W,H);
+  onDrawResult({x:lm[8].x,y:lm[8].y},shouldDraw);
+}
+
+function onDrawResult(pt,shouldDraw){
+  const W=window.innerWidth,H=window.innerHeight;
+  if(!pt){drawing=false;lastPt=null;smoothPt=null;fingerDotEl.style.display='none';return;}
+  if(detectMode==='color'){dbSet('dbHand','סמן ✓','ok');dbSet('dbGest','🔴 מצייר','ok');}
+  let nx=pt.x,ny=pt.y;
+  if(homography){const m=applyH(homography,pt.x,pt.y);nx=m.x;ny=m.y;}
   let cx=nx*W,cy=ny*H;
   if(!smoothPt)smoothPt={x:cx,y:cy};
   else{smoothPt.x+=(cx-smoothPt.x)*0.45;smoothPt.y+=(cy-smoothPt.y)*0.45;}
   cx=smoothPt.x;cy=smoothPt.y;
-  fingerDotEl.style.display='block';fingerDotEl.style.left=cx+'px';fingerDotEl.style.top=cy+'px';fingerDotEl.className=shouldDraw?'drawing':'';
-  drawSkeleton(lm,W,H);
+  fingerDotEl.style.display='block';fingerDotEl.style.left=cx+'px';fingerDotEl.style.top=cy+'px';
+  fingerDotEl.className=shouldDraw?'drawing':'';
   if(shouldDraw){
     if(!drawing){drawing=true;lastPt={x:cx,y:cy};}
     drawCtx.strokeStyle=hexRgba(curColor,alphaVal);drawCtx.lineWidth=brushSz;drawCtx.lineCap='round';drawCtx.lineJoin='round';
