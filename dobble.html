@@ -1115,6 +1115,16 @@ async function expPDF(setp){
     const d=cardMm;
     drawCard(tmp,S.layouts[i],S.imgEls,S.shape);
     pdf.addImage(tmp.toDataURL('image/png',1),'PNG',x-d/2,y-d/2,d,d);
+    if(S.isSilhouette){
+      // Vector cut line so Silhouette Studio detects the card shape, not the PNG bounding box
+      pdf.setDrawColor(255,0,0);pdf.setLineWidth(0.25);
+      if(S.shape==='circle'){
+        pdf.circle(x,y,d/2,'S');
+      }else{
+        const sq=d*0.94,cr=sq*0.09;
+        pdf.roundedRect(x-sq/2,y-sq/2,sq,sq,cr,cr,'S');
+      }
+    }
     if(S.crop&&!S.isSilhouette){
       const cg=2,cl=4,lx=x-d/2,ly=y-d/2;
       pdf.setDrawColor(0);pdf.setLineWidth(.25);
