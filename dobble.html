@@ -674,7 +674,7 @@ fi.addEventListener('change',e=>{addFiles(e.target.files);fi.value='';});
 async function addFiles(files){
   const imgs=Array.from(files).filter(f=>f.type.startsWith('image/')||/\.(heic|heif|avif)$/i.test(f.name));
   if(!imgs.length){alert('נא לבחור קבצי תמונה (PNG, JPG, SVG, WebP)');return;}
-  let failed=0;
+  const failedNames=[];
   for(const f of imgs){
     const url=URL.createObjectURL(f);
     try{
@@ -682,19 +682,24 @@ async function addFiles(files){
       const thumb=makeThumb(imgEl);
       S.assets.push({id:++S.idSeq,type:'image',name:f.name,url,thumb,imgEl});
       renderGallery();updateCounter();
-    }catch(e){URL.revokeObjectURL(url);failed++;console.warn('upload failed:',f.name,e?.message||e);}
+    }catch(e){URL.revokeObjectURL(url);failedNames.push(f.name);console.warn('upload failed:',f.name,e?.message||e);}
   }
-  if(failed)alert(`${failed} תמונות לא נטענו. ייתכן שהפורמט לא נתמך.`);
+  if(failedNames.length)alert(`${failedNames.length} תמונות לא נטענו:\n${failedNames.join('\n')}\n\nנסה פורמטים אחרים: PNG, JPG, WebP, SVG.`);
 }
 
 async function loadImgFile(f,url){
-  // Try createImageBitmap directly on the Blob — skips full-res HTMLImageElement decode,
-  // handles HEIC/Live Photos via OS decoder, avoids memory pressure on mobile
   if(typeof createImageBitmap==='function'){
+    // Try with resize options (most efficient)
     try{return await createImageBitmap(f,{resizeWidth:IMG_PX,resizeHeight:IMG_PX,resizeQuality:'high'});}
     catch{}
+    // Some browsers/formats don't support resize options — try without them
+    try{
+      const bmp=await createImageBitmap(f);
+      const c=document.createElement('canvas');c.width=c.height=IMG_PX;
+      c.getContext('2d').drawImage(bmp,0,0,IMG_PX,IMG_PX);bmp.close&&bmp.close();return c;
+    }catch{}
   }
-  // Fallback: via HTMLImageElement + blob URL
+  // Final fallback: via HTMLImageElement + blob URL
   return loadImg(url);
 }
 
