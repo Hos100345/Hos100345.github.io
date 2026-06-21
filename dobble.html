@@ -687,7 +687,29 @@ async function addFiles(files){
   if(failedNames.length)alert(`${failedNames.length} תמונות לא נטענו:\n${failedNames.join('\n')}\n\nנסה פורמטים אחרים: PNG, JPG, WebP, SVG.`);
 }
 
+function isHeicFile(f){return /\.(heic|heif)$/i.test(f.name)||f.type==='image/heic'||f.type==='image/heif';}
+async function ensureHeic2Any(){
+  if(typeof heic2any!=='undefined')return true;
+  try{
+    await new Promise((res,rej)=>{
+      const s=document.createElement('script');
+      s.src='https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js';
+      s.onload=res;s.onerror=rej;document.head.appendChild(s);
+    });
+    return true;
+  }catch{return false;}
+}
+
 async function loadImgFile(f,url){
+  // HEIC/HEIF (iPhone photos): not supported natively on Android/Windows — convert via heic2any
+  if(isHeicFile(f)){
+    const ok=await ensureHeic2Any();
+    if(!ok)throw new Error('נדרש חיבור לאינטרנט לטעינת ממיר HEIC');
+    const result=await heic2any({blob:f,toType:'image/jpeg',quality:0.92});
+    const blob=Array.isArray(result)?result[0]:result;
+    const jUrl=URL.createObjectURL(blob);
+    try{return await loadImg(jUrl);}finally{URL.revokeObjectURL(jUrl);}
+  }
   if(typeof createImageBitmap==='function'){
     // Try with resize options (most efficient)
     try{return await createImageBitmap(f,{resizeWidth:IMG_PX,resizeHeight:IMG_PX,resizeQuality:'high'});}
