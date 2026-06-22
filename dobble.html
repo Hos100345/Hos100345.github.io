@@ -100,6 +100,8 @@
     .btn-out:not(:disabled):hover{background:var(--indigo);color:#fff}
     .btn-ghost{background:transparent;border:2px solid var(--border);color:var(--muted)}
     .btn-ghost:not(:disabled):hover{border-color:var(--indigo);color:var(--indigo)}
+    .btn-sec{background:var(--purple-light);border:2px solid var(--indigo);color:var(--indigo);font-weight:700}
+    .btn-sec:not(:disabled):hover{background:var(--indigo);color:#fff}
     .brow{display:flex;gap:.65rem;flex-wrap:wrap;align-items:center;margin-top:1.35rem}
 
     /* ── PROGRESS ── */
@@ -472,6 +474,7 @@
     </div>
 
     <div class="brow">
+      <button class="btn btn-sec" id="btn-prevprint">👁 תצוגה מקדימה</button>
       <button class="btn btn-pri" id="btn-doexp">⚙️ צור PDF</button>
       <button class="btn btn-out" id="btn-dozip">🗜️ צור ZIP (PNG)</button>
       <button class="btn btn-ok" id="btn-dodxf" style="display:none">✂️ ייצא DXF לחיתוך</button>
@@ -491,6 +494,24 @@
 </section>
 
 </div><!-- /wrap -->
+
+<!-- PRINT PREVIEW MODAL -->
+<div class="modal-bg" id="ppmodal" hidden>
+  <div class="modal-card" style="max-width:480px;width:95vw">
+    <div class="modal-hdr">
+      <div class="modal-title">👁 תצוגה מקדימה לפני הדפסה</div>
+      <button class="modal-x" id="ppmodal-x">✕</button>
+    </div>
+    <div style="padding:.75rem 1rem 1rem;text-align:center">
+      <canvas id="pp-canvas" style="max-width:100%;border:1px solid #e5e7eb;border-radius:4px;box-shadow:0 2px 10px rgba(0,0,0,.12)"></canvas>
+      <div style="display:flex;align-items:center;justify-content:center;gap:.75rem;margin-top:.75rem">
+        <button class="btn btn-ghost" id="pp-prev" style="padding:.35rem .8rem">‹ הקודם</button>
+        <span id="pp-info" style="font-size:.85rem;font-weight:700;color:var(--muted);min-width:8rem;text-align:center"></span>
+        <button class="btn btn-ghost" id="pp-next" style="padding:.35rem .8rem">הבא ›</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- VERIFY MODAL -->
 <div class="modal-bg" id="vmodal" hidden>
@@ -1070,14 +1091,22 @@ function updatePaperPrev(){
   cx.fillStyle='#fff';cx.strokeStyle='#d1d5db';cx.lineWidth=1;
   cx.fillRect(0,0,120,170);cx.strokeRect(.5,.5,119,169);
   const sc=120/210;
-  cx.fillStyle=S.shape==='circle'?'#DBEAFE':'#EDE9FE';
-  cx.strokeStyle='#4338CA';cx.lineWidth=1;
-  for(const{x,y}of positions){
-    const px=x*sc,py=y*sc,pr=cardMm/2*sc;
-    cx.beginPath();
-    if(S.shape==='circle')cx.arc(px,py,pr,0,Math.PI*2);
-    else cx.rect(px-pr,py-pr,pr*2,pr*2);
-    cx.fill();cx.stroke();
+  if(S.canvases.length){
+    for(let i=0;i<positions.length;i++){
+      if(i>=S.canvases.length)break;
+      const{x,y}=positions[i],d=cardMm*sc;
+      cx.drawImage(S.canvases[i],x*sc-d/2,y*sc-d/2,d,d);
+    }
+  }else{
+    cx.fillStyle=S.shape==='circle'?'#DBEAFE':'#EDE9FE';
+    cx.strokeStyle='#4338CA';cx.lineWidth=1;
+    for(const{x,y}of positions){
+      const px=x*sc,py=y*sc,pr=cardMm/2*sc;
+      cx.beginPath();
+      if(S.shape==='circle')cx.arc(px,py,pr,0,Math.PI*2);
+      else cx.rect(px-pr,py-pr,pr*2,pr*2);
+      cx.fill();cx.stroke();
+    }
   }
   if(S.isSilhouette){
     // Silhouette Type 1: TL=filled square, TR=L-lines, BL=L-lines, BR=empty
@@ -1187,6 +1216,77 @@ async function redrawCards(){
   }
 }
 function onDesignChange(){resetExport();redrawCards();updatePaperPrev();}
+
+// ══ PRINT PREVIEW ══
+let _ppPage=0;
+document.getElementById('btn-prevprint').addEventListener('click',()=>{
+  if(!S.canvases.length){alert('יש ליצור קלפים תחילה (לחץ/י על כפתור \'צור משחק\')');return;}
+  _ppPage=0;
+  document.getElementById('ppmodal').hidden=false;
+  renderPP(_ppPage);
+});
+document.getElementById('ppmodal-x').addEventListener('click',()=>{document.getElementById('ppmodal').hidden=true;});
+document.getElementById('pp-prev').addEventListener('click',()=>{if(_ppPage>0){_ppPage--;renderPP(_ppPage);}});
+document.getElementById('pp-next').addEventListener('click',()=>{
+  const{positions}=layoutEngine();
+  const total=Math.ceil(S.canvases.length/Math.max(1,positions.length));
+  if(_ppPage<total-1){_ppPage++;renderPP(_ppPage);}
+});
+
+function renderPP(page){
+  const{positions,cardMm}=layoutEngine();
+  const perPage=Math.max(1,positions.length);
+  const totalPages=Math.ceil(S.canvases.length/perPage);
+  const modal=document.getElementById('ppmodal');
+  const W=Math.min(420,modal.querySelector('.modal-card').clientWidth-32||420);
+  const H=Math.round(W*297/210);
+  const cv=document.getElementById('pp-canvas');
+  cv.width=W;cv.height=H;
+  const ctx=cv.getContext('2d');
+  const sc=W/210;
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+
+  const start=page*perPage;
+  for(let i=0;i<perPage;i++){
+    const ci=start+i;
+    if(ci>=S.canvases.length)break;
+    const{x,y}=positions[i],d=cardMm*sc;
+    ctx.drawImage(S.canvases[ci],Math.round(x*sc-d/2),Math.round(y*sc-d/2),Math.round(d),Math.round(d));
+    if(S.crop&&!S.isSilhouette){
+      const cg=2*sc,cl=4*sc,lx=x*sc-d/2,ly=y*sc-d/2;
+      ctx.strokeStyle='rgba(0,0,0,.45)';ctx.lineWidth=.5;ctx.beginPath();
+      ctx.moveTo(lx-cg-cl,ly);ctx.lineTo(lx-cg,ly);
+      ctx.moveTo(lx,ly-cg-cl);ctx.lineTo(lx,ly-cg);
+      ctx.moveTo(lx+d+cg,ly);ctx.lineTo(lx+d+cg+cl,ly);
+      ctx.moveTo(lx+d,ly-cg-cl);ctx.lineTo(lx+d,ly-cg);
+      ctx.moveTo(lx-cg-cl,ly+d);ctx.lineTo(lx-cg,ly+d);
+      ctx.moveTo(lx,ly+d+cg);ctx.lineTo(lx,ly+d+cg+cl);
+      ctx.moveTo(lx+d+cg,ly+d);ctx.lineTo(lx+d+cg+cl,ly+d);
+      ctx.moveTo(lx+d,ly+d+cg);ctx.lineTo(lx+d,ly+d+cg+cl);
+      ctx.stroke();
+    }
+    if(S.isSilhouette){
+      ctx.strokeStyle='#f00';ctx.lineWidth=.6;
+      const r=cardMm/2*sc;ctx.beginPath();
+      if(S.shape==='circle')ctx.arc(x*sc,y*sc,r,0,Math.PI*2);
+      else{const sq=cardMm*0.94*sc,sqr=sq*0.09;rrect(ctx,x*sc-sq/2,y*sc-sq/2,sq,sq,sqr);}
+      ctx.stroke();
+    }
+  }
+  if(S.isSilhouette){
+    const off=10*sc,ms=6*sc,arm=20*sc;
+    ctx.fillStyle='#000';ctx.fillRect(off,off,ms,ms);
+    ctx.strokeStyle='#000';ctx.lineWidth=.7;ctx.beginPath();
+    ctx.moveTo(W-off,off);ctx.lineTo(W-off-arm,off);
+    ctx.moveTo(W-off,off);ctx.lineTo(W-off,off+arm);
+    ctx.moveTo(off,H-off);ctx.lineTo(off+arm,H-off);
+    ctx.moveTo(off,H-off);ctx.lineTo(off,H-off-arm);
+    ctx.stroke();
+  }
+  document.getElementById('pp-info').textContent=`עמוד ${page+1} מתוך ${totalPages}`;
+  document.getElementById('pp-prev').disabled=page===0;
+  document.getElementById('pp-next').disabled=page>=totalPages-1;
+}
 
 // ══ EXPORT ══
 document.getElementById('btn-doexp').addEventListener('click',()=>doExport('pdf'));
