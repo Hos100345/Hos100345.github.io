@@ -207,6 +207,19 @@
     .dl-area{display:none;margin-top:1.1rem;align-items:center;gap:.65rem;flex-wrap:wrap}
     .dl-area.on{display:flex}
 
+    /* ── DESIGN PANEL ── */
+    .dp-summary{font-size:.875rem;font-weight:700;color:var(--indigo);cursor:pointer;list-style:none;display:flex;align-items:center;gap:.35rem;padding:.1rem 0;user-select:none}
+    .dp-summary::-webkit-details-marker{display:none}
+    .dp-inner{margin-top:.7rem;display:flex;flex-direction:column;gap:.65rem}
+    .dp-sec{background:var(--blue-light);border-radius:var(--rs);padding:.65rem .8rem}
+    .dp-sec-hd{font-size:.7rem;font-weight:700;color:var(--indigo);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.5rem}
+    .swatch-row{display:flex;flex-wrap:wrap;gap:.35rem;margin:.45rem 0}
+    .sw{width:26px;height:26px;border-radius:50%;border:2.5px solid transparent;cursor:pointer;transition:all var(--tr);box-shadow:0 1px 3px rgba(0,0,0,.18);padding:0;outline:none;flex-shrink:0}
+    .sw.on{border-color:var(--indigo);transform:scale(1.22);box-shadow:0 2px 7px rgba(0,0,0,.28)}
+    .sw:hover:not(.on){transform:scale(1.1)}
+    .cp-row{display:flex;align-items:center;gap:.55rem;font-size:.8rem;color:var(--muted);margin:.25rem 0;cursor:pointer}
+    .cp-row input[type=color]{width:30px;height:26px;border:none;padding:1px;border-radius:6px;cursor:pointer;background:none;flex-shrink:0}
+
     /* ── SPINNER ── */
     .spin{display:inline-block;width:15px;height:15px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .6s linear infinite}
     @keyframes sp{to{transform:rotate(360deg)}}
@@ -425,6 +438,29 @@
             <span class="tog-lbl">מצב Silhouette Cameo ✂️</span>
           </div>
         </div>
+        <div class="og">
+          <details id="dp-details" open>
+            <summary class="dp-summary">🎨 עיצוב קלף</summary>
+            <div class="dp-inner">
+              <div class="dp-sec">
+                <div class="dp-sec-hd">מסגרת</div>
+                <div class="sl-lbl"><span>רוחב מסגרת</span><strong id="lbl-fw">3מ"מ</strong></div>
+                <input type="range" id="sl-fw" min="0" max="15" step="0.5" value="3">
+                <div class="sl-lbl"><span>עוצמת פיגמנט</span><strong id="lbl-fop">100%</strong></div>
+                <input type="range" id="sl-fop" min="0" max="100" step="1" value="100">
+                <div class="swatch-row" id="sw-frame"></div>
+                <label class="cp-row"><span>צבע חופשי</span><input type="color" id="pick-frame" value="#4338CA"></label>
+              </div>
+              <div class="dp-sec">
+                <div class="dp-sec-hd">רקע</div>
+                <div class="swatch-row" id="sw-bg"></div>
+                <label class="cp-row"><span>צבע חופשי</span><input type="color" id="pick-bg" value="#FFFEF5"></label>
+                <div class="sl-lbl"><span>עוצמת פיגמנט</span><strong id="lbl-bop">100%</strong></div>
+                <input type="range" id="sl-bop" min="0" max="100" step="1" value="100">
+              </div>
+            </div>
+          </details>
+        </div>
       </div>
       <div>
         <div class="og-t">תצוגה מקדימה (A4)</div>
@@ -606,17 +642,27 @@ function drawCard(canvas,layout,imgs,shape,hitIdx){
   const isC=shape==='circle';
   const sq=r*1.88,sqx=cx-sq/2,sqy=cy-sq/2,sqcr=sq*.09;
 
+  // Background (configurable color + opacity)
   ctx.save();ctx.beginPath();
   if(isC)ctx.arc(cx,cy,r,0,Math.PI*2);else rrect(ctx,sqx,sqy,sq,sq,sqcr);
-  ctx.clip();ctx.fillStyle='#FFFEF5';ctx.fillRect(0,0,sz,sz);ctx.restore();
+  ctx.clip();ctx.globalAlpha=S.bg.op/100;ctx.fillStyle=S.bg.color;
+  ctx.fillRect(0,0,sz,sz);ctx.globalAlpha=1;ctx.restore();
 
-  ctx.beginPath();
-  if(isC)ctx.arc(cx,cy,r,0,Math.PI*2);else rrect(ctx,sqx,sqy,sq,sq,sqcr);
-  ctx.strokeStyle='#4338CA';ctx.lineWidth=sz*.021;ctx.stroke();
-
-  ctx.beginPath();
-  if(isC)ctx.arc(cx,cy,r-sz*.016,0,Math.PI*2);else rrect(ctx,sqx+sz*.013,sqy+sz*.013,sq-sz*.026,sq-sz*.026,sqcr*.8);
-  ctx.strokeStyle='rgba(67,56,202,.09)';ctx.lineWidth=sz*.006;ctx.stroke();
+  // Frame (configurable width, color, opacity)
+  const ppMm=(sz-14)/Math.max(1,S.cardSizeMm),fw=S.frame.w*ppMm;
+  if(fw>0.5&&S.frame.op>0){
+    ctx.save();ctx.beginPath();
+    if(isC)ctx.arc(cx,cy,r,0,Math.PI*2);else rrect(ctx,sqx,sqy,sq,sq,sqcr);
+    ctx.clip();ctx.beginPath();
+    if(isC)ctx.arc(cx,cy,r-fw/2,0,Math.PI*2);
+    else rrect(ctx,sqx+fw/2,sqy+fw/2,sq-fw,sq-fw,sqcr);
+    ctx.strokeStyle=S.frame.color;ctx.globalAlpha=S.frame.op/100;
+    ctx.lineWidth=fw;ctx.stroke();ctx.globalAlpha=1;ctx.restore();
+  }else{
+    ctx.beginPath();
+    if(isC)ctx.arc(cx,cy,r,0,Math.PI*2);else rrect(ctx,sqx,sqy,sq,sq,sqcr);
+    ctx.strokeStyle='rgba(0,0,0,.12)';ctx.lineWidth=1.5;ctx.stroke();
+  }
 
   const pos=symPos(layout.syms.length,cx,cy,r);
   for(let i=0;i<layout.syms.length;i++){
@@ -642,6 +688,8 @@ const S={
   sel:[],
   cardSizeMm:85,spacingMm:5,startPos:'center',
   crop:true,isSilhouette:false,
+  frame:{w:3,color:'#4338CA',op:100},
+  bg:{color:'#FFFEF5',op:100},
   idSeq:0,
 };
 
@@ -1085,6 +1133,60 @@ document.getElementById('chk-sil').addEventListener('change',e=>{
   resetExport();
   updatePaperPrev();
 });
+
+// ══ DESIGN PANEL ══
+const FRAME_COLORS=['#4338CA','#1E1B4B','#0F172A','#B91C1C','#15803D','#92400E','#7C3AED','#0369A1','#831843','#FFFFFF'];
+const BG_COLORS=['#FFFFFF','#FFFEF5','#FFFBEB','#FFF8DC','#FFF3D0','#FBF7EE','#F5F0E8','#EDE0CC','#FFF0F5','#F0F8FF','#F0FFF0','#F5F0FF'];
+
+function buildSwatches(containerId,colors,getColor,setColor,pickerId){
+  const el=document.getElementById(containerId),pick=document.getElementById(pickerId);
+  colors.forEach(c=>{
+    const sw=document.createElement('button');
+    sw.type='button';sw.className='sw'+(c===getColor()?' on':'');
+    sw.style.background=c;
+    if(c==='#FFFFFF')sw.style.boxShadow='0 1px 3px rgba(0,0,0,.25),inset 0 0 0 1px #ddd';
+    sw.addEventListener('click',()=>{
+      setColor(c);pick.value=c;
+      el.querySelectorAll('.sw').forEach(s=>s.classList.remove('on'));
+      sw.classList.add('on');onDesignChange();
+    });
+    el.appendChild(sw);
+  });
+}
+buildSwatches('sw-frame',FRAME_COLORS,()=>S.frame.color,c=>{S.frame.color=c;},'pick-frame');
+buildSwatches('sw-bg',BG_COLORS,()=>S.bg.color,c=>{S.bg.color=c;},'pick-bg');
+
+document.getElementById('sl-fw').addEventListener('input',e=>{
+  S.frame.w=parseFloat(e.target.value);
+  document.getElementById('lbl-fw').textContent=S.frame.w+'מ"מ';onDesignChange();
+});
+document.getElementById('sl-fop').addEventListener('input',e=>{
+  S.frame.op=parseInt(e.target.value);
+  document.getElementById('lbl-fop').textContent=S.frame.op+'%';onDesignChange();
+});
+document.getElementById('sl-bop').addEventListener('input',e=>{
+  S.bg.op=parseInt(e.target.value);
+  document.getElementById('lbl-bop').textContent=S.bg.op+'%';onDesignChange();
+});
+document.getElementById('pick-frame').addEventListener('input',e=>{
+  S.frame.color=e.target.value;
+  document.getElementById('sw-frame').querySelectorAll('.sw').forEach(s=>s.classList.remove('on'));
+  onDesignChange();
+});
+document.getElementById('pick-bg').addEventListener('input',e=>{
+  S.bg.color=e.target.value;
+  document.getElementById('sw-bg').querySelectorAll('.sw').forEach(s=>s.classList.remove('on'));
+  onDesignChange();
+});
+
+async function redrawCards(){
+  if(!S.canvases.length)return;
+  for(let i=0;i<S.canvases.length;i++){
+    drawCard(S.canvases[i],S.layouts[i],S.imgEls,S.shape);
+    if(i%8===7)await tick();
+  }
+}
+function onDesignChange(){resetExport();redrawCards();updatePaperPrev();}
 
 // ══ EXPORT ══
 document.getElementById('btn-doexp').addEventListener('click',()=>doExport('pdf'));
