@@ -1088,7 +1088,7 @@ function layoutEngine(){
 function updatePaperPrev(){
   const{positions,cardMm}=layoutEngine();
   const perPage=positions.length;
-  const pages=S.deck.length?Math.ceil(S.deck.length/perPage):1;
+  const pages=perPage&&S.deck.length?Math.ceil(S.deck.length/perPage):1;
   const cv=document.getElementById('prev-canvas');
   const cx=cv.getContext('2d');
   cx.clearRect(0,0,120,170);
@@ -1234,6 +1234,7 @@ document.getElementById('btn-prevprint').addEventListener('click',()=>{
   renderPP(_ppPage);
 });
 document.getElementById('ppmodal-x').addEventListener('click',()=>{document.getElementById('ppmodal').hidden=true;});
+document.getElementById('ppmodal').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.hidden=true;});
 document.getElementById('pp-prev').addEventListener('click',()=>{if(_ppPage>0){_ppPage--;renderPP(_ppPage);}});
 document.getElementById('pp-next').addEventListener('click',()=>{
   const{positions}=layoutEngine();
@@ -1246,7 +1247,7 @@ function renderPP(page){
   const perPage=Math.max(1,positions.length);
   const totalPages=Math.ceil(S.canvases.length/perPage);
   const modal=document.getElementById('ppmodal');
-  const W=Math.min(420,modal.querySelector('.modal-card').clientWidth-32||420);
+  const W=Math.min(420,Math.max(280,(modal.querySelector('.modal-card').clientWidth||452)-32));
   const H=Math.round(W*297/210);
   const cv=document.getElementById('pp-canvas');
   cv.width=W;cv.height=H;
