@@ -450,6 +450,8 @@
                 <input type="range" id="sl-fw" min="0" max="15" step="0.5" value="3">
                 <div class="sl-lbl"><span>עוצמת פיגמנט</span><strong id="lbl-fop">100%</strong></div>
                 <input type="range" id="sl-fop" min="0" max="100" step="1" value="100">
+                <div class="sl-lbl"><span>מרווח סמלים ← מסגרת</span><strong id="lbl-sympad">2מ"מ</strong></div>
+                <input type="range" id="sl-sympad" min="0" max="20" step="0.5" value="2">
                 <div class="swatch-row" id="sw-frame"></div>
                 <label class="cp-row"><span>צבע חופשי</span><input type="color" id="pick-frame" value="#4338CA"></label>
               </div>
@@ -685,7 +687,8 @@ function drawCard(canvas,layout,imgs,shape,hitIdx){
     ctx.strokeStyle='rgba(0,0,0,.12)';ctx.lineWidth=1.5;ctx.stroke();
   }
 
-  const pos=symPos(layout.syms.length,cx,cy,r);
+  const rSym=Math.max(r*.45,r-fw-S.symPad*ppMm);
+  const pos=symPos(layout.syms.length,cx,cy,rSym);
   for(let i=0;i<layout.syms.length;i++){
     const si=layout.syms[i],pp=pos[i],t=layout.tr[i],img=imgs[si];
     if(!img)continue;
@@ -710,6 +713,7 @@ const S={
   cardSizeMm:85,spacingMm:5,startPos:'center',
   crop:true,isSilhouette:false,
   frame:{w:3,color:'#4338CA',op:100},
+  symPad:2,
   bg:{color:'#FFFEF5',op:100},
   idSeq:0,
 };
@@ -1192,6 +1196,10 @@ document.getElementById('sl-fw').addEventListener('input',e=>{
 document.getElementById('sl-fop').addEventListener('input',e=>{
   S.frame.op=parseInt(e.target.value);
   document.getElementById('lbl-fop').textContent=S.frame.op+'%';onDesignChange();
+});
+document.getElementById('sl-sympad').addEventListener('input',e=>{
+  S.symPad=parseFloat(e.target.value);
+  document.getElementById('lbl-sympad').textContent=S.symPad+'מ"מ';onDesignChange();
 });
 document.getElementById('sl-bop').addEventListener('input',e=>{
   S.bg.op=parseInt(e.target.value);
