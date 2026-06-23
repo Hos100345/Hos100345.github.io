@@ -4,6 +4,33 @@
 
 window.SITE_DATA = {
 
+  // ── פרטי עסק ──────────────────────────────────────
+  businessDetails: {
+    name: "הושעיה אמן בלונים",
+    phone1: "050-591-8734",
+    phone2: "052-358-1790",
+    whatsapp: "050-591-8734",
+    email: "hoshaya@gmail.com",
+    facebook: "https://www.facebook.com/hoshaya1",
+    instagram: "https://www.instagram.com/hoshaya_balonim/",
+    serviceArea: "בקעת הירדן · מצפה יריחו · כפר אדומים · מעלה אדומים",
+    mapsUrl: "https://maps.app.goo.gl/Bd8kUYHAc3KXrB5c6?g_st=ac"
+  },
+
+  // ── טיקר ───────────────────────────────────────────
+  ticker: {
+    enabled: false,
+    items: ["🎈 עיצוב בלונים לכל שמחה", "📞 050-591-8734", "🎊 הפעלות וסדנאות"],
+    speed: "medium"
+  },
+
+  // ── פס תמונות ──────────────────────────────────────
+  worksStrip: {
+    mode: "auto",
+    images: [],
+    speed: "medium"
+  },
+
   // ── סרטון ──────────────────────────────────────────
   // הדבק כאן רק את ה-ID מיוטיוב (הספרות אחרי ?v= או youtu.be/)
   // דוגמה: https://www.youtube.com/watch?v=dQw4w9WgXcQ  →  youtubeId: "dQw4w9WgXcQ"
@@ -119,7 +146,7 @@ window.SITE_DATA = {
     { src: "https://lh3.googleusercontent.com/d/1BxZ8oFiv5mkwU1TBEDUxGfhEPyOi9mA7", cat: "numbers",      alt: "מספרים מבלונים" },
     { src: "https://lh3.googleusercontent.com/d/1Vif0JJUZIZqfRQonitRz6_bV8nWNl1eE", cat: "numbers",      alt: "מספרים מבלונים" },
     { src: "https://lh3.googleusercontent.com/d/1oMjqoajIZ-TG01h-05zBmig7jOQ8srjo", cat: "numbers",      alt: "מספרים מבלונים" },
-    // ── הגרטלים ──
+    // ── גרלנדות ──
     { src: "https://lh3.googleusercontent.com/d/1zhP4FaD-YUYd1CwB-K94i-qiWZEZZHa1", cat: "garlands",     alt: "גרלנד בלונים" },
     { src: "https://lh3.googleusercontent.com/d/1Yxfeki8fsakeN0tOYrdIQofmbYAQgzlA", cat: "garlands",     alt: "גרלנד בלונים" },
     { src: "https://lh3.googleusercontent.com/d/1U43W1ZiQjeFMEdlsylfYremrkHlqGdQF", cat: "garlands",     alt: "גרלנד בלונים" },
@@ -362,7 +389,7 @@ window.SITE_DATA = {
     { src: "https://lh3.googleusercontent.com/d/1pSKMl8DnZCF7717Gdpn2n-26k2VwcuNl", cat: "characters",   alt: "דמות מבלונים" },
     { src: "https://lh3.googleusercontent.com/d/1pQ-PpdTeG4moM7BwONJWGRFd4Li6d6E4", cat: "characters",   alt: "דמות מבלונים" },
     { src: "https://lh3.googleusercontent.com/d/1ooIHpO4HHbQ_Kx5LqgVGgATiOTT-ApmT", cat: "characters",   alt: "דמות מבלונים" },
-    // ── כתבים / כובעים — נוסף מדרייב ──
+    // ── כתבים / כובעים — נוסף ──
     { src: "https://lh3.googleusercontent.com/d/1s-IygxdbnYHGxlGC09TAkYary3kvjzY_", cat: "hats",         alt: "כובע בלונים" },
     // ── עיצוב אירועים ──
     { src: "https://lh3.googleusercontent.com/d/1v4hKj5YWct_CobyA8Nqv-jqLg88gD_O2", cat: "events",       alt: "עיצוב אירוע" },
@@ -383,8 +410,6 @@ window.SITE_DATA = {
   ],
 
   // ── המלצות ─────────────────────────────────────────
-  // photo:      תמונת פרופיל של הממליץ (אופציונלי — מגוגל דרייב)
-  // screenshot: צילום מסך שיחת וואטסאפ (אופציונלי)
   testimonials: [
     { name: "חנה אור",             text: "הושעיה היה אצלנו בברית. הפך את האירוע להרבה יותר משמח ומיוחד. בעל גישה נהדרת לילדים. זורם וכמובן שמוכשר בעבודתו. ממליצה עליו בגדול!", photo: "", screenshot: "" },
     { name: "דוד לוין",             text: "מומלץ ביותר!! מקצוען ותותח", photo: "", screenshot: "" },
