@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /inventory.html
+Disallow: /hoshaya-quotes-v2.html
+
+Sitemap: https://www.hoshaya.co.il/sitemap.xml

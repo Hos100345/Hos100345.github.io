@@ -33,13 +33,13 @@ const header    = document.getElementById('site-header');
 const navToggle = document.getElementById('nav-toggle');
 const navLinks  = document.getElementById('nav-links');
 
-navToggle.addEventListener('click', () => {
+if (navToggle && navLinks) navToggle.addEventListener('click', () => {
   const open = navLinks.classList.toggle('open');
   navToggle.setAttribute('aria-expanded', String(open));
   document.body.style.overflow = open ? 'hidden' : '';
   header.classList.toggle('nav-open', open);
 });
-navLinks.querySelectorAll('.nav-link').forEach(link => {
+if (navLinks) navLinks.querySelectorAll('.nav-link').forEach(link => {
   link.addEventListener('click', () => {
     navLinks.classList.remove('open');
     navToggle.setAttribute('aria-expanded', 'false');
@@ -49,7 +49,7 @@ navLinks.querySelectorAll('.nav-link').forEach(link => {
 });
 
 let lastY = 0;
-window.addEventListener('scroll', () => {
+if (header) window.addEventListener('scroll', () => {
   const y = window.scrollY;
   header.classList.toggle('scrolled', y > 60);
   if (y > 200) {
@@ -168,6 +168,7 @@ function makeGalleryItem(item) {
 }
 
 function loadGalleryPage() {
+  if (!galleryGrid) return;
   const all      = SD.gallery || [];
   const filtered = galCat === 'all' ? all : all.filter(i => i.cat === galCat);
   const start    = galPage * GAL_PAGE_SIZE;
@@ -192,7 +193,8 @@ function loadGalleryPage() {
   }
 }
 
-setGalleryFilter('all');
+// קטגוריית ברירת מחדל לגלריה — נקבעת לפי data-default-cat על #gallery-grid
+if (galleryGrid) setGalleryFilter(galleryGrid.dataset.defaultCat || 'all');
 
 /* GALLERY CATEGORY CARDS */
 const catConfig = {
@@ -221,10 +223,12 @@ const catConfig = {
 
 function openGalleryBrowse(cat) {
   setGalleryFilter(cat);
-  document.getElementById('gallery-sub').textContent = catConfig[cat]?.label || 'גלריה';
+  const sub = document.getElementById('gallery-sub');
+  if (sub) sub.textContent = catConfig[cat]?.label || 'גלריה';
 }
 
 function setGalleryFilter(cat) {
+  if (!galleryGrid) return;
   document.querySelectorAll('.gfilter').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
   galCat  = cat;
   galPage = 0;
@@ -254,13 +258,25 @@ let currentSlide = 0;
 let autoTimer;
 let cardsPerView = getCardsPerView();
 
+/* המלצות לפי הקשר — data-keywords על testimonials-track מסנן המלצות
+   שמכילות אחת ממילות המפתח (למשל "חתונה,בר מצווה" בעמוד אירועים).
+   אם נמצאו פחות מ-2 התאמות מוצגות כל ההמלצות. */
+function contextTestimonials() {
+  const all = SD.testimonials || [];
+  const kw = (track?.dataset.keywords || '').split(',').map(s => s.trim()).filter(Boolean);
+  if (!kw.length) return all;
+  const matched = all.filter(t => kw.some(k => t.text.includes(k) || t.name.includes(k)));
+  return matched.length >= 2 ? matched : all;
+}
+const tList = contextTestimonials();
+
 function getCardsPerView() {
   if (window.innerWidth >= 1000) return 3;
   if (window.innerWidth >= 640)  return 2;
   return 1;
 }
 function totalSlides() {
-  return Math.ceil((SD.testimonials || []).length / cardsPerView);
+  return Math.ceil(tList.length / cardsPerView);
 }
 
 const avatarColors = ['#2563EB','#7C3AED','#0891B2','#059669','#D97706','#DC2626','#DB2777','#4338CA'];
@@ -274,7 +290,7 @@ function initials(name) {
 }
 
 function buildTestimonials() {
-  const list = SD.testimonials || [];
+  const list = tList;
   track.innerHTML = list.map(t => {
     const avatar = t.photo
       ? `<img src="${t.photo}" alt="${t.name}" class="testimonial-avatar" loading="lazy">`
@@ -321,32 +337,34 @@ function startAuto() {
   autoTimer = setInterval(() => goTo(currentSlide + 1), 5000);
 }
 
-buildTestimonials();
-buildDots();
-goTo(0);
-startAuto();
+if (track) {
+  buildTestimonials();
+  buildDots();
+  goTo(0);
+  startAuto();
 
-btnPrev.addEventListener('click', () => { goTo(currentSlide + 1); startAuto(); });
-btnNext.addEventListener('click', () => { goTo(currentSlide - 1); startAuto(); });
-track.addEventListener('mouseenter', () => clearInterval(autoTimer));
-track.addEventListener('mouseleave', startAuto);
+  btnPrev.addEventListener('click', () => { goTo(currentSlide + 1); startAuto(); });
+  btnNext.addEventListener('click', () => { goTo(currentSlide - 1); startAuto(); });
+  track.addEventListener('mouseenter', () => clearInterval(autoTimer));
+  track.addEventListener('mouseleave', startAuto);
 
-window.addEventListener('resize', () => {
-  const newCPV = getCardsPerView();
-  if (newCPV !== cardsPerView) {
-    cardsPerView = newCPV;
-    currentSlide = 0;
-    buildDots();
-    goTo(0);
-  }
-}, { passive: true });
+  window.addEventListener('resize', () => {
+    const newCPV = getCardsPerView();
+    if (newCPV !== cardsPerView) {
+      cardsPerView = newCPV;
+      currentSlide = 0;
+      buildDots();
+      goTo(0);
+    }
+  }, { passive: true });
 
-let touchStartX = 0;
-track.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
-track.addEventListener('touchend', e => {
-  const dx = e.changedTouches[0].clientX - touchStartX;
-  if (Math.abs(dx) > 50) { goTo(dx > 0 ? currentSlide + 1 : currentSlide - 1); startAuto(); }
-}, { passive: true });
+  let touchStartX = 0;
+  track.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+  track.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 50) { goTo(dx > 0 ? currentSlide + 1 : currentSlide - 1); startAuto(); }
+  }, { passive: true });
+}
 
 /* =====================================================
    SERVICE TILES — inject gallery image + link to gallery filter
@@ -379,7 +397,9 @@ track.addEventListener('touchend', e => {
 document.querySelectorAll('.service-tile[data-gallery-cat]').forEach(tile => {
   tile.addEventListener('click', () => {
     const cat = tile.dataset.galleryCat;
-    document.getElementById('gallery').scrollIntoView({ behavior: 'smooth' });
+    const gallerySection = document.getElementById('gallery');
+    if (!gallerySection) return;
+    gallerySection.scrollIntoView({ behavior: 'smooth' });
     setTimeout(() => openGalleryBrowse(cat), 600);
   });
   tile.addEventListener('keydown', e => {
@@ -445,7 +465,9 @@ buildWorksStrip();
    ===================================================== */
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   anchor.addEventListener('click', e => {
-    const target = document.querySelector(anchor.getAttribute('href'));
+    const href = anchor.getAttribute('href');
+    if (href.length < 2) return;
+    const target = document.querySelector(href);
     if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   });
 });
