@@ -242,6 +242,29 @@
       .modal-body{grid-template-columns:1fr}
       .mcw canvas{width:150px;height:150px}
     }
+
+    /* ── ONBOARDING ── */
+    .ob-step{display:flex;align-items:flex-start;gap:.85rem;padding:.75rem;background:rgba(67,56,202,.05);border:1.5px solid rgba(67,56,202,.1);border-radius:10px}
+    .ob-ico{font-size:1.45rem;flex-shrink:0;line-height:1.3}
+    .ob-s{font-size:.81rem;color:var(--muted);margin-top:.15rem;line-height:1.5}
+
+    /* ── ADMIN PANEL ── */
+    .adm-ov{position:fixed;inset:0;background:#0f172a;z-index:9998;overflow-y:auto;display:none;padding:2rem}
+    .adm-ov.on{display:block}
+    .adm-hdr{color:#e2e8f0;font-size:1.15rem;font-weight:900;margin-bottom:1.4rem;display:flex;align-items:center;gap:.7rem;flex-wrap:wrap}
+    .adm-sec{background:#1e293b;border-radius:12px;padding:1.15rem;margin-bottom:1rem}
+    .adm-sec h3{color:#a5b4fc;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.8rem}
+    .adm-tbl{width:100%;border-collapse:collapse;color:#e2e8f0}
+    .adm-tbl th{color:#64748b;font-size:.68rem;font-weight:700;text-align:right;padding:.4rem .6rem;border-bottom:1px solid #334155}
+    .adm-tbl td{padding:.42rem .6rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.82rem}
+    .adm-tbl tr:last-child td{border-bottom:none}
+    .adm-tag{display:inline-block;padding:.12rem .45rem;border-radius:100px;font-size:.67rem;font-weight:700}
+    .adm-tag.ok{background:#064e3b;color:#6ee7b7}
+    .adm-tag.exp{background:#450a0a;color:#fca5a5}
+    .adm-inp{background:#0f172a;border:1.5px solid #334155;color:#e2e8f0;border-radius:7px;padding:.42rem .65rem;font-family:inherit;font-size:.85rem;outline:none;width:100%;transition:border-color .2s}
+    .adm-inp:focus{border-color:#4338ca}
+    .adm-g2{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.6rem}
+    @media(max-width:480px){.adm-g2{grid-template-columns:1fr}.adm-ov{padding:1rem}}
   </style>
 </head>
 <body>
@@ -251,29 +274,124 @@
   <div style="font-size:3rem">🎯</div>
   <div style="font-size:1.6rem;font-weight:900;color:#fff;letter-spacing:.05em">מחולל דובל</div>
   <div style="color:#a5b4fc;font-size:.95rem">הזן/י קוד כניסה</div>
-  <input id="lock-inp" type="password" inputmode="numeric" maxlength="6" placeholder="• • •"
-    style="text-align:center;font-size:2rem;letter-spacing:.6rem;width:160px;padding:.65rem .5rem;border-radius:14px;border:2.5px solid #4338ca;outline:none;background:#fff;font-family:inherit">
+  <input id="lock-inp" type="password" inputmode="text" maxlength="20" placeholder="• • •"
+    style="text-align:center;font-size:2rem;letter-spacing:.6rem;width:200px;padding:.65rem .5rem;border-radius:14px;border:2.5px solid #4338ca;outline:none;background:#fff;font-family:inherit">
   <div id="lock-err" style="color:#fca5a5;font-size:.88rem;min-height:1.2em"></div>
 </div>
 <script>
 (function(){
-  if(sessionStorage.getItem('dobble_unlocked')==='1'){document.getElementById('lock-screen').remove();return;}
+  // Admin pass — change this to your own secret phrase
+  const ADMIN_P='dbl2025adm';
+
+  function getCodes(){try{return JSON.parse(localStorage.getItem('dobble_codes')||'[]');}catch{return[];}}
+
+  function removeLockScreen(cb){
+    const ls=document.getElementById('lock-screen');
+    ls.style.transition='opacity .4s';ls.style.opacity='0';
+    setTimeout(()=>{if(ls.parentNode)ls.remove();cb&&cb();},420);
+  }
+
+  function doUserUnlock(){
+    sessionStorage.setItem('dobble_unlocked','1');
+    removeLockScreen(()=>{
+      // Show onboarding on first visit
+      if(!localStorage.getItem('dobble_onboarded')){
+        const m=document.getElementById('onboard-modal');if(m)m.hidden=false;
+      }
+      // Trigger IDB load (main JS hook)
+      window._afterUnlock&&window._afterUnlock();
+    });
+  }
+
+  function doAdminUnlock(){
+    removeLockScreen(()=>{
+      const p=document.getElementById('admin-panel');
+      if(p){p.classList.add('on');window._initAdminPanel&&window._initAdminPanel();}
+    });
+  }
+
+  function tryCode(v){
+    if(v===ADMIN_P){doAdminUnlock();return true;}
+    const codes=getCodes();
+    const today=new Date().toISOString().slice(0,10);
+    if(codes.find(c=>c.code===v&&(!c.expiry||c.expiry>=today))||v==='123'){doUserUnlock();return true;}
+    return false;
+  }
+
+  // Already unlocked this session
+  if(sessionStorage.getItem('dobble_unlocked')==='1'){
+    document.getElementById('lock-screen').remove();
+    if(!localStorage.getItem('dobble_onboarded')){
+      window.addEventListener('DOMContentLoaded',()=>{
+        const m=document.getElementById('onboard-modal');if(m)m.hidden=false;
+      });
+    }
+    return;
+  }
+
   const inp=document.getElementById('lock-inp');
   const err=document.getElementById('lock-err');
   inp.focus();
+
+  let errTimer,checkTimer;
   inp.addEventListener('input',function(){
-    if(inp.value==='123'){
-      sessionStorage.setItem('dobble_unlocked','1');
-      document.getElementById('lock-screen').style.transition='opacity .4s';
-      document.getElementById('lock-screen').style.opacity='0';
-      setTimeout(()=>document.getElementById('lock-screen').remove(),400);
-    } else if(inp.value.length>=3){
+    clearTimeout(errTimer);clearTimeout(checkTimer);
+    err.textContent='';
+    const v=inp.value;
+    if(!v.length)return;
+    if(tryCode(v))return;
+    // Delay error to allow typing longer admin code
+    checkTimer=setTimeout(()=>{
+      if(inp.value!==v)return;
+      if(v.length>=3){
+        err.textContent='קוד שגוי ❌';
+        errTimer=setTimeout(()=>{inp.value='';err.textContent='';inp.focus();},900);
+      }
+    },600);
+  });
+
+  inp.addEventListener('keydown',function(e){
+    if(e.key!=='Enter')return;
+    clearTimeout(errTimer);clearTimeout(checkTimer);
+    if(!tryCode(inp.value)&&inp.value.length>=1){
       err.textContent='קוד שגוי ❌';
       setTimeout(()=>{inp.value='';err.textContent='';inp.focus();},900);
     }
   });
 })();
 </script>
+
+<!-- ONBOARDING MODAL -->
+<div class="modal-bg" id="onboard-modal" hidden>
+  <div class="modal-card" style="max-width:490px;width:96%">
+    <div style="text-align:center;padding:.3rem 0 1rem">
+      <div style="font-size:2.6rem;margin-bottom:.4rem">🎯</div>
+      <h2 style="font-size:1.2rem;font-weight:900;color:var(--indigo);margin-bottom:.25rem">ברוכים הבאים למחולל דובל!</h2>
+      <p style="color:var(--muted);font-size:.84rem;line-height:1.55">צור/י משחק Spot-It מותאם אישית בשלושה שלבים פשוטים</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:.55rem;margin-bottom:1rem">
+      <div class="ob-step">
+        <div class="ob-ico">🖼️</div>
+        <div><strong style="color:var(--indigo)">שלב 1 — העלאת סמלים</strong><div class="ob-s">גרור/י תמונות (PNG, JPG, SVG, HEIC). ניתן לחתוך סמלים מתמונות גדולות עם כלי ✂️ וגם לבצע הסרת רקע אוטומטית</div></div>
+      </div>
+      <div class="ob-step">
+        <div class="ob-ico">✨</div>
+        <div><strong style="color:var(--purple)">שלב 2 — יצירה ועיצוב</strong><div class="ob-s">המערכת מחשבת קלפים אוטומטית לפי מתמטיקה מדויקת. ניתן לעצב מסגרת, רקע ופריסת סמלים</div></div>
+      </div>
+      <div class="ob-step">
+        <div class="ob-ico">📥</div>
+        <div><strong style="color:var(--green)">שלב 3 — ייצוא</strong><div class="ob-s">PDF מוכן להדפסה, ZIP של PNG בודדים, ותמיכה ב-Silhouette Cameo לחיתוך מדויק</div></div>
+      </div>
+    </div>
+    <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:.75rem 1rem;text-align:center;margin-bottom:.9rem">
+      <div style="font-size:.8rem;color:#166534;font-weight:600;margin-bottom:.35rem">💬 לרכישת קוד גישה — צרו קשר</div>
+      <a id="wa-link" href="#" target="_blank" class="btn btn-ok" style="display:inline-flex;justify-content:center;padding:.5rem 1.4rem">
+        📱 פנה/י אלינו בוואטסאפ
+      </a>
+    </div>
+    <button class="btn btn-cta" id="onboard-start" style="width:100%;justify-content:center">🚀 בואו נתחיל!</button>
+  </div>
+</div>
 
 <!-- HEADER -->
 <header class="hdr">
@@ -573,6 +691,56 @@
   </div>
 </div>
 
+<!-- ADMIN PANEL -->
+<div id="admin-panel" class="adm-ov">
+  <div style="max-width:820px;margin:0 auto">
+    <div class="adm-hdr">
+      🔐 לוח בקרה — מחולל דובל
+      <button onclick="closeAdminPanel()" style="margin-right:auto;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.15);color:#a5b4fc;border-radius:8px;padding:.35rem .85rem;cursor:pointer;font-family:inherit;font-size:.85rem">✕ סגור</button>
+    </div>
+
+    <div class="adm-sec">
+      <h3>⚙️ הגדרות כלליות</h3>
+      <div style="display:flex;gap:.65rem;align-items:center;flex-wrap:wrap">
+        <label style="color:#94a3b8;font-size:.85rem;min-width:130px">מספר וואטסאפ:</label>
+        <input class="adm-inp" id="adm-wa-inp" placeholder="972501234567" style="max-width:210px">
+        <button class="btn btn-pri" onclick="adminSaveWA()" style="font-size:.82rem;padding:.42rem 1rem">💾 שמור</button>
+      </div>
+      <div style="font-size:.7rem;color:#475569;margin-top:.4rem">פורמט: קוד מדינה + מספר ללא + ולא רווחים (לדוג׳: 972501234567)</div>
+    </div>
+
+    <div class="adm-sec">
+      <h3>🔑 קודי גישה</h3>
+      <div class="adm-g2">
+        <div>
+          <div style="font-size:.7rem;color:#64748b;margin-bottom:.28rem">קוד חדש</div>
+          <input class="adm-inp" id="adm-code-inp" placeholder="הקלד/י קוד גישה">
+        </div>
+        <div>
+          <div style="font-size:.7rem;color:#64748b;margin-bottom:.28rem">תאריך תפוגה (ריק = ללא הגבלה)</div>
+          <input class="adm-inp" id="adm-exp-inp" type="date">
+        </div>
+      </div>
+      <div style="margin-bottom:.65rem">
+        <div style="font-size:.7rem;color:#64748b;margin-bottom:.28rem">תיאור / שם לקוח (אופציונלי)</div>
+        <input class="adm-inp" id="adm-label-inp" placeholder="לדוג׳: רחל כהן — יומן 2025">
+      </div>
+      <button class="btn btn-ok" onclick="adminAddCode()" style="font-size:.85rem">➕ הוסף קוד</button>
+      <div id="adm-codes-tbl" style="margin-top:.9rem"></div>
+    </div>
+
+    <div class="adm-sec">
+      <h3>📊 יומן ייצואים (PDF / ZIP)</h3>
+      <div style="display:flex;gap:.6rem;align-items:center;margin-bottom:.7rem;flex-wrap:wrap">
+        <span id="adm-game-count" style="color:#a5b4fc;font-size:.85rem"></span>
+        <button class="btn btn-ghost" onclick="adminExportCSV()" style="font-size:.77rem;padding:.32rem .8rem;color:#a5b4fc;border-color:#334155">📤 ייצא CSV</button>
+        <button class="btn btn-ghost" onclick="adminClearLog()" style="font-size:.77rem;padding:.32rem .8rem;color:#fca5a5;border-color:#334155">🗑️ נקה יומן</button>
+      </div>
+      <div id="adm-games-tbl" style="overflow-x:auto;max-height:350px;overflow-y:auto;border-radius:8px"></div>
+    </div>
+  </div>
+</div>
+
 <script>
 'use strict';
 
@@ -758,6 +926,7 @@ async function addFiles(files){
     }catch(e){URL.revokeObjectURL(url);failedNames.push(f.name);console.warn('upload failed:',f.name,e?.message||e);}
   }
   if(failedNames.length)alert(`${failedNames.length} תמונות לא נטענו:\n${failedNames.join('\n')}\n\nנסה פורמטים אחרים: PNG, JPG, WebP, SVG.`);
+  schedIdbSave();
 }
 
 function isHeicFile(f){return /\.(heic|heif)$/i.test(f.name)||f.type==='image/heic'||f.type==='image/heif';}
@@ -882,7 +1051,7 @@ function removeAsset(id){
     S.assets=S.assets.filter(x=>!(x.type==='crop'&&x.srcAssetId===id));
   }
   S.assets=S.assets.filter(x=>x.id!==id);
-  renderGallery();updateCounter();
+  renderGallery();updateCounter();schedIdbSave();
 }
 
 // ══ SHAPE ══
@@ -1023,6 +1192,7 @@ function resetGenerated(){
 function resetState(){
   S.assets.forEach(a=>{if(a.type==='image')URL.revokeObjectURL(a.url);});
   Object.assign(S,{assets:[],order:null,deck:[],layouts:[],imgEls:[],canvases:[],sel:[],seed:1,idSeq:0});
+  idbClear();
   fi.value='';
   document.getElementById('rec').classList.remove('on');
   document.getElementById('btn-create').disabled=true;
@@ -1378,10 +1548,12 @@ async function expPDF(setp){
   const blob=pdf.output('blob');
   if(_exportUrl)URL.revokeObjectURL(_exportUrl);
   _exportUrl=URL.createObjectURL(blob);
+  const fn=`dobble-${S.order.total}cards-${S.cardSizeMm}mm.pdf`;
   const lnk=document.getElementById('dl-link');
-  lnk.href=_exportUrl;lnk.download=`dobble-${S.order.total}cards-${S.cardSizeMm}mm.pdf`;
+  lnk.href=_exportUrl;lnk.download=fn;
   document.getElementById('dl-area').classList.add('on');
   setp(100,'✅ מוכן!');
+  logGame({total:S.order.total,cards:S.deck.length,sizeMm:S.cardSizeMm,filename:fn,type:'pdf'});
 }
 
 async function expZIP(setp){
@@ -1398,9 +1570,11 @@ async function expZIP(setp){
   const blob=await zip.generateAsync({type:'blob'});
   if(_exportUrl)URL.revokeObjectURL(_exportUrl);
   _exportUrl=URL.createObjectURL(blob);
-  const lnk=document.getElementById('dl-link');lnk.href=_exportUrl;lnk.download=`dobble-${S.order.total}cards.zip`;
+  const fnz=`dobble-${S.order.total}cards.zip`;
+  const lnk=document.getElementById('dl-link');lnk.href=_exportUrl;lnk.download=fnz;
   document.getElementById('dl-area').classList.add('on');
   setp(100,'✅ מוכן!');
+  logGame({total:S.order.total,cards:S.deck.length,sizeMm:S.cardSizeMm,filename:fnz,type:'zip'});
 }
 
 function generateDXF(){
@@ -1786,8 +1960,188 @@ document.getElementById('btn-crop-add').addEventListener('click',()=>{
   });
   if(asset) asset.isCropSource=true;
   closeCropModal();
-  renderGallery();updateCounter();
+  renderGallery();updateCounter();schedIdbSave();
 });
+
+// ══ PERSISTENCE (IndexedDB) ══
+const IDB_NAME='dobble_v1',IDB_STORE='assets';
+let _idb=null;
+async function idbOpen(){
+  if(_idb)return _idb;
+  return new Promise((res,rej)=>{
+    const r=indexedDB.open(IDB_NAME,1);
+    r.onupgradeneeded=e=>e.target.result.createObjectStore(IDB_STORE);
+    r.onsuccess=e=>{_idb=e.target.result;res(_idb);};
+    r.onerror=e=>rej(e.target.error);
+  });
+}
+let _idbTimer=0;
+function schedIdbSave(){clearTimeout(_idbTimer);_idbTimer=setTimeout(idbSave,800);}
+async function idbSave(){
+  try{
+    const db=await idbOpen();
+    const rows=S.assets.map(a=>{
+      const cv=document.createElement('canvas');cv.width=cv.height=IMG_PX;
+      cv.getContext('2d').drawImage(a.imgEl,0,0,IMG_PX,IMG_PX);
+      return{id:a.id,type:a.type,name:a.name,dataURL:cv.toDataURL('image/jpeg',.82),
+             srcAssetId:a.srcAssetId||null,isCropSource:a.isCropSource||false};
+    });
+    const tx=db.transaction(IDB_STORE,'readwrite');
+    tx.objectStore(IDB_STORE).put(rows,'all');
+    await new Promise(r=>{tx.oncomplete=r;tx.onerror=()=>r();});
+  }catch(e){console.warn('idbSave:',e);}
+}
+async function idbLoad(){
+  try{
+    const db=await idbOpen();
+    const tx=db.transaction(IDB_STORE,'readonly');
+    const req=tx.objectStore(IDB_STORE).get('all');
+    const rows=await new Promise(r=>{req.onsuccess=e=>r(e.target.result);req.onerror=()=>r(null);});
+    if(!rows||!rows.length)return;
+    for(const d of rows){
+      try{
+        const imgEl=await loadImg(d.dataURL);
+        const thumb=makeThumb(imgEl);
+        S.assets.push({id:d.id,type:d.type,name:d.name,url:'',thumb,imgEl,
+                        srcAssetId:d.srcAssetId||undefined,isCropSource:d.isCropSource||false});
+        if(d.id>=S.idSeq)S.idSeq=d.id;
+      }catch(e){console.warn('idbLoad item:',e);}
+    }
+    if(S.assets.length){renderGallery();updateCounter();}
+  }catch(e){console.warn('idbLoad:',e);}
+}
+async function idbClear(){
+  try{
+    const db=await idbOpen();
+    const tx=db.transaction(IDB_STORE,'readwrite');
+    tx.objectStore(IDB_STORE).delete('all');
+  }catch(e){console.warn('idbClear:',e);}
+}
+
+// ══ ONBOARDING ══
+document.getElementById('onboard-start').addEventListener('click',()=>{
+  localStorage.setItem('dobble_onboarded','1');
+  document.getElementById('onboard-modal').hidden=true;
+});
+function updateWaLink(){
+  const n=localStorage.getItem('dobble_wa')||'';
+  const el=document.getElementById('wa-link');
+  if(el)el.href=n?`https://wa.me/${n}`:'#';
+}
+updateWaLink();
+
+// ══ ADMIN PANEL ══
+function closeAdminPanel(){document.getElementById('admin-panel').classList.remove('on');}
+
+function adminGetCodes(){try{return JSON.parse(localStorage.getItem('dobble_codes')||'[]');}catch{return[];}}
+function adminSaveCodes(c){localStorage.setItem('dobble_codes',JSON.stringify(c));}
+
+function adminSaveWA(){
+  const v=document.getElementById('adm-wa-inp').value.trim().replace(/\D/g,'');
+  if(!v){alert('הזן מספר תקין');return;}
+  localStorage.setItem('dobble_wa',v);
+  updateWaLink();
+  alert('✅ מספר וואטסאפ נשמר!');
+}
+
+function adminAddCode(){
+  const code=document.getElementById('adm-code-inp').value.trim();
+  const expiry=document.getElementById('adm-exp-inp').value;
+  const label=document.getElementById('adm-label-inp').value.trim();
+  if(!code){alert('הזן קוד');return;}
+  const codes=adminGetCodes();
+  if(codes.find(c=>c.code===code)){alert('קוד זה כבר קיים');return;}
+  codes.unshift({code,expiry:expiry||'',label:label||''});
+  adminSaveCodes(codes);
+  document.getElementById('adm-code-inp').value='';
+  document.getElementById('adm-exp-inp').value='';
+  document.getElementById('adm-label-inp').value='';
+  adminRenderCodes();
+}
+
+function adminDeleteCode(code){
+  if(!confirm(`מחק קוד "${code}"?`))return;
+  adminSaveCodes(adminGetCodes().filter(c=>c.code!==code));
+  adminRenderCodes();
+}
+
+function adminRenderCodes(){
+  const codes=adminGetCodes();
+  const el=document.getElementById('adm-codes-tbl');
+  const today=new Date().toISOString().slice(0,10);
+  if(!codes.length){el.innerHTML='<div style="color:#475569;font-size:.85rem;padding:.5rem 0">אין קודי גישה — הוסף קוד ראשון למעלה</div>';return;}
+  el.innerHTML=`<table class="adm-tbl"><thead><tr><th>קוד</th><th>תיאור</th><th>תפוגה</th><th>סטטוס</th><th></th></tr></thead><tbody>${
+    codes.map(c=>{
+      const expired=c.expiry&&c.expiry<today;
+      const esc=c.code.replace(/'/g,"\\'");
+      return `<tr>
+        <td style="font-family:monospace;font-size:.9rem;color:#e2e8f0;letter-spacing:.04em">${c.code}</td>
+        <td style="color:#94a3b8">${c.label||'—'}</td>
+        <td style="color:#94a3b8">${c.expiry||'ללא'}</td>
+        <td><span class="adm-tag ${expired?'exp':'ok'}">${expired?'פג תוקף':'פעיל'}</span></td>
+        <td><button onclick="adminDeleteCode('${esc}')" style="background:none;border:none;color:#f87171;cursor:pointer;font-size:.9rem;padding:.1rem .3rem">✕</button></td>
+      </tr>`;
+    }).join('')
+  }</tbody></table>`;
+}
+
+// Game log (stored locally, shown in admin)
+function getGameLog(){try{return JSON.parse(localStorage.getItem('dobble_games')||'[]');}catch{return[];}}
+function logGame(meta){
+  const log=getGameLog();
+  log.unshift({...meta,date:new Date().toLocaleString('he-IL')});
+  if(log.length>1000)log.length=1000;
+  localStorage.setItem('dobble_games',JSON.stringify(log));
+}
+
+function adminRenderGames(){
+  const games=getGameLog();
+  const cnt=document.getElementById('adm-game-count');
+  const el=document.getElementById('adm-games-tbl');
+  cnt.textContent=`${games.length} רשומות`;
+  if(!games.length){el.innerHTML='<div style="color:#475569;font-size:.85rem;padding:.5rem 0">אין ייצואים עדיין</div>';return;}
+  el.innerHTML=`<table class="adm-tbl" style="min-width:480px"><thead><tr><th>תאריך</th><th>סמלים</th><th>קלפים</th><th>גודל</th><th>שם קובץ</th></tr></thead><tbody>${
+    games.slice(0,200).map(g=>`<tr>
+      <td style="color:#94a3b8;white-space:nowrap;font-size:.78rem">${g.date||''}</td>
+      <td>${g.total||'—'}</td>
+      <td>${g.cards||'—'}</td>
+      <td>${g.sizeMm||'—'}mm</td>
+      <td style="color:#94a3b8;font-size:.78rem;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${g.filename||'—'}</td>
+    </tr>`).join('')
+  }</tbody></table>`;
+}
+
+function adminExportCSV(){
+  const games=getGameLog();
+  if(!games.length){alert('אין נתונים לייצוא');return;}
+  const csv='תאריך,סמלים,קלפים,גודל (mm),שם קובץ\n'+
+    games.map(g=>`"${g.date||''}",${g.total||''},${g.cards||''},${g.sizeMm||''},"${g.filename||''}"`).join('\n');
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='dobble-exports.csv';a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
+}
+
+function adminClearLog(){
+  if(!confirm('למחוק את כל יומן הייצואים?'))return;
+  localStorage.removeItem('dobble_games');
+  adminRenderGames();
+}
+
+function openAdminPanel(){
+  document.getElementById('admin-panel').classList.add('on');
+  // Init fields
+  document.getElementById('adm-wa-inp').value=localStorage.getItem('dobble_wa')||'';
+  adminRenderCodes();
+  adminRenderGames();
+}
+
+// Wire hooks for lock screen callbacks
+window._afterUnlock=()=>{idbLoad();};
+window._initAdminPanel=openAdminPanel;
+
+// If already unlocked on page load, run IDB restore
+if(sessionStorage.getItem('dobble_unlocked')==='1'){idbLoad();}
 
 // ══ UTILS ══
 function loadImg(url){
