@@ -1647,3 +1647,23 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .subpage-link-card:hover { border-color: var(--blue); transform: translateY(-3px); }
 .subpage-link-card strong { font-size: 1.15rem; }
 .subpage-link-card span   { color: var(--muted); display: block; }
+
+/* ---- מחירון מקובץ (רשת כרטיסים) ---- */
+.price-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+@media (min-width: 900px) { .price-grid { grid-template-columns: repeat(2, 1fr); } }
+.price-grid .price-card { max-width: none; margin-inline: 0; }
+.price-card-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  padding-bottom: 0.6rem;
+  border-bottom: 2px solid var(--blue-light);
+  margin-bottom: 0.4rem;
+}
+.price-card-title small { font-weight: 500; color: var(--muted); font-size: 0.85rem; }
+.price-terms { text-align: center; }
+.price-terms .price-note { margin-top: 0.4rem; }
