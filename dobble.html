@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>מחולל משחק דובל | Dobble Card Generator</title>
+  <title>מחולל משחק דאבל | Dobble Card Generator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -14,17 +14,40 @@
       --purple:#7C3AED;--purple-light:#EDE9FE;
       --gold:#F59E0B;--gold-light:#FEF3C7;
       --green:#059669;
-      --bg:#FAFAF8;--white:#fff;--text:#0F172A;--muted:#6B7280;--border:#E5E7EB;
-      --r:1rem;--rs:.5rem;--sh:0 4px 24px rgba(0,0,0,.08);--shl:0 8px 40px rgba(0,0,0,.14);
+      --bg:#FAFAF8;--white:#fff;--text:#0F172A;--muted:#5B6472;--border:rgba(15,23,42,.1);
+      --r:1.15rem;--rs:.6rem;
+      --sh:0 8px 32px rgba(30,27,75,.10),0 1.5px 4px rgba(30,27,75,.06);
+      --shl:0 16px 48px rgba(30,27,75,.18);
       --tr:.25s cubic-bezier(.4,0,.2,1);
+      /* ── Glassmorphism tokens ── */
+      --glass:rgba(255,255,255,.6);
+      --glass-strong:rgba(255,255,255,.78);
+      --glass-brd:1px solid rgba(255,255,255,.65);
+      --glass-blur:blur(18px) saturate(1.35);
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;direction:rtl}
+    body{
+      font-family:'Heebo',sans-serif;color:var(--text);min-height:100vh;direction:rtl;
+      background:
+        radial-gradient(ellipse 65% 50% at 12% 5%,rgba(37,99,235,.20) 0%,transparent 55%),
+        radial-gradient(ellipse 55% 55% at 90% 12%,rgba(124,58,237,.18) 0%,transparent 55%),
+        radial-gradient(ellipse 70% 45% at 50% 100%,rgba(245,158,11,.12) 0%,transparent 55%),
+        radial-gradient(ellipse 50% 50% at 80% 70%,rgba(37,99,235,.10) 0%,transparent 50%),
+        #EEF1FB;
+      background-attachment:fixed;
+    }
+    @media(prefers-reduced-motion:reduce){
+      *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+    }
+    /* ── glass surface (משטח זכוכית חלבית) ── */
+    .glass{background:var(--glass);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:var(--glass-brd);box-shadow:var(--sh)}
 
     /* ── HEADER ── */
-    .hdr{background:linear-gradient(135deg,var(--indigo),var(--purple));color:#fff;height:60px;display:flex;align-items:center;padding:0 1.5rem;gap:1.25rem;box-shadow:var(--shl);position:sticky;top:0;z-index:200}
+    .hdr{background:linear-gradient(135deg,rgba(67,56,202,.92),rgba(124,58,237,.88));backdrop-filter:blur(14px) saturate(1.4);-webkit-backdrop-filter:blur(14px) saturate(1.4);border-bottom:1px solid rgba(255,255,255,.22);color:#fff;height:60px;display:flex;align-items:center;padding:0 1.5rem;gap:1.25rem;box-shadow:var(--shl);position:sticky;top:0;z-index:200}
     .hdr-back{color:rgba(255,255,255,.8);text-decoration:none;font-size:.85rem;font-weight:600;white-space:nowrap;flex-shrink:0}
     .hdr-back:hover{color:#fff}
+    .hdr-gear{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:50%;width:38px;height:38px;font-size:1.05rem;cursor:pointer;flex-shrink:0;transition:all var(--tr);display:flex;align-items:center;justify-content:center}
+    .hdr-gear:hover{background:rgba(255,255,255,.28);transform:rotate(40deg)}
     .hdr-title{flex:1}
     .hdr-title h1{font-size:1.35rem;font-weight:900;line-height:1.2}
     .hdr-title .sub{font-size:.72rem;opacity:.7}
@@ -42,14 +65,14 @@
     .scr.on{display:block;animation:fu .28s ease}
     @keyframes fu{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
 
-    /* ── BOX ── */
-    .box{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);padding:1.6rem;margin-bottom:1.2rem}
+    /* ── BOX (זכוכית) ── */
+    .box{background:var(--glass);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:var(--glass-brd);border-radius:var(--r);box-shadow:var(--sh);padding:1.6rem;margin-bottom:1.2rem}
     .box-h{font-size:1.1rem;font-weight:800;color:var(--indigo);margin-bottom:.3rem}
     .box-s{font-size:.875rem;color:var(--muted);margin-bottom:1.2rem;line-height:1.6}
 
     /* ── UPLOAD ZONE ── */
-    .uz{border:2.5px dashed var(--indigo);border-radius:var(--r);padding:2.25rem 1.75rem;text-align:center;cursor:pointer;transition:all var(--tr);background:var(--purple-light);user-select:none}
-    .uz:hover,.uz.over{background:var(--blue-light);border-color:var(--blue);transform:scale(1.012)}
+    .uz{border:2.5px dashed rgba(67,56,202,.55);border-radius:var(--r);padding:2.25rem 1.75rem;text-align:center;cursor:pointer;transition:all var(--tr);background:rgba(237,233,254,.5);user-select:none}
+    .uz:hover,.uz.over{background:rgba(219,234,254,.65);border-color:var(--blue);transform:scale(1.012);box-shadow:0 8px 28px rgba(37,99,235,.18)}
     .uz-ico{font-size:2.75rem;margin-bottom:.5rem;line-height:1}
     .uz-t{font-size:1.2rem;font-weight:800;color:var(--indigo);margin-bottom:.25rem}
     .uz-s{font-size:.875rem;color:var(--muted)}
@@ -86,7 +109,8 @@
     .sbt.on{background:var(--indigo);color:#fff}
 
     /* ── BUTTONS ── */
-    .btn{display:inline-flex;align-items:center;gap:.4rem;padding:.7rem 1.6rem;border-radius:100px;font-size:.9rem;font-weight:700;font-family:inherit;cursor:pointer;border:none;transition:all var(--tr);white-space:nowrap;text-decoration:none}
+    .btn{display:inline-flex;align-items:center;gap:.4rem;padding:.7rem 1.6rem;border-radius:100px;font-size:.9rem;font-weight:700;font-family:inherit;cursor:pointer;border:none;transition:all var(--tr);white-space:nowrap;text-decoration:none;min-height:44px}
+    .btn:not(:disabled):active{transform:scale(.96);transition-duration:.06s}
     .btn:disabled{opacity:.38;cursor:not-allowed!important;transform:none!important;box-shadow:none!important}
     .btn-cta{background:linear-gradient(135deg,var(--gold),#d97706);color:#fff;font-size:1.05rem;padding:.8rem 2.25rem}
     .btn-cta:not(:disabled):hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(245,158,11,.38)}
@@ -111,7 +135,7 @@
 
     /* ── SCREEN 2 LAYOUT ── */
     .prev-layout{display:grid;grid-template-columns:210px 1fr;gap:1.1rem;align-items:start}
-    .sidebar{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);padding:1.1rem;position:sticky;top:72px}
+    .sidebar{background:var(--glass);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:var(--glass-brd);border-radius:var(--r);box-shadow:var(--sh);padding:1.1rem;position:sticky;top:72px}
     .sb-sec{margin-bottom:1.1rem;padding-bottom:1.1rem;border-bottom:1px solid var(--border)}
     .sb-sec:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
     .sb-t{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.65rem}
@@ -125,23 +149,25 @@
     input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--indigo);cursor:pointer;border:none}
 
     /* ── GEN OVERLAY ── */
-    .gen-ov{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);padding:2rem}
+    .gen-ov{background:var(--glass);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:var(--glass-brd);border-radius:var(--r);box-shadow:var(--sh);padding:2rem}
 
     /* ── CARDS AREA ── */
-    .cards-main{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);padding:1.25rem}
-    .vfy-banner{background:linear-gradient(135deg,var(--blue-light),var(--purple-light));border:1.5px solid var(--indigo);border-radius:var(--rs);padding:.65rem 1rem;font-size:.83rem;color:var(--indigo);font-weight:600;margin-bottom:.9rem}
-    .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:.8rem}
-    .cw{cursor:pointer;border-radius:50%;aspect-ratio:1;border:3px solid transparent;transition:all var(--tr);box-shadow:var(--sh);overflow:hidden}
+    .cards-main{background:var(--glass);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:var(--glass-brd);border-radius:var(--r);box-shadow:var(--sh);padding:1.25rem}
+    .vfy-banner{background:linear-gradient(135deg,rgba(219,234,254,.75),rgba(237,233,254,.75));border:1.5px solid rgba(67,56,202,.5);border-radius:var(--rs);padding:.65rem 1rem;font-size:.83rem;color:var(--indigo);font-weight:600;margin-bottom:.9rem}
+    .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:.8rem;perspective:900px}
+    .cw{cursor:pointer;border-radius:50%;aspect-ratio:1;border:3px solid transparent;transition:transform .18s ease,box-shadow var(--tr),border-color var(--tr);box-shadow:var(--sh);overflow:hidden;will-change:transform;animation:cardIn .5s cubic-bezier(.2,.9,.3,1.2) both;touch-action:pan-y}
+    @keyframes cardIn{from{opacity:0;transform:translateY(16px) scale(.85)}to{opacity:1;transform:none}}
     .cards-grid.sq .cw{border-radius:11px}
     .cw canvas{width:100%;height:100%;display:block}
-    .cw:hover{transform:scale(1.07);box-shadow:var(--shl)}
+    .cw:hover{box-shadow:var(--shl)}
     .cw.s1{border-color:var(--blue);box-shadow:0 0 0 5px rgba(37,99,235,.2)}
     .cw.s2{border-color:var(--purple);box-shadow:0 0 0 5px rgba(124,58,237,.2)}
 
     /* ── VERIFY MODAL ── */
-    .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:500;display:flex;align-items:center;justify-content:center;padding:1rem}
+    .modal-bg{position:fixed;inset:0;background:rgba(20,16,60,.45);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);z-index:500;display:flex;align-items:center;justify-content:center;padding:1rem}
     .modal-bg[hidden]{display:none}
-    .modal-card{background:#fff;border-radius:var(--r);box-shadow:var(--shl);max-width:760px;width:100%;padding:1.6rem;animation:fu .2s ease}
+    .modal-card{background:var(--glass-strong);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:var(--glass-brd);border-radius:var(--r);box-shadow:var(--shl);max-width:760px;width:100%;padding:1.6rem;animation:pop .28s cubic-bezier(.2,.9,.3,1.15)}
+    @keyframes pop{from{opacity:0;transform:scale(.92) translateY(10px)}to{opacity:1;transform:none}}
     .modal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem}
     .modal-title{font-size:1.05rem;font-weight:800;color:var(--indigo)}
     .modal-x{background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--muted);line-height:1;padding:.2rem}
@@ -161,7 +187,7 @@
     .gallery-hdr{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap;margin-bottom:.45rem}
     .gallery-count{font-size:.85rem;font-weight:700;color:var(--indigo)}
     .under-lim{font-size:.78rem;color:#92400e;background:var(--gold-light);padding:.2rem .6rem;border-radius:100px}
-    .gallery-grid{display:flex;gap:.6rem;flex-wrap:wrap;padding:.65rem;background:var(--bg);border-radius:var(--rs);min-height:70px;align-items:flex-start}
+    .gallery-grid{display:flex;gap:.6rem;flex-wrap:wrap;padding:.65rem;background:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.55);border-radius:var(--rs);min-height:70px;align-items:flex-start}
     .g-item{position:relative;flex-shrink:0;width:72px;text-align:center}
     .g-item canvas{width:72px;height:72px;border-radius:6px;display:block;border:2px solid var(--border);box-shadow:var(--sh)}
     .g-item.crop canvas{border-radius:50%;border-color:var(--indigo)}
@@ -202,7 +228,7 @@
     .tswitch input:checked+.tslider{background:var(--indigo)}
     .tswitch input:checked+.tslider::before{transform:translateX(18px)}
     .tog-lbl{font-size:.875rem;font-weight:600}
-    .paper-prev{background:var(--bg);border-radius:var(--rs);padding:.9rem;text-align:center;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem}
+    .paper-prev{background:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.55);border-radius:var(--rs);padding:.9rem;text-align:center;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem}
     .paper-info{font-size:.75rem;color:var(--muted);line-height:1.55;text-align:center}
     .exp-prog{display:none;margin-top:1.1rem}
     .exp-prog.on{display:block}
@@ -228,46 +254,116 @@
 
     /* ── TABLE ── */
     .ref-table{width:100%;border-collapse:collapse;font-size:.875rem}
-    .ref-table th{padding:.5rem .9rem;text-align:center;background:var(--blue-light);color:var(--indigo);font-weight:700;border-bottom:1px solid var(--border)}
+    .ref-table th{padding:.5rem .9rem;text-align:center;background:rgba(219,234,254,.65);color:var(--indigo);font-weight:700;border-bottom:1px solid var(--border)}
     .ref-table td{padding:.5rem .9rem;text-align:center;border-bottom:1px solid var(--border)}
-    .ref-table tr:last-child td{border-bottom:none;background:#fefce8;font-weight:700;color:#92400e}
+    .ref-table tr:last-child td{border-bottom:none;background:rgba(254,252,232,.7);font-weight:700;color:#92400e}
 
-    /* ── RESPONSIVE ── */
+    /* ── TOAST (פידבק מיידי) ── */
+    .toast{position:fixed;bottom:1.4rem;right:50%;transform:translateX(50%) translateY(12px);background:rgba(15,23,42,.88);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#fff;font-size:.9rem;font-weight:600;padding:.7rem 1.5rem;border-radius:100px;border:1px solid rgba(255,255,255,.18);box-shadow:0 10px 32px rgba(0,0,0,.3);z-index:800;opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s cubic-bezier(.2,.9,.3,1.2);max-width:88vw;text-align:center}
+    .toast.show{opacity:1;transform:translateX(50%) translateY(0)}
+    .toast.ok{background:rgba(5,102,72,.92)}
+    .toast.err{background:rgba(153,27,27,.92)}
+
+    /* ── חבילות תמונות מוכנות ── */
+    .packs{margin-top:.9rem}
+    .packs-grid{display:flex;gap:.6rem;flex-wrap:wrap}
+    .pack-btn{display:flex;align-items:center;gap:.55rem;background:rgba(255,255,255,.55);border:1.5px solid rgba(67,56,202,.35);border-radius:100px;padding:.5rem 1.1rem;font-family:inherit;font-size:.88rem;font-weight:700;color:var(--indigo);cursor:pointer;transition:all var(--tr);min-height:44px}
+    .pack-btn:hover{border-color:var(--indigo);background:rgba(237,233,254,.8);transform:translateY(-2px)}
+    .pack-btn:disabled{opacity:.5;cursor:wait}
+    .pack-btn .pk-count{font-size:.72rem;font-weight:600;color:var(--muted)}
+
+    /* ── פאנל ניהול ── */
+    .adm-field{margin-bottom:.85rem}
+    .adm-field label{display:block;font-size:.8rem;font-weight:700;color:var(--indigo);margin-bottom:.3rem}
+    .adm-field input,.adm-field textarea{width:100%;padding:.55rem .8rem;border-radius:var(--rs);border:1.5px solid var(--border);font-family:inherit;font-size:.9rem;background:rgba(255,255,255,.8);outline:none}
+    .adm-field input:focus,.adm-field textarea:focus{border-color:var(--indigo)}
+    .adm-field textarea{min-height:120px;direction:ltr;font-size:.78rem;font-family:monospace;line-height:1.5}
+    .adm-hint{font-size:.73rem;color:var(--muted);margin-top:.25rem;line-height:1.5}
+    .adm-msg{font-size:.85rem;font-weight:700;min-height:1.3em;margin-top:.4rem}
+
+    /* ── RESPONSIVE (Mobile First) ── */
     @media(max-width:680px){
-      .hdr{padding:0 .9rem}.step-ind{display:none}
-      #wrap{padding:1rem .75rem 4rem}
+      .hdr{padding:0 .9rem;gap:.75rem}.step-ind{display:none}
+      #wrap{padding:1rem .75rem 5rem}
+      .box{padding:1.15rem;border-radius:1rem}
       .prev-layout{grid-template-columns:1fr}.sidebar{position:static}
       .exp-grid{grid-template-columns:1fr}
       .upload-methods-grid{grid-template-columns:1fr}
       .modal-body{grid-template-columns:1fr}
       .mcw canvas{width:150px;height:150px}
+      /* מטרות מגע גדולות ונוחות לאגודל */
+      .btn{padding:.8rem 1.6rem;font-size:.95rem;width:auto}
+      .btn-cta{width:100%;justify-content:center;font-size:1.08rem}
+      .sbt{padding:.6rem 1rem;min-height:44px}
+      .g-item{width:84px}
+      .g-item canvas{width:84px;height:84px}
+      .g-del{width:24px;height:24px;font-size:.8rem;top:-8px}
+      .g-edit{width:26px;height:26px;font-size:.85rem;bottom:-8px}
+      .g-name{max-width:84px;font-size:.66rem}
+      .cards-grid{grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:.65rem}
+      .uz{padding:2.5rem 1.25rem}
+      input[type=range]{height:7px}
+      input[type=range]::-webkit-slider-thumb{width:24px;height:24px}
+      input[type=range]::-moz-range-thumb{width:24px;height:24px}
+      .brow .btn{flex:1;justify-content:center}
+      .pack-btn{flex:1;justify-content:center}
     }
   </style>
 </head>
 <body>
 
+<!-- CONFIG (קודים, וואטסאפ, חבילות) -->
+<script src="js/dobble-config.js"></script>
+<script>
+// קונפיג בזמן ריצה: ברירות מחדל ← קובץ הקונפיג ← עריכות מקומיות מפאנל הניהול
+window.DCFG=(function(){
+  const def={accessCodes:['123'],adminCode:'8734',whatsapp:'972505918734',phoneDisplay:'050-591-8734',
+             contactMessage:'שלום הושעיה, אשמח לקבל קוד גישה למחולל הדאבל 🎯',packs:[]};
+  let ov={};try{ov=JSON.parse(localStorage.getItem('dobble_config_override')||'{}')}catch(e){}
+  return Object.assign({},def,window.DOBBLE_CONFIG||{},ov);
+})();
+function dcfgSave(patch){
+  let ov={};try{ov=JSON.parse(localStorage.getItem('dobble_config_override')||'{}')}catch(e){}
+  Object.assign(ov,patch);
+  localStorage.setItem('dobble_config_override',JSON.stringify(ov));
+  Object.assign(window.DCFG,patch);
+}
+</script>
+
 <!-- LOCK SCREEN -->
-<div id="lock-screen" style="position:fixed;inset:0;background:#1e1b4b;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.4rem;padding:2rem">
+<div id="lock-screen" style="position:fixed;inset:0;background:linear-gradient(150deg,#1e1b4b,#312e81 55%,#4c1d95);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.05rem;padding:2rem;text-align:center">
   <div style="font-size:3rem">🎯</div>
-  <div style="font-size:1.6rem;font-weight:900;color:#fff;letter-spacing:.05em">מחולל דובל</div>
+  <div style="font-size:1.6rem;font-weight:900;color:#fff;letter-spacing:.05em">מחולל דאבל</div>
   <div style="color:#a5b4fc;font-size:.95rem">הזן/י קוד כניסה</div>
-  <input id="lock-inp" type="password" inputmode="numeric" maxlength="6" placeholder="• • •"
-    style="text-align:center;font-size:2rem;letter-spacing:.6rem;width:160px;padding:.65rem .5rem;border-radius:14px;border:2.5px solid #4338ca;outline:none;background:#fff;font-family:inherit">
+  <input id="lock-inp" type="password" inputmode="numeric" maxlength="8" placeholder="• • •"
+    style="text-align:center;font-size:2rem;letter-spacing:.6rem;width:180px;padding:.7rem .5rem;border-radius:16px;border:2.5px solid rgba(255,255,255,.35);outline:none;background:rgba(255,255,255,.94);font-family:inherit">
   <div id="lock-err" style="color:#fca5a5;font-size:.88rem;min-height:1.2em"></div>
+  <div style="width:min(320px,80vw);height:1px;background:rgba(255,255,255,.18);margin-block:.35rem"></div>
+  <div style="color:rgba(255,255,255,.88);font-size:.95rem;font-weight:600">אין לך קוד גישה?</div>
+  <a id="lock-wa" href="#" target="_blank" rel="noopener noreferrer"
+     style="display:inline-flex;align-items:center;gap:.55rem;background:#25D366;color:#fff;font-weight:700;font-size:1.02rem;padding:.75rem 1.6rem;border-radius:100px;text-decoration:none;box-shadow:0 6px 24px rgba(37,211,102,.45)">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    לקביעת מנוי בוואטסאפ
+  </a>
+  <div id="lock-phone" style="color:rgba(255,255,255,.75);font-size:.95rem;direction:ltr"></div>
 </div>
 <script>
 (function(){
+  document.getElementById('lock-wa').href='https://wa.me/'+DCFG.whatsapp+'?text='+encodeURIComponent(DCFG.contactMessage);
+  document.getElementById('lock-phone').textContent='📞 '+DCFG.phoneDisplay;
   if(sessionStorage.getItem('dobble_unlocked')==='1'){document.getElementById('lock-screen').remove();return;}
   const inp=document.getElementById('lock-inp');
   const err=document.getElementById('lock-err');
   inp.focus();
+  const codes=DCFG.accessCodes.map(String);
+  const maxLen=Math.max.apply(null,codes.map(c=>c.length).concat([3]));
   inp.addEventListener('input',function(){
-    if(inp.value==='123'){
+    if(codes.includes(inp.value)){
       sessionStorage.setItem('dobble_unlocked','1');
       document.getElementById('lock-screen').style.transition='opacity .4s';
       document.getElementById('lock-screen').style.opacity='0';
       setTimeout(()=>document.getElementById('lock-screen').remove(),400);
-    } else if(inp.value.length>=3){
+    } else if(inp.value.length>=maxLen){
       err.textContent='קוד שגוי ❌';
       setTimeout(()=>{inp.value='';err.textContent='';inp.focus();},900);
     }
@@ -279,7 +375,7 @@
 <header class="hdr">
   <a href="index.html" class="hdr-back">→ האתר</a>
   <div class="hdr-title">
-    <h1>🎯 מחולל משחק דובל</h1>
+    <h1>🎯 מחולל משחק דאבל</h1>
     <div class="sub">Dobble / Spot It! · Finite Projective Plane</div>
   </div>
   <nav class="step-ind">
@@ -289,6 +385,7 @@
     <div class="si-sep"></div>
     <div class="si" id="si3"><span class="n">3</span>ייצוא</div>
   </nav>
+  <button class="hdr-gear" id="btn-admin" title="פאנל ניהול" aria-label="פאנל ניהול">⚙️</button>
 </header>
 
 <div id="wrap">
@@ -306,6 +403,12 @@
       <div class="uz-s">או לחץ/י לבחירת קבצים · כל העלאה מצטברת למאגר</div>
       <div class="uz-hint">PNG · JPG · SVG · WebP · ניתן לבחור מספר קבצים</div>
       <input type="file" id="fi" multiple accept="image/*" style="display:none">
+    </div>
+
+    <!-- ── חבילות תמונות מוכנות ── -->
+    <div id="packs-wrap" class="packs" style="display:none">
+      <div class="og-t" style="margin-top:.4rem">🧰 או התחילו מחבילה מוכנה</div>
+      <div class="packs-grid" id="packs-grid"></div>
     </div>
 
     <!-- ── Inline Active Gallery ── -->
@@ -345,7 +448,7 @@
         <tr><td>13</td><td>4</td><td>13</td><td>ילדים 6+</td></tr>
         <tr><td>21</td><td>5</td><td>21</td><td>משפחה</td></tr>
         <tr><td>31</td><td>6</td><td>31</td><td>בינוני–קשה</td></tr>
-        <tr><td>57</td><td>8</td><td>57</td><td>⭐ דובל סטנדרטי</td></tr>
+        <tr><td>57</td><td>8</td><td>57</td><td>⭐ דאבל סטנדרטי</td></tr>
       </tbody>
     </table>
   </div>
@@ -573,6 +676,54 @@
   </div>
 </div>
 
+<!-- ADMIN MODAL -->
+<div class="modal-bg" id="adm-modal" hidden>
+  <div class="modal-card" style="max-width:560px">
+    <div class="modal-hdr">
+      <div class="modal-title">⚙️ פאנל ניהול</div>
+      <button class="modal-x" id="adm-x">✕</button>
+    </div>
+
+    <!-- שלב כניסה -->
+    <div id="adm-login">
+      <div class="adm-field">
+        <label for="adm-code">קוד ניהול</label>
+        <input id="adm-code" type="password" inputmode="numeric" maxlength="8" style="text-align:center;letter-spacing:.4rem;font-size:1.3rem">
+      </div>
+      <div class="adm-msg" id="adm-login-msg" style="color:#b91c1c"></div>
+    </div>
+
+    <!-- פאנל -->
+    <div id="adm-panel" hidden>
+      <div class="adm-field">
+        <label for="adm-codes">קודי כניסה למחולל (מופרדים בפסיק)</label>
+        <input id="adm-codes" type="text" style="direction:ltr">
+        <div class="adm-hint">אפשר להגדיר כמה קודים — למשל קוד שונה לכל לקוח, ולמחוק קוד כשמנוי מסתיים.</div>
+      </div>
+      <div class="adm-field">
+        <label for="adm-wa">מספר וואטסאפ (בפורמט בינלאומי, למשל 972505918734)</label>
+        <input id="adm-wa" type="text" style="direction:ltr">
+      </div>
+      <div class="adm-field">
+        <label for="adm-phone">מספר טלפון לתצוגה</label>
+        <input id="adm-phone" type="text" style="direction:ltr">
+      </div>
+      <div class="adm-field">
+        <label for="adm-packs">חבילות תמונות (JSON)</label>
+        <textarea id="adm-packs" spellcheck="false"></textarea>
+        <div class="adm-hint">מבנה: <code>[{"name":"חיות","icon":"🦁","images":["https://lh3.googleusercontent.com/d/FILE_ID"]}]</code><br>קישור מגוגל דרייב: שיתוף → "כל מי שיש לו קישור" → מזהה הקובץ נכנס אחרי <code>/d/</code>.</div>
+      </div>
+      <div class="brow">
+        <button class="btn btn-ok" id="adm-save">💾 שמור (בדפדפן זה)</button>
+        <button class="btn btn-pri" id="adm-export">📥 יצוא קובץ הגדרות</button>
+        <button class="btn btn-ghost" id="adm-reset">↩️ איפוס עריכות מקומיות</button>
+      </div>
+      <div class="adm-msg" id="adm-msg" style="color:var(--green)"></div>
+      <div class="adm-hint" style="margin-top:.6rem">שמירה חלה על הדפדפן הזה בלבד. כדי שהשינויים יחולו על כולם — "יצוא קובץ הגדרות" והחלפת <code>js/dobble-config.js</code> בגיטהאב.</div>
+    </div>
+  </div>
+</div>
+
 <script>
 'use strict';
 
@@ -748,15 +899,18 @@ async function addFiles(files){
   const imgs=Array.from(files).filter(f=>f.type.startsWith('image/')||/\.(heic|heif|avif)$/i.test(f.name));
   if(!imgs.length){alert('נא לבחור קבצי תמונה (PNG, JPG, SVG, WebP)');return;}
   const failedNames=[];
+  let okCount=0;
   for(const f of imgs){
     const url=URL.createObjectURL(f);
     try{
       const imgEl=await loadImgFile(f,url);
       const thumb=makeThumb(imgEl);
       S.assets.push({id:++S.idSeq,type:'image',name:f.name,url,thumb,imgEl});
+      okCount++;
       renderGallery();updateCounter();
     }catch(e){URL.revokeObjectURL(url);failedNames.push(f.name);console.warn('upload failed:',f.name,e?.message||e);}
   }
+  if(okCount)toast(`נוספו ${okCount} תמונות למאגר ✓`,'ok');
   if(failedNames.length)alert(`${failedNames.length} תמונות לא נטענו:\n${failedNames.join('\n')}\n\nנסה פורמטים אחרים: PNG, JPG, WebP, SVG.`);
 }
 
@@ -930,6 +1084,8 @@ async function generate(){
     const c=document.createElement('canvas');c.width=c.height=CARD_PX;
     drawCard(c,S.layouts[i],S.imgEls,S.shape);S.canvases.push(c);
     const w=document.createElement('div');w.className='cw';w.dataset.i=i;w.appendChild(c);
+    w.style.animationDelay=Math.min(i*22,900)+'ms';
+    attachTilt(w);
     w.addEventListener('click',()=>onCardClick(i));grid.appendChild(w);
     setp(35+Math.round(65*(i+1)/S.deck.length),`מצייר קלף ${i+1}/${S.deck.length}…`);
     if(i%6===5)await tick();
@@ -941,6 +1097,7 @@ async function generate(){
      <div class="stat-row"><span>סדר (q)</span><span class="stat-v">${S.order.q}</span></div>`;
   document.getElementById('gen-ov').style.display='none';
   document.getElementById('prev-wrap').style.display='block';
+  toast(`נוצרו ${S.deck.length} קלפים 🎉`,'ok');
 }
 
 async function renderAll(){
@@ -960,6 +1117,7 @@ document.getElementById('btn-reshuffle').addEventListener('click',async()=>{
   S.seed=Math.floor(Math.random()*90000)+10000;
   await renderAll();
   btn.disabled=false;btn.innerHTML='🔀 ערבב מחדש';
+  toast('הקלפים עורבבו מחדש ✓','ok');
 });
 
 // ══ CARD CLICK / VERIFY ══
@@ -1311,6 +1469,7 @@ async function doExport(type){
     if(type==='pdf')await expPDF(setp);
     else if(type==='zip')await expZIP(setp);
     else await expDXF(setp);
+    toast('הקובץ מוכן להורדה ✅','ok');
   }catch(err){
     document.getElementById('exp-prog').classList.remove('on');
     alert(`שגיאה בייצוא:\n${err.message||err}\n\nודא שהדף נטען עם חיבור לאינטרנט (נדרש jsPDF / JSZip).`);
@@ -1785,8 +1944,171 @@ document.getElementById('btn-crop-add').addEventListener('click',()=>{
     S.assets.push({id:++S.idSeq,type:'crop',name:`${srcName} #${i+1}`,url:'',thumb,imgEl:fullEl,srcAssetId:srcId});
   });
   if(asset) asset.isCropSource=true;
+  const nAdded=CM.crops.length;
   closeCropModal();
   renderGallery();updateCounter();
+  toast(`${nAdded} סמלים נוספו למאגר ✓`,'ok');
+});
+
+// ══ TOAST — פידבק מיידי ══
+let _toastTimer=0;
+function toast(msg,type){
+  let t=document.getElementById('toast');
+  if(!t){t=document.createElement('div');t.id='toast';t.className='toast';t.setAttribute('role','status');document.body.appendChild(t);}
+  t.textContent=msg;
+  t.className='toast show'+(type?' '+type:'');
+  clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(()=>{t.classList.remove('show');},2400);
+}
+
+// ══ 3D TILT — תחושת קלף פיזי ══
+const TILT_OK=!window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function attachTilt(el){
+  if(!TILT_OK)return;
+  const move=(cx,cy)=>{
+    const r=el.getBoundingClientRect();
+    const px=(cx-r.left)/r.width-.5,py=(cy-r.top)/r.height-.5;
+    el.style.transform=`perspective(620px) rotateY(${(px*12).toFixed(2)}deg) rotateX(${(-py*12).toFixed(2)}deg) scale(1.06)`;
+  };
+  el.addEventListener('pointermove',e=>{if(e.pointerType==='mouse')move(e.clientX,e.clientY);});
+  el.addEventListener('pointerleave',()=>{el.style.transform='';});
+  el.addEventListener('touchmove',e=>{const t=e.touches[0];move(t.clientX,t.clientY);},{passive:true});
+  el.addEventListener('touchend',()=>{el.style.transform='';},{passive:true});
+}
+
+// ══ חבילות תמונות מוכנות ══
+function loadImgUrl(url){
+  return new Promise((res,rej)=>{
+    const img=new Image();
+    img.crossOrigin='anonymous';
+    img.onload=()=>{
+      try{
+        const c=document.createElement('canvas');c.width=c.height=IMG_PX;
+        c.getContext('2d').drawImage(img,0,0,IMG_PX,IMG_PX);
+        c.toDataURL();  // יזרוק אם הקנבס "מוכתם" (חסימת CORS)
+        res(c);
+      }catch(e){rej(e);}
+    };
+    img.onerror=()=>rej(new Error('image load failed'));
+    img.src=url;
+  });
+}
+
+function renderPacks(){
+  const wrap=document.getElementById('packs-wrap');
+  const grid=document.getElementById('packs-grid');
+  const packs=DCFG.packs||[];
+  grid.innerHTML='';
+  if(!packs.length){wrap.style.display='none';return;}
+  wrap.style.display='';
+  packs.forEach(pk=>{
+    if(!pk||!pk.name||!Array.isArray(pk.images)||!pk.images.length)return;
+    const b=document.createElement('button');
+    b.type='button';b.className='pack-btn';
+    b.innerHTML=`<span>${pk.icon||'📦'}</span><span>${pk.name}</span><span class="pk-count">${pk.images.length} תמונות</span>`;
+    b.addEventListener('click',()=>loadPack(pk,b));
+    grid.appendChild(b);
+  });
+}
+
+async function loadPack(pk,btn){
+  btn.disabled=true;
+  const orig=btn.innerHTML;
+  btn.innerHTML='<span class="spin" style="border-color:rgba(67,56,202,.3);border-top-color:var(--indigo)"></span> טוען…';
+  let ok=0,fail=0;
+  for(const url of pk.images){
+    try{
+      const imgEl=await loadImgUrl(url);
+      S.assets.push({id:++S.idSeq,type:'image',name:pk.name+' '+(ok+1),url:'',thumb:makeThumb(imgEl),imgEl});
+      ok++;
+      renderGallery();updateCounter();
+    }catch(e){fail++;console.warn('pack image failed:',url);}
+  }
+  btn.disabled=false;btn.innerHTML=orig;
+  if(ok&&!fail)toast(`חבילת "${pk.name}" נוספה — ${ok} תמונות ✓`,'ok');
+  else if(ok)toast(`נוספו ${ok} תמונות, ${fail} נכשלו`,'err');
+  else toast(`טעינת החבילה נכשלה — בדקו שהתמונות משותפות לכולם`,'err');
+}
+renderPacks();
+
+// ══ פאנל ניהול ══
+let _admAuthed=false;
+const admModal=document.getElementById('adm-modal');
+document.getElementById('btn-admin').addEventListener('click',()=>{
+  admModal.hidden=false;
+  if(_admAuthed){showAdmPanel();}
+  else{
+    document.getElementById('adm-login').hidden=false;
+    document.getElementById('adm-panel').hidden=true;
+    const c=document.getElementById('adm-code');c.value='';c.focus();
+  }
+});
+document.getElementById('adm-x').addEventListener('click',()=>{admModal.hidden=true;});
+admModal.addEventListener('click',e=>{if(e.target===e.currentTarget)admModal.hidden=true;});
+
+document.getElementById('adm-code').addEventListener('input',function(){
+  if(this.value===String(DCFG.adminCode)){_admAuthed=true;showAdmPanel();}
+  else if(this.value.length>=String(DCFG.adminCode).length){
+    document.getElementById('adm-login-msg').textContent='קוד שגוי';
+    setTimeout(()=>{this.value='';document.getElementById('adm-login-msg').textContent='';},800);
+  }
+});
+
+function showAdmPanel(){
+  document.getElementById('adm-login').hidden=true;
+  document.getElementById('adm-panel').hidden=false;
+  document.getElementById('adm-codes').value=(DCFG.accessCodes||[]).join(', ');
+  document.getElementById('adm-wa').value=DCFG.whatsapp||'';
+  document.getElementById('adm-phone').value=DCFG.phoneDisplay||'';
+  document.getElementById('adm-packs').value=JSON.stringify(DCFG.packs||[],null,2);
+}
+
+function admCollect(){
+  const codes=document.getElementById('adm-codes').value.split(',').map(s=>s.trim()).filter(Boolean);
+  if(!codes.length)throw new Error('נדרש לפחות קוד כניסה אחד');
+  let packs;
+  try{packs=JSON.parse(document.getElementById('adm-packs').value||'[]');}
+  catch(e){throw new Error('ה-JSON של החבילות לא תקין: '+e.message);}
+  if(!Array.isArray(packs))throw new Error('החבילות חייבות להיות רשימה [...]');
+  return{
+    accessCodes:codes,
+    whatsapp:document.getElementById('adm-wa').value.trim()||DCFG.whatsapp,
+    phoneDisplay:document.getElementById('adm-phone').value.trim()||DCFG.phoneDisplay,
+    packs
+  };
+}
+
+document.getElementById('adm-save').addEventListener('click',()=>{
+  const msg=document.getElementById('adm-msg');
+  try{
+    dcfgSave(admCollect());
+    renderPacks();
+    msg.style.color='var(--green)';msg.textContent='✅ נשמר בדפדפן זה';
+    toast('ההגדרות נשמרו ✓','ok');
+  }catch(e){msg.style.color='#b91c1c';msg.textContent='⚠️ '+e.message;}
+});
+
+document.getElementById('adm-export').addEventListener('click',()=>{
+  const msg=document.getElementById('adm-msg');
+  try{
+    const cfg=Object.assign({},admCollect(),{adminCode:DCFG.adminCode,contactMessage:DCFG.contactMessage});
+    const file='// =====================================================\n'+
+      '// הגדרות מחולל הדאבל — הוחלף מתוך פאנל הניהול\n'+
+      '// העלו קובץ זה במקום js/dobble-config.js בגיטהאב\n'+
+      '// =====================================================\n\n'+
+      'window.DOBBLE_CONFIG = '+JSON.stringify(cfg,null,2)+';\n';
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([file],{type:'text/javascript'}));
+    a.download='dobble-config.js';a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+    msg.style.color='var(--green)';msg.textContent='✅ הקובץ ירד — החליפו את js/dobble-config.js בגיטהאב';
+  }catch(e){msg.style.color='#b91c1c';msg.textContent='⚠️ '+e.message;}
+});
+
+document.getElementById('adm-reset').addEventListener('click',()=>{
+  localStorage.removeItem('dobble_config_override');
+  toast('העריכות המקומיות אופסו — נטען מהקובץ','ok');
+  setTimeout(()=>location.reload(),700);
 });
 
 // ══ UTILS ══
