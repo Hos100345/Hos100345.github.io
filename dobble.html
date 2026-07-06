@@ -283,7 +283,8 @@
     .btn-wa{background:linear-gradient(135deg,#25D366,#1DA851);color:#fff;font-size:1rem}
     .btn-wa:not(:disabled):hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(37,211,102,.4)}
 
-    /* ── ONBOARDING ── */
+    /* ── ONBOARDING (מוצג לפני הזנת הקוד — מעל מסך הנעילה) ── */
+    #onboard-modal{z-index:10001}
     .ob-step{display:flex;align-items:flex-start;gap:.85rem;padding:.75rem;background:rgba(67,56,202,.06);border:1.5px solid rgba(67,56,202,.12);border-radius:10px}
     .ob-ico{font-size:1.45rem;flex-shrink:0;line-height:1.3}
     .ob-s{font-size:.81rem;color:var(--muted);margin-top:.15rem;line-height:1.5}
@@ -344,7 +345,7 @@
 <script>
 // קונפיג בזמן ריצה: ברירות מחדל ← קובץ הקונפיג ← עריכות מקומיות מפאנל הניהול
 window.DCFG=(function(){
-  const def={accessCodes:['123'],adminCode:'8734',whatsapp:'972505918734',phoneDisplay:'050-591-8734',
+  const def={accessCodes:[],adminCode:'8734',whatsapp:'972505918734',phoneDisplay:'050-591-8734',
              contactMessage:'שלום הושעיה, אשמח לקבל קוד גישה למחולל הדאבל 🎯',packs:[]};
   let ov={};try{ov=JSON.parse(localStorage.getItem('dobble_config_override')||'{}')}catch(e){}
   return Object.assign({},def,window.DOBBLE_CONFIG||{},ov);
@@ -394,9 +395,6 @@ function dcfgSave(patch){
   function doUserUnlock(){
     sessionStorage.setItem('dobble_unlocked','1');
     removeLockScreen(()=>{
-      if(!localStorage.getItem('dobble_onboarded')){
-        const m=document.getElementById('onboard-modal');if(m)m.hidden=false;
-      }
       window._afterUnlock&&window._afterUnlock();
     });
   }
@@ -416,13 +414,15 @@ function dcfgSave(patch){
     return false;
   };
 
+  // ההסבר מוצג לפני הזנת הקוד — בביקור הראשון, מעל מסך הנעילה
+  if(!localStorage.getItem('dobble_onboarded')){
+    window.addEventListener('DOMContentLoaded',()=>{
+      const m=document.getElementById('onboard-modal');if(m)m.hidden=false;
+    });
+  }
+
   if(sessionStorage.getItem('dobble_unlocked')==='1'){
     document.getElementById('lock-screen').remove();
-    if(!localStorage.getItem('dobble_onboarded')){
-      window.addEventListener('DOMContentLoaded',()=>{
-        const m=document.getElementById('onboard-modal');if(m)m.hidden=false;
-      });
-    }
     return;
   }
 
@@ -2387,6 +2387,8 @@ renderDesigns();
 document.getElementById('onboard-start').addEventListener('click',()=>{
   localStorage.setItem('dobble_onboarded','1');
   document.getElementById('onboard-modal').hidden=true;
+  const li=document.getElementById('lock-inp');
+  if(li)li.focus();
 });
 function updateWaLink(){
   const n=localStorage.getItem('dobble_wa')||DCFG.whatsapp||'';
