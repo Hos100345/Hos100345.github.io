@@ -52,11 +52,22 @@ let lastY = 0;
 if (header) window.addEventListener('scroll', () => {
   const y = window.scrollY;
   header.classList.toggle('scrolled', y > 60);
-  if (y > 200) {
+  // כשהתפריט פתוח ההדר לא מתחבא — אחרת התפריט "נתקע" בלי כותרת
+  if (y > 200 && !header.classList.contains('nav-open')) {
     header.classList.toggle('hidden',  y > lastY + 8);
     header.classList.toggle('visible', y < lastY - 8);
   }
   lastY = y;
+}, { passive: true });
+
+// מעבר לדסקטופ בזמן שהתפריט פתוח — משחררים את נעילת הגלילה ואת מצב התפריט
+if (navToggle && navLinks) window.addEventListener('resize', () => {
+  if (window.innerWidth >= 860 && navLinks.classList.contains('open')) {
+    navLinks.classList.remove('open');
+    navToggle.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+    header.classList.remove('nav-open');
+  }
 }, { passive: true });
 
 /* =====================================================

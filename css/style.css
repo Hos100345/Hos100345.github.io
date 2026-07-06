@@ -225,7 +225,11 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .nav-toggle {
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
   gap: 5px;
+  min-width: 44px;
+  min-height: 44px;
   padding: 6px;
   z-index: 1100;
 }
@@ -243,7 +247,12 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 
 /* mobile menu */
 .nav-links {
-  display: none;
+  display: flex;
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+  transition: opacity .25s ease, transform .25s ease, visibility 0s linear .25s;
   flex-direction: column;
   gap: 0;
   position: fixed;
@@ -258,7 +267,13 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   z-index: 1100;
   overflow-y: auto;
 }
-.nav-links.open { display: flex; }
+.nav-links.open {
+  visibility: visible;
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+  transition: opacity .25s ease, transform .25s ease;
+}
 
 .nav-link {
   font-size: 1.2rem;
@@ -279,6 +294,11 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   .nav-toggle { display: none; }
   .nav-links {
     display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: none !important;
+    pointer-events: auto !important;
+    transition: none !important;
     flex-direction: row;
     position: static;
     background: none;

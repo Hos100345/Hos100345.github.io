@@ -271,6 +271,17 @@
     .pack-btn:hover{border-color:var(--indigo);background:rgba(237,233,254,.8);transform:translateY(-2px)}
     .pack-btn:disabled{opacity:.5;cursor:wait}
     .pack-btn .pk-count{font-size:.72rem;font-weight:600;color:var(--muted)}
+    .design-chip{position:relative;padding-inline-end:2.6rem}
+    .design-del{position:absolute;inset-inline-end:.55rem;top:50%;transform:translateY(-50%);width:22px;height:22px;border-radius:50%;background:rgba(239,68,68,.12);color:#dc2626;font-size:.72rem;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer}
+    .design-del:hover{background:#ef4444;color:#fff}
+
+    /* ── הדפסה ומשלוח ── */
+    .print-order{position:relative;border:2px solid rgba(37,211,102,.4)}
+    .po-badge{position:absolute;top:-12px;inset-inline-start:1.4rem;background:linear-gradient(120deg,#25D366,#1DA851);color:#fff;font-size:.75rem;font-weight:800;padding:.25rem .85rem;border-radius:100px;box-shadow:0 4px 14px rgba(37,211,102,.4)}
+    .po-list{list-style:none;display:flex;gap:1rem;flex-wrap:wrap;margin:0;padding:0}
+    .po-list li{font-size:.88rem;font-weight:600;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.7);border-radius:100px;padding:.4rem 1rem}
+    .btn-wa{background:linear-gradient(135deg,#25D366,#1DA851);color:#fff;font-size:1rem}
+    .btn-wa:not(:disabled):hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(37,211,102,.4)}
 
     /* ── ONBOARDING ── */
     .ob-step{display:flex;align-items:flex-start;gap:.85rem;padding:.75rem;background:rgba(67,56,202,.06);border:1.5px solid rgba(67,56,202,.12);border-radius:10px}
@@ -356,6 +367,7 @@ function dcfgSave(patch){
   <div id="lock-err" style="color:#fca5a5;font-size:.88rem;min-height:1.2em"></div>
   <div style="width:min(320px,80vw);height:1px;background:rgba(255,255,255,.18);margin-block:.35rem"></div>
   <div style="color:rgba(255,255,255,.88);font-size:.95rem;font-weight:600">אין לך קוד גישה?</div>
+  <div style="color:rgba(255,255,255,.65);font-size:.83rem;max-width:340px;line-height:1.6">מנוי אישי — יצירת משחקים ללא הגבלה והדפסה בבית · רוצים עותק מודפס? הדפסה בבית דפוס ומשלוח עד הבית בתוספת תשלום</div>
   <a id="lock-wa" href="#" target="_blank" rel="noopener noreferrer"
      style="display:inline-flex;align-items:center;gap:.55rem;background:#25D366;color:#fff;font-weight:700;font-size:1.02rem;padding:.75rem 1.6rem;border-radius:100px;text-decoration:none;box-shadow:0 6px 24px rgba(37,211,102,.45)">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
@@ -465,7 +477,7 @@ function dcfgSave(patch){
       </div>
       <div class="ob-step">
         <div class="ob-ico">📥</div>
-        <div><strong style="color:var(--green)">שלב 3 — ייצוא</strong><div class="ob-s">PDF מוכן להדפסה, ZIP של PNG בודדים, ותמיכה ב-Silhouette Cameo לחיתוך מדויק</div></div>
+        <div><strong style="color:var(--green)">שלב 3 — ייצוא</strong><div class="ob-s">PDF מוכן להדפסה בבית או ZIP של PNG בודדים — ואפשר גם להזמין הדפסה מקצועית בבית דפוס עם משלוח עד הבית (בתוספת תשלום)</div></div>
       </div>
     </div>
     <div style="background:rgba(240,253,244,.85);border:1.5px solid #bbf7d0;border-radius:10px;padding:.75rem 1rem;text-align:center;margin-bottom:.9rem">
@@ -516,6 +528,12 @@ function dcfgSave(patch){
     <div id="packs-wrap" class="packs" style="display:none">
       <div class="og-t" style="margin-top:.4rem">🧰 או התחילו מחבילה מוכנה</div>
       <div class="packs-grid" id="packs-grid"></div>
+    </div>
+
+    <!-- ── העיצובים השמורים שלי ── -->
+    <div id="designs-wrap" class="packs" style="display:none">
+      <div class="og-t" style="margin-top:.4rem">🗂️ העיצובים השמורים שלי</div>
+      <div class="packs-grid" id="designs-grid"></div>
     </div>
 
     <!-- ── Inline Active Gallery ── -->
@@ -597,6 +615,7 @@ function dcfgSave(patch){
         <div class="sb-sec">
           <div class="sb-t">פעולות</div>
           <button class="btn btn-pur" id="btn-reshuffle" style="width:100%;justify-content:center;margin-bottom:.5rem">🔀 ערבב מחדש</button>
+          <button class="btn btn-sec" id="btn-save-design" style="width:100%;justify-content:center;margin-bottom:.5rem">💾 שמור עיצוב</button>
           <button class="btn btn-ghost" id="btn-b1" style="width:100%;justify-content:center;font-size:.82rem">← חזרה להעלאה</button>
         </div>
         <div class="sb-sec">
@@ -701,7 +720,24 @@ function dcfgSave(patch){
     <div class="dl-area" id="dl-area">
       <span style="font-size:.875rem;color:var(--green);font-weight:700">✅ הקובץ מוכן!</span>
       <a class="btn btn-ok" id="dl-link" href="#" download>📥 הורד קובץ</a>
+      <button class="btn btn-sec" id="btn-print-order-2">🚚 או: הדפסה ומשלוח עד הבית</button>
     </div>
+  </div>
+
+  <!-- ── הדפסה מקצועית עד הבית ── -->
+  <div class="box print-order" id="print-order">
+    <span class="po-badge">🚚 בתוספת תשלום</span>
+    <h2 class="box-h">🖨️ רוצים את המשחק מודפס ומוכן?</h2>
+    <p class="box-s">לא חייבים להדפיס לבד — נדפיס את המשחק שלכם בבית דפוס איכותי, נחתוך כל קלף בצורה מדויקת ונשלח עד הבית.</p>
+    <ul class="po-list">
+      <li>🖨️ הדפסה מקצועית על נייר קשיח</li>
+      <li>✂️ חיתוך מדויק לכל קלף</li>
+      <li>📦 אריזה ומשלוח עד הבית</li>
+    </ul>
+    <div class="brow" style="margin-top:1rem">
+      <button class="btn btn-wa" id="btn-print-order">💬 להזמנת הדפסה ומשלוח בוואטסאפ</button>
+    </div>
+    <p style="font-size:.78rem;color:var(--muted);margin-top:.6rem">ההודעה תישלח עם פרטי המשחק שיצרתם — נחזור אליכם עם מחיר וזמן אספקה.</p>
   </div>
 </section>
 
@@ -2173,15 +2209,27 @@ async function loadPack(pk,btn){
 renderPacks();
 
 // ══ PERSISTENCE (IndexedDB) — המאגר נשמר בדפדפן ומשוחזר בביקור הבא ══
-const IDB_NAME='dobble_v1',IDB_STORE='assets';
+const IDB_NAME='dobble_v1',IDB_STORE='assets',IDB_DESIGNS='designs';
 let _idb=null;
 async function idbOpen(){
   if(_idb)return _idb;
   return new Promise((res,rej)=>{
-    const r=indexedDB.open(IDB_NAME,1);
-    r.onupgradeneeded=e=>e.target.result.createObjectStore(IDB_STORE);
+    const r=indexedDB.open(IDB_NAME,2);
+    r.onupgradeneeded=e=>{
+      const db=e.target.result;
+      if(!db.objectStoreNames.contains(IDB_STORE))db.createObjectStore(IDB_STORE);
+      if(!db.objectStoreNames.contains(IDB_DESIGNS))db.createObjectStore(IDB_DESIGNS);
+    };
     r.onsuccess=e=>{_idb=e.target.result;res(_idb);};
     r.onerror=e=>rej(e.target.error);
+  });
+}
+function assetsToRows(){
+  return S.assets.map(a=>{
+    const cv=document.createElement('canvas');cv.width=cv.height=IMG_PX;
+    cv.getContext('2d').drawImage(a.imgEl,0,0,IMG_PX,IMG_PX);
+    return{id:a.id,type:a.type,name:a.name,dataURL:cv.toDataURL('image/jpeg',.82),
+           srcAssetId:a.srcAssetId||null,isCropSource:a.isCropSource||false};
   });
 }
 let _idbTimer=0;
@@ -2189,12 +2237,7 @@ function schedIdbSave(){clearTimeout(_idbTimer);_idbTimer=setTimeout(idbSave,800
 async function idbSave(){
   try{
     const db=await idbOpen();
-    const rows=S.assets.map(a=>{
-      const cv=document.createElement('canvas');cv.width=cv.height=IMG_PX;
-      cv.getContext('2d').drawImage(a.imgEl,0,0,IMG_PX,IMG_PX);
-      return{id:a.id,type:a.type,name:a.name,dataURL:cv.toDataURL('image/jpeg',.82),
-             srcAssetId:a.srcAssetId||null,isCropSource:a.isCropSource||false};
-    });
+    const rows=assetsToRows();
     const tx=db.transaction(IDB_STORE,'readwrite');
     tx.objectStore(IDB_STORE).put(rows,'all');
     await new Promise(r=>{tx.oncomplete=r;tx.onerror=()=>r();});
@@ -2226,6 +2269,119 @@ async function idbClear(){
     tx.objectStore(IDB_STORE).delete('all');
   }catch(e){console.warn('idbClear:',e);}
 }
+
+// ══ עיצובים שמורים ("העיצובים שלי") ══
+async function saveDesign(){
+  if(!S.assets.length){toast('אין תמונות במאגר — העלו תמונות קודם','err');return;}
+  const defName='העיצוב שלי '+new Date().toLocaleDateString('he-IL');
+  const name=(prompt('שם לעיצוב:',defName)||'').trim();
+  if(!name)return;
+  try{
+    const design={name,date:new Date().toLocaleString('he-IL'),rows:assetsToRows(),
+      settings:{shape:S.shape,sMin:S.sMin,sMax:S.sMax,seed:S.seed,layoutMode:S.layoutMode,
+        cardSizeMm:S.cardSizeMm,spacingMm:S.spacingMm,startPos:S.startPos,
+        frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),symPad:S.symPad,
+        orderTotal:S.order?S.order.total:null}};
+    const db=await idbOpen();
+    const tx=db.transaction(IDB_DESIGNS,'readwrite');
+    tx.objectStore(IDB_DESIGNS).put(design,name);
+    await new Promise(r=>{tx.oncomplete=r;tx.onerror=()=>r();});
+    toast(`העיצוב "${name}" נשמר 💾`,'ok');
+    renderDesigns();
+  }catch(e){console.warn('saveDesign:',e);toast('שמירת העיצוב נכשלה','err');}
+}
+
+async function getDesigns(){
+  try{
+    const db=await idbOpen();
+    const tx=db.transaction(IDB_DESIGNS,'readonly');
+    const req=tx.objectStore(IDB_DESIGNS).getAll();
+    return await new Promise(r=>{req.onsuccess=e=>r(e.target.result||[]);req.onerror=()=>r([]);});
+  }catch(e){return[];}
+}
+
+async function deleteDesign(name){
+  if(!confirm(`למחוק את העיצוב "${name}"?`))return;
+  try{
+    const db=await idbOpen();
+    const tx=db.transaction(IDB_DESIGNS,'readwrite');
+    tx.objectStore(IDB_DESIGNS).delete(name);
+    await new Promise(r=>{tx.oncomplete=r;tx.onerror=()=>r();});
+    renderDesigns();
+    toast('העיצוב נמחק','ok');
+  }catch(e){console.warn('deleteDesign:',e);}
+}
+
+function applySettingsToUI(st){
+  // צורת קלף + סידור
+  document.querySelectorAll('#shp .sbt').forEach(b=>b.classList.toggle('on',b.dataset.s===st.shape));
+  document.querySelectorAll('#layout-mode-grp .sbt').forEach(b=>b.classList.toggle('on',b.dataset.lm===st.layoutMode));
+  // סליידרים של גודל סמלים
+  slMn.value=Math.round(st.sMin*100);lblMn.textContent=slMn.value+'%';
+  slMx.value=Math.round(st.sMax*100);lblMx.textContent=slMx.value+'%';
+  // ייצוא
+  slCardSize.value=st.cardSizeMm;lblCardSize.textContent=st.cardSizeMm+'mm';
+  slSpacing.value=st.spacingMm;lblSpacing.textContent=st.spacingMm+'mm';
+  document.querySelectorAll('#startpos-grp .sbt').forEach(b=>b.classList.toggle('on',b.dataset.sp===st.startPos));
+  // עיצוב קלף
+  document.getElementById('sl-fw').value=st.frame.w;document.getElementById('lbl-fw').textContent=st.frame.w+'מ"מ';
+  document.getElementById('sl-fop').value=st.frame.op;document.getElementById('lbl-fop').textContent=st.frame.op+'%';
+  document.getElementById('sl-sympad').value=st.symPad;document.getElementById('lbl-sympad').textContent=st.symPad+'מ"מ';
+  document.getElementById('sl-bop').value=st.bg.op;document.getElementById('lbl-bop').textContent=st.bg.op+'%';
+  document.getElementById('pick-frame').value=st.frame.color;
+  document.getElementById('pick-bg').value=st.bg.color;
+}
+
+async function loadDesign(name){
+  const designs=await getDesigns();
+  const d=designs.find(x=>x.name===name);
+  if(!d){toast('העיצוב לא נמצא','err');return;}
+  // ניקוי המאגר הנוכחי
+  S.assets.forEach(a=>{if(a.type==='image'&&a.url)URL.revokeObjectURL(a.url);});
+  S.assets=[];S.idSeq=0;
+  for(const row of d.rows){
+    try{
+      const imgEl=await loadImg(row.dataURL);
+      S.assets.push({id:row.id,type:row.type,name:row.name,url:'',thumb:makeThumb(imgEl),imgEl,
+                      srcAssetId:row.srcAssetId||undefined,isCropSource:row.isCropSource||false});
+      if(row.id>=S.idSeq)S.idSeq=row.id;
+    }catch(e){console.warn('loadDesign item:',e);}
+  }
+  const st=d.settings||{};
+  Object.assign(S,{shape:st.shape||'circle',sMin:st.sMin??.7,sMax:st.sMax??1.3,
+    seed:st.seed||1,layoutMode:st.layoutMode||'scatter',cardSizeMm:st.cardSizeMm||85,
+    spacingMm:st.spacingMm??5,startPos:st.startPos||'center',symPad:st.symPad??2});
+  if(st.frame)S.frame=Object.assign({},st.frame);
+  if(st.bg)S.bg=Object.assign({},st.bg);
+  applySettingsToUI(S);
+  resetGenerated();
+  goScr(1);
+  schedIdbSave();
+  toast(`העיצוב "${name}" נטען — לחצו "ייצר משחק" 🎨`,'ok');
+}
+
+async function renderDesigns(){
+  const wrap=document.getElementById('designs-wrap');
+  const grid=document.getElementById('designs-grid');
+  if(!wrap||!grid)return;
+  const designs=await getDesigns();
+  grid.innerHTML='';
+  if(!designs.length){wrap.style.display='none';return;}
+  wrap.style.display='';
+  designs.forEach(d=>{
+    const b=document.createElement('button');
+    b.type='button';b.className='pack-btn design-chip';
+    b.innerHTML=`<span>🗂️</span><span>${d.name}</span><span class="pk-count">${(d.rows||[]).length} תמונות · ${d.date||''}</span>`;
+    b.addEventListener('click',()=>loadDesign(d.name));
+    const del=document.createElement('span');
+    del.className='design-del';del.textContent='✕';del.title='מחק עיצוב';
+    del.addEventListener('click',e=>{e.stopPropagation();deleteDesign(d.name);});
+    b.appendChild(del);
+    grid.appendChild(b);
+  });
+}
+document.getElementById('btn-save-design').addEventListener('click',saveDesign);
+renderDesigns();
 
 // ══ ONBOARDING ══
 document.getElementById('onboard-start').addEventListener('click',()=>{
@@ -2406,6 +2562,21 @@ document.getElementById('adm-gate-inp').addEventListener('input',function(){
     setTimeout(()=>{this.value='';document.getElementById('adm-gate-msg').textContent='';},800);
   }
 });
+
+// ══ הזמנת הדפסה ומשלוח עד הבית ══
+function orderPrint(){
+  const waNum=localStorage.getItem('dobble_wa')||DCFG.whatsapp;
+  const shape=S.shape==='circle'?'עגול':'מרובע';
+  const specs=S.order&&S.deck.length
+    ?`\nפרטי המשחק: ${S.deck.length} קלפים · ${S.order.spc} סמלים בקלף · קוטר ${S.cardSizeMm} מ"מ · קלף ${shape}`
+    :'';
+  const msg=`שלום! סיימתי לעצב משחק דאבל במחולל ואשמח להזמין הדפסה ומשלוח עד הבית 🖨️📦${specs}\nשם: \nיישוב וכתובת למשלוח: \nכמות עותקים: `;
+  logGame({total:S.order?S.order.total:'',cards:S.deck.length||'',sizeMm:S.cardSizeMm,filename:'🚚 בקשת הדפסה ומשלוח',type:'print-order'});
+  window.open('https://wa.me/'+waNum+'?text='+encodeURIComponent(msg),'_blank','noopener');
+  toast('נפתחה הודעת וואטסאפ עם פרטי המשחק 💬','ok');
+}
+document.getElementById('btn-print-order').addEventListener('click',orderPrint);
+document.getElementById('btn-print-order-2').addEventListener('click',orderPrint);
 
 // חיבור למסך הנעילה
 window._afterUnlock=()=>{idbLoad();};
