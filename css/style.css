@@ -28,11 +28,17 @@
   --muted:        #6B7280;
   --border:       #E5E7EB;
 
-  --radius:       1rem;
-  --radius-sm:    0.5rem;
+  --radius:       1.15rem;
+  --radius-sm:    0.6rem;
   --radius-pill:  100px;
-  --shadow:       0 4px 24px rgba(0,0,0,.08);
-  --shadow-lg:    0 8px 40px rgba(0,0,0,.14);
+  --shadow:       0 8px 32px rgba(30,27,75,.10), 0 1.5px 4px rgba(30,27,75,.06);
+  --shadow-lg:    0 16px 48px rgba(30,27,75,.18);
+
+  /* ── Glassmorphism (כמו מחולל הדאבל) ── */
+  --glass:        rgba(255,255,255,.6);
+  --glass-strong: rgba(255,255,255,.78);
+  --glass-brd:    1px solid rgba(255,255,255,.65);
+  --glass-blur:   blur(18px) saturate(1.35);
   --transition:   0.3s cubic-bezier(.4,0,.2,1);
 
   --container:    1200px;
@@ -47,11 +53,11 @@ html {
 body {
   font-family: 'Heebo', 'Segoe UI', Tahoma, sans-serif;
   background:
-    radial-gradient(ellipse 70% 55% at  8%  8%, rgba(37,99,235,.13)  0%, transparent 55%),
-    radial-gradient(ellipse 60% 60% at 92% 15%, rgba(124,58,237,.11) 0%, transparent 55%),
-    radial-gradient(ellipse 80% 50% at 50% 95%, rgba(67,56,202,.09)  0%, transparent 55%),
-    radial-gradient(ellipse 55% 55% at 85% 70%, rgba(37,99,235,.07)  0%, transparent 50%),
-    #F0F4FF;
+    radial-gradient(ellipse 65% 50% at 12%  5%, rgba(37,99,235,.20)  0%, transparent 55%),
+    radial-gradient(ellipse 55% 55% at 90% 12%, rgba(124,58,237,.18) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 45% at 50% 100%, rgba(245,158,11,.12) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 50% at 80% 70%, rgba(37,99,235,.10)  0%, transparent 50%),
+    #EEF1FB;
   background-attachment: fixed;
   color: var(--text);
   line-height: 1.7;
@@ -411,9 +417,9 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
    ===================================================== */
 .section {
   padding-block: 5rem;
-  background: rgba(240,244,255,.5);
+  background: transparent;
 }
-.section-alt { background: rgba(219,234,254,.45); }
+.section-alt { background: rgba(219,234,254,.28); }
 
 .section-header {
   text-align: center;
@@ -1667,3 +1673,72 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .price-card-title small { font-weight: 500; color: var(--muted); font-size: 0.85rem; }
 .price-terms { text-align: center; }
 .price-terms .price-note { margin-top: 0.4rem; }
+
+/* =====================================================
+   שכבת זכוכית (Glassmorphism) — תואם למחולל הדאבל
+   ===================================================== */
+
+/* משטחי תוכן → זכוכית חלבית */
+.offer-card,
+.price-card,
+.audience-card,
+.testimonial-card,
+.service-tile,
+.video-placeholder,
+.gallery-more-btn,
+.gallery-back-btn,
+.tnav-btn {
+  background: var(--glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: var(--glass-brd);
+  box-shadow: var(--shadow);
+}
+.subpage-link-card {
+  background: var(--glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+/* גלולות סינון גלריה — זכוכית */
+.gfilter {
+  background: rgba(255,255,255,.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1.5px solid rgba(255,255,255,.7);
+}
+.gfilter:hover { background: rgba(255,255,255,.85); }
+
+/* כרטיסי קשר — מיושרים לטוקנים */
+.contact-card, .contact-social {
+  background: var(--glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+/* הדר בגלילה + תפריט מובייל פתוח */
+.site-header.scrolled:not(.nav-open) {
+  background: rgba(255,255,255,.72);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid rgba(255,255,255,.65);
+}
+@media (max-width: 859px) {
+  .nav-links.open { background: var(--glass-strong); }
+}
+
+/* מבטאי הגרדיאנט נשארים — עם הצל הרך החדש */
+.cta-band, .balloon-cta-card { box-shadow: var(--shadow-lg); }
+
+/* לחיצת כפתור מיידית (Snappy) */
+.btn:active, .gfilter:active, .service-tile:active { transform: scale(.96); transition-duration: .06s; }
+
+/* כיבוד העדפת צמצום תנועה */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+  html { scroll-behavior: auto; }
+}
