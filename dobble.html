@@ -272,14 +272,30 @@
     .pack-btn:disabled{opacity:.5;cursor:wait}
     .pack-btn .pk-count{font-size:.72rem;font-weight:600;color:var(--muted)}
 
-    /* ── פאנל ניהול ── */
-    .adm-field{margin-bottom:.85rem}
-    .adm-field label{display:block;font-size:.8rem;font-weight:700;color:var(--indigo);margin-bottom:.3rem}
-    .adm-field input,.adm-field textarea{width:100%;padding:.55rem .8rem;border-radius:var(--rs);border:1.5px solid var(--border);font-family:inherit;font-size:.9rem;background:rgba(255,255,255,.8);outline:none}
-    .adm-field input:focus,.adm-field textarea:focus{border-color:var(--indigo)}
-    .adm-field textarea{min-height:120px;direction:ltr;font-size:.78rem;font-family:monospace;line-height:1.5}
-    .adm-hint{font-size:.73rem;color:var(--muted);margin-top:.25rem;line-height:1.5}
-    .adm-msg{font-size:.85rem;font-weight:700;min-height:1.3em;margin-top:.4rem}
+    /* ── ONBOARDING ── */
+    .ob-step{display:flex;align-items:flex-start;gap:.85rem;padding:.75rem;background:rgba(67,56,202,.06);border:1.5px solid rgba(67,56,202,.12);border-radius:10px}
+    .ob-ico{font-size:1.45rem;flex-shrink:0;line-height:1.3}
+    .ob-s{font-size:.81rem;color:var(--muted);margin-top:.15rem;line-height:1.5}
+
+    /* ── לוח בקרה (זכוכית כהה) ── */
+    .adm-ov{position:fixed;inset:0;background:rgba(10,14,35,.9);backdrop-filter:blur(16px) saturate(1.2);-webkit-backdrop-filter:blur(16px) saturate(1.2);z-index:9998;overflow-y:auto;display:none;padding:2rem}
+    .adm-ov.on{display:block}
+    .adm-hdr{color:#e2e8f0;font-size:1.15rem;font-weight:900;margin-bottom:1.4rem;display:flex;align-items:center;gap:.7rem;flex-wrap:wrap}
+    .adm-sec{background:rgba(30,41,59,.72);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:1.15rem;margin-bottom:1rem}
+    .adm-sec h3{color:#a5b4fc;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.8rem}
+    .adm-tbl{width:100%;border-collapse:collapse;color:#e2e8f0}
+    .adm-tbl th{color:#64748b;font-size:.68rem;font-weight:700;text-align:right;padding:.4rem .6rem;border-bottom:1px solid #334155}
+    .adm-tbl td{padding:.42rem .6rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.82rem}
+    .adm-tbl tr:last-child td{border-bottom:none}
+    .adm-tag{display:inline-block;padding:.12rem .45rem;border-radius:100px;font-size:.67rem;font-weight:700}
+    .adm-tag.ok{background:#064e3b;color:#6ee7b7}
+    .adm-tag.exp{background:#450a0a;color:#fca5a5}
+    .adm-inp{background:rgba(15,23,42,.85);border:1.5px solid #334155;color:#e2e8f0;border-radius:7px;padding:.42rem .65rem;font-family:inherit;font-size:.85rem;outline:none;width:100%;transition:border-color .2s}
+    .adm-inp:focus{border-color:#4338ca}
+    textarea.adm-inp{min-height:130px;direction:ltr;font-family:monospace;font-size:.76rem;line-height:1.5}
+    .adm-g2{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.6rem}
+    .adm-hint2{font-size:.7rem;color:#64748b;margin-top:.4rem;line-height:1.5}
+    @media(max-width:480px){.adm-g2{grid-template-columns:1fr}.adm-ov{padding:1rem}}
 
     /* ── RESPONSIVE (Mobile First) ── */
     @media(max-width:680px){
@@ -335,7 +351,7 @@ function dcfgSave(patch){
   <div style="font-size:3rem">🎯</div>
   <div style="font-size:1.6rem;font-weight:900;color:#fff;letter-spacing:.05em">מחולל דאבל</div>
   <div style="color:#a5b4fc;font-size:.95rem">הזן/י קוד כניסה</div>
-  <input id="lock-inp" type="password" inputmode="numeric" maxlength="8" placeholder="• • •"
+  <input id="lock-inp" type="password" inputmode="text" maxlength="20" placeholder="• • •"
     style="text-align:center;font-size:2rem;letter-spacing:.6rem;width:180px;padding:.7rem .5rem;border-radius:16px;border:2.5px solid rgba(255,255,255,.35);outline:none;background:rgba(255,255,255,.94);font-family:inherit">
   <div id="lock-err" style="color:#fca5a5;font-size:.88rem;min-height:1.2em"></div>
   <div style="width:min(320px,80vw);height:1px;background:rgba(255,255,255,.18);margin-block:.35rem"></div>
@@ -349,27 +365,118 @@ function dcfgSave(patch){
 </div>
 <script>
 (function(){
-  document.getElementById('lock-wa').href='https://wa.me/'+DCFG.whatsapp+'?text='+encodeURIComponent(DCFG.contactMessage);
+  // מספר וואטסאפ אפקטיבי: מה שהוגדר בלוח הבקרה גובר על קובץ הקונפיג
+  const waNum=localStorage.getItem('dobble_wa')||DCFG.whatsapp;
+  document.getElementById('lock-wa').href='https://wa.me/'+waNum+'?text='+encodeURIComponent(DCFG.contactMessage);
   document.getElementById('lock-phone').textContent='📞 '+DCFG.phoneDisplay;
-  if(sessionStorage.getItem('dobble_unlocked')==='1'){document.getElementById('lock-screen').remove();return;}
+
+  function getManagedCodes(){try{return JSON.parse(localStorage.getItem('dobble_codes')||'[]');}catch{return[];}}
+
+  function removeLockScreen(cb){
+    const ls=document.getElementById('lock-screen');
+    if(!ls){cb&&cb();return;}
+    ls.style.transition='opacity .4s';ls.style.opacity='0';
+    setTimeout(()=>{if(ls.parentNode)ls.remove();cb&&cb();},420);
+  }
+
+  function doUserUnlock(){
+    sessionStorage.setItem('dobble_unlocked','1');
+    removeLockScreen(()=>{
+      if(!localStorage.getItem('dobble_onboarded')){
+        const m=document.getElementById('onboard-modal');if(m)m.hidden=false;
+      }
+      window._afterUnlock&&window._afterUnlock();
+    });
+  }
+
+  function doAdminUnlock(){
+    sessionStorage.setItem('dobble_unlocked','1');
+    removeLockScreen(()=>{window._initAdminPanel&&window._initAdminPanel();});
+  }
+
+  window._tryCode=function(v){
+    // קודי ניהול: הקוד ההיסטורי וגם הקוד מהקונפיג
+    if(v==='dbl2025adm'||v===String(DCFG.adminCode)){doAdminUnlock();return true;}
+    // קודי משתמש: קודים מנוהלים (עם תוקף) + קודי הקונפיג
+    const today=new Date().toISOString().slice(0,10);
+    const managed=getManagedCodes().filter(c=>!c.expiry||c.expiry>=today).map(c=>String(c.code));
+    if(managed.includes(v)||DCFG.accessCodes.map(String).includes(v)){doUserUnlock();return true;}
+    return false;
+  };
+
+  if(sessionStorage.getItem('dobble_unlocked')==='1'){
+    document.getElementById('lock-screen').remove();
+    if(!localStorage.getItem('dobble_onboarded')){
+      window.addEventListener('DOMContentLoaded',()=>{
+        const m=document.getElementById('onboard-modal');if(m)m.hidden=false;
+      });
+    }
+    return;
+  }
+
   const inp=document.getElementById('lock-inp');
   const err=document.getElementById('lock-err');
   inp.focus();
-  const codes=DCFG.accessCodes.map(String);
-  const maxLen=Math.max.apply(null,codes.map(c=>c.length).concat([3]));
+
+  let errTimer,checkTimer;
   inp.addEventListener('input',function(){
-    if(codes.includes(inp.value)){
-      sessionStorage.setItem('dobble_unlocked','1');
-      document.getElementById('lock-screen').style.transition='opacity .4s';
-      document.getElementById('lock-screen').style.opacity='0';
-      setTimeout(()=>document.getElementById('lock-screen').remove(),400);
-    } else if(inp.value.length>=maxLen){
+    clearTimeout(errTimer);clearTimeout(checkTimer);
+    err.textContent='';
+    const v=inp.value;
+    if(!v.length)return;
+    if(window._tryCode(v))return;
+    // השהיה כדי לאפשר הקלדת קוד ניהול ארוך
+    checkTimer=setTimeout(()=>{
+      if(inp.value!==v)return;
+      if(v.length>=3){
+        err.textContent='קוד שגוי ❌';
+        errTimer=setTimeout(()=>{inp.value='';err.textContent='';inp.focus();},900);
+      }
+    },600);
+  });
+
+  inp.addEventListener('keydown',function(e){
+    if(e.key!=='Enter')return;
+    clearTimeout(errTimer);clearTimeout(checkTimer);
+    if(!window._tryCode(inp.value)&&inp.value.length>=1){
       err.textContent='קוד שגוי ❌';
       setTimeout(()=>{inp.value='';err.textContent='';inp.focus();},900);
     }
   });
 })();
 </script>
+
+<!-- ONBOARDING MODAL -->
+<div class="modal-bg" id="onboard-modal" hidden>
+  <div class="modal-card" style="max-width:490px;width:96%">
+    <div style="text-align:center;padding:.3rem 0 1rem">
+      <div style="font-size:2.6rem;margin-bottom:.4rem">🎯</div>
+      <h2 style="font-size:1.2rem;font-weight:900;color:var(--indigo);margin-bottom:.25rem">ברוכים הבאים למחולל דאבל!</h2>
+      <p style="color:var(--muted);font-size:.84rem;line-height:1.55">צור/י משחק Spot-It מותאם אישית בשלושה שלבים פשוטים</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:.55rem;margin-bottom:1rem">
+      <div class="ob-step">
+        <div class="ob-ico">🖼️</div>
+        <div><strong style="color:var(--indigo)">שלב 1 — העלאת סמלים</strong><div class="ob-s">גרור/י תמונות (PNG, JPG, SVG, HEIC) או בחרו חבילה מוכנה. ניתן לחתוך סמלים מתמונות גדולות עם כלי ✂️ וגם לבצע הסרת רקע אוטומטית</div></div>
+      </div>
+      <div class="ob-step">
+        <div class="ob-ico">✨</div>
+        <div><strong style="color:var(--purple)">שלב 2 — יצירה ועיצוב</strong><div class="ob-s">המערכת מחשבת קלפים אוטומטית לפי מתמטיקה מדויקת. ניתן לעצב מסגרת, רקע ופריסת סמלים</div></div>
+      </div>
+      <div class="ob-step">
+        <div class="ob-ico">📥</div>
+        <div><strong style="color:var(--green)">שלב 3 — ייצוא</strong><div class="ob-s">PDF מוכן להדפסה, ZIP של PNG בודדים, ותמיכה ב-Silhouette Cameo לחיתוך מדויק</div></div>
+      </div>
+    </div>
+    <div style="background:rgba(240,253,244,.85);border:1.5px solid #bbf7d0;border-radius:10px;padding:.75rem 1rem;text-align:center;margin-bottom:.9rem">
+      <div style="font-size:.8rem;color:#166534;font-weight:600;margin-bottom:.35rem">💬 לרכישת קוד גישה — צרו קשר</div>
+      <a id="wa-link" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-ok" style="display:inline-flex;justify-content:center;padding:.5rem 1.4rem">
+        📱 פנה/י אלינו בוואטסאפ
+      </a>
+    </div>
+    <button class="btn btn-cta" id="onboard-start" style="width:100%;justify-content:center">🚀 בואו נתחיל!</button>
+  </div>
+</div>
 
 <!-- HEADER -->
 <header class="hdr">
@@ -676,50 +783,77 @@ function dcfgSave(patch){
   </div>
 </div>
 
-<!-- ADMIN MODAL -->
-<div class="modal-bg" id="adm-modal" hidden>
-  <div class="modal-card" style="max-width:560px">
+<!-- ADMIN GATE (כניסה ללוח הבקרה מתוך המחולל) -->
+<div class="modal-bg" id="adm-gate" hidden>
+  <div class="modal-card" style="max-width:340px;text-align:center">
     <div class="modal-hdr">
-      <div class="modal-title">⚙️ פאנל ניהול</div>
-      <button class="modal-x" id="adm-x">✕</button>
+      <div class="modal-title">🔐 קוד ניהול</div>
+      <button class="modal-x" id="adm-gate-x">✕</button>
+    </div>
+    <input id="adm-gate-inp" type="password" maxlength="20" class="adm-inp"
+      style="background:rgba(255,255,255,.85);color:var(--text);border-color:var(--border);text-align:center;font-size:1.25rem;letter-spacing:.3rem">
+    <div id="adm-gate-msg" style="color:#b91c1c;font-size:.85rem;min-height:1.3em;margin-top:.5rem"></div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="admin-panel" class="adm-ov">
+  <div style="max-width:820px;margin:0 auto">
+    <div class="adm-hdr">
+      🔐 לוח בקרה — מחולל דאבל
+      <button onclick="closeAdminPanel()" style="margin-right:auto;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.15);color:#a5b4fc;border-radius:8px;padding:.35rem .85rem;cursor:pointer;font-family:inherit;font-size:.85rem">✕ סגור</button>
     </div>
 
-    <!-- שלב כניסה -->
-    <div id="adm-login">
-      <div class="adm-field">
-        <label for="adm-code">קוד ניהול</label>
-        <input id="adm-code" type="password" inputmode="numeric" maxlength="8" style="text-align:center;letter-spacing:.4rem;font-size:1.3rem">
+    <div class="adm-sec">
+      <h3>⚙️ הגדרות כלליות</h3>
+      <div style="display:flex;gap:.65rem;align-items:center;flex-wrap:wrap">
+        <label style="color:#94a3b8;font-size:.85rem;min-width:130px">מספר וואטסאפ:</label>
+        <input class="adm-inp" id="adm-wa-inp" placeholder="972501234567" style="max-width:210px">
+        <button class="btn btn-pri" onclick="adminSaveWA()" style="font-size:.82rem;padding:.42rem 1rem">💾 שמור</button>
       </div>
-      <div class="adm-msg" id="adm-login-msg" style="color:#b91c1c"></div>
+      <div class="adm-hint2">פורמט: קוד מדינה + מספר ללא + ולא רווחים (לדוג׳: 972501234567)</div>
     </div>
 
-    <!-- פאנל -->
-    <div id="adm-panel" hidden>
-      <div class="adm-field">
-        <label for="adm-codes">קודי כניסה למחולל (מופרדים בפסיק)</label>
-        <input id="adm-codes" type="text" style="direction:ltr">
-        <div class="adm-hint">אפשר להגדיר כמה קודים — למשל קוד שונה לכל לקוח, ולמחוק קוד כשמנוי מסתיים.</div>
+    <div class="adm-sec">
+      <h3>🔑 קודי גישה</h3>
+      <div class="adm-g2">
+        <div>
+          <div style="font-size:.7rem;color:#64748b;margin-bottom:.28rem">קוד חדש</div>
+          <input class="adm-inp" id="adm-code-inp" placeholder="הקלד/י קוד גישה">
+        </div>
+        <div>
+          <div style="font-size:.7rem;color:#64748b;margin-bottom:.28rem">תאריך תפוגה (ריק = ללא הגבלה)</div>
+          <input class="adm-inp" id="adm-exp-inp" type="date">
+        </div>
       </div>
-      <div class="adm-field">
-        <label for="adm-wa">מספר וואטסאפ (בפורמט בינלאומי, למשל 972505918734)</label>
-        <input id="adm-wa" type="text" style="direction:ltr">
+      <div style="margin-bottom:.65rem">
+        <div style="font-size:.7rem;color:#64748b;margin-bottom:.28rem">תיאור / שם לקוח (אופציונלי)</div>
+        <input class="adm-inp" id="adm-label-inp" placeholder="לדוג׳: רחל כהן — יומן 2025">
       </div>
-      <div class="adm-field">
-        <label for="adm-phone">מספר טלפון לתצוגה</label>
-        <input id="adm-phone" type="text" style="direction:ltr">
+      <button class="btn btn-ok" onclick="adminAddCode()" style="font-size:.85rem">➕ הוסף קוד</button>
+      <div id="adm-codes-tbl" style="margin-top:.9rem"></div>
+      <div class="adm-hint2">בנוסף לקודים כאן פעילים תמיד הקודים הקבועים מקובץ ההגדרות (js/dobble-config.js).</div>
+    </div>
+
+    <div class="adm-sec">
+      <h3>🧰 חבילות תמונות מוכנות</h3>
+      <textarea class="adm-inp" id="adm-packs-inp" spellcheck="false"></textarea>
+      <div class="adm-hint2">מבנה: [{"name":"חיות","icon":"🦁","images":["https://lh3.googleusercontent.com/d/FILE_ID"]}] — קישור מדרייב: שיתוף ← "כל מי שיש לו קישור", מזהה הקובץ אחרי ‎/d/‎.</div>
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.7rem">
+        <button class="btn btn-ok" onclick="adminSavePacks()" style="font-size:.82rem">💾 שמור חבילות (בדפדפן זה)</button>
+        <button class="btn btn-pri" onclick="adminExportConfig()" style="font-size:.82rem">📥 יצוא קובץ הגדרות לגיטהאב</button>
       </div>
-      <div class="adm-field">
-        <label for="adm-packs">חבילות תמונות (JSON)</label>
-        <textarea id="adm-packs" spellcheck="false"></textarea>
-        <div class="adm-hint">מבנה: <code>[{"name":"חיות","icon":"🦁","images":["https://lh3.googleusercontent.com/d/FILE_ID"]}]</code><br>קישור מגוגל דרייב: שיתוף → "כל מי שיש לו קישור" → מזהה הקובץ נכנס אחרי <code>/d/</code>.</div>
+      <div id="adm-packs-msg" class="adm-hint2" style="min-height:1.2em"></div>
+    </div>
+
+    <div class="adm-sec">
+      <h3>📊 יומן ייצואים (PDF / ZIP)</h3>
+      <div style="display:flex;gap:.6rem;align-items:center;margin-bottom:.7rem;flex-wrap:wrap">
+        <span id="adm-game-count" style="color:#a5b4fc;font-size:.85rem"></span>
+        <button class="btn btn-ghost" onclick="adminExportCSV()" style="font-size:.77rem;padding:.32rem .8rem;color:#a5b4fc;border-color:#334155">📤 ייצא CSV</button>
+        <button class="btn btn-ghost" onclick="adminClearLog()" style="font-size:.77rem;padding:.32rem .8rem;color:#fca5a5;border-color:#334155">🗑️ נקה יומן</button>
       </div>
-      <div class="brow">
-        <button class="btn btn-ok" id="adm-save">💾 שמור (בדפדפן זה)</button>
-        <button class="btn btn-pri" id="adm-export">📥 יצוא קובץ הגדרות</button>
-        <button class="btn btn-ghost" id="adm-reset">↩️ איפוס עריכות מקומיות</button>
-      </div>
-      <div class="adm-msg" id="adm-msg" style="color:var(--green)"></div>
-      <div class="adm-hint" style="margin-top:.6rem">שמירה חלה על הדפדפן הזה בלבד. כדי שהשינויים יחולו על כולם — "יצוא קובץ הגדרות" והחלפת <code>js/dobble-config.js</code> בגיטהאב.</div>
+      <div id="adm-games-tbl" style="overflow-x:auto;max-height:350px;overflow-y:auto;border-radius:8px"></div>
     </div>
   </div>
 </div>
@@ -910,7 +1044,7 @@ async function addFiles(files){
       renderGallery();updateCounter();
     }catch(e){URL.revokeObjectURL(url);failedNames.push(f.name);console.warn('upload failed:',f.name,e?.message||e);}
   }
-  if(okCount)toast(`נוספו ${okCount} תמונות למאגר ✓`,'ok');
+  if(okCount){toast(`נוספו ${okCount} תמונות למאגר ✓`,'ok');schedIdbSave();}
   if(failedNames.length)alert(`${failedNames.length} תמונות לא נטענו:\n${failedNames.join('\n')}\n\nנסה פורמטים אחרים: PNG, JPG, WebP, SVG.`);
 }
 
@@ -1036,7 +1170,7 @@ function removeAsset(id){
     S.assets=S.assets.filter(x=>!(x.type==='crop'&&x.srcAssetId===id));
   }
   S.assets=S.assets.filter(x=>x.id!==id);
-  renderGallery();updateCounter();
+  renderGallery();updateCounter();schedIdbSave();
 }
 
 // ══ SHAPE ══
@@ -1179,6 +1313,7 @@ function resetGenerated(){
   renderGallery();updateCounter();
 }
 function resetState(){
+  idbClear();
   S.assets.forEach(a=>{if(a.type==='image')URL.revokeObjectURL(a.url);});
   Object.assign(S,{assets:[],order:null,deck:[],layouts:[],imgEls:[],canvases:[],sel:[],seed:1,idSeq:0});
   fi.value='';
@@ -1538,8 +1673,10 @@ async function expPDF(setp){
   if(_exportUrl)URL.revokeObjectURL(_exportUrl);
   _exportUrl=URL.createObjectURL(blob);
   const lnk=document.getElementById('dl-link');
-  lnk.href=_exportUrl;lnk.download=`dobble-${S.order.total}cards-${S.cardSizeMm}mm.pdf`;
+  const fn=`dobble-${S.order.total}cards-${S.cardSizeMm}mm.pdf`;
+  lnk.href=_exportUrl;lnk.download=fn;
   document.getElementById('dl-area').classList.add('on');
+  logGame({total:S.order.total,cards:S.deck.length,sizeMm:S.cardSizeMm,filename:fn,type:'pdf'});
   setp(100,'✅ מוכן!');
 }
 
@@ -1557,8 +1694,11 @@ async function expZIP(setp){
   const blob=await zip.generateAsync({type:'blob'});
   if(_exportUrl)URL.revokeObjectURL(_exportUrl);
   _exportUrl=URL.createObjectURL(blob);
-  const lnk=document.getElementById('dl-link');lnk.href=_exportUrl;lnk.download=`dobble-${S.order.total}cards.zip`;
+  const lnk=document.getElementById('dl-link');
+  const fnz=`dobble-${S.order.total}cards.zip`;
+  lnk.href=_exportUrl;lnk.download=fnz;
   document.getElementById('dl-area').classList.add('on');
+  logGame({total:S.order.total,cards:S.deck.length,sizeMm:S.cardSizeMm,filename:fnz,type:'zip'});
   setp(100,'✅ מוכן!');
 }
 
@@ -1946,7 +2086,7 @@ document.getElementById('btn-crop-add').addEventListener('click',()=>{
   if(asset) asset.isCropSource=true;
   const nAdded=CM.crops.length;
   closeCropModal();
-  renderGallery();updateCounter();
+  renderGallery();updateCounter();schedIdbSave();
   toast(`${nAdded} סמלים נוספו למאגר ✓`,'ok');
 });
 
@@ -2025,75 +2165,164 @@ async function loadPack(pk,btn){
     }catch(e){fail++;console.warn('pack image failed:',url);}
   }
   btn.disabled=false;btn.innerHTML=orig;
+  if(ok)schedIdbSave();
   if(ok&&!fail)toast(`חבילת "${pk.name}" נוספה — ${ok} תמונות ✓`,'ok');
   else if(ok)toast(`נוספו ${ok} תמונות, ${fail} נכשלו`,'err');
   else toast(`טעינת החבילה נכשלה — בדקו שהתמונות משותפות לכולם`,'err');
 }
 renderPacks();
 
-// ══ פאנל ניהול ══
-let _admAuthed=false;
-const admModal=document.getElementById('adm-modal');
-document.getElementById('btn-admin').addEventListener('click',()=>{
-  admModal.hidden=false;
-  if(_admAuthed){showAdmPanel();}
-  else{
-    document.getElementById('adm-login').hidden=false;
-    document.getElementById('adm-panel').hidden=true;
-    const c=document.getElementById('adm-code');c.value='';c.focus();
-  }
-});
-document.getElementById('adm-x').addEventListener('click',()=>{admModal.hidden=true;});
-admModal.addEventListener('click',e=>{if(e.target===e.currentTarget)admModal.hidden=true;});
-
-document.getElementById('adm-code').addEventListener('input',function(){
-  if(this.value===String(DCFG.adminCode)){_admAuthed=true;showAdmPanel();}
-  else if(this.value.length>=String(DCFG.adminCode).length){
-    document.getElementById('adm-login-msg').textContent='קוד שגוי';
-    setTimeout(()=>{this.value='';document.getElementById('adm-login-msg').textContent='';},800);
-  }
-});
-
-function showAdmPanel(){
-  document.getElementById('adm-login').hidden=true;
-  document.getElementById('adm-panel').hidden=false;
-  document.getElementById('adm-codes').value=(DCFG.accessCodes||[]).join(', ');
-  document.getElementById('adm-wa').value=DCFG.whatsapp||'';
-  document.getElementById('adm-phone').value=DCFG.phoneDisplay||'';
-  document.getElementById('adm-packs').value=JSON.stringify(DCFG.packs||[],null,2);
+// ══ PERSISTENCE (IndexedDB) — המאגר נשמר בדפדפן ומשוחזר בביקור הבא ══
+const IDB_NAME='dobble_v1',IDB_STORE='assets';
+let _idb=null;
+async function idbOpen(){
+  if(_idb)return _idb;
+  return new Promise((res,rej)=>{
+    const r=indexedDB.open(IDB_NAME,1);
+    r.onupgradeneeded=e=>e.target.result.createObjectStore(IDB_STORE);
+    r.onsuccess=e=>{_idb=e.target.result;res(_idb);};
+    r.onerror=e=>rej(e.target.error);
+  });
 }
-
-function admCollect(){
-  const codes=document.getElementById('adm-codes').value.split(',').map(s=>s.trim()).filter(Boolean);
-  if(!codes.length)throw new Error('נדרש לפחות קוד כניסה אחד');
-  let packs;
-  try{packs=JSON.parse(document.getElementById('adm-packs').value||'[]');}
-  catch(e){throw new Error('ה-JSON של החבילות לא תקין: '+e.message);}
-  if(!Array.isArray(packs))throw new Error('החבילות חייבות להיות רשימה [...]');
-  return{
-    accessCodes:codes,
-    whatsapp:document.getElementById('adm-wa').value.trim()||DCFG.whatsapp,
-    phoneDisplay:document.getElementById('adm-phone').value.trim()||DCFG.phoneDisplay,
-    packs
-  };
-}
-
-document.getElementById('adm-save').addEventListener('click',()=>{
-  const msg=document.getElementById('adm-msg');
+let _idbTimer=0;
+function schedIdbSave(){clearTimeout(_idbTimer);_idbTimer=setTimeout(idbSave,800);}
+async function idbSave(){
   try{
-    dcfgSave(admCollect());
+    const db=await idbOpen();
+    const rows=S.assets.map(a=>{
+      const cv=document.createElement('canvas');cv.width=cv.height=IMG_PX;
+      cv.getContext('2d').drawImage(a.imgEl,0,0,IMG_PX,IMG_PX);
+      return{id:a.id,type:a.type,name:a.name,dataURL:cv.toDataURL('image/jpeg',.82),
+             srcAssetId:a.srcAssetId||null,isCropSource:a.isCropSource||false};
+    });
+    const tx=db.transaction(IDB_STORE,'readwrite');
+    tx.objectStore(IDB_STORE).put(rows,'all');
+    await new Promise(r=>{tx.oncomplete=r;tx.onerror=()=>r();});
+  }catch(e){console.warn('idbSave:',e);}
+}
+async function idbLoad(){
+  try{
+    const db=await idbOpen();
+    const tx=db.transaction(IDB_STORE,'readonly');
+    const req=tx.objectStore(IDB_STORE).get('all');
+    const rows=await new Promise(r=>{req.onsuccess=e=>r(e.target.result);req.onerror=()=>r(null);});
+    if(!rows||!rows.length)return;
+    for(const d of rows){
+      try{
+        const imgEl=await loadImg(d.dataURL);
+        const thumb=makeThumb(imgEl);
+        S.assets.push({id:d.id,type:d.type,name:d.name,url:'',thumb,imgEl,
+                        srcAssetId:d.srcAssetId||undefined,isCropSource:d.isCropSource||false});
+        if(d.id>=S.idSeq)S.idSeq=d.id;
+      }catch(e){console.warn('idbLoad item:',e);}
+    }
+    if(S.assets.length){renderGallery();updateCounter();toast(`המאגר שוחזר — ${S.assets.filter(a=>!a.isCropSource).length} סמלים 📦`,'ok');}
+  }catch(e){console.warn('idbLoad:',e);}
+}
+async function idbClear(){
+  try{
+    const db=await idbOpen();
+    const tx=db.transaction(IDB_STORE,'readwrite');
+    tx.objectStore(IDB_STORE).delete('all');
+  }catch(e){console.warn('idbClear:',e);}
+}
+
+// ══ ONBOARDING ══
+document.getElementById('onboard-start').addEventListener('click',()=>{
+  localStorage.setItem('dobble_onboarded','1');
+  document.getElementById('onboard-modal').hidden=true;
+});
+function updateWaLink(){
+  const n=localStorage.getItem('dobble_wa')||DCFG.whatsapp||'';
+  const el=document.getElementById('wa-link');
+  if(el)el.href=n?`https://wa.me/${n}?text=${encodeURIComponent(DCFG.contactMessage)}`:'#';
+}
+updateWaLink();
+
+// ══ לוח בקרה ══
+function closeAdminPanel(){document.getElementById('admin-panel').classList.remove('on');}
+
+function adminGetCodes(){try{return JSON.parse(localStorage.getItem('dobble_codes')||'[]');}catch{return[];}}
+function adminSaveCodes(c){localStorage.setItem('dobble_codes',JSON.stringify(c));}
+
+function adminSaveWA(){
+  const v=document.getElementById('adm-wa-inp').value.trim().replace(/\D/g,'');
+  if(!v){toast('הזן מספר תקין','err');return;}
+  localStorage.setItem('dobble_wa',v);
+  updateWaLink();
+  toast('✅ מספר וואטסאפ נשמר','ok');
+}
+
+function adminAddCode(){
+  const code=document.getElementById('adm-code-inp').value.trim();
+  const expiry=document.getElementById('adm-exp-inp').value;
+  const label=document.getElementById('adm-label-inp').value.trim();
+  if(!code){toast('הזן קוד','err');return;}
+  const codes=adminGetCodes();
+  if(codes.find(c=>c.code===code)){toast('קוד זה כבר קיים','err');return;}
+  codes.unshift({code,expiry:expiry||'',label:label||''});
+  adminSaveCodes(codes);
+  document.getElementById('adm-code-inp').value='';
+  document.getElementById('adm-exp-inp').value='';
+  document.getElementById('adm-label-inp').value='';
+  adminRenderCodes();
+  toast('הקוד נוסף ✓','ok');
+}
+
+function adminDeleteCode(code){
+  if(!confirm(`מחק קוד "${code}"?`))return;
+  adminSaveCodes(adminGetCodes().filter(c=>c.code!==code));
+  adminRenderCodes();
+}
+
+function adminRenderCodes(){
+  const codes=adminGetCodes();
+  const el=document.getElementById('adm-codes-tbl');
+  const today=new Date().toISOString().slice(0,10);
+  if(!codes.length){el.innerHTML='<div style="color:#64748b;font-size:.85rem;padding:.5rem 0">אין קודים מנוהלים — הוסף קוד ראשון למעלה</div>';return;}
+  el.innerHTML=`<table class="adm-tbl"><thead><tr><th>קוד</th><th>תיאור</th><th>תפוגה</th><th>סטטוס</th><th></th></tr></thead><tbody>${
+    codes.map(c=>{
+      const expired=c.expiry&&c.expiry<today;
+      const esc=c.code.replace(/'/g,"\\'");
+      return `<tr>
+        <td style="font-family:monospace;font-size:.9rem;color:#e2e8f0;letter-spacing:.04em">${c.code}</td>
+        <td style="color:#94a3b8">${c.label||'—'}</td>
+        <td style="color:#94a3b8">${c.expiry||'ללא'}</td>
+        <td><span class="adm-tag ${expired?'exp':'ok'}">${expired?'פג תוקף':'פעיל'}</span></td>
+        <td><button onclick="adminDeleteCode('${esc}')" style="background:none;border:none;color:#f87171;cursor:pointer;font-size:.9rem;padding:.1rem .3rem">✕</button></td>
+      </tr>`;
+    }).join('')
+  }</tbody></table>`;
+}
+
+// ── חבילות תמונות ──
+function adminSavePacks(){
+  const msg=document.getElementById('adm-packs-msg');
+  try{
+    const packs=JSON.parse(document.getElementById('adm-packs-inp').value||'[]');
+    if(!Array.isArray(packs))throw new Error('החבילות חייבות להיות רשימה [...]');
+    dcfgSave({packs});
     renderPacks();
-    msg.style.color='var(--green)';msg.textContent='✅ נשמר בדפדפן זה';
-    toast('ההגדרות נשמרו ✓','ok');
-  }catch(e){msg.style.color='#b91c1c';msg.textContent='⚠️ '+e.message;}
-});
+    msg.style.color='#6ee7b7';msg.textContent='✅ נשמר בדפדפן זה';
+    toast('החבילות נשמרו ✓','ok');
+  }catch(e){msg.style.color='#fca5a5';msg.textContent='⚠️ JSON לא תקין: '+e.message;}
+}
 
-document.getElementById('adm-export').addEventListener('click',()=>{
-  const msg=document.getElementById('adm-msg');
+function adminExportConfig(){
+  const msg=document.getElementById('adm-packs-msg');
   try{
-    const cfg=Object.assign({},admCollect(),{adminCode:DCFG.adminCode,contactMessage:DCFG.contactMessage});
+    let packs=DCFG.packs;
+    try{packs=JSON.parse(document.getElementById('adm-packs-inp').value||'[]');}catch(e){}
+    const cfg={
+      accessCodes:DCFG.accessCodes,
+      adminCode:DCFG.adminCode,
+      whatsapp:localStorage.getItem('dobble_wa')||DCFG.whatsapp,
+      phoneDisplay:DCFG.phoneDisplay,
+      contactMessage:DCFG.contactMessage,
+      packs
+    };
     const file='// =====================================================\n'+
-      '// הגדרות מחולל הדאבל — הוחלף מתוך פאנל הניהול\n'+
+      '// הגדרות מחולל הדאבל — יוצא מלוח הבקרה\n'+
       '// העלו קובץ זה במקום js/dobble-config.js בגיטהאב\n'+
       '// =====================================================\n\n'+
       'window.DOBBLE_CONFIG = '+JSON.stringify(cfg,null,2)+';\n';
@@ -2101,15 +2330,89 @@ document.getElementById('adm-export').addEventListener('click',()=>{
     a.href=URL.createObjectURL(new Blob([file],{type:'text/javascript'}));
     a.download='dobble-config.js';a.click();
     setTimeout(()=>URL.revokeObjectURL(a.href),4000);
-    msg.style.color='var(--green)';msg.textContent='✅ הקובץ ירד — החליפו את js/dobble-config.js בגיטהאב';
-  }catch(e){msg.style.color='#b91c1c';msg.textContent='⚠️ '+e.message;}
+    msg.style.color='#6ee7b7';msg.textContent='✅ הקובץ ירד — החליפו את js/dobble-config.js בגיטהאב';
+  }catch(e){msg.style.color='#fca5a5';msg.textContent='⚠️ '+e.message;}
+}
+
+// ── יומן ייצואים ──
+function getGameLog(){try{return JSON.parse(localStorage.getItem('dobble_games')||'[]');}catch{return[];}}
+function logGame(meta){
+  const log=getGameLog();
+  log.unshift({...meta,date:new Date().toLocaleString('he-IL')});
+  if(log.length>1000)log.length=1000;
+  localStorage.setItem('dobble_games',JSON.stringify(log));
+}
+
+function adminRenderGames(){
+  const games=getGameLog();
+  const cnt=document.getElementById('adm-game-count');
+  const el=document.getElementById('adm-games-tbl');
+  cnt.textContent=`${games.length} רשומות`;
+  if(!games.length){el.innerHTML='<div style="color:#64748b;font-size:.85rem;padding:.5rem 0">אין ייצואים עדיין</div>';return;}
+  el.innerHTML=`<table class="adm-tbl" style="min-width:480px"><thead><tr><th>תאריך</th><th>סמלים</th><th>קלפים</th><th>גודל</th><th>שם קובץ</th></tr></thead><tbody>${
+    games.slice(0,200).map(g=>`<tr>
+      <td style="color:#94a3b8;white-space:nowrap;font-size:.78rem">${g.date||''}</td>
+      <td>${g.total||'—'}</td>
+      <td>${g.cards||'—'}</td>
+      <td>${g.sizeMm||'—'}mm</td>
+      <td style="color:#94a3b8;font-size:.78rem;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${g.filename||'—'}</td>
+    </tr>`).join('')
+  }</tbody></table>`;
+}
+
+function adminExportCSV(){
+  const games=getGameLog();
+  if(!games.length){toast('אין נתונים לייצוא','err');return;}
+  const csv='תאריך,סמלים,קלפים,גודל (mm),שם קובץ\n'+
+    games.map(g=>`"${g.date||''}",${g.total||''},${g.cards||''},${g.sizeMm||''},"${g.filename||''}"`).join('\n');
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='dobble-exports.csv';a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
+}
+
+function adminClearLog(){
+  if(!confirm('למחוק את כל יומן הייצואים?'))return;
+  localStorage.removeItem('dobble_games');
+  adminRenderGames();
+}
+
+function openAdminPanel(){
+  document.getElementById('admin-panel').classList.add('on');
+  document.getElementById('adm-wa-inp').value=localStorage.getItem('dobble_wa')||DCFG.whatsapp||'';
+  document.getElementById('adm-packs-inp').value=JSON.stringify(DCFG.packs||[],null,2);
+  adminRenderCodes();
+  adminRenderGames();
+}
+
+// ── כניסה ללוח מתוך המחולל (⚙️) ──
+let _admAuthed=false;
+const admGate=document.getElementById('adm-gate');
+document.getElementById('btn-admin').addEventListener('click',()=>{
+  if(_admAuthed){openAdminPanel();return;}
+  admGate.hidden=false;
+  const inp=document.getElementById('adm-gate-inp');
+  inp.value='';inp.focus();
+});
+document.getElementById('adm-gate-x').addEventListener('click',()=>{admGate.hidden=true;});
+admGate.addEventListener('click',e=>{if(e.target===e.currentTarget)admGate.hidden=true;});
+document.getElementById('adm-gate-inp').addEventListener('input',function(){
+  if(this.value==='dbl2025adm'||this.value===String(DCFG.adminCode)){
+    _admAuthed=true;
+    admGate.hidden=true;
+    openAdminPanel();
+  }else if(this.value.length>=Math.max(String(DCFG.adminCode).length,10)){
+    document.getElementById('adm-gate-msg').textContent='קוד שגוי';
+    setTimeout(()=>{this.value='';document.getElementById('adm-gate-msg').textContent='';},800);
+  }
 });
 
-document.getElementById('adm-reset').addEventListener('click',()=>{
-  localStorage.removeItem('dobble_config_override');
-  toast('העריכות המקומיות אופסו — נטען מהקובץ','ok');
-  setTimeout(()=>location.reload(),700);
-});
+// חיבור למסך הנעילה
+window._afterUnlock=()=>{idbLoad();};
+window._initAdminPanel=()=>{_admAuthed=true;openAdminPanel();};
+
+// אם כבר פתוח מהסשן — שחזור המאגר מיד
+if(sessionStorage.getItem('dobble_unlocked')==='1'){idbLoad();}
 
 // ══ UTILS ══
 function loadImg(url){
