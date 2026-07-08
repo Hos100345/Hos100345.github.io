@@ -260,9 +260,9 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255,255,255,.97);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  height: calc(100vh - var(--nav-h));
+  height: calc(100dvh - var(--nav-h));
+  background: rgba(255,255,255,.98);
   padding: 2rem 1.5rem;
   z-index: 1100;
   overflow-y: auto;
@@ -1743,8 +1743,13 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   -webkit-backdrop-filter: var(--glass-blur);
   border-bottom: 1px solid rgba(255,255,255,.65);
 }
+/* במובייל התפריט נשאר אטום ובלי blur — יציבות ציור באנדרואיד */
 @media (max-width: 859px) {
-  .nav-links.open { background: var(--glass-strong); }
+  .nav-links, .nav-links.open {
+    background: rgba(255,255,255,.98);
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
 }
 
 /* מבטאי הגרדיאנט נשארים — עם הצל הרך החדש */
