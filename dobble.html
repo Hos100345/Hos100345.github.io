@@ -404,13 +404,18 @@ function dcfgSave(patch){
     removeLockScreen(()=>{window._initAdminPanel&&window._initAdminPanel();});
   }
 
+  // מנרמל רשומת קוד: מחרוזת "739154" או אובייקט {code,expiry,label} → {code,expiry}
+  window._normCode=function(c){
+    if(c&&typeof c==='object')return{code:String(c.code),expiry:c.expiry||''};
+    return{code:String(c),expiry:''};
+  };
   window._tryCode=function(v){
-    // קודי ניהול: הקוד ההיסטורי וגם הקוד מהקונפיג
+    // קוד ניהול: הקוד ההיסטורי וגם הקוד מהקונפיג
     if(v==='dbl2025adm'||v===String(DCFG.adminCode)){doAdminUnlock();return true;}
-    // קודי משתמש: קודים מנוהלים (עם תוקף) + קודי הקונפיג
+    // קודי משתמש: קודי הקונפיג (גלובליים לכולם) + קודים מנוהלים (מקומיים) — שניהם עם תמיכה בתוקף
     const today=new Date().toISOString().slice(0,10);
-    const managed=getManagedCodes().filter(c=>!c.expiry||c.expiry>=today).map(c=>String(c.code));
-    if(managed.includes(v)||DCFG.accessCodes.map(String).includes(v)){doUserUnlock();return true;}
+    const all=(DCFG.accessCodes||[]).concat(getManagedCodes()).map(window._normCode);
+    if(all.some(c=>c.code===v&&(!c.expiry||c.expiry>=today))){doUserUnlock();return true;}
     return false;
   };
 
@@ -2471,8 +2476,15 @@ function adminExportConfig(){
   try{
     let packs=DCFG.packs;
     try{packs=JSON.parse(document.getElementById('adm-packs-inp').value||'[]');}catch(e){}
+    // מאחד את קודי הקונפיג עם הקודים שנוספו בלוח הבקרה (עם תוקף/תווית), ללא כפילויות
+    const seen={},codes=[];
+    (DCFG.accessCodes||[]).concat(adminGetCodes()).forEach(raw=>{
+      const n=window._normCode(raw),src=(raw&&typeof raw==='object')?raw:null;
+      if(seen[n.code])return;seen[n.code]=1;
+      codes.push((n.expiry||(src&&src.label))?{code:n.code,expiry:n.expiry||'',label:(src&&src.label)||''}:n.code);
+    });
     const cfg={
-      accessCodes:DCFG.accessCodes,
+      accessCodes:codes,
       adminCode:DCFG.adminCode,
       whatsapp:localStorage.getItem('dobble_wa')||DCFG.whatsapp,
       phoneDisplay:DCFG.phoneDisplay,
