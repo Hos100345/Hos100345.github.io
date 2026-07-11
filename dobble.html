@@ -346,7 +346,7 @@
 // קונפיג בזמן ריצה: ברירות מחדל ← קובץ הקונפיג ← עריכות מקומיות מפאנל הניהול
 window.DCFG=(function(){
   const def={accessCodes:[],adminCode:'8734',whatsapp:'972505918734',phoneDisplay:'050-591-8734',
-             contactMessage:'שלום הושעיה, אשמח לקבל קוד גישה למחולל הדאבל 🎯',packs:[]};
+             contactMessage:'שלום הושעיה, אשמח לקבל קוד גישה למחולל הדאבל 🎯',analyticsUrl:'',packs:[]};
   let ov={};try{ov=JSON.parse(localStorage.getItem('dobble_config_override')||'{}')}catch(e){}
   return Object.assign({},def,window.DOBBLE_CONFIG||{},ov);
 })();
@@ -392,9 +392,12 @@ function dcfgSave(patch){
     setTimeout(()=>{if(ls.parentNode)ls.remove();cb&&cb();},420);
   }
 
-  function doUserUnlock(){
+  function doUserUnlock(code,label){
     sessionStorage.setItem('dobble_unlocked','1');
+    // שומרים איזה מנוי נכנס — יצורף לכל אירוע מעקב
+    try{sessionStorage.setItem('dobble_sub',JSON.stringify({code:code||'',label:label||''}));}catch(e){}
     removeLockScreen(()=>{
+      window.track&&window.track('unlock',{});
       window._afterUnlock&&window._afterUnlock();
     });
   }
@@ -414,8 +417,13 @@ function dcfgSave(patch){
     if(v==='dbl2025adm'||v===String(DCFG.adminCode)){doAdminUnlock();return true;}
     // קודי משתמש: קודי הקונפיג (גלובליים לכולם) + קודים מנוהלים (מקומיים) — שניהם עם תמיכה בתוקף
     const today=new Date().toISOString().slice(0,10);
-    const all=(DCFG.accessCodes||[]).concat(getManagedCodes()).map(window._normCode);
-    if(all.some(c=>c.code===v&&(!c.expiry||c.expiry>=today))){doUserUnlock();return true;}
+    const entries=(DCFG.accessCodes||[]).concat(getManagedCodes());
+    const hit=entries.map(e=>({raw:e,n:window._normCode(e)}))
+                     .find(x=>x.n.code===v&&(!x.n.expiry||x.n.expiry>=today));
+    if(hit){
+      const label=(hit.raw&&typeof hit.raw==='object')?(hit.raw.label||''):'';
+      doUserUnlock(v,label);return true;
+    }
     return false;
   };
 
@@ -853,6 +861,12 @@ function dcfgSave(patch){
         <button class="btn btn-pri" onclick="adminSaveWA()" style="font-size:.82rem;padding:.42rem 1rem">💾 שמור</button>
       </div>
       <div class="adm-hint2">פורמט: קוד מדינה + מספר ללא + ולא רווחים (לדוג׳: 972501234567)</div>
+      <div style="display:flex;gap:.65rem;align-items:center;flex-wrap:wrap;margin-top:.85rem">
+        <label style="color:#94a3b8;font-size:.85rem;min-width:130px">כתובת מעקב פעילות:</label>
+        <input class="adm-inp" id="adm-analytics-inp" placeholder="https://script.google.com/…/exec" style="max-width:320px;direction:ltr">
+        <button class="btn btn-pri" onclick="adminSaveAnalytics()" style="font-size:.82rem;padding:.42rem 1rem">💾 שמור</button>
+      </div>
+      <div class="adm-hint2">כתובת ה-Web App שאוסף פעילות לגיליון (ריק = מעקב כבוי). ראו analytics-endpoint.gs.</div>
     </div>
 
     <div class="adm-sec">
@@ -1273,6 +1287,7 @@ async function generate(){
   document.getElementById('gen-ov').style.display='none';
   document.getElementById('prev-wrap').style.display='block';
   toast(`נוצרו ${S.deck.length} קלפים 🎉`,'ok');
+  window.track&&window.track('game',{cards:S.deck.length,symbols:S.order.spc,total:S.order.total});
 }
 
 async function renderAll(){
@@ -2416,6 +2431,13 @@ function adminSaveWA(){
   toast('✅ מספר וואטסאפ נשמר','ok');
 }
 
+function adminSaveAnalytics(){
+  const v=document.getElementById('adm-analytics-inp').value.trim();
+  if(v)localStorage.setItem('dobble_analytics_url',v);
+  else localStorage.removeItem('dobble_analytics_url');
+  toast(v?'✅ מעקב הופעל':'מעקב כובה','ok');
+}
+
 function adminAddCode(){
   const code=document.getElementById('adm-code-inp').value.trim();
   const expiry=document.getElementById('adm-exp-inp').value;
@@ -2489,6 +2511,7 @@ function adminExportConfig(){
       whatsapp:localStorage.getItem('dobble_wa')||DCFG.whatsapp,
       phoneDisplay:DCFG.phoneDisplay,
       contactMessage:DCFG.contactMessage,
+      analyticsUrl:localStorage.getItem('dobble_analytics_url')||DCFG.analyticsUrl||'',
       packs
     };
     const file='// =====================================================\n'+
@@ -2512,6 +2535,22 @@ function logGame(meta){
   if(log.length>1000)log.length=1000;
   localStorage.setItem('dobble_games',JSON.stringify(log));
 }
+
+// ══ מעקב פעילות מרכזי (אירועים נשלחים לגיליון גוגל דרך analyticsUrl) ══
+function analyticsUrl(){return localStorage.getItem('dobble_analytics_url')||DCFG.analyticsUrl||'';}
+function currentSub(){try{return JSON.parse(sessionStorage.getItem('dobble_sub')||'{}');}catch(e){return{};}}
+window.track=function(event,data){
+  try{
+    const url=analyticsUrl();
+    if(!url)return;                         // מעקב כבוי — לא שולחים כלום
+    const sub=currentSub();
+    const payload=Object.assign({event,code:sub.code||'',label:sub.label||'',
+      ts:new Date().toISOString(),ua:navigator.userAgent},data||{});
+    fetch(url,{method:'POST',mode:'no-cors',keepalive:true,
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify(payload)}).catch(()=>{});
+  }catch(e){}
+};
 
 function adminRenderGames(){
   const games=getGameLog();
@@ -2550,6 +2589,7 @@ function adminClearLog(){
 function openAdminPanel(){
   document.getElementById('admin-panel').classList.add('on');
   document.getElementById('adm-wa-inp').value=localStorage.getItem('dobble_wa')||DCFG.whatsapp||'';
+  document.getElementById('adm-analytics-inp').value=localStorage.getItem('dobble_analytics_url')||DCFG.analyticsUrl||'';
   document.getElementById('adm-packs-inp').value=JSON.stringify(DCFG.packs||[],null,2);
   adminRenderCodes();
   adminRenderGames();
@@ -2586,6 +2626,7 @@ function orderPrint(){
     :'';
   const msg=`שלום! סיימתי לעצב משחק דאבל במחולל ואשמח להזמין הדפסה ומשלוח עד הבית 🖨️📦${specs}\nשם: \nיישוב וכתובת למשלוח: \nכמות עותקים: `;
   logGame({total:S.order?S.order.total:'',cards:S.deck.length||'',sizeMm:S.cardSizeMm,filename:'🚚 בקשת הדפסה ומשלוח',type:'print-order'});
+  window.track&&window.track('print-order',{cards:S.deck.length||'',symbols:S.order?S.order.spc:'',detail:`קוטר ${S.cardSizeMm}מ"מ · ${shape}`});
   window.open('https://wa.me/'+waNum+'?text='+encodeURIComponent(msg),'_blank','noopener');
   toast('נפתחה הודעת וואטסאפ עם פרטי המשחק 💬','ok');
 }

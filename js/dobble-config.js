@@ -18,6 +18,10 @@ window.DOBBLE_CONFIG = {
   phoneDisplay: "050-591-8734",
   contactMessage: "שלום הושעיה, אשמח לקבל קוד גישה למחולל הדאבל 🎯",
 
+  // מעקב פעילות: כתובת ה-Web App של Google Apps Script שאוסף אירועים לגיליון.
+  // ריק = מעקב כבוי. ראו analytics-endpoint.gs להוראות הפעלה.
+  analyticsUrl: "",
+
   // חבילות תמונות מוכנות — כל חבילה: שם, אייקון ורשימת כתובות תמונה
   // (קישורי גוגל דרייב בפורמט https://lh3.googleusercontent.com/d/FILE_ID)
   packs: [
