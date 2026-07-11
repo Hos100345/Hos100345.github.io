@@ -8,6 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root{
       --blue:#2563EB;--blue-light:#DBEAFE;--indigo:#4338CA;
@@ -48,6 +49,8 @@
     .hdr-back:hover{color:#fff}
     .hdr-gear{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:50%;width:38px;height:38px;font-size:1.05rem;cursor:pointer;flex-shrink:0;transition:all var(--tr);display:flex;align-items:center;justify-content:center}
     .hdr-gear:hover{background:rgba(255,255,255,.28);transform:rotate(40deg)}
+    #btn-account:hover{transform:none;background:rgba(255,255,255,.28)}
+    .acct-dot{position:absolute;top:5px;inset-inline-end:5px;width:9px;height:9px;border-radius:50%;background:#34d399;border:1.5px solid #fff}
     .hdr-title{flex:1}
     .hdr-title h1{font-size:1.35rem;font-weight:900;line-height:1.2}
     .hdr-title .sub{font-size:.72rem;opacity:.7}
@@ -342,6 +345,7 @@
 
 <!-- CONFIG (קודים, וואטסאפ, חבילות) -->
 <script src="js/dobble-config.js"></script>
+<script src="js/supabase-config.js"></script>
 <script>
 // קונפיג בזמן ריצה: ברירות מחדל ← קובץ הקונפיג ← עריכות מקומיות מפאנל הניהול
 window.DCFG=(function(){
@@ -517,6 +521,7 @@ function dcfgSave(patch){
     <div class="si-sep"></div>
     <div class="si" id="si3"><span class="n">3</span>ייצוא</div>
   </nav>
+  <button class="hdr-gear" id="btn-account" title="חשבון וסנכרון" aria-label="חשבון וסנכרון" style="position:relative">👤<span id="acct-dot" class="acct-dot" hidden></span></button>
   <button class="hdr-gear" id="btn-admin" title="פאנל ניהול" aria-label="פאנל ניהול">⚙️</button>
 </header>
 
@@ -828,6 +833,42 @@ function dcfgSave(patch){
     <div class="brow" style="justify-content:flex-end;margin-top:.65rem">
       <button class="btn btn-ghost" id="btn-crop-cancel">ביטול</button>
       <button class="btn btn-ok" id="btn-crop-add" disabled>✅ הוסף למאגר</button>
+    </div>
+  </div>
+</div>
+
+<!-- AUTH MODAL (חשבון וסנכרון — Magic Link) -->
+<div class="modal-bg" id="auth-modal" hidden>
+  <div class="modal-card" style="max-width:420px">
+    <div class="modal-hdr">
+      <div class="modal-title">☁️ חשבון וסנכרון</div>
+      <button class="modal-x" id="auth-x">✕</button>
+    </div>
+
+    <!-- מנותק -->
+    <div id="auth-out">
+      <p style="font-size:.9rem;color:var(--muted);line-height:1.6;margin-bottom:1rem">
+        התחברו כדי לגבות את העיצובים שלכם לחשבון האישי — כך הם לא ייעלמו אם תחליפו מכשיר או תנקו את הדפדפן. הכניסה במייל, בלי סיסמה.
+      </p>
+      <div class="adm-field">
+        <label for="auth-email">המייל שלכם</label>
+        <input id="auth-email" type="email" inputmode="email" placeholder="name@example.com"
+          style="width:100%;padding:.6rem .8rem;border-radius:var(--rs);border:1.5px solid var(--border);font-family:inherit;font-size:1rem;direction:ltr;text-align:left;background:rgba(255,255,255,.85);outline:none">
+      </div>
+      <button class="btn btn-ok" id="auth-send" style="width:100%;justify-content:center">✉️ שלחו לי קישור כניסה</button>
+      <div id="auth-msg" style="font-size:.85rem;min-height:1.3em;margin-top:.6rem;text-align:center"></div>
+    </div>
+
+    <!-- מחובר -->
+    <div id="auth-in" hidden>
+      <div style="text-align:center;padding:.3rem 0 1rem">
+        <div style="font-size:2.2rem">✅</div>
+        <p style="font-size:.9rem;color:var(--muted);margin-top:.3rem">מחובר/ת כ־</p>
+        <p style="font-weight:700;direction:ltr" id="auth-user"></p>
+      </div>
+      <div id="auth-sync" style="background:rgba(240,253,244,.85);border:1.5px solid #bbf7d0;border-radius:10px;padding:.7rem 1rem;text-align:center;font-size:.85rem;color:#166534;margin-bottom:1rem"></div>
+      <div class="adm-hint2" style="text-align:center;margin-bottom:1rem;color:var(--muted)">בשלב זה מגובות <strong>הגדרות</strong> העיצוב. גיבוי התמונות עצמן יתווסף בקרוב.</div>
+      <button class="btn btn-ghost" id="auth-signout" style="width:100%;justify-content:center">התנתקות</button>
     </div>
   </div>
 </div>
@@ -2632,6 +2673,89 @@ function orderPrint(){
 }
 document.getElementById('btn-print-order').addEventListener('click',orderPrint);
 document.getElementById('btn-print-order-2').addEventListener('click',orderPrint);
+
+// ══ SUPABASE — חשבון וסנכרון (Magic Link) ══
+let SB=null;
+(function initSupabase(){
+  try{
+    const cfg=window.SUPABASE_CONFIG||{};
+    if(cfg.url&&cfg.anonKey&&window.supabase&&window.supabase.createClient){
+      SB=window.supabase.createClient(cfg.url,cfg.anonKey);
+    }
+  }catch(e){console.warn('supabase init:',e);}
+})();
+
+const authModal=document.getElementById('auth-modal');
+document.getElementById('btn-account').addEventListener('click',()=>{ authModal.hidden=false; });
+document.getElementById('auth-x').addEventListener('click',()=>{ authModal.hidden=true; });
+authModal.addEventListener('click',e=>{ if(e.target===e.currentTarget)authModal.hidden=true; });
+
+function updateAuthUI(session){
+  const inEl=document.getElementById('auth-in'),outEl=document.getElementById('auth-out');
+  const dot=document.getElementById('acct-dot');
+  if(session&&session.user){
+    outEl.hidden=true;inEl.hidden=false;dot.hidden=false;
+    document.getElementById('auth-user').textContent=session.user.email||'';
+  }else{
+    inEl.hidden=true;outEl.hidden=false;dot.hidden=true;
+  }
+}
+
+document.getElementById('auth-send').addEventListener('click',async()=>{
+  const msg=document.getElementById('auth-msg');
+  const email=document.getElementById('auth-email').value.trim();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){msg.style.color='#b91c1c';msg.textContent='נא להזין כתובת מייל תקינה';return;}
+  if(!SB){msg.style.color='#b91c1c';msg.textContent='הסנכרון אינו זמין כרגע — נסו שוב מאוחר יותר';return;}
+  const btn=document.getElementById('auth-send');btn.disabled=true;
+  msg.style.color='var(--muted)';msg.textContent='שולח…';
+  try{
+    const{error}=await SB.auth.signInWithOtp({email,options:{emailRedirectTo:location.href}});
+    if(error)throw error;
+    msg.style.color='#166534';msg.textContent='📩 שלחנו קישור כניסה למייל — פִּתחו אותו מהמכשיר הזה';
+  }catch(e){msg.style.color='#b91c1c';msg.textContent='שגיאה בשליחה: '+(e.message||e);}
+  btn.disabled=false;
+});
+
+document.getElementById('auth-signout').addEventListener('click',async()=>{
+  if(SB)await SB.auth.signOut();
+  toast('התנתקת','ok');
+});
+
+// סנכרון: העלאת הגדרות העיצובים המקומיים לחשבון (בלי base64 של התמונות)
+async function syncDesigns(session){
+  if(!SB||!session||!session.user)return;
+  try{
+    const uid=session.user.id;
+    const local=await getDesigns();               // מ-IndexedDB — כולל תמונות מקומית
+    const{data:cloud}=await SB.from('designs').select('name');
+    const have=new Set((cloud||[]).map(d=>d.name));
+    const rows=local.filter(d=>!have.has(d.name)).map(d=>({
+      user_id:uid,
+      name:d.name,
+      game_data:{settings:d.settings||{},symbolCount:(d.rows||[]).length}  // הגדרות בלבד
+    }));
+    if(rows.length)await SB.from('designs').insert(rows);
+    const total=(cloud||[]).length+rows.length;
+    const info=document.getElementById('auth-sync');
+    if(info)info.innerHTML=`☁️ ${total} עיצובים מגובים בחשבון${rows.length?` (הועלו ${rows.length} חדשים)`:''}`;
+  }catch(e){
+    console.warn('syncDesigns:',e);
+    const info=document.getElementById('auth-sync');
+    if(info){info.style.color='#b91c1c';info.textContent='הסנכרון נכשל — ננסה שוב בכניסה הבאה';}
+  }
+}
+
+if(SB){
+  SB.auth.getSession().then(({data})=>updateAuthUI(data.session));
+  SB.auth.onAuthStateChange((event,session)=>{
+    updateAuthUI(session);
+    if(event==='SIGNED_IN'){
+      authModal.hidden=false;
+      toast('התחברת — מסנכרן עיצובים ☁️','ok');
+      syncDesigns(session);
+    }
+  });
+}
 
 // חיבור למסך הנעילה
 window._afterUnlock=()=>{idbLoad();};
