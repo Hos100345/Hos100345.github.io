@@ -448,29 +448,43 @@ function dcfgSave(patch){
   inp.focus();
 
   let errTimer,checkTimer;
+  const triedSub=new Set();
+  // ניסיון כניסת מנוי: הקוד משמש כסיסמה לחשבון Supabase (בלי אימות מייל)
+  async function trySubscriber(v){
+    if(!window.SB||v.length<6||triedSub.has(v))return false;
+    triedSub.add(v);
+    err.style.color='#a5b4fc';err.textContent='בודק קוד…';
+    const ok=await window.subscriberLogin(v);   // הצלחה → מאזין SIGNED_IN פותח את האפליקציה
+    if(!ok)err.textContent='';
+    return ok;
+  }
+  function showWrong(v){
+    if(inp.value!==v)return;
+    err.style.color='#fca5a5';err.textContent='קוד שגוי ❌';
+    errTimer=setTimeout(()=>{inp.value='';err.textContent='';inp.focus();},900);
+  }
   inp.addEventListener('input',function(){
     clearTimeout(errTimer);clearTimeout(checkTimer);
     err.textContent='';
     const v=inp.value;
     if(!v.length)return;
-    if(window._tryCode(v))return;
-    // השהיה כדי לאפשר הקלדת קוד ניהול ארוך
-    checkTimer=setTimeout(()=>{
+    if(window._tryCode(v))return;               // קוד מקומי (גישה כללית / ניהול)
+    checkTimer=setTimeout(async()=>{
       if(inp.value!==v)return;
       if(v.length>=3){
-        err.textContent='קוד שגוי ❌';
-        errTimer=setTimeout(()=>{inp.value='';err.textContent='';inp.focus();},900);
+        if(await trySubscriber(v))return;       // קוד מנוי (כניסה לחשבון)
+        showWrong(v);
       }
-    },600);
+    },700);
   });
 
-  inp.addEventListener('keydown',function(e){
+  inp.addEventListener('keydown',async function(e){
     if(e.key!=='Enter')return;
     clearTimeout(errTimer);clearTimeout(checkTimer);
-    if(!window._tryCode(inp.value)&&inp.value.length>=1){
-      err.textContent='קוד שגוי ❌';
-      setTimeout(()=>{inp.value='';err.textContent='';inp.focus();},900);
-    }
+    const v=inp.value;
+    if(window._tryCode(v))return;
+    if(await trySubscriber(v))return;
+    if(v.length>=1)showWrong(v);
   });
 })();
 </script>
@@ -2781,6 +2795,29 @@ document.getElementById('auth-signout').addEventListener('click',async()=>{
   toast('התנתקת','ok');
 });
 
+// כניסת מנוי בקוד: הקוד = סיסמה לחשבון "{code}@{subEmailDomain}" (בלי אימות מייל)
+window.subscriberLogin=async function(code){
+  if(!SB)return false;
+  try{
+    const domain=(window.SUPABASE_CONFIG&&window.SUPABASE_CONFIG.subEmailDomain)||'sub.hoshaya.co.il';
+    const email=String(code).trim().toLowerCase()+'@'+domain;
+    const{error}=await SB.auth.signInWithPassword({email,password:String(code)});
+    return !error;
+  }catch(e){return false;}
+};
+
+// פותח את האפליקציה כשיש סשן פעיל (למשל אחרי כניסת קוד מנוי) והנעילה עדיין למעלה
+function unlockFromSession(session){
+  const ls=document.getElementById('lock-screen');
+  if(!ls)return;
+  sessionStorage.setItem('dobble_unlocked','1');
+  try{sessionStorage.setItem('dobble_sub',JSON.stringify({code:'',label:(session.user&&session.user.email)||''}));}catch(e){}
+  ls.style.transition='opacity .4s';ls.style.opacity='0';
+  setTimeout(()=>{if(ls.parentNode)ls.remove();},420);
+  goScr(1);
+  if(window._afterUnlock)window._afterUnlock();
+}
+
 // ── המרות dataURL ⇄ Blob ──
 function dataURLtoBlob(dataURL){
   const [head,b64]=dataURL.split(',');
@@ -2867,12 +2904,15 @@ async function syncDesigns(session){
 }
 
 if(SB){
-  SB.auth.getSession().then(({data})=>updateAuthUI(data.session));
+  SB.auth.getSession().then(({data})=>{
+    updateAuthUI(data.session);
+    if(data.session){ unlockFromSession(data.session); syncDesigns(data.session); }
+  });
   SB.auth.onAuthStateChange((event,session)=>{
     updateAuthUI(session);
     if(event==='SIGNED_IN'){
-      authModal.hidden=false;
-      toast('התחברת — מסנכרן עיצובים ☁️','ok');
+      unlockFromSession(session);   // אם נכנס דרך קוד מנוי — פותח את האפליקציה
+      toast('התחברת — טוען את העיצובים שלך ☁️','ok');
       syncDesigns(session);
     }
   });
