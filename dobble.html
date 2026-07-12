@@ -957,6 +957,10 @@ function dcfgSave(patch){
 <script>
 'use strict';
 
+// ── Supabase (מאותחל בהמשך; var כדי שיהיה נגיש גם ל-renderDesigns בטעינה) ──
+var SB=null, authSession=null;
+const SB_BUCKET='symbols';
+
 // ══ MATH ══
 const ORDERS=[{q:2,total:7,spc:3},{q:3,total:13,spc:4},{q:4,total:21,spc:5},{q:5,total:31,spc:6},{q:7,total:57,spc:8}];
 const CARD_PX=500;
@@ -2349,6 +2353,13 @@ async function saveDesign(){
     await new Promise(r=>{tx.oncomplete=r;tx.onerror=()=>r();});
     toast(`העיצוב "${name}" נשמר 💾`,'ok');
     renderDesigns();
+    // אם מחוברים — גיבוי לחשבון כולל התמונות (ברקע)
+    if(isSignedIn()){
+      try{
+        const cloud=await cloudListDesigns();
+        if(!cloud.some(c=>c.name===name)){await cloudSaveDesign(design);toast('גובה לחשבון ☁️','ok');renderDesigns();}
+      }catch(e){console.warn('cloud backup on save:',e);}
+    }
   }catch(e){console.warn('saveDesign:',e);toast('שמירת העיצוב נכשלה','err');}
 }
 
@@ -2368,6 +2379,13 @@ async function deleteDesign(name){
     const tx=db.transaction(IDB_DESIGNS,'readwrite');
     tx.objectStore(IDB_DESIGNS).delete(name);
     await new Promise(r=>{tx.oncomplete=r;tx.onerror=()=>r();});
+    // מוחק גם מהחשבון אם קיים שם (כולל התמונות ב-Storage)
+    if(isSignedIn()){
+      try{
+        const twin=(await cloudListDesigns()).find(c=>c.name===name);
+        if(twin)await cloudDeleteDesign(twin);
+      }catch(e){console.warn('cloud delete:',e);}
+    }
     renderDesigns();
     toast('העיצוב נמחק','ok');
   }catch(e){console.warn('deleteDesign:',e);}
@@ -2393,20 +2411,17 @@ function applySettingsToUI(st){
   document.getElementById('pick-bg').value=st.bg.color;
 }
 
-async function loadDesign(name){
-  const designs=await getDesigns();
-  const d=designs.find(x=>x.name===name);
-  if(!d){toast('העיצוב לא נמצא','err');return;}
-  // ניקוי המאגר הנוכחי
+// טעינת מבנה עיצוב {name,rows,settings} לתוך מצב האפליקציה
+async function applyDesignToState(d){
   S.assets.forEach(a=>{if(a.type==='image'&&a.url)URL.revokeObjectURL(a.url);});
   S.assets=[];S.idSeq=0;
-  for(const row of d.rows){
+  for(const row of (d.rows||[])){
     try{
       const imgEl=await loadImg(row.dataURL);
       S.assets.push({id:row.id,type:row.type,name:row.name,url:'',thumb:makeThumb(imgEl),imgEl,
                       srcAssetId:row.srcAssetId||undefined,isCropSource:row.isCropSource||false});
       if(row.id>=S.idSeq)S.idSeq=row.id;
-    }catch(e){console.warn('loadDesign item:',e);}
+    }catch(e){console.warn('applyDesign item:',e);}
   }
   const st=d.settings||{};
   Object.assign(S,{shape:st.shape||'circle',sMin:st.sMin??.7,sMax:st.sMax??1.3,
@@ -2418,27 +2433,71 @@ async function loadDesign(name){
   resetGenerated();
   goScr(1);
   schedIdbSave();
+}
+
+async function loadDesign(name){
+  const designs=await getDesigns();
+  const d=designs.find(x=>x.name===name);
+  if(!d){toast('העיצוב לא נמצא','err');return;}
+  await applyDesignToState(d);
   toast(`העיצוב "${name}" נטען — לחצו "ייצר משחק" 🎨`,'ok');
+}
+
+// טעינת עיצוב שקיים רק בענן: מוריד את התמונות, טוען, ושומר מקומית לפעם הבאה
+async function loadCloudDesign(row){
+  toast('מוריד עיצוב מהחשבון…','ok');
+  try{
+    const d=await cloudFetchDesign(row);
+    if(!d.rows.length){toast('לא נמצאו תמונות לעיצוב הזה','err');return;}
+    await applyDesignToState(d);
+    // שמירה מקומית כדי שיהיה זמין מיד ובלי אינטרנט
+    const db=await idbOpen();
+    const tx=db.transaction(IDB_DESIGNS,'readwrite');
+    tx.objectStore(IDB_DESIGNS).put({name:d.name,date:d.date,rows:d.rows,settings:d.settings},d.name);
+    await new Promise(r=>{tx.oncomplete=r;tx.onerror=()=>r();});
+    renderDesigns();
+    toast(`העיצוב "${row.name}" נטען מהחשבון 🎨`,'ok');
+  }catch(e){console.warn('loadCloudDesign:',e);toast('טעינת העיצוב מהחשבון נכשלה','err');}
 }
 
 async function renderDesigns(){
   const wrap=document.getElementById('designs-wrap');
   const grid=document.getElementById('designs-grid');
   if(!wrap||!grid)return;
-  const designs=await getDesigns();
+  const local=await getDesigns();
+  const localNames=new Set(local.map(d=>d.name));
+  let cloud=[];
+  if(isSignedIn()){try{cloud=await cloudListDesigns();}catch(e){}}
+  const cloudNames=new Set(cloud.map(c=>c.name));
+  const cloudOnly=cloud.filter(c=>!localNames.has(c.name));
+
   grid.innerHTML='';
-  if(!designs.length){wrap.style.display='none';return;}
+  if(!local.length&&!cloudOnly.length){wrap.style.display='none';return;}
   wrap.style.display='';
-  designs.forEach(d=>{
+
+  const chip=(icon,name,meta,onClick,onDelete)=>{
     const b=document.createElement('button');
     b.type='button';b.className='pack-btn design-chip';
-    b.innerHTML=`<span>🗂️</span><span>${d.name}</span><span class="pk-count">${(d.rows||[]).length} תמונות · ${d.date||''}</span>`;
-    b.addEventListener('click',()=>loadDesign(d.name));
+    b.innerHTML=`<span>${icon}</span><span>${name}</span><span class="pk-count">${meta}</span>`;
+    b.addEventListener('click',onClick);
     const del=document.createElement('span');
     del.className='design-del';del.textContent='✕';del.title='מחק עיצוב';
-    del.addEventListener('click',e=>{e.stopPropagation();deleteDesign(d.name);});
-    b.appendChild(del);
-    grid.appendChild(b);
+    del.addEventListener('click',e=>{e.stopPropagation();onDelete();});
+    b.appendChild(del);grid.appendChild(b);
+  };
+
+  // עיצובים מקומיים (☁️ אם מגובים גם בחשבון)
+  local.forEach(d=>{
+    const synced=cloudNames.has(d.name);
+    chip(synced?'🗂️☁️':'🗂️',d.name,`${(d.rows||[]).length} תמונות · ${d.date||''}`,
+      ()=>loadDesign(d.name),()=>deleteDesign(d.name));
+  });
+  // עיצובים שקיימים רק בחשבון (ממכשיר אחר)
+  cloudOnly.forEach(c=>{
+    const n=(c.game_data&&c.game_data.symbolCount)||'?';
+    chip('☁️',c.name,`${n} תמונות · בחשבון`,
+      ()=>loadCloudDesign(c),
+      ()=>{ if(confirm(`למחוק את "${c.name}" מהחשבון?`)){cloudDeleteDesign(c).then(()=>{renderDesigns();toast('נמחק מהחשבון','ok');});} });
   });
 }
 document.getElementById('btn-save-design').addEventListener('click',saveDesign);
@@ -2675,7 +2734,6 @@ document.getElementById('btn-print-order').addEventListener('click',orderPrint);
 document.getElementById('btn-print-order-2').addEventListener('click',orderPrint);
 
 // ══ SUPABASE — חשבון וסנכרון (Magic Link) ══
-let SB=null;
 (function initSupabase(){
   try{
     const cfg=window.SUPABASE_CONFIG||{};
@@ -2691,6 +2749,7 @@ document.getElementById('auth-x').addEventListener('click',()=>{ authModal.hidde
 authModal.addEventListener('click',e=>{ if(e.target===e.currentTarget)authModal.hidden=true; });
 
 function updateAuthUI(session){
+  authSession=session||null;
   const inEl=document.getElementById('auth-in'),outEl=document.getElementById('auth-out');
   const dot=document.getElementById('acct-dot');
   if(session&&session.user){
@@ -2699,6 +2758,7 @@ function updateAuthUI(session){
   }else{
     inEl.hidden=true;outEl.hidden=false;dot.hidden=true;
   }
+  renderDesigns();   // מרענן את רשימת העיצובים (מקומי + ענן)
 }
 
 document.getElementById('auth-send').addEventListener('click',async()=>{
@@ -2721,26 +2781,87 @@ document.getElementById('auth-signout').addEventListener('click',async()=>{
   toast('התנתקת','ok');
 });
 
-// סנכרון: העלאת הגדרות העיצובים המקומיים לחשבון (בלי base64 של התמונות)
+// ── המרות dataURL ⇄ Blob ──
+function dataURLtoBlob(dataURL){
+  const [head,b64]=dataURL.split(',');
+  const mime=(head.match(/:(.*?);/)||[])[1]||'image/jpeg';
+  const bin=atob(b64),arr=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
+  return new Blob([arr],{type:mime});
+}
+function blobToDataURL(blob){return new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.readAsDataURL(blob);});}
+
+// ── ענן: רשימה / שמירה (כולל תמונות ל-Storage) / טעינה / מחיקה ──
+function isSignedIn(){return !!(SB&&authSession&&authSession.user);}
+
+async function cloudListDesigns(){
+  if(!isSignedIn())return[];
+  const{data,error}=await SB.from('designs').select('id,name,game_data,created_at').order('created_at',{ascending:false});
+  if(error){console.warn('cloudList:',error);return[];}
+  return data||[];
+}
+
+async function cloudSaveDesign(design){
+  if(!isSignedIn())return null;
+  const uid=authSession.user.id;
+  // 1) יצירת שורה (הגדרות בלבד) וקבלת id
+  const{data:ins,error:e1}=await SB.from('designs')
+    .insert({user_id:uid,name:design.name,
+      game_data:{settings:design.settings||{},symbolCount:(design.rows||[]).length}})
+    .select('id').single();
+  if(e1)throw e1;
+  const rowId=ins.id;
+  // 2) העלאת התמונות ל-Storage תחת {uid}/{rowId}/{assetId}.jpg
+  const images=[];
+  for(const row of (design.rows||[])){
+    const path=`${uid}/${rowId}/${row.id}.jpg`;
+    const{error:e2}=await SB.storage.from(SB_BUCKET).upload(path,dataURLtoBlob(row.dataURL),{contentType:'image/jpeg',upsert:true});
+    if(e2)throw e2;
+    images.push({id:row.id,name:row.name,type:row.type,srcAssetId:row.srcAssetId||null,isCropSource:row.isCropSource||false,path});
+  }
+  // 3) עדכון השורה עם נתיבי התמונות
+  await SB.from('designs').update({game_data:{settings:design.settings||{},symbolCount:images.length,images}}).eq('id',rowId);
+  return rowId;
+}
+
+async function cloudFetchDesign(row){
+  // מוריד את התמונות מ-Storage ובונה מבנה עיצוב תואם למקומי {name,rows,settings}
+  const gd=row.game_data||{};const images=gd.images||[];
+  const rows=[];
+  for(const im of images){
+    try{
+      const{data,error}=await SB.storage.from(SB_BUCKET).download(im.path);
+      if(error||!data)continue;
+      const dataURL=await blobToDataURL(data);
+      rows.push({id:im.id,name:im.name,type:im.type,dataURL,srcAssetId:im.srcAssetId||undefined,isCropSource:im.isCropSource||false});
+    }catch(e){console.warn('download',im.path,e);}
+  }
+  return{name:row.name,date:row.created_at,rows,settings:gd.settings||{}};
+}
+
+async function cloudDeleteDesign(row){
+  if(!isSignedIn())return;
+  const paths=((row.game_data||{}).images||[]).map(im=>im.path);
+  if(paths.length)await SB.storage.from(SB_BUCKET).remove(paths);
+  await SB.from('designs').delete().eq('id',row.id);
+}
+
+// סנכרון בכניסה: מעלה עיצובים מקומיים שעדיין לא בענן — כולל התמונות
 async function syncDesigns(session){
   if(!SB||!session||!session.user)return;
+  authSession=session;
+  const info=document.getElementById('auth-sync');
   try{
-    const uid=session.user.id;
-    const local=await getDesigns();               // מ-IndexedDB — כולל תמונות מקומית
-    const{data:cloud}=await SB.from('designs').select('name');
-    const have=new Set((cloud||[]).map(d=>d.name));
-    const rows=local.filter(d=>!have.has(d.name)).map(d=>({
-      user_id:uid,
-      name:d.name,
-      game_data:{settings:d.settings||{},symbolCount:(d.rows||[]).length}  // הגדרות בלבד
-    }));
-    if(rows.length)await SB.from('designs').insert(rows);
-    const total=(cloud||[]).length+rows.length;
-    const info=document.getElementById('auth-sync');
-    if(info)info.innerHTML=`☁️ ${total} עיצובים מגובים בחשבון${rows.length?` (הועלו ${rows.length} חדשים)`:''}`;
+    const local=await getDesigns();
+    const cloud=await cloudListDesigns();
+    const have=new Set(cloud.map(c=>c.name));
+    let uploaded=0;
+    for(const d of local){ if(!have.has(d.name)){ await cloudSaveDesign(d); uploaded++; } }
+    const total=cloud.length+uploaded;
+    if(info){info.style.color='#166534';info.innerHTML=`☁️ ${total} עיצובים בחשבון${uploaded?` (הועלו ${uploaded} כולל תמונות)`:''}`;}
+    renderDesigns();
   }catch(e){
     console.warn('syncDesigns:',e);
-    const info=document.getElementById('auth-sync');
     if(info){info.style.color='#b91c1c';info.textContent='הסנכרון נכשל — ננסה שוב בכניסה הבאה';}
   }
 }
