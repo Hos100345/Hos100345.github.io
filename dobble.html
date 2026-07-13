@@ -881,7 +881,7 @@ function dcfgSave(patch){
         <p style="font-weight:700;direction:ltr" id="auth-user"></p>
       </div>
       <div id="auth-sync" style="background:rgba(240,253,244,.85);border:1.5px solid #bbf7d0;border-radius:10px;padding:.7rem 1rem;text-align:center;font-size:.85rem;color:#166534;margin-bottom:1rem"></div>
-      <div class="adm-hint2" style="text-align:center;margin-bottom:1rem;color:var(--muted)">בשלב זה מגובות <strong>הגדרות</strong> העיצוב. גיבוי התמונות עצמן יתווסף בקרוב.</div>
+      <div class="adm-hint2" style="text-align:center;margin-bottom:1rem;color:var(--muted)">העיצובים והתמונות מגובים לחשבון וזמינים מכל מכשיר.</div>
       <button class="btn btn-ghost" id="auth-signout" style="width:100%;justify-content:center">התנתקות</button>
     </div>
   </div>
@@ -942,7 +942,36 @@ function dcfgSave(patch){
       </div>
       <button class="btn btn-ok" onclick="adminAddCode()" style="font-size:.85rem">➕ הוסף קוד</button>
       <div id="adm-codes-tbl" style="margin-top:.9rem"></div>
-      <div class="adm-hint2">בנוסף לקודים כאן פעילים תמיד הקודים הקבועים מקובץ ההגדרות (js/dobble-config.js).</div>
+      <div class="adm-hint2">קודים אלה פותחים את המחולל <strong>מקומית</strong> (בלי חשבון בענן). לחשבון עם תמונות מסונכרנות — ראו "מנויים" למטה.</div>
+    </div>
+
+    <div class="adm-sec">
+      <h3>👥 מנויים (חשבון בענן + תמונות מסונכרנות)</h3>
+      <!-- לא מחובר כמנהל -->
+      <div id="adm-sub-need-login">
+        <div class="adm-hint2" style="margin-bottom:.6rem">כדי לנהל מנויים, התחבר/י עם מייל המנהל שלך (המנוי נכנס אחר כך בקוד בלבד).</div>
+        <button class="btn btn-pri" id="adm-sub-login" style="font-size:.82rem">🔑 התחברות מנהל</button>
+      </div>
+      <!-- מחובר כמנהל -->
+      <div id="adm-sub-panel" hidden>
+        <div class="adm-g2">
+          <div>
+            <div style="font-size:.7rem;color:#64748b;margin-bottom:.28rem">קוד מנוי (6 תווים לפחות)</div>
+            <input class="adm-inp" id="adm-sub-code" placeholder="לדוג׳: RachelK26" style="direction:ltr">
+          </div>
+          <div>
+            <div style="font-size:.7rem;color:#64748b;margin-bottom:.28rem">תוקף (ריק = ללא הגבלה)</div>
+            <input class="adm-inp" id="adm-sub-exp" type="date">
+          </div>
+        </div>
+        <div style="margin-bottom:.65rem">
+          <div style="font-size:.7rem;color:#64748b;margin-bottom:.28rem">שם / תיאור (אופציונלי)</div>
+          <input class="adm-inp" id="adm-sub-label" placeholder="לדוג׳: רחל כהן">
+        </div>
+        <button class="btn btn-ok" id="adm-sub-create" style="font-size:.85rem">➕ צור מנוי</button>
+        <div id="adm-sub-msg" class="adm-hint2" style="min-height:1.2em"></div>
+        <div id="adm-sub-tbl" style="margin-top:.9rem"></div>
+      </div>
     </div>
 
     <div class="adm-sec">
@@ -2707,7 +2736,79 @@ function openAdminPanel(){
   document.getElementById('adm-packs-inp').value=JSON.stringify(DCFG.packs||[],null,2);
   adminRenderCodes();
   adminRenderGames();
+  refreshSubscribersUI();
 }
+
+// ── ניהול מנויים (דרך Edge Function, מאובטח למנהל המחובר) ──
+function adminEmails(){return((window.SUPABASE_CONFIG&&window.SUPABASE_CONFIG.adminEmails)||['hoshaya@gmail.com']).map(s=>String(s).toLowerCase());}
+function isAdminUser(){return !!(authSession&&authSession.user&&adminEmails().includes((authSession.user.email||'').toLowerCase()));}
+
+async function callManageSubscriber(payload){
+  if(!SB||!authSession)throw new Error('צריך להתחבר כמנהל');
+  const base=(window.SUPABASE_CONFIG&&window.SUPABASE_CONFIG.url)||'';
+  const res=await fetch(base+'/functions/v1/manage-subscriber',{
+    method:'POST',
+    headers:{'Content-Type':'application/json',
+      'Authorization':'Bearer '+authSession.access_token,
+      'apikey':(window.SUPABASE_CONFIG&&window.SUPABASE_CONFIG.anonKey)||''},
+    body:JSON.stringify(payload)
+  });
+  const data=await res.json().catch(()=>({}));
+  if(!res.ok)throw new Error(data.error||('שגיאה '+res.status));
+  return data;
+}
+
+function refreshSubscribersUI(){
+  const need=document.getElementById('adm-sub-need-login');
+  const panel=document.getElementById('adm-sub-panel');
+  if(!need||!panel)return;
+  if(isAdminUser()){need.hidden=true;panel.hidden=false;renderSubscribers();}
+  else{need.hidden=false;panel.hidden=true;}
+}
+
+async function renderSubscribers(){
+  const el=document.getElementById('adm-sub-tbl');if(!el)return;
+  el.innerHTML='<div style="color:#64748b;font-size:.85rem;padding:.4rem 0">טוען…</div>';
+  try{
+    const{subscribers}=await callManageSubscriber({action:'list'});
+    if(!subscribers||!subscribers.length){el.innerHTML='<div style="color:#64748b;font-size:.85rem;padding:.4rem 0">אין מנויים עדיין</div>';return;}
+    el.innerHTML='<table class="adm-tbl"><thead><tr><th>קוד</th><th>נוצר</th><th>כניסה אחרונה</th><th></th></tr></thead><tbody>'+
+      subscribers.map(s=>{
+        const esc=String(s.code).replace(/'/g,"\\'");
+        const d=v=>v?new Date(v).toLocaleDateString('he-IL'):'—';
+        return `<tr>
+          <td style="font-family:monospace;color:#e2e8f0;letter-spacing:.04em">${s.code}</td>
+          <td style="color:#94a3b8">${d(s.created)}</td>
+          <td style="color:#94a3b8">${s.lastSignIn?d(s.lastSignIn):'טרם נכנס'}</td>
+          <td><button onclick="deleteSubscriber('${esc}')" style="background:none;border:none;color:#f87171;cursor:pointer;font-size:.9rem;padding:.1rem .3rem">✕</button></td>
+        </tr>`;
+      }).join('')+'</tbody></table>';
+  }catch(e){el.innerHTML='<div style="color:#fca5a5;font-size:.85rem;padding:.4rem 0">שגיאה בטעינת מנויים: '+e.message+'</div>';}
+}
+
+async function createSubscriber(){
+  const msg=document.getElementById('adm-sub-msg');
+  const code=document.getElementById('adm-sub-code').value.trim();
+  const label=document.getElementById('adm-sub-label').value.trim();
+  const expiry=document.getElementById('adm-sub-exp').value;
+  if(code.length<6){msg.style.color='#fca5a5';msg.textContent='הקוד חייב 6 תווים לפחות';return;}
+  msg.style.color='#a5b4fc';msg.textContent='יוצר…';
+  try{
+    await callManageSubscriber({action:'create',code,label,expiry:expiry||null});
+    msg.style.color='#6ee7b7';msg.textContent=`✅ המנוי נוצר — הקוד "${code}" מוכן לחלוקה`;
+    document.getElementById('adm-sub-code').value='';document.getElementById('adm-sub-label').value='';document.getElementById('adm-sub-exp').value='';
+    renderSubscribers();
+  }catch(e){msg.style.color='#fca5a5';msg.textContent='⚠️ '+e.message;}
+}
+
+async function deleteSubscriber(code){
+  if(!confirm(`למחוק את המנוי "${code}"? החשבון והתמונות שלו יימחקו.`))return;
+  try{await callManageSubscriber({action:'delete',code});renderSubscribers();toast('המנוי נמחק','ok');}
+  catch(e){toast('מחיקה נכשלה: '+e.message,'err');}
+}
+
+document.getElementById('adm-sub-create').addEventListener('click',createSubscriber);
+document.getElementById('adm-sub-login').addEventListener('click',()=>{document.getElementById('auth-modal').hidden=false;});
 
 // ── כניסה ללוח מתוך המחולל (⚙️) ──
 let _admAuthed=false;
@@ -2773,6 +2874,7 @@ function updateAuthUI(session){
     inEl.hidden=true;outEl.hidden=false;dot.hidden=true;
   }
   renderDesigns();   // מרענן את רשימת העיצובים (מקומי + ענן)
+  if(typeof refreshSubscribersUI==='function')refreshSubscribersUI();
 }
 
 document.getElementById('auth-send').addEventListener('click',async()=>{

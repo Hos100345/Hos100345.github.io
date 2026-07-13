@@ -11,5 +11,9 @@ window.SUPABASE_CONFIG = {
 
   // דומיין סינתטי לחשבונות מנוי (כניסה בקוד בלבד, בלי מייל אמיתי).
   // כל מנוי = חשבון עם מייל "{code}@{subEmailDomain}" וסיסמה = הקוד.
-  subEmailDomain: "sub.hoshaya.co.il"
+  subEmailDomain: "sub.hoshaya.co.il",
+
+  // מיילים של מנהלים — רק הם רואים ומפעילים את ניהול המנויים בלוח הבקרה.
+  // האכיפה האמיתית היא בצד ה-Edge Function; זה רק לתצוגה.
+  adminEmails: ["hoshaya@gmail.com"]
 };
