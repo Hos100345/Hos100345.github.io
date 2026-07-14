@@ -2746,14 +2746,22 @@ function isAdminUser(){return !!(authSession&&authSession.user&&adminEmails().in
 async function callManageSubscriber(payload){
   if(!SB||!authSession)throw new Error('צריך להתחבר כמנהל');
   const base=(window.SUPABASE_CONFIG&&window.SUPABASE_CONFIG.url)||'';
-  const res=await fetch(base+'/functions/v1/manage-subscriber',{
-    method:'POST',
-    headers:{'Content-Type':'application/json',
-      'Authorization':'Bearer '+authSession.access_token,
-      'apikey':(window.SUPABASE_CONFIG&&window.SUPABASE_CONFIG.anonKey)||''},
-    body:JSON.stringify(payload)
-  });
+  let res;
+  try{
+    res=await fetch(base+'/functions/v1/manage-subscriber',{
+      method:'POST',
+      headers:{'Content-Type':'application/json',
+        'Authorization':'Bearer '+authSession.access_token,
+        'apikey':(window.SUPABASE_CONFIG&&window.SUPABASE_CONFIG.anonKey)||''},
+      body:JSON.stringify(payload)
+    });
+  }catch(err){
+    // כשל ברמת הרשת (fetch עצמו נכשל) — כמעט תמיד: הפונקציה manage-subscriber
+    // לא פרוסה עדיין, פרוסה בשם אחר, או אין רשת. זו לא שגיאת HTTP מהשרת.
+    throw new Error('לא הצלחתי להגיע לפונקציה manage-subscriber. ודאו ב-Supabase → Edge Functions שהיא פרוסה (Deployed) בדיוק בשם הזה, ושיש חיבור לאינטרנט.');
+  }
   const data=await res.json().catch(()=>({}));
+  if(res.status===404)throw new Error('הפונקציה manage-subscriber לא נמצאה (404) — כנראה לא פרוסה או פרוסה בשם אחר ב-Supabase → Edge Functions.');
   if(!res.ok)throw new Error(data.error||('שגיאה '+res.status));
   return data;
 }
