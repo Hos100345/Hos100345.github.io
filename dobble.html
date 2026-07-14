@@ -975,6 +975,19 @@ function dcfgSave(patch){
     </div>
 
     <div class="adm-sec">
+      <h3>📊 פעילות מנויים (כל המכשירים)</h3>
+      <div id="adm-act-need-login" class="adm-hint2">התחבר/י כמנהל (במקטע "מנויים" למעלה) כדי לראות מי נכנס, מי יצר משחקים ומי ביקש הדפסה — מכל המכשירים.</div>
+      <div id="adm-act-panel" hidden>
+        <div style="display:flex;gap:.6rem;align-items:center;margin-bottom:.85rem;flex-wrap:wrap">
+          <button class="btn btn-ghost" id="adm-act-refresh" style="font-size:.77rem;padding:.32rem .8rem;color:#a5b4fc;border-color:#334155">🔄 רענן</button>
+          <span id="adm-act-range" style="color:#64748b;font-size:.78rem"></span>
+        </div>
+        <div id="adm-act-tiles" style="display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:.9rem"></div>
+        <div id="adm-act-tbl" style="overflow-x:auto;max-height:360px;overflow-y:auto;border-radius:8px"></div>
+      </div>
+    </div>
+
+    <div class="adm-sec">
       <h3>🧰 חבילות תמונות מוכנות</h3>
       <textarea class="adm-inp" id="adm-packs-inp" spellcheck="false"></textarea>
       <div class="adm-hint2">מבנה: [{"name":"חיות","icon":"🦁","images":["https://lh3.googleusercontent.com/d/FILE_ID"]}] — קישור מדרייב: שיתוף ← "כל מי שיש לו קישור", מזהה הקובץ אחרי ‎/d/‎.</div>
@@ -2679,19 +2692,34 @@ function logGame(meta){
   localStorage.setItem('dobble_games',JSON.stringify(log));
 }
 
-// ══ מעקב פעילות מרכזי (אירועים נשלחים לגיליון גוגל דרך analyticsUrl) ══
+// ══ מעקב פעילות מרכזי — נרשם ל-Supabase (טבלת events) מכל מכשיר ══
 function analyticsUrl(){return localStorage.getItem('dobble_analytics_url')||DCFG.analyticsUrl||'';}
 function currentSub(){try{return JSON.parse(sessionStorage.getItem('dobble_sub')||'{}');}catch(e){return{};}}
 window.track=function(event,data){
   try{
-    const url=analyticsUrl();
-    if(!url)return;                         // מעקב כבוי — לא שולחים כלום
     const sub=currentSub();
-    const payload=Object.assign({event,code:sub.code||'',label:sub.label||'',
-      ts:new Date().toISOString(),ua:navigator.userAgent},data||{});
-    fetch(url,{method:'POST',mode:'no-cors',keepalive:true,
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify(payload)}).catch(()=>{});
+    const d=data||{};
+    // 1) Supabase — מרכזי, חוצה-מכשירים (כל אחד יכול להוסיף; רק המנהל קורא)
+    if(window.SB){
+      SB.from('events').insert({
+        event:event,
+        code:sub.code||null,
+        label:sub.label||null,
+        cards:(d.cards!=null&&d.cards!=='')?parseInt(d.cards,10):null,
+        symbols:(d.symbols!=null&&d.symbols!=='')?parseInt(d.symbols,10):null,
+        detail:d.detail||null,
+        ua:(navigator.userAgent||'').slice(0,300)
+      }).then(()=>{},()=>{});   // נכשל בשקט — לא חוסם את המשתמש
+    }
+    // 2) גיבוי אופציונלי לגיליון גוגל אם הוגדר analyticsUrl
+    const url=analyticsUrl();
+    if(url){
+      const payload=Object.assign({event,code:sub.code||'',label:sub.label||'',
+        ts:new Date().toISOString(),ua:navigator.userAgent},d);
+      fetch(url,{method:'POST',mode:'no-cors',keepalive:true,
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body:JSON.stringify(payload)}).catch(()=>{});
+    }
   }catch(e){}
 };
 
@@ -2767,11 +2795,62 @@ async function callManageSubscriber(payload){
 }
 
 function refreshSubscribersUI(){
+  const admin=isAdminUser();
   const need=document.getElementById('adm-sub-need-login');
   const panel=document.getElementById('adm-sub-panel');
-  if(!need||!panel)return;
-  if(isAdminUser()){need.hidden=true;panel.hidden=false;renderSubscribers();}
-  else{need.hidden=false;panel.hidden=true;}
+  if(need&&panel){
+    if(admin){need.hidden=true;panel.hidden=false;renderSubscribers();}
+    else{need.hidden=false;panel.hidden=true;}
+  }
+  const actNeed=document.getElementById('adm-act-need-login');
+  const actPanel=document.getElementById('adm-act-panel');
+  if(actNeed&&actPanel){
+    if(admin){actNeed.hidden=true;actPanel.hidden=false;renderActivity();}
+    else{actNeed.hidden=false;actPanel.hidden=true;}
+  }
+}
+
+// דשבורד פעילות: אגרגציה של טבלת events לפי מנוי (רק המנהל קורא — לפי RLS)
+async function renderActivity(){
+  const tiles=document.getElementById('adm-act-tiles');
+  const tbl=document.getElementById('adm-act-tbl');
+  const range=document.getElementById('adm-act-range');
+  if(!tiles||!tbl)return;
+  tbl.innerHTML='<div style="color:#64748b;font-size:.85rem;padding:.4rem 0">טוען…</div>';
+  try{
+    const{data,error}=await callSelectEvents();
+    if(error)throw error;
+    const evs=data||[];
+    const c=t=>evs.filter(e=>e.event===t).length;
+    tiles.innerHTML=[['🔓','כניסות',c('unlock')],['🎲','משחקים',c('game')],['🖨️','בקשות הדפסה',c('print-order')]]
+      .map(([ic,lbl,n])=>`<div style="flex:1;min-width:96px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:.7rem .5rem;text-align:center">
+        <div style="font-size:1.25rem">${ic}</div>
+        <div style="font-size:1.5rem;font-weight:800;color:#e2e8f0">${n}</div>
+        <div style="font-size:.72rem;color:#94a3b8">${lbl}</div></div>`).join('');
+    if(range)range.textContent=evs.length?('מאז '+new Date(evs[evs.length-1].created_at).toLocaleDateString('he-IL')+' · '+evs.length+' אירועים'):'';
+    const by={};
+    evs.forEach(e=>{
+      const key=e.code||e.label||'—';
+      const o=by[key]||(by[key]={code:e.code||'',label:e.label||'',unlock:0,game:0,print:0,last:e.created_at});
+      if(e.event==='unlock')o.unlock++;else if(e.event==='game')o.game++;else if(e.event==='print-order')o.print++;
+      if(e.created_at>o.last)o.last=e.created_at;
+    });
+    const rows=Object.values(by).sort((a,b)=>String(b.last).localeCompare(String(a.last)));
+    if(!rows.length){tbl.innerHTML='<div style="color:#64748b;font-size:.85rem;padding:.4rem 0">אין פעילות עדיין</div>';return;}
+    const d=v=>v?new Date(v).toLocaleDateString('he-IL'):'—';
+    tbl.innerHTML='<table class="adm-tbl" style="min-width:460px"><thead><tr><th>מנוי</th><th>כניסות</th><th>משחקים</th><th>הדפסות</th><th>אחרון</th></tr></thead><tbody>'+
+      rows.map(o=>{
+        const name=o.code?`<span style="font-family:monospace;letter-spacing:.03em">${o.code}</span>${o.label?` · ${o.label}`:''}`:(o.label||'—');
+        return `<tr>
+          <td style="color:#e2e8f0">${name}</td>
+          <td>${o.unlock}</td><td>${o.game}</td><td>${o.print}</td>
+          <td style="color:#94a3b8;white-space:nowrap">${d(o.last)}</td>
+        </tr>`;
+      }).join('')+'</tbody></table>';
+  }catch(e){tbl.innerHTML='<div style="color:#fca5a5;font-size:.85rem;padding:.4rem 0">שגיאה בטעינת הפעילות: '+(e.message||e)+'</div>';}
+}
+function callSelectEvents(){
+  return SB.from('events').select('event,code,label,cards,symbols,created_at').order('created_at',{ascending:false}).limit(3000);
 }
 
 async function renderSubscribers(){
@@ -2780,13 +2859,19 @@ async function renderSubscribers(){
   try{
     const{subscribers}=await callManageSubscriber({action:'list'});
     if(!subscribers||!subscribers.length){el.innerHTML='<div style="color:#64748b;font-size:.85rem;padding:.4rem 0">אין מנויים עדיין</div>';return;}
-    el.innerHTML='<table class="adm-tbl"><thead><tr><th>קוד</th><th>נוצר</th><th>כניסה אחרונה</th><th></th></tr></thead><tbody>'+
+    const todayStr=new Date().toISOString().slice(0,10);
+    el.innerHTML='<table class="adm-tbl"><thead><tr><th>קוד</th><th>תוקף</th><th>כניסה אחרונה</th><th></th></tr></thead><tbody>'+
       subscribers.map(s=>{
         const esc=String(s.code).replace(/'/g,"\\'");
         const d=v=>v?new Date(v).toLocaleDateString('he-IL'):'—';
+        const expired=s.expiry&&String(s.expiry).slice(0,10)<todayStr;
+        const disabled=s.status&&s.status!=='active';
+        const expCell=disabled?'<span style="color:#f87171">מושבת</span>'
+          :s.expiry?`<span style="color:${expired?'#f87171':'#94a3b8'}">${d(s.expiry)}${expired?' ⛔':''}</span>`
+          :'<span style="color:#64748b">ללא הגבלה</span>';
         return `<tr>
-          <td style="font-family:monospace;color:#e2e8f0;letter-spacing:.04em">${s.code}</td>
-          <td style="color:#94a3b8">${d(s.created)}</td>
+          <td style="font-family:monospace;color:#e2e8f0;letter-spacing:.04em">${s.code}${s.label?`<div style="font-family:inherit;color:#64748b;font-size:.72rem;letter-spacing:0">${s.label}</div>`:''}</td>
+          <td>${expCell}</td>
           <td style="color:#94a3b8">${s.lastSignIn?d(s.lastSignIn):'טרם נכנס'}</td>
           <td><button onclick="deleteSubscriber('${esc}')" style="background:none;border:none;color:#f87171;cursor:pointer;font-size:.9rem;padding:.1rem .3rem">✕</button></td>
         </tr>`;
@@ -2816,6 +2901,7 @@ async function deleteSubscriber(code){
 }
 
 document.getElementById('adm-sub-create').addEventListener('click',createSubscriber);
+(function(){const b=document.getElementById('adm-act-refresh');if(b)b.addEventListener('click',renderActivity);})();
 document.getElementById('adm-sub-login').addEventListener('click',()=>{document.getElementById('auth-modal').hidden=false;});
 
 // ── כניסה ללוח מתוך המחולל (⚙️) ──
@@ -2916,12 +3002,70 @@ window.subscriberLogin=async function(code){
   }catch(e){return false;}
 };
 
+// זיהוי חשבון מנוי (מייל סינתטי) והוצאת הקוד ממנו
+function subDomain(){return((window.SUPABASE_CONFIG&&window.SUPABASE_CONFIG.subEmailDomain)||'sub.hoshaya.co.il').toLowerCase();}
+function isSubscriberEmail(email){return String(email||'').toLowerCase().endsWith('@'+subDomain());}
+
+// בדיקת תוקף מנוי לפני פתיחה. מנהל/מייל אמיתי → תמיד תקין.
+// שגיאה/היעדר נתונים → fail-open (לא חוסמים מנוי בטעות בגלל תקלת רשת).
+async function subscriptionGate(session){
+  try{
+    const email=(session&&session.user&&session.user.email)||'';
+    if(!isSubscriberEmail(email))return{ok:true};      // מנהל/מייל אמיתי — לא נחסם
+    if(!SB)return{ok:true};
+    const{data,error}=await SB.from('profiles')
+      .select('subscription_expires,subscriber_status').eq('id',session.user.id).single();
+    if(error||!data)return{ok:true};                    // אין נתונים — לא חוסמים
+    if(data.subscriber_status&&data.subscriber_status!=='active')return{ok:false,reason:'disabled'};
+    const exp=data.subscription_expires;
+    if(exp){
+      const today=new Date().toISOString().slice(0,10);
+      if(String(exp).slice(0,10)<today)return{ok:false,reason:'expired',exp:exp};
+    }
+    return{ok:true};
+  }catch(e){return{ok:true};}
+}
+
+// מציג הודעת חסימה על מסך הנעילה עם קישור חידוש בוואטסאפ
+function showExpiredNotice(gate){
+  const err=document.getElementById('lock-err');
+  const inp=document.getElementById('lock-inp');
+  const wa=String(localStorage.getItem('dobble_wa')||DCFG.whatsapp||'').replace(/\D/g,'');
+  const msg=(gate&&gate.reason==='disabled')?'המנוי שלך אינו פעיל':'תוקף המנוי שלך פג';
+  const waMsg=encodeURIComponent('שלום הושעיה, אשמח לחדש את מנוי מחולל הדאבל שלי 🎯');
+  if(inp)inp.value='';
+  if(err){
+    err.style.color='#fca5a5';
+    err.innerHTML=msg+' — <a href="https://wa.me/'+wa+'?text='+waMsg+'" target="_blank" rel="noopener" style="color:#93c5fd;text-decoration:underline">חידוש בוואטסאפ</a>';
+  }
+}
+
+// שער הכניסה: בודק תוקף, ואם תקין פותח את האפליקציה. מחזיר true אם נפתח.
+async function guardedUnlock(session){
+  const gate=await subscriptionGate(session);
+  if(!gate.ok){
+    showExpiredNotice(gate);
+    try{if(SB)await SB.auth.signOut();}catch(e){}
+    return false;
+  }
+  unlockFromSession(session);
+  return true;
+}
+
 // פותח את האפליקציה כשיש סשן פעיל (למשל אחרי כניסת קוד מנוי) והנעילה עדיין למעלה
 function unlockFromSession(session){
   const ls=document.getElementById('lock-screen');
   if(!ls)return;
   sessionStorage.setItem('dobble_unlocked','1');
-  try{sessionStorage.setItem('dobble_sub',JSON.stringify({code:'',label:(session.user&&session.user.email)||''}));}catch(e){}
+  // שומרים מי נכנס — לקוד מנוי מוציאים את הקוד מהמייל הסינתטי; אחרת המייל האמיתי
+  try{
+    const email=(session.user&&session.user.email)||'';
+    const isSub=isSubscriberEmail(email);
+    sessionStorage.setItem('dobble_sub',JSON.stringify({
+      code:isSub?email.split('@')[0]:'',
+      label:isSub?'':email
+    }));
+  }catch(e){}
   ls.style.transition='opacity .4s';ls.style.opacity='0';
   setTimeout(()=>{if(ls.parentNode)ls.remove();},420);
   goScr(1);
@@ -3016,14 +3160,14 @@ async function syncDesigns(session){
 if(SB){
   SB.auth.getSession().then(({data})=>{
     updateAuthUI(data.session);
-    if(data.session){ unlockFromSession(data.session); syncDesigns(data.session); }
+    if(data.session){ guardedUnlock(data.session).then(ok=>{ if(ok)syncDesigns(data.session); }); }
   });
   SB.auth.onAuthStateChange((event,session)=>{
     updateAuthUI(session);
     if(event==='SIGNED_IN'){
-      unlockFromSession(session);   // אם נכנס דרך קוד מנוי — פותח את האפליקציה
-      toast('התחברת — טוען את העיצובים שלך ☁️','ok');
-      syncDesigns(session);
+      guardedUnlock(session).then(ok=>{   // בודק תוקף מנוי; אם תקין — פותח את האפליקציה
+        if(ok){ toast('התחברת — טוען את העיצובים שלך ☁️','ok'); syncDesigns(session); }
+      });
     }
   });
 }

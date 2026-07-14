@@ -75,13 +75,24 @@ Deno.serve(async (req) => {
 
     if (action === 'list') {
       const { data: list } = await admin.auth.admin.listUsers({ perPage: 1000 });
-      const subs = (list?.users || [])
-        .filter((u) => (u.email || '').endsWith('@' + SUB_DOMAIN))
-        .map((u) => ({
+      const users = (list?.users || []).filter((u) => (u.email || '').endsWith('@' + SUB_DOMAIN));
+      // מצרפים תוקף/סטטוס/תיאור מטבלת profiles
+      const ids = users.map((u) => u.id);
+      const { data: profs } = ids.length
+        ? await admin.from('profiles').select('id,subscription_expires,subscriber_status,label').in('id', ids)
+        : { data: [] };
+      const pmap = new Map((profs || []).map((p: any) => [p.id, p]));
+      const subs = users.map((u) => {
+        const p: any = pmap.get(u.id) || {};
+        return {
           code: (u.email || '').split('@')[0],
           created: u.created_at,
           lastSignIn: u.last_sign_in_at,
-        }));
+          expiry: p.subscription_expires || null,
+          status: p.subscriber_status || 'active',
+          label: p.label || null,
+        };
+      });
       return json({ subscribers: subs });
     }
 
