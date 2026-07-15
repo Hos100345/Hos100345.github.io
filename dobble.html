@@ -369,6 +369,8 @@ function dcfgSave(patch){
   <div style="color:#a5b4fc;font-size:.95rem">הזן/י קוד כניסה</div>
   <input id="lock-inp" type="password" inputmode="text" maxlength="20" placeholder="• • •"
     style="text-align:center;font-size:2rem;letter-spacing:.6rem;width:180px;padding:.7rem .5rem;border-radius:16px;border:2.5px solid rgba(255,255,255,.35);outline:none;background:rgba(255,255,255,.94);font-family:inherit">
+  <button id="lock-go" type="button"
+    style="background:#6366f1;color:#fff;font-weight:800;font-size:1.05rem;padding:.7rem 2.4rem;border:none;border-radius:100px;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(99,102,241,.5)">כניסה ✓</button>
   <div id="lock-err" style="color:#fca5a5;font-size:.88rem;min-height:1.2em"></div>
   <div style="width:min(320px,80vw);height:1px;background:rgba(255,255,255,.18);margin-block:.35rem"></div>
   <div style="color:rgba(255,255,255,.88);font-size:.95rem;font-weight:600">אין לך קוד גישה?</div>
@@ -380,6 +382,19 @@ function dcfgSave(patch){
   </a>
   <div id="lock-phone" style="color:rgba(255,255,255,.75);font-size:.95rem;direction:ltr"></div>
 </div>
+
+<!-- חלון קופץ: קוד שגוי / פג תוקף — חידוש מנוי -->
+<div class="modal-bg" id="renew-modal" hidden style="z-index:10000">
+  <div class="modal-card" style="max-width:420px;width:94%;text-align:center">
+    <div style="font-size:2.6rem;margin-bottom:.3rem">⚠️</div>
+    <div id="renew-title" style="font-size:1.3rem;font-weight:800;margin-bottom:.5rem">הקוד לא התקבל</div>
+    <div id="renew-msg" style="color:var(--muted);font-size:.96rem;line-height:1.6;margin-bottom:1.2rem">ייתכן שהקוד שגוי או שפג תוקף המנוי.</div>
+    <a id="renew-wa" href="#" target="_blank" rel="noopener noreferrer"
+       style="display:inline-flex;align-items:center;justify-content:center;gap:.5rem;background:#25D366;color:#fff;font-weight:700;font-size:1rem;padding:.72rem 1.5rem;border-radius:100px;text-decoration:none;margin-bottom:.85rem">💬 חידוש מנוי בוואטסאפ</a>
+    <div><button id="renew-close" type="button" style="background:none;border:none;color:var(--muted);cursor:pointer;font-family:inherit;font-size:.9rem;text-decoration:underline">סגירה</button></div>
+  </div>
+</div>
+
 <script>
 (function(){
   // מספר וואטסאפ אפקטיבי: מה שהוגדר בלוח הבקרה גובר על קובץ הקונפיג
@@ -447,45 +462,26 @@ function dcfgSave(patch){
   const err=document.getElementById('lock-err');
   inp.focus();
 
-  let errTimer,checkTimer;
-  const triedSub=new Set();
-  // ניסיון כניסת מנוי: הקוד משמש כסיסמה לחשבון Supabase (בלי אימות מייל)
-  async function trySubscriber(v){
-    if(!window.SB||v.length<6||triedSub.has(v))return false;
-    triedSub.add(v);
-    err.style.color='#a5b4fc';err.textContent='בודק קוד…';
-    const ok=await window.subscriberLogin(v);   // הצלחה → מאזין SIGNED_IN פותח את האפליקציה
-    if(!ok)err.textContent='';
-    return ok;
+  // הגשה מפורשת: מקלידים קוד ולוחצים "כניסה ✓" (או Enter). אין בדיקה אוטומטית תוך כדי הקלדה.
+  let submitting=false;
+  async function submitCode(){
+    if(submitting)return;
+    const v=inp.value.trim();
+    if(!v)return;
+    if(window._tryCode(v))return;                 // קוד מקומי / מנהל — פותח מיד
+    if(window.SB&&v.length>=3){
+      submitting=true;
+      err.style.color='#a5b4fc';err.textContent='בודק…';
+      let ok=false;
+      try{ok=await window.subscriberLogin(v);}catch(e){ok=false;}   // הצלחה → SIGNED_IN פותח (ואם פג תוקף — פופאפ)
+      submitting=false;err.textContent='';
+      if(ok)return;
+    }
+    // קוד שגוי / קצר / אין חיבור — חלון חידוש
+    window.showRenewPopup&&window.showRenewPopup('wrong');
   }
-  function showWrong(v){
-    if(inp.value!==v)return;
-    err.style.color='#fca5a5';err.textContent='קוד שגוי ❌';
-    errTimer=setTimeout(()=>{inp.value='';err.textContent='';inp.focus();},900);
-  }
-  inp.addEventListener('input',function(){
-    clearTimeout(errTimer);clearTimeout(checkTimer);
-    err.textContent='';
-    const v=inp.value;
-    if(!v.length)return;
-    if(window._tryCode(v))return;               // קוד מקומי (גישה כללית / ניהול)
-    checkTimer=setTimeout(async()=>{
-      if(inp.value!==v)return;
-      if(v.length>=3){
-        if(await trySubscriber(v))return;       // קוד מנוי (כניסה לחשבון)
-        showWrong(v);
-      }
-    },700);
-  });
-
-  inp.addEventListener('keydown',async function(e){
-    if(e.key!=='Enter')return;
-    clearTimeout(errTimer);clearTimeout(checkTimer);
-    const v=inp.value;
-    if(window._tryCode(v))return;
-    if(await trySubscriber(v))return;
-    if(v.length>=1)showWrong(v);
-  });
+  document.getElementById('lock-go').addEventListener('click',submitCode);
+  inp.addEventListener('keydown',function(e){ if(e.key==='Enter'){e.preventDefault();submitCode();} });
 })();
 </script>
 
@@ -3027,17 +3023,28 @@ async function subscriptionGate(session){
 }
 
 // מציג הודעת חסימה על מסך הנעילה עם קישור חידוש בוואטסאפ
-function showExpiredNotice(gate){
-  const err=document.getElementById('lock-err');
-  const inp=document.getElementById('lock-inp');
+// חלון קופץ: קוד שגוי / פג תוקף — חידוש מנוי בוואטסאפ
+window.showRenewPopup=function(mode){
+  const m=document.getElementById('renew-modal');if(!m)return;
   const wa=String(localStorage.getItem('dobble_wa')||DCFG.whatsapp||'').replace(/\D/g,'');
-  const msg=(gate&&gate.reason==='disabled')?'המנוי שלך אינו פעיל':'תוקף המנוי שלך פג';
   const waMsg=encodeURIComponent('שלום הושעיה, אשמח לחדש את מנוי מחולל הדאבל שלי 🎯');
+  const waEl=document.getElementById('renew-wa');if(waEl)waEl.href='https://wa.me/'+wa+'?text='+waMsg;
+  const t=document.getElementById('renew-title'),g=document.getElementById('renew-msg');
+  if(mode==='expired'){ if(t)t.textContent='תוקף המנוי פג'; if(g)g.textContent='המנוי שלך אינו פעיל יותר. לחידוש:'; }
+  else{ if(t)t.textContent='הקוד לא התקבל'; if(g)g.textContent='ייתכן שהקוד שגוי או שפג תוקף המנוי. לחידוש:'; }
+  m.hidden=false;
+};
+(function(){
+  const m=document.getElementById('renew-modal');if(!m)return;
+  const close=()=>{m.hidden=true;const inp=document.getElementById('lock-inp');if(inp){inp.value='';try{inp.focus();}catch(e){}}};
+  const cb=document.getElementById('renew-close');if(cb)cb.addEventListener('click',close);
+  m.addEventListener('click',e=>{if(e.target===m)close();});
+})();
+
+function showExpiredNotice(gate){
+  const inp=document.getElementById('lock-inp');
   if(inp)inp.value='';
-  if(err){
-    err.style.color='#fca5a5';
-    err.innerHTML=msg+' — <a href="https://wa.me/'+wa+'?text='+waMsg+'" target="_blank" rel="noopener" style="color:#93c5fd;text-decoration:underline">חידוש בוואטסאפ</a>';
-  }
+  window.showRenewPopup&&window.showRenewPopup(gate&&gate.reason==='disabled'?'expired':'expired');
 }
 
 // שער הכניסה: בודק תוקף, ואם תקין פותח את האפליקציה. מחזיר true אם נפתח.
@@ -3066,6 +3073,8 @@ function unlockFromSession(session){
       label:isSub?'':email
     }));
   }catch(e){}
+  // רישום כניסה למעקב (גם למנויים שנכנסים בקוד/מייל — לא רק קוד מקומי)
+  window.track&&window.track('unlock',{});
   ls.style.transition='opacity .4s';ls.style.opacity='0';
   setTimeout(()=>{if(ls.parentNode)ls.remove();},420);
   goScr(1);
@@ -3160,7 +3169,9 @@ async function syncDesigns(session){
 if(SB){
   SB.auth.getSession().then(({data})=>{
     updateAuthUI(data.session);
-    if(data.session){ guardedUnlock(data.session).then(ok=>{ if(ok)syncDesigns(data.session); }); }
+    // לא פותחים אוטומטית מסשן שמור — חייבים להקליד קוד בכל ביקור.
+    // הסשן משמש רק לזיהוי מנהל ולסנכרון העיצובים ברקע.
+    if(data.session){ syncDesigns(data.session); }
   });
   SB.auth.onAuthStateChange((event,session)=>{
     updateAuthUI(session);
