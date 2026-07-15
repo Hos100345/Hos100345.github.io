@@ -3066,6 +3066,8 @@ function unlockFromSession(session){
       label:isSub?'':email
     }));
   }catch(e){}
+  // רישום כניסה למעקב (גם למנויים שנכנסים בקוד/מייל — לא רק קוד מקומי)
+  window.track&&window.track('unlock',{});
   ls.style.transition='opacity .4s';ls.style.opacity='0';
   setTimeout(()=>{if(ls.parentNode)ls.remove();},420);
   goScr(1);

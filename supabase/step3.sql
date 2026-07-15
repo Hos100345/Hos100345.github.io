@@ -32,3 +32,8 @@ create policy "anyone insert events" on public.events
 drop policy if exists "admin read events" on public.events;
 create policy "admin read events" on public.events
   for select using ( lower(coalesce(auth.jwt() ->> 'email','')) = 'hoshaya@gmail.com' );
+
+-- הרשאות מפורשות (ליתר ביטחון — כדי שרישום הפעילות יעבוד לכל משתמש):
+-- כל אחד (אנונימי + מחובר) יכול להוסיף אירוע; קריאה למחוברים (מגובה ב-RLS למנהל בלבד).
+grant insert on public.events to anon, authenticated;
+grant select on public.events to authenticated;
