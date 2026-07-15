@@ -48,17 +48,29 @@ Deno.serve(async (req) => {
     if (action === 'create') {
       const code = String(body.code || '').trim();
       if (code.length < 6) return json({ error: 'הקוד חייב להיות 6 תווים לפחות' }, 400);
+      const email = codeToEmail(code);
+      let userId: string | null = null;
       const { data, error } = await admin.auth.admin.createUser({
-        email: codeToEmail(code), password: code, email_confirm: true,
+        email, password: code, email_confirm: true,
       });
-      if (error) return json({ error: error.message }, 400);
-      if (data.user) {
-        await admin.from('profiles').upsert({
-          id: data.user.id,
+      if (error) {
+        // כנראה כבר קיים — מאתרים ומעדכנים (חידוש/הארכת תוקף)
+        const { data: list } = await admin.auth.admin.listUsers({ perPage: 1000 });
+        const existing = (list?.users || []).find((x) => (x.email || '').toLowerCase() === email);
+        if (!existing) return json({ error: error.message }, 400);
+        userId = existing.id;
+      } else {
+        userId = data.user?.id || null;
+      }
+      if (userId) {
+        const { error: pErr } = await admin.from('profiles').upsert({
+          id: userId,
           label: body.label || null,
           subscription_expires: body.expiry || null,
           subscriber_status: 'active',
         });
+        // חשוב: לא לשתוק על כשל שמירה — אחרת התוקף "נעלם"
+        if (pErr) return json({ error: 'המנוי נוצר אך שמירת התוקף נכשלה: ' + pErr.message }, 500);
       }
       return json({ ok: true, code });
     }
