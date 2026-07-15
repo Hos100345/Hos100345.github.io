@@ -108,6 +108,37 @@ Deno.serve(async (req) => {
       return json({ subscribers: subs });
     }
 
+    // העיצובים של מנוי — מחזיר למנהל את העיצובים השמורים בענן עם קישורי-תמונה חתומים
+    if (action === 'subscriber-designs') {
+      const email = codeToEmail(body.code || '');
+      const { data: list } = await admin.auth.admin.listUsers({ perPage: 1000 });
+      const u = (list?.users || []).find((x) => (x.email || '').toLowerCase() === email);
+      if (!u) return json({ error: 'המנוי לא נמצא' }, 404);
+      const { data: designs, error } = await admin.from('designs')
+        .select('id,name,game_data,created_at').eq('user_id', u.id).order('created_at', { ascending: false });
+      if (error) return json({ error: error.message }, 400);
+      const out = [];
+      for (const dz of (designs || [])) {
+        const gd: any = dz.game_data || {};
+        const imgs: any[] = gd.images || [];
+        const paths = imgs.map((im) => im.path).filter(Boolean);
+        let byPath = new Map<string, string>();
+        if (paths.length) {
+          const { data: su } = await admin.storage.from('symbols').createSignedUrls(paths, 3600);
+          byPath = new Map((su || []).map((s: any) => [s.path, s.signedUrl || s.signedURL]));
+        }
+        out.push({
+          id: dz.id, name: dz.name, created_at: dz.created_at, settings: gd.settings || {},
+          images: imgs.map((im) => ({
+            id: im.id, name: im.name, type: im.type,
+            srcAssetId: im.srcAssetId || null, isCropSource: im.isCropSource || false,
+            url: byPath.get(im.path) || null,
+          })),
+        });
+      }
+      return json({ designs: out });
+    }
+
     return json({ error: 'unknown action' }, 400);
   } catch (e) {
     return json({ error: String((e as Error)?.message || e) }, 500);
