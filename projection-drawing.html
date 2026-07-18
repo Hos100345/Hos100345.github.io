@@ -68,6 +68,22 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 #btnRetry{display:none;margin-top:8px;padding:10px 24px;background:#e94560;color:#fff;border:none;border-radius:24px;font-size:1em;cursor:pointer}
 .spinner{width:46px;height:46px;border:4px solid #333;border-top-color:#e94560;border-radius:50%;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+#tunePanel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(92vw,430px);max-height:82vh;overflow-y:auto;background:#0d1226f5;border:1px solid #2a3560;border-radius:18px;z-index:60;padding:16px 18px;box-shadow:0 8px 40px #000c}
+#tunePanel.hidden{display:none}
+.tn-head{display:flex;justify-content:space-between;align-items:center;font-size:1.15em;font-weight:bold;color:#e94560;margin-bottom:6px}
+#tnClose{background:#2a2a4a;color:#fff;border:none;border-radius:50%;width:44px;height:44px;font-size:1.15em;cursor:pointer;flex-shrink:0}
+.tn-sec{margin:16px 0 4px;color:#5ac8fa;font-weight:bold;font-size:.95em;border-bottom:1px solid #223055;padding-bottom:5px}
+.tn-row{margin:12px 0}
+.tn-lab{display:flex;justify-content:space-between;font-size:.92em;color:#ddd;margin-bottom:5px}
+.tn-val{color:#ffcc00;font-weight:bold;direction:ltr}
+.tn-hint{font-size:.74em;color:#8892aa;margin-top:4px;line-height:1.45}
+.tn-row input[type=range]{width:100%;height:10px}
+.tn-fps{font-size:.92em;color:#ddd;margin:8px 0;direction:rtl}
+#tnFps{color:#00ff88;font-weight:bold}
+#maskPreview{width:100%;max-width:240px;height:auto;background:#000;border:1px solid #334;border-radius:8px;display:block;margin:8px auto 4px;image-rendering:pixelated}
+#maskInfo{text-align:center;font-size:.82em;color:#8892aa;margin-bottom:8px}
+#tnReset{width:100%;padding:13px;background:#2a2a4a;color:#ccc;border:none;border-radius:12px;font-size:.95em;cursor:pointer;margin-top:8px}
+#btnTune{background:#0f3460;color:#ffcc00;min-width:54px;justify-content:center}
 </style>
 </head>
 <body>
@@ -103,7 +119,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
     📷 <span id="dbCam" class="warn">ממתין</span><br>
     🤖 <span id="dbMp" class="warn">ממתין</span><br>
     ✋ <span id="dbHand" class="err">לא מזוהה</span><br>
-    🤏 <span id="dbGest">—</span>
+    🤏 <span id="dbGest">—</span><br>
+    ⚡ <span id="dbFps">—</span>
     <div id="dbCtrl">
       <button class="dbtn" id="btnFlip">↔ הפוך</button>
       <button class="dbtn" id="btnSwitchCam">📷 החלף</button>
@@ -123,10 +140,46 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
     <div class="tb-row">
       <button class="tb-btn" id="btnClear">🗑 מחק</button>
       <button class="tb-btn" id="btnSave">💾 שמור</button>
-      <button class="tb-btn" id="btnMode">⚙ מצב</button>
+      <button class="tb-btn" id="btnMode">🔙 מצב</button>
+      <button class="tb-btn" id="btnTune">⚙️</button>
       <button class="tb-btn" id="btnDebug">🐛</button>
     </div>
   </div>
+</div>
+<div id="tunePanel" class="hidden">
+  <div class="tn-head"><span>⚙️ בקרה וכיוונון</span><button id="tnClose">✕</button></div>
+  <div class="tn-sec">🖐 זיהוי יד (TF.js)</div>
+  <div class="tn-row">
+    <div class="tn-lab"><span>רגישות זיהוי (סף ביטחון)</span><span class="tn-val" id="vConf">0.50</span></div>
+    <input type="range" id="tnConf" min="10" max="90" value="50">
+    <div class="tn-hint">נמוך = מזהה יד בקלות גם בחושך · גבוה = פחות זיהויי שווא</div>
+  </div>
+  <div class="tn-row">
+    <div class="tn-lab"><span>החלקת קו</span><span class="tn-val" id="vSmooth">0.45</span></div>
+    <input type="range" id="tnSmooth" min="5" max="95" value="45">
+    <div class="tn-hint">נמוך = קו חלק מאוד אבל איטי · גבוה = תגובה מיידית אבל רועדת</div>
+  </div>
+  <div class="tn-sec">🔴 סמן אדום (מעקב צבע)</div>
+  <div class="tn-row">
+    <div class="tn-lab"><span>רגישות צבע</span><span class="tn-val" id="vColor">80</span></div>
+    <input type="range" id="tnColor" min="20" max="150" value="80">
+    <div class="tn-hint">כמה הפיקסל צריך להיות אדום ביחס לירוק/כחול · נמוך = תופס גם אדום חלש</div>
+  </div>
+  <div class="tn-row">
+    <div class="tn-lab"><span>בהירות מינימלית</span><span class="tn-val" id="vBright">150</span></div>
+    <input type="range" id="tnBright" min="0" max="220" value="150">
+    <div class="tn-hint">מסנן פיקסלים כהים · העלה בחדר חשוך כדי להתעלם מהשתקפויות עמומות של המקרן</div>
+  </div>
+  <div class="tn-row">
+    <div class="tn-lab"><span>גודל כתם מינימלי</span><span class="tn-val" id="vBlob">30</span></div>
+    <input type="range" id="tnBlob" min="5" max="200" value="30">
+    <div class="tn-hint">כמה פיקסלים אדומים דרושים כדי להתחיל לצייר · מונע נקודות אקראיות מרעש מצלמה בחושך</div>
+  </div>
+  <div class="tn-sec">📊 ניטור בזמן אמת</div>
+  <div class="tn-fps">⚡ FPS: <span id="tnFps">—</span></div>
+  <canvas id="maskPreview" width="160" height="120"></canvas>
+  <div id="maskInfo">מסכת צבע – לבן = פיקסל שעבר את הסינון</div>
+  <button id="tnReset">↺ איפוס להגדרות ברירת מחדל</button>
 </div>
 <div id="toast"></div>
 <script>
@@ -141,6 +194,15 @@ let drawCtx,debugCtx,fingerDotEl,videoEl;
 let detector=null,rafId=null,debugVisible=true;
 let flipH=false,camList=[],camIdx=0,detectMode='hand';
 let colorCanvas=null,colorCtx=null;
+
+// tuning panel state – all values affect the RAF loop live
+const TUNE_DEFAULTS={conf:0.5,smooth:0.45,colorTh:80,minBright:150,minBlob:30};
+const tune={...TUNE_DEFAULTS};
+let tuneOpen=false,maskTmpCanvas=null;
+const fps={loop:0,cam:0,_l:0,_c:0,_t:0};
+function loadTune(){try{const s=JSON.parse(localStorage.getItem('airdraw_tune'));if(s)for(const k in TUNE_DEFAULTS)if(typeof s[k]==='number')tune[k]=s[k];}catch(e){}}
+function saveTune(){try{localStorage.setItem('airdraw_tune',JSON.stringify(tune));}catch(e){}}
+loadTune();
 
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 function toast(msg,ms=2500){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),ms);}
@@ -188,9 +250,50 @@ onTap(document.getElementById('btnDetectMode'),()=>{
 });
 onTap(document.getElementById('btnRetry'),()=>{document.getElementById('btnRetry').style.display='none';loadTFHandpose();});
 
+// tuning panel
+function bindTune(id,valId,key,scale,digits){
+  const el=document.getElementById(id),v=document.getElementById(valId);
+  el._sync=()=>{el.value=Math.round(tune[key]/scale);v.textContent=tune[key].toFixed(digits);};
+  el.addEventListener('input',()=>{tune[key]=+el.value*scale;v.textContent=tune[key].toFixed(digits);saveTune();});
+  el._sync();
+}
+bindTune('tnConf','vConf','conf',0.01,2);
+bindTune('tnSmooth','vSmooth','smooth',0.01,2);
+bindTune('tnColor','vColor','colorTh',1,0);
+bindTune('tnBright','vBright','minBright',1,0);
+bindTune('tnBlob','vBlob','minBlob',1,0);
+function setTuneOpen(open){tuneOpen=open;document.getElementById('tunePanel').classList.toggle('hidden',!open);}
+onTap(document.getElementById('btnTune'),()=>setTuneOpen(!tuneOpen));
+onTap(document.getElementById('tnClose'),()=>setTuneOpen(false));
+onTap(document.getElementById('tnReset'),()=>{
+  Object.assign(tune,TUNE_DEFAULTS);saveTune();
+  document.querySelectorAll('#tunePanel input[type=range]').forEach(el=>el._sync&&el._sync());
+  toast('ההגדרות אופסו ↺');
+});
+
+function fpsLoopTick(){
+  fps._l++;
+  const now=performance.now();
+  if(!fps._t)fps._t=now;
+  if(now-fps._t>=1000){
+    fps.loop=fps._l;fps.cam=fps._c;fps._l=0;fps._c=0;fps._t=now;
+    const s=`לולאה ${fps.loop} · מצלמה ${fps.cam||'—'}`;
+    dbSet('dbFps',s,fps.loop>=20?'ok':'warn');
+    const el=document.getElementById('tnFps');if(el)el.textContent=s;
+  }
+}
+function startCamFpsCounter(){
+  if(!videoEl||!videoEl.requestVideoFrameCallback||videoEl._fpsCb)return;
+  videoEl._fpsCb=true;
+  const cb=()=>{fps._c++;videoEl.requestVideoFrameCallback(cb);};
+  videoEl.requestVideoFrameCallback(cb);
+}
+
 function applyFlipCSS(){
   const t=flipH?'scaleX(-1)':'';
   if(videoEl)videoEl.style.transform=t;
+  const mp=document.getElementById('maskPreview');
+  if(mp)mp.style.transform=t;
 }
 
 // calibration
@@ -329,6 +432,7 @@ async function openCamera(deviceId){
     await new Promise(res=>{if(videoEl.readyState>=1){res();return;}videoEl.addEventListener('loadedmetadata',res,{once:true});});
     await videoEl.play().catch(()=>{});
     loadingEl.classList.add('hidden');
+    startCamFpsCounter();
     startRAF();
     // Load TF.js in background (hand mode)
     loadTFHandpose();
@@ -361,39 +465,64 @@ function loadTFHandpose(){
     .catch(e=>{console.error('TF:',e);dbSet('dbMp','שגיאה','err');});
 }
 
-// Color marker tracking (track brightest red blob)
+// Color marker tracking (red blob) – thresholds are live-tunable via the panel
 function trackByColor(video){
   const vW=video.videoWidth||320,vH=video.videoHeight||240;
   const sw=Math.floor(vW/3),sh=Math.floor(vH/3);
   if(!colorCanvas){colorCanvas=document.createElement('canvas');colorCtx=colorCanvas.getContext('2d',{willReadFrequently:true});}
-  colorCanvas.width=sw;colorCanvas.height=sh;
+  if(colorCanvas.width!==sw||colorCanvas.height!==sh){colorCanvas.width=sw;colorCanvas.height=sh;}
   colorCtx.drawImage(video,0,0,sw,sh);
   const d=colorCtx.getImageData(0,0,sw,sh).data;
+  const mask=tuneOpen?new Uint8ClampedArray(d.length):null;
   let sx=0,sy=0,n=0;
   for(let i=0;i<d.length;i+=4){
     const r=d[i],g=d[i+1],b=d[i+2];
-    if(r>180&&g<90&&b<90){const px=(i/4)%sw,py=Math.floor((i/4)/sw);sx+=px;sy+=py;n++;}
+    const pass=r>=tune.minBright&&(r-Math.max(g,b))>=tune.colorTh;
+    if(pass){const p=i/4,px=p%sw,py=(p/sw)|0;sx+=px;sy+=py;n++;}
+    if(mask){const v=pass?255:0;mask[i]=v;mask[i+1]=v;mask[i+2]=v;mask[i+3]=255;}
   }
-  if(n<30)return null;
+  if(mask)renderMask(mask,sw,sh,n);
+  if(n<tune.minBlob)return null;
   let x=sx/n/sw,y=sy/n/sh;
   if(flipH)x=1-x;
   return{x,y};
+}
+
+// B/W mask thumbnail in the tuning panel: white = pixel passed the red filter
+function renderMask(mask,sw,sh,n){
+  const prev=document.getElementById('maskPreview');
+  if(!maskTmpCanvas)maskTmpCanvas=document.createElement('canvas');
+  if(maskTmpCanvas.width!==sw||maskTmpCanvas.height!==sh){maskTmpCanvas.width=sw;maskTmpCanvas.height=sh;}
+  maskTmpCanvas.getContext('2d').putImageData(new ImageData(mask,sw,sh),0,0);
+  const pc=prev.getContext('2d');
+  pc.imageSmoothingEnabled=false;
+  pc.clearRect(0,0,prev.width,prev.height);
+  pc.drawImage(maskTmpCanvas,0,0,prev.width,prev.height);
+  const info=document.getElementById('maskInfo');
+  const ok=n>=tune.minBlob;
+  info.textContent=`פיקסלים אדומים: ${n} · סף כתם: ${tune.minBlob} ${ok?'✓ מצייר':'✗ מתחת לסף'}`;
+  info.style.color=ok?'#00ff88':'#8892aa';
 }
 
 function startRAF(){
   if(rafId)cancelAnimationFrame(rafId);let busy=false;
   async function loop(){
     rafId=requestAnimationFrame(loop);
+    fpsLoopTick();
     if(busy||videoEl.readyState<2)return;
     busy=true;
     try{
       if(detectMode==='color'){
         onDrawResult(trackByColor(videoEl),true);
-      }else if(detector){
-        const results=await detector.estimateHands(videoEl,{flipHorizontal:flipH});
-        onHandResults(results);
       }else{
-        dbSet('dbHand','ממתין למודל...','warn');
+        if(detector){
+          const results=await detector.estimateHands(videoEl,{flipHorizontal:flipH});
+          onHandResults(results);
+        }else{
+          dbSet('dbHand','ממתין למודל...','warn');
+        }
+        // panel open in hand mode: still run the color pass so the mask preview updates
+        if(tuneOpen)trackByColor(videoEl);
       }
     }catch(e){}
     busy=false;
@@ -404,6 +533,8 @@ function startRAF(){
 function onHandResults(results){
   const W=window.innerWidth,H=window.innerHeight;
   debugCtx.clearRect(0,0,W,H);
+  // detection-confidence filter (live-tunable)
+  if(results&&results.length&&results[0].score!=null&&results[0].score<tune.conf)results=[];
   if(!results||!results.length){
     drawing=false;lastPt=null;smoothPt=null;fingerDotEl.style.display='none';
     dbSet('dbHand','לא מזוהה','err');dbSet('dbGest','—');return;
@@ -433,7 +564,7 @@ function onDrawResult(pt,shouldDraw){
   if(homography){const m=applyH(homography,pt.x,pt.y);nx=m.x;ny=m.y;}
   let cx=nx*W,cy=ny*H;
   if(!smoothPt)smoothPt={x:cx,y:cy};
-  else{smoothPt.x+=(cx-smoothPt.x)*0.45;smoothPt.y+=(cy-smoothPt.y)*0.45;}
+  else{const a=tune.smooth;smoothPt.x+=(cx-smoothPt.x)*a;smoothPt.y+=(cy-smoothPt.y)*a;}
   cx=smoothPt.x;cy=smoothPt.y;
   fingerDotEl.style.display='block';fingerDotEl.style.left=cx+'px';fingerDotEl.style.top=cy+'px';
   fingerDotEl.className=shouldDraw?'drawing':'';
