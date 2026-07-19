@@ -127,6 +127,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
     <div class="mode-card" id="setupAuto"><div class="icon">⚡</div><h2>אוטומטי</h2><p>מדידת תאורה והגדרה מתאימה – ומתחילים!</p></div>
     <div class="mode-card" id="setupManual"><div class="icon">🎛</div><h2>ידני</h2><p>פתיחת חלונית הכיוונון המלאה</p></div>
   </div>
+  <button id="setupBack" style="background:#333;color:#ccc;border:none;border-radius:24px;padding:12px 26px;font-size:.95em;cursor:pointer">↩ חזרה לכיול</button>
 </div>
 <div id="screenCalib" class="screen">
   <video id="calibVideo" autoplay playsinline muted></video>
@@ -317,6 +318,9 @@ async function openSelCamera(deviceId){
     const settings=(s.getVideoTracks()[0].getSettings&&s.getVideoTracks()[0].getSettings())||{};
     vid.style.transform=settings.facingMode==='user'?'scaleX(-1)':'';
     try{const devs=await navigator.mediaDevices.enumerateDevices();camList=devs.filter(d=>d.kind==='videoinput');}catch(e){}
+    // sync camIdx to the camera that ACTUALLY opened, so the first cycle
+    // press moves to a genuinely different device
+    if(settings.deviceId&&camList.length){const i=camList.findIndex(d=>d.deviceId===settings.deviceId);if(i>=0)camIdx=i;}
     const face=settings.facingMode==='user'?' (קדמית)':settings.facingMode==='environment'?' (אחורית)':'';
     info.textContent='מצלמה '+(camList.length?(camIdx%camList.length)+1:1)+'/'+(camList.length||1)+face+' · כוון אותה אל אזור ההקרנה';
   }catch(e){
@@ -440,7 +444,10 @@ async function recreateDetector(){
     detector=await handPoseDetection.createDetector(handPoseDetection.SupportedModels.MediaPipeHands,{runtime:'tfjs',modelType:tune.modelFull?'full':'lite',maxHands:1});
     const b=(window.tf&&tf.getBackend&&tf.getBackend())||'';
     dbSet('dbMp','מודל ✓'+(b?' ('+(BACKEND_LABEL[b]||b)+')':''),b==='cpu'?'warn':'ok');
-  }catch(e){console.error('model:',e);dbSet('dbMp','שגיאה','err');}
+  }catch(e){
+    console.error('model:',e);dbSet('dbMp','שגיאה','err');
+    toast('❌ טעינת המודל נכשלה על מנוע זה – נסה מנוע אחר או מודל "מהיר" ב-⚙️',5000);
+  }
 }
 let lockRestoreTried=false;
 function setTuneOpen(open){
@@ -564,6 +571,8 @@ function tapToFrame(sx,sy,rect){
 }
 function handleZoneTap(e){
   if(calibPoints.length>=4)return;
+  // taps before video metadata would use wrong default dims → bad quad
+  if(!document.getElementById('calibVideo').videoWidth){toast('רגע – הווידאו עוד נטען...');return;}
   const zone=document.getElementById('calibTapZone');const rect=zone.getBoundingClientRect();
   const x=(e.clientX??e.pageX)-rect.left,y=(e.clientY??e.pageY)-rect.top;
   const sx=x/rect.width,sy=y/rect.height;
@@ -637,6 +646,11 @@ onTap(document.getElementById('setupHand'),()=>{setDetectMode('hand',true);showS
 onTap(document.getElementById('setupColor'),()=>{setDetectMode('color',true);showSetupScreen();});
 onTap(document.getElementById('setupAuto'),()=>{applyAutoTune(ambientLum);startDrawingScreen();});
 onTap(document.getElementById('setupManual'),()=>{startDrawingScreen();setTuneOpen(true);});
+onTap(document.getElementById('setupBack'),()=>{
+  // reuse the still-live stream held for the drawing screen
+  const s=calibStream;calibStream=null;
+  startCalibration(s&&s.getVideoTracks().some(t=>t.readyState==='live')?s:null);
+});
 
 function measureLuminance(video){
   try{
@@ -737,8 +751,10 @@ async function openCamera(deviceId){
     mirrorPreview=(settings.facingMode==='user');
     document.getElementById('btnMirror').classList.toggle('on',mirrorPreview);
     applyFlipCSS();
-    // Enumerate cameras after getting permission
+    // Enumerate cameras after getting permission + sync camIdx to the
+    // device that actually opened (cycle button then works predictably)
     try{const devs=await navigator.mediaDevices.enumerateDevices();camList=devs.filter(d=>d.kind==='videoinput');}catch(e){}
+    if(settings.deviceId&&camList.length){const i=camList.findIndex(d=>d.deviceId===settings.deviceId);if(i>=0)camIdx=i;}
     dbSet('dbCam','פעיל ✓','ok');
     await new Promise(res=>{if(videoEl.readyState>=1){res();return;}videoEl.addEventListener('loadedmetadata',res,{once:true});});
     await videoEl.play().catch(()=>{});
@@ -1144,6 +1160,20 @@ function stopTracking(){
   smoothPt=null;drawing=false;lastPt=null;roi=null;
   if(fingerDotEl)fingerDotEl.style.display='none';
 }
+
+// screen-lock / app-switch can kill the camera track – recover on return
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState!=='visible')return;
+  const deviceId=camList.length?camList[camIdx%camList.length].deviceId:undefined;
+  if(document.getElementById('screenDraw').classList.contains('active')){
+    const t=videoEl&&videoEl._stream&&videoEl._stream.getVideoTracks()[0];
+    if(!t||t.readyState!=='live'){toast('מחדש את המצלמה...');openCamera(deviceId);}
+  }else if(document.getElementById('screenCam').classList.contains('active')){
+    const vid=document.getElementById('camSelVideo');
+    const t=vid._stream&&vid._stream.getVideoTracks()[0];
+    if(!t||t.readyState!=='live')openSelCamera(deviceId);
+  }
+});
 
 // ---- boot: step 1 (camera selection); the AI model preloads in parallel ----
 openSelCamera();
