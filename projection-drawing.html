@@ -845,7 +845,7 @@ async function fixBackend(){
 // TF.js HandPose – scripts are loaded ONCE; re-entry only re-creates the
 // detector on the saved backend (reloading tf.min.js resets the backend
 // registry and silently reverts to the broken default)
-let tfLoading=false;
+let tfLoading=false,tfLoadAttempts=0;
 function loadTFHandpose(){
   if(detector||tfLoading){return;}// already ready / in progress
   tfLoading=true;
@@ -875,9 +875,19 @@ function loadTFHandpose(){
       syncBackendBtns();
       detector=await handPoseDetection.createDetector(handPoseDetection.SupportedModels.MediaPipeHands,{runtime:'tfjs',modelType:tune.modelFull?'full':'lite',maxHands:1});
       dbSet('dbMp','מודל ✓ ('+BACKEND_LABEL[b]+')',b==='cpu'?'warn':'ok');
-      tfLoading=false;
+      tfLoading=false;tfLoadAttempts=0;
     })
-    .catch(e=>{console.error('TF:',e);dbSet('dbMp','שגיאה','err');tfLoading=false;});
+    .catch(e=>{
+      console.error('TF:',e);tfLoading=false;
+      // flaky network: auto-retry with backoff instead of dying silently
+      if(++tfLoadAttempts<=3){
+        dbSet('dbMp','שגיאה – מנסה שוב ('+tfLoadAttempts+'/3)...','warn');
+        setTimeout(loadTFHandpose,4000*tfLoadAttempts);
+      }else{
+        dbSet('dbMp','שגיאה','err');
+        toast('⚠️ טעינת מודל ה-AI נכשלה – בדוק חיבור לאינטרנט. מצב הסמן האדום 🔴 עובד גם בלי מודל',6000);
+      }
+    });
 }
 
 // Color marker tracking (red blob) – thresholds are live-tunable via the panel
