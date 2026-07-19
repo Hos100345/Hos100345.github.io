@@ -152,6 +152,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 </div>
 <div id="tunePanel" class="hidden">
   <div class="tn-head"><span>⚙️ בקרה וכיוונון</span><button id="tnClose">✕</button></div>
+  <div id="secHand">
   <div class="tn-sec">🖐 זיהוי יד (TF.js)</div>
   <div class="tn-row">
     <div class="tn-lab"><span>רגישות זיהוי (סף ביטחון)</span><span class="tn-val" id="vConf">0.50</span></div>
@@ -177,6 +178,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
     </div>
     <div class="tn-hint">הקטנת התמונה שנשלחת ל-AI · שליש = FPS גבוה בהרבה במובייל חלש, דיוק מעט נמוך יותר</div>
   </div>
+  </div>
+  <div id="secColor">
   <div class="tn-sec">🔴 סמן אדום (מעקב צבע)</div>
   <div class="tn-row">
     <div class="tn-lab"><span>רגישות צבע</span><span class="tn-val" id="vColor">80</span></div>
@@ -192,6 +195,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
     <div class="tn-lab"><span>גודל כתם מינימלי</span><span class="tn-val" id="vBlob">30</span></div>
     <input type="range" id="tnBlob" min="5" max="200" value="30">
     <div class="tn-hint">כמה פיקסלים אדומים דרושים כדי להתחיל לצייר · מונע נקודות אקראיות מרעש מצלמה בחושך</div>
+  </div>
   </div>
   <div class="tn-sec">📊 ניטור בזמן אמת</div>
   <div class="tn-tabs">
@@ -277,6 +281,9 @@ function setDetectMode(m,quiet){
   const info=document.getElementById('maskInfo');
   info.textContent=m==='hand'?'תצוגת יד – שלד ה-AI על הווידאו':'מסכת צבע – לבן = פיקסל שעבר את הסינון';
   info.style.color='#8892aa';
+  // show only the sliders relevant to the active mode
+  document.getElementById('secHand').style.display=m==='hand'?'':'none';
+  document.getElementById('secColor').style.display=m==='color'?'':'none';
   if(!quiet)toast(m==='hand'?'מצב: זיהוי יד':'מצב: סמן אדום');
 }
 onTap(document.getElementById('btnDetectMode'),()=>setDetectMode(detectMode==='hand'?'color':'hand'));
@@ -574,24 +581,38 @@ function startRAF(){
           if(tuneOpen)renderHandPreview(null,null);
         }
       }
-    }catch(e){}
+    }catch(e){console.error('loop:',e);dbSet('dbHand','שגיאת עיבוד','err');}
     busy=false;
   }
   rafId=requestAnimationFrame(loop);
+}
+
+// robust confidence extraction – tfjs runtime may expose it as hand.score
+// or only inside handedness[0].score; anything non-numeric becomes null
+function handScore(h){
+  if(!h)return null;
+  let s=h.score;
+  if(typeof s!=='number'||isNaN(s)){
+    const hd=h.handedness;
+    if(Array.isArray(hd)&&hd.length&&typeof hd[0].score==='number')s=hd[0].score;
+  }
+  return(typeof s==='number'&&!isNaN(s))?s:null;
 }
 
 function onHandResults(results){
   const W=window.innerWidth,H=window.innerHeight;
   debugCtx.clearRect(0,0,W,H);
   // live confidence readout (raw score, before the threshold filter)
-  const rawScore=results&&results.length&&results[0].score!=null?results[0].score:null;
+  const hasHand=!!(results&&results.length);
+  const rawScore=handScore(hasHand?results[0]:null);
   const scEl=document.getElementById('tnScore');
   if(scEl){
-    if(rawScore!=null){scEl.textContent=Math.round(rawScore*100)+'%';scEl.style.color=rawScore>=tune.conf?'#00ff88':'#ffcc00';}
-    else{scEl.textContent='—';scEl.style.color='#8892aa';}
+    if(!hasHand){scEl.textContent='0%';scEl.style.color='#ff2d55';}
+    else if(rawScore!=null){scEl.textContent=Math.round(rawScore*100)+'%';scEl.style.color=rawScore>=tune.conf?'#00ff88':'#ffcc00';}
+    else{scEl.textContent='✓ (ללא ציון)';scEl.style.color='#00ff88';}
   }
-  // detection-confidence filter (live-tunable)
-  if(results&&results.length&&results[0].score!=null&&results[0].score<tune.conf)results=[];
+  // detection-confidence filter (live-tunable; skipped when the model returns no numeric score)
+  if(hasHand&&rawScore!=null&&rawScore<tune.conf)results=[];
   if(!results||!results.length){
     drawing=false;lastPt=null;smoothPt=null;stopFrames=0;fingerDotEl.style.display='none';
     dbSet('dbHand','לא מזוהה','err');dbSet('dbGest','—');
