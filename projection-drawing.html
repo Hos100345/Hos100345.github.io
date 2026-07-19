@@ -60,6 +60,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 #btnDebug{background:#0f3460;color:#7bb;min-width:54px;justify-content:center}
 #fingerDot{position:fixed;width:32px;height:32px;border-radius:50%;border:4px solid #fff;background:transparent;pointer-events:none;z-index:40;transform:translate(-50%,-50%);transition:all .1s;display:none;box-shadow:0 0 8px #fff8}
 #fingerDot.drawing{background:#ff2d55cc;border-color:#ff2d55;width:20px;height:20px;box-shadow:0 0 14px #ff2d55}
+#fingerDot.outside{border-color:#ffcc00;background:#ffcc0033;box-shadow:0 0 8px #ffcc00}
 #toast{position:fixed;bottom:210px;left:50%;transform:translateX(-50%);background:#000d;color:#fff;padding:9px 20px;border-radius:20px;font-size:.9em;z-index:50;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
 #toast.show{opacity:1}
 #loading{position:fixed;inset:0;background:#000e;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;gap:14px}
@@ -226,7 +227,7 @@ let colorCanvas=null,colorCtx=null;
 const TUNE_DEFAULTS={conf:0.5,smooth:0.45,colorTh:80,minBright:150,minBlob:30,minFingers:2,handRes:'full'};
 const tune={...TUNE_DEFAULTS};
 let tuneOpen=false,maskTmpCanvas=null;
-let handCanvas=null,handCtx=null,lastInW=640,lastInH=480,stopFrames=0;
+let handCanvas=null,handCtx=null,lastInW=640,lastInH=480,stopFrames=0,noHandFrames=0,resHintShown=false;
 const HAND_C=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
 const fps={loop:0,cam:0,_l:0,_c:0,_t:0};
 function loadTune(){try{const s=JSON.parse(localStorage.getItem('airdraw_tune'));if(s)for(const k in TUNE_DEFAULTS)if(typeof s[k]===typeof TUNE_DEFAULTS[k])tune[k]=s[k];}catch(e){}}
@@ -634,8 +635,14 @@ function onHandResults(results){
     drawing=false;lastPt=null;smoothPt=null;stopFrames=0;fingerDotEl.style.display='none';
     dbSet('dbHand','לא מזוהה','err');dbSet('dbGest','—');
     if(tuneOpen&&detectMode==='hand')renderHandPreview(null,rawScore);
+    // reduced resolution can kill detection – hint after ~5s of nothing
+    if(++noHandFrames>150&&!resHintShown&&tune.handRes!=='full'){
+      resHintShown=true;
+      toast('💡 לא מזוהה? נסה "רזולוציית עיבוד: מלא" בחלונית ⚙️',5000);
+    }
     return;
   }
+  noHandFrames=0;
   const kp=results[0].keypoints;
   dbSet('dbHand','מזוהה ✓','ok');
   // Normalize by the actual model-input dims (may be downsampled)
@@ -685,10 +692,20 @@ function onDrawResult(pt,shouldDraw){
   let nx=pt.x,ny=pt.y;
   if(homography){const m=applyH(homography,pt.x,pt.y);nx=m.x;ny=m.y;}
   if(flipH)nx=1-nx;
-  // reject unstable / out-of-range mappings (near the homography horizon a
-  // tiny jitter explodes into huge jumps) – treat as pen-up instead
-  if(!isFinite(nx)||!isFinite(ny)||nx<-0.15||nx>1.15||ny<-0.15||ny>1.15){
+  // truly unstable mapping (homography horizon) – pen up, hide
+  if(!isFinite(nx)||!isFinite(ny)||nx<-1.5||nx>2.5||ny<-1.5||ny>2.5){
     drawing=false;lastPt=null;smoothPt=null;fingerDotEl.style.display='none';return;
+  }
+  // outside the calibrated area: show a yellow dot clamped to the edge so
+  // the user SEES the hand is tracked, just not inside the projection zone
+  if(nx<-0.05||nx>1.05||ny<-0.05||ny>1.05){
+    drawing=false;lastPt=null;smoothPt=null;
+    fingerDotEl.style.display='block';
+    fingerDotEl.style.left=(Math.min(1,Math.max(0,nx))*W)+'px';
+    fingerDotEl.style.top=(Math.min(1,Math.max(0,ny))*H)+'px';
+    fingerDotEl.className='outside';
+    dbSet('dbGest','☝️ מחוץ לאזור המכויל','warn');
+    return;
   }
   let cx=nx*W,cy=ny*H;
   // teleport guard: a giant single-frame jump starts a new stroke, never a line
