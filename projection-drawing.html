@@ -250,6 +250,7 @@ const tune={...TUNE_DEFAULTS};
 let tuneOpen=false,maskTmpCanvas=null;
 let handCanvas=null,handCtx=null,lastInW=640,lastInH=480,stopFrames=0,noHandFrames=0,resHintShown=false;
 let lastCrop={x:0,y:0,w:1,h:1};
+let roi=null,roiLost=0,frameNo=0,nanFrames=0,backendFixStage=0,backendFixBusy=false;
 const HAND_C=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
 const fps={loop:0,cam:0,_l:0,_c:0,_t:0};
 function loadTune(){try{const s=JSON.parse(localStorage.getItem('airdraw_tune'));if(s)for(const k in TUNE_DEFAULTS)if(typeof s[k]===typeof TUNE_DEFAULTS[k])tune[k]=s[k];}catch(e){}}
@@ -411,6 +412,11 @@ function drawMiniMap(rawPt){
     c.strokeStyle='#00ff88';c.lineWidth=2;c.beginPath();
     calibPoints.forEach((p,i)=>{const q=frameToOverlay({x:p.fx,y:p.fy},ov.width,ov.height,vw,vh);i?c.lineTo(q.x,q.y):c.moveTo(q.x,q.y);});
     c.closePath();c.stroke();
+  }
+  if(detectMode==='hand'&&roi){
+    const a=frameToOverlay({x:roi.cx-roi.size/2,y:roi.cy-roi.size/2},ov.width,ov.height,vw,vh);
+    const b=frameToOverlay({x:roi.cx+roi.size/2,y:roi.cy+roi.size/2},ov.width,ov.height,vw,vh);
+    c.strokeStyle='#ffcc00';c.lineWidth=1.5;c.strokeRect(a.x,a.y,b.x-a.x,b.y-a.y);
   }
   if(rawPt){
     const q=frameToOverlay(rawPt,ov.width,ov.height,vw,vh);
@@ -580,12 +586,46 @@ async function openCamera(deviceId){
   }
 }
 
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
+
+// GPU precision bug on some mobile GPUs (Mali/Adreno) makes the model emit
+// NaN outputs while appearing to work. Detected at runtime → auto-switch
+// backend: WebGL → WASM → CPU, recreating the detector each time.
+async function fixBackend(){
+  if(backendFixBusy||backendFixStage>=2)return;
+  backendFixBusy=true;nanFrames=0;
+  const wantWasm=backendFixStage===0;
+  backendFixStage++;
+  try{
+    if(wantWasm){
+      toast('🔧 זוהתה בעיית GPU – עובר למנוע WASM...',4000);
+      const WASM='@tensorflow/tfjs-backend-wasm@4.17.0/dist/tf-backend-wasm.min.js';
+      await loadScript('https://cdn.jsdelivr.net/npm/'+WASM).catch(()=>loadScript('https://unpkg.com/'+WASM));
+      if(tf.wasm&&tf.wasm.setWasmPaths)tf.wasm.setWasmPaths('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@4.17.0/dist/');
+      const ok=await tf.setBackend('wasm');
+      if(!ok)throw new Error('wasm backend rejected');
+      await tf.ready();
+      dbSet('dbMp','WASM ✓','ok');
+    }else{
+      toast('🔧 עובר לעיבוד CPU (איטי אך יציב)...',4000);
+      await tf.setBackend('cpu');await tf.ready();
+      dbSet('dbMp','CPU ✓','warn');
+    }
+    await recreateDetector();
+  }catch(e){
+    console.error('backend fix:',e);
+    backendFixBusy=false;
+    if(wantWasm)return fixBackend();
+    dbSet('dbMp','שגיאה','err');
+  }
+  backendFixBusy=false;
+}
+
 // TF.js HandPose (WebGL – no WASM)
 function loadTFHandpose(){
   if(window.handPoseDetection&&detector){return;}// already loaded
   const msgEl=document.getElementById('loadingMsg');
   dbSet('dbMp','טוען...','warn');
-  function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
   const C1='https://cdn.jsdelivr.net/npm/',C2='https://unpkg.com/';
   const TF='@tensorflow/tfjs@4.17.0/dist/tf.min.js';
   const HPD='@tensorflow-models/hand-pose-detection@2.0.1/dist/hand-pose-detection.js';
@@ -655,10 +695,16 @@ function startRAF(){
       }else{
         if(detector){
           const vw=videoEl.videoWidth||640,vh=videoEl.videoHeight||480;
-          // smart crop: send only the calibrated zone (+margin) to the model –
-          // a far-away hand becomes several times larger in the model's eyes
+          frameNo++;
+          // dynamic ROI: once a hand is found, crop around it (bigger to the
+          // model = better tracking). While searching, alternate between the
+          // full frame (near hands) and the calibrated zone (far hands).
           let cx0=0,cy0=0,cw=1,ch=1;
-          if(calibPoints.length===4&&calibPoints[0].fx!=null){
+          if(roi){
+            const s=roi.size;
+            cx0=Math.max(0,roi.cx-s/2);cy0=Math.max(0,roi.cy-s/2);
+            cw=Math.min(1,roi.cx+s/2)-cx0;ch=Math.min(1,roi.cy+s/2)-cy0;
+          }else if(frameNo%2===0&&calibPoints.length===4&&calibPoints[0].fx!=null){
             const xs=calibPoints.map(p=>p.fx),ys=calibPoints.map(p=>p.fy),pad=0.12;
             cx0=Math.max(0,Math.min(...xs)-pad);cy0=Math.max(0,Math.min(...ys)-pad);
             cw=Math.min(1,Math.max(...xs)+pad)-cx0;ch=Math.min(1,Math.max(...ys)+pad)-cy0;
@@ -721,6 +767,7 @@ function onHandResults(results){
   if(hasHand&&rawScore!=null&&rawScore<tune.conf)results=[];
   if(!results||!results.length){
     drawing=false;lastPt=null;smoothPt=null;stopFrames=0;fingerDotEl.style.display='none';lastRawPt=null;
+    if(++roiLost>8)roi=null;
     dbSet('dbHand','לא מזוהה','err');dbSet('dbGest','—');
     if(tuneOpen&&detectMode==='hand')renderHandPreview(null,rawScore);
     // reduced resolution can kill detection – hint after ~5s of nothing
@@ -732,10 +779,25 @@ function onHandResults(results){
   }
   noHandFrames=0;
   const kp=results[0].keypoints;
+  // corrupt (NaN) model output – GPU precision bug; auto-fix the backend
+  if(!kp||!kp.length||!isFinite(kp[0].x)||!isFinite(kp[0].y)||!isFinite(kp[8].x)){
+    drawing=false;lastPt=null;smoothPt=null;fingerDotEl.style.display='none';lastRawPt=null;
+    if(++roiLost>8)roi=null;
+    dbSet('dbHand','פלט פגום (GPU)','err');dbSet('dbGest','—');
+    if(++nanFrames>=20)fixBackend();
+    return;
+  }
+  nanFrames=0;roiLost=0;
   dbSet('dbHand','מזוהה ✓','ok');
   // Normalize by the input dims, then map from crop space back to frame space
   const lm=kp.map(k=>({x:lastCrop.x+(k.x/lastInW)*lastCrop.w,y:lastCrop.y+(k.y/lastInH)*lastCrop.h}));
   lastRawPt={x:lm[8].x,y:lm[8].y};
+  // update tracking ROI around the hand's bounding box
+  {
+    const xs=lm.map(p=>p.x),ys=lm.map(p=>p.y);
+    const x1=Math.min(...xs),x2=Math.max(...xs),y1=Math.min(...ys),y2=Math.max(...ys);
+    roi={cx:(x1+x2)/2,cy:(y1+y2)/2,size:Math.min(1,Math.max(0.3,Math.max(x2-x1,y2-y1)*2.6))};
+  }
   // Gesture math in RAW PIXEL space – aspect-ratio safe on portrait phones
   const dpx=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
   const wristK=kp[0];
