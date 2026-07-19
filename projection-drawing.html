@@ -32,7 +32,8 @@ body{background:#1a1a2e;color:#eee;font-family:'Segoe UI',Arial,sans-serif;overf
 #calibUndo{padding:16px 24px;background:#333;color:#ccc;border:none;border-radius:50px;font-size:1.05em;cursor:pointer;display:none}
 #calibBtn{padding:16px 36px;background:#e94560;color:#fff;border:none;border-radius:50px;font-size:1.15em;font-weight:bold;cursor:pointer;display:none;box-shadow:0 0 20px #e9456088}
 #screenDraw{background:#000;position:relative}
-#camPreview{position:absolute;bottom:185px;left:10px;width:110px;height:82px;object-fit:cover;opacity:.7;border-radius:8px;border:2px solid #333;z-index:5;pointer-events:none}
+#camPreview{position:absolute;bottom:185px;left:10px;width:150px;height:112px;object-fit:cover;opacity:.75;border-radius:8px;border:2px solid #333;z-index:5;pointer-events:none}
+#camOverlay{position:absolute;bottom:185px;left:10px;width:150px;height:112px;z-index:6;pointer-events:none}
 #drawCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
 #debugCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3;opacity:.7}
 #debugPanel{position:fixed;top:10px;right:10px;z-index:30;background:#000d;padding:10px 12px;border-radius:12px;font-size:.72em;color:#aaa;line-height:1.9;pointer-events:auto;min-width:160px}
@@ -117,6 +118,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 </div>
 <div id="screenDraw" class="screen">
   <video id="camPreview" autoplay playsinline muted></video>
+  <canvas id="camOverlay" width="150" height="112"></canvas>
   <canvas id="drawCanvas"></canvas>
   <canvas id="debugCanvas"></canvas>
   <div id="fingerDot"></div>
@@ -128,6 +130,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
     ⚡ <span id="dbFps">—</span>
     <div id="dbCtrl">
       <button class="dbtn" id="btnFlip">↔ הפוך</button>
+      <button class="dbtn" id="btnFlipV">↕ הפוך</button>
       <button class="dbtn" id="btnSwitchCam">📷 החלף</button>
       <button class="dbtn" id="btnDetectMode">🖐 יד</button>
     </div>
@@ -162,7 +165,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
   </div>
   <div class="tn-row">
     <div class="tn-lab"><span>החלקת קו</span><span class="tn-val" id="vSmooth">0.45</span></div>
-    <input type="range" id="tnSmooth" min="5" max="95" value="45">
+    <input type="range" id="tnSmooth" min="10" max="95" value="45">
     <div class="tn-hint">נמוך = קו חלק מאוד אבל איטי · גבוה = תגובה מיידית אבל רועדת</div>
   </div>
   <div class="tn-row">
@@ -221,7 +224,8 @@ let drawing=false,lastPt=null,smoothPt=null;
 let curColor=COLORS[0],brushSz=8,alphaVal=0.9,senseVal=0.65;
 let drawCtx,debugCtx,fingerDotEl,videoEl;
 let detector=null,rafId=null,debugVisible=true;
-let flipH=false,mirrorPreview=false,camList=[],camIdx=0,detectMode='hand',calibStream=null;
+let flipH=false,flipV=false,mirrorPreview=false,camList=[],camIdx=0,detectMode='hand',calibStream=null;
+let lastRawPt=null,outStreak=0,outWarned=false;
 let colorCanvas=null,colorCtx=null;
 
 // tuning panel state – all values affect the RAF loop live
@@ -259,11 +263,16 @@ onTap(document.getElementById('btnSave'),()=>{
 });
 
 // debug panel buttons
-// manual flip: applied to the OUTPUT x (after homography) – always stable
+// manual flips: applied to the OUTPUT (after homography) – always stable
 onTap(document.getElementById('btnFlip'),()=>{
   flipH=!flipH;
   document.getElementById('btnFlip').classList.toggle('on',flipH);
   toast(flipH?'ציר X הפוך ✓':'ציר X רגיל');
+});
+onTap(document.getElementById('btnFlipV'),()=>{
+  flipV=!flipV;
+  document.getElementById('btnFlipV').classList.toggle('on',flipV);
+  toast(flipV?'ציר Y הפוך ✓ (למעלה⇄למטה)':'ציר Y רגיל');
 });
 onTap(document.getElementById('btnSwitchCam'),async()=>{
   if(!camList.length){try{const devs=await navigator.mediaDevices.enumerateDevices();camList=devs.filter(d=>d.kind==='videoinput');}catch(e){}}
@@ -345,11 +354,36 @@ function applyFlipCSS(){
   if(videoEl)videoEl.style.transform=t;
   const mp=document.getElementById('maskPreview');
   if(mp)mp.style.transform=t;
+  const ov=document.getElementById('camOverlay');
+  if(ov)ov.style.transform=t;
+}
+
+// mini-map over the camera thumbnail: calibrated quad (green) + live raw
+// detection point (red) – shows instantly whether the marker/finger is
+// inside the calibrated zone. Same cover-crop math as the thumbnail CSS.
+function frameToOverlay(p,ow,oh,vw,vh){
+  const scale=Math.max(ow/vw,oh/vh),dw=vw*scale,dh=vh*scale;
+  return{x:p.x*dw-(dw-ow)/2,y:p.y*dh-(dh-oh)/2};
+}
+function drawMiniMap(rawPt){
+  const ov=document.getElementById('camOverlay');if(!ov||!videoEl)return;
+  const c=ov.getContext('2d');c.clearRect(0,0,ov.width,ov.height);
+  const vw=videoEl.videoWidth||640,vh=videoEl.videoHeight||480;
+  if(calibPoints.length===4&&calibPoints[0].fx!=null){
+    c.strokeStyle='#00ff88';c.lineWidth=2;c.beginPath();
+    calibPoints.forEach((p,i)=>{const q=frameToOverlay({x:p.fx,y:p.fy},ov.width,ov.height,vw,vh);i?c.lineTo(q.x,q.y):c.moveTo(q.x,q.y);});
+    c.closePath();c.stroke();
+  }
+  if(rawPt){
+    const q=frameToOverlay(rawPt,ov.width,ov.height,vw,vh);
+    c.fillStyle='#ff2d55';c.beginPath();c.arc(q.x,q.y,5,0,Math.PI*2);c.fill();
+    c.strokeStyle='#fff';c.lineWidth=1.5;c.stroke();
+  }
 }
 
 // calibration
 function startCalibration(){
-  showScreen('screenCalib');calibPoints=[];updateCalibUI();
+  showScreen('screenCalib');calibPoints=[];outStreak=0;outWarned=false;updateCalibUI();
   const vid=document.getElementById('calibVideo');
   if(vid._stream)vid._stream.getTracks().forEach(t=>t.stop());
   // calibration video: NO CSS mirror – shows raw camera feed
@@ -401,7 +435,7 @@ function updateCalibUI(){
     d.textContent=i+1;container.appendChild(d);
   });
   const ins=document.getElementById('calibInstructions');
-  if(calibPoints.length<4)ins.innerHTML=`לחץ על <strong>פינה ${calibPoints.length+1} (${CALIB_LABELS[calibPoints.length]})</strong> של מסגרת ההקרנה`;
+  if(calibPoints.length<4)ins.innerHTML=`לחץ על <strong>פינה ${calibPoints.length+1} (${CALIB_LABELS[calibPoints.length]})</strong> של האזור המוקרן <u>כפי שהוא נראה בווידאו</u> – לא על פינות המסך!`;
   else ins.textContent='✅ כל 4 הפינות סומנו! לחץ אישור.';
   document.getElementById('calibUndo').style.display=calibPoints.length>0?'block':'none';
   const btn=document.getElementById('calibBtn'),zone=document.getElementById('calibTapZone');
@@ -577,7 +611,9 @@ function startRAF(){
     busy=true;
     try{
       if(detectMode==='color'){
-        onDrawResult(trackByColor(videoEl),true);
+        const p=trackByColor(videoEl);
+        lastRawPt=p;
+        onDrawResult(p,true);
       }else{
         if(detector){
           // optional downsampling of the frame sent to the model (live-tunable)
@@ -598,8 +634,10 @@ function startRAF(){
         }else{
           dbSet('dbHand','ממתין למודל...','warn');
           if(tuneOpen)renderHandPreview(null,null);
+          lastRawPt=null;
         }
       }
+      drawMiniMap(lastRawPt);
     }catch(e){console.error('loop:',e);dbSet('dbHand','שגיאת עיבוד','err');}
     busy=false;
   }
@@ -633,7 +671,7 @@ function onHandResults(results){
   // detection-confidence filter (live-tunable; skipped when the model returns no numeric score)
   if(hasHand&&rawScore!=null&&rawScore<tune.conf)results=[];
   if(!results||!results.length){
-    drawing=false;lastPt=null;smoothPt=null;stopFrames=0;fingerDotEl.style.display='none';
+    drawing=false;lastPt=null;smoothPt=null;stopFrames=0;fingerDotEl.style.display='none';lastRawPt=null;
     dbSet('dbHand','לא מזוהה','err');dbSet('dbGest','—');
     if(tuneOpen&&detectMode==='hand')renderHandPreview(null,rawScore);
     // reduced resolution can kill detection – hint after ~5s of nothing
@@ -648,6 +686,7 @@ function onHandResults(results){
   dbSet('dbHand','מזוהה ✓','ok');
   // Normalize by the actual model-input dims (may be downsampled)
   const lm=kp.map(k=>({x:k.x/lastInW,y:k.y/lastInH}));
+  lastRawPt={x:lm[8].x,y:lm[8].y};
   // Gesture math in RAW PIXEL space – aspect-ratio safe on portrait phones
   const dpx=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
   const wristK=kp[0];
@@ -695,6 +734,7 @@ function onDrawResult(pt,shouldDraw){
   let nx=pt.x,ny=pt.y;
   if(homography){const m=applyH(homography,pt.x,pt.y);nx=m.x;ny=m.y;}
   if(flipH)nx=1-nx;
+  if(flipV)ny=1-ny;
   if(tuneOpen){const el=document.getElementById('tnMap');if(el)el.textContent=isFinite(nx)&&isFinite(ny)?`(${nx.toFixed(2)}, ${ny.toFixed(2)})`+(nx>=0&&nx<=1&&ny>=0&&ny<=1?' ✓ בפנים':' ✗ בחוץ'):'לא יציב';}
   // truly unstable mapping (homography horizon) – pen up, hide
   if(!isFinite(nx)||!isFinite(ny)||nx<-1.5||nx>2.5||ny<-1.5||ny>2.5){
@@ -709,8 +749,14 @@ function onDrawResult(pt,shouldDraw){
     fingerDotEl.style.top=(Math.min(1,Math.max(0,ny))*H)+'px';
     fingerDotEl.className='outside';
     dbSet('dbGest','☝️ מחוץ לאזור המכויל','warn');
+    // tracked fine but persistently outside → the calibrated quad is off
+    if(++outStreak===90&&!outWarned){
+      outWarned=true;
+      toast('💡 המעקב עובד אבל מחוץ לאזור שכויל – כייל מחדש על פינות אזור ההקרנה כפי שנראה בווידאו',6000);
+    }
     return;
   }
+  outStreak=0;
   let cx=nx*W,cy=ny*H;
   // teleport guard: a giant single-frame jump starts a new stroke, never a line
   if(smoothPt&&Math.hypot(cx-smoothPt.x,cy-smoothPt.y)>0.4*Math.hypot(W,H)){
