@@ -9,12 +9,21 @@
 body{background:#1a1a2e;color:#eee;font-family:'Segoe UI',Arial,sans-serif;overflow:hidden;touch-action:none;user-select:none}
 .screen{display:none;width:100vw;height:100vh;height:100dvh}
 .screen.active{display:flex;flex-direction:column}
-#screenMode{align-items:center;justify-content:center;gap:26px;background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460)}
-#screenMode h1{font-size:2em;color:#e94560;text-shadow:0 0 20px #e9456088}
-#screenMode>p{color:#aaa;font-size:1.05em}
+#screenSetup{align-items:center;justify-content:center;gap:18px;background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);overflow-y:auto;padding:20px 0}
+#screenSetup h1{font-size:1.7em;color:#e94560;text-shadow:0 0 20px #e9456088}
+#screenSetup p.sub{color:#aaa;font-size:1em}
 .mode-cards{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
 .mode-card{background:#16213e;border:2px solid #0f3460;border-radius:20px;padding:26px 20px;width:180px;text-align:center;cursor:pointer;transition:all .25s}
 .mode-card:active{border-color:#e94560;transform:scale(1.04);background:#1a2a4e}
+.mode-card.selected{border-color:#e94560;background:#1a2a4e;box-shadow:0 0 16px #e9456055}
+#screenCam{position:relative;background:#000}
+#camSelVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#camSelTitle{position:absolute;top:14px;left:50%;transform:translateX(-50%);background:#000d;padding:10px 18px;border-radius:12px;z-index:2;text-align:center;max-width:88vw}
+#camSelTitle b{color:#e94560}
+#camSelInfo{color:#aaa;font-size:.9em}
+#camSelBar{position:fixed;bottom:max(26px,env(safe-area-inset-bottom,26px));left:50%;transform:translateX(-50%);display:flex;gap:12px;z-index:3}
+#btnCamCycle{padding:16px 24px;background:#333;color:#eee;border:none;border-radius:50px;font-size:1.05em;cursor:pointer}
+#btnCamOk{padding:16px 36px;background:#e94560;color:#fff;border:none;border-radius:50px;font-size:1.15em;font-weight:bold;cursor:pointer;box-shadow:0 0 20px #e9456088}
 .mode-card .icon{font-size:2.6em;margin-bottom:10px}
 .mode-card h2{font-size:1em;margin-bottom:6px;color:#e94560}
 .mode-card p{font-size:.8em;color:#aaa;line-height:1.4}
@@ -98,12 +107,25 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
   <p id="loadingMsg">טוען...</p>
   <button id="btnRetry">נסה שוב</button>
 </div>
-<div id="screenMode" class="screen active">
-  <h1>🎨 ציור באוויר</h1>
-  <p>בחר מצב עבודה</p>
+<div id="screenCam" class="screen active">
+  <video id="camSelVideo" autoplay playsinline muted></video>
+  <div id="camSelTitle"><b>🎨 ציור באוויר</b> · שלב 1/3<br><span id="camSelInfo">פותח מצלמה...</span></div>
+  <div id="camSelBar">
+    <button id="btnCamCycle">📷 החלף מצלמה</button>
+    <button id="btnCamOk">✅ המשך לכיול</button>
+  </div>
+</div>
+<div id="screenSetup" class="screen">
+  <h1>🎯 שיטת ציור · שלב 3/3</h1>
+  <p class="sub">במה מציירים?</p>
   <div class="mode-cards">
-    <div class="mode-card" id="btnStatic"><div class="icon">📌</div><h2>מצב קבוע</h2><p>המצלמה והמקרן קבועים. כיול חד-פעמי.</p></div>
-    <div class="mode-card" id="btnDynamic2"><div class="icon">🔄</div><h2>מצב דינמי</h2><p>המצלמה יכולה לזוז. כיול אוטומטי.</p></div>
+    <div class="mode-card" id="setupHand"><div class="icon">🖐</div><h2>יד חופשית</h2><p>ציור עם האצבע באוויר</p></div>
+    <div class="mode-card" id="setupColor"><div class="icon">🔴</div><h2>סמן אדום</h2><p>עט/חפץ אדום בוהק – הכי אמין</p></div>
+  </div>
+  <p class="sub">כוונון:</p>
+  <div class="mode-cards">
+    <div class="mode-card" id="setupAuto"><div class="icon">⚡</div><h2>אוטומטי</h2><p>מדידת תאורה והגדרה מתאימה – ומתחילים!</p></div>
+    <div class="mode-card" id="setupManual"><div class="icon">🎛</div><h2>ידני</h2><p>פתיחת חלונית הכיוונון המלאה</p></div>
   </div>
 </div>
 <div id="screenCalib" class="screen">
@@ -278,9 +300,40 @@ document.getElementById('brushSize').addEventListener('input',e=>brushSz=+e.targ
 document.getElementById('opacity').addEventListener('input',e=>alphaVal=e.target.value/100);
 document.getElementById('sense').addEventListener('input',e=>senseVal=e.target.value/100);
 
-onTap(document.getElementById('btnStatic'),()=>{appMode='static';startCalibration();});
-onTap(document.getElementById('btnDynamic2'),()=>{appMode='dynamic';startCalibration();});
-onTap(document.getElementById('btnMode'),()=>{stopTracking();showScreen('screenMode');});
+// ---- step 1: camera selection ----
+let ambientLum=null;
+async function openSelCamera(deviceId){
+  const vid=document.getElementById('camSelVideo'),info=document.getElementById('camSelInfo');
+  if(vid._stream)vid._stream.getTracks().forEach(t=>t.stop());
+  info.textContent='פותח מצלמה...';
+  try{
+    const constraints=deviceId
+      ?{video:{deviceId:{exact:deviceId},width:{ideal:640},height:{ideal:480}}}
+      :{video:{facingMode:'environment',width:{ideal:640},height:{ideal:480}}};
+    const s=await navigator.mediaDevices.getUserMedia(constraints)
+      .catch(()=>navigator.mediaDevices.getUserMedia({video:true}));
+    vid.srcObject=s;vid._stream=s;
+    const settings=(s.getVideoTracks()[0].getSettings&&s.getVideoTracks()[0].getSettings())||{};
+    vid.style.transform=settings.facingMode==='user'?'scaleX(-1)':'';
+    try{const devs=await navigator.mediaDevices.enumerateDevices();camList=devs.filter(d=>d.kind==='videoinput');}catch(e){}
+    const face=settings.facingMode==='user'?' (קדמית)':settings.facingMode==='environment'?' (אחורית)':'';
+    info.textContent='מצלמה '+(camList.length?(camIdx%camList.length)+1:1)+'/'+(camList.length||1)+face+' · כוון אותה אל אזור ההקרנה';
+  }catch(e){
+    info.textContent='⚠️ אין גישה למצלמה – בדוק הרשאות ו-HTTPS';
+  }
+}
+onTap(document.getElementById('btnCamCycle'),async()=>{
+  if(camList.length<=1){toast('רק מצלמה אחת זמינה');return;}
+  camIdx=(camIdx+1)%camList.length;
+  await openSelCamera(camList[camIdx].deviceId);
+});
+onTap(document.getElementById('btnCamOk'),()=>{
+  const vid=document.getElementById('camSelVideo');
+  if(!vid._stream){toast('אין מצלמה פעילה');return;}
+  const s=vid._stream;vid._stream=null;vid.srcObject=null;
+  startCalibration(s);
+});
+onTap(document.getElementById('btnMode'),()=>{stopTracking();showScreen('screenCam');openSelCamera(camList.length?camList[camIdx%camList.length].deviceId:undefined);});
 onTap(document.getElementById('btnDebug'),()=>{debugVisible=!debugVisible;document.getElementById('debugPanel').style.display=debugVisible?'block':'none';});
 onTap(document.getElementById('btnClear'),()=>{drawCtx.clearRect(0,0,document.getElementById('drawCanvas').width,document.getElementById('drawCanvas').height);toast('הקנבס נוקה!');});
 onTap(document.getElementById('btnSave'),()=>{
@@ -446,20 +499,22 @@ function drawMiniMap(rawPt){
   }
 }
 
-// calibration
-function startCalibration(){
+// ---- step 2: calibration (uses the stream chosen in step 1) ----
+function startCalibration(stream){
   showScreen('screenCalib');calibPoints=[];outStreak=0;outWarned=false;updateCalibUI();
   const vid=document.getElementById('calibVideo');
   if(vid._stream)vid._stream.getTracks().forEach(t=>t.stop());
   // calibration video: NO CSS mirror – shows raw camera feed
   // This ensures tap coords match TF.js coords (both in raw frame space)
   vid.style.transform='';
-  // SAME constraints as the drawing camera – calibration and detection
-  // must share identical framing or the homography maps the wrong quad
-  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:640},height:{ideal:480}}})
-    .catch(()=>navigator.mediaDevices.getUserMedia({video:true}))
-    .then(s=>{vid.srcObject=s;vid._stream=s;})
-    .catch(()=>toast('לא ניתן לגשת למצלמה'));
+  if(stream){
+    vid.srcObject=stream;vid._stream=stream;
+  }else{
+    navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:640},height:{ideal:480}}})
+      .catch(()=>navigator.mediaDevices.getUserMedia({video:true}))
+      .then(s=>{vid.srcObject=s;vid._stream=s;})
+      .catch(()=>toast('לא ניתן לגשת למצלמה'));
+  }
   const zone=document.getElementById('calibTapZone');
   if(zone._rm){zone._rm();zone._rm=null;}
   zone.style.pointerEvents='auto';
@@ -500,7 +555,7 @@ function updateCalibUI(){
     d.textContent=i+1;container.appendChild(d);
   });
   const ins=document.getElementById('calibInstructions');
-  if(calibPoints.length<4)ins.innerHTML=`לחץ על <strong>פינה ${calibPoints.length+1} (${CALIB_LABELS[calibPoints.length]})</strong> של האזור המוקרן <u>כפי שהוא נראה בווידאו</u> – לא על פינות המסך!`;
+  if(calibPoints.length<4)ins.innerHTML=`שלב 2/3 · לחץ על <strong>פינה ${calibPoints.length+1} (${CALIB_LABELS[calibPoints.length]})</strong> של האזור המוקרן <u>כפי שהוא נראה בווידאו</u> – לא על פינות המסך!`;
   else ins.textContent='✅ כל 4 הפינות סומנו! לחץ אישור.';
   document.getElementById('calibUndo').style.display=calibPoints.length>0?'block':'none';
   const btn=document.getElementById('calibBtn'),zone=document.getElementById('calibTapZone');
@@ -510,14 +565,55 @@ function updateCalibUI(){
 onTap(document.getElementById('calibUndo'),()=>{if(calibPoints.length===0)return;calibPoints.pop();updateCalibUI();});
 onTap(document.getElementById('calibBtn'),()=>{
   const vid=document.getElementById('calibVideo');
+  // measure ambient light NOW, while the video is still attached
+  ambientLum=measureLuminance(vid);
   // hand the SAME stream to the drawing screen – reopening the camera can
   // change resolution/FOV and silently invalidate the calibration
   calibStream=vid._stream||null;
   vid._stream=null;vid.srcObject=null;
   const zone=document.getElementById('calibTapZone');
   if(zone._rm){zone._rm();zone._rm=null;}
-  startDrawingScreen();
+  showSetupScreen();
 });
+
+// ---- step 3: detection method + tuning choice ----
+function showSetupScreen(){
+  showScreen('screenSetup');
+  document.getElementById('setupHand').classList.toggle('selected',detectMode==='hand');
+  document.getElementById('setupColor').classList.toggle('selected',detectMode==='color');
+}
+onTap(document.getElementById('setupHand'),()=>{setDetectMode('hand',true);showSetupScreen();});
+onTap(document.getElementById('setupColor'),()=>{setDetectMode('color',true);showSetupScreen();});
+onTap(document.getElementById('setupAuto'),()=>{applyAutoTune(ambientLum);startDrawingScreen();});
+onTap(document.getElementById('setupManual'),()=>{startDrawingScreen();setTuneOpen(true);});
+
+function measureLuminance(video){
+  try{
+    const c=document.createElement('canvas');c.width=64;c.height=48;
+    const x=c.getContext('2d');x.drawImage(video,0,0,64,48);
+    const d=x.getImageData(0,0,64,48).data;let s=0;
+    for(let i=0;i<d.length;i+=4)s+=d[i]*0.299+d[i+1]*0.587+d[i+2]*0.114;
+    return s/(d.length/4);
+  }catch(e){return null;}
+}
+function applyAutoTune(lum){
+  const prevFull=tune.modelFull;
+  if(lum==null){toast('לא ניתן למדוד תאורה – ממשיכים עם ההגדרות הקיימות');return;}
+  if(lum<50){
+    Object.assign(tune,{conf:0.3,modelFull:true,minBright:80,colorTh:55,minBlob:15,smooth:0.35});
+    toast('🌙 זוהה חדר חשוך – הוגדרו הגדרות חושך (רגישות גבוהה, מודל מדויק)',4500);
+  }else if(lum<110){
+    Object.assign(tune,{conf:0.4,minBright:120,colorTh:70,minBlob:25,smooth:0.45});
+    toast('🌤 תאורה בינונית – הוגדרו הגדרות מאוזנות',4000);
+  }else{
+    Object.assign(tune,{conf:0.5,minBright:150,colorTh:80,minBlob:30,smooth:0.45});
+    toast('☀️ תאורה טובה – הוגדרו הגדרות רגילות',4000);
+  }
+  saveTune();
+  document.querySelectorAll('#tunePanel input[type=range]').forEach(el=>el._sync&&el._sync());
+  syncResBtns();syncModelBtns();syncGmodeBtns();
+  if(detector&&tune.modelFull!==prevFull)recreateDetector();
+}
 
 // homography
 function computeHomography(){homography=getDLTHomography(calibPoints.map(p=>({x:p.fx,y:p.fy})),[{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:0,y:1}]);}
@@ -948,8 +1044,12 @@ function stopTracking(){
   if(rafId){cancelAnimationFrame(rafId);rafId=null;}
   if(videoEl&&videoEl._stream)videoEl._stream.getTracks().forEach(t=>t.stop());
   if(detector){try{detector.dispose();}catch(e){}detector=null;}
-  smoothPt=null;drawing=false;lastPt=null;
+  smoothPt=null;drawing=false;lastPt=null;roi=null;
 }
+
+// ---- boot: step 1 (camera selection); the AI model preloads in parallel ----
+openSelCamera();
+loadTFHandpose();
 </script>
 </body>
 </html>
