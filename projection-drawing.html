@@ -562,6 +562,21 @@ function handleZoneTap(e){
   // x,y = screen space (for drawing the dots); fx,fy = frame space (for the homography)
   calibPoints.push({x:sx,y:sy,fx:f.x,fy:f.y});updateCalibUI();
 }
+// quad sanity: corners tapped out of order create a self-intersecting quad
+// and the homography explodes without warning – especially easy to get
+// wrong at a steep camera angle where the area looks like a narrow trapezoid
+function quadConvex(pts){
+  let sign=0;
+  for(let i=0;i<4;i++){
+    const a=pts[i],b=pts[(i+1)%4],c=pts[(i+2)%4];
+    const z=(b.x-a.x)*(c.y-b.y)-(b.y-a.y)*(c.x-b.x);
+    if(Math.abs(z)<1e-9)return false;
+    if(!sign)sign=Math.sign(z);
+    else if(Math.sign(z)!==sign)return false;
+  }
+  return true;
+}
+function quadArea(pts){let s=0;for(let i=0;i<4;i++){const a=pts[i],b=pts[(i+1)%4];s+=a.x*b.y-b.x*a.y;}return Math.abs(s)/2;}
 function updateCalibUI(){
   const container=document.getElementById('calibPoints');container.innerHTML='';
   GUIDE.forEach((pos,i)=>{
@@ -572,12 +587,22 @@ function updateCalibUI(){
     d.textContent=i+1;container.appendChild(d);
   });
   const ins=document.getElementById('calibInstructions');
-  if(calibPoints.length<4)ins.innerHTML=`שלב 2/3 · לחץ על <strong>פינה ${calibPoints.length+1} (${CALIB_LABELS[calibPoints.length]})</strong> של האזור המוקרן <u>כפי שהוא נראה בווידאו</u> – לא על פינות המסך!`;
-  else ins.textContent='✅ כל 4 הפינות סומנו! לחץ אישור.';
   document.getElementById('calibUndo').style.display=calibPoints.length>0?'block':'none';
   const btn=document.getElementById('calibBtn'),zone=document.getElementById('calibTapZone');
-  if(calibPoints.length===4){btn.style.display='block';zone.style.pointerEvents='none';computeHomography();}
-  else{btn.style.display='none';zone.style.pointerEvents='auto';}
+  if(calibPoints.length===4){
+    const q=calibPoints.map(p=>({x:p.fx,y:p.fy}));
+    if(quadConvex(q)&&quadArea(q)>0.004){
+      ins.textContent='✅ כל 4 הפינות סומנו! לחץ אישור.';
+      btn.style.display='block';zone.style.pointerEvents='none';computeHomography();
+    }else{
+      ins.innerHTML='⚠️ <strong>הסימון לא תקין</strong> – סדר פינות שגוי או אזור קטן מדי.<br>לחץ "↩ בטל" וסמן מחדש לפי הסדר: 1 שמאל-עליון → 2 ימין-עליון → 3 ימין-תחתון → 4 שמאל-תחתון';
+      btn.style.display='none';zone.style.pointerEvents='none';
+    }
+  }
+  else{
+    ins.innerHTML=`שלב 2/3 · לחץ על <strong>פינה ${calibPoints.length+1} (${CALIB_LABELS[calibPoints.length]})</strong> של האזור המוקרן <u>כפי שהוא נראה בווידאו</u> – לא על פינות המסך!`;
+    btn.style.display='none';zone.style.pointerEvents='auto';
+  }
 }
 onTap(document.getElementById('calibUndo'),()=>{if(calibPoints.length===0)return;calibPoints.pop();updateCalibUI();});
 onTap(document.getElementById('calibBtn'),()=>{
