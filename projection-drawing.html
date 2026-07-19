@@ -190,6 +190,15 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
     <div class="tn-hint">"מדויק" מזהה יד קטנה/רחוקה הרבה יותר טוב · מעט איטי יותר</div>
   </div>
   <div class="tn-row">
+    <div class="tn-lab"><span>מנוע עיבוד (Backend)</span></div>
+    <div class="tn-seg" id="tnBackend">
+      <button data-b="webgl">WebGL</button>
+      <button data-b="wasm">WASM</button>
+      <button data-b="cpu">CPU</button>
+    </div>
+    <div class="tn-hint">אם הזיהוי לא עובד או מופיע "פלט פגום (GPU)" – נסה WASM ואז CPU · השווה ביצועים עם מד ה-FPS למטה</div>
+  </div>
+  <div class="tn-row">
     <div class="tn-lab"><span>רזולוציית עיבוד למודל</span></div>
     <div class="tn-seg" id="tnRes">
       <button data-res="full">מלא</button>
@@ -245,7 +254,7 @@ let lastRawPt=null,outStreak=0,outWarned=false;
 let colorCanvas=null,colorCtx=null;
 
 // tuning panel state – all values affect the RAF loop live
-const TUNE_DEFAULTS={conf:0.5,smooth:0.45,colorTh:80,minBright:150,minBlob:30,minFingers:2,handRes:'full',gestureMode:'always',modelFull:false};
+const TUNE_DEFAULTS={conf:0.5,smooth:0.45,colorTh:80,minBright:150,minBlob:30,minFingers:2,handRes:'full',gestureMode:'always',modelFull:false,backend:'webgl'};
 const tune={...TUNE_DEFAULTS};
 let tuneOpen=false,maskTmpCanvas=null;
 let handCanvas=null,handCtx=null,lastInW=640,lastInH=480,stopFrames=0,noHandFrames=0,resHintShown=false;
@@ -341,6 +350,14 @@ syncResBtns();
 function syncGmodeBtns(){document.querySelectorAll('#tnGmode button').forEach(b=>b.classList.toggle('on',b.dataset.g===tune.gestureMode));}
 document.querySelectorAll('#tnGmode button').forEach(b=>onTap(b,()=>{tune.gestureMode=b.dataset.g;saveTune();syncGmodeBtns();toast(b.dataset.g==='always'?'מצייר תמיד כשיש יד':'ציור לפי מחוות אצבעות');}));
 syncGmodeBtns();
+document.querySelectorAll('#tnBackend button').forEach(b=>onTap(b,()=>{
+  const name=b.dataset.b;
+  tune.backend=name;saveTune();
+  nanFrames=0;backendFixStage=0;
+  toast('עובר למנוע '+(name==='webgl'?'WebGL':name==='wasm'?'WASM':'CPU')+'...');
+  applyBackend(name);
+}));
+syncBackendBtns();
 function syncModelBtns(){document.querySelectorAll('#tnModel button').forEach(b=>b.classList.toggle('on',(b.dataset.m==='full')===tune.modelFull));}
 document.querySelectorAll('#tnModel button').forEach(b=>onTap(b,()=>{
   const wantFull=b.dataset.m==='full';
@@ -356,7 +373,8 @@ async function recreateDetector(){
   dbSet('dbMp','טוען מודל...','warn');
   try{
     detector=await handPoseDetection.createDetector(handPoseDetection.SupportedModels.MediaPipeHands,{runtime:'tfjs',modelType:tune.modelFull?'full':'lite',maxHands:1});
-    dbSet('dbMp','מודל ✓','ok');
+    const b=(window.tf&&tf.getBackend&&tf.getBackend())||'';
+    dbSet('dbMp','מודל ✓'+(b?' ('+(BACKEND_LABEL[b]||b)+')':''),b==='cpu'?'warn':'ok');
   }catch(e){console.error('model:',e);dbSet('dbMp','שגיאה','err');}
 }
 function setTuneOpen(open){tuneOpen=open;document.getElementById('tunePanel').classList.toggle('hidden',!open);}
@@ -365,7 +383,7 @@ onTap(document.getElementById('tnClose'),()=>setTuneOpen(false));
 onTap(document.getElementById('tnReset'),()=>{
   Object.assign(tune,TUNE_DEFAULTS);saveTune();
   document.querySelectorAll('#tunePanel input[type=range]').forEach(el=>el._sync&&el._sync());
-  syncResBtns();syncGmodeBtns();syncModelBtns();
+  syncResBtns();syncGmodeBtns();syncModelBtns();syncBackendBtns();
   toast('ההגדרות אופסו ↺');
 });
 
@@ -588,37 +606,48 @@ async function openCamera(deviceId){
 
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
 
+const BACKEND_LABEL={webgl:'WebGL',wasm:'WASM',cpu:'CPU'};
+async function ensureWasmLoaded(){
+  if(window.tf&&tf.findBackend&&tf.findBackend('wasm'))return;
+  const WASM='@tensorflow/tfjs-backend-wasm@4.17.0/dist/tf-backend-wasm.min.js';
+  await loadScript('https://cdn.jsdelivr.net/npm/'+WASM).catch(()=>loadScript('https://unpkg.com/'+WASM));
+  if(tf.wasm&&tf.wasm.setWasmPaths)tf.wasm.setWasmPaths('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@4.17.0/dist/');
+}
+function syncBackendBtns(){
+  const cur=(window.tf&&tf.getBackend&&tf.getBackend())||tune.backend;
+  document.querySelectorAll('#tnBackend button').forEach(b=>b.classList.toggle('on',b.dataset.b===cur));
+}
+// live backend switch: loads WASM on demand, recreates the detector
+async function applyBackend(name){
+  if(!window.tf){toast('המודל עדיין נטען – נסה שוב עוד רגע');return false;}
+  try{
+    if(name==='wasm')await ensureWasmLoaded();
+    const ok=await tf.setBackend(name);
+    if(!ok)throw new Error(name+' rejected');
+    await tf.ready();
+    dbSet('dbMp',BACKEND_LABEL[name]+' ✓',name==='cpu'?'warn':'ok');
+    await recreateDetector();
+    syncBackendBtns();
+    return true;
+  }catch(e){
+    console.error('backend:',e);
+    toast('מנוע '+BACKEND_LABEL[name]+' לא זמין במכשיר זה');
+    syncBackendBtns();
+    return false;
+  }
+}
 // GPU precision bug on some mobile GPUs (Mali/Adreno) makes the model emit
 // NaN outputs while appearing to work. Detected at runtime → auto-switch
 // backend: WebGL → WASM → CPU, recreating the detector each time.
 async function fixBackend(){
   if(backendFixBusy||backendFixStage>=2)return;
   backendFixBusy=true;nanFrames=0;
-  const wantWasm=backendFixStage===0;
+  const target=backendFixStage===0?'wasm':'cpu';
   backendFixStage++;
-  try{
-    if(wantWasm){
-      toast('🔧 זוהתה בעיית GPU – עובר למנוע WASM...',4000);
-      const WASM='@tensorflow/tfjs-backend-wasm@4.17.0/dist/tf-backend-wasm.min.js';
-      await loadScript('https://cdn.jsdelivr.net/npm/'+WASM).catch(()=>loadScript('https://unpkg.com/'+WASM));
-      if(tf.wasm&&tf.wasm.setWasmPaths)tf.wasm.setWasmPaths('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@4.17.0/dist/');
-      const ok=await tf.setBackend('wasm');
-      if(!ok)throw new Error('wasm backend rejected');
-      await tf.ready();
-      dbSet('dbMp','WASM ✓','ok');
-    }else{
-      toast('🔧 עובר לעיבוד CPU (איטי אך יציב)...',4000);
-      await tf.setBackend('cpu');await tf.ready();
-      dbSet('dbMp','CPU ✓','warn');
-    }
-    await recreateDetector();
-  }catch(e){
-    console.error('backend fix:',e);
-    backendFixBusy=false;
-    if(wantWasm)return fixBackend();
-    dbSet('dbMp','שגיאה','err');
-  }
+  toast(target==='wasm'?'🔧 זוהתה בעיית GPU – עובר למנוע WASM...':'🔧 עובר לעיבוד CPU (איטי אך יציב)...',4000);
+  const ok=await applyBackend(target);
   backendFixBusy=false;
+  if(!ok&&target==='wasm')return fixBackend();
 }
 
 // TF.js HandPose (WebGL – no WASM)
@@ -633,11 +662,16 @@ function loadTFHandpose(){
     .catch(()=>loadScript(C2+TF))
     .then(()=>loadScript(C1+HPD).catch(()=>loadScript(C2+HPD)))
     .then(async()=>{
-      const ok=await tf.setBackend('webgl');if(!ok)await tf.setBackend('cpu');
+      // start with the saved backend preference, falling back down the chain
+      let b=tune.backend||'webgl';
+      if(b==='wasm'){try{await ensureWasmLoaded();}catch(e){b='webgl';}}
+      let ok=false;try{ok=await tf.setBackend(b);}catch(e){}
+      if(!ok&&b!=='webgl'){b='webgl';try{ok=await tf.setBackend('webgl');}catch(e){}}
+      if(!ok){b='cpu';await tf.setBackend('cpu');}
       await tf.ready();
-      dbSet('dbMp','WebGL ✓','ok');
+      syncBackendBtns();
       detector=await handPoseDetection.createDetector(handPoseDetection.SupportedModels.MediaPipeHands,{runtime:'tfjs',modelType:tune.modelFull?'full':'lite',maxHands:1});
-      dbSet('dbMp','מודל ✓','ok');
+      dbSet('dbMp','מודל ✓ ('+BACKEND_LABEL[b]+')',b==='cpu'?'warn':'ok');
     })
     .catch(e=>{console.error('TF:',e);dbSet('dbMp','שגיאה','err');});
 }
