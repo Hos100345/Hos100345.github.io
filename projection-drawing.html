@@ -135,7 +135,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
   <div id="calibInstructions">לחץ על <strong>פינה 1</strong></div>
   <div id="calibBar">
     <button id="calibUndo">↩ בטל</button>
-    <button id="calibBtn">✅ אישור – התחל ציור</button>
+    <button id="calibBtn">✅ אישור – המשך</button>
   </div>
 </div>
 <div id="screenDraw" class="screen">
@@ -330,11 +330,11 @@ onTap(document.getElementById('btnCamCycle'),async()=>{
 });
 onTap(document.getElementById('btnCamOk'),()=>{
   const vid=document.getElementById('camSelVideo');
-  if(!vid._stream){toast('אין מצלמה פעילה');return;}
+  if(!vid._stream){toast('אין מצלמה פעילה – מנסה לפתוח שוב...');openSelCamera();return;}
   const s=vid._stream;vid._stream=null;vid.srcObject=null;
   startCalibration(s);
 });
-onTap(document.getElementById('btnMode'),()=>{stopTracking();showScreen('screenCam');openSelCamera(camList.length?camList[camIdx%camList.length].deviceId:undefined);});
+onTap(document.getElementById('btnMode'),()=>{stopTracking();setTuneOpen(false);showScreen('screenCam');openSelCamera(camList.length?camList[camIdx%camList.length].deviceId:undefined);});
 onTap(document.getElementById('btnDebug'),()=>{debugVisible=!debugVisible;document.getElementById('debugPanel').style.display=debugVisible?'block':'none';});
 onTap(document.getElementById('btnClear'),()=>{drawCtx.clearRect(0,0,document.getElementById('drawCanvas').width,document.getElementById('drawCanvas').height);toast('הקנבס נוקה!');});
 onTap(document.getElementById('btnSave'),()=>{
@@ -391,7 +391,8 @@ onTap(document.getElementById('btnDetectMode'),()=>setDetectMode(detectMode==='h
 onTap(document.getElementById('tabHand'),()=>setDetectMode('hand'));
 onTap(document.getElementById('tabColor'),()=>setDetectMode('color'));
 setDetectMode(detectMode,true);
-onTap(document.getElementById('btnRetry'),()=>{document.getElementById('btnRetry').style.display='none';loadTFHandpose();});
+// retry after a CAMERA failure – reopen the camera (the model loads on its own)
+onTap(document.getElementById('btnRetry'),()=>{document.getElementById('btnRetry').style.display='none';openCamera();});
 
 // tuning panel
 function bindTune(id,valId,key,scale,digits){
@@ -445,10 +446,12 @@ function setTuneOpen(open){tuneOpen=open;document.getElementById('tunePanel').cl
 onTap(document.getElementById('btnTune'),()=>setTuneOpen(!tuneOpen));
 onTap(document.getElementById('tnClose'),()=>setTuneOpen(false));
 onTap(document.getElementById('tnReset'),()=>{
-  Object.assign(tune,TUNE_DEFAULTS);saveTune();
+  // reset thresholds only – the user's engine/model choices are sacred
+  const keep={backend:tune.backend,backendLocked:tune.backendLocked,modelFull:tune.modelFull};
+  Object.assign(tune,TUNE_DEFAULTS,keep);saveTune();
   document.querySelectorAll('#tunePanel input[type=range]').forEach(el=>el._sync&&el._sync());
   syncResBtns();syncGmodeBtns();syncModelBtns();syncBackendBtns();
-  toast('ההגדרות אופסו ↺');
+  toast('הספים אופסו ↺ (מנוע ומודל נשמרו)');
 });
 
 function fpsLoopTick(){
@@ -767,9 +770,10 @@ async function fixBackend(){
 // TF.js HandPose – scripts are loaded ONCE; re-entry only re-creates the
 // detector on the saved backend (reloading tf.min.js resets the backend
 // registry and silently reverts to the broken default)
+let tfLoading=false;
 function loadTFHandpose(){
-  if(detector){return;}// already ready
-  const msgEl=document.getElementById('loadingMsg');
+  if(detector||tfLoading){return;}// already ready / in progress
+  tfLoading=true;
   dbSet('dbMp','טוען...','warn');
   const C1='https://cdn.jsdelivr.net/npm/',C2='https://unpkg.com/';
   const TF='@tensorflow/tfjs@4.17.0/dist/tf.min.js';
@@ -790,8 +794,9 @@ function loadTFHandpose(){
       syncBackendBtns();
       detector=await handPoseDetection.createDetector(handPoseDetection.SupportedModels.MediaPipeHands,{runtime:'tfjs',modelType:tune.modelFull?'full':'lite',maxHands:1});
       dbSet('dbMp','מודל ✓ ('+BACKEND_LABEL[b]+')',b==='cpu'?'warn':'ok');
+      tfLoading=false;
     })
-    .catch(e=>{console.error('TF:',e);dbSet('dbMp','שגיאה','err');});
+    .catch(e=>{console.error('TF:',e);dbSet('dbMp','שגיאה','err');tfLoading=false;});
 }
 
 // Color marker tracking (red blob) – thresholds are live-tunable via the panel
@@ -865,7 +870,11 @@ function startRAF(){
           const f=tune.handRes==='half'?2:tune.handRes==='third'?3:1;
           let input=videoEl;
           if(f!==1||cw<1||ch<1){
-            const iw=Math.max(96,Math.floor(vw*cw/f)),ih=Math.max(96,Math.floor(vh*ch/f));
+            // enforce a min size while PRESERVING aspect – clamping each axis
+            // independently would distort the crop→frame landmark mapping
+            let iw0=vw*cw/f,ih0=vh*ch/f;
+            const up=Math.max(1,96/iw0,96/ih0);
+            const iw=Math.floor(iw0*up),ih=Math.floor(ih0*up);
             if(!handCanvas){handCanvas=document.createElement('canvas');handCtx=handCanvas.getContext('2d',{willReadFrequently:true});}
             if(handCanvas.width!==iw||handCanvas.height!==ih){handCanvas.width=iw;handCanvas.height=ih;}
             handCtx.drawImage(videoEl,cx0*vw,cy0*vh,cw*vw,ch*vh,0,0,iw,ih);
@@ -1006,7 +1015,11 @@ function renderHandPreview(lm,score,extCount){
 
 function onDrawResult(pt,shouldDraw){
   const W=window.innerWidth,H=window.innerHeight;
-  if(!pt){drawing=false;lastPt=null;smoothPt=null;fingerDotEl.style.display='none';return;}
+  if(!pt){
+    drawing=false;lastPt=null;smoothPt=null;fingerDotEl.style.display='none';
+    if(detectMode==='color'){dbSet('dbHand','לא מזוהה','err');dbSet('dbGest','—');}
+    return;
+  }
   if(detectMode==='color'){dbSet('dbHand','סמן ✓','ok');dbSet('dbGest','🔴 מצייר','ok');}
   let nx=pt.x,ny=pt.y;
   if(homography){const m=applyH(homography,pt.x,pt.y);nx=m.x;ny=m.y;}
@@ -1065,6 +1078,7 @@ function stopTracking(){
   if(videoEl&&videoEl._stream)videoEl._stream.getTracks().forEach(t=>t.stop());
   if(detector){try{detector.dispose();}catch(e){}detector=null;}
   smoothPt=null;drawing=false;lastPt=null;roi=null;
+  if(fingerDotEl)fingerDotEl.style.display='none';
 }
 
 // ---- boot: step 1 (camera selection); the AI model preloads in parallel ----
