@@ -7,7 +7,7 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{background:#1a1a2e;color:#eee;font-family:'Segoe UI',Arial,sans-serif;overflow:hidden;touch-action:none;user-select:none}
-.screen{display:none;width:100vw;height:100vh}
+.screen{display:none;width:100vw;height:100vh;height:100dvh}
 .screen.active{display:flex;flex-direction:column}
 #screenMode{align-items:center;justify-content:center;gap:26px;background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460)}
 #screenMode h1{font-size:2em;color:#e94560;text-shadow:0 0 20px #e9456088}
@@ -28,9 +28,9 @@ body{background:#1a1a2e;color:#eee;font-family:'Segoe UI',Arial,sans-serif;overf
 .calib-dot.pending{background:#ffffff22}
 @keyframes pulse{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.28)}}
 #calibInstructions{position:absolute;top:14px;left:50%;transform:translateX(-50%);background:#000d;color:#fff;padding:10px 16px;border-radius:12px;font-size:.93em;text-align:center;z-index:11;max-width:88vw;pointer-events:none}
-#calibBar{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:12;display:flex;gap:12px}
-#calibUndo{padding:14px 22px;background:#333;color:#ccc;border:none;border-radius:50px;font-size:1em;cursor:pointer;display:none}
-#calibBtn{padding:14px 32px;background:#e94560;color:#fff;border:none;border-radius:50px;font-size:1.05em;cursor:pointer;display:none}
+#calibBar{position:fixed;bottom:max(26px,env(safe-area-inset-bottom,26px));left:50%;transform:translateX(-50%);z-index:12;display:flex;gap:12px}
+#calibUndo{padding:16px 24px;background:#333;color:#ccc;border:none;border-radius:50px;font-size:1.05em;cursor:pointer;display:none}
+#calibBtn{padding:16px 36px;background:#e94560;color:#fff;border:none;border-radius:50px;font-size:1.15em;font-weight:bold;cursor:pointer;display:none;box-shadow:0 0 20px #e9456088}
 #screenDraw{background:#000;position:relative}
 #camPreview{position:absolute;bottom:185px;left:10px;width:110px;height:82px;object-fit:cover;opacity:.7;border-radius:8px;border:2px solid #333;z-index:5;pointer-events:none}
 #drawCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
