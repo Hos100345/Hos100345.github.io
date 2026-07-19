@@ -219,7 +219,7 @@ let drawing=false,lastPt=null,smoothPt=null;
 let curColor=COLORS[0],brushSz=8,alphaVal=0.9,senseVal=0.65;
 let drawCtx,debugCtx,fingerDotEl,videoEl;
 let detector=null,rafId=null,debugVisible=true;
-let flipH=false,camList=[],camIdx=0,detectMode='hand';
+let flipH=false,mirrorPreview=false,camList=[],camIdx=0,detectMode='hand',calibStream=null;
 let colorCanvas=null,colorCtx=null;
 
 // tuning panel state – all values affect the RAF loop live
@@ -257,11 +257,11 @@ onTap(document.getElementById('btnSave'),()=>{
 });
 
 // debug panel buttons
+// manual flip: applied to the OUTPUT x (after homography) – always stable
 onTap(document.getElementById('btnFlip'),()=>{
   flipH=!flipH;
   document.getElementById('btnFlip').classList.toggle('on',flipH);
-  applyFlipCSS();
-  toast(flipH?'ציר X הופך ✓':'ציר X רגיל');
+  toast(flipH?'ציר X הפוך ✓':'ציר X רגיל');
 });
 onTap(document.getElementById('btnSwitchCam'),async()=>{
   if(!camList.length){try{const devs=await navigator.mediaDevices.enumerateDevices();camList=devs.filter(d=>d.kind==='videoinput');}catch(e){}}
@@ -270,6 +270,7 @@ onTap(document.getElementById('btnSwitchCam'),async()=>{
   if(videoEl&&videoEl._stream)videoEl._stream.getTracks().forEach(t=>t.stop());
   toast('מחליף מצלמה...');
   await openCamera(camList[camIdx].deviceId);
+  toast('⚠️ מצלמה חדשה – מומלץ לכייל מחדש (🔙 מצב)',4000);
 });
 function setDetectMode(m,quiet){
   detectMode=m;
@@ -336,8 +337,9 @@ function startCamFpsCounter(){
   videoEl.requestVideoFrameCallback(cb);
 }
 
+// cosmetic mirror of the small previews only – never affects coordinates
 function applyFlipCSS(){
-  const t=flipH?'scaleX(-1)':'';
+  const t=mirrorPreview?'scaleX(-1)':'';
   if(videoEl)videoEl.style.transform=t;
   const mp=document.getElementById('maskPreview');
   if(mp)mp.style.transform=t;
@@ -351,16 +353,11 @@ function startCalibration(){
   // calibration video: NO CSS mirror – shows raw camera feed
   // This ensures tap coords match TF.js coords (both in raw frame space)
   vid.style.transform='';
-  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}}})
+  // SAME constraints as the drawing camera – calibration and detection
+  // must share identical framing or the homography maps the wrong quad
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:640},height:{ideal:480}}})
     .catch(()=>navigator.mediaDevices.getUserMedia({video:true}))
-    .then(s=>{
-      vid.srcObject=s;vid._stream=s;
-      // auto-detect facing mode and set flipH
-      const track=s.getVideoTracks()[0];
-      const settings=track.getSettings&&track.getSettings()||{};
-      flipH=(settings.facingMode==='user');
-      document.getElementById('btnFlip').classList.toggle('on',flipH);
-    })
+    .then(s=>{vid.srcObject=s;vid._stream=s;})
     .catch(()=>toast('לא ניתן לגשת למצלמה'));
   const zone=document.getElementById('calibTapZone');
   if(zone._rm){zone._rm();zone._rm=null;}
@@ -372,11 +369,25 @@ function startCalibration(){
   zone.addEventListener('click',clickH);
   zone._rm=()=>{zone.removeEventListener('touchend',touchH);zone.removeEventListener('click',clickH);};
 }
+// convert a screen tap to raw-frame coords, undoing the object-fit:cover
+// crop – on a portrait phone the landscape camera frame is cropped hard at
+// the sides, so screen-space and frame-space are very different
+function tapToFrame(sx,sy,rect){
+  const vid=document.getElementById('calibVideo');
+  const vw=vid.videoWidth||640,vh=vid.videoHeight||480;
+  const scale=Math.max(rect.width/vw,rect.height/vh);
+  const dw=vw*scale,dh=vh*scale;
+  const ox=(dw-rect.width)/2,oy=(dh-rect.height)/2;
+  return{x:(sx*rect.width+ox)/dw,y:(sy*rect.height+oy)/dh};
+}
 function handleZoneTap(e){
   if(calibPoints.length>=4)return;
   const zone=document.getElementById('calibTapZone');const rect=zone.getBoundingClientRect();
   const x=(e.clientX??e.pageX)-rect.left,y=(e.clientY??e.pageY)-rect.top;
-  calibPoints.push({x:x/rect.width,y:y/rect.height});updateCalibUI();
+  const sx=x/rect.width,sy=y/rect.height;
+  const f=tapToFrame(sx,sy,rect);
+  // x,y = screen space (for drawing the dots); fx,fy = frame space (for the homography)
+  calibPoints.push({x:sx,y:sy,fx:f.x,fy:f.y});updateCalibUI();
 }
 function updateCalibUI(){
   const container=document.getElementById('calibPoints');container.innerHTML='';
@@ -398,14 +409,17 @@ function updateCalibUI(){
 onTap(document.getElementById('calibUndo'),()=>{if(calibPoints.length===0)return;calibPoints.pop();updateCalibUI();});
 onTap(document.getElementById('calibBtn'),()=>{
   const vid=document.getElementById('calibVideo');
-  if(vid._stream)vid._stream.getTracks().forEach(t=>t.stop());
+  // hand the SAME stream to the drawing screen – reopening the camera can
+  // change resolution/FOV and silently invalidate the calibration
+  calibStream=vid._stream||null;
+  vid._stream=null;vid.srcObject=null;
   const zone=document.getElementById('calibTapZone');
   if(zone._rm){zone._rm();zone._rm=null;}
   startDrawingScreen();
 });
 
 // homography
-function computeHomography(){homography=getDLTHomography(calibPoints,[{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:0,y:1}]);}
+function computeHomography(){homography=getDLTHomography(calibPoints.map(p=>({x:p.fx,y:p.fy})),[{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:0,y:1}]);}
 function getDLTHomography(src,dst){
   const A=[];
   for(let i=0;i<4;i++){const sx=src[i].x,sy=src[i].y,dx=dst[i].x,dy=dst[i].y;A.push([-sx,-sy,-1,0,0,0,dx*sx,dx*sy,dx]);A.push([0,0,0,-sx,-sy,-1,dy*sx,dy*sy,dy]);}
@@ -422,7 +436,7 @@ function solveDLT(A){
   }
   const h=M.map((row,i)=>b[i]/row[i]);h.push(1);return h;
 }
-function applyH(h,px,py){const w=h[6]*px+h[7]*py+h[8];return{x:(h[0]*px+h[1]*py+h[2])/w,y:(h[3]*px+h[4]*py+h[5])/w};}
+function applyH(h,px,py){const w=h[6]*px+h[7]*py+h[8];if(Math.abs(w)<1e-6)return{x:NaN,y:NaN};return{x:(h[0]*px+h[1]*py+h[2])/w,y:(h[3]*px+h[4]*py+h[5])/w};}
 
 // canvas resize
 function resizeCanvases(){
@@ -455,24 +469,26 @@ async function openCamera(deviceId){
   document.getElementById('btnRetry').style.display='none';
   dbSet('dbCam','פותח...','warn');
   try{
-    let constraints;
-    if(deviceId){
-      constraints={video:{deviceId:{exact:deviceId},width:{ideal:640},height:{ideal:480}}};
+    let stream;
+    if(!deviceId&&calibStream&&calibStream.getVideoTracks().some(t=>t.readyState==='live')){
+      stream=calibStream;calibStream=null;
     }else{
-      constraints={video:{facingMode:'environment',width:{ideal:640},height:{ideal:480}}};
+      let constraints;
+      if(deviceId){
+        constraints={video:{deviceId:{exact:deviceId},width:{ideal:640},height:{ideal:480}}};
+      }else{
+        constraints={video:{facingMode:'environment',width:{ideal:640},height:{ideal:480}}};
+      }
+      stream=await navigator.mediaDevices.getUserMedia(constraints)
+        .catch(()=>navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}}))
+        .catch(()=>navigator.mediaDevices.getUserMedia({video:true}));
     }
-    const stream=await navigator.mediaDevices.getUserMedia(constraints)
-      .catch(()=>navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}}))
-      .catch(()=>navigator.mediaDevices.getUserMedia({video:true}));
     videoEl.srcObject=stream;videoEl._stream=stream;
-    // Auto-detect flip based on facing mode
+    // front camera → mirror the small previews (cosmetic only)
     const track=stream.getVideoTracks()[0];
     const settings=track.getSettings&&track.getSettings()||{};
-    if(!deviceId){
-      flipH=(settings.facingMode==='user');
-      document.getElementById('btnFlip').classList.toggle('on',flipH);
-      applyFlipCSS();
-    }
+    mirrorPreview=(settings.facingMode==='user');
+    applyFlipCSS();
     // Enumerate cameras after getting permission
     try{const devs=await navigator.mediaDevices.enumerateDevices();camList=devs.filter(d=>d.kind==='videoinput');}catch(e){}
     dbSet('dbCam','פעיל ✓','ok');
@@ -530,9 +546,8 @@ function trackByColor(video){
   }
   if(mask)renderMask(mask,sw,sh,n);
   if(n<tune.minBlob)return null;
-  let x=sx/n/sw,y=sy/n/sh;
-  if(flipH)x=1-x;
-  return{x,y};
+  // raw-frame space – the homography handles orientation
+  return{x:sx/n/sw,y:sy/n/sh};
 }
 
 // B/W mask thumbnail in the tuning panel: white = pixel passed the red filter
@@ -574,7 +589,9 @@ function startRAF(){
             handCtx.drawImage(videoEl,0,0,iw,ih);
             input=handCanvas;lastInW=iw;lastInH=ih;
           }
-          const results=await detector.estimateHands(input,{flipHorizontal:flipH});
+          // always raw-frame space: the homography was calibrated on the raw
+          // frame, so detection coords must never be pre-flipped
+          const results=await detector.estimateHands(input,{flipHorizontal:false});
           onHandResults(results);
         }else{
           dbSet('dbHand','ממתין למודל...','warn');
@@ -647,9 +664,9 @@ function renderHandPreview(lm,score){
   try{pc.drawImage(videoEl,0,0,prev.width,prev.height);}catch(e){}
   const info=document.getElementById('maskInfo');
   if(lm){
-    // landmarks are in flipped space when flipH; un-flip so they align with
-    // the raw video – the canvas CSS mirror then flips both together
-    const X=p=>(flipH?1-p.x:p.x)*prev.width,Y=p=>p.y*prev.height;
+    // landmarks are raw-frame space, aligned with the raw video; the CSS
+    // mirror (mirrorPreview) flips both together for front cameras
+    const X=p=>p.x*prev.width,Y=p=>p.y*prev.height;
     pc.strokeStyle='#00ff88';pc.lineWidth=1.5;
     HAND_C.forEach(([a,b])=>{pc.beginPath();pc.moveTo(X(lm[a]),Y(lm[a]));pc.lineTo(X(lm[b]),Y(lm[b]));pc.stroke();});
     lm.forEach((p,i)=>{pc.fillStyle=i===8?'#ff2d55':'#ffcc00';pc.beginPath();pc.arc(X(p),Y(p),i===8?4:2,0,Math.PI*2);pc.fill();});
@@ -667,7 +684,17 @@ function onDrawResult(pt,shouldDraw){
   if(detectMode==='color'){dbSet('dbHand','סמן ✓','ok');dbSet('dbGest','🔴 מצייר','ok');}
   let nx=pt.x,ny=pt.y;
   if(homography){const m=applyH(homography,pt.x,pt.y);nx=m.x;ny=m.y;}
+  if(flipH)nx=1-nx;
+  // reject unstable / out-of-range mappings (near the homography horizon a
+  // tiny jitter explodes into huge jumps) – treat as pen-up instead
+  if(!isFinite(nx)||!isFinite(ny)||nx<-0.15||nx>1.15||ny<-0.15||ny>1.15){
+    drawing=false;lastPt=null;smoothPt=null;fingerDotEl.style.display='none';return;
+  }
   let cx=nx*W,cy=ny*H;
+  // teleport guard: a giant single-frame jump starts a new stroke, never a line
+  if(smoothPt&&Math.hypot(cx-smoothPt.x,cy-smoothPt.y)>0.4*Math.hypot(W,H)){
+    smoothPt={x:cx,y:cy};lastPt=null;drawing=false;
+  }
   if(!smoothPt)smoothPt={x:cx,y:cy};
   else{const a=tune.smooth;smoothPt.x+=(cx-smoothPt.x)*a;smoothPt.y+=(cy-smoothPt.y)*a;}
   cx=smoothPt.x;cy=smoothPt.y;
