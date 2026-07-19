@@ -151,8 +151,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
     🤏 <span id="dbGest">—</span><br>
     ⚡ <span id="dbFps">—</span>
     <div id="dbCtrl">
-      <button class="dbtn" id="btnFlip">↔ הפוך</button>
-      <button class="dbtn" id="btnFlipV">↕ הפוך</button>
+      <button class="dbtn" id="btnFlip">↔ ציור</button>
+      <button class="dbtn" id="btnFlipV">↕ ציור</button>
+      <button class="dbtn" id="btnMirror">🪞 תצוגה</button>
       <button class="dbtn" id="btnSwitchCam">📷 החלף</button>
       <button class="dbtn" id="btnDetectMode">🖐 יד</button>
     </div>
@@ -343,16 +344,24 @@ onTap(document.getElementById('btnSave'),()=>{
 });
 
 // debug panel buttons
-// manual flips: applied to the OUTPUT (after homography) – always stable
+// drawing-axis flips: applied to the OUTPUT (after homography) only.
+// They never touch the preview image – that's the separate 🪞 button.
 onTap(document.getElementById('btnFlip'),()=>{
   flipH=!flipH;
   document.getElementById('btnFlip').classList.toggle('on',flipH);
-  toast(flipH?'ציר X הפוך ✓':'ציר X רגיל');
+  toast(flipH?'כיוון ציור ↔ הפוך (התמונה לא משתנה)':'כיוון ציור ↔ רגיל');
 });
 onTap(document.getElementById('btnFlipV'),()=>{
   flipV=!flipV;
   document.getElementById('btnFlipV').classList.toggle('on',flipV);
-  toast(flipV?'ציר Y הפוך ✓ (למעלה⇄למטה)':'ציר Y רגיל');
+  toast(flipV?'כיוון ציור ↕ הפוך (התמונה לא משתנה)':'כיוון ציור ↕ רגיל');
+});
+// preview mirror: image only, zero effect on the drawing axis
+onTap(document.getElementById('btnMirror'),()=>{
+  mirrorPreview=!mirrorPreview;
+  document.getElementById('btnMirror').classList.toggle('on',mirrorPreview);
+  applyFlipCSS();
+  toast(mirrorPreview?'תצוגה במראה (הציור לא מושפע)':'תצוגה רגילה');
 });
 onTap(document.getElementById('btnSwitchCam'),async()=>{
   if(!camList.length){try{const devs=await navigator.mediaDevices.enumerateDevices();camList=devs.filter(d=>d.kind==='videoinput');}catch(e){}}
@@ -501,7 +510,13 @@ function drawMiniMap(rawPt){
 
 // ---- step 2: calibration (uses the stream chosen in step 1) ----
 function startCalibration(stream){
-  showScreen('screenCalib');calibPoints=[];outStreak=0;outWarned=false;updateCalibUI();
+  showScreen('screenCalib');calibPoints=[];outStreak=0;outWarned=false;
+  // a fresh calibration defines the correct mapping – stale manual flips
+  // from a previous run would corrupt it
+  flipH=false;flipV=false;
+  document.getElementById('btnFlip').classList.remove('on');
+  document.getElementById('btnFlipV').classList.remove('on');
+  updateCalibUI();
   const vid=document.getElementById('calibVideo');
   if(vid._stream)vid._stream.getTracks().forEach(t=>t.stop());
   // calibration video: NO CSS mirror – shows raw camera feed
@@ -685,6 +700,7 @@ async function openCamera(deviceId){
     const track=stream.getVideoTracks()[0];
     const settings=track.getSettings&&track.getSettings()||{};
     mirrorPreview=(settings.facingMode==='user');
+    document.getElementById('btnMirror').classList.toggle('on',mirrorPreview);
     applyFlipCSS();
     // Enumerate cameras after getting permission
     try{const devs=await navigator.mediaDevices.enumerateDevices();camList=devs.filter(d=>d.kind==='videoinput');}catch(e){}
