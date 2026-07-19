@@ -84,6 +84,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 #maskInfo{text-align:center;font-size:.82em;color:#8892aa;margin-bottom:8px}
 #tnReset{width:100%;padding:13px;background:#2a2a4a;color:#ccc;border:none;border-radius:12px;font-size:.95em;cursor:pointer;margin-top:8px}
 #btnTune{background:#0f3460;color:#ffcc00;min-width:54px;justify-content:center}
+.tn-tabs{display:flex;gap:8px;margin:6px 0 10px}
+.tn-tabs button,.tn-seg button{flex:1;padding:11px 8px;background:#1a2a4a;color:#ccc;border:1px solid #334;border-radius:10px;font-size:.9em;cursor:pointer}
+.tn-tabs button.on,.tn-seg button.on{background:#e94560;border-color:#e94560;color:#fff;font-weight:bold}
+.tn-seg{display:flex;gap:8px;margin-top:4px}
 </style>
 </head>
 <body>
@@ -159,6 +163,20 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
     <input type="range" id="tnSmooth" min="5" max="95" value="45">
     <div class="tn-hint">נמוך = קו חלק מאוד אבל איטי · גבוה = תגובה מיידית אבל רועדת</div>
   </div>
+  <div class="tn-row">
+    <div class="tn-lab"><span>סיווג מחוות – אצבעות פתוחות לציור</span><span class="tn-val" id="vFingers">2</span></div>
+    <input type="range" id="tnFingers" min="1" max="4" value="2">
+    <div class="tn-hint">כמה אצבעות (חוץ מהאגודל) צריכות להיות פתוחות כדי לצייר · פחות מזה = אגרוף = עצירה. נמוך = יציב יותר בחושך</div>
+  </div>
+  <div class="tn-row">
+    <div class="tn-lab"><span>רזולוציית עיבוד למודל</span></div>
+    <div class="tn-seg" id="tnRes">
+      <button data-res="full">מלא</button>
+      <button data-res="half">½ חצי</button>
+      <button data-res="third">⅓ שליש</button>
+    </div>
+    <div class="tn-hint">הקטנת התמונה שנשלחת ל-AI · שליש = FPS גבוה בהרבה במובייל חלש, דיוק מעט נמוך יותר</div>
+  </div>
   <div class="tn-sec">🔴 סמן אדום (מעקב צבע)</div>
   <div class="tn-row">
     <div class="tn-lab"><span>רגישות צבע</span><span class="tn-val" id="vColor">80</span></div>
@@ -176,9 +194,14 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
     <div class="tn-hint">כמה פיקסלים אדומים דרושים כדי להתחיל לצייר · מונע נקודות אקראיות מרעש מצלמה בחושך</div>
   </div>
   <div class="tn-sec">📊 ניטור בזמן אמת</div>
+  <div class="tn-tabs">
+    <button id="tabHand">🖐 תצוגת יד</button>
+    <button id="tabColor">🔴 תצוגת סמן</button>
+  </div>
   <div class="tn-fps">⚡ FPS: <span id="tnFps">—</span></div>
+  <div class="tn-fps">🖐 ביטחון זיהוי: <span id="tnScore">—</span></div>
   <canvas id="maskPreview" width="160" height="120"></canvas>
-  <div id="maskInfo">מסכת צבע – לבן = פיקסל שעבר את הסינון</div>
+  <div id="maskInfo">—</div>
   <button id="tnReset">↺ איפוס להגדרות ברירת מחדל</button>
 </div>
 <div id="toast"></div>
@@ -196,11 +219,13 @@ let flipH=false,camList=[],camIdx=0,detectMode='hand';
 let colorCanvas=null,colorCtx=null;
 
 // tuning panel state – all values affect the RAF loop live
-const TUNE_DEFAULTS={conf:0.5,smooth:0.45,colorTh:80,minBright:150,minBlob:30};
+const TUNE_DEFAULTS={conf:0.5,smooth:0.45,colorTh:80,minBright:150,minBlob:30,minFingers:2,handRes:'full'};
 const tune={...TUNE_DEFAULTS};
 let tuneOpen=false,maskTmpCanvas=null;
+let handCanvas=null,handCtx=null,lastInW=640,lastInH=480,stopFrames=0;
+const HAND_C=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
 const fps={loop:0,cam:0,_l:0,_c:0,_t:0};
-function loadTune(){try{const s=JSON.parse(localStorage.getItem('airdraw_tune'));if(s)for(const k in TUNE_DEFAULTS)if(typeof s[k]==='number')tune[k]=s[k];}catch(e){}}
+function loadTune(){try{const s=JSON.parse(localStorage.getItem('airdraw_tune'));if(s)for(const k in TUNE_DEFAULTS)if(typeof s[k]===typeof TUNE_DEFAULTS[k])tune[k]=s[k];}catch(e){}}
 function saveTune(){try{localStorage.setItem('airdraw_tune',JSON.stringify(tune));}catch(e){}}
 loadTune();
 
@@ -242,12 +267,22 @@ onTap(document.getElementById('btnSwitchCam'),async()=>{
   toast('מחליף מצלמה...');
   await openCamera(camList[camIdx].deviceId);
 });
-onTap(document.getElementById('btnDetectMode'),()=>{
-  detectMode=detectMode==='hand'?'color':'hand';
-  document.getElementById('btnDetectMode').textContent=detectMode==='hand'?'🖐 יד':'🔴 סמן';
-  document.getElementById('btnDetectMode').classList.toggle('on',detectMode==='color');
-  toast(detectMode==='hand'?'מצב: זיהוי יד':'מצב: סמן אדום');
-});
+function setDetectMode(m,quiet){
+  detectMode=m;
+  const btn=document.getElementById('btnDetectMode');
+  btn.textContent=m==='hand'?'🖐 יד':'🔴 סמן';
+  btn.classList.toggle('on',m==='color');
+  document.getElementById('tabHand').classList.toggle('on',m==='hand');
+  document.getElementById('tabColor').classList.toggle('on',m==='color');
+  const info=document.getElementById('maskInfo');
+  info.textContent=m==='hand'?'תצוגת יד – שלד ה-AI על הווידאו':'מסכת צבע – לבן = פיקסל שעבר את הסינון';
+  info.style.color='#8892aa';
+  if(!quiet)toast(m==='hand'?'מצב: זיהוי יד':'מצב: סמן אדום');
+}
+onTap(document.getElementById('btnDetectMode'),()=>setDetectMode(detectMode==='hand'?'color':'hand'));
+onTap(document.getElementById('tabHand'),()=>setDetectMode('hand'));
+onTap(document.getElementById('tabColor'),()=>setDetectMode('color'));
+setDetectMode(detectMode,true);
 onTap(document.getElementById('btnRetry'),()=>{document.getElementById('btnRetry').style.display='none';loadTFHandpose();});
 
 // tuning panel
@@ -262,12 +297,17 @@ bindTune('tnSmooth','vSmooth','smooth',0.01,2);
 bindTune('tnColor','vColor','colorTh',1,0);
 bindTune('tnBright','vBright','minBright',1,0);
 bindTune('tnBlob','vBlob','minBlob',1,0);
+bindTune('tnFingers','vFingers','minFingers',1,0);
+function syncResBtns(){document.querySelectorAll('#tnRes button').forEach(b=>b.classList.toggle('on',b.dataset.res===tune.handRes));}
+document.querySelectorAll('#tnRes button').forEach(b=>onTap(b,()=>{tune.handRes=b.dataset.res;saveTune();syncResBtns();toast('רזולוציית עיבוד: '+b.textContent);}));
+syncResBtns();
 function setTuneOpen(open){tuneOpen=open;document.getElementById('tunePanel').classList.toggle('hidden',!open);}
 onTap(document.getElementById('btnTune'),()=>setTuneOpen(!tuneOpen));
 onTap(document.getElementById('tnClose'),()=>setTuneOpen(false));
 onTap(document.getElementById('tnReset'),()=>{
   Object.assign(tune,TUNE_DEFAULTS);saveTune();
   document.querySelectorAll('#tunePanel input[type=range]').forEach(el=>el._sync&&el._sync());
+  syncResBtns();
   toast('ההגדרות אופסו ↺');
 });
 
@@ -516,13 +556,23 @@ function startRAF(){
         onDrawResult(trackByColor(videoEl),true);
       }else{
         if(detector){
-          const results=await detector.estimateHands(videoEl,{flipHorizontal:flipH});
+          // optional downsampling of the frame sent to the model (live-tunable)
+          let input=videoEl;
+          lastInW=videoEl.videoWidth||640;lastInH=videoEl.videoHeight||480;
+          if(tune.handRes!=='full'){
+            const f=tune.handRes==='half'?2:3;
+            const iw=Math.floor(lastInW/f),ih=Math.floor(lastInH/f);
+            if(!handCanvas){handCanvas=document.createElement('canvas');handCtx=handCanvas.getContext('2d',{willReadFrequently:true});}
+            if(handCanvas.width!==iw||handCanvas.height!==ih){handCanvas.width=iw;handCanvas.height=ih;}
+            handCtx.drawImage(videoEl,0,0,iw,ih);
+            input=handCanvas;lastInW=iw;lastInH=ih;
+          }
+          const results=await detector.estimateHands(input,{flipHorizontal:flipH});
           onHandResults(results);
         }else{
           dbSet('dbHand','ממתין למודל...','warn');
+          if(tuneOpen)renderHandPreview(null,null);
         }
-        // panel open in hand mode: still run the color pass so the mask preview updates
-        if(tuneOpen)trackByColor(videoEl);
       }
     }catch(e){}
     busy=false;
@@ -533,27 +583,61 @@ function startRAF(){
 function onHandResults(results){
   const W=window.innerWidth,H=window.innerHeight;
   debugCtx.clearRect(0,0,W,H);
+  // live confidence readout (raw score, before the threshold filter)
+  const rawScore=results&&results.length&&results[0].score!=null?results[0].score:null;
+  const scEl=document.getElementById('tnScore');
+  if(scEl){
+    if(rawScore!=null){scEl.textContent=Math.round(rawScore*100)+'%';scEl.style.color=rawScore>=tune.conf?'#00ff88':'#ffcc00';}
+    else{scEl.textContent='—';scEl.style.color='#8892aa';}
+  }
   // detection-confidence filter (live-tunable)
   if(results&&results.length&&results[0].score!=null&&results[0].score<tune.conf)results=[];
   if(!results||!results.length){
-    drawing=false;lastPt=null;smoothPt=null;fingerDotEl.style.display='none';
-    dbSet('dbHand','לא מזוהה','err');dbSet('dbGest','—');return;
+    drawing=false;lastPt=null;smoothPt=null;stopFrames=0;fingerDotEl.style.display='none';
+    dbSet('dbHand','לא מזוהה','err');dbSet('dbGest','—');
+    if(tuneOpen&&detectMode==='hand')renderHandPreview(null,rawScore);
+    return;
   }
   const kp=results[0].keypoints;
-  const vW=videoEl.videoWidth||640,vH=videoEl.videoHeight||480;
   dbSet('dbHand','מזוהה ✓','ok');
-  // Normalize; TF.js already applied flipH internally via flipHorizontal param
-  const lm=kp.map(k=>({x:k.x/vW,y:k.y/vH}));
+  // Normalize by the actual model-input dims (may be downsampled)
+  const lm=kp.map(k=>({x:k.x/lastInW,y:k.y/lastInH}));
   const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
   const wrist=lm[0];
-  const pinchTh=0.03+senseVal*0.07,extRatio=1.3-senseVal*0.4;
-  const idxExt=dist(lm[8],wrist)>dist(lm[6],wrist)*extRatio;
-  const allClosed=dist(lm[8],wrist)<dist(lm[5],wrist)*1.1&&dist(lm[12],wrist)<dist(lm[9],wrist)*1.1;
+  const pinchTh=0.03+senseVal*0.07,extRatio=1.3-senseVal*0.35;
+  // count extended fingers (index, middle, ring, pinky)
+  let extCount=0;
+  [[8,6],[12,10],[16,14],[20,18]].forEach(([tip,pip])=>{if(dist(lm[tip],wrist)>dist(lm[pip],wrist)*extRatio)extCount++;});
   const pinch=dist(lm[4],lm[8])<pinchTh;
-  const shouldDraw=(idxExt||pinch)&&!allClosed;
-  dbSet('dbGest',shouldDraw?(pinch?'🤏 צביטה':'☝️ מצביע')+' – מצייר':'✊ עצור',shouldDraw?'ok':'');
+  const wantDraw=extCount>=tune.minFingers||pinch;
+  // debounce stop: fist must hold 3 frames before drawing stops (prevents flicker in dim light)
+  if(wantDraw)stopFrames=0;else stopFrames++;
+  const shouldDraw=wantDraw||(drawing&&stopFrames<3);
+  dbSet('dbGest',shouldDraw?(pinch?'🤏 צביטה':`🖐 ${extCount} אצבעות`)+' – מצייר':'✊ עצור',shouldDraw?'ok':'');
   drawSkeleton(lm,W,H);
+  if(tuneOpen&&detectMode==='hand')renderHandPreview(lm,rawScore);
   onDrawResult({x:lm[8].x,y:lm[8].y},shouldDraw);
+}
+
+// hand-mode preview: downscaled live video + AI wireframe overlay
+function renderHandPreview(lm,score){
+  const prev=document.getElementById('maskPreview'),pc=prev.getContext('2d');
+  pc.clearRect(0,0,prev.width,prev.height);
+  try{pc.drawImage(videoEl,0,0,prev.width,prev.height);}catch(e){}
+  const info=document.getElementById('maskInfo');
+  if(lm){
+    // landmarks are in flipped space when flipH; un-flip so they align with
+    // the raw video – the canvas CSS mirror then flips both together
+    const X=p=>(flipH?1-p.x:p.x)*prev.width,Y=p=>p.y*prev.height;
+    pc.strokeStyle='#00ff88';pc.lineWidth=1.5;
+    HAND_C.forEach(([a,b])=>{pc.beginPath();pc.moveTo(X(lm[a]),Y(lm[a]));pc.lineTo(X(lm[b]),Y(lm[b]));pc.stroke();});
+    lm.forEach((p,i)=>{pc.fillStyle=i===8?'#ff2d55':'#ffcc00';pc.beginPath();pc.arc(X(p),Y(p),i===8?4:2,0,Math.PI*2);pc.fill();});
+    info.textContent=`יד מזוהה ✓ · ביטחון ${score!=null?Math.round(score*100)+'%':'—'}`;
+    info.style.color='#00ff88';
+  }else{
+    info.textContent=score!=null?`יד חלשה מדי (${Math.round(score*100)}% < סף) – הורד את רגישות הזיהוי`:'יד לא מזוהה – בדוק תאורה או זווית מצלמה';
+    info.style.color='#ff2d55';
+  }
 }
 
 function onDrawResult(pt,shouldDraw){
@@ -577,9 +661,8 @@ function onDrawResult(pt,shouldDraw){
 }
 
 function drawSkeleton(lm,W,H){
-  const C=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
   debugCtx.strokeStyle='rgba(0,255,136,0.5)';debugCtx.lineWidth=1.5;
-  C.forEach(([a,b])=>{debugCtx.beginPath();debugCtx.moveTo(lm[a].x*W,lm[a].y*H);debugCtx.lineTo(lm[b].x*W,lm[b].y*H);debugCtx.stroke();});
+  HAND_C.forEach(([a,b])=>{debugCtx.beginPath();debugCtx.moveTo(lm[a].x*W,lm[a].y*H);debugCtx.lineTo(lm[b].x*W,lm[b].y*H);debugCtx.stroke();});
   debugCtx.fillStyle='#ff2d55';debugCtx.beginPath();debugCtx.arc(lm[8].x*W,lm[8].y*H,8,0,Math.PI*2);debugCtx.fill();
 }
 
