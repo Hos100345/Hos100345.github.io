@@ -442,7 +442,16 @@ async function recreateDetector(){
     dbSet('dbMp','מודל ✓'+(b?' ('+(BACKEND_LABEL[b]||b)+')':''),b==='cpu'?'warn':'ok');
   }catch(e){console.error('model:',e);dbSet('dbMp','שגיאה','err');}
 }
-function setTuneOpen(open){tuneOpen=open;document.getElementById('tunePanel').classList.toggle('hidden',!open);}
+let lockRestoreTried=false;
+function setTuneOpen(open){
+  tuneOpen=open;document.getElementById('tunePanel').classList.toggle('hidden',!open);
+  // running on a temporary fallback while a lock exists? try to go home once
+  if(open&&tune.backendLocked&&!lockRestoreTried&&detector&&window.tf&&tf.getBackend&&tf.getBackend()!==tune.backend){
+    lockRestoreTried=true;
+    toast('מנסה לחזור למנוע הנעול '+BACKEND_LABEL[tune.backend]+'...');
+    applyBackend(tune.backend);
+  }
+}
 onTap(document.getElementById('btnTune'),()=>setTuneOpen(!tuneOpen));
 onTap(document.getElementById('tnClose'),()=>setTuneOpen(false));
 onTap(document.getElementById('tnReset'),()=>{
@@ -752,7 +761,10 @@ async function ensureWasmLoaded(){
   if(window.tf&&tf.findBackend&&tf.findBackend('wasm'))return;
   const WASM='@tensorflow/tfjs-backend-wasm@4.17.0/dist/tf-backend-wasm.min.js';
   await loadScript('https://cdn.jsdelivr.net/npm/'+WASM).catch(()=>loadScript('https://unpkg.com/'+WASM));
-  if(tf.wasm&&tf.wasm.setWasmPaths)tf.wasm.setWasmPaths('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@4.17.0/dist/');
+  // the UMD bundle may expose setWasmPaths in several places – try them all,
+  // otherwise the .wasm binaries 404 and the backend silently fails forever
+  const sw=(window.tf&&tf.wasm&&tf.wasm.setWasmPaths)||(window.tfjsWasm&&window.tfjsWasm.setWasmPaths)||(window.tf&&tf.setWasmPaths);
+  if(sw)sw('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@4.17.0/dist/');
 }
 function syncBackendBtns(){
   const cur=(window.tf&&tf.getBackend&&tf.getBackend())||tune.backend;
@@ -806,15 +818,21 @@ function loadTFHandpose(){
   (window.tf?Promise.resolve():loadScript(C1+TF).catch(()=>loadScript(C2+TF)))
     .then(()=>window.handPoseDetection?null:loadScript(C1+HPD).catch(()=>loadScript(C2+HPD)))
     .then(async()=>{
-      // start with the saved backend preference, falling back down the chain
-      let b=tune.backend||'webgl';
-      if(b==='wasm'){try{await ensureWasmLoaded();}catch(e){b='webgl';}}
-      let ok=false;try{ok=await tf.setBackend(b);}catch(e){}
-      if(!ok&&b!=='webgl'){b='webgl';try{ok=await tf.setBackend('webgl');}catch(e){}}
-      if(!ok){b='cpu';await tf.setBackend('cpu');}
+      // honor the saved (possibly locked) backend choice
+      const want=tune.backend||'webgl';
+      const tryB=async name=>{try{if(name==='wasm')await ensureWasmLoaded();return await tf.setBackend(name);}catch(e){return false;}};
+      let b=want,ok=await tryB(b);
+      if(!ok&&tune.backendLocked)ok=await tryB(b);// locked engine: retry once before any fallback
+      if(!ok){
+        for(const fb of ['webgl','wasm','cpu']){
+          if(fb===want)continue;
+          if(await tryB(fb)){b=fb;ok=true;break;}
+        }
+      }
       await tf.ready();
-      // user-locked backend → auto-fix fully disabled; otherwise arm it
-      // only for engines below the active one
+      // a locked choice is NEVER overwritten – if it failed to load we run
+      // temporarily on a fallback and say so explicitly
+      if(b!==want&&tune.backendLocked)toast('⚠️ המנוע הנעול ('+BACKEND_LABEL[want]+') לא נטען – פועל זמנית על '+BACKEND_LABEL[b]+' (הבחירה שלך נשמרה)',6000);
       backendFixStage=tune.backendLocked?2:(b==='webgl'?0:b==='wasm'?1:2);
       syncBackendBtns();
       detector=await handPoseDetection.createDetector(handPoseDetection.SupportedModels.MediaPipeHands,{runtime:'tfjs',modelType:tune.modelFull?'full':'lite',maxHands:1});
@@ -980,8 +998,8 @@ function onHandResults(results){
     return;
   }
   nanFrames=0;roiLost=0;
-  // this backend is proven to work – persist it so next launch starts here
-  if(++goodFrames===60){
+  // auto-persist a proven backend – but NEVER overwrite a user-locked choice
+  if(++goodFrames===60&&!tune.backendLocked){
     const b=window.tf&&tf.getBackend&&tf.getBackend();
     if(b&&b!==tune.backend){
       tune.backend=b;saveTune();syncBackendBtns();
