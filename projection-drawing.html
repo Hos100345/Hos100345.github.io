@@ -174,6 +174,22 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
     <div class="tn-hint">כמה אצבעות (חוץ מהאגודל) צריכות להיות פתוחות כדי לצייר · פחות מזה = אגרוף = עצירה. נמוך = יציב יותר בחושך</div>
   </div>
   <div class="tn-row">
+    <div class="tn-lab"><span>מתי לצייר</span></div>
+    <div class="tn-seg" id="tnGmode">
+      <button data-g="always">תמיד כשיש יד</button>
+      <button data-g="fingers">לפי מחוות</button>
+    </div>
+    <div class="tn-hint">"תמיד" = הכי אמין: מצייר כל עוד יש יד בפריים, מפסיק כשמורידים אותה · "מחוות" = יד פתוחה מציירת, אגרוף עוצר</div>
+  </div>
+  <div class="tn-row">
+    <div class="tn-lab"><span>דיוק מודל</span></div>
+    <div class="tn-seg" id="tnModel">
+      <button data-m="lite">מהיר</button>
+      <button data-m="full">מדויק</button>
+    </div>
+    <div class="tn-hint">"מדויק" מזהה יד קטנה/רחוקה הרבה יותר טוב · מעט איטי יותר</div>
+  </div>
+  <div class="tn-row">
     <div class="tn-lab"><span>רזולוציית עיבוד למודל</span></div>
     <div class="tn-seg" id="tnRes">
       <button data-res="full">מלא</button>
@@ -229,10 +245,11 @@ let lastRawPt=null,outStreak=0,outWarned=false;
 let colorCanvas=null,colorCtx=null;
 
 // tuning panel state – all values affect the RAF loop live
-const TUNE_DEFAULTS={conf:0.5,smooth:0.45,colorTh:80,minBright:150,minBlob:30,minFingers:2,handRes:'full'};
+const TUNE_DEFAULTS={conf:0.5,smooth:0.45,colorTh:80,minBright:150,minBlob:30,minFingers:2,handRes:'full',gestureMode:'always',modelFull:false};
 const tune={...TUNE_DEFAULTS};
 let tuneOpen=false,maskTmpCanvas=null;
 let handCanvas=null,handCtx=null,lastInW=640,lastInH=480,stopFrames=0,noHandFrames=0,resHintShown=false;
+let lastCrop={x:0,y:0,w:1,h:1};
 const HAND_C=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
 const fps={loop:0,cam:0,_l:0,_c:0,_t:0};
 function loadTune(){try{const s=JSON.parse(localStorage.getItem('airdraw_tune'));if(s)for(const k in TUNE_DEFAULTS)if(typeof s[k]===typeof TUNE_DEFAULTS[k])tune[k]=s[k];}catch(e){}}
@@ -320,13 +337,34 @@ bindTune('tnFingers','vFingers','minFingers',1,0);
 function syncResBtns(){document.querySelectorAll('#tnRes button').forEach(b=>b.classList.toggle('on',b.dataset.res===tune.handRes));}
 document.querySelectorAll('#tnRes button').forEach(b=>onTap(b,()=>{tune.handRes=b.dataset.res;saveTune();syncResBtns();toast('רזולוציית עיבוד: '+b.textContent);}));
 syncResBtns();
+function syncGmodeBtns(){document.querySelectorAll('#tnGmode button').forEach(b=>b.classList.toggle('on',b.dataset.g===tune.gestureMode));}
+document.querySelectorAll('#tnGmode button').forEach(b=>onTap(b,()=>{tune.gestureMode=b.dataset.g;saveTune();syncGmodeBtns();toast(b.dataset.g==='always'?'מצייר תמיד כשיש יד':'ציור לפי מחוות אצבעות');}));
+syncGmodeBtns();
+function syncModelBtns(){document.querySelectorAll('#tnModel button').forEach(b=>b.classList.toggle('on',(b.dataset.m==='full')===tune.modelFull));}
+document.querySelectorAll('#tnModel button').forEach(b=>onTap(b,()=>{
+  const wantFull=b.dataset.m==='full';
+  if(wantFull===tune.modelFull){syncModelBtns();return;}
+  tune.modelFull=wantFull;saveTune();syncModelBtns();
+  recreateDetector();
+  toast(wantFull?'מודל מדויק – טוען...':'מודל מהיר – טוען...');
+}));
+syncModelBtns();
+async function recreateDetector(){
+  if(!window.handPoseDetection)return;
+  if(detector){try{detector.dispose();}catch(e){}detector=null;}
+  dbSet('dbMp','טוען מודל...','warn');
+  try{
+    detector=await handPoseDetection.createDetector(handPoseDetection.SupportedModels.MediaPipeHands,{runtime:'tfjs',modelType:tune.modelFull?'full':'lite',maxHands:1});
+    dbSet('dbMp','מודל ✓','ok');
+  }catch(e){console.error('model:',e);dbSet('dbMp','שגיאה','err');}
+}
 function setTuneOpen(open){tuneOpen=open;document.getElementById('tunePanel').classList.toggle('hidden',!open);}
 onTap(document.getElementById('btnTune'),()=>setTuneOpen(!tuneOpen));
 onTap(document.getElementById('tnClose'),()=>setTuneOpen(false));
 onTap(document.getElementById('tnReset'),()=>{
   Object.assign(tune,TUNE_DEFAULTS);saveTune();
   document.querySelectorAll('#tunePanel input[type=range]').forEach(el=>el._sync&&el._sync());
-  syncResBtns();
+  syncResBtns();syncGmodeBtns();syncModelBtns();
   toast('ההגדרות אופסו ↺');
 });
 
@@ -558,7 +596,7 @@ function loadTFHandpose(){
       const ok=await tf.setBackend('webgl');if(!ok)await tf.setBackend('cpu');
       await tf.ready();
       dbSet('dbMp','WebGL ✓','ok');
-      detector=await handPoseDetection.createDetector(handPoseDetection.SupportedModels.MediaPipeHands,{runtime:'tfjs',modelType:'lite',maxHands:1});
+      detector=await handPoseDetection.createDetector(handPoseDetection.SupportedModels.MediaPipeHands,{runtime:'tfjs',modelType:tune.modelFull?'full':'lite',maxHands:1});
       dbSet('dbMp','מודל ✓','ok');
     })
     .catch(e=>{console.error('TF:',e);dbSet('dbMp','שגיאה','err');});
@@ -616,17 +654,28 @@ function startRAF(){
         onDrawResult(p,true);
       }else{
         if(detector){
-          // optional downsampling of the frame sent to the model (live-tunable)
+          const vw=videoEl.videoWidth||640,vh=videoEl.videoHeight||480;
+          // smart crop: send only the calibrated zone (+margin) to the model –
+          // a far-away hand becomes several times larger in the model's eyes
+          let cx0=0,cy0=0,cw=1,ch=1;
+          if(calibPoints.length===4&&calibPoints[0].fx!=null){
+            const xs=calibPoints.map(p=>p.fx),ys=calibPoints.map(p=>p.fy),pad=0.12;
+            cx0=Math.max(0,Math.min(...xs)-pad);cy0=Math.max(0,Math.min(...ys)-pad);
+            cw=Math.min(1,Math.max(...xs)+pad)-cx0;ch=Math.min(1,Math.max(...ys)+pad)-cy0;
+            if(cw<0.15||ch<0.15){cx0=0;cy0=0;cw=1;ch=1;}
+          }
+          const f=tune.handRes==='half'?2:tune.handRes==='third'?3:1;
           let input=videoEl;
-          lastInW=videoEl.videoWidth||640;lastInH=videoEl.videoHeight||480;
-          if(tune.handRes!=='full'){
-            const f=tune.handRes==='half'?2:3;
-            const iw=Math.floor(lastInW/f),ih=Math.floor(lastInH/f);
+          if(f!==1||cw<1||ch<1){
+            const iw=Math.max(96,Math.floor(vw*cw/f)),ih=Math.max(96,Math.floor(vh*ch/f));
             if(!handCanvas){handCanvas=document.createElement('canvas');handCtx=handCanvas.getContext('2d',{willReadFrequently:true});}
             if(handCanvas.width!==iw||handCanvas.height!==ih){handCanvas.width=iw;handCanvas.height=ih;}
-            handCtx.drawImage(videoEl,0,0,iw,ih);
+            handCtx.drawImage(videoEl,cx0*vw,cy0*vh,cw*vw,ch*vh,0,0,iw,ih);
             input=handCanvas;lastInW=iw;lastInH=ih;
+          }else{
+            lastInW=vw;lastInH=vh;
           }
+          lastCrop={x:cx0,y:cy0,w:cw,h:ch};
           // always raw-frame space: the homography was calibrated on the raw
           // frame, so detection coords must never be pre-flipped
           const results=await detector.estimateHands(input,{flipHorizontal:false});
@@ -684,8 +733,8 @@ function onHandResults(results){
   noHandFrames=0;
   const kp=results[0].keypoints;
   dbSet('dbHand','מזוהה ✓','ok');
-  // Normalize by the actual model-input dims (may be downsampled)
-  const lm=kp.map(k=>({x:k.x/lastInW,y:k.y/lastInH}));
+  // Normalize by the input dims, then map from crop space back to frame space
+  const lm=kp.map(k=>({x:lastCrop.x+(k.x/lastInW)*lastCrop.w,y:lastCrop.y+(k.y/lastInH)*lastCrop.h}));
   lastRawPt={x:lm[8].x,y:lm[8].y};
   // Gesture math in RAW PIXEL space – aspect-ratio safe on portrait phones
   const dpx=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
@@ -696,11 +745,11 @@ function onHandResults(results){
   // pinch threshold relative to palm size – scale invariant
   const palmSpan=dpx(kp[9],wristK)||1;
   const pinch=dpx(kp[4],kp[8])<palmSpan*(0.2+senseVal*0.25);
-  const wantDraw=extCount>=tune.minFingers||pinch;
+  const wantDraw=tune.gestureMode==='always'?true:(extCount>=tune.minFingers||pinch);
   // debounce stop: fist must hold 3 frames before drawing stops (prevents flicker in dim light)
   if(wantDraw)stopFrames=0;else stopFrames++;
   const shouldDraw=wantDraw||(drawing&&stopFrames<3);
-  dbSet('dbGest',shouldDraw?(pinch?'🤏 צביטה':`🖐 ${extCount} אצבעות`)+' – מצייר':`✊ עצור (${extCount} אצבעות)`,shouldDraw?'ok':'');
+  dbSet('dbGest',shouldDraw?(tune.gestureMode==='always'?'🖐 מצייר':(pinch?'🤏 צביטה':`🖐 ${extCount} אצבעות`)+' – מצייר'):`✊ עצור (${extCount} אצבעות)`,shouldDraw?'ok':'');
   drawSkeleton(lm,W,H);
   if(tuneOpen&&detectMode==='hand')renderHandPreview(lm,rawScore,extCount);
   onDrawResult({x:lm[8].x,y:lm[8].y},shouldDraw);
