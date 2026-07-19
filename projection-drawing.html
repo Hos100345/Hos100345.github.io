@@ -439,6 +439,7 @@ syncModelBtns();
 async function recreateDetector(){
   if(!window.handPoseDetection)return;
   if(detector){try{detector.dispose();}catch(e){}detector=null;}
+  roi=null;roiLost=0;// fresh tracking state for the new model/engine
   dbSet('dbMp','טוען מודל...','warn');
   try{
     detector=await handPoseDetection.createDetector(handPoseDetection.SupportedModels.MediaPipeHands,{runtime:'tfjs',modelType:tune.modelFull?'full':'lite',maxHands:1});
@@ -938,10 +939,16 @@ function startRAF(){
           // full frame (near hands) and the calibrated zone (far hands).
           let cx0=0,cy0=0,cw=1,ch=1;
           if(roi){
+            // clamp BOTH edges into [0,1] – an ROI that drifted outside the
+            // frame produced a negative-width crop canvas and a permanent
+            // processing error (the throw also blocked ROI expiry)
             const s=roi.size;
-            cx0=Math.max(0,roi.cx-s/2);cy0=Math.max(0,roi.cy-s/2);
-            cw=Math.min(1,roi.cx+s/2)-cx0;ch=Math.min(1,roi.cy+s/2)-cy0;
-          }else if(frameNo%2===0&&calibPoints.length===4&&calibPoints[0].fx!=null){
+            const x1=Math.min(Math.max(roi.cx-s/2,0),1),y1=Math.min(Math.max(roi.cy-s/2,0),1);
+            const x2=Math.min(Math.max(roi.cx+s/2,0),1),y2=Math.min(Math.max(roi.cy+s/2,0),1);
+            if(x2-x1<0.1||y2-y1<0.1){roi=null;}
+            else{cx0=x1;cy0=y1;cw=x2-x1;ch=y2-y1;}
+          }
+          if(!roi&&frameNo%2===0&&calibPoints.length===4&&calibPoints[0].fx!=null){
             const xs=calibPoints.map(p=>p.fx),ys=calibPoints.map(p=>p.fy),pad=0.12;
             cx0=Math.max(0,Math.min(...xs)-pad);cy0=Math.max(0,Math.min(...ys)-pad);
             cw=Math.min(1,Math.max(...xs)+pad)-cx0;ch=Math.min(1,Math.max(...ys)+pad)-cy0;
@@ -954,7 +961,7 @@ function startRAF(){
             // independently would distort the crop→frame landmark mapping
             let iw0=vw*cw/f,ih0=vh*ch/f;
             const up=Math.max(1,96/iw0,96/ih0);
-            const iw=Math.floor(iw0*up),ih=Math.floor(ih0*up);
+            const iw=Math.max(1,Math.floor(iw0*up)),ih=Math.max(1,Math.floor(ih0*up));
             if(!handCanvas){handCanvas=document.createElement('canvas');handCtx=handCanvas.getContext('2d',{willReadFrequently:true});}
             if(handCanvas.width!==iw||handCanvas.height!==ih){handCanvas.width=iw;handCanvas.height=ih;}
             handCtx.drawImage(videoEl,cx0*vw,cy0*vh,cw*vw,ch*vh,0,0,iw,ih);
@@ -974,7 +981,10 @@ function startRAF(){
         }
       }
       drawMiniMap(lastRawPt);
-    }catch(e){console.error('loop:',e);dbSet('dbHand','שגיאת עיבוד','err');}
+    }catch(e){
+      console.error('loop:',e);dbSet('dbHand','שגיאת עיבוד','err');
+      roi=null;// a poisoned tracking window must never wedge the loop forever
+    }
     busy=false;
   }
   rafId=requestAnimationFrame(loop);
@@ -1047,11 +1057,18 @@ function onHandResults(results){
   // Normalize by the input dims, then map from crop space back to frame space
   const lm=kp.map(k=>({x:lastCrop.x+(k.x/lastInW)*lastCrop.w,y:lastCrop.y+(k.y/lastInH)*lastCrop.h}));
   lastRawPt={x:lm[8].x,y:lm[8].y};
-  // update tracking ROI around the hand's bounding box
+  // update tracking ROI around the hand's bounding box – center clamped
+  // into the frame and skipped entirely on any non-finite value
   {
     const xs=lm.map(p=>p.x),ys=lm.map(p=>p.y);
     const x1=Math.min(...xs),x2=Math.max(...xs),y1=Math.min(...ys),y2=Math.max(...ys);
-    roi={cx:(x1+x2)/2,cy:(y1+y2)/2,size:Math.min(1,Math.max(0.3,Math.max(x2-x1,y2-y1)*2.6))};
+    if(isFinite(x1)&&isFinite(x2)&&isFinite(y1)&&isFinite(y2)){
+      roi={
+        cx:Math.min(1,Math.max(0,(x1+x2)/2)),
+        cy:Math.min(1,Math.max(0,(y1+y2)/2)),
+        size:Math.min(1,Math.max(0.3,Math.max(x2-x1,y2-y1)*2.6))
+      };
+    }
   }
   // Gesture math in RAW PIXEL space – aspect-ratio safe on portrait phones
   const dpx=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
