@@ -757,14 +757,30 @@ async function openCamera(deviceId){
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
 
 const BACKEND_LABEL={webgl:'WebGL',wasm:'WASM',cpu:'CPU'};
-async function ensureWasmLoaded(){
-  if(window.tf&&tf.findBackend&&tf.findBackend('wasm'))return;
-  const WASM='@tensorflow/tfjs-backend-wasm@4.17.0/dist/tf-backend-wasm.min.js';
-  await loadScript('https://cdn.jsdelivr.net/npm/'+WASM).catch(()=>loadScript('https://unpkg.com/'+WASM));
+const WASM_DIR_1='https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@4.17.0/dist/';
+const WASM_DIR_2='https://unpkg.com/@tensorflow/tfjs-backend-wasm@4.17.0/dist/';
+function setWasmPathsSafe(prefix){
   // the UMD bundle may expose setWasmPaths in several places – try them all,
   // otherwise the .wasm binaries 404 and the backend silently fails forever
   const sw=(window.tf&&tf.wasm&&tf.wasm.setWasmPaths)||(window.tfjsWasm&&window.tfjsWasm.setWasmPaths)||(window.tf&&tf.setWasmPaths);
-  if(sw)sw('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@4.17.0/dist/');
+  if(sw)try{sw(prefix);}catch(e){}
+}
+async function ensureWasmLoaded(){
+  if(window.tf&&tf.findBackend&&tf.findBackend('wasm'))return;
+  await loadScript(WASM_DIR_1+'tf-backend-wasm.min.js').catch(()=>loadScript(WASM_DIR_2+'tf-backend-wasm.min.js'));
+  setWasmPathsSafe(WASM_DIR_1);
+  if(!(window.tf&&tf.findBackend&&tf.findBackend('wasm')))throw new Error('סקריפט WASM לא נרשם');
+}
+// wasm activation with a second-CDN retry for the .wasm binaries
+async function activateWasm(){
+  await ensureWasmLoaded();
+  let ok=false;
+  try{ok=await tf.setBackend('wasm');}catch(e){}
+  if(!ok){
+    setWasmPathsSafe(WASM_DIR_2);
+    try{ok=await tf.setBackend('wasm');}catch(e){}
+  }
+  if(!ok)throw new Error('קבצי WASM לא נטענו (רשת/דפדפן)');
 }
 function syncBackendBtns(){
   const cur=(window.tf&&tf.getBackend&&tf.getBackend())||tune.backend;
@@ -775,9 +791,12 @@ async function applyBackend(name){
   if(!window.tf){toast('המודל עדיין נטען – נסה שוב עוד רגע');return false;}
   goodFrames=0;
   try{
-    if(name==='wasm')await ensureWasmLoaded();
-    const ok=await tf.setBackend(name);
-    if(!ok)throw new Error(name+' rejected');
+    if(name==='wasm'){
+      await activateWasm();
+    }else{
+      const ok=await tf.setBackend(name);
+      if(!ok)throw new Error('הדפדפן דחה את המנוע');
+    }
     await tf.ready();
     dbSet('dbMp',BACKEND_LABEL[name]+' ✓',name==='cpu'?'warn':'ok');
     await recreateDetector();
@@ -785,7 +804,9 @@ async function applyBackend(name){
     return true;
   }catch(e){
     console.error('backend:',e);
-    toast('מנוע '+BACKEND_LABEL[name]+' לא זמין במכשיר זה');
+    // say WHY it failed and what always works, so the user isn't stuck
+    // bouncing between a broken engine and one that won't start
+    toast('❌ מנוע '+BACKEND_LABEL[name]+' נכשל: '+((e&&e.message)||'לא נתמך')+' · CPU עובד תמיד',6000);
     syncBackendBtns();
     return false;
   }
@@ -820,7 +841,7 @@ function loadTFHandpose(){
     .then(async()=>{
       // honor the saved (possibly locked) backend choice
       const want=tune.backend||'webgl';
-      const tryB=async name=>{try{if(name==='wasm')await ensureWasmLoaded();return await tf.setBackend(name);}catch(e){return false;}};
+      const tryB=async name=>{try{if(name==='wasm'){await activateWasm();return true;}return await tf.setBackend(name);}catch(e){return false;}};
       let b=want,ok=await tryB(b);
       if(!ok&&tune.backendLocked)ok=await tryB(b);// locked engine: retry once before any fallback
       if(!ok){
