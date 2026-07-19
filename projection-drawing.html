@@ -284,6 +284,7 @@ let tuneOpen=false,maskTmpCanvas=null;
 let handCanvas=null,handCtx=null,lastInW=640,lastInH=480,stopFrames=0,noHandFrames=0,resHintShown=false;
 let lastCrop={x:0,y:0,w:1,h:1};
 let roi=null,roiLost=0,frameNo=0,nanFrames=0,backendFixStage=0,backendFixBusy=false,goodFrames=0,nanLockWarned=false;
+let corruptCanvas=0,corruptVideo=0,cropDisabled=false,lastInputCanvas=false;
 const HAND_C=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
 const fps={loop:0,cam:0,_l:0,_c:0,_t:0};
 function loadTune(){try{const s=JSON.parse(localStorage.getItem('airdraw_tune'));if(s)for(const k in TUNE_DEFAULTS)if(typeof s[k]===typeof TUNE_DEFAULTS[k])tune[k]=s[k];}catch(e){}}
@@ -966,7 +967,12 @@ function startRAF(){
           }
           const f=tune.handRes==='half'?2:tune.handRes==='third'?3:1;
           let input=videoEl;
-          if(f!==1||cw<1||ch<1){
+          if(cropDisabled){
+            // some devices corrupt canvas-processed pixels – feed the raw
+            // video element only (no crop, no downscale)
+            cx0=0;cy0=0;cw=1;ch=1;
+          }
+          if(!cropDisabled&&(f!==1||cw<1||ch<1)){
             // enforce a min size while PRESERVING aspect – clamping each axis
             // independently would distort the crop→frame landmark mapping
             let iw0=vw*cw/f,ih0=vh*ch/f;
@@ -980,6 +986,7 @@ function startRAF(){
             lastInW=vw;lastInH=vh;
           }
           lastCrop={x:cx0,y:cy0,w:cw,h:ch};
+          lastInputCanvas=(input!==videoEl);
           // always raw-frame space: the homography was calibrated on the raw
           // frame, so detection coords must never be pre-flipped
           const results=await detector.estimateHands(input,{flipHorizontal:false});
@@ -1040,21 +1047,30 @@ function onHandResults(results){
   }
   noHandFrames=0;
   const kp=results[0].keypoints;
-  // corrupt (NaN) model output – GPU precision bug; auto-fix the backend
+  // corrupt (NaN) model output – track WHICH input type corrupts: if only
+  // canvas-fed frames corrupt, the device mangles canvas pixels → drop the
+  // crop path instead of blaming the engine
   if(!kp||!kp.length||!isFinite(kp[0].x)||!isFinite(kp[0].y)||!isFinite(kp[8].x)){
     drawing=false;lastPt=null;smoothPt=null;fingerDotEl.style.display='none';lastRawPt=null;
     if(++roiLost>8)roi=null;
-    dbSet('dbHand','פלט פגום (GPU)','err');dbSet('dbGest','—');
+    if(lastInputCanvas)corruptCanvas++;else corruptVideo++;
+    dbSet('dbHand','פלט פגום ('+(lastInputCanvas?'קנבס':'וידאו')+')','err');dbSet('dbGest','—');
     goodFrames=0;
+    if(!cropDisabled&&corruptCanvas>=12&&corruptVideo<=2){
+      cropDisabled=true;nanFrames=0;
+      toast('🔧 זוהתה רגישות לעיבוד קנבס במכשיר – החיתוך החכם כובה, מנסה וידאו ישיר',5000);
+      return;
+    }
     if(++nanFrames>=20){
       if(backendFixStage>=2){
         // locked by the user – never auto-switch; suggest once instead
-        if(!nanLockWarned){nanLockWarned=true;toast('⚠️ המנוע הנבחר מוציא פלט פגום – ניתן להחליף ידנית ב-⚙️',5000);}
+        if(!nanLockWarned){nanLockWarned=true;toast('⚠️ המנוע הנעול מוציא פלט פגום – נסה מנוע CPU ומודל "מדויק" ב-⚙️',6000);}
       }else fixBackend();
     }
     return;
   }
   nanFrames=0;roiLost=0;
+  if(lastInputCanvas)corruptCanvas=0;else corruptVideo=0;
   // auto-persist a proven backend – but NEVER overwrite a user-locked choice
   if(++goodFrames===60&&!tune.backendLocked){
     const b=window.tf&&tf.getBackend&&tf.getBackend();
