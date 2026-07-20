@@ -22,7 +22,8 @@ body{background:#1a1a2e;color:#eee;font-family:'Segoe UI',Arial,sans-serif;overf
 #camSelTitle b{color:#e94560}
 #camSelInfo{color:#aaa;font-size:.9em}
 #camSelBar{position:fixed;bottom:max(26px,env(safe-area-inset-bottom,26px));left:50%;transform:translateX(-50%);display:flex;gap:12px;z-index:3}
-#btnCamCycle{padding:16px 24px;background:#333;color:#eee;border:none;border-radius:50px;font-size:1.05em;cursor:pointer}
+#btnCamCycle,#btnSelfie{padding:16px 20px;background:#333;color:#eee;border:none;border-radius:50px;font-size:1em;cursor:pointer}
+#btnSelfie.on{background:#00c896;color:#fff}
 #btnCamOk{padding:16px 36px;background:#e94560;color:#fff;border:none;border-radius:50px;font-size:1.15em;font-weight:bold;cursor:pointer;box-shadow:0 0 20px #e9456088}
 .mode-card .icon{font-size:2.6em;margin-bottom:10px}
 .mode-card h2{font-size:1em;margin-bottom:6px;color:#e94560}
@@ -45,7 +46,7 @@ body{background:#1a1a2e;color:#eee;font-family:'Segoe UI',Arial,sans-serif;overf
 #camOverlay{position:absolute;bottom:185px;left:10px;width:150px;height:112px;z-index:6;pointer-events:none}
 #drawCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
 #debugCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3;opacity:.7}
-#debugPanel{position:fixed;top:10px;right:10px;z-index:30;background:#000d;padding:10px 12px;border-radius:12px;font-size:.72em;color:#aaa;line-height:1.9;pointer-events:auto;min-width:160px}
+#debugPanel{position:fixed;top:10px;left:10px;z-index:30;background:#000b;padding:8px 11px;border-radius:12px;font-size:.7em;color:#aaa;line-height:1.8;pointer-events:none;min-width:130px}
 #debugPanel .ok{color:#00ff88}
 #debugPanel .err{color:#ff2d55}
 #debugPanel .warn{color:#ffcc00}
@@ -79,7 +80,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 #btnRetry{display:none;margin-top:8px;padding:10px 24px;background:#e94560;color:#fff;border:none;border-radius:24px;font-size:1em;cursor:pointer}
 .spinner{width:46px;height:46px;border:4px solid #333;border-top-color:#e94560;border-radius:50%;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-#tunePanel{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(92vw,430px);max-height:82vh;overflow-y:auto;background:#0d1226f5;border:1px solid #2a3560;border-radius:18px;z-index:60;padding:16px 18px;box-shadow:0 8px 40px #000c}
+/* floating side drawer – the drawing + hand skeleton stay visible behind it */
+#tunePanel{position:fixed;top:8px;right:8px;width:min(76vw,330px);max-height:calc(100dvh - 220px);overflow-y:auto;background:#0d1226cc;backdrop-filter:blur(8px);border:1px solid #2a3560;border-radius:14px;z-index:60;padding:12px 14px;box-shadow:0 6px 30px #0009}
 #tunePanel.hidden{display:none}
 .tn-head{display:flex;justify-content:space-between;align-items:center;font-size:1.15em;font-weight:bold;color:#e94560;margin-bottom:6px}
 #tnClose{background:#2a2a4a;color:#fff;border:none;border-radius:50%;width:44px;height:44px;font-size:1.15em;cursor:pointer;flex-shrink:0}
@@ -112,7 +114,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
   <div id="camSelTitle"><b>🎨 ציור באוויר</b> · שלב 1/3<br><span id="camSelInfo">פותח מצלמה...</span></div>
   <div id="camSelBar">
     <button id="btnCamCycle">📷 החלף מצלמה</button>
-    <button id="btnCamOk">✅ המשך לכיול</button>
+    <button id="btnSelfie">🪞 הפוך תמונה</button>
+    <button id="btnCamOk">✅ המשך</button>
   </div>
 </div>
 <div id="screenSetup" class="screen">
@@ -151,13 +154,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
     ✋ <span id="dbHand" class="err">לא מזוהה</span><br>
     🤏 <span id="dbGest">—</span><br>
     ⚡ <span id="dbFps">—</span>
-    <div id="dbCtrl">
-      <button class="dbtn" id="btnFlip">↔ ציור</button>
-      <button class="dbtn" id="btnFlipV">↕ ציור</button>
-      <button class="dbtn" id="btnMirror">🪞 תצוגה</button>
-      <button class="dbtn" id="btnSwitchCam">📷 החלף</button>
-      <button class="dbtn" id="btnDetectMode">🖐 יד</button>
-    </div>
   </div>
   <div id="toolbar">
     <div class="tb-row" id="colorRow"></div>
@@ -179,7 +175,14 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
   </div>
 </div>
 <div id="tunePanel" class="hidden">
-  <div class="tn-head"><span>⚙️ בקרה וכיוונון</span><button id="tnClose">✕</button></div>
+  <div class="tn-head"><span>⚙️ כוונון</span><button id="tnClose">✕</button></div>
+  <div class="tn-row">
+    <div class="tn-lab"><span>כיווני ציור (אם הקו זז הפוך)</span></div>
+    <div class="tn-seg">
+      <button id="btnFlip">↔ שמאל-ימין</button>
+      <button id="btnFlipV">↕ מעלה-מטה</button>
+    </div>
+  </div>
   <div id="secHand">
   <div class="tn-sec">🖐 זיהוי יד (TF.js)</div>
   <div class="tn-row">
@@ -214,13 +217,13 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
     <div class="tn-hint">"מדויק" מזהה יד קטנה/רחוקה הרבה יותר טוב · מעט איטי יותר</div>
   </div>
   <div class="tn-row">
-    <div class="tn-lab"><span>מנוע עיבוד (Backend)</span></div>
+    <div class="tn-lab"><span>מצב עיבוד</span></div>
     <div class="tn-seg" id="tnBackend">
-      <button data-b="webgl">WebGL</button>
-      <button data-b="wasm">WASM</button>
-      <button data-b="cpu">CPU</button>
+      <button data-b="webgl">🚀 מהיר ביותר</button>
+      <button data-b="wasm">🛡️ יציב (מומלץ)</button>
+      <button data-b="cpu">🐢 בסיסי</button>
     </div>
-    <div class="tn-hint">אם הזיהוי לא עובד או מופיע "פלט פגום (GPU)" – נסה WASM ואז CPU · השווה ביצועים עם מד ה-FPS למטה</div>
+    <div class="tn-hint">אם האפליקציה מציגה שגיאה או קורסת – מומלץ להעביר למצב היציב</div>
   </div>
   <div class="tn-row">
     <div class="tn-lab"><span>רזולוציית עיבוד למודל</span></div>
@@ -274,11 +277,15 @@ let curColor=COLORS[0],brushSz=8,alphaVal=0.9,senseVal=0.65;
 let drawCtx,debugCtx,fingerDotEl,videoEl;
 let detector=null,rafId=null,debugVisible=true;
 let flipH=false,flipV=false,mirrorPreview=false,camList=[],camIdx=0,detectMode='hand',calibStream=null;
+let selfieMode=false;// mirror display + tap-conversion together, 1:1
 let lastRawPt=null,outStreak=0,outWarned=false;
 let colorCanvas=null,colorCtx=null;
 
+// mobile devices default to the stable WASM engine – WebGL there has known
+// precision issues, and the intermediate canvas path is fragile
+const IS_MOBILE=/Android|iPhone|iPad|Mobi/i.test(navigator.userAgent);
 // tuning panel state – all values affect the RAF loop live
-const TUNE_DEFAULTS={conf:0.5,smooth:0.45,colorTh:80,minBright:150,minBlob:30,minFingers:2,handRes:'full',gestureMode:'always',modelFull:false,backend:'webgl',backendLocked:false};
+const TUNE_DEFAULTS={conf:0.5,smooth:0.45,colorTh:80,minBright:150,minBlob:30,minFingers:2,handRes:'full',gestureMode:'always',modelFull:false,backend:IS_MOBILE?'wasm':'webgl',backendLocked:false};
 const tune={...TUNE_DEFAULTS};
 let tuneOpen=false,maskTmpCanvas=null;
 let handCanvas=null,handCtx=null,lastInW=640,lastInH=480,stopFrames=0,noHandFrames=0,resHintShown=false;
@@ -317,7 +324,9 @@ async function openSelCamera(deviceId){
       .catch(()=>navigator.mediaDevices.getUserMedia({video:true}));
     vid.srcObject=s;vid._stream=s;
     const settings=(s.getVideoTracks()[0].getSettings&&s.getVideoTracks()[0].getSettings())||{};
-    vid.style.transform=settings.facingMode==='user'?'scaleX(-1)':'';
+    // front camera defaults selfie mode ON; the 🪞 button overrides
+    selfieMode=(settings.facingMode==='user');
+    syncSelfieUI();
     try{const devs=await navigator.mediaDevices.enumerateDevices();camList=devs.filter(d=>d.kind==='videoinput');}catch(e){}
     // sync camIdx to the camera that ACTUALLY opened, so the first cycle
     // press moves to a genuinely different device
@@ -332,6 +341,16 @@ onTap(document.getElementById('btnCamCycle'),async()=>{
   if(camList.length<=1){toast('רק מצלמה אחת זמינה');return;}
   camIdx=(camIdx+1)%camList.length;
   await openSelCamera(camList[camIdx].deviceId);
+});
+// selfie mode: display mirror + tap-conversion mirror move together (1:1)
+function syncSelfieUI(){
+  document.getElementById('camSelVideo').style.transform=selfieMode?'scaleX(-1)':'';
+  document.getElementById('btnSelfie').classList.toggle('on',selfieMode);
+}
+onTap(document.getElementById('btnSelfie'),()=>{
+  selfieMode=!selfieMode;
+  syncSelfieUI();
+  toast(selfieMode?'🪞 מצב מראה – התמונה והציור יזוזו יחד כמו מראה':'תצוגה רגילה');
 });
 onTap(document.getElementById('btnCamOk'),()=>{
   const vid=document.getElementById('camSelVideo');
@@ -361,27 +380,8 @@ onTap(document.getElementById('btnFlipV'),()=>{
   document.getElementById('btnFlipV').classList.toggle('on',flipV);
   toast(flipV?'כיוון ציור ↕ הפוך (התמונה לא משתנה)':'כיוון ציור ↕ רגיל');
 });
-// preview mirror: image only, zero effect on the drawing axis
-onTap(document.getElementById('btnMirror'),()=>{
-  mirrorPreview=!mirrorPreview;
-  document.getElementById('btnMirror').classList.toggle('on',mirrorPreview);
-  applyFlipCSS();
-  toast(mirrorPreview?'תצוגה במראה (הציור לא מושפע)':'תצוגה רגילה');
-});
-onTap(document.getElementById('btnSwitchCam'),async()=>{
-  if(!camList.length){try{const devs=await navigator.mediaDevices.enumerateDevices();camList=devs.filter(d=>d.kind==='videoinput');}catch(e){}}
-  if(camList.length<=1){toast('רק מצלמה אחת זמינה');return;}
-  camIdx=(camIdx+1)%camList.length;
-  if(videoEl&&videoEl._stream)videoEl._stream.getTracks().forEach(t=>t.stop());
-  toast('מחליף מצלמה...');
-  await openCamera(camList[camIdx].deviceId);
-  toast('⚠️ מצלמה חדשה – מומלץ לכייל מחדש (🔙 מצב)',4000);
-});
 function setDetectMode(m,quiet){
   detectMode=m;
-  const btn=document.getElementById('btnDetectMode');
-  btn.textContent=m==='hand'?'🖐 יד':'🔴 סמן';
-  btn.classList.toggle('on',m==='color');
   document.getElementById('tabHand').classList.toggle('on',m==='hand');
   document.getElementById('tabColor').classList.toggle('on',m==='color');
   const info=document.getElementById('maskInfo');
@@ -392,7 +392,6 @@ function setDetectMode(m,quiet){
   document.getElementById('secColor').style.display=m==='color'?'':'none';
   if(!quiet)toast(m==='hand'?'מצב: זיהוי יד':'מצב: סמן אדום');
 }
-onTap(document.getElementById('btnDetectMode'),()=>setDetectMode(detectMode==='hand'?'color':'hand'));
 onTap(document.getElementById('tabHand'),()=>setDetectMode('hand'));
 onTap(document.getElementById('tabColor'),()=>setDetectMode('color'));
 setDetectMode(detectMode,true);
@@ -472,6 +471,7 @@ onTap(document.getElementById('tnReset'),()=>{
   toast('הספים אופסו ↺ (מנוע ומודל נשמרו)');
 });
 
+let lowFpsSecs=0;
 function fpsLoopTick(){
   fps._l++;
   const now=performance.now();
@@ -481,6 +481,20 @@ function fpsLoopTick(){
     const s=`לולאה ${fps.loop} · מצלמה ${fps.cam||'—'}`;
     dbSet('dbFps',s,fps.loop>=20?'ok':'warn');
     const el=document.getElementById('tnFps');if(el)el.textContent=s;
+    // FPS watchdog: <15fps for 3 consecutive seconds in hand mode →
+    // first kill the smart crop, then step the engine down (unless locked)
+    if(detectMode==='hand'&&detector&&document.visibilityState==='visible'&&fps.loop<15){
+      if(++lowFpsSecs>=3){
+        lowFpsSecs=0;
+        if(!cropDisabled){
+          cropDisabled=true;
+          toast('🔧 ביצועים איטיים – החיתוך החכם כובה כדי להאיץ',4000);
+        }else if(!tune.backendLocked&&backendFixStage<2){
+          toast('🔧 ביצועים איטיים – עובר למצב עיבוד אחר',4000);
+          fixBackend();
+        }
+      }
+    }else lowFpsSecs=0;
   }
 }
 function startCamFpsCounter(){
@@ -539,9 +553,9 @@ function startCalibration(stream){
   updateCalibUI();
   const vid=document.getElementById('calibVideo');
   if(vid._stream)vid._stream.getTracks().forEach(t=>t.stop());
-  // calibration video: NO CSS mirror – shows raw camera feed
-  // This ensures tap coords match TF.js coords (both in raw frame space)
-  vid.style.transform='';
+  // selfie mode: display mirrored EXACTLY like step 1; handleZoneTap
+  // un-mirrors the tap x so the stored quad stays in raw-frame space
+  vid.style.transform=selfieMode?'scaleX(-1)':'';
   if(stream){
     vid.srcObject=stream;vid._stream=stream;
   }else{
@@ -578,7 +592,10 @@ function handleZoneTap(e){
   const zone=document.getElementById('calibTapZone');const rect=zone.getBoundingClientRect();
   const x=(e.clientX??e.pageX)-rect.left,y=(e.clientY??e.pageY)-rect.top;
   const sx=x/rect.width,sy=y/rect.height;
-  const f=tapToFrame(sx,sy,rect);
+  // selfie mode shows the video mirrored – un-mirror the tap x so the quad
+  // is stored in RAW frame space (the cover-crop is centered, so mirroring
+  // the screen x before conversion is exact)
+  const f=tapToFrame(selfieMode?1-sx:sx,sy,rect);
   // x,y = screen space (for drawing the dots); fx,fy = frame space (for the homography)
   calibPoints.push({x:sx,y:sy,fx:f.x,fy:f.y});updateCalibUI();
 }
@@ -747,12 +764,11 @@ async function openCamera(deviceId){
         .catch(()=>navigator.mediaDevices.getUserMedia({video:true}));
     }
     videoEl.srcObject=stream;videoEl._stream=stream;
-    // front camera → mirror the small previews (cosmetic only)
+    // previews mirror exactly when selfie mode is on – one flag, one truth
+    mirrorPreview=selfieMode;
+    applyFlipCSS();
     const track=stream.getVideoTracks()[0];
     const settings=track.getSettings&&track.getSettings()||{};
-    mirrorPreview=(settings.facingMode==='user');
-    document.getElementById('btnMirror').classList.toggle('on',mirrorPreview);
-    applyFlipCSS();
     // Enumerate cameras after getting permission + sync camIdx to the
     // device that actually opened (cycle button then works predictably)
     try{const devs=await navigator.mediaDevices.enumerateDevices();camList=devs.filter(d=>d.kind==='videoinput');}catch(e){}
@@ -774,7 +790,7 @@ async function openCamera(deviceId){
 
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
 
-const BACKEND_LABEL={webgl:'WebGL',wasm:'WASM',cpu:'CPU'};
+const BACKEND_LABEL={webgl:'מהיר ביותר 🚀',wasm:'יציב 🛡️',cpu:'בסיסי 🐢'};
 const WASM_DIR_1='https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@4.17.0/dist/';
 const WASM_DIR_2='https://unpkg.com/@tensorflow/tfjs-backend-wasm@4.17.0/dist/';
 function setWasmPathsSafe(prefix){
@@ -863,7 +879,8 @@ function loadTFHandpose(){
       let b=want,ok=await tryB(b);
       if(!ok&&tune.backendLocked)ok=await tryB(b);// locked engine: retry once before any fallback
       if(!ok){
-        for(const fb of ['webgl','wasm','cpu']){
+        // device-aware fallback order: mobile prefers stable WASM over WebGL
+        for(const fb of (IS_MOBILE?['wasm','webgl','cpu']:['webgl','wasm','cpu'])){
           if(fb===want)continue;
           if(await tryB(fb)){b=fb;ok=true;break;}
         }
@@ -1102,11 +1119,15 @@ function onHandResults(results){
   const extRatio=1.25-senseVal*0.35;
   let extCount=0;
   [[8,6],[12,10],[16,14],[20,18]].forEach(([tip,pip])=>{if(dpx(kp[tip],wristK)>dpx(kp[pip],wristK)*extRatio)extCount++;});
-  // pinch threshold relative to palm size – scale invariant
+  // pinch threshold relative to palm size – scale invariant.
+  // CRITICAL: a closed fist also brings thumb+index tips together, which
+  // used to read as a "pinch" and kept drawing forever – a fist
+  // (0 extended fingers) now always stops, pinch requires an open finger
   const palmSpan=dpx(kp[9],wristK)||1;
-  const pinch=dpx(kp[4],kp[8])<palmSpan*(0.2+senseVal*0.25);
-  const wantDraw=tune.gestureMode==='always'?true:(extCount>=tune.minFingers||pinch);
-  // debounce stop: fist must hold 3 frames before drawing stops (prevents flicker in dim light)
+  const fist=extCount===0;
+  const pinch=!fist&&dpx(kp[4],kp[8])<palmSpan*(0.2+senseVal*0.25);
+  const wantDraw=tune.gestureMode==='always'?true:(!fist&&(extCount>=tune.minFingers||pinch));
+  // debounce stop: gesture must hold 3 frames before drawing stops (prevents flicker in dim light)
   if(wantDraw)stopFrames=0;else stopFrames++;
   const shouldDraw=wantDraw||(drawing&&stopFrames<3);
   dbSet('dbGest',shouldDraw?(tune.gestureMode==='always'?'🖐 מצייר':(pinch?'🤏 צביטה':`🖐 ${extCount} אצבעות`)+' – מצייר'):`✊ עצור (${extCount} אצבעות)`,shouldDraw?'ok':'');
