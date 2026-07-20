@@ -481,17 +481,19 @@ function fpsLoopTick(){
     const s=`לולאה ${fps.loop} · מצלמה ${fps.cam||'—'}`;
     dbSet('dbFps',s,fps.loop>=20?'ok':'warn');
     const el=document.getElementById('tnFps');if(el)el.textContent=s;
-    // FPS watchdog: <15fps for 3 consecutive seconds in hand mode →
-    // first kill the smart crop, then step the engine down (unless locked)
-    if(detectMode==='hand'&&detector&&document.visibilityState==='visible'&&fps.loop<15){
-      if(++lowFpsSecs>=3){
+    // FPS watchdog – conservative: 10-14fps is perfectly usable for
+    // drawing, so act only under 10fps for 5s. Crop-disable is automatic;
+    // engine change is only ever SUGGESTED (never automatic – switching
+    // mid-inference can hang the loop and 12fps setups were being broken)
+    if(detectMode==='hand'&&detector&&document.visibilityState==='visible'&&fps.loop<10){
+      if(++lowFpsSecs>=5){
         lowFpsSecs=0;
         if(!cropDisabled){
           cropDisabled=true;
           toast('🔧 ביצועים איטיים – החיתוך החכם כובה כדי להאיץ',4000);
-        }else if(!tune.backendLocked&&backendFixStage<2){
-          toast('🔧 ביצועים איטיים – עובר למצב עיבוד אחר',4000);
-          fixBackend();
+        }else if(!resHintShown){
+          resHintShown=true;
+          toast('💡 עדיין איטי? נסה "רזולוציית עיבוד ⅓" או מצב עיבוד אחר ב-⚙️',5000);
         }
       }
     }else lowFpsSecs=0;
@@ -947,12 +949,18 @@ function renderMask(mask,sw,sh,n){
 }
 
 function startRAF(){
-  if(rafId)cancelAnimationFrame(rafId);let busy=false;
+  if(rafId)cancelAnimationFrame(rafId);let busy=false,busySince=0;
   async function loop(){
     rafId=requestAnimationFrame(loop);
     fpsLoopTick();
-    if(busy||videoEl.readyState<2)return;
-    busy=true;
+    if(busy){
+      // inference hung (e.g., detector disposed mid-predict) – the promise
+      // never settles and busy would lock the loop dead forever. Recover.
+      if(busySince&&performance.now()-busySince>4000){busy=false;busySince=0;roi=null;}
+      else return;
+    }
+    if(videoEl.readyState<2)return;
+    busy=true;busySince=performance.now();
     try{
       if(detectMode==='color'){
         const p=trackByColor(videoEl);
@@ -1019,7 +1027,7 @@ function startRAF(){
       console.error('loop:',e);dbSet('dbHand','שגיאת עיבוד','err');
       roi=null;// a poisoned tracking window must never wedge the loop forever
     }
-    busy=false;
+    busy=false;busySince=0;
   }
   rafId=requestAnimationFrame(loop);
 }
