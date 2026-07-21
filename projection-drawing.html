@@ -439,7 +439,9 @@ syncModelBtns();
 async function recreateDetector(){
   if(!window.handPoseDetection)return;
   if(detector){try{detector.dispose();}catch(e){}detector=null;}
-  roi=null;roiLost=0;// fresh tracking state for the new model/engine
+  // fresh tracking + corruption state for the new model/engine, so a rebuild
+  // truly starts clean instead of inheriting a poisoned "corrupt" verdict
+  roi=null;roiLost=0;nanFrames=0;corruptCanvas=0;corruptVideo=0;goodFrames=0;
   dbSet('dbMp','טוען מודל...','warn');
   try{
     detector=await handPoseDetection.createDetector(handPoseDetection.SupportedModels.MediaPipeHands,{runtime:'tfjs',modelType:tune.modelFull?'full':'lite',maxHands:1});
@@ -952,15 +954,20 @@ function renderMask(mask,sw,sh,n){
 }
 
 function startRAF(){
-  if(rafId)cancelAnimationFrame(rafId);let busy=false,busySince=0;
+  if(rafId)cancelAnimationFrame(rafId);let busy=false,busySince=0,rebuilding=false;
   async function loop(){
     rafId=requestAnimationFrame(loop);
     fpsLoopTick();
     if(busy){
-      // inference hung (e.g., detector disposed mid-predict) – the promise
-      // never settles and busy would lock the loop dead forever. Recover.
-      if(busySince&&performance.now()-busySince>4000){busy=false;busySince=0;roi=null;}
-      else return;
+      // An inference is still in flight. NEVER start a second estimateHands
+      // concurrently – two overlapping calls on one detector return NaN and
+      // permanently poison the model ("works 10s then corrupt output"). If a
+      // call has genuinely hung, rebuild the detector instead of racing it.
+      if(busySince&&performance.now()-busySince>6000&&!rebuilding&&detectMode==='hand'){
+        rebuilding=true;dbSet('dbHand','משחזר מודל...','warn');
+        recreateDetector().finally(()=>{busy=false;busySince=0;rebuilding=false;roi=null;});
+      }
+      return;
     }
     if(videoEl.readyState<2)return;
     busy=true;busySince=performance.now();
