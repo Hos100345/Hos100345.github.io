@@ -267,6 +267,15 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 </div>
 <div id="toast"></div>
 <script>
+// Chrome (and every modern browser) blocks camera access on an insecure
+// (http) origin. Typing "hoshaya.co.il" can land on http:// with no auto
+// upgrade in Chrome → "cannot access camera". Force HTTPS before anything.
+(function(){
+  const h=location.hostname;
+  if(location.protocol==='http:'&&h!=='localhost'&&h!=='127.0.0.1'&&!h.startsWith('192.168.')){
+    location.replace('https://'+location.host+location.pathname+location.search+location.hash);
+  }
+})();
 const COLORS=['#ff2d55','#ff9500','#ffcc00','#4cd964','#5ac8fa','#007aff','#af52de','#ffffff','#000000','#8e8e93'];
 const CALIB_LABELS=['שמאל-עליון','ימין-עליון','ימין-תחתון','שמאל-תחתון'];
 const GUIDE=[{tx:'10%',ty:'10%'},{tx:'90%',ty:'10%'},{tx:'90%',ty:'90%'},{tx:'10%',ty:'90%'}];
@@ -310,12 +319,23 @@ document.getElementById('brushSize').addEventListener('input',e=>brushSz=+e.targ
 document.getElementById('opacity').addEventListener('input',e=>alphaVal=e.target.value/100);
 document.getElementById('sense').addEventListener('input',e=>senseVal=e.target.value/100);
 
+// translate a getUserMedia failure into a concrete Hebrew reason
+function camErrorMsg(e){
+  if(!window.isSecureContext)return '⚠️ החיבור אינו מאובטח (HTTPS) – פתח את הכתובת עם https://';
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)return '⚠️ הדפדפן לא תומך בגישה למצלמה';
+  const n=e&&e.name;
+  if(n==='NotAllowedError'||n==='SecurityError')return '⚠️ ההרשאה למצלמה נדחתה – אשר גישה בסמל 🔒/📷 שליד הכתובת ורענן';
+  if(n==='NotFoundError'||n==='OverconstrainedError')return '⚠️ לא נמצאה מצלמה במכשיר';
+  if(n==='NotReadableError')return '⚠️ המצלמה תפוסה ע"י אפליקציה אחרת – סגור אותה ורענן';
+  return '⚠️ אין גישה למצלמה'+(n?' ('+n+')':'')+' – בדוק הרשאות ו-HTTPS';
+}
 // ---- step 1: camera selection ----
 let ambientLum=null;
 async function openSelCamera(deviceId){
   const vid=document.getElementById('camSelVideo'),info=document.getElementById('camSelInfo');
   if(vid._stream)vid._stream.getTracks().forEach(t=>t.stop());
   info.textContent='פותח מצלמה...';
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){info.textContent=camErrorMsg();return;}
   try{
     const constraints=deviceId
       ?{video:{deviceId:{exact:deviceId},width:{ideal:640},height:{ideal:480}}}
@@ -334,7 +354,9 @@ async function openSelCamera(deviceId){
     const face=settings.facingMode==='user'?' (קדמית)':settings.facingMode==='environment'?' (אחורית)':'';
     info.textContent='מצלמה '+(camList.length?(camIdx%camList.length)+1:1)+'/'+(camList.length||1)+face+' · כוון אותה אל אזור ההקרנה';
   }catch(e){
-    info.textContent='⚠️ אין גישה למצלמה – בדוק הרשאות ו-HTTPS';
+    console.error('camera:',e);
+    info.textContent=camErrorMsg(e)+' · הקש כאן לניסיון חוזר';
+    info.style.cursor='pointer';info.onclick=()=>openSelCamera(deviceId);
   }
 }
 onTap(document.getElementById('btnCamCycle'),async()=>{
@@ -508,7 +530,9 @@ function startCamFpsCounter(){
   videoEl.requestVideoFrameCallback(cb);
 }
 
-// cosmetic mirror of the small previews only – never affects coordinates
+// cosmetic mirror – previews AND the full-screen hand skeleton overlay, so
+// in selfie mode the skeleton moves the same direction as the drawn line
+// (the finger cursor is positioned via the homography output, already correct)
 function applyFlipCSS(){
   const t=mirrorPreview?'scaleX(-1)':'';
   if(videoEl)videoEl.style.transform=t;
@@ -516,6 +540,8 @@ function applyFlipCSS(){
   if(mp)mp.style.transform=t;
   const ov=document.getElementById('camOverlay');
   if(ov)ov.style.transform=t;
+  const dbg=document.getElementById('debugCanvas');
+  if(dbg)dbg.style.transform=t;
 }
 
 // mini-map over the camera thumbnail: calibrated quad (green) + live raw
@@ -789,8 +815,9 @@ async function openCamera(deviceId){
     // Load TF.js in background (hand mode)
     loadTFHandpose();
   }catch(e){
+    console.error('camera:',e);
     dbSet('dbCam','שגיאה','err');
-    msgEl.textContent='⚠️ לא ניתן לגשת למצלמה. בדוק הרשאות ו-HTTPS.';
+    msgEl.textContent=camErrorMsg(e);
     document.getElementById('btnRetry').style.display='block';
   }
 }
