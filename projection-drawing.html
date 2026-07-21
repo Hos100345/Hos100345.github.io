@@ -278,7 +278,7 @@ let drawCtx,debugCtx,fingerDotEl,videoEl;
 let detector=null,rafId=null,debugVisible=true;
 let flipH=false,flipV=false,mirrorPreview=false,camList=[],camIdx=0,detectMode='hand',calibStream=null;
 let selfieMode=false;// mirror display + tap-conversion together, 1:1
-let lastRawPt=null,outStreak=0,outWarned=false;
+let lastRawPt=null,outStreak=0,outWarned=false,drawWarmup=0;
 let colorCanvas=null,colorCtx=null;
 
 // mobile devices default to the stable WASM engine – WebGL there has known
@@ -739,6 +739,9 @@ function startDrawingScreen(){
   fingerDotEl=document.getElementById('fingerDot');
   drawCtx=dc.getContext('2d');debugCtx=de.getContext('2d');
   videoEl=document.getElementById('camPreview');
+  // no stale tracking state from a previous session may bleed into the
+  // first strokes (a root cause of the start-of-session streak)
+  drawing=false;lastPt=null;smoothPt=null;drawWarmup=0;roi=null;roiLost=0;stopFrames=0;
   applyFlipCSS();
   // Open camera first (fast), then load TF.js in background
   openCamera();
@@ -1210,11 +1213,22 @@ function onDrawResult(pt,shouldDraw){
   fingerDotEl.style.display='block';fingerDotEl.style.left=cx+'px';fingerDotEl.style.top=cy+'px';
   fingerDotEl.className=shouldDraw?'drawing':'';
   if(shouldDraw){
-    if(!drawing){drawing=true;lastPt={x:cx,y:cy};}
-    drawCtx.strokeStyle=hexRgba(curColor,alphaVal);drawCtx.lineWidth=brushSz;drawCtx.lineCap='round';drawCtx.lineJoin='round';
-    drawCtx.beginPath();drawCtx.moveTo(lastPt.x,lastPt.y);drawCtx.lineTo(cx,cy);drawCtx.stroke();
-    lastPt={x:cx,y:cy};
-  }else{drawing=false;lastPt=null;}
+    if(!drawing){
+      // pen down: anchor here, start warm-up. NO line is drawn from a
+      // stale point – this is what produced the "streak at the start".
+      drawing=true;drawWarmup=0;lastPt={x:cx,y:cy};
+    }else{
+      drawWarmup++;
+      const seg=Math.hypot(cx-lastPt.x,cy-lastPt.y);
+      // draw only after the tracker settled (3 frames) AND only for
+      // sane-length segments – a big one-frame jump is a move, never a line
+      if(drawWarmup>=3&&seg<=0.12*Math.hypot(W,H)){
+        drawCtx.strokeStyle=hexRgba(curColor,alphaVal);drawCtx.lineWidth=brushSz;drawCtx.lineCap='round';drawCtx.lineJoin='round';
+        drawCtx.beginPath();drawCtx.moveTo(lastPt.x,lastPt.y);drawCtx.lineTo(cx,cy);drawCtx.stroke();
+      }
+      lastPt={x:cx,y:cy};
+    }
+  }else{drawing=false;lastPt=null;drawWarmup=0;}
 }
 
 function drawSkeleton(lm,W,H){
