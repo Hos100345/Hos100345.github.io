@@ -294,7 +294,7 @@ let colorCanvas=null,colorCtx=null;
 // precision issues, and the intermediate canvas path is fragile
 const IS_MOBILE=/Android|iPhone|iPad|Mobi/i.test(navigator.userAgent);
 // tuning panel state – all values affect the RAF loop live
-const TUNE_DEFAULTS={conf:0.5,smooth:0.45,colorTh:80,minBright:150,minBlob:30,minFingers:2,handRes:'full',gestureMode:'always',modelFull:false,backend:IS_MOBILE?'wasm':'webgl',backendLocked:false};
+const TUNE_DEFAULTS={conf:0.5,smooth:0.45,colorTh:80,minBright:150,minBlob:30,minFingers:2,handRes:'full',gestureMode:'always',modelFull:false,backend:IS_MOBILE?'wasm':'webgl',backendLocked:false,smartCrop:false};
 const tune={...TUNE_DEFAULTS};
 let tuneOpen=false,maskTmpCanvas=null;
 let handCanvas=null,handCtx=null,lastInW=640,lastInH=480,stopFrames=0,noHandFrames=0,resHintShown=false;
@@ -1010,36 +1010,33 @@ function startRAF(){
         if(detector){
           const vw=videoEl.videoWidth||640,vh=videoEl.videoHeight||480;
           frameNo++;
-          // dynamic ROI: once a hand is found, crop around it (bigger to the
-          // model = better tracking). While searching, alternate between the
-          // full frame (near hands) and the calibrated zone (far hands).
-          let cx0=0,cy0=0,cw=1,ch=1;
-          if(roi){
-            // clamp BOTH edges into [0,1] – an ROI that drifted outside the
-            // frame produced a negative-width crop canvas and a permanent
-            // processing error (the throw also blocked ROI expiry)
-            const s=roi.size;
-            const x1=Math.min(Math.max(roi.cx-s/2,0),1),y1=Math.min(Math.max(roi.cy-s/2,0),1);
-            const x2=Math.min(Math.max(roi.cx+s/2,0),1),y2=Math.min(Math.max(roi.cy+s/2,0),1);
-            if(x2-x1<0.1||y2-y1<0.1){roi=null;}
-            else{cx0=x1;cy0=y1;cw=x2-x1;ch=y2-y1;}
+          let cx0=0,cy0=0,cw=1,ch=1,input=videoEl;
+          lastInW=vw;lastInH=vh;
+          // Smart region-crop (ROI/calib zone) is OPT-IN and default OFF: the
+          // crop path alternated the model input between video and canvas
+          // every frame once the hand left, which poisoned WASM ("worked
+          // until I removed my hand"). Feeding the raw video element every
+          // frame keeps the pipeline identical whether or not a hand is
+          // present – the single most stable configuration.
+          if(tune.smartCrop&&!cropDisabled){
+            if(roi){
+              const s=roi.size;
+              const x1=Math.min(Math.max(roi.cx-s/2,0),1),y1=Math.min(Math.max(roi.cy-s/2,0),1);
+              const x2=Math.min(Math.max(roi.cx+s/2,0),1),y2=Math.min(Math.max(roi.cy+s/2,0),1);
+              if(x2-x1<0.1||y2-y1<0.1){roi=null;}
+              else{cx0=x1;cy0=y1;cw=x2-x1;ch=y2-y1;}
+            }
+            if(!roi&&frameNo%2===0&&calibPoints.length===4&&calibPoints[0].fx!=null){
+              const xs=calibPoints.map(p=>p.fx),ys=calibPoints.map(p=>p.fy),pad=0.12;
+              cx0=Math.max(0,Math.min(...xs)-pad);cy0=Math.max(0,Math.min(...ys)-pad);
+              cw=Math.min(1,Math.max(...xs)+pad)-cx0;ch=Math.min(1,Math.max(...ys)+pad)-cy0;
+              if(cw<0.15||ch<0.15){cx0=0;cy0=0;cw=1;ch=1;}
+            }
           }
-          if(!roi&&frameNo%2===0&&calibPoints.length===4&&calibPoints[0].fx!=null){
-            const xs=calibPoints.map(p=>p.fx),ys=calibPoints.map(p=>p.fy),pad=0.12;
-            cx0=Math.max(0,Math.min(...xs)-pad);cy0=Math.max(0,Math.min(...ys)-pad);
-            cw=Math.min(1,Math.max(...xs)+pad)-cx0;ch=Math.min(1,Math.max(...ys)+pad)-cy0;
-            if(cw<0.15||ch<0.15){cx0=0;cy0=0;cw=1;ch=1;}
-          }
+          // Optional fixed-ratio downscale of the (usually full) frame for FPS
+          // on weak devices. Same dims every frame → consistent, stable.
           const f=tune.handRes==='half'?2:tune.handRes==='third'?3:1;
-          let input=videoEl;
-          if(cropDisabled){
-            // some devices corrupt canvas-processed pixels – feed the raw
-            // video element only (no crop, no downscale)
-            cx0=0;cy0=0;cw=1;ch=1;
-          }
-          if(!cropDisabled&&(f!==1||cw<1||ch<1)){
-            // enforce a min size while PRESERVING aspect – clamping each axis
-            // independently would distort the crop→frame landmark mapping
+          if(f!==1||cw<1||ch<1){
             let iw0=vw*cw/f,ih0=vh*ch/f;
             const up=Math.max(1,96/iw0,96/ih0);
             const iw=Math.max(1,Math.floor(iw0*up)),ih=Math.max(1,Math.floor(ih0*up));
@@ -1047,8 +1044,6 @@ function startRAF(){
             if(handCanvas.width!==iw||handCanvas.height!==ih){handCanvas.width=iw;handCanvas.height=ih;}
             handCtx.drawImage(videoEl,cx0*vw,cy0*vh,cw*vw,ch*vh,0,0,iw,ih);
             input=handCanvas;lastInW=iw;lastInH=ih;
-          }else{
-            lastInW=vw;lastInH=vh;
           }
           lastCrop={x:cx0,y:cy0,w:cw,h:ch};
           lastInputCanvas=(input!==videoEl);
