@@ -300,7 +300,7 @@ let tuneOpen=false,maskTmpCanvas=null;
 let handCanvas=null,handCtx=null,lastInW=640,lastInH=480,stopFrames=0,noHandFrames=0,resHintShown=false;
 let lastCrop={x:0,y:0,w:1,h:1};
 let roi=null,roiLost=0,frameNo=0,nanFrames=0,backendFixStage=0,backendFixBusy=false,goodFrames=0,nanLockWarned=false;
-let corruptCanvas=0,corruptVideo=0,cropDisabled=false,lastInputCanvas=false,nanHealTried=false,detectorRebuilding=false;
+let corruptCanvas=0,corruptVideo=0,cropDisabled=false,lastInputCanvas=false,detectorRebuilding=false,healCount=0,goodStreak=0,nanGaveUp=false;
 const HAND_C=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
 const fps={loop:0,cam:0,_l:0,_c:0,_t:0};
 function loadTune(){try{const s=JSON.parse(localStorage.getItem('airdraw_tune'));if(s)for(const k in TUNE_DEFAULTS)if(typeof s[k]===typeof TUNE_DEFAULTS[k])tune[k]=s[k];}catch(e){}}
@@ -458,12 +458,15 @@ document.querySelectorAll('#tnModel button').forEach(b=>onTap(b,()=>{
   toast(wantFull?'מודל מדויק – טוען...':'מודל מהיר – טוען...');
 }));
 syncModelBtns();
-async function recreateDetector(){
+async function recreateDetector(isHeal){
   if(!window.handPoseDetection)return;
   if(detector){try{detector.dispose();}catch(e){}detector=null;}
   // fresh tracking + corruption state for the new model/engine, so a rebuild
   // truly starts clean instead of inheriting a poisoned "corrupt" verdict
-  roi=null;roiLost=0;nanFrames=0;corruptCanvas=0;corruptVideo=0;goodFrames=0;nanHealTried=false;
+  roi=null;roiLost=0;nanFrames=0;corruptCanvas=0;corruptVideo=0;goodFrames=0;
+  // a MANUAL change (engine/model button) is a clean slate; a heal rebuild
+  // keeps the heal budget so repeated failures still escalate
+  if(!isHeal){healCount=0;goodStreak=0;nanGaveUp=false;}
   dbSet('dbMp','טוען מודל...','warn');
   try{
     detector=await handPoseDetection.createDetector(handPoseDetection.SupportedModels.MediaPipeHands,{runtime:'tfjs',modelType:tune.modelFull?'full':'lite',maxHands:1});
@@ -1123,26 +1126,35 @@ function onHandResults(results){
       toast('🔧 זוהתה רגישות לעיבוד קנבס במכשיר – החיתוך החכם כובה, מנסה וידאו ישיר',5000);
       return;
     }
-    nanFrames++;
-    // STEP 1 (nanFrames 20): the engine state itself is poisoned – rebuild
-    // the detector in place. This usually clears WASM/WebGL corruption
-    // WITHOUT dropping to the slow engine, so the good stable model survives
-    if(nanFrames===20&&!nanHealTried&&!detectorRebuilding&&window.handPoseDetection){
-      nanHealTried=true;detectorRebuilding=true;
-      dbSet('dbMp','מאתחל מזהה...','warn');toast('🔧 מאתחל את המזהה מחדש...',3000);
-      recreateDetector().finally(()=>{detectorRebuilding=false;});
-      return;
-    }
-    // STEP 2 (nanFrames 45): rebuild didn't help → engine-level problem
-    if(nanFrames>=45){
-      if(backendFixStage>=2){
-        // locked by the user – never auto-switch; suggest once instead
-        if(!nanLockWarned){nanLockWarned=true;toast('⚠️ המנוע הנעול מוציא פלט פגום – נסה מנוע 🐢 בסיסי ב-⚙️',6000);}
-      }else fixBackend();
+    nanFrames++;goodStreak=0;
+    if(nanFrames>=20&&!detectorRebuilding){
+      // corruption survives across intermittent good frames – count heals
+      // cumulatively (a single good frame must NOT reset the escalation),
+      // otherwise a flapping detector rebuilds forever and never recovers
+      if(healCount<2&&window.handPoseDetection){
+        healCount++;detectorRebuilding=true;nanFrames=0;
+        // also drop the canvas crop path – it's a common corruption source
+        cropDisabled=true;
+        dbSet('dbMp','מאתחל מזהה...','warn');toast('🔧 מאתחל את המזהה מחדש... ('+healCount+'/2)',3000);
+        recreateDetector(true).finally(()=>{detectorRebuilding=false;});
+        return;
+      }
+      // two rebuilds didn't stick → decisive, one-way escalation
+      nanFrames=0;
+      if(!tune.backendLocked&&backendFixStage<2){
+        toast('🔧 הזיהוי לא יציב – עובר למצב עיבוד יציב יותר',4000);
+        fixBackend();
+      }else if(!nanGaveUp){
+        nanGaveUp=true;
+        toast('⚠️ זיהוי היד לא יציב במכשיר זה. נסה מצב 🐢 בסיסי ב-⚙️, או עבור ל-🔴 סמן אדום שעובד מצוין',9000);
+      }
     }
     return;
   }
-  nanFrames=0;roiLost=0;nanHealTried=false;
+  nanFrames=0;roiLost=0;
+  // engine considered healthy only after a sustained good streak – then the
+  // heal budget and give-up latch reset for a genuinely fresh episode
+  if(++goodStreak>=60){healCount=0;nanGaveUp=false;goodStreak=60;}
   if(lastInputCanvas)corruptCanvas=0;else corruptVideo=0;
   // auto-persist a proven backend – but NEVER overwrite a user-locked choice
   if(++goodFrames===60&&!tune.backendLocked){
