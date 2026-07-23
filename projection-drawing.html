@@ -38,7 +38,8 @@ body{background:#1a1a2e;color:#eee;font-family:'Segoe UI',Arial,sans-serif;overf
 .calib-dot.pending{background:#ffffff22}
 @keyframes pulse{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.28)}}
 #calibInstructions{position:absolute;top:14px;left:50%;transform:translateX(-50%);background:#000d;color:#fff;padding:10px 16px;border-radius:12px;font-size:.93em;text-align:center;z-index:11;max-width:88vw;pointer-events:none}
-#calibBar{position:fixed;bottom:max(26px,env(safe-area-inset-bottom,26px));left:50%;transform:translateX(-50%);z-index:12;display:flex;gap:12px}
+#calibBar{position:fixed;bottom:max(26px,env(safe-area-inset-bottom,26px));left:50%;transform:translateX(-50%);z-index:12;display:flex;gap:10px;flex-wrap:wrap;justify-content:center;max-width:96vw}
+#calibSkip{padding:14px 20px;background:#0f3460;color:#8fd;border:none;border-radius:50px;font-size:1em;cursor:pointer}
 #calibUndo{padding:16px 24px;background:#333;color:#ccc;border:none;border-radius:50px;font-size:1.05em;cursor:pointer;display:none}
 #calibBtn{padding:16px 36px;background:#e94560;color:#fff;border:none;border-radius:50px;font-size:1.15em;font-weight:bold;cursor:pointer;display:none;box-shadow:0 0 20px #e9456088}
 #screenDraw{background:#000;position:relative}
@@ -138,6 +139,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
   <div id="calibPoints"></div>
   <div id="calibInstructions">לחץ על <strong>פינה 1</strong></div>
   <div id="calibBar">
+    <button id="calibSkip">🙅 בלי כיול – ציור ישיר</button>
     <button id="calibUndo">↩ בטל</button>
     <button id="calibBtn">✅ אישור – המשך</button>
   </div>
@@ -577,7 +579,7 @@ function drawMiniMap(rawPt){
 
 // ---- step 2: calibration (uses the stream chosen in step 1) ----
 function startCalibration(stream){
-  showScreen('screenCalib');calibPoints=[];outStreak=0;outWarned=false;
+  showScreen('screenCalib');calibPoints=[];homography=null;outStreak=0;outWarned=false;
   // a fresh calibration defines the correct mapping – stale manual flips
   // from a previous run would corrupt it
   flipH=false;flipV=false;
@@ -675,7 +677,7 @@ function updateCalibUI(){
   }
 }
 onTap(document.getElementById('calibUndo'),()=>{if(calibPoints.length===0)return;calibPoints.pop();updateCalibUI();});
-onTap(document.getElementById('calibBtn'),()=>{
+function finishCalib(){
   const vid=document.getElementById('calibVideo');
   // measure ambient light NOW, while the video is still attached
   ambientLum=measureLuminance(vid);
@@ -686,6 +688,14 @@ onTap(document.getElementById('calibBtn'),()=>{
   const zone=document.getElementById('calibTapZone');
   if(zone._rm){zone._rm();zone._rm=null;}
   showSetupScreen();
+}
+onTap(document.getElementById('calibBtn'),finishCalib);
+// skip calibration entirely – draw directly (no wall/projection mapping),
+// the whole frame maps to the whole canvas. Ideal for plain selfie drawing.
+onTap(document.getElementById('calibSkip'),()=>{
+  homography=null;calibPoints=[];
+  toast('ציור ישיר – בלי כיול פינות',3000);
+  finishCalib();
 });
 
 // ---- step 3: detection method + tuning choice ----
@@ -1189,11 +1199,15 @@ function onHandResults(results){
   const palmSpan=dpx(kp[9],wristK)||1;
   const fist=extCount===0;
   const pinch=!fist&&dpx(kp[4],kp[8])<palmSpan*(0.2+senseVal*0.25);
-  const wantDraw=tune.gestureMode==='always'?true:(!fist&&(extCount>=tune.minFingers||pinch));
-  // debounce stop: gesture must hold 3 frames before drawing stops (prevents flicker in dim light)
+  // "always" = draw whenever the hand is OPEN, stop on a closed fist (so
+  // the fist gesture works in both modes now). "fingers" = need the set
+  // number of open fingers to draw.
+  const wantDraw=tune.gestureMode==='always'?(!fist):(!fist&&(extCount>=tune.minFingers||pinch));
+  // debounce stop: fist must hold 4 frames before drawing stops (prevents a
+  // momentary mis-count from breaking a stroke)
   if(wantDraw)stopFrames=0;else stopFrames++;
-  const shouldDraw=wantDraw||(drawing&&stopFrames<3);
-  dbSet('dbGest',shouldDraw?(tune.gestureMode==='always'?'🖐 מצייר':(pinch?'🤏 צביטה':`🖐 ${extCount} אצבעות`)+' – מצייר'):`✊ עצור (${extCount} אצבעות)`,shouldDraw?'ok':'');
+  const shouldDraw=wantDraw||(drawing&&stopFrames<4);
+  dbSet('dbGest',shouldDraw?(pinch?'🤏 צביטה':`🖐 ${extCount} אצבעות`)+' – מצייר':`✊ אגרוף – עצור`,shouldDraw?'ok':'');
   drawSkeleton(lm,W,H);
   if(tuneOpen&&detectMode==='hand')renderHandPreview(lm,rawScore,extCount);
   onDrawResult({x:lm[8].x,y:lm[8].y},shouldDraw);
@@ -1230,6 +1244,9 @@ function onDrawResult(pt,shouldDraw){
   if(detectMode==='color'){dbSet('dbHand','סמן ✓','ok');dbSet('dbGest','🔴 מצייר','ok');}
   let nx=pt.x,ny=pt.y;
   if(homography){const m=applyH(homography,pt.x,pt.y);nx=m.x;ny=m.y;}
+  // direct-draw mode (no calibration): selfie mirroring isn't baked into a
+  // homography, so apply it here to keep the drawing mirror-natural
+  else if(selfieMode)nx=1-nx;
   if(flipH)nx=1-nx;
   if(flipV)ny=1-ny;
   if(tuneOpen){const el=document.getElementById('tnMap');if(el)el.textContent=isFinite(nx)&&isFinite(ny)?`(${nx.toFixed(2)}, ${ny.toFixed(2)})`+(nx>=0&&nx<=1&&ny>=0&&ny<=1?' ✓ בפנים':' ✗ בחוץ'):'לא יציב';}
