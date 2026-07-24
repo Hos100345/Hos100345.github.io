@@ -838,6 +838,19 @@ async function openCamera(deviceId){
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
 
 const BACKEND_LABEL={webgl:'מהיר ביותר 🚀',wasm:'יציב 🛡️',cpu:'בסיסי 🐢'};
+// Mitigate the mobile-GPU precision bug (landmarks "spin" then turn to NaN):
+// force full-float32 textures and disable packing/f16 fallbacks that some
+// Mali/Adreno drivers compute wrongly. Must run BEFORE the webgl backend
+// initialises its textures. Harmless if the GPU genuinely supports float32.
+function tuneWebGLPrecision(){
+  try{
+    if(window.tf&&tf.env){
+      tf.env().set('WEBGL_FORCE_F16_TEXTURES',false);
+      tf.env().set('WEBGL_RENDER_FLOAT32_ENABLED',true);
+      tf.env().set('WEBGL_PACK',false);
+    }
+  }catch(e){}
+}
 const WASM_DIR_1='https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@4.17.0/dist/';
 const WASM_DIR_2='https://unpkg.com/@tensorflow/tfjs-backend-wasm@4.17.0/dist/';
 function setWasmPathsSafe(prefix){
@@ -875,6 +888,7 @@ async function applyBackend(name){
     if(name==='wasm'){
       await activateWasm();
     }else{
+      if(name==='webgl')tuneWebGLPrecision();
       const ok=await tf.setBackend(name);
       if(!ok)throw new Error('הדפדפן דחה את המנוע');
     }
@@ -922,7 +936,7 @@ function loadTFHandpose(){
     .then(async()=>{
       // honor the saved (possibly locked) backend choice
       const want=tune.backend||'webgl';
-      const tryB=async name=>{try{if(name==='wasm'){await activateWasm();return true;}return await tf.setBackend(name);}catch(e){return false;}};
+      const tryB=async name=>{try{if(name==='wasm'){await activateWasm();return true;}if(name==='webgl')tuneWebGLPrecision();return await tf.setBackend(name);}catch(e){return false;}};
       let b=want,ok=await tryB(b);
       if(!ok&&tune.backendLocked)ok=await tryB(b);// locked engine: retry once before any fallback
       if(!ok){
