@@ -446,6 +446,22 @@ function dcfgSave(patch){
     return false;
   };
 
+  // ── קוד גישה מסוג כרטיס/שותף — נבדק בשרת מול טבלת dobble_access_codes ──
+  window.tryAccessCode=async function(code){
+    try{
+      const cfg=window.SUPABASE_CONFIG||{};
+      const base=cfg.url||'';const key=cfg.anonKey||'';
+      if(!base||!key)return null;
+      const res=await fetch(base+'/functions/v1/validate-code',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','apikey':key,'Authorization':'Bearer '+key},
+        body:JSON.stringify({code})
+      });
+      if(!res.ok)return null;
+      return await res.json();
+    }catch(e){return null;}
+  };
+
   // ההסבר מוצג לפני הזנת הקוד — בביקור הראשון, מעל מסך הנעילה
   if(!localStorage.getItem('dobble_onboarded')){
     window.addEventListener('DOMContentLoaded',()=>{
@@ -476,6 +492,18 @@ function dcfgSave(patch){
       try{ok=await window.subscriberLogin(v);}catch(e){ok=false;}   // הצלחה → SIGNED_IN פותח (ואם פג תוקף — פופאפ)
       submitting=false;err.textContent='';
       if(ok)return;
+    }
+    // קוד גישה חדש (כרטיס/שותף) — אימות מול validate-code
+    if(window.SB&&v.length>=3){
+      submitting=true;
+      err.style.color='#a5b4fc';err.textContent='בודק…';
+      let res=null;
+      try{res=await window.tryAccessCode(v);}catch(e){res=null;}
+      submitting=false;err.textContent='';
+      if(res&&res.valid){
+        const label=res.type==='partner'?'קוד שותף':'כרטיס גישה';
+        doUserUnlock(v,label);return;
+      }
     }
     // קוד שגוי / קצר / אין חיבור — חלון חידוש
     window.showRenewPopup&&window.showRenewPopup('wrong');
