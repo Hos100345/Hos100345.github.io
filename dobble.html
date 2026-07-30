@@ -191,14 +191,23 @@
     .gallery-count{font-size:.85rem;font-weight:700;color:var(--indigo)}
     .under-lim{font-size:.78rem;color:#92400e;background:var(--gold-light);padding:.2rem .6rem;border-radius:100px}
     .gallery-grid{display:flex;gap:.6rem;flex-wrap:wrap;padding:.65rem;background:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.55);border-radius:var(--rs);min-height:70px;align-items:flex-start}
-    .g-item{position:relative;flex-shrink:0;width:72px;text-align:center}
+    .g-item{position:relative;flex-shrink:0;width:72px;text-align:center;transition:opacity var(--tr)}
     .g-item canvas{width:72px;height:72px;border-radius:6px;display:block;border:2px solid var(--border);box-shadow:var(--sh)}
     .g-item.crop canvas{border-radius:50%;border-color:var(--indigo)}
     .g-item.source canvas{border-style:dashed;border-color:#f59e0b;opacity:.7}
+    .g-item.off{opacity:.4}
     .g-source-lbl{font-size:.6rem;color:#92400e;background:#fef3c7;border-radius:4px;padding:1px 4px;margin-top:2px;display:inline-block}
     .g-del{position:absolute;top:-5px;inset-inline-end:-5px;width:18px;height:18px;background:#ef4444;color:#fff;border-radius:50%;font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;line-height:1;box-shadow:0 1px 3px rgba(0,0,0,.25)}
-    .g-edit{position:absolute;bottom:-5px;inset-inline-end:-5px;width:20px;height:20px;background:var(--indigo);color:#fff;border-radius:50%;font-size:.72rem;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;line-height:1;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+    .g-edit{position:absolute;bottom:-6px;inset-inline-end:-6px;width:24px;height:24px;background:var(--indigo);color:#fff;border-radius:50%;font-size:.85rem;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid #fff;line-height:1;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+    .g-edit:hover{transform:scale(1.15)}
+    .g-check{position:absolute;top:-5px;inset-inline-start:-5px;width:18px;height:18px;margin:0;cursor:pointer;accent-color:var(--indigo)}
     .g-name{font-size:.58rem;color:var(--muted);margin-top:.2rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:72px}
+    .gallery-bulk{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem}
+    .g-bulk-btn{font-size:.75rem;font-weight:700;padding:.32rem .75rem;border-radius:100px;border:1.5px solid var(--border);background:rgba(255,255,255,.6);color:var(--muted);cursor:pointer;transition:all var(--tr);font-family:inherit}
+    .g-bulk-btn:hover{border-color:var(--indigo);color:var(--indigo)}
+    .g-sel-count{font-size:.78rem;color:var(--muted)}
+    .crop-hint{display:flex;align-items:center;justify-content:space-between;gap:.6rem;background:var(--gold-light);color:#92400e;border:1px solid #fbbf24;border-radius:var(--rs);padding:.55rem .8rem;font-size:.82rem;margin-bottom:.5rem}
+    .crop-hint button{background:none;border:none;color:#92400e;cursor:pointer;font-size:.9rem;line-height:1;flex-shrink:0;padding:0}
 
     /* ── V4: EXTRACTOR (used in crop modal) ── */
     .ext-wrap{margin-top:.5rem}
@@ -598,6 +607,15 @@ function dcfgSave(patch){
         <div class="og-t">📦 מאגר נכסים</div>
         <span class="gallery-count" id="gallery-count">0 נכסים</span>
         <span class="under-lim" id="under-lim" style="display:none"></span>
+      </div>
+      <div id="crop-hint" class="crop-hint" style="display:none">
+        <span>💡 יש לך תמונות שאינן מרובעות — לחצו על <strong>✂</strong> ליד תמונה כדי לחתוך ולמקד את הסמל.</span>
+        <button type="button" id="crop-hint-x" title="סגור">✕</button>
+      </div>
+      <div class="gallery-bulk" id="gallery-bulk">
+        <button type="button" class="g-bulk-btn" id="btn-select-all">☑️ סמן הכל</button>
+        <button type="button" class="g-bulk-btn" id="btn-clear-all">◻️ נקה הכל</button>
+        <span class="g-sel-count" id="g-sel-count"></span>
       </div>
       <div class="gallery-grid" id="gallery-grid"></div>
     </div>
@@ -1047,7 +1065,13 @@ const SB_BUCKET='symbols';
 const ORDERS=[{q:2,total:7,spc:3},{q:3,total:13,spc:4},{q:4,total:21,spc:5},{q:5,total:31,spc:6},{q:7,total:57,spc:8}];
 const CARD_PX=500;
 const IMG_PX=400;
+const LOAD_MAX=1200; // צד ארוך מקסימלי בטעינה — שומר על יחס גובה-רוחב (לא כופה ריבוע)
 const A4_W=210,A4_H=297;
+
+function fitLongSide(w,h,max){
+  const scale=Math.min(1,max/Math.max(w,h));
+  return{w:Math.max(1,Math.round(w*scale)),h:Math.max(1,Math.round(h*scale))};
+}
 
 function gf4a(a,b){return a^b}
 function gf4m(a,b){
@@ -1166,7 +1190,7 @@ function drawCard(canvas,layout,imgs,shape,hitIdx){
       ctx.beginPath();ctx.arc(0,0,pp.hs*t.sc*1.35,0,Math.PI*2);
       ctx.fillStyle='rgba(253,224,71,.28)';ctx.fill();ctx.shadowBlur=0;
     }
-    ctx.drawImage(img,-ds/2,-ds/2,ds,ds);
+    drawCover(ctx,img,-ds/2,-ds/2,ds);
     ctx.restore();
   }
 }
@@ -1221,7 +1245,7 @@ async function addFiles(files){
     try{
       const imgEl=await loadImgFile(f,url);
       const thumb=makeThumb(imgEl);
-      S.assets.push({id:++S.idSeq,type:'image',name:f.name,url,thumb,imgEl});
+      S.assets.push({id:++S.idSeq,type:'image',name:f.name,url,thumb,imgEl,selected:true});
       okCount++;
       renderGallery();updateCounter();
     }catch(e){URL.revokeObjectURL(url);failedNames.push(f.name);console.warn('upload failed:',f.name,e?.message||e);}
@@ -1254,14 +1278,11 @@ async function loadImgFile(f,url){
     try{return await loadImg(jUrl);}finally{URL.revokeObjectURL(jUrl);}
   }
   if(typeof createImageBitmap==='function'){
-    // Try with resize options (most efficient)
-    try{return await createImageBitmap(f,{resizeWidth:IMG_PX,resizeHeight:IMG_PX,resizeQuality:'high'});}
-    catch{}
-    // Some browsers/formats don't support resize options — try without them
     try{
       const bmp=await createImageBitmap(f);
-      const c=document.createElement('canvas');c.width=c.height=IMG_PX;
-      c.getContext('2d').drawImage(bmp,0,0,IMG_PX,IMG_PX);bmp.close&&bmp.close();return c;
+      const{w,h}=fitLongSide(bmp.width,bmp.height,LOAD_MAX);
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(bmp,0,0,w,h);bmp.close&&bmp.close();return c;
     }catch{}
   }
   // Final fallback: via HTMLImageElement + blob URL
@@ -1270,7 +1291,7 @@ async function loadImgFile(f,url){
 
 function makeThumb(imgEl){
   const c=document.createElement('canvas');c.width=c.height=72;
-  c.getContext('2d').drawImage(imgEl,0,0,72,72);
+  drawCover(c.getContext('2d'),imgEl,0,0,72);
   return c;
 }
 
@@ -1282,15 +1303,26 @@ function renderGallery(){
   gallery.style.display='';
   S.assets.forEach(a=>{
     const item=document.createElement('div');
-    item.className='g-item'+(a.type==='crop'?' crop':a.isCropSource?' source':'');
+    const isOn=a.selected!==false;
+    item.className='g-item'+(a.type==='crop'?' crop':a.isCropSource?' source':'')+(!a.isCropSource&&!isOn?' off':'');
     const thumbCv=document.createElement('canvas');thumbCv.width=thumbCv.height=72;
-    thumbCv.getContext('2d').drawImage(a.imgEl,0,0,72,72);
+    drawCover(thumbCv.getContext('2d'),a.imgEl,0,0,72);
     item.appendChild(thumbCv);
+    if(!a.isCropSource){
+      const chk=document.createElement('input');chk.type='checkbox';chk.className='g-check';
+      chk.title='כלול במשחק';chk.checked=isOn;
+      chk.addEventListener('change',()=>{
+        a.selected=chk.checked;
+        item.classList.toggle('off',!chk.checked);
+        updateCounter();schedIdbSave();
+      });
+      item.appendChild(chk);
+    }
     const del=document.createElement('button');del.className='g-del';del.textContent='×';del.title='הסר';
     del.addEventListener('click',()=>removeAsset(a.id));
     item.appendChild(del);
     if(a.type==='image'){
-      const edit=document.createElement('button');edit.className='g-edit';edit.textContent='✂';edit.title='הפק סמלים';
+      const edit=document.createElement('button');edit.className='g-edit';edit.textContent='✂';edit.title='חיתוך ומיקוד תמונה';
       edit.addEventListener('click',()=>openCropModal(a.id));
       item.appendChild(edit);
     }
@@ -1304,10 +1336,36 @@ function renderGallery(){
   });
 }
 
+function updateCropHint(){
+  const hint=document.getElementById('crop-hint');
+  if(!hint)return;
+  if(localStorage.getItem('dobble_hide_crop_hint')==='1'){hint.style.display='none';return;}
+  const hasNonSquare=S.assets.some(a=>a.type==='image'&&!a.isCropSource&&
+    Math.abs(imgNatW(a.imgEl)-imgNatH(a.imgEl))>imgNatW(a.imgEl)*0.05);
+  hint.style.display=hasNonSquare?'flex':'none';
+}
+document.getElementById('crop-hint-x').addEventListener('click',()=>{
+  localStorage.setItem('dobble_hide_crop_hint','1');
+  document.getElementById('crop-hint').style.display='none';
+});
+
+document.getElementById('btn-select-all').addEventListener('click',()=>{
+  S.assets.forEach(a=>{if(!a.isCropSource)a.selected=true;});
+  renderGallery();updateCounter();schedIdbSave();
+});
+document.getElementById('btn-clear-all').addEventListener('click',()=>{
+  S.assets.forEach(a=>{if(!a.isCropSource)a.selected=false;});
+  renderGallery();updateCounter();schedIdbSave();
+});
+
 function updateCounter(){
-  const n=S.assets.filter(a=>!a.isCropSource).length;
+  const usable=S.assets.filter(a=>!a.isCropSource);
+  const n=usable.filter(a=>a.selected!==false).length;
   const nSrc=S.assets.filter(a=>a.isCropSource).length;
   document.getElementById('gallery-count').textContent=nSrc?`${n} סמלים · ${nSrc} מקורות`:`${n} סמלים`;
+  const selEl=document.getElementById('g-sel-count');
+  if(selEl)selEl.textContent=usable.length?`נבחרו ${n} מתוך ${usable.length}`:'';
+  updateCropHint();
   const ulEl=document.getElementById('under-lim');
   const best=bestOrder(n),nxt=nextOrder(n);
   if(n>0&&!best){ulEl.style.display='';ulEl.textContent=`נדרשות לפחות 7 — הוסף עוד ${7-n}`;}
@@ -1391,7 +1449,7 @@ async function generate(){
   S.seed=Math.floor(Math.random()*90000)+10000;
   S.layouts=buildLayouts(S.deck,S.seed,S.sMin,S.sMax);
   setp(15,'מכין תמונות…');
-  S.imgEls=S.assets.filter(a=>!a.isCropSource).slice(0,S.order.total).map(a=>a.imgEl);
+  S.imgEls=S.assets.filter(a=>!a.isCropSource&&a.selected!==false).slice(0,S.order.total).map(a=>a.imgEl);
   setp(35,'מצייר קלפים…');
   S.canvases=[];S.sel=[];
   const grid=document.getElementById('cgrid');
@@ -1467,7 +1525,7 @@ function openVerify(c1,c2){
   if(sym>=0&&S.imgEls[sym]){
     mct.beginPath();mct.arc(40,40,37,0,Math.PI*2);mct.fillStyle='#FEF9C3';mct.fill();
     mct.strokeStyle='#F59E0B';mct.lineWidth=3;mct.stroke();
-    mct.drawImage(S.imgEls[sym],8,8,64,64);
+    drawCover(mct,S.imgEls[sym],8,8,64);
   }
   const symAsset=sym>=0?S.assets.find(a=>a.imgEl===S.imgEls[sym]):null;
   document.getElementById('mc-txt').textContent=sym>=0?`#${sym+1} · ${symAsset?.name||''}`:'—';
@@ -1510,6 +1568,7 @@ function resetState(){
   document.getElementById('gallery-grid').innerHTML='';
   document.getElementById('gallery-count').textContent='0 נכסים';
   document.getElementById('under-lim').style.display='none';
+  document.getElementById('g-sel-count').textContent='';
 }
 let _exportUrl=null;
 function resetExport(){
@@ -1939,6 +1998,15 @@ async function expDXF(setp){
 function imgNatW(el){return el.naturalWidth||el.width;}
 function imgNatH(el){return el.naturalHeight||el.height;}
 
+// ציור "cover" (מילוי יעד ריבועי ללא מעיכה, עם חיתוך מרכזי) — למניעת עיוות תמונות לא-ריבועיות
+function drawCover(ctx,img,dx,dy,dSize){
+  const iw=imgNatW(img),ih=imgNatH(img);
+  const s=Math.max(dSize/iw,dSize/ih);
+  const sw=dSize/s,sh=dSize/s;
+  const sx=(iw-sw)/2,sy=(ih-sh)/2;
+  ctx.drawImage(img,sx,sy,sw,sh,dx,dy,dSize,dSize);
+}
+
 function openCropModal(assetId){
   const asset=S.assets.find(a=>a.id===assetId);
   if(!asset||asset.type!=='image')return;
@@ -2264,7 +2332,7 @@ document.getElementById('btn-crop-add').addEventListener('click',()=>{
   CM.crops.forEach((c,i)=>{
     const fullEl=cropExtractFull(CM.srcImg,c);
     const thumb=cropExtractThumb(CM.srcImg,c);
-    S.assets.push({id:++S.idSeq,type:'crop',name:`${srcName} #${i+1}`,url:'',thumb,imgEl:fullEl,srcAssetId:srcId});
+    S.assets.push({id:++S.idSeq,type:'crop',name:`${srcName} #${i+1}`,url:'',thumb,imgEl:fullEl,srcAssetId:srcId,selected:true});
   });
   if(asset) asset.isCropSource=true;
   const nAdded=CM.crops.length;
@@ -2342,7 +2410,7 @@ async function loadPack(pk,btn){
   for(const url of pk.images){
     try{
       const imgEl=await loadImgUrl(url);
-      S.assets.push({id:++S.idSeq,type:'image',name:pk.name+' '+(ok+1),url:'',thumb:makeThumb(imgEl),imgEl});
+      S.assets.push({id:++S.idSeq,type:'image',name:pk.name+' '+(ok+1),url:'',thumb:makeThumb(imgEl),imgEl,selected:true});
       ok++;
       renderGallery();updateCounter();
     }catch(e){fail++;console.warn('pack image failed:',url);}
@@ -2373,10 +2441,11 @@ async function idbOpen(){
 }
 function assetsToRows(){
   return S.assets.map(a=>{
-    const cv=document.createElement('canvas');cv.width=cv.height=IMG_PX;
-    cv.getContext('2d').drawImage(a.imgEl,0,0,IMG_PX,IMG_PX);
+    const w=imgNatW(a.imgEl),h=imgNatH(a.imgEl);
+    const cv=document.createElement('canvas');cv.width=w;cv.height=h;
+    cv.getContext('2d').drawImage(a.imgEl,0,0,w,h);
     return{id:a.id,type:a.type,name:a.name,dataURL:cv.toDataURL('image/jpeg',.82),
-           srcAssetId:a.srcAssetId||null,isCropSource:a.isCropSource||false};
+           srcAssetId:a.srcAssetId||null,isCropSource:a.isCropSource||false,selected:a.selected!==false};
   });
 }
 let _idbTimer=0;
@@ -2402,7 +2471,7 @@ async function idbLoad(){
         const imgEl=await loadImg(d.dataURL);
         const thumb=makeThumb(imgEl);
         S.assets.push({id:d.id,type:d.type,name:d.name,url:'',thumb,imgEl,
-                        srcAssetId:d.srcAssetId||undefined,isCropSource:d.isCropSource||false});
+                        srcAssetId:d.srcAssetId||undefined,isCropSource:d.isCropSource||false,selected:d.selected!==false});
         if(d.id>=S.idSeq)S.idSeq=d.id;
       }catch(e){console.warn('idbLoad item:',e);}
     }
@@ -2533,7 +2602,7 @@ async function applyDesignToState(d){
     try{
       const imgEl=await loadImg(row.dataURL);
       S.assets.push({id:row.id,type:row.type,name:row.name,url:'',thumb:makeThumb(imgEl),imgEl,
-                      srcAssetId:row.srcAssetId||undefined,isCropSource:row.isCropSource||false});
+                      srcAssetId:row.srcAssetId||undefined,isCropSource:row.isCropSource||false,selected:row.selected!==false});
       if(row.id>=S.idSeq)S.idSeq=row.id;
     }catch(e){console.warn('applyDesign item:',e);}
   }
@@ -2971,7 +3040,7 @@ async function loadSubscriberDesign(idx){
       try{
         const resp=await fetch(im.url);const blob=await resp.blob();
         const dataURL=await blobToDataURL(blob);
-        rows.push({id:im.id,name:im.name,type:im.type,dataURL,srcAssetId:im.srcAssetId||undefined,isCropSource:im.isCropSource||false});
+        rows.push({id:im.id,name:im.name,type:im.type,dataURL,srcAssetId:im.srcAssetId||undefined,isCropSource:im.isCropSource||false,selected:im.selected!==false});
       }catch(e){console.warn('sub img download',im.path,e);}
     }
     if(!rows.length){toast('לא נמצאו תמונות לעיצוב הזה','err');return;}
@@ -3223,7 +3292,7 @@ async function cloudSaveDesign(design){
     const path=`${uid}/${rowId}/${row.id}.jpg`;
     const{error:e2}=await SB.storage.from(SB_BUCKET).upload(path,dataURLtoBlob(row.dataURL),{contentType:'image/jpeg',upsert:true});
     if(e2)throw e2;
-    images.push({id:row.id,name:row.name,type:row.type,srcAssetId:row.srcAssetId||null,isCropSource:row.isCropSource||false,path});
+    images.push({id:row.id,name:row.name,type:row.type,srcAssetId:row.srcAssetId||null,isCropSource:row.isCropSource||false,selected:row.selected!==false,path});
   }
   // 3) עדכון השורה עם נתיבי התמונות
   await SB.from('designs').update({game_data:{settings:design.settings||{},symbolCount:images.length,images}}).eq('id',rowId);
@@ -3239,7 +3308,7 @@ async function cloudFetchDesign(row){
       const{data,error}=await SB.storage.from(SB_BUCKET).download(im.path);
       if(error||!data)continue;
       const dataURL=await blobToDataURL(data);
-      rows.push({id:im.id,name:im.name,type:im.type,dataURL,srcAssetId:im.srcAssetId||undefined,isCropSource:im.isCropSource||false});
+      rows.push({id:im.id,name:im.name,type:im.type,dataURL,srcAssetId:im.srcAssetId||undefined,isCropSource:im.isCropSource||false,selected:im.selected!==false});
     }catch(e){console.warn('download',im.path,e);}
   }
   return{name:row.name,date:row.created_at,rows,settings:gd.settings||{}};
@@ -3301,20 +3370,11 @@ function loadImg(url){
   return new Promise((res,rej)=>{
     const img=new Image();
     img.onload=()=>{
-      const fallback=()=>{
-        try{
-          const c=document.createElement('canvas');c.width=c.height=IMG_PX;
-          c.getContext('2d').drawImage(img,0,0,IMG_PX,IMG_PX);res(c);
-        }catch(e){rej(e);}
-      };
-      if(typeof createImageBitmap==='function'){
-        try{
-          createImageBitmap(img,{resizeWidth:IMG_PX,resizeHeight:IMG_PX,resizeQuality:'high'})
-            .then(res,fallback);
-        }catch{fallback();}
-      }else{
-        fallback();
-      }
+      try{
+        const{w,h}=fitLongSide(img.naturalWidth||img.width,img.naturalHeight||img.height,LOAD_MAX);
+        const c=document.createElement('canvas');c.width=w;c.height=h;
+        c.getContext('2d').drawImage(img,0,0,w,h);res(c);
+      }catch(e){rej(e);}
     };
     img.onerror=rej;img.src=url;
   });
