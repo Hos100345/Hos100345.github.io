@@ -381,6 +381,8 @@ function dcfgSave(patch){
   <button id="lock-go" type="button"
     style="background:#6366f1;color:#fff;font-weight:800;font-size:1.05rem;padding:.7rem 2.4rem;border:none;border-radius:100px;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(99,102,241,.5)">כניסה ✓</button>
   <div id="lock-err" style="color:#fca5a5;font-size:.88rem;min-height:1.2em"></div>
+  <button type="button" onclick="window.buyAccess()"
+    style="background:rgba(255,255,255,.12);color:#fff;font-weight:700;font-size:.95rem;padding:.6rem 1.8rem;border:2px solid rgba(255,255,255,.35);border-radius:100px;cursor:pointer;font-family:inherit">רכישת גישה</button>
   <div style="width:min(320px,80vw);height:1px;background:rgba(255,255,255,.18);margin-block:.35rem"></div>
   <div style="color:rgba(255,255,255,.88);font-size:.95rem;font-weight:600">אין לך קוד גישה?</div>
   <div style="color:rgba(255,255,255,.65);font-size:.83rem;max-width:340px;line-height:1.6">מנוי אישי — יצירת משחקים ללא הגבלה והדפסה בבית · רוצים עותק מודפס? הדפסה בבית דפוס ומשלוח עד הבית בתוספת תשלום</div>
@@ -400,6 +402,7 @@ function dcfgSave(patch){
     <div id="renew-msg" style="color:var(--muted);font-size:.96rem;line-height:1.6;margin-bottom:1.2rem">ייתכן שהקוד שגוי או שפג תוקף המנוי.</div>
     <a id="renew-wa" href="#" target="_blank" rel="noopener noreferrer"
        style="display:inline-flex;align-items:center;justify-content:center;gap:.5rem;background:#25D366;color:#fff;font-weight:700;font-size:1rem;padding:.72rem 1.5rem;border-radius:100px;text-decoration:none;margin-bottom:.85rem">💬 חידוש מנוי בוואטסאפ</a>
+    <div><button type="button" onclick="window.buyAccess()" style="background:#6366f1;color:#fff;font-weight:700;font-size:1rem;padding:.7rem 1.5rem;border:none;border-radius:100px;cursor:pointer;font-family:inherit;margin-bottom:.85rem">רכישת גישה</button></div>
     <div><button id="renew-close" type="button" style="background:none;border:none;color:var(--muted);cursor:pointer;font-family:inherit;font-size:.9rem;text-decoration:underline">סגירה</button></div>
   </div>
 </div>
@@ -469,6 +472,23 @@ function dcfgSave(patch){
       if(!res.ok)return null;
       return await res.json();
     }catch(e){return null;}
+  };
+
+  // ── רכישת גישה: יוצר דרישת תשלום ב-Morning ומפנה לקישור התשלום ──
+  window.buyAccess=async function(){
+    try{
+      const cfg=window.SUPABASE_CONFIG||{};
+      const base=cfg.url||'';const key=cfg.anonKey||'';
+      if(!base||!key){alert('חסר חיבור לשרת');return;}
+      const res=await fetch(base+'/functions/v1/create-payment',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','apikey':key,'Authorization':'Bearer '+key},
+        body:JSON.stringify({})
+      });
+      const d=await res.json().catch(()=>({}));
+      if(d&&d.url){location.href=d.url;return;}
+      alert('שגיאה ביצירת התשלום'+(d&&d.error?': '+d.error:''));
+    }catch(e){alert('שגיאה ביצירת התשלום');}
   };
 
   // ההסבר מוצג לפני הזנת הקוד — בביקור הראשון, מעל מסך הנעילה
