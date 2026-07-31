@@ -404,6 +404,50 @@ function dcfgSave(patch){
   </div>
 </div>
 
+<!-- חלון קופץ: הייצוא דורש מנוי (freemium) -->
+<div class="modal-bg" id="paywall-modal" hidden style="z-index:10001">
+  <div class="modal-card" style="max-width:420px;width:94%;text-align:center">
+    <div style="font-size:2.6rem;margin-bottom:.3rem">🔒</div>
+    <div style="font-size:1.3rem;font-weight:800;margin-bottom:.5rem">הייצוא דורש מנוי</div>
+    <div style="color:var(--muted);font-size:.96rem;line-height:1.6;margin-bottom:1.1rem">משחק 7 תמונות חינמי לגמרי, כולל הורדה. משחקים גדולים יותר פתוחים לתצוגה מקדימה לכולם — וההורדה דורשת מנוי חודשי.</div>
+    <div id="paywall-step-main">
+      <button class="btn btn-ok" id="paywall-buy" style="width:100%;justify-content:center;margin-bottom:.6rem">רכישת מנוי חודשי</button>
+      <button id="paywall-havecode" type="button" style="background:none;border:none;color:var(--indigo);cursor:pointer;font-family:inherit;font-size:.92rem;text-decoration:underline">יש לי כבר קוד</button>
+    </div>
+    <div id="paywall-step-email" hidden>
+      <div style="text-align:right;margin-bottom:.6rem">
+        <label for="paywall-email" style="display:block;font-size:.85rem;color:var(--muted);margin-bottom:.3rem">האימייל שאיתו תרצה/י לשלם</label>
+        <input id="paywall-email" type="email" inputmode="email" placeholder="name@example.com"
+          style="width:100%;box-sizing:border-box;padding:.6rem .8rem;border-radius:var(--rs);border:1.5px solid var(--border);font-family:inherit;font-size:1rem;direction:ltr;text-align:left;background:rgba(255,255,255,.85);outline:none">
+      </div>
+      <button class="btn btn-ok" id="paywall-pay" style="width:100%;justify-content:center">מעבר לתשלום</button>
+      <div id="paywall-email-msg" style="font-size:.85rem;min-height:1.3em;margin-top:.5rem"></div>
+    </div>
+    <div style="margin-top:.8rem"><button id="paywall-close" type="button" style="background:none;border:none;color:var(--muted);cursor:pointer;font-family:inherit;font-size:.9rem;text-decoration:underline">סגירה</button></div>
+  </div>
+</div>
+
+<!-- חלון קופץ: אחרי תשלום — בחירת קוד אישי -->
+<div class="modal-bg" id="claim-modal" hidden style="z-index:10001">
+  <div class="modal-card" style="max-width:420px;width:94%;text-align:center">
+    <div style="font-size:2.6rem;margin-bottom:.3rem">🎉</div>
+    <div style="font-size:1.3rem;font-weight:800;margin-bottom:.5rem">התשלום התקבל — בחר/י קוד אישי</div>
+    <div style="color:var(--muted);font-size:.96rem;line-height:1.6;margin-bottom:1rem">הקוד הזה יהיה מפתח הכניסה שלך למנוי החודשי בכל ביקור הבא.</div>
+    <div style="text-align:right;margin-bottom:.6rem">
+      <label for="claim-email" style="display:block;font-size:.85rem;color:var(--muted);margin-bottom:.3rem">האימייל ששילמת/ה איתו</label>
+      <input id="claim-email" type="email" inputmode="email" placeholder="name@example.com"
+        style="width:100%;box-sizing:border-box;padding:.6rem .8rem;border-radius:var(--rs);border:1.5px solid var(--border);font-family:inherit;font-size:1rem;direction:ltr;text-align:left;background:rgba(255,255,255,.85);outline:none">
+    </div>
+    <div style="text-align:right;margin-bottom:.6rem">
+      <label for="claim-code" style="display:block;font-size:.85rem;color:var(--muted);margin-bottom:.3rem">קוד אישי לבחירתך (4–20 תווים, בלי רווחים)</label>
+      <input id="claim-code" type="text" maxlength="20" placeholder="לדוגמה: dana2026"
+        style="width:100%;box-sizing:border-box;padding:.6rem .8rem;border-radius:var(--rs);border:1.5px solid var(--border);font-family:inherit;font-size:1rem;direction:ltr;text-align:left;background:rgba(255,255,255,.85);outline:none">
+    </div>
+    <button class="btn btn-ok" id="claim-go" style="width:100%;justify-content:center">שמירת הקוד וכניסה ✓</button>
+    <div id="claim-msg" style="font-size:.85rem;min-height:1.3em;margin-top:.6rem"></div>
+  </div>
+</div>
+
 <script>
 (function(){
   // מספר וואטסאפ אפקטיבי: מה שהוגדר בלוח הבקרה גובר על קובץ הקונפיג
@@ -471,6 +515,22 @@ function dcfgSave(patch){
     }catch(e){return null;}
   };
 
+  // ── שער מודל freemium: המחולל פתוח לכולם; מסך הנעילה נפתח רק לפי דרישה ──
+  // (למשל מתוך חלון "הייצוא דורש מנוי") ולא יותר חוסם את הטעינה הראשונית.
+  window.showLockScreen=function(){
+    const ls=document.getElementById('lock-screen');
+    if(!ls)return;                      // כבר הוסר — המשתמש כבר מחובר בסשן הזה
+    ls.style.opacity='';ls.style.display='flex';
+    const i=document.getElementById('lock-inp'),e=document.getElementById('lock-err');
+    if(i){i.value='';i.focus();}
+    if(e)e.textContent='';
+  };
+  window.hideLockScreen=function(){
+    const ls=document.getElementById('lock-screen');
+    if(ls)ls.style.display='none';
+  };
+  window.dobbleUnlock=function(code,label){ doUserUnlock(code,label); };
+
   // ההסבר מוצג לפני הזנת הקוד — בביקור הראשון, מעל מסך הנעילה
   if(!localStorage.getItem('dobble_onboarded')){
     window.addEventListener('DOMContentLoaded',()=>{
@@ -478,14 +538,15 @@ function dcfgSave(patch){
     });
   }
 
+  const lockScreenEl=document.getElementById('lock-screen');
   if(sessionStorage.getItem('dobble_unlocked')==='1'){
-    document.getElementById('lock-screen').remove();
+    if(lockScreenEl)lockScreenEl.remove();
     return;
   }
+  if(lockScreenEl)lockScreenEl.style.display='none';   // פתוח לכולם בטעינה — נפתח רק לפי דרישה
 
   const inp=document.getElementById('lock-inp');
   const err=document.getElementById('lock-err');
-  inp.focus();
 
   // הגשה מפורשת: מקלידים קוד ולוחצים "כניסה ✓" (או Enter). אין בדיקה אוטומטית תוך כדי הקלדה.
   let submitting=false;
@@ -519,6 +580,120 @@ function dcfgSave(patch){
   }
   document.getElementById('lock-go').addEventListener('click',submitCode);
   inp.addEventListener('keydown',function(e){ if(e.key==='Enter'){e.preventDefault();submitCode();} });
+})();
+</script>
+
+<!-- ══ FREEMIUM: שער תשלום + בחירת קוד אישי ══ -->
+<script>
+(function(){
+  const m=document.getElementById('paywall-modal');if(!m)return;
+  const stepMain=document.getElementById('paywall-step-main');
+  const stepEmail=document.getElementById('paywall-step-email');
+
+  function close(){m.hidden=true;stepMain.hidden=false;stepEmail.hidden=true;}
+  window.showPaywall=function(){m.hidden=false;};
+
+  document.getElementById('paywall-close').addEventListener('click',close);
+  m.addEventListener('click',e=>{if(e.target===m)close();});
+  document.getElementById('paywall-havecode').addEventListener('click',()=>{
+    close();window.showLockScreen&&window.showLockScreen();
+  });
+  document.getElementById('paywall-buy').addEventListener('click',()=>{
+    stepMain.hidden=true;stepEmail.hidden=false;
+    const em=document.getElementById('paywall-email');
+    try{const saved=localStorage.getItem('dobble_pay_email');if(saved)em.value=saved;}catch(e){}
+    em.focus();
+  });
+
+  document.getElementById('paywall-pay').addEventListener('click',async()=>{
+    const inp=document.getElementById('paywall-email');
+    const msg=document.getElementById('paywall-email-msg');
+    const email=(inp.value||'').trim();
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){msg.style.color='#b91c1c';msg.textContent='נא להזין כתובת מייל תקינה';return;}
+    const cfg=window.SUPABASE_CONFIG||{};
+    const base=cfg.url||'',key=cfg.anonKey||'';
+    if(!base||!key){msg.style.color='#b91c1c';msg.textContent='שירות התשלום אינו זמין כרגע';return;}
+    const btn=document.getElementById('paywall-pay');btn.disabled=true;
+    msg.style.color='var(--muted)';msg.textContent='פותח חלון תשלום…';
+    try{
+      try{localStorage.setItem('dobble_pay_email',email);}catch(e){}
+      const res=await fetch(base+'/functions/v1/create-payment',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','apikey':key,'Authorization':'Bearer '+key},
+        body:JSON.stringify({email})
+      });
+      const data=await res.json().catch(()=>({}));
+      if(!res.ok||!data.url)throw new Error('no_url');
+      location.href=data.url;
+    }catch(e){
+      msg.style.color='#b91c1c';msg.textContent='לא הצלחנו לפתוח את דף התשלום. נסו שוב מאוחר יותר.';
+      btn.disabled=false;
+    }
+  });
+})();
+
+(function(){
+  const m=document.getElementById('claim-modal');if(!m)return;
+  window.showClaimScreen=function(prefillEmail){
+    const em=document.getElementById('claim-email');
+    if(em&&prefillEmail)em.value=prefillEmail;
+    m.hidden=false;
+  };
+
+  const REASONS={
+    bad_code_format:'הקוד חייב להכיל 4–20 תווים, בלי רווחים.',
+    missing_email:'נא להזין כתובת מייל תקינה.',
+    no_unclaimed_payment:'לא נמצא תשלום שממתין למימוש לאימייל הזה. ודאו שהזנתם את אותו אימייל ששילמתם איתו.',
+    code_taken:'הקוד הזה כבר תפוס — נסו קוד אחר.'
+  };
+
+  document.getElementById('claim-go').addEventListener('click',async()=>{
+    const email=(document.getElementById('claim-email').value||'').trim();
+    const code=(document.getElementById('claim-code').value||'').trim();
+    const msg=document.getElementById('claim-msg');
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){msg.style.color='#b91c1c';msg.textContent='נא להזין כתובת מייל תקינה';return;}
+    if(code.length<4||code.length>20||/\s/.test(code)){msg.style.color='#b91c1c';msg.textContent='הקוד חייב להכיל 4–20 תווים, בלי רווחים';return;}
+    const cfg=window.SUPABASE_CONFIG||{};
+    const base=cfg.url||'',key=cfg.anonKey||'';
+    if(!base||!key){msg.style.color='#b91c1c';msg.textContent='השירות אינו זמין כרגע';return;}
+    const btn=document.getElementById('claim-go');btn.disabled=true;
+    msg.style.color='var(--muted)';msg.textContent='בודק…';
+    try{
+      const res=await fetch(base+'/functions/v1/claim-code',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','apikey':key,'Authorization':'Bearer '+key},
+        body:JSON.stringify({email,code})
+      });
+      const data=await res.json().catch(()=>({}));
+      if(data&&data.ok){
+        msg.style.color='#166534';msg.textContent='הקוד נשמר! נכנסים…';
+        try{localStorage.removeItem('dobble_pay_email');}catch(e){}
+        setTimeout(()=>{
+          m.hidden=true;
+          window.dobbleUnlock&&window.dobbleUnlock(code,'מנוי חודשי');
+          try{
+            const url=new URL(location.href);url.searchParams.delete('paid');
+            history.replaceState({},'',url.toString());
+          }catch(e){}
+        },600);
+        return;
+      }
+      msg.style.color='#b91c1c';
+      msg.textContent=REASONS[(data&&data.reason)||'']||'לא הצלחנו לשמור את הקוד. נסו שוב.';
+    }catch(e){
+      msg.style.color='#b91c1c';msg.textContent='שגיאת תקשורת — נסו שוב.';
+    }
+    btn.disabled=false;
+  });
+
+  // חזרה מתשלום מוצלח: פותחים אוטומטית את מסך בחירת הקוד
+  try{
+    const paid=new URLSearchParams(location.search).get('paid');
+    if(paid==='1'){
+      let savedEmail='';try{savedEmail=localStorage.getItem('dobble_pay_email')||'';}catch(e){}
+      window.showClaimScreen(savedEmail);
+    }
+  }catch(e){}
 })();
 </script>
 
@@ -1093,6 +1268,11 @@ function genDeck(q){
 function bestOrder(n){let b=null;for(const o of ORDERS)if(o.total<=n)b=o;return b}
 function nextOrder(n){for(const o of ORDERS)if(o.total>n)return o;return null}
 
+// ══ FREEMIUM: משחק 7 חינמי לגמרי; משחקים גדולים יותר דורשים מנוי לייצוא ══
+function isFreeTier(order){return !!order&&order.total===7;}
+function isSubscribed(){try{return sessionStorage.getItem('dobble_unlocked')==='1';}catch(e){return false;}}
+function needsWatermark(){return !isFreeTier(S.order)&&!isSubscribed();}
+
 // ══ SEEDED RANDOM ══
 function sr(seed){
   seed=Math.imul(seed^(seed>>>16),0x45d9f3b);
@@ -1193,6 +1373,22 @@ function drawCard(canvas,layout,imgs,shape,hitIdx){
     drawCover(ctx,img,-ds/2,-ds/2,ds);
     ctx.restore();
   }
+  if(needsWatermark())drawWatermark(ctx,cx,cy,r,isC,sq,sqx,sqy,sqcr,sz);
+}
+
+// סימן-מים אלכסוני "תצוגה מקדימה" — חתוך לצורת הקלף (עיגול/מרובע), לתצוגת המשחקים בתשלום לפני רכישה
+function drawWatermark(ctx,cx,cy,r,isC,sq,sqx,sqy,sqcr,sz){
+  ctx.save();
+  ctx.beginPath();
+  if(isC)ctx.arc(cx,cy,r,0,Math.PI*2);else rrect(ctx,sqx,sqy,sq,sq,sqcr);
+  ctx.clip();
+  ctx.globalAlpha=.16;
+  ctx.fillStyle='#1e1b4b';
+  ctx.font=`900 ${Math.round(sz*.1)}px system-ui,-apple-system,"Segoe UI",Arial`;
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.translate(cx,cy);ctx.rotate(-Math.PI/6);
+  for(let y=-sz;y<=sz;y+=sz*.24)ctx.fillText('תצוגה מקדימה',0,y);
+  ctx.restore();
 }
 
 // ══ STATE ══
@@ -1838,6 +2034,10 @@ document.getElementById('btn-dozip').addEventListener('click',()=>doExport('zip'
 document.getElementById('btn-dodxf').addEventListener('click',()=>doExport('dxf'));
 
 async function doExport(type){
+  if(!isFreeTier(S.order)&&!isSubscribed()){
+    window.showPaywall&&window.showPaywall();
+    return;
+  }
   resetExport();
   document.getElementById('exp-prog').classList.add('on');
   const setp=(p,t)=>{document.getElementById('exp-bar').style.width=p+'%';document.getElementById('exp-lbl').textContent=t;};
