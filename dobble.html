@@ -1472,7 +1472,7 @@ function symPos(n,cx,cy,r){
 
 function symPosPeriph(n,cx,cy,r){
   // All symbols on one ring — evenly spaced, sized so neighbours don't overlap
-  const cfg={3:{rr:.52,hs:.45},4:{rr:.57,hs:.375},5:{rr:.61,hs:.325},6:{rr:.64,hs:.288},8:{rr:.68,hs:.25}};
+  const cfg={3:{rr:.52,hs:.396},4:{rr:.57,hs:.330},5:{rr:.61,hs:.286},6:{rr:.64,hs:.253},8:{rr:.68,hs:.220}};
   const{rr,hs}=cfg[n]||{rr:.65,hs:.20};
   const P=[],ringR=r*rr,hsz=r*hs;
   for(let i=0;i<n;i++){const a=i*2*Math.PI/n-Math.PI/2;P.push({x:cx+ringR*Math.cos(a),y:cy+ringR*Math.sin(a),hs:hsz});}
