@@ -1011,6 +1011,10 @@ function dcfgSave(patch){
             <div class="sl-lbl"><span>מקסימום</span><strong id="lbl-mx">130%</strong></div>
             <input type="range" id="sl-mx" min="100" max="150" value="130" step="5">
           </div>
+          <div class="sl-row">
+            <div class="sl-lbl"><span>חפיפה</span><strong id="lbl-ov">0%</strong></div>
+            <input type="range" id="sl-ov" min="0" max="100" value="0" step="5">
+          </div>
         </div>
         <div class="sb-sec">
           <div class="sb-t">פעולות</div>
@@ -1451,21 +1455,26 @@ function buildLayouts(deck,seed,sMin,sMax){
 }
 
 // ══ SYMBOL POSITIONS ══
+// S.overlap (0–100, מהסליידר "חפיפה"): מקרב את הסמלים זה לזה בלי לשנות את גודלם —
+// ככל שגדל, כך קטן המרחק בין הסמלים ונוצרת חפיפה ויזואלית.
+function overlapFactor(){ return 1-(S.overlap||0)/100*.35; }
+
 function symPos(n,cx,cy,r){
   if(S.layoutMode==='peripheral') return symPosPeriph(n,cx,cy,r);
+  const ov=overlapFactor();
   const P=[],p=(x,y,hs)=>P.push({x,y,hs});
   if(n===3){
-    const rr=r*.56,hs=r*.34;for(let i=0;i<3;i++){const a=i*2*Math.PI/3-Math.PI/2;p(cx+rr*Math.cos(a),cy+rr*Math.sin(a),hs);}
+    const rr=r*.56*ov,hs=r*.34;for(let i=0;i<3;i++){const a=i*2*Math.PI/3-Math.PI/2;p(cx+rr*Math.cos(a),cy+rr*Math.sin(a),hs);}
   }else if(n===4){
-    p(cx,cy,r*.30);const rr=r*.60,hs=r*.28;for(let i=0;i<3;i++){const a=i*2*Math.PI/3-Math.PI/2;p(cx+rr*Math.cos(a),cy+rr*Math.sin(a),hs);}
+    p(cx,cy,r*.30);const rr=r*.60*ov,hs=r*.28;for(let i=0;i<3;i++){const a=i*2*Math.PI/3-Math.PI/2;p(cx+rr*Math.cos(a),cy+rr*Math.sin(a),hs);}
   }else if(n===5){
-    p(cx,cy,r*.27);const rr=r*.60,hs=r*.25;for(let i=0;i<4;i++){const a=i*Math.PI/2-Math.PI/4;p(cx+rr*Math.cos(a),cy+rr*Math.sin(a),hs);}
+    p(cx,cy,r*.27);const rr=r*.60*ov,hs=r*.25;for(let i=0;i<4;i++){const a=i*Math.PI/2-Math.PI/4;p(cx+rr*Math.cos(a),cy+rr*Math.sin(a),hs);}
   }else if(n===6){
-    p(cx,cy,r*.24);const rr=r*.60,hs=r*.23;for(let i=0;i<5;i++){const a=i*2*Math.PI/5-Math.PI/2;p(cx+rr*Math.cos(a),cy+rr*Math.sin(a),hs);}
+    p(cx,cy,r*.24);const rr=r*.60*ov,hs=r*.23;for(let i=0;i<5;i++){const a=i*2*Math.PI/5-Math.PI/2;p(cx+rr*Math.cos(a),cy+rr*Math.sin(a),hs);}
   }else{
     p(cx,cy,r*.20);
-    const ri=r*.38,hsi=r*.19;for(let i=0;i<3;i++){const a=i*2*Math.PI/3;p(cx+ri*Math.cos(a),cy+ri*Math.sin(a),hsi);}
-    const ro=r*.72,hso=r*.18;for(let i=0;i<4;i++){const a=i*Math.PI/2-Math.PI/4;p(cx+ro*Math.cos(a),cy+ro*Math.sin(a),hso);}
+    const ri=r*.38*ov,hsi=r*.19;for(let i=0;i<3;i++){const a=i*2*Math.PI/3;p(cx+ri*Math.cos(a),cy+ri*Math.sin(a),hsi);}
+    const ro=r*.72*ov,hso=r*.18;for(let i=0;i<4;i++){const a=i*Math.PI/2-Math.PI/4;p(cx+ro*Math.cos(a),cy+ro*Math.sin(a),hso);}
   }
   return P;
 }
@@ -1474,7 +1483,7 @@ function symPosPeriph(n,cx,cy,r){
   // All symbols on one ring — evenly spaced, sized so neighbours don't overlap
   const cfg={3:{rr:.52,hs:.396},4:{rr:.57,hs:.330},5:{rr:.61,hs:.286},6:{rr:.64,hs:.253},8:{rr:.68,hs:.220}};
   const{rr,hs}=cfg[n]||{rr:.65,hs:.20};
-  const P=[],ringR=r*rr,hsz=r*hs;
+  const P=[],ringR=r*rr*overlapFactor(),hsz=r*hs;
   for(let i=0;i<n;i++){const a=i*2*Math.PI/n-Math.PI/2;P.push({x:cx+ringR*Math.cos(a),y:cy+ringR*Math.sin(a),hs:hsz});}
   return P;
 }
@@ -1553,7 +1562,7 @@ function drawWatermark(ctx,cx,cy,r,isC,sq,sqx,sqy,sqcr,sz){
 const S={
   assets:[],
   order:null,deck:[],layouts:[],imgEls:[],canvases:[],
-  shape:'circle',sMin:.70,sMax:1.30,seed:1,layoutMode:'scatter',
+  shape:'circle',sMin:.70,sMax:1.30,seed:1,layoutMode:'scatter',overlap:0,
   sel:[],
   cardSizeMm:85,spacingMm:5,startPos:'center',
   crop:true,isSilhouette:false,
@@ -1788,6 +1797,9 @@ slMn.addEventListener('input',()=>{S.sMin=+slMn.value/100;lblMn.textContent=slMn
 slMx.addEventListener('input',()=>{S.sMax=+slMx.value/100;lblMx.textContent=slMx.value+'%';});
 slMn.addEventListener('change',()=>renderAll());
 slMx.addEventListener('change',()=>renderAll());
+
+const slOv=document.getElementById('sl-ov'),lblOv=document.getElementById('lbl-ov');
+slOv.addEventListener('input',()=>{S.overlap=+slOv.value;lblOv.textContent=slOv.value+'%';redrawCards();});
 
 // ══ GENERATE ══
 document.getElementById('btn-create').addEventListener('click',generate);
@@ -2866,7 +2878,7 @@ async function saveDesign(){
     const design={name,date:new Date().toLocaleString('he-IL'),rows:assetsToRows(),
       settings:{shape:S.shape,sMin:S.sMin,sMax:S.sMax,seed:S.seed,layoutMode:S.layoutMode,
         cardSizeMm:S.cardSizeMm,spacingMm:S.spacingMm,startPos:S.startPos,
-        frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),symPad:S.symPad,
+        frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),symPad:S.symPad,overlap:S.overlap,
         orderTotal:S.order?S.order.total:null}};
     const db=await idbOpen();
     const tx=db.transaction(IDB_DESIGNS,'readwrite');
@@ -2889,7 +2901,7 @@ function buildDesignObject(name){
   return {name,date:new Date().toLocaleString('he-IL'),rows:assetsToRows(),
     settings:{shape:S.shape,sMin:S.sMin,sMax:S.sMax,seed:S.seed,layoutMode:S.layoutMode,
       cardSizeMm:S.cardSizeMm,spacingMm:S.spacingMm,startPos:S.startPos,
-      frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),symPad:S.symPad,
+      frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),symPad:S.symPad,overlap:S.overlap,
       orderTotal:S.order?S.order.total:null}};
 }
 
@@ -2951,6 +2963,7 @@ function applySettingsToUI(st){
   // סליידרים של גודל סמלים
   slMn.value=Math.round(st.sMin*100);lblMn.textContent=slMn.value+'%';
   slMx.value=Math.round(st.sMax*100);lblMx.textContent=slMx.value+'%';
+  slOv.value=st.overlap||0;lblOv.textContent=slOv.value+'%';
   // ייצוא
   slCardSize.value=st.cardSizeMm;lblCardSize.textContent=st.cardSizeMm+'mm';
   slSpacing.value=st.spacingMm;lblSpacing.textContent=st.spacingMm+'mm';
@@ -2979,7 +2992,7 @@ async function applyDesignToState(d){
   const st=d.settings||{};
   Object.assign(S,{shape:st.shape||'circle',sMin:st.sMin??.7,sMax:st.sMax??1.3,
     seed:st.seed||1,layoutMode:st.layoutMode||'scatter',cardSizeMm:st.cardSizeMm||85,
-    spacingMm:st.spacingMm??5,startPos:st.startPos||'center',symPad:st.symPad??2});
+    spacingMm:st.spacingMm??5,startPos:st.startPos||'center',symPad:st.symPad??2,overlap:st.overlap??0});
   if(st.frame)S.frame=Object.assign({},st.frame);
   if(st.bg)S.bg=Object.assign({},st.bg);
   applySettingsToUI(S);
