@@ -372,24 +372,58 @@ function dcfgSave(patch){
 </script>
 
 <!-- LOCK SCREEN -->
-<div id="lock-screen" style="position:fixed;inset:0;background:linear-gradient(150deg,#1e1b4b,#312e81 55%,#4c1d95);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.05rem;padding:2rem;text-align:center">
-  <div style="font-size:3rem">🎯</div>
-  <div style="font-size:1.6rem;font-weight:900;color:#fff;letter-spacing:.05em">מחולל דאבל</div>
-  <div style="color:#a5b4fc;font-size:.95rem">הזן/י קוד כניסה</div>
-  <input id="lock-inp" type="password" inputmode="text" maxlength="20" placeholder="• • •"
-    style="text-align:center;font-size:2rem;letter-spacing:.6rem;width:180px;padding:.7rem .5rem;border-radius:16px;border:2.5px solid rgba(255,255,255,.35);outline:none;background:rgba(255,255,255,.94);font-family:inherit">
-  <button id="lock-go" type="button"
-    style="background:#6366f1;color:#fff;font-weight:800;font-size:1.05rem;padding:.7rem 2.4rem;border:none;border-radius:100px;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(99,102,241,.5)">כניסה ✓</button>
-  <div id="lock-err" style="color:#fca5a5;font-size:.88rem;min-height:1.2em"></div>
-  <div style="width:min(320px,80vw);height:1px;background:rgba(255,255,255,.18);margin-block:.35rem"></div>
-  <div style="color:rgba(255,255,255,.88);font-size:.95rem;font-weight:600">אין לך קוד גישה?</div>
-  <div style="color:rgba(255,255,255,.65);font-size:.83rem;max-width:340px;line-height:1.6">מנוי אישי — יצירת משחקים ללא הגבלה והדפסה בבית · רוצים עותק מודפס? הדפסה בבית דפוס ומשלוח עד הבית בתוספת תשלום</div>
-  <a id="lock-wa" href="#" target="_blank" rel="noopener noreferrer"
-     style="display:inline-flex;align-items:center;gap:.55rem;background:#25D366;color:#fff;font-weight:700;font-size:1.02rem;padding:.75rem 1.6rem;border-radius:100px;text-decoration:none;box-shadow:0 6px 24px rgba(37,211,102,.45)">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-    לקביעת מנוי בוואטסאפ
-  </a>
-  <div id="lock-phone" style="color:rgba(255,255,255,.75);font-size:.95rem;direction:ltr"></div>
+<div id="lock-screen" style="position:fixed;inset:0;background:linear-gradient(150deg,#1e1b4b,#312e81 55%,#4c1d95);z-index:9999;display:flex;flex-direction:column;align-items:center;overflow-y:auto;padding:2rem 1rem;text-align:center">
+  <div style="max-width:400px;width:100%;margin:auto;display:flex;flex-direction:column;align-items:center;gap:.85rem">
+    <div style="font-size:3rem">🎯</div>
+    <div style="font-size:1.6rem;font-weight:900;color:#fff;letter-spacing:.05em">מחולל דאבל</div>
+
+    <div style="display:flex;gap:.35rem;background:rgba(255,255,255,.1);border-radius:100px;padding:.3rem;width:100%">
+      <button type="button" id="lock-tab-code" style="flex:1;padding:.55rem .3rem;border:none;border-radius:100px;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer;background:#fff;color:#1e1b4b">יש לי קוד</button>
+      <button type="button" id="lock-tab-free" style="flex:1;padding:.55rem .3rem;border:none;border-radius:100px;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer;background:transparent;color:#fff">הרשמה חינם</button>
+      <button type="button" id="lock-tab-buy" style="flex:1;padding:.55rem .3rem;border:none;border-radius:100px;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer;background:transparent;color:#fff">רכישת מנוי</button>
+    </div>
+
+    <!-- טאב: יש לי קוד -->
+    <div id="lock-panel-code" style="display:flex;flex-direction:column;align-items:center;gap:.9rem;width:100%">
+      <div style="color:#a5b4fc;font-size:.95rem">הזן/י קוד כניסה</div>
+      <input id="lock-inp" type="password" inputmode="text" maxlength="20" placeholder="• • •"
+        style="text-align:center;font-size:2rem;letter-spacing:.6rem;width:180px;padding:.7rem .5rem;border-radius:16px;border:2.5px solid rgba(255,255,255,.35);outline:none;background:rgba(255,255,255,.94);font-family:inherit">
+      <button id="lock-go" type="button"
+        style="background:#6366f1;color:#fff;font-weight:800;font-size:1.05rem;padding:.7rem 2.4rem;border:none;border-radius:100px;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(99,102,241,.5)">כניסה ✓</button>
+      <div id="lock-err" style="color:#fca5a5;font-size:.88rem;min-height:1.2em"></div>
+    </div>
+
+    <!-- טאב: הרשמה חינם -->
+    <div id="lock-panel-free" style="display:none;flex-direction:column;align-items:center;gap:.65rem;width:100%">
+      <div style="color:#a5b4fc;font-size:.88rem;line-height:1.6">משחק 7 תמונות — חינם לגמרי. הרשמה עם אימייל ובחירת קוד אישי:</div>
+      <input id="free-email" type="email" inputmode="email" placeholder="name@example.com"
+        style="width:100%;box-sizing:border-box;padding:.65rem .8rem;border-radius:14px;border:2px solid rgba(255,255,255,.35);outline:none;background:rgba(255,255,255,.94);font-family:inherit;font-size:1rem;direction:ltr;text-align:left">
+      <input id="free-code" type="text" maxlength="20" placeholder="בחר/י קוד אישי (4–20 תווים)"
+        style="width:100%;box-sizing:border-box;padding:.65rem .8rem;border-radius:14px;border:2px solid rgba(255,255,255,.35);outline:none;background:rgba(255,255,255,.94);font-family:inherit;font-size:1rem;direction:ltr;text-align:left">
+      <button id="free-go" type="button" style="width:100%;background:#6366f1;color:#fff;font-weight:800;font-size:1.02rem;padding:.7rem 2rem;border:none;border-radius:100px;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(99,102,241,.5)">הרשמה וכניסה ✓</button>
+      <div id="free-msg" style="color:#fca5a5;font-size:.85rem;min-height:1.2em"></div>
+    </div>
+
+    <!-- טאב: רכישת מנוי -->
+    <div id="lock-panel-buy" style="display:none;flex-direction:column;align-items:center;gap:.6rem;width:100%">
+      <div style="color:#a5b4fc;font-size:.88rem">בחר/י רמת מנוי:</div>
+      <div id="lock-tiers" style="display:flex;flex-direction:column;gap:.45rem;width:100%"></div>
+      <input id="buy-email" type="email" inputmode="email" placeholder="name@example.com" hidden
+        style="width:100%;box-sizing:border-box;padding:.65rem .8rem;border-radius:14px;border:2px solid rgba(255,255,255,.35);outline:none;background:rgba(255,255,255,.94);font-family:inherit;font-size:1rem;direction:ltr;text-align:left">
+      <button id="buy-go" type="button" hidden style="width:100%;background:#6366f1;color:#fff;font-weight:800;font-size:1.02rem;padding:.7rem 2rem;border:none;border-radius:100px;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(99,102,241,.5)">מעבר לתשלום</button>
+      <div id="buy-msg" style="color:#fca5a5;font-size:.85rem;min-height:1.2em"></div>
+    </div>
+
+    <div style="width:min(320px,80vw);height:1px;background:rgba(255,255,255,.18);margin-block:.3rem"></div>
+    <a id="lock-wa" href="#" target="_blank" rel="noopener noreferrer"
+       style="display:inline-flex;align-items:center;gap:.5rem;background:#25D366;color:#fff;font-weight:700;font-size:.88rem;padding:.55rem 1.2rem;border-radius:100px;text-decoration:none;box-shadow:0 6px 24px rgba(37,211,102,.45)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      עזרה בוואטסאפ
+    </a>
+    <div id="lock-phone" style="color:rgba(255,255,255,.7);font-size:.85rem;direction:ltr"></div>
+    <button id="lock-cancel" type="button" hidden
+      style="background:none;border:none;color:rgba(255,255,255,.55);cursor:pointer;font-family:inherit;font-size:.82rem;text-decoration:underline">ביטול</button>
+  </div>
 </div>
 
 <!-- חלון קופץ: קוד שגוי / פג תוקף — חידוש מנוי -->
@@ -404,26 +438,24 @@ function dcfgSave(patch){
   </div>
 </div>
 
-<!-- חלון קופץ: הייצוא דורש מנוי (freemium) -->
-<div class="modal-bg" id="paywall-modal" hidden style="z-index:10001">
+<!-- חלון קופץ: שדרוג מנוי (בתוך המחולל — כשמנסים גודל מעל הרמה הנוכחית) -->
+<div class="modal-bg" id="upgrade-modal" hidden style="z-index:10001">
   <div class="modal-card" style="max-width:420px;width:94%;text-align:center">
     <div style="font-size:2.6rem;margin-bottom:.3rem">🔒</div>
-    <div style="font-size:1.3rem;font-weight:800;margin-bottom:.5rem">הייצוא דורש מנוי</div>
-    <div style="color:var(--muted);font-size:.96rem;line-height:1.6;margin-bottom:1.1rem">משחק 7 תמונות חינמי לגמרי, כולל הורדה. משחקים גדולים יותר פתוחים לתצוגה מקדימה לכולם — וההורדה דורשת מנוי חודשי.</div>
-    <div id="paywall-step-main">
-      <button class="btn btn-ok" id="paywall-buy" style="width:100%;justify-content:center;margin-bottom:.6rem">רכישת מנוי חודשי</button>
-      <button id="paywall-havecode" type="button" style="background:none;border:none;color:var(--indigo);cursor:pointer;font-family:inherit;font-size:.92rem;text-decoration:underline">יש לי כבר קוד</button>
-    </div>
-    <div id="paywall-step-email" hidden>
-      <div style="text-align:right;margin-bottom:.6rem">
-        <label for="paywall-email" style="display:block;font-size:.85rem;color:var(--muted);margin-bottom:.3rem">האימייל שאיתו תרצה/י לשלם</label>
-        <input id="paywall-email" type="email" inputmode="email" placeholder="name@example.com"
+    <div style="font-size:1.3rem;font-weight:800;margin-bottom:.5rem">המשחק הזה דורש שדרוג</div>
+    <div style="color:var(--muted);font-size:.96rem;line-height:1.6;margin-bottom:1rem">הקוד שלך פותח עד <b id="upg-current"></b> קלפים. אפשר להמשיך לצפות בתצוגה מקדימה, ולשדרג להורדה:</div>
+    <div id="upg-tiers" style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:.8rem"></div>
+    <div id="upg-email-wrap" hidden>
+      <div style="text-align:right;margin-bottom:.5rem">
+        <label for="upg-email" style="display:block;font-size:.85rem;color:var(--muted);margin-bottom:.3rem">האימייל שאיתו תרצה/י לשלם</label>
+        <input id="upg-email" type="email" inputmode="email" placeholder="name@example.com"
           style="width:100%;box-sizing:border-box;padding:.6rem .8rem;border-radius:var(--rs);border:1.5px solid var(--border);font-family:inherit;font-size:1rem;direction:ltr;text-align:left;background:rgba(255,255,255,.85);outline:none">
       </div>
-      <button class="btn btn-ok" id="paywall-pay" style="width:100%;justify-content:center">מעבר לתשלום</button>
-      <div id="paywall-email-msg" style="font-size:.85rem;min-height:1.3em;margin-top:.5rem"></div>
+      <button class="btn btn-ok" id="upg-pay" style="width:100%;justify-content:center">מעבר לתשלום</button>
+      <div id="upg-msg" style="font-size:.85rem;min-height:1.3em;margin-top:.5rem"></div>
     </div>
-    <div style="margin-top:.8rem"><button id="paywall-close" type="button" style="background:none;border:none;color:var(--muted);cursor:pointer;font-family:inherit;font-size:.9rem;text-decoration:underline">סגירה</button></div>
+    <div style="margin-top:.6rem"><button id="upg-havecode" type="button" style="background:none;border:none;color:var(--indigo);cursor:pointer;font-family:inherit;font-size:.9rem;text-decoration:underline">יש לי כבר קוד אחר</button></div>
+    <div style="margin-top:.5rem"><button id="upg-close" type="button" style="background:none;border:none;color:var(--muted);cursor:pointer;font-family:inherit;font-size:.9rem;text-decoration:underline">סגירה</button></div>
   </div>
 </div>
 
@@ -464,8 +496,10 @@ function dcfgSave(patch){
     setTimeout(()=>{if(ls.parentNode)ls.remove();cb&&cb();},420);
   }
 
-  function doUserUnlock(code,label){
+  function doUserUnlock(code,label,maxOrder){
     sessionStorage.setItem('dobble_unlocked','1');
+    // ברירת מחדל 57 (גישה מלאה) — למסלולי כניסה ישנים שלא מדווחים max_order (קוד מקומי/מנהל)
+    sessionStorage.setItem('dobble_max_order',String(maxOrder!=null?maxOrder:57));
     // שומרים איזה מנוי נכנס — יצורף לכל אירוע מעקב
     try{sessionStorage.setItem('dobble_sub',JSON.stringify({code:code||'',label:label||''}));}catch(e){}
     removeLockScreen(()=>{
@@ -476,6 +510,7 @@ function dcfgSave(patch){
 
   function doAdminUnlock(){
     sessionStorage.setItem('dobble_unlocked','1');
+    sessionStorage.setItem('dobble_max_order','57');
     removeLockScreen(()=>{window._initAdminPanel&&window._initAdminPanel();});
   }
 
@@ -515,12 +550,13 @@ function dcfgSave(patch){
     }catch(e){return null;}
   };
 
-  // ── שער מודל freemium: המחולל פתוח לכולם; מסך הנעילה נפתח רק לפי דרישה ──
-  // (למשל מתוך חלון "הייצוא דורש מנוי") ולא יותר חוסם את הטעינה הראשונית.
+  // ── כניסה חסומה: מסך הנעילה גלוי כברירת מחדל. showLockScreen/hideLockScreen —
+  // גשר לפתיחה/סגירה מחדש שלו מתוך קוד חיצוני (למשל "יש לי כבר קוד אחר" בחלון שדרוג). ──
   window.showLockScreen=function(){
     const ls=document.getElementById('lock-screen');
     if(!ls)return;                      // כבר הוסר — המשתמש כבר מחובר בסשן הזה
     ls.style.opacity='';ls.style.display='flex';
+    const cancelBtn=document.getElementById('lock-cancel');if(cancelBtn)cancelBtn.hidden=false;
     const i=document.getElementById('lock-inp'),e=document.getElementById('lock-err');
     if(i){i.value='';i.focus();}
     if(e)e.textContent='';
@@ -529,7 +565,22 @@ function dcfgSave(patch){
     const ls=document.getElementById('lock-screen');
     if(ls)ls.style.display='none';
   };
-  window.dobbleUnlock=function(code,label){ doUserUnlock(code,label); };
+  window.dobbleUnlock=function(code,label,maxOrder){ doUserUnlock(code,label,maxOrder); };
+
+  document.getElementById('lock-cancel').addEventListener('click',()=>window.hideLockScreen());
+
+  // ── טאבים: יש לי קוד / הרשמה חינם / רכישת מנוי ──
+  function lockShowTab(name){
+    ['code','free','buy'].forEach(k=>{
+      const tab=document.getElementById('lock-tab-'+k),panel=document.getElementById('lock-panel-'+k);
+      tab.style.background=k===name?'#fff':'transparent';
+      tab.style.color=k===name?'#1e1b4b':'#fff';
+      panel.style.display=k===name?'flex':'none';
+    });
+  }
+  document.getElementById('lock-tab-code').addEventListener('click',()=>lockShowTab('code'));
+  document.getElementById('lock-tab-free').addEventListener('click',()=>lockShowTab('free'));
+  document.getElementById('lock-tab-buy').addEventListener('click',()=>lockShowTab('buy'));
 
   // ההסבר מוצג לפני הזנת הקוד — בביקור הראשון, מעל מסך הנעילה
   if(!localStorage.getItem('dobble_onboarded')){
@@ -543,10 +594,11 @@ function dcfgSave(patch){
     if(lockScreenEl)lockScreenEl.remove();
     return;
   }
-  if(lockScreenEl)lockScreenEl.style.display='none';   // פתוח לכולם בטעינה — נפתח רק לפי דרישה
+  // כניסה חסומה: מסך הנעילה נשאר גלוי (ברירת המחדל ב-HTML) עד שאחד משלושת המסלולים מצליח
 
   const inp=document.getElementById('lock-inp');
   const err=document.getElementById('lock-err');
+  inp.focus();
 
   // הגשה מפורשת: מקלידים קוד ולוחצים "כניסה ✓" (או Enter). אין בדיקה אוטומטית תוך כדי הקלדה.
   let submitting=false;
@@ -554,7 +606,7 @@ function dcfgSave(patch){
     if(submitting)return;
     const v=inp.value.trim();
     if(!v)return;
-    if(window._tryCode(v))return;                 // קוד מקומי / מנהל — פותח מיד
+    if(window._tryCode(v))return;                 // קוד מקומי / מנהל — פותח מיד (גישה מלאה)
     if(window.SB&&v.length>=3){
       submitting=true;
       err.style.color='#a5b4fc';err.textContent='בודק…';
@@ -563,7 +615,7 @@ function dcfgSave(patch){
       submitting=false;err.textContent='';
       if(ok)return;
     }
-    // קוד גישה חדש (כרטיס/שותף) — אימות מול validate-code
+    // קוד גישה חדש (כרטיס/שותף/מנוי) — אימות מול validate-code, כולל max_order
     if(window.SB&&v.length>=3){
       submitting=true;
       err.style.color='#a5b4fc';err.textContent='בודק…';
@@ -572,55 +624,104 @@ function dcfgSave(patch){
       submitting=false;err.textContent='';
       if(res&&res.valid){
         const label=res.type==='partner'?'קוד שותף':'כרטיס גישה';
-        doUserUnlock(v,label);return;
+        doUserUnlock(v,label,res.max_order);return;
+      }
+      if(res&&res.reason==='expired'){
+        window.showRenewPopup&&window.showRenewPopup('expired');return;
       }
     }
-    // קוד שגוי / קצר / אין חיבור — חלון חידוש
+    // קוד שגוי / לא נמצא / לא פעיל / מוצה / אין חיבור — חלון חידוש
     window.showRenewPopup&&window.showRenewPopup('wrong');
   }
   document.getElementById('lock-go').addEventListener('click',submitCode);
   inp.addEventListener('keydown',function(e){ if(e.key==='Enter'){e.preventDefault();submitCode();} });
+
+  // ── הרשמה חינם: אימייל + קוד לבחירה → register-free → כניסה עם max_order:7 ──
+  document.getElementById('free-go').addEventListener('click',async()=>{
+    const email=(document.getElementById('free-email').value||'').trim();
+    const code=(document.getElementById('free-code').value||'').trim();
+    const msg=document.getElementById('free-msg');
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){msg.textContent='נא להזין כתובת מייל תקינה';return;}
+    if(code.length<4||code.length>20||/\s/.test(code)){msg.textContent='הקוד חייב להכיל 4–20 תווים, בלי רווחים';return;}
+    const cfg=window.SUPABASE_CONFIG||{};
+    const base=cfg.url||'',key=cfg.anonKey||'';
+    if(!base||!key){msg.textContent='השירות אינו זמין כרגע';return;}
+    const btn=document.getElementById('free-go');btn.disabled=true;
+    msg.style.color='#a5b4fc';msg.textContent='נרשם/ת…';
+    try{
+      const res=await fetch(base+'/functions/v1/register-free',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','apikey':key,'Authorization':'Bearer '+key},
+        body:JSON.stringify({email,code})
+      });
+      const data=await res.json().catch(()=>({}));
+      if(data&&data.ok){
+        msg.style.color='#86efac';msg.textContent='נרשמת בהצלחה! נכנסים…';
+        setTimeout(()=>{doUserUnlock(data.code||code,'הרשמה חינם',data.max_order!=null?data.max_order:7);},500);
+        return;
+      }
+      const REASONS_FREE={
+        bad_email:'נא להזין כתובת מייל תקינה.',
+        bad_code_format:'הקוד חייב להכיל 4–20 תווים, בלי רווחים.',
+        code_taken:'הקוד הזה כבר תפוס — נסו קוד אחר.',
+        already_registered:'כבר יש לך קוד חינמי רשום עם האימייל הזה. השתמשו בטאב "יש לי קוד".'
+      };
+      msg.style.color='#fca5a5';
+      msg.textContent=REASONS_FREE[(data&&data.reason)||'']||'לא הצלחנו להשלים את ההרשמה. נסו שוב.';
+    }catch(e){
+      msg.style.color='#fca5a5';msg.textContent='שגיאת תקשורת — נסו שוב.';
+    }
+    btn.disabled=false;
+  });
 })();
 </script>
 
-<!-- ══ FREEMIUM: שער תשלום + בחירת קוד אישי ══ -->
+<!-- ══ תשלום מדורג: בחירת רמה + רכישה + בחירת קוד אישי אחרי תשלום ══ -->
 <script>
 (function(){
-  const m=document.getElementById('paywall-modal');if(!m)return;
-  const stepMain=document.getElementById('paywall-step-main');
-  const stepEmail=document.getElementById('paywall-step-email');
+  // מדרגות המחיר — תואם לטבלה ב-create-payment
+  window.TIER_PRICES={13:5,21:10,31:12,57:15};
 
-  function close(){m.hidden=true;stepMain.hidden=false;stepEmail.hidden=true;}
-  window.showPaywall=function(){m.hidden=false;};
+  // בונה שורות בחירת רמה בתוך container; onPick(tier) נקרא כשנבחרת רמה
+  window.renderTierPicker=function(container,dark,onPick){
+    container.innerHTML='';
+    let selectedBtn=null;
+    Object.entries(window.TIER_PRICES).forEach(([tierStr,price])=>{
+      const tier=Number(tierStr);
+      const b=document.createElement('button');
+      b.type='button';
+      b.textContent=`עד ${tier} קלפים — ${price} ₪ לחודש`;
+      b.style.cssText=dark
+        ? 'width:100%;padding:.6rem .8rem;border-radius:14px;border:2px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff;font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;transition:all .15s'
+        : 'width:100%;padding:.6rem .8rem;border-radius:14px;border:2px solid var(--border);background:transparent;color:var(--text);font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;transition:all .15s';
+      b.addEventListener('click',()=>{
+        if(selectedBtn){
+          selectedBtn.style.borderColor=dark?'rgba(255,255,255,.3)':'var(--border)';
+          selectedBtn.style.background=dark?'rgba(255,255,255,.08)':'transparent';
+        }
+        selectedBtn=b;
+        b.style.borderColor='#6366f1';
+        b.style.background=dark?'rgba(99,102,241,.35)':'var(--purple-light)';
+        onPick(tier);
+      });
+      container.appendChild(b);
+    });
+  };
 
-  document.getElementById('paywall-close').addEventListener('click',close);
-  m.addEventListener('click',e=>{if(e.target===m)close();});
-  document.getElementById('paywall-havecode').addEventListener('click',()=>{
-    close();window.showLockScreen&&window.showLockScreen();
-  });
-  document.getElementById('paywall-buy').addEventListener('click',()=>{
-    stepMain.hidden=true;stepEmail.hidden=false;
-    const em=document.getElementById('paywall-email');
-    try{const saved=localStorage.getItem('dobble_pay_email');if(saved)em.value=saved;}catch(e){}
-    em.focus();
-  });
-
-  document.getElementById('paywall-pay').addEventListener('click',async()=>{
-    const inp=document.getElementById('paywall-email');
-    const msg=document.getElementById('paywall-email-msg');
-    const email=(inp.value||'').trim();
-    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){msg.style.color='#b91c1c';msg.textContent='נא להזין כתובת מייל תקינה';return;}
+  // מבצע את הקריאה ל-create-payment ומפנה לתשלום
+  window.payForTier=async function(tier,email,msgEl,btnEl,errColor){
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){msgEl.style.color=errColor;msgEl.textContent='נא להזין כתובת מייל תקינה';return;}
     const cfg=window.SUPABASE_CONFIG||{};
     const base=cfg.url||'',key=cfg.anonKey||'';
-    if(!base||!key){msg.style.color='#b91c1c';msg.textContent='שירות התשלום אינו זמין כרגע';return;}
-    const btn=document.getElementById('paywall-pay');btn.disabled=true;
-    msg.style.color='var(--muted)';msg.textContent='פותח חלון תשלום…';
+    if(!base||!key){msgEl.style.color=errColor;msgEl.textContent='שירות התשלום אינו זמין כרגע';return;}
+    btnEl.disabled=true;
+    msgEl.style.color='';msgEl.textContent='פותח חלון תשלום…';
     try{
       try{localStorage.setItem('dobble_pay_email',email);}catch(e){}
       const res=await fetch(base+'/functions/v1/create-payment',{
         method:'POST',
         headers:{'Content-Type':'application/json','apikey':key,'Authorization':'Bearer '+key},
-        body:JSON.stringify({email})
+        body:JSON.stringify({email,tier})
       });
       const data=await res.json().catch(()=>({}));
       if(!res.ok||!data.url){
@@ -632,10 +733,52 @@ function dcfgSave(patch){
       }
       location.href=data.url;
     }catch(e){
-      msg.style.color='#b91c1c';
-      msg.textContent='שגיאה ביצירת התשלום: '+(e.message||e);
-      btn.disabled=false;
+      msgEl.style.color=errColor;
+      msgEl.textContent='שגיאה ביצירת התשלום: '+(e.message||e);
+      btnEl.disabled=false;
     }
+  };
+
+  // ── טאב "רכישת מנוי" במסך הנעילה ──
+  let lockTier=null;
+  window.renderTierPicker(document.getElementById('lock-tiers'),true,(tier)=>{
+    lockTier=tier;
+    document.getElementById('buy-email').hidden=false;
+    document.getElementById('buy-go').hidden=false;
+    document.getElementById('buy-email').focus();
+  });
+  document.getElementById('buy-go').addEventListener('click',()=>{
+    const email=(document.getElementById('buy-email').value||'').trim();
+    if(!lockTier)return;
+    window.payForTier(lockTier,email,document.getElementById('buy-msg'),document.getElementById('buy-go'),'#fca5a5');
+  });
+
+  // ── חלון שדרוג בתוך המחולל ──
+  const m=document.getElementById('upgrade-modal');if(!m)return;
+  let upgTier=null;
+  window.showUpgradeModal=function(){
+    document.getElementById('upg-current').textContent=String(window.currentMaxOrder?window.currentMaxOrder():7);
+    document.getElementById('upg-email-wrap').hidden=true;
+    upgTier=null;
+    window.renderTierPicker(document.getElementById('upg-tiers'),false,(tier)=>{
+      upgTier=tier;
+      document.getElementById('upg-email-wrap').hidden=false;
+      const em=document.getElementById('upg-email');
+      try{const saved=localStorage.getItem('dobble_pay_email');if(saved)em.value=saved;}catch(e){}
+      em.focus();
+    });
+    m.hidden=false;
+  };
+  function closeUpg(){m.hidden=true;}
+  document.getElementById('upg-close').addEventListener('click',closeUpg);
+  m.addEventListener('click',e=>{if(e.target===m)closeUpg();});
+  document.getElementById('upg-havecode').addEventListener('click',()=>{
+    closeUpg();window.showLockScreen&&window.showLockScreen();
+  });
+  document.getElementById('upg-pay').addEventListener('click',()=>{
+    const email=(document.getElementById('upg-email').value||'').trim();
+    if(!upgTier)return;
+    window.payForTier(upgTier,email,document.getElementById('upg-msg'),document.getElementById('upg-pay'),'#b91c1c');
   });
 })();
 
@@ -677,9 +820,10 @@ function dcfgSave(patch){
         try{localStorage.removeItem('dobble_pay_email');}catch(e){}
         setTimeout(()=>{
           m.hidden=true;
-          window.dobbleUnlock&&window.dobbleUnlock(code,'מנוי חודשי');
+          window.dobbleUnlock&&window.dobbleUnlock(code,'מנוי חודשי',data.max_order);
           try{
-            const url=new URL(location.href);url.searchParams.delete('paid');
+            const url=new URL(location.href);
+            url.searchParams.delete('paid');url.searchParams.delete('tier');
             history.replaceState({},'',url.toString());
           }catch(e){}
         },600);
@@ -1276,9 +1420,16 @@ function bestOrder(n){let b=null;for(const o of ORDERS)if(o.total<=n)b=o;return 
 function nextOrder(n){for(const o of ORDERS)if(o.total>n)return o;return null}
 
 // ══ FREEMIUM: משחק 7 חינמי לגמרי; משחקים גדולים יותר דורשים מנוי לייצוא ══
-function isFreeTier(order){return !!order&&order.total===7;}
-function isSubscribed(){try{return sessionStorage.getItem('dobble_unlocked')==='1';}catch(e){return false;}}
-function needsWatermark(){return !isFreeTier(S.order)&&!isSubscribed();}
+function currentMaxOrder(){
+  try{
+    if(sessionStorage.getItem('dobble_unlocked')!=='1')return 0;
+    const v=parseInt(sessionStorage.getItem('dobble_max_order')||'0',10);
+    return isNaN(v)?0:v;
+  }catch(e){return 0;}
+}
+window.currentMaxOrder=currentMaxOrder;
+function isWithinTier(order){return !!order&&order.total<=currentMaxOrder();}
+function needsWatermark(){return !isWithinTier(S.order);}
 
 // ══ SEEDED RANDOM ══
 function sr(seed){
@@ -2041,8 +2192,8 @@ document.getElementById('btn-dozip').addEventListener('click',()=>doExport('zip'
 document.getElementById('btn-dodxf').addEventListener('click',()=>doExport('dxf'));
 
 async function doExport(type){
-  if(!isFreeTier(S.order)&&!isSubscribed()){
-    window.showPaywall&&window.showPaywall();
+  if(!isWithinTier(S.order)){
+    window.showUpgradeModal&&window.showUpgradeModal();
     return;
   }
   resetExport();
@@ -3458,6 +3609,7 @@ function unlockFromSession(session){
   const ls=document.getElementById('lock-screen');
   if(!ls)return;
   sessionStorage.setItem('dobble_unlocked','1');
+  sessionStorage.setItem('dobble_max_order','57');   // מנויים ישנים דרך חשבון Supabase — גישה מלאה
   // שומרים מי נכנס — לקוד מנוי מוציאים את הקוד מהמייל הסינתטי; אחרת המייל האמיתי
   try{
     const email=(session.user&&session.user.email)||'';
