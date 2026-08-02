@@ -3678,6 +3678,18 @@ function dataURLtoBlob(dataURL){
 }
 function blobToDataURL(blob){return new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.readAsDataURL(blob);});}
 
+async function sbUploadRetry(path,dataURL,mime,tries=3){
+  let blob;
+  try{blob=dataURLtoBlob(dataURL);}catch(e){console.warn('bad dataURL',path,e);return false;}
+  for(let i=0;i<tries;i++){
+    const{error}=await SB.storage.from(SB_BUCKET).upload(path,blob,{contentType:mime,upsert:true});
+    if(!error)return true;
+    console.warn('upload try',i+1,path,error);
+    await new Promise(r=>setTimeout(r,400*(i+1)));
+  }
+  return false;
+}
+
 // ── ענן: רשימה / שמירה (כולל תמונות ל-Storage) / טעינה / מחיקה ──
 function isSignedIn(){return !!(SB&&authSession&&authSession.user);}
 
@@ -3700,16 +3712,18 @@ async function cloudSaveDesign(design){
   const rowId=ins.id;
   // 2) העלאת התמונות ל-Storage תחת {uid}/{rowId}/{assetId}.{jpg|png}
   const images=[];
+  let failed=0;
   for(const row of (design.rows||[])){
     const mime=dataURLMime(row.dataURL);
     const ext=mime==='image/png'?'png':'jpg';
     const path=`${uid}/${rowId}/${row.id}.${ext}`;
-    const{error:e2}=await SB.storage.from(SB_BUCKET).upload(path,dataURLtoBlob(row.dataURL),{contentType:mime,upsert:true});
-    if(e2)throw e2;
+    const ok=await sbUploadRetry(path,row.dataURL,mime);
+    if(!ok){failed++;continue;}
     images.push({id:row.id,name:row.name,type:row.type,srcAssetId:row.srcAssetId||null,isCropSource:row.isCropSource||false,selected:row.selected!==false,path});
   }
-  // 3) עדכון השורה עם נתיבי התמונות
+  // 3) עדכון השורה עם נתיבי התמונות (רץ תמיד — גם אם חלק נכשלו)
   await SB.from('designs').update({game_data:{settings:design.settings||{},symbolCount:images.length,images}}).eq('id',rowId);
+  if(failed)toast(`${failed} תמונות לא עלו — נסה לשמור שוב`,'warn');
   return rowId;
 }
 
@@ -3743,13 +3757,14 @@ async function cloudAutosave(){
     const existing=(ex&&ex.game_data&&ex.game_data.images)||[];
     const havePaths=new Set(existing.map(im=>im.path));
     const images=[];
+    let failed=0;
     for(const row of (design.rows||[])){
       const mime=dataURLMime(row.dataURL);
       const ext=mime==='image/png'?'png':'jpg';
       const path=`${uid}/${rowId}/${row.id}.${ext}`;
       if(!havePaths.has(path)){                    // דלג על מה שכבר הועלה (אותו id = אותו path)
-        const{error:e2}=await SB.storage.from(SB_BUCKET).upload(path,dataURLtoBlob(row.dataURL),{contentType:mime,upsert:true});
-        if(e2)throw e2;
+        const ok=await sbUploadRetry(path,row.dataURL,mime);
+        if(!ok){failed++;continue;}
       }
       images.push({id:row.id,name:row.name,type:row.type,srcAssetId:row.srcAssetId||null,isCropSource:row.isCropSource||false,selected:row.selected!==false,path});
     }
@@ -3757,8 +3772,9 @@ async function cloudAutosave(){
     const keep=new Set(images.map(im=>im.path));
     const stale=existing.map(im=>im.path).filter(p=>p&&!keep.has(p));
     if(stale.length){try{await SB.storage.from(SB_BUCKET).remove(stale);}catch(e){}}
+    // עדכון רץ תמיד — גם אם חלק נכשלו; dirty נשאר true כדי שהאוטוסייב הבא ישלים
     await SB.from('designs').update({game_data:{settings:design.settings||{},symbolCount:images.length,images}}).eq('id',rowId);
-    _cloudAutoDirty=false;
+    _cloudAutoDirty=(failed>0);
   }catch(e){console.warn('cloudAutosave:',e);}
   finally{_cloudAutoBusy=false;}
 }
