@@ -2819,7 +2819,18 @@ async function idbOpen(){
     r.onerror=e=>rej(e.target.error);
   });
 }
+// גרסה רזה — metadata בלבד, בלי dataURL. משמשת לשמירת "עיצובים שמורים" מקומית (IDB_DESIGNS)
+// כדי למנוע חריגה ממכסת האחסון של IndexedDB כשנצברים הרבה עיצובים שמורים עם תמונות מלאות.
 function assetsToRows(){
+  return S.assets.map(a=>({
+    id:a.id,type:a.type,name:a.name,
+    srcAssetId:a.srcAssetId||null,isCropSource:a.isCropSource||false,selected:a.selected!==false
+  }));
+}
+
+// גרסה מלאה — כוללת dataURL. משמשת לגיבוי הרציף של המאגר הנוכחי (idbSave/idbLoad, כדי לשרוד
+// רענון דף) ולהעלאת תמונות אמיתיות לענן (buildDesignObject → cloudSaveDesign/cloudAutosave).
+function assetsToRowsWithImages(){
   return S.assets.map(a=>{
     const w=imgNatW(a.imgEl),h=imgNatH(a.imgEl);
     const cv=document.createElement('canvas');cv.width=w;cv.height=h;
@@ -2835,7 +2846,7 @@ function schedIdbSave(){clearTimeout(_idbTimer);_idbTimer=setTimeout(idbSave,800
 async function idbSave(){
   try{
     const db=await idbOpen();
-    const rows=assetsToRows();
+    const rows=assetsToRowsWithImages();   // גיבוי רציף — צריך תמונות מלאות כדי לשרוד רענון דף
     const tx=db.transaction(IDB_STORE,'readwrite');
     tx.objectStore(IDB_STORE).put(rows,'all');
     await new Promise(r=>{tx.oncomplete=r;tx.onerror=()=>r();});
@@ -2875,30 +2886,36 @@ async function saveDesign(){
   const name=(prompt('שם לעיצוב:',defName)||'').trim();
   if(!name)return;
   try{
-    const design={name,date:new Date().toLocaleString('he-IL'),rows:assetsToRows(),
-      settings:{shape:S.shape,sMin:S.sMin,sMax:S.sMax,seed:S.seed,layoutMode:S.layoutMode,
-        cardSizeMm:S.cardSizeMm,spacingMm:S.spacingMm,startPos:S.startPos,
-        frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),symPad:S.symPad,overlap:S.overlap,
-        orderTotal:S.order?S.order.total:null}};
+    const settings={shape:S.shape,sMin:S.sMin,sMax:S.sMax,seed:S.seed,layoutMode:S.layoutMode,
+      cardSizeMm:S.cardSizeMm,spacingMm:S.spacingMm,startPos:S.startPos,
+      frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),symPad:S.symPad,overlap:S.overlap,
+      orderTotal:S.order?S.order.total:null};
+    // שמירה מקומית — metadata בלבד (בלי dataURL), כדי לא לחרוג ממכסת האחסון של IndexedDB
+    const date=new Date().toLocaleString('he-IL');
+    const design={name,date,rows:assetsToRows(),settings};
     const db=await idbOpen();
     const tx=db.transaction(IDB_DESIGNS,'readwrite');
     tx.objectStore(IDB_DESIGNS).put(design,name);
     await new Promise(r=>{tx.oncomplete=r;tx.onerror=()=>r();});
     toast(`העיצוב "${name}" נשמר 💾`,'ok');
     renderDesigns();
-    // אם מחוברים — גיבוי לחשבון כולל התמונות (ברקע)
+    // אם מחוברים — גיבוי לחשבון כולל התמונות האמיתיות (ברקע), ל-Supabase Storage ולא ל-IndexedDB
     if(isSignedIn()){
       try{
         const cloud=await cloudListDesigns();
-        if(!cloud.some(c=>c.name===name)){await cloudSaveDesign(design);toast('גובה לחשבון ☁️','ok');renderDesigns();}
+        if(!cloud.some(c=>c.name===name)){
+          const cloudDesign={name,date,rows:assetsToRowsWithImages(),settings};
+          await cloudSaveDesign(cloudDesign);toast('גובה לחשבון ☁️','ok');renderDesigns();
+        }
       }catch(e){console.warn('cloud backup on save:',e);}
     }
   }catch(e){console.warn('saveDesign:',e);toast('שמירת העיצוב נכשלה','err');}
 }
 
-// בונה אובייקט עיצוב מהמצב הנוכחי (שם + תמונות + הגדרות)
+// בונה אובייקט עיצוב מהמצב הנוכחי (שם + תמונות + הגדרות) — כולל dataURL מלא, לשימוש
+// בנתיבי ענן בלבד (cloudAutosave / sendStuckToAdmin), שמעלים את התמונות בפועל ל-Supabase Storage
 function buildDesignObject(name){
-  return {name,date:new Date().toLocaleString('he-IL'),rows:assetsToRows(),
+  return {name,date:new Date().toLocaleString('he-IL'),rows:assetsToRowsWithImages(),
     settings:{shape:S.shape,sMin:S.sMin,sMax:S.sMax,seed:S.seed,layoutMode:S.layoutMode,
       cardSizeMm:S.cardSizeMm,spacingMm:S.spacingMm,startPos:S.startPos,
       frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),symPad:S.symPad,overlap:S.overlap,
@@ -2981,13 +2998,24 @@ function applySettingsToUI(st){
 async function applyDesignToState(d){
   S.assets.forEach(a=>{if(a.type==='image'&&a.url)URL.revokeObjectURL(a.url);});
   S.assets=[];S.idSeq=0;
+  let missingImages=0;
   for(const row of (d.rows||[])){
+    if(!row.dataURL){
+      // עיצוב שנשמר בגרסה הרזה (metadata בלבד) — אין תמונה לשחזר, מדלגים בלי לגרום לכשל
+      console.warn('applyDesign item: missing dataURL for',row.name||row.id);
+      missingImages++;
+      if(row.id>=S.idSeq)S.idSeq=row.id;
+      continue;
+    }
     try{
       const imgEl=await loadImg(row.dataURL);
       S.assets.push({id:row.id,type:row.type,name:row.name,url:'',thumb:makeThumb(imgEl),imgEl,
                       srcAssetId:row.srcAssetId||undefined,isCropSource:row.isCropSource||false,selected:row.selected!==false});
       if(row.id>=S.idSeq)S.idSeq=row.id;
     }catch(e){console.warn('applyDesign item:',e);}
+  }
+  if(missingImages>0){
+    toast('יש לי תמונה שנשמרה, אבל היא לא מצאו בחומר הגיבוי. אנא העלו את הקובץ שוב.','err');
   }
   const st=d.settings||{};
   Object.assign(S,{shape:st.shape||'circle',sMin:st.sMin??.7,sMax:st.sMax??1.3,
