@@ -914,6 +914,8 @@ function dcfgSave(patch){
       <div class="uz-hint">PNG · JPG · SVG · WebP · ניתן לבחור מספר קבצים</div>
       <input type="file" id="fi" multiple accept="image/*" style="display:none">
     </div>
+    <button type="button" id="uz-files-btn" class="uz-files-btn" style="margin-top:.5rem;width:100%;padding:.55rem;border:1px dashed var(--line,#ccc);border-radius:.6rem;background:transparent;cursor:pointer;font-size:.9rem">📁 בחירת קבצים מרובים (שיאומי / אנדרואיד)</button>
+    <input type="file" id="fiDocs" multiple style="display:none">
 
     <!-- ── חבילות תמונות מוכנות ── -->
     <div id="packs-wrap" class="packs" style="display:none">
@@ -1597,6 +1599,9 @@ uz.addEventListener('dragover',e=>{e.preventDefault();uz.classList.add('over');}
 uz.addEventListener('dragleave',()=>uz.classList.remove('over'));
 uz.addEventListener('drop',e=>{e.preventDefault();uz.classList.remove('over');addFiles(e.dataTransfer.files);});
 fi.addEventListener('change',e=>{addFiles(e.target.files);fi.value='';});
+const fiDocs=document.getElementById('fiDocs');
+document.getElementById('uz-files-btn').addEventListener('click',()=>fiDocs.click());
+fiDocs.addEventListener('change',e=>{addFiles(e.target.files);fiDocs.value='';});
 
 async function addFiles(files){
   const imgs=Array.from(files).filter(f=>f.type.startsWith('image/')||/\.(heic|heif|avif)$/i.test(f.name));
