@@ -30,7 +30,7 @@
 
 ### IndexedDB overflow
 - סיבה: בעבר `assetsToRows()` הטמיע `dataURL` מלא (base64), ו-`saveDesign()` כתב אותו ל-`IDB_DESIGNS` — שורה עמוסת-תמונות לכל עיצוב, עד חריגת quota.
-- תיקון (חי ב-`main`; לפי הסיכום PR #24): `saveDesign()`→`IDB_DESIGNS` כותב lean בלבד. התמונות חיות בזיכרון (`imgEl`) למשך ה-session; store מאגר-העבודה (`IDB_STORE` דרך `idbSave`) עדיין מחזיק תמונות מלאות כדי לשחזר את הגלריה אחרי רענון.
+- תיקון (חי ב-`main`, PR #24 — ברנץ' `claude/dobble-idb-overflow-fix`): `saveDesign()`→`IDB_DESIGNS` כותב lean בלבד. התמונות חיות בזיכרון (`imgEl`) למשך ה-session; store מאגר-העבודה (`IDB_STORE` דרך `idbSave`) עדיין מחזיק תמונות מלאות כדי לשחזר את הגלריה אחרי רענון.
 - טעינת עיצוב lean שתמונותיו לא זמינות → מדלג ומציג toast של העלאה-מחדש; עיצובים ישנים עם `dataURL` עדיין נטענים.
 
 ### Cloud autosave (נבדל מ-`idbSave` המקומי)
