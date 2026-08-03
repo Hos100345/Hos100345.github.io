@@ -1627,10 +1627,19 @@ async function addFiles(files){
     }catch(e){URL.revokeObjectURL(url);failedNames.push(f.name);console.warn('upload failed:',f.name,e?.message||e);}
   }
   if(okCount){toast(`נוספו ${okCount} תמונות למאגר ✓`,'ok');schedIdbSave();}
-  if(failedNames.length)alert(`${failedNames.length} תמונות לא נטענו:\n${failedNames.join('\n')}\n\nנסה פורמטים אחרים: PNG, JPG, WebP, SVG.`);
+  if(failedNames.length)alert(`${failedNames.length} תמונות לא נטענו:\n${failedNames.join('\n')}\n\nנסה פורמטים אחרים: PNG, JPG, WebP, SVG. אם התמונה מאייפון וסיומתה .jpg — ייתכן שהיא בפועל HEIC; נסה לשמור/לייצא אותה מחדש כ-JPG או PNG ולהעלות שוב. (הסיבה המדויקת לכשל מופיעה בקונסול)`);
 }
 
 function isHeicFile(f){return /\.(heic|heif)$/i.test(f.name)||f.type==='image/heic'||f.type==='image/heif';}
+// זיהוי HEIC/HEIF לפי magic bytes (תיבת ftyp) — תופס קבצים עם סיומת שגויה (למשל HEIC בפועל עם סיומת .jpg, נפוץ ביציאה מאייפון)
+async function sniffHeic(f){
+  try{
+    const b=new Uint8Array(await f.slice(0,16).arrayBuffer());
+    if(b[4]!==0x66||b[5]!==0x74||b[6]!==0x79||b[7]!==0x70)return false; // "ftyp"
+    const brand=String.fromCharCode(b[8],b[9],b[10],b[11]);
+    return /^(heic|heix|hevc|hevx|heim|heis|hevm|hevs|mif1|msf1|heif)/.test(brand);
+  }catch{return false;}
+}
 async function ensureHeic2Any(){
   if(typeof heic2any!=='undefined')return true;
   try{
@@ -1642,27 +1651,37 @@ async function ensureHeic2Any(){
     return true;
   }catch{return false;}
 }
+async function convertHeicAndLoad(f){
+  const ok=await ensureHeic2Any();
+  if(!ok)throw new Error('נדרש חיבור לאינטרנט לטעינת ממיר HEIC');
+  const result=await heic2any({blob:f,toType:'image/jpeg',quality:0.92});
+  const blob=Array.isArray(result)?result[0]:result;
+  const jUrl=URL.createObjectURL(blob);
+  try{return await loadImg(jUrl);}finally{URL.revokeObjectURL(jUrl);}
+}
 
 async function loadImgFile(f,url){
   // HEIC/HEIF (iPhone photos): not supported natively on Android/Windows — convert via heic2any
-  if(isHeicFile(f)){
-    const ok=await ensureHeic2Any();
-    if(!ok)throw new Error('נדרש חיבור לאינטרנט לטעינת ממיר HEIC');
-    const result=await heic2any({blob:f,toType:'image/jpeg',quality:0.92});
-    const blob=Array.isArray(result)?result[0]:result;
-    const jUrl=URL.createObjectURL(blob);
-    try{return await loadImg(jUrl);}finally{URL.revokeObjectURL(jUrl);}
-  }
+  // מזוהה לפי סיומת/type, ואם לא — לפי magic bytes (תופס קבצי HEIC עם סיומת .jpg שגויה)
+  if(isHeicFile(f)||await sniffHeic(f))return convertHeicAndLoad(f);
   if(typeof createImageBitmap==='function'){
     try{
       const bmp=await createImageBitmap(f);
       const{w,h}=fitLongSide(bmp.width,bmp.height,LOAD_MAX);
       const c=document.createElement('canvas');c.width=w;c.height=h;
       c.getContext('2d').drawImage(bmp,0,0,w,h);bmp.close&&bmp.close();return c;
-    }catch{}
+    }catch(e){console.warn('createImageBitmap failed:',f.name,e?.message||e);}
   }
   // Final fallback: via HTMLImageElement + blob URL
-  return loadImg(url);
+  try{
+    return await loadImg(url);
+  }catch(e){
+    try{
+      return await convertHeicAndLoad(f); // מוצא אחרון: אולי HEIC מוסווה שה-sniff פספס
+    }catch{
+      throw new Error(`decode failed ${f.name} (type=${f.type||'?'}): ${e?.message||'load error'}`);
+    }
+  }
 }
 
 function makeThumb(imgEl){
@@ -3884,7 +3903,7 @@ function loadImg(url){
         c.getContext('2d').drawImage(img,0,0,w,h);res(c);
       }catch(e){rej(e);}
     };
-    img.onerror=rej;img.src=url;
+    img.onerror=()=>rej(new Error('image load/decode error'));img.src=url;
   });
 }
 function tick(){return new Promise(r=>setTimeout(r,0));}
