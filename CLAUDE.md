@@ -11,6 +11,26 @@
 - ספריות: jsPDF, JSZip, Supabase, heic2any (המרת HEIC מ-iPhone).
 - Supabase: project ref `sccivxenkyzxolpraexf`, region `eu-west-2`. auth = Magic Link (מייל, בלי סיסמאות).
 
+## סטטוס עבודה נוכחי (מעודכן 2026-08-03 — עדכנו את זה בכל סבב עבודה)
+
+### מוזג ל-main ופעיל באתר
+- **מודל גישה מדורג (PR #19)** — הכניסה חסומה שוב (בטל את מודל ה-freemium הפתוח מ-PR #17/#18). שלושה מסלולים: קוד קיים / הרשמה חינם (7 קלפים, `max_order:7`) / רכישת מנוי (13/21/31/57 קלפים). ראו "מונטיזציה" למטה לפרטים המלאים.
+- **תיקון גלישת IndexedDB (PR #24)** — `assetsToRows()` lean מול `assetsToRowsWithImages()` full. מתועד ב-Persistence internals למעלה.
+- **fallback לענן בטעינת עיצוב מקומי (PR #29, פתוח — ממתין לאישור)** — `loadDesign()` בודק אם לשורות המקומיות יש בפועל `dataURL`; אם לא ויש סשן מחובר, מחפש התאמה בעיצובי הענן וטוען דרך `loadCloudDesign()` במקום מ-metadata ריק.
+- **העלאה עמידה לענן (PR #26)** — `sbUploadRetry(path,dataURL,mime,tries=3)`: עד 3 ניסיונות עם back-off, לא מפיל את כל השמירה אם תמונה בודדת נכשלת. ב-`cloudSaveDesign` וב-`cloudAutosave`.
+- **גודל ומיקום סמלים** — כוונן כמה פעמים (PR #20 → #22 מצמצם ל-10% מעל הבסיס), סליידר "חפיפה" (PR #23, `S.overlap`, מקרב סמלים בלי לשנות גודל), מרווח thumbnails גדול יותר (PR #21).
+- **צורת סמל (PR #28)** — `S.symShape`, ברירת מחדל `'circle'` (חיתוך אוטומטי סביב `drawCover()`, לא שינוי שלו), אופציה `'square'`. **עיצובים ישנים בלי `symShape` נטענים כעיגול** — אם מישהו רוצה לשמר סמלים מרובעים מעיצוב ישן, צריך לפתוח, לשנות ידנית ל-square, לשמור מחדש.
+- **תיקון טעינת JPG/HEIC מוסווה (PR #30, פתוח — ממתין לאישור)** — `sniffHeic()` מזהה HEIC לפי magic bytes (תיבת `ftyp`) גם כשהסיומת `.jpg` שגויה (נפוץ מאייפון); `convertHeicAndLoad()` מרכז את נתיב ה-heic2any כדי לא לשכפל קוד; `loadImg`'s `onerror` מחזיר `Error` אמיתי במקום Event גולמי.
+- **CLAUDE.md** ו**בורר קבצים שני להעלאה מרובה ב-Xiaomi/MIUI** (PR #27) — לא ממני, נמזגו כבר.
+
+### פתוח / ממתין (טרם מוזג)
+- **PR #29** — fallback לענן בטעינת עיצוב מקומי (למעלה).
+- **PR #30** — תיקון JPG/HEIC מוסווה (למעלה).
+- **PR #31** — הוספת `amount: price` ל-payload של `create-payment` (`supabase/functions/create-payment/index.ts`) — מתקן `errorCode 2417` מ-Morning ("סכום מסמך לא תקין"). **זו הפעם הראשונה שקוד `create-payment` נכנס לגיט** (עד עכשיו נפרס ישירות דרך Supabase MCP בלי מעקב גיט). **⚠️ מיזוג ה-PR לא מספיק — צריך redeploy מפורש דרך Supabase MCP/CLI אחרי המיזוג**, אחרת השינוי לא חי בפרודקשן.
+
+### בעיה ידועה — מסוף סליקה Morning
+`create-payment` נכשל בעבר עם `errorCode 2600` ("לא נמצא מסוף סליקה פעיל") — זו בעיה בהגדרות חשבון Morning (לא בקוד), צריך לחבר אמצעי תשלום בדשבורד של Morning. הושעיה דיווח שתיקן את זה, אבל **לא אומת עדיין בפועל** — הלוגים (`get_logs` על `edge-function`) לא הראו ניסיון חדש מאז. אם מישהו מנסה לרכוש ומקבל שגיאה — לבדוק קודם את הלוגים לפני שמניחים שזה קוד.
+
 ## ⛔ אילוצים קריטיים בקוד הפרונט — לא לגעת
 1. **מתמטיקת GF(4)** של Dobble היא load-bearing. אין לשנות אותה בשום מצב.
 2. **ציור תמונה ריבועית = `drawCover()`**, לא `drawImage` מתוח. אחרת העיוות חוזר באופן גלוי.
@@ -39,21 +59,32 @@
 - Flush: `visibilitychange`(hidden) ו-`pagehide`, מוגן ע"י `_cloudAutoDirty`; best-effort בסגירה.
 - מדלג על תמונות שה-`path` שלהן (`${uid}/${rowId}/${row.id}.${ext}`) כבר קיים; מוחק מ-Storage קבצים של assetים שנמחקו. השורות נבנות דרך `assetsToRowsWithImages()`.
 
-## גישה ומנויים — שני מנגנונים (חשוב להבחין!)
-1. **קוד גישה מקומי** (בקובץ `js/dobble-config.js`): קוד משותף/גלובלי, לא מזוהה ללקוח. חסימה = החלפת הקוד בקובץ. אין אכיפת תוקף אוטומטית, אין סנכרון תמונות אישי.
-2. **מנוי** (חשבון ב-Supabase, טבלת `profiles`): קוד אישי לכל לקוח (4–20 תווים, בלי רווחים), תוקף נאכף אוטומטית, תמונות מסונכרנות בין מכשירים, פעילות אישית בדשבורד. **המנגנון המומלץ ללקוחות.**
-- אכיפת תוקף: מנוי שפג/הושבת נחסם עם הודעה + קישור חידוש. **המנהל לעולם לא נחסם.** תקלת רשת רגעית = fail-open (לא חוסם בטעות). הזנת קוד קיים = חידוש/הארכה, לא כפילות.
+## גישה — שלושה מנגנונים (חשוב להבחין!)
+1. **`dobble_access_codes` + `max_order` (נוכחי, PR #19)** — הקוד שכל משתמש חדש מקבל: `validate-code`/`register-free`/`claim-code`. `max_order` קובע איזה גודל משחק נפתח במלואו. ראו "מונטיזציה" למטה.
+2. **קוד גישה מקומי (legacy)** (בקובץ `js/dobble-config.js`): קוד משותף/גלובלי, לא מזוהה ללקוח. חסימה = החלפת הקוד בקובץ. אין אכיפת תוקף אוטומטית, אין סנכרון תמונות אישי. נכנס תמיד עם `max_order:57` (גישה מלאה).
+3. **מנוי Supabase Auth (legacy)** (חשבון ב-Supabase, טבלת `profiles`): קוד אישי לכל לקוח (4–20 תווים, בלי רווחים) שהוא בפועל סיסמה לחשבון עם אימייל סינתטי (`{code}@sub.hoshaya.co.il`); תוקף נאכף אוטומטית מול `profiles.subscription_expires`, תמונות מסונכרנות בין מכשירים דרך `designs`/Storage. נכנס עם `max_order:57`.
+- אכיפת תוקף (מנגנון 3 בלבד): מנוי שפג/הושבת נחסם עם הודעה + קישור חידוש. **המנהל לעולם לא נחסם.** תקלת רשת רגעית = fail-open (לא חוסם בטעות). הזנת קוד קיים = חידוש/הארכה, לא כפילות.
 
-## מונטיזציה (freemium)
-- **חינם:** 7 סמלים, כולל ייצוא.
-- **בתשלום:** 13/21/31/57 סמלים — watermark אלכסוני מונפש ("תצוגה מקדימה"); הייצוא נעול מאחורי מנוי חודשי.
-- תשלום: **Morning (חשבונית ירוקה) + תוסף סליקה Meshulam** (הכרחי ליצירת קישור תשלום). אחרי תשלום הלקוח בוחר קוד גישה אישי לחודש; לקוח חוזר מזין קוד במסך הנעילה.
+## מונטיזציה — מודל גישה מדורג (PR #19, נוכחי; מחליף freemium פתוח מ-PR #17/#18)
+**הכניסה חסומה — אין גישה למחולל בלי קוד, כולל הרמה החינמית.** מסך הכניסה: שלושה טאבים.
+
+| מסלול | תוצאה |
+|---|---|
+| "יש לי קוד" | `validate-code` → `max_order` מהקוד הקיים |
+| "הרשמה חינם" | `register-free` → `max_order:7`, קוד אישי שהמשתמש בוחר |
+| "רכישת מנוי" | בחירת רמה (13/21/31/57 קלפים = 5/10/12/15 ₪) → `create-payment` → Morning |
+
+- `max_order` נשמר ב-`sessionStorage` אחרי כניסה. גדלים **עד** `max_order` עובדים במלואם כולל ייצוא; גדלים **מעל** — תצוגה מקדימה עם watermark אלכסוני, והייצוא פותח חלון שדרוג (אותה טבלת מחירים).
+- קודים ישנים/מנהל/מנויי Supabase Auth (מנגנון legacy, ראו "גישה" למעלה) → `max_order:57` (גישה מלאה), לא צריך הרשמה מחדש.
+- אחרי תשלום: Morning מחזיר ל-`dobble.html?paid=1&tier=N` → נפתח מסך בחירת קוד אישי → `claim-code` (מאתר עסקה לפי אימייל, מחזיר `max_order` לפי הרמה ששולמה).
+- תשלום: **Morning (חשבונית ירוקה)**, `create-payment` יוצר את קישור התשלום. דורש מסוף סליקה מחובר בחשבון Morning (ראו "בעיה ידועה" למעלה).
 
 ## Supabase — סכמה ופונקציות
-- **טבלאות:** `profiles` (מנויים; כולל `subscription_expires`, `subscriber_status`, `label`) · `designs` (עיצובים שמורים) · `events` (מעקב פעילות: כניסה / יצירת משחק / הדפסה — מכל מכשיר).
-- **Storage bucket `symbols`:** תמונות פרטיות לכל משתמש.
-- **Edge Functions:** `manage-subscriber` (יצירה/חידוש/מחיקה/רשימה — מנהל בלבד, service_role) · `create-payment` (מאומת עובד) · `morning-webhook` (event `payment/received`, `verify_jwt=false`, ללא secret).
-- כל ה-SQL והפונקציות בריפו תחת `supabase/`.
+- **טבלאות:** `profiles` (מנויי Auth legacy; כולל `subscription_expires`, `subscriber_status`, `label`) · `designs` (עיצובים שמורים, מנויי Auth) · `events` (מעקב פעילות) · `dobble_access_codes` (**המנגנון הנוכחי** — `code`, `type`, `max_order`, `expires_at`, `usage_limit`, `current_usage`, `created_for`, `is_active`) · `dobble_transactions` (עסקאות Morning — `customer_email`, `amount`, `tier`, `status`, `claimed_at`, `claimed_code`).
+- **Storage bucket `symbols`:** תמונות פרטיות לכל משתמש (מנויי Auth legacy בלבד).
+- **Edge Functions (המנגנון הנוכחי):** `validate-code` (בודק קוד מול `dobble_access_codes` דרך RPC `redeem_access_code`, מחזיר `max_order`) · `register-free` (RPC `register_free_code`, קוד חינמי אחד לאימייל, `max_order:7`) · `create-payment` (`{email,tier}` ← 13/21/31/57, יוצר דרישת תשלום ב-Morning, מחזיר `{url,tier,price}`) · `claim-code` (אחרי תשלום — RPC `claim_access_code`, מאתר עסקה `paid`+לא ממומשת לפי אימייל, יוצר/מחדש קוד, מחזיר `max_order`).
+- **Edge Functions (legacy):** `manage-subscriber` (ניהול `profiles` — מנהל בלבד, service_role) · `morning-webhook` (`event payment/received`, `verify_jwt=false`, ללא secret — כותב ל-`dobble_transactions`).
+- כל ה-SQL בריפו תחת `supabase/`. **לא כל הפונקציות מתועדות שם** — עד PR #31 אף אחת מ-`validate-code`/`register-free`/`create-payment`/`claim-code` לא הייתה בגיט, רק פרוסה ישירות דרך Supabase MCP. לפני שנוגעים בפונקציה — לבדוק קודם עם `get_edge_function` מה חי בפועל, לא לסמוך על מה שבגיט.
 
 ## 🔒 עקרונות אבטחה (קריטי)
 - **אימות בצד שרת בלבד.** אסור לגזור הרשאה ממשתנה JS בדפדפן (כמו `isPaid=true`) — ניתן לעקוף ב-DevTools. שחרור ייצוא רק מול אישור שרת.
@@ -65,6 +96,7 @@
 
 ## Edge Functions — פריסה
 - **לא נפרסים אוטומטית מ-GitHub.** כל שינוי בקבצי `supabase/functions/` דורש redeploy מפורש (CLI/MCP). `verify_jwt=false` נדרש לפונקציות webhook.
+- **⚠️ `create-payment` — שדה `amount` ברמת ה-payload העליונה (לצד `income[]`) חובה, אחרת Morning מחזיר `errorCode 2417`.** השדה הזה כבר נשמט פעם אחת בשכתוב קודם (כשנוסף תמיכה ב-tier) וגרם לרגרסיה שקטה — עכשיו שהקובץ בגיט (PR #31), לוודא שהוא נשאר בכל שכתוב עתידי.
 
 ## Workflow (git)
 - ברנץ' ייעודי `claude/<שם-מתאר>`. לפני commit: `git diff --stat` + `node --check` על כל בלוק סקריפט.
