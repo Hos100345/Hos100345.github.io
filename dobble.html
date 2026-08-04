@@ -679,8 +679,15 @@ function dcfgSave(patch){
 <!-- ══ תשלום מדורג: בחירת רמה + רכישה + בחירת קוד אישי אחרי תשלום ══ -->
 <script>
 (function(){
-  // מדרגות המחיר — תואם לטבלה ב-create-payment
+  // מדרגות המחיר — תואם לטבלה ב-morning-webhook (allowlist לפי productId)
   window.TIER_PRICES={13:5,21:10,31:12,57:15};
+  // לינקי תשלום קבועים ב-Morning לכל מדרגה — ה-webhook מזהה תשלום לפי productId+amount ומעניק גישה
+  window.PAYMENT_LINKS={
+    13:'https://mrng.to/IC0mmKwgzj',
+    21:'https://mrng.to/feHfaA6vLA',
+    31:'https://mrng.to/4LjUZBvnND',
+    57:'https://mrng.to/9F19TfbGTa'
+  };
 
   // בונה שורות בחירת רמה בתוך container; onPick(tier) נקרא כשנבחרת רמה
   window.renderTierPicker=function(container,dark,onPick){
@@ -708,60 +715,49 @@ function dcfgSave(patch){
     });
   };
 
-  // מבצע את הקריאה ל-create-payment ומפנה לתשלום
-  window.payForTier=async function(tier,email,msgEl,btnEl,errColor){
-    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){msgEl.style.color=errColor;msgEl.textContent='נא להזין כתובת מייל תקינה';return;}
-    const cfg=window.SUPABASE_CONFIG||{};
-    const base=cfg.url||'',key=cfg.anonKey||'';
-    if(!base||!key){msgEl.style.color=errColor;msgEl.textContent='שירות התשלום אינו זמין כרגע';return;}
-    btnEl.disabled=true;
-    msgEl.style.color='';msgEl.textContent='פותח חלון תשלום…';
-    try{
-      try{localStorage.setItem('dobble_pay_email',email);}catch(e){}
-      const res=await fetch(base+'/functions/v1/create-payment',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','apikey':key,'Authorization':'Bearer '+key},
-        body:JSON.stringify({email,tier})
-      });
-      const data=await res.json().catch(()=>({}));
-      if(!res.ok||!data.url){
-        console.error('create-payment failed:',res.status,data);
-        const upstream=data&&(data.detail||data.raw);
-        const bits=[data&&data.error?data.error:('http_'+res.status)];
-        if(upstream)bits.push(JSON.stringify(upstream).slice(0,300));
-        throw new Error(bits.join(' — '));
-      }
-      location.href=data.url;
-    }catch(e){
-      msgEl.style.color=errColor;
-      msgEl.textContent='שגיאה ביצירת התשלום: '+(e.message||e);
-      btnEl.disabled=false;
-    }
+  // פותח את לינק התשלום הקבוע של המדרגה בכרטיסייה חדשה (Morning אינו מפנה חזרה אוטומטית —
+  // ה-webhook מזהה את התשלום לפי productId+amount, וה"שילמתי" למטה פותח את מסך בחירת הקוד)
+  window.payForTier=function(tier,email,msgEl,btnEl,errColor){
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){msgEl.style.color=errColor;msgEl.textContent='נא להזין כתובת מייל תקינה';return false;}
+    const link=window.PAYMENT_LINKS[tier];
+    if(!link){msgEl.style.color=errColor;msgEl.textContent='שירות התשלום אינו זמין כרגע';return false;}
+    try{localStorage.setItem('dobble_pay_email',email);}catch(e){}
+    window.open(link,'_blank','noopener');
+    msgEl.style.color='';
+    msgEl.textContent='נפתח חלון תשלום בכרטיסייה חדשה — חשוב להזין שם את אותו אימייל ('+email+'). אחרי התשלום, חזרו לכאן ולחצו שוב.';
+    return true;
   };
 
   // ── טאב "רכישת מנוי" במסך הנעילה ──
-  let lockTier=null;
+  let lockTier=null,lockPaid=false;
   window.renderTierPicker(document.getElementById('lock-tiers'),true,(tier)=>{
-    lockTier=tier;
+    lockTier=tier;lockPaid=false;
+    document.getElementById('buy-go').textContent='מעבר לתשלום';
     document.getElementById('buy-email').hidden=false;
     document.getElementById('buy-go').hidden=false;
     document.getElementById('buy-email').focus();
   });
   document.getElementById('buy-go').addEventListener('click',()=>{
     const email=(document.getElementById('buy-email').value||'').trim();
+    if(lockPaid){window.showClaimScreen&&window.showClaimScreen(email);return;}
     if(!lockTier)return;
-    window.payForTier(lockTier,email,document.getElementById('buy-msg'),document.getElementById('buy-go'),'#fca5a5');
+    if(window.payForTier(lockTier,email,document.getElementById('buy-msg'),document.getElementById('buy-go'),'#fca5a5')){
+      lockPaid=true;
+      document.getElementById('buy-go').textContent='שילמתי — בחר קוד ✓';
+    }
   });
 
   // ── חלון שדרוג בתוך המחולל ──
   const m=document.getElementById('upgrade-modal');if(!m)return;
-  let upgTier=null;
+  let upgTier=null,upgPaid=false;
   window.showUpgradeModal=function(){
     document.getElementById('upg-current').textContent=String(window.currentMaxOrder?window.currentMaxOrder():7);
     document.getElementById('upg-email-wrap').hidden=true;
-    upgTier=null;
+    upgTier=null;upgPaid=false;
+    document.getElementById('upg-pay').textContent='מעבר לתשלום';
     window.renderTierPicker(document.getElementById('upg-tiers'),false,(tier)=>{
-      upgTier=tier;
+      upgTier=tier;upgPaid=false;
+      document.getElementById('upg-pay').textContent='מעבר לתשלום';
       document.getElementById('upg-email-wrap').hidden=false;
       const em=document.getElementById('upg-email');
       try{const saved=localStorage.getItem('dobble_pay_email');if(saved)em.value=saved;}catch(e){}
@@ -777,8 +773,12 @@ function dcfgSave(patch){
   });
   document.getElementById('upg-pay').addEventListener('click',()=>{
     const email=(document.getElementById('upg-email').value||'').trim();
+    if(upgPaid){closeUpg();window.showClaimScreen&&window.showClaimScreen(email);return;}
     if(!upgTier)return;
-    window.payForTier(upgTier,email,document.getElementById('upg-msg'),document.getElementById('upg-pay'),'#b91c1c');
+    if(window.payForTier(upgTier,email,document.getElementById('upg-msg'),document.getElementById('upg-pay'),'#b91c1c')){
+      upgPaid=true;
+      document.getElementById('upg-pay').textContent='שילמתי — בחר קוד ✓';
+    }
   });
 })();
 
@@ -837,7 +837,8 @@ function dcfgSave(patch){
     btn.disabled=false;
   });
 
-  // חזרה מתשלום מוצלח: פותחים אוטומטית את מסך בחירת הקוד
+  // חזרה מתשלום מוצלח (legacy — קישורי Morning הקבועים לא מפנים חזרה עם ?paid=1 יותר;
+  // נשאר כ-fallback לא מזיק, המסלול הפעיל הוא כפתור "שילמתי — בחר קוד"): פותחים אוטומטית את מסך בחירת הקוד
   try{
     const paid=new URLSearchParams(location.search).get('paid');
     if(paid==='1'){
