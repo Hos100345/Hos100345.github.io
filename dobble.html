@@ -1306,7 +1306,10 @@ function dcfgSave(patch){
       <div class="adm-hint2">כתובת ה-Web App שאוסף פעילות לגיליון (ריק = מעקב כבוי). ראו analytics-endpoint.gs.</div>
     </div>
 
-    <div class="adm-sec">
+    <!-- TODO: להסרה אחרי מיגרציה מלאה למנויים — ניהול הגישות עובר ל-👥 מנויים.
+         הלוגיקה (adminAddCode/adminRenderCodes/אימות קוד מקומי בצד לקוח) נשארת כ-fallback,
+         רק חלונית הניהול הזו מוסתרת. -->
+    <div class="adm-sec" hidden>
       <h3>🔑 קודי גישה</h3>
       <div class="adm-g2">
         <div>
@@ -3466,7 +3469,12 @@ async function renderSubscribers(){
           </td>
         </tr>`;
       }).join('')+'</tbody></table>';
-  }catch(e){el.innerHTML='<div style="color:#fca5a5;font-size:.85rem;padding:.4rem 0">שגיאה בטעינת מנויים: '+e.message+'</div>';}
+  }catch(e){
+    // תצוגה בלבד — fail-open: לא שוברים את שאר הדשבורד, לא מציגים בלוק אדום מפחיד.
+    // פעולות כתיבה (createSubscriber/deleteSubscriber) ממשיכות להיכשל בבירור, בלי לגעת בהן.
+    console.warn('renderSubscribers:',e);
+    el.innerHTML='<div style="color:#94a3b8;font-size:.85rem;padding:.4rem 0">לא ניתן לטעון כרגע. <button onclick="renderSubscribers()" style="background:none;border:none;color:#93c5fd;cursor:pointer;font-family:inherit;font-size:.85rem;text-decoration:underline;padding:0">נסה שוב</button></div>';
+  }
 }
 
 // ── טעינת העיצובים של מנוי (למנהל בלבד, דרך ה-Edge Function עם קישורים חתומים) ──
@@ -3485,7 +3493,12 @@ async function openSubscriberDesigns(code){
         <div style="color:#64748b;font-size:.75rem">${(dz.images||[]).length} תמונות · ${d(dz.created_at)}</div></div>
         <button onclick="loadSubscriberDesign(${i})" class="btn btn-ok" style="font-size:.8rem;padding:.4rem .9rem;white-space:nowrap">⬇️ טען למחולל</button>
       </div>`).join('');
-  }catch(e){box.innerHTML='<div style="color:#fca5a5;font-size:.85rem;padding:.5rem 0">שגיאה בטעינת העיצובים: '+(e.message||e)+'</div>';}
+  }catch(e){
+    // תצוגה בלבד — fail-open, אותו עיקרון כמו renderSubscribers.
+    console.warn('openSubscriberDesigns:',e);
+    const esc=String(code).replace(/'/g,"\\'");
+    box.innerHTML=`<div style="color:#94a3b8;font-size:.85rem;padding:.5rem 0">לא ניתן לטעון כרגע. <button onclick="openSubscriberDesigns('${esc}')" style="background:none;border:none;color:#93c5fd;cursor:pointer;font-family:inherit;font-size:.85rem;text-decoration:underline;padding:0">נסה שוב</button></div>`;
+  }
 }
 
 // טוען עיצוב של מנוי (מוריד את התמונות מהקישורים החתומים) ומכניס אותו למחולל
