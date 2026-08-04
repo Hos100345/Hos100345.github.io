@@ -3054,6 +3054,14 @@ async function loadDesign(name){
   const designs=await getDesigns();
   const d=designs.find(x=>x.name===name);
   if(!d){toast('העיצוב לא נמצא','err');return;}
+  const hasImages=(d.rows||[]).some(r=>r.dataURL);
+  if(!hasImages&&isSignedIn()){
+    try{
+      const cloud=await cloudListDesigns();
+      const c=cloud.find(x=>x.name===name);
+      if(c){await loadCloudDesign(c);return;}
+    }catch(e){console.warn('loadDesign cloud fallback:',e);}
+  }
   await applyDesignToState(d);
   toast(`העיצוב "${name}" נטען — לחצו "ייצר משחק" 🎨`,'ok');
 }
