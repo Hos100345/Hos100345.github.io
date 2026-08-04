@@ -17,6 +17,10 @@ const ADMIN_EMAILS = (Deno.env.get('ADMIN_EMAILS') || 'hoshaya@gmail.com')
   .split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
 const SUB_DOMAIN = Deno.env.get('SUB_EMAIL_DOMAIN') || 'sub.hoshaya.co.il';
 
+// מסלולי מנוי למנגנון ה"מנויים" הישן (profiles) — נפרד מהמדרגות של הרכישה החדשה (13/21/31/57).
+// שלוש רמות בלבד, כפי שהתבקש: חינמי / בתשלום / גישה מלאה. עדכנו כאן אם רוצים ערכים אחרים.
+const ADMIN_TIERS: Record<string, number> = { freemium: 7, paid: 31, full: 57 };
+
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -40,10 +44,29 @@ Deno.serve(async (req) => {
     if (uErr || !user || !ADMIN_EMAILS.includes((user.email || '').toLowerCase())) {
       return json({ error: 'not authorized' }, 403);
     }
+    const adminEmail = (user.email || '').toLowerCase();
+
+    // רישום audit — "מי, מה, על מי, מתי". לא חוסם את הפעולה הראשית אם הכתיבה נכשלת (רק נרשם ל-log של הפונקציה).
+    async function logAudit(event: string, code: string | null, detail: Record<string, unknown>) {
+      try {
+        const { error } = await admin.from('events').insert({
+          event, code: code || null, label: null, actor: adminEmail, detail: JSON.stringify(detail),
+        });
+        if (error) console.error('audit insert failed:', error.message);
+      } catch (e) {
+        console.error('audit insert threw:', String(e));
+      }
+    }
 
     const body = await req.json().catch(() => ({}));
     const action = body.action;
     const codeToEmail = (c: string) => String(c).trim().toLowerCase() + '@' + SUB_DOMAIN;
+
+    async function findUserByCode(code: string) {
+      const email = codeToEmail(code);
+      const { data: list } = await admin.auth.admin.listUsers({ perPage: 1000 });
+      return (list?.users || []).find((x) => (x.email || '').toLowerCase() === email) || null;
+    }
 
     if (action === 'create') {
       const code = String(body.code || '').trim();
@@ -55,8 +78,7 @@ Deno.serve(async (req) => {
       });
       if (error) {
         // כנראה כבר קיים — מאתרים ומעדכנים (חידוש/הארכת תוקף)
-        const { data: list } = await admin.auth.admin.listUsers({ perPage: 1000 });
-        const existing = (list?.users || []).find((x) => (x.email || '').toLowerCase() === email);
+        const existing = await findUserByCode(code);
         if (!existing) return json({ error: error.message }, 400);
         userId = existing.id;
       } else {
@@ -72,47 +94,136 @@ Deno.serve(async (req) => {
         // חשוב: לא לשתוק על כשל שמירה — אחרת התוקף "נעלם"
         if (pErr) return json({ error: 'המנוי נוצר אך שמירת התוקף נכשלה: ' + pErr.message }, 500);
       }
+      await logAudit('admin_create_subscriber', code, {});
       return json({ ok: true, code });
     }
 
     if (action === 'delete') {
-      const email = codeToEmail(body.code || '');
-      const { data: list } = await admin.auth.admin.listUsers({ perPage: 1000 });
-      const u = (list?.users || []).find((x) => (x.email || '').toLowerCase() === email);
+      const code = String(body.code || '').trim();
+      const u = await findUserByCode(code);
       if (!u) return json({ error: 'המנוי לא נמצא' }, 404);
       const { error } = await admin.auth.admin.deleteUser(u.id);
       if (error) return json({ error: error.message }, 400);
+      await logAudit('admin_delete_subscriber', code, {});
       return json({ ok: true });
     }
 
     if (action === 'list') {
       const { data: list } = await admin.auth.admin.listUsers({ perPage: 1000 });
       const users = (list?.users || []).filter((u) => (u.email || '').endsWith('@' + SUB_DOMAIN));
-      // מצרפים תוקף/סטטוס/תיאור מטבלת profiles
+      const codes = users.map((u) => (u.email || '').split('@')[0]);
       const ids = users.map((u) => u.id);
+
+      // תוקף/סטטוס/תיאור/מסלול מטבלת profiles
       const { data: profs } = ids.length
-        ? await admin.from('profiles').select('id,subscription_expires,subscriber_status,label').in('id', ids)
+        ? await admin.from('profiles').select('id,subscription_expires,subscriber_status,label,max_order').in('id', ids)
         : { data: [] };
       const pmap = new Map((profs || []).map((p: any) => [p.id, p]));
+
+      // שימוש בזמן אמת: אגרגציה של events לפי code — נעשית כאן בשרת (Deno), לא בדפדפן.
+      // הדאטהסט קטן (מאות שורות) כך שסינון+ספירה בזיכרון עדיף על RPC ייעודי כרגע.
+      const { data: evRows } = codes.length
+        ? await admin.from('events').select('event,code').in('code', codes)
+        : { data: [] };
+      const usageMap = new Map<string, { logins: number; games: number; prints: number }>();
+      for (const e of (evRows || [])) {
+        const key = (e as any).code;
+        if (!key) continue;
+        const u = usageMap.get(key) || { logins: 0, games: 0, prints: 0 };
+        if ((e as any).event === 'unlock') u.logins++;
+        else if ((e as any).event === 'game') u.games++;
+        else if ((e as any).event === 'print-order') u.prints++;
+        usageMap.set(key, u);
+      }
+
+      // תיקיית עיצובים: כמות עיצובים + כמות סמלים שמורים — נגזר מ-designs.game_data, לא מקריאת Storage
+      // (אותו מידע, בלי לשלם על list() רקורסיבי לכל תיקיית משתמש).
+      const { data: designRows } = ids.length
+        ? await admin.from('designs').select('user_id,game_data').in('user_id', ids)
+        : { data: [] };
+      const designAgg = new Map<string, { designsCount: number; symbolsCount: number }>();
+      for (const d of (designRows || [])) {
+        const uid = (d as any).user_id;
+        const imgs = ((d as any).game_data && (d as any).game_data.images) || [];
+        const agg = designAgg.get(uid) || { designsCount: 0, symbolsCount: 0 };
+        agg.designsCount++;
+        agg.symbolsCount += Array.isArray(imgs) ? imgs.length : 0;
+        designAgg.set(uid, agg);
+      }
+
       const subs = users.map((u) => {
         const p: any = pmap.get(u.id) || {};
+        const code = (u.email || '').split('@')[0];
+        const usage = usageMap.get(code) || { logins: 0, games: 0, prints: 0 };
+        const dz = designAgg.get(u.id) || { designsCount: 0, symbolsCount: 0 };
         return {
-          code: (u.email || '').split('@')[0],
+          code,
           created: u.created_at,
           lastSignIn: u.last_sign_in_at,
           expiry: p.subscription_expires || null,
           status: p.subscriber_status || 'active',
           label: p.label || null,
+          maxOrder: p.max_order != null ? p.max_order : null,
+          usage,
+          designsCount: dz.designsCount,
+          symbolsCount: dz.symbolsCount,
         };
       });
       return json({ subscribers: subs });
     }
 
-    // העיצובים של מנוי — מחזיר למנהל את העיצובים השמורים בענן עם קישורי-תמונה חתומים
+    // שדרוג/שינוי מסלול — freemium (7) / paid (31) / full (57). ראו ADMIN_TIERS למעלה.
+    if (action === 'set_tier') {
+      const code = String(body.code || '').trim();
+      const tier = String(body.tier || '');
+      if (!(tier in ADMIN_TIERS)) return json({ error: 'tier לא תקין — freemium/paid/full בלבד' }, 400);
+      const u = await findUserByCode(code);
+      if (!u) return json({ error: 'המנוי לא נמצא' }, 404);
+      const maxOrder = ADMIN_TIERS[tier];
+      const { error } = await admin.from('profiles').upsert({ id: u.id, max_order: maxOrder });
+      if (error) return json({ error: error.message }, 500);
+      await logAudit('admin_set_tier', code, { tier, maxOrder });
+      return json({ ok: true, tier, maxOrder });
+    }
+
+    // הארכת תוקף — days (מספר ימים מהיום/מהתוקף הקיים, המאוחר מביניהם) או unlimited:true (ללא הגבלה)
+    if (action === 'extend') {
+      const code = String(body.code || '').trim();
+      const u = await findUserByCode(code);
+      if (!u) return json({ error: 'המנוי לא נמצא' }, 404);
+      let newExpiry: string | null = null;
+      if (body.unlimited) {
+        newExpiry = null;
+      } else {
+        const days = Number(body.days);
+        if (!Number.isFinite(days) || days <= 0) return json({ error: 'days לא תקין' }, 400);
+        const { data: prof } = await admin.from('profiles').select('subscription_expires').eq('id', u.id).maybeSingle();
+        const current = prof?.subscription_expires ? new Date(prof.subscription_expires).getTime() : 0;
+        const base = Math.max(current, Date.now());
+        newExpiry = new Date(base + days * 86400000).toISOString();
+      }
+      const { error } = await admin.from('profiles').upsert({ id: u.id, subscription_expires: newExpiry });
+      if (error) return json({ error: error.message }, 500);
+      await logAudit('admin_extend', code, { unlimited: !!body.unlimited, days: body.days || null, newExpiry });
+      return json({ ok: true, expiry: newExpiry });
+    }
+
+    // חסימה/שחרור — המנהל עצמו לעולם לא בטבלת המנויים (דומיין @sub.* בלבד) כך שאינו יכול לחסום את עצמו דרך הפעולה הזו.
+    if (action === 'block' || action === 'unblock') {
+      const code = String(body.code || '').trim();
+      const u = await findUserByCode(code);
+      if (!u) return json({ error: 'המנוי לא נמצא' }, 404);
+      const status = action === 'block' ? 'disabled' : 'active';
+      const { error } = await admin.from('profiles').upsert({ id: u.id, subscriber_status: status });
+      if (error) return json({ error: error.message }, 500);
+      await logAudit('admin_' + action, code, {});
+      return json({ ok: true, status });
+    }
+
+    // העיצובים של מנוי — מחזיר למנהל את העיצובים השמורים בענן עם קישורי-תמונה חתומים (לתמיכה/צפייה בלבד)
     if (action === 'subscriber-designs') {
-      const email = codeToEmail(body.code || '');
-      const { data: list } = await admin.auth.admin.listUsers({ perPage: 1000 });
-      const u = (list?.users || []).find((x) => (x.email || '').toLowerCase() === email);
+      const code = String(body.code || '').trim();
+      const u = await findUserByCode(code);
       if (!u) return json({ error: 'המנוי לא נמצא' }, 404);
       const { data: designs, error } = await admin.from('designs')
         .select('id,name,game_data,created_at').eq('user_id', u.id).order('created_at', { ascending: false });
@@ -136,6 +247,8 @@ Deno.serve(async (req) => {
           })),
         });
       }
+      // Audit: כל פתיחת עיצוב של לקוח לצורך תמיכה נרשמת (מי, על מי, מתי)
+      await logAudit('admin_view_designs', code, { designCount: out.length });
       return json({ designs: out });
     }
 
