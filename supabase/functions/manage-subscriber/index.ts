@@ -17,8 +17,10 @@ const ADMIN_EMAILS = (Deno.env.get('ADMIN_EMAILS') || 'hoshaya@gmail.com')
   .split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
 const SUB_DOMAIN = Deno.env.get('SUB_EMAIL_DOMAIN') || 'sub.hoshaya.co.il';
 
-// מסלולי מנוי למנגנון ה"מנויים" הישן (profiles) — נפרד מהמדרגות של הרכישה החדשה (13/21/31/57).
-// שלוש רמות בלבד, כפי שהתבקש: חינמי / בתשלום / גישה מלאה. עדכנו כאן אם רוצים ערכים אחרים.
+// מסלולי מנוי למנגנון ה"מנויים" הישן (profiles) — נפרד מהמדרגות של הרכישה החדשה, אבל אותם ערכי max_order.
+// חמש הרמות החוקיות היחידות (תואם ל-ORDERS.total בפרונט — מבנה GF(4) של Dobble, לא כל מספר).
+const VALID_MAX_ORDERS = [7, 13, 21, 31, 57];
+// שלושה כינויים נוחים, מאושרים — freemium/paid/full. 13/21 נשלחים כמספר ישירות (body.maxOrder), לא דרך tier.
 const ADMIN_TIERS: Record<string, number> = { freemium: 7, paid: 31, full: 57 };
 
 const CORS = {
@@ -172,18 +174,27 @@ Deno.serve(async (req) => {
       return json({ subscribers: subs });
     }
 
-    // שדרוג/שינוי מסלול — freemium (7) / paid (31) / full (57). ראו ADMIN_TIERS למעלה.
+    // שדרוג/שינוי מסלול — כל אחת מחמש הרמות החוקיות (7/13/21/31/57), לא רק שלושת הכינויים.
+    // body.tier (freemium/paid/full) נשאר לתאימות/נוחות; body.maxOrder מקבל כל אחת מהחמש ישירות (כולל 13/21).
     if (action === 'set_tier') {
       const code = String(body.code || '').trim();
-      const tier = String(body.tier || '');
-      if (!(tier in ADMIN_TIERS)) return json({ error: 'tier לא תקין — freemium/paid/full בלבד' }, 400);
+      let maxOrder: number;
+      if (body.maxOrder != null) {
+        maxOrder = Number(body.maxOrder);
+        if (!VALID_MAX_ORDERS.includes(maxOrder)) {
+          return json({ error: 'maxOrder לא תקין — ערכים חוקיים: ' + VALID_MAX_ORDERS.join('/') }, 400);
+        }
+      } else {
+        const tier = String(body.tier || '');
+        if (!(tier in ADMIN_TIERS)) return json({ error: 'יש לשלוח tier (freemium/paid/full) או maxOrder (7/13/21/31/57)' }, 400);
+        maxOrder = ADMIN_TIERS[tier];
+      }
       const u = await findUserByCode(code);
       if (!u) return json({ error: 'המנוי לא נמצא' }, 404);
-      const maxOrder = ADMIN_TIERS[tier];
       const { error } = await admin.from('profiles').upsert({ id: u.id, max_order: maxOrder });
       if (error) return json({ error: error.message }, 500);
-      await logAudit('admin_set_tier', code, { tier, maxOrder });
-      return json({ ok: true, tier, maxOrder });
+      await logAudit('admin_set_tier', code, { maxOrder });
+      return json({ ok: true, maxOrder });
     }
 
     // הארכת תוקף — days (מספר ימים מהיום/מהתוקף הקיים, המאוחר מביניהם) או unlimited:true (ללא הגבלה)

@@ -3454,9 +3454,11 @@ function callSelectEvents(){
 }
 
 // כרטיס לקוח מאוחד: זהות + סטטוס/תוקף/מסלול + שימוש בזמן אמת + תיקיית עיצובים, עם פעולות בלחיצה אחת.
-const ADM_TIER_CYCLE=['freemium','paid','full'];
-const ADM_TIER_LABELS={freemium:'חינמי (7)',paid:'בתשלום (31)',full:'מלא (57)'};
-function admTierName(maxOrder){return maxOrder===7?'freemium':maxOrder===31?'paid':'full';}
+// חמש הרמות החוקיות היחידות ל-max_order (תואם ל-ORDERS.total בפרונט ול-VALID_MAX_ORDERS בשרת) — כולל
+// 13/21 שקיימות ב-Morning, לא רק שלושת הכינויים המאושרים freemium/paid/full.
+const ADM_TIER_VALUES=[7,13,21,31,57];
+const ADM_TIER_LABELS={7:'חינמי (7)',13:'13 סמלים',21:'21 סמלים',31:'בתשלום (31)',57:'מלא (57)'};
+function admCurrentTier(maxOrder){return ADM_TIER_VALUES.includes(maxOrder)?maxOrder:57;}
 function admEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 async function renderSubscribers(){
@@ -3474,17 +3476,19 @@ async function renderSubscribers(){
       const expTag=disabled?'<span class="adm-tag exp">מושבת</span>'
         :s.expiry?`<span class="adm-tag ${expired?'exp':'ok'}">${expired?'פג ⛔ ':''}${d(s.expiry)}</span>`
         :'<span class="adm-tag ok">ללא הגבלה</span>';
-      const tierName=admTierName(s.maxOrder);
-      const nextTier=ADM_TIER_CYCLE[(ADM_TIER_CYCLE.indexOf(tierName)+1)%3];
+      const curTier=admCurrentTier(s.maxOrder);
       const usage=s.usage||{logins:0,games:0,prints:0};
       const actBtn=(action,label,color,extra)=>`<button class="sub-act" data-action="${action}"${extra||''} style="background:none;border:1px solid #334155;color:${color};border-radius:8px;cursor:pointer;font-size:.74rem;padding:.28rem .6rem;white-space:nowrap">${label}</button>`;
+      const tierSelect=`<select class="sub-tier-select" title="שינוי מסלול" style="background:#0f172a;border:1px solid #334155;color:#a5b4fc;border-radius:8px;cursor:pointer;font-size:.74rem;padding:.28rem .5rem;font-family:inherit">${
+        ADM_TIER_VALUES.map(v=>`<option value="${v}"${v===curTier?' selected':''}>${ADM_TIER_LABELS[v]}</option>`).join('')
+      }</select>`;
       return `<div class="sub-card" data-code="${codeAttr}" style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:.7rem .8rem;margin-bottom:.55rem">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.6rem;flex-wrap:wrap">
           <div>
             <div style="font-family:monospace;color:#e2e8f0;font-weight:700;letter-spacing:.03em">${admEsc(s.code)}</div>
             ${s.label?`<div style="color:#64748b;font-size:.75rem">${admEsc(s.label)}</div>`:''}
           </div>
-          <div style="display:flex;gap:.35rem;flex-wrap:wrap">${expTag}<span class="adm-tag" style="background:#1e293b;color:#93c5fd">${ADM_TIER_LABELS[tierName]}</span></div>
+          <div style="display:flex;gap:.35rem;flex-wrap:wrap">${expTag}<span class="adm-tag" style="background:#1e293b;color:#93c5fd">${ADM_TIER_LABELS[curTier]}</span></div>
         </div>
         <div style="display:flex;gap:1rem;flex-wrap:wrap;margin:.5rem 0;font-size:.74rem;color:#94a3b8">
           <span>🔓 ${usage.logins} כניסות</span>
@@ -3493,8 +3497,8 @@ async function renderSubscribers(){
           <span>📂 ${s.designsCount||0} עיצובים · ${s.symbolsCount||0} סמלים</span>
           <span>אחרון: ${s.lastSignIn?d(s.lastSignIn):'טרם נכנס'}</span>
         </div>
-        <div style="display:flex;gap:.4rem;flex-wrap:wrap">
-          ${actBtn('tier',`🔁 ${ADM_TIER_LABELS[tierName]}`,'#a5b4fc',` data-tier="${nextTier}" title="לחיצה למעבר ל${ADM_TIER_LABELS[nextTier]}"`)}
+        <div style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center">
+          ${tierSelect}
           ${actBtn('extend30','⏰ +30 יום','#94a3b8')}
           ${actBtn('unlimited','♾️ ללא הגבלה','#94a3b8')}
           ${disabled?actBtn('unblock','🔓 שחרר','#6ee7b7'):actBtn('block','🔒 חסום','#fca5a5')}
@@ -3522,8 +3526,7 @@ document.getElementById('adm-sub-tbl').addEventListener('click',async(e)=>{
   if(action==='delete'){deleteSubscriber(code);return;}
   btn.disabled=true;
   try{
-    if(action==='tier')await callManageSubscriber({action:'set_tier',code,tier:btn.dataset.tier});
-    else if(action==='extend30')await callManageSubscriber({action:'extend',code,days:30});
+    if(action==='extend30')await callManageSubscriber({action:'extend',code,days:30});
     else if(action==='unlimited')await callManageSubscriber({action:'extend',code,unlimited:true});
     else if(action==='block')await callManageSubscriber({action:'block',code});
     else if(action==='unblock')await callManageSubscriber({action:'unblock',code});
@@ -3533,6 +3536,23 @@ document.getElementById('adm-sub-tbl').addEventListener('click',async(e)=>{
   }catch(err){
     toast('הפעולה נכשלה: '+(err.message||err),'err');
     btn.disabled=false;
+  }
+});
+
+// שינוי מסלול — select נפרד (מאזין change, לא click), תומך בכל חמש הרמות (כולל 13/21) לא רק שלושת הכינויים.
+document.getElementById('adm-sub-tbl').addEventListener('change',async(e)=>{
+  const sel=e.target.closest('.sub-tier-select');if(!sel)return;
+  const card=e.target.closest('.sub-card');if(!card)return;
+  const code=card.dataset.code;
+  const maxOrder=Number(sel.value);
+  sel.disabled=true;
+  try{
+    await callManageSubscriber({action:'set_tier',code,maxOrder});
+    toast('המסלול עודכן ✓','ok');
+    renderSubscribers();
+  }catch(err){
+    toast('הפעולה נכשלה: '+(err.message||err),'err');
+    sel.disabled=false;
   }
 });
 
