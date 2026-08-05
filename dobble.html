@@ -384,12 +384,6 @@ function dcfgSave(patch){
 }
 </script>
 
-<!-- באנר מצב תמיכה: מוצג כשמנהל טוען עיצוב לקוח לצפייה/תמיכה בלבד (בזיכרון, לא נשמר) -->
-<div id="support-banner" hidden style="position:fixed;top:0;left:0;right:0;z-index:20000;background:#b45309;color:#fff;padding:.6rem 1rem;display:flex;align-items:center;justify-content:center;gap:.8rem;flex-wrap:wrap;font-size:.88rem;font-weight:700;box-shadow:0 2px 10px rgba(0,0,0,.25);font-family:'Heebo',sans-serif">
-  <span>🛟 מציג עיצוב תמיכה של <span id="support-banner-label"></span> — לצפייה בלבד, לא נשמר</span>
-  <button id="support-banner-exit" type="button" style="background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.4);color:#fff;border-radius:8px;padding:.25rem .8rem;cursor:pointer;font-family:inherit;font-size:.82rem;font-weight:700">יציאה ממצב תמיכה</button>
-</div>
-
 <!-- LOCK SCREEN -->
 <div id="lock-screen" style="position:fixed;inset:0;background:linear-gradient(150deg,#1e1b4b,#312e81 55%,#4c1d95);z-index:9999;display:flex;flex-direction:column;align-items:center;overflow-y:auto;padding:2rem 1rem;text-align:center">
   <div style="max-width:400px;width:100%;margin:auto;display:flex;flex-direction:column;align-items:center;gap:.85rem">
@@ -913,6 +907,9 @@ function dcfgSave(patch){
     <div class="si-sep"></div>
     <div class="si" id="si3"><span class="n">3</span>ייצוא</div>
   </nav>
+  <!-- מצב תמיכה: מנהל צופה בעיצוב לקוח (בזיכרון, לא נשמר) — כפתור קומפקטי בתוך ה-header עצמו,
+       לא סרגל צף נפרד, כדי שלא יכסה/יחסום שום דבר. -->
+  <button id="support-mini-exit" type="button" hidden title="לחץ ליציאה ממצב תמיכה" style="background:#b45309;color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:100px;padding:.3rem .7rem;cursor:pointer;font-family:inherit;font-size:.74rem;font-weight:700;display:flex;align-items:center;gap:.35rem;white-space:nowrap">🛟 <span id="support-mini-label" style="max-width:9em;overflow:hidden;text-overflow:ellipsis"></span> ✕</button>
   <button class="hdr-gear" id="btn-account" title="חשבון וסנכרון" aria-label="חשבון וסנכרון" style="position:relative">👤<span id="acct-dot" class="acct-dot" hidden></span></button>
   <button class="hdr-gear" id="btn-admin" title="פאנל ניהול" aria-label="פאנל ניהול">⚙️</button>
 </header>
@@ -1218,13 +1215,13 @@ function dcfgSave(patch){
 <div class="modal-bg" id="upload-modal" hidden style="z-index:10003">
   <div class="modal-card" style="max-width:380px;text-align:center">
     <div style="font-size:2.4rem;line-height:1;margin-bottom:.5rem">🖼️</div>
-    <div style="font-size:1.05rem;font-weight:800;color:var(--indigo)">מעלה תמונות…</div>
+    <div id="up-title" style="font-size:1.05rem;font-weight:800;color:var(--indigo)">מעלה תמונות…</div>
     <div id="up-name" style="font-size:.78rem;color:var(--muted);margin-top:.35rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:ltr"></div>
     <div style="height:9px;background:var(--border);border-radius:100px;overflow:hidden;margin:.75rem 0 .45rem">
       <div id="up-bar" style="height:100%;width:0%;border-radius:100px;background:linear-gradient(90deg,var(--blue),var(--indigo));transition:width .18s ease"></div>
     </div>
     <div id="up-count" style="font-size:.85rem;font-weight:700;color:var(--indigo)">0 / 0</div>
-    <div style="font-size:.74rem;color:var(--muted);margin-top:.5rem;line-height:1.6">תמונות מאייפון (HEIC) עוברות המרה — זה עשוי לקחת כמה שניות לתמונה</div>
+    <div id="up-hint" style="font-size:.74rem;color:var(--muted);margin-top:.5rem;line-height:1.6">תמונות מאייפון (HEIC) עוברות המרה — זה עשוי לקחת כמה שניות לתמונה</div>
   </div>
 </div>
 
@@ -1492,7 +1489,13 @@ function currentMaxOrder(){
   }catch(e){return 0;}
 }
 window.currentMaxOrder=currentMaxOrder;
-function isWithinTier(order){return !!order&&order.total<=currentMaxOrder();}
+// במצב תמיכה המנהל מייצא קובץ עבור הלקוח לפי המנוי של הלקוח, לא לפי הקוד האישי שלו —
+// בלי החריג הזה, אם הקוד של המנהל עצמו לא פותח מספיק סמלים, "צור PDF" לא מייצר כלום
+// ופותח במקום זאת את חלון השדרוג/רכישה, ובלבול הזה נראה כאילו התהליך "נתקע".
+function isWithinTier(order){
+  if(window.__supportMode)return true;
+  return !!order&&order.total<=currentMaxOrder();
+}
 function needsWatermark(){return !isWithinTier(S.order);}
 
 // ══ SEEDED RANDOM ══
@@ -1663,7 +1666,12 @@ document.getElementById('uz-files-btn').addEventListener('click',()=>fiDocs.clic
 fiDocs.addEventListener('change',e=>{addFiles(e.target.files);fiDocs.value='';});
 
 // ── חלונית טעינה בזמן העלאה ──
-function uploadProgressOpen(total){
+// opts.title/opts.hint מאפשרים להשתמש באותו מודל להתקדמות גם בהקשרים שאינם העלאה
+// (למשל הורדת תמונות של לקוח למצב תמיכה) — בלי זה, ברירת המחדל נשארת טקסט ההעלאה הרגיל.
+function uploadProgressOpen(total,opts){
+  const o=opts||{};
+  document.getElementById('up-title').textContent=o.title||'מעלה תמונות…';
+  document.getElementById('up-hint').textContent=o.hint!=null?o.hint:'תמונות מאייפון (HEIC) עוברות המרה — זה עשוי לקחת כמה שניות לתמונה';
   document.getElementById('up-bar').style.width='0%';
   document.getElementById('up-count').textContent='0 / '+total;
   document.getElementById('up-name').textContent='';
@@ -3787,26 +3795,39 @@ async function openSubscriberDesigns(code){
   }
 }
 
+// fetch עם timeout — בלי זה, קישור חתום שנתקע (רשת איטית/פג תוקף) משאיר את הלולאה למטה
+// תלויה ב-await לנצח, ונראה למנהל כאילו המחשב "נתקע" בלי שום משוב.
+function fetchWithTimeout(url,ms){
+  const ctrl=new AbortController();
+  const t=setTimeout(()=>ctrl.abort(),ms);
+  return fetch(url,{signal:ctrl.signal}).finally(()=>clearTimeout(t));
+}
+
 // טוען עיצוב של מנוי (מוריד את התמונות מהקישורים החתומים) ומכניס אותו למחולל
 async function loadSubscriberDesign(idx){
   const dz=(window.__subDesigns||[])[idx];if(!dz)return;
-  toast('מוריד את התמונות של המנוי…','ok');
+  const imgs=(dz.images||[]).filter(im=>im.url);
+  if(!imgs.length){toast('לא נמצאו תמונות לעיצוב הזה','err');return;}
+  uploadProgressOpen(imgs.length,{title:'טוען את העיצוב של הלקוח…',hint:'מוריד את התמונות מהענן — תלוי במספר התמונות ובמהירות האינטרנט'});
   try{
     const rows=[];
-    for(const im of (dz.images||[])){
-      if(!im.url)continue;
+    let done=0;
+    for(const im of imgs){
+      uploadProgressStep(done,imgs.length,im.name);
       try{
-        const resp=await fetch(im.url);const blob=await resp.blob();
+        const resp=await fetchWithTimeout(im.url,20000);const blob=await resp.blob();
         const dataURL=await blobToDataURL(blob);
         rows.push({id:im.id,name:im.name,type:im.type,dataURL,srcAssetId:im.srcAssetId||undefined,isCropSource:im.isCropSource||false,selected:im.selected!==false});
       }catch(e){console.warn('sub img download',im.path,e);}
+      done++;uploadProgressStep(done,imgs.length,im.name);
     }
-    if(!rows.length){toast('לא נמצאו תמונות לעיצוב הזה','err');return;}
+    if(!rows.length){toast('הורדת התמונות נכשלה — נסה שוב','err');return;}
     enterSupportMode(window.__subDesignsCode||dz.name);   // מפעיל את שער ה-session-only לפני הטעינה (schedIdbSave הופך לא-פעיל)
     await applyDesignToState({name:dz.name,date:dz.created_at,rows,settings:dz.settings||{}});
     if(typeof closeAdminPanel==='function')closeAdminPanel();
     toast(`נטען העיצוב "${dz.name}" למצב תמיכה — לצפייה בלבד 🛟`,'ok');
   }catch(e){console.warn('loadSubscriberDesign:',e);exitSupportMode(true);toast('טעינת העיצוב נכשלה','err');}
+  finally{uploadProgressClose();}
 }
 
 // ── מצב תמיכה: מנהל צופה בעיצוב לקוח בזיכרון בלבד — session-only, לא נכתב ל-IDB/ענן (ראו schedIdbSave) ──
@@ -3821,26 +3842,12 @@ function enterSupportMode(label){
       frame:Object.assign({},S.frame),bg:Object.assign({},S.bg)}
   };
   window.__supportMode=true;
-  const label2=document.getElementById('support-banner-label');if(label2)label2.textContent=label||'לקוח';
-  const banner=document.getElementById('support-banner');if(banner)banner.hidden=false;
-  _syncSupportBannerOffset();
+  const label2=document.getElementById('support-mini-label');if(label2)label2.textContent=label||'לקוח';
+  const mini=document.getElementById('support-mini-exit');if(mini)mini.hidden=false;
 }
-// הבאנר הוא position:fixed מעל הכל (z-index 20000) — בלי הזזה הוא שוכב בדיוק על ה-header
-// הדביק (position:sticky, גם top:0) ומכסה/חוסם קליק על הכפתורים שבו (👤/⚙️). דוחפים את
-// ה-header בפועל בגובה הבאנר הנמדד בפועל (במקום מספר קבוע), כדי לשרוד גם עטיפת טקסט במובייל.
-function _syncSupportBannerOffset(){
-  const banner=document.getElementById('support-banner');
-  const hdr=document.querySelector('header.hdr');
-  if(!banner||!hdr)return;
-  const h=banner.hidden?0:banner.getBoundingClientRect().height;
-  hdr.style.marginTop=h?h+'px':'';
-  hdr.style.top=h?h+'px':'';
-}
-window.addEventListener('resize',()=>{if(window.__supportMode)_syncSupportBannerOffset();});
 window.exitSupportMode=function(silent){
   window.__supportMode=false;
-  const banner=document.getElementById('support-banner');if(banner)banner.hidden=true;
-  _syncSupportBannerOffset();
+  const mini=document.getElementById('support-mini-exit');if(mini)mini.hidden=true;
   if(_supportSnapshot){
     S.assets=_supportSnapshot.assets;S.idSeq=_supportSnapshot.idSeq;
     Object.assign(S,_supportSnapshot.settings);
@@ -3850,7 +3857,7 @@ window.exitSupportMode=function(silent){
   }
   if(!silent)toast('חזרת לעיצוב המקומי שלך','ok');
 };
-(function(){const b=document.getElementById('support-banner-exit');if(b)b.addEventListener('click',()=>window.exitSupportMode());})();
+(function(){const b=document.getElementById('support-mini-exit');if(b)b.addEventListener('click',()=>window.exitSupportMode());})();
 
 async function createSubscriber(){
   const msg=document.getElementById('adm-sub-msg');
