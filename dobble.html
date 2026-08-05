@@ -3821,12 +3821,26 @@ function enterSupportMode(label){
       frame:Object.assign({},S.frame),bg:Object.assign({},S.bg)}
   };
   window.__supportMode=true;
-  const label2=document.getElementById('support-banner-label');if(label2)label2.textContent=label||'';
+  const label2=document.getElementById('support-banner-label');if(label2)label2.textContent=label||'לקוח';
   const banner=document.getElementById('support-banner');if(banner)banner.hidden=false;
+  _syncSupportBannerOffset();
 }
+// הבאנר הוא position:fixed מעל הכל (z-index 20000) — בלי הזזה הוא שוכב בדיוק על ה-header
+// הדביק (position:sticky, גם top:0) ומכסה/חוסם קליק על הכפתורים שבו (👤/⚙️). דוחפים את
+// ה-header בפועל בגובה הבאנר הנמדד בפועל (במקום מספר קבוע), כדי לשרוד גם עטיפת טקסט במובייל.
+function _syncSupportBannerOffset(){
+  const banner=document.getElementById('support-banner');
+  const hdr=document.querySelector('header.hdr');
+  if(!banner||!hdr)return;
+  const h=banner.hidden?0:banner.getBoundingClientRect().height;
+  hdr.style.marginTop=h?h+'px':'';
+  hdr.style.top=h?h+'px':'';
+}
+window.addEventListener('resize',()=>{if(window.__supportMode)_syncSupportBannerOffset();});
 window.exitSupportMode=function(silent){
   window.__supportMode=false;
   const banner=document.getElementById('support-banner');if(banner)banner.hidden=true;
+  _syncSupportBannerOffset();
   if(_supportSnapshot){
     S.assets=_supportSnapshot.assets;S.idSeq=_supportSnapshot.idSeq;
     Object.assign(S,_supportSnapshot.settings);
