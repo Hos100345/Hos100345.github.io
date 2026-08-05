@@ -208,6 +208,19 @@
     .g-sel-count{font-size:.78rem;color:var(--muted)}
     .crop-hint{display:flex;align-items:center;justify-content:space-between;gap:.6rem;background:var(--gold-light);color:#92400e;border:1px solid #fbbf24;border-radius:var(--rs);padding:.55rem .8rem;font-size:.82rem;margin-bottom:.5rem}
     .crop-hint button{background:none;border:none;color:#92400e;cursor:pointer;font-size:.9rem;line-height:1;flex-shrink:0;padding:0}
+    .g-bulk-btn.danger{border-color:#fca5a5;color:#b91c1c}
+    .g-bulk-btn.danger:hover{border-color:#ef4444;color:#ef4444;background:rgba(254,226,226,.7)}
+    /* ── תיקיות העלאה (מנויים בלבד) ── */
+    .gallery-grid.foldered{flex-direction:column;align-items:stretch;flex-wrap:nowrap;gap:.45rem}
+    .g-folder{border:1px solid rgba(255,255,255,.7);border-radius:var(--rs);background:rgba(255,255,255,.55);overflow:hidden}
+    .g-fold-hdr{display:flex;align-items:center;gap:.5rem;padding:.5rem .7rem;cursor:pointer;user-select:none}
+    .g-fold-hdr:hover{background:rgba(255,255,255,.75)}
+    .g-fold-caret{font-size:.8rem;color:var(--indigo);width:.9rem;flex-shrink:0}
+    .g-fold-name{font-size:.82rem;font-weight:700;color:var(--indigo);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+    .g-fold-cnt{font-size:.72rem;color:var(--muted);flex-shrink:0}
+    .g-fold-del{background:none;border:none;cursor:pointer;font-size:.9rem;line-height:1;padding:.15rem .25rem;flex-shrink:0;opacity:.65}
+    .g-fold-del:hover{opacity:1}
+    .g-fold-body{display:flex;gap:.6rem;flex-wrap:wrap;padding:.55rem .7rem .8rem;align-items:flex-start;border-top:1px solid rgba(255,255,255,.6)}
 
     /* ── V4: EXTRACTOR (used in crop modal) ── */
     .ext-wrap{margin-top:.5rem}
@@ -949,6 +962,7 @@ function dcfgSave(patch){
       <div class="gallery-bulk" id="gallery-bulk">
         <button type="button" class="g-bulk-btn" id="btn-select-all">☑️ סמן הכל</button>
         <button type="button" class="g-bulk-btn" id="btn-clear-all">◻️ נקה הכל</button>
+        <button type="button" class="g-bulk-btn danger" id="btn-del-selected">🗑 מחק מסומנים</button>
         <span class="g-sel-count" id="g-sel-count"></span>
       </div>
       <div class="gallery-grid" id="gallery-grid"></div>
@@ -1196,6 +1210,34 @@ function dcfgSave(patch){
         <div class="mc-txt" id="mc-txt">—</div>
       </div>
       <div class="mcw" id="mcw2"><canvas id="mc2" width="280" height="280"></canvas><div class="mc-lbl">קלף ב</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- UPLOAD PROGRESS MODAL -->
+<div class="modal-bg" id="upload-modal" hidden style="z-index:10003">
+  <div class="modal-card" style="max-width:380px;text-align:center">
+    <div style="font-size:2.4rem;line-height:1;margin-bottom:.5rem">🖼️</div>
+    <div style="font-size:1.05rem;font-weight:800;color:var(--indigo)">מעלה תמונות…</div>
+    <div id="up-name" style="font-size:.78rem;color:var(--muted);margin-top:.35rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:ltr"></div>
+    <div style="height:9px;background:var(--border);border-radius:100px;overflow:hidden;margin:.75rem 0 .45rem">
+      <div id="up-bar" style="height:100%;width:0%;border-radius:100px;background:linear-gradient(90deg,var(--blue),var(--indigo));transition:width .18s ease"></div>
+    </div>
+    <div id="up-count" style="font-size:.85rem;font-weight:700;color:var(--indigo)">0 / 0</div>
+    <div style="font-size:.74rem;color:var(--muted);margin-top:.5rem;line-height:1.6">תמונות מאייפון (HEIC) עוברות המרה — זה עשוי לקחת כמה שניות לתמונה</div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-bg" id="confirm-modal" hidden style="z-index:10002">
+  <div class="modal-card" style="max-width:420px;text-align:center">
+    <div style="font-size:2.4rem;line-height:1;margin-bottom:.5rem" id="cfm-ico">🗑</div>
+    <div id="cfm-title" style="font-size:1.05rem;font-weight:800;color:var(--indigo)">אישור מחיקה</div>
+    <div id="cfm-body" style="font-size:.9rem;color:var(--muted);line-height:1.7;margin:.55rem 0 .5rem;white-space:pre-line"></div>
+    <div id="cfm-warn" style="display:none;font-size:.82rem;color:#b91c1c;background:#fef2f2;border:1px solid #fca5a5;border-radius:var(--rs);padding:.55rem .7rem;margin-bottom:.75rem;line-height:1.6"></div>
+    <div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap">
+      <button type="button" class="btn btn-ghost" id="cfm-no">ביטול</button>
+      <button type="button" class="btn" id="cfm-yes" style="background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff">מחק</button>
     </div>
   </div>
 </div>
@@ -1620,21 +1662,85 @@ const fiDocs=document.getElementById('fiDocs');
 document.getElementById('uz-files-btn').addEventListener('click',()=>fiDocs.click());
 fiDocs.addEventListener('change',e=>{addFiles(e.target.files);fiDocs.value='';});
 
+// ── חלונית טעינה בזמן העלאה ──
+function uploadProgressOpen(total){
+  document.getElementById('up-bar').style.width='0%';
+  document.getElementById('up-count').textContent='0 / '+total;
+  document.getElementById('up-name').textContent='';
+  document.getElementById('upload-modal').hidden=false;
+}
+function uploadProgressStep(done,total,name){
+  document.getElementById('up-bar').style.width=Math.round(done/total*100)+'%';
+  document.getElementById('up-count').textContent=done+' / '+total;
+  if(name!==undefined)document.getElementById('up-name').textContent=name||'';
+}
+function uploadProgressClose(){document.getElementById('upload-modal').hidden=true;}
+
+// ── חלון אישור מעוצב ──
+let _cfmResolve=null;
+function confirmDialog(opt){
+  const o=opt||{};
+  document.getElementById('cfm-ico').textContent=o.icon||'🗑';
+  document.getElementById('cfm-title').textContent=o.title||'אישור מחיקה';
+  document.getElementById('cfm-body').textContent=o.body||'';
+  const w=document.getElementById('cfm-warn');
+  if(o.warn){w.textContent=o.warn;w.style.display='';}else{w.style.display='none';}
+  document.getElementById('cfm-yes').textContent=o.okText||'מחק';
+  document.getElementById('confirm-modal').hidden=false;
+  return new Promise(res=>{_cfmResolve=res;});
+}
+function _cfmClose(v){
+  document.getElementById('confirm-modal').hidden=true;
+  if(_cfmResolve){const r=_cfmResolve;_cfmResolve=null;r(v);}
+}
+document.getElementById('cfm-no').addEventListener('click',()=>_cfmClose(false));
+document.getElementById('cfm-yes').addEventListener('click',()=>_cfmClose(true));
+document.getElementById('confirm-modal').addEventListener('click',e=>{if(e.target.id==='confirm-modal')_cfmClose(false);});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&!document.getElementById('confirm-modal').hidden)_cfmClose(false);
+});
+
+function cloudDeleteWarn(){
+  return isSignedIn()?'☁️ הפריטים יימחקו גם מהענן ולא ניתן יהיה לשחזר אותם.':'';
+}
+
+// ── תיקיות: כל אצווה של העלאה מקבלת תיקייה משלה ──
+function newFolder(label){
+  const d=new Date();
+  const stamp=d.toLocaleDateString('he-IL',{day:'numeric',month:'numeric',year:'2-digit'})+' · '+
+              d.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});
+  return{id:'f'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:(label||'העלאה')+' '+stamp};
+}
+function folderKey(a){return(a.folder&&a.folder.id)||'__none__';}
+function folderLabel(a){return(a.folder&&a.folder.name)||'מאגר כללי';}
+
+const _closedFolders=new Set();   // תיקיות מתחילות פתוחות כברירת מחדל; כאן נשמרות רק אלה שנסגרו ידנית
+
 async function addFiles(files){
   const imgs=Array.from(files).filter(f=>f.type.startsWith('image/')||/\.(heic|heif|avif)$/i.test(f.name));
   if(!imgs.length){alert('נא לבחור קבצי תמונה (PNG, JPG, SVG, WebP)');return;}
   const failedNames=[];
   let okCount=0;
-  for(const f of imgs){
-    const url=URL.createObjectURL(f);
-    try{
-      const imgEl=await loadImgFile(f,url);
-      const thumb=makeThumb(imgEl);
-      S.assets.push({id:++S.idSeq,type:'image',name:f.name,url,thumb,imgEl,selected:true});
-      okCount++;
-      renderGallery();updateCounter();
-    }catch(e){URL.revokeObjectURL(url);failedNames.push(f.name);console.warn('upload failed:',f.name,e?.message||e);}
-  }
+  const folder=newFolder('העלאה');
+  const total=imgs.length;
+  uploadProgressOpen(total);
+  try{
+    let done=0;
+    for(const f of imgs){
+      uploadProgressStep(done,total,f.name);
+      await new Promise(r=>requestAnimationFrame(()=>setTimeout(r,0)));
+      const url=URL.createObjectURL(f);
+      try{
+        const imgEl=await loadImgFile(f,url);
+        const thumb=makeThumb(imgEl);
+        S.assets.push({id:++S.idSeq,type:'image',name:f.name,url,thumb,imgEl,selected:true,folder});
+        okCount++;
+        renderGallery();updateCounter();
+      }catch(e){URL.revokeObjectURL(url);failedNames.push(f.name);console.warn('upload failed:',f.name,e?.message||e);}
+      done++;
+      uploadProgressStep(done,total);
+    }
+  }finally{uploadProgressClose();}
   if(okCount){toast(`נוספו ${okCount} תמונות למאגר ✓`,'ok');schedIdbSave();}
   if(failedNames.length)alert(`${failedNames.length} תמונות לא נטענו:\n${failedNames.join('\n')}\n\nנסה פורמטים אחרים: PNG, JPG, WebP, SVG. אם התמונה מאייפון וסיומתה .jpg — ייתכן שהיא בפועל HEIC; נסה לשמור/לייצא אותה מחדש כ-JPG או PNG ולהעלות שוב. (הסיבה המדויקת לכשל מופיעה בקונסול)`);
 }
@@ -1699,44 +1805,85 @@ function makeThumb(imgEl){
   return c;
 }
 
+function buildGalleryItem(a){
+  const item=document.createElement('div');
+  const isOn=a.selected!==false;
+  item.className='g-item'+(a.type==='crop'?' crop':a.isCropSource?' source':'')+(!a.isCropSource&&!isOn?' off':'');
+  const thumbCv=document.createElement('canvas');thumbCv.width=thumbCv.height=72;
+  drawCover(thumbCv.getContext('2d'),a.imgEl,0,0,72);
+  item.appendChild(thumbCv);
+  if(!a.isCropSource){
+    const chk=document.createElement('input');chk.type='checkbox';chk.className='g-check';
+    chk.title='כלול במשחק';chk.checked=isOn;
+    chk.addEventListener('change',()=>{
+      a.selected=chk.checked;
+      item.classList.toggle('off',!chk.checked);
+      updateCounter();schedIdbSave();
+    });
+    item.appendChild(chk);
+  }
+  const del=document.createElement('button');del.className='g-del';del.textContent='×';del.title='הסר';
+  del.addEventListener('click',()=>removeAsset(a.id));
+  item.appendChild(del);
+  if(a.type==='image'){
+    const edit=document.createElement('button');edit.className='g-edit';edit.textContent='✂';edit.title='חיתוך ומיקוד תמונה';
+    edit.addEventListener('click',()=>openCropModal(a.id));
+    item.appendChild(edit);
+  }
+  const nm=document.createElement('div');nm.className='g-name';nm.textContent=a.name;
+  item.appendChild(nm);
+  if(a.isCropSource){
+    const lbl=document.createElement('div');lbl.className='g-source-lbl';lbl.textContent='מקור';
+    item.appendChild(lbl);
+  }
+  return item;
+}
+
 function renderGallery(){
   const grid=document.getElementById('gallery-grid');
   const gallery=document.getElementById('gallery');
   grid.innerHTML='';
   if(!S.assets.length){gallery.style.display='none';return;}
   gallery.style.display='';
+
+  // תצוגה מקובצת לפי תיקיות העלאה — למנויים מחוברים בלבד (אין לה תועלת אמיתית למשתמש מקומי
+  // עם קוד גישה בודד). משתמש לא מחובר ממשיך לראות גלריה שטוחה בדיוק כמו היום.
+  if(!isSignedIn()){
+    grid.classList.remove('foldered');
+    S.assets.forEach(a=>grid.appendChild(buildGalleryItem(a)));
+    return;
+  }
+
+  grid.classList.add('foldered');
+  const groups=new Map();
   S.assets.forEach(a=>{
-    const item=document.createElement('div');
-    const isOn=a.selected!==false;
-    item.className='g-item'+(a.type==='crop'?' crop':a.isCropSource?' source':'')+(!a.isCropSource&&!isOn?' off':'');
-    const thumbCv=document.createElement('canvas');thumbCv.width=thumbCv.height=72;
-    drawCover(thumbCv.getContext('2d'),a.imgEl,0,0,72);
-    item.appendChild(thumbCv);
-    if(!a.isCropSource){
-      const chk=document.createElement('input');chk.type='checkbox';chk.className='g-check';
-      chk.title='כלול במשחק';chk.checked=isOn;
-      chk.addEventListener('change',()=>{
-        a.selected=chk.checked;
-        item.classList.toggle('off',!chk.checked);
-        updateCounter();schedIdbSave();
-      });
-      item.appendChild(chk);
+    const k=folderKey(a);
+    if(!groups.has(k))groups.set(k,{key:k,label:folderLabel(a),items:[]});
+    groups.get(k).items.push(a);
+  });
+  groups.forEach(g=>{
+    const wrap=document.createElement('div');wrap.className='g-folder';
+    const isOpen=!_closedFolders.has(g.key);
+    const usable=g.items.filter(a=>!a.isCropSource).length;
+    const hdr=document.createElement('div');hdr.className='g-fold-hdr';
+    const caret=document.createElement('span');caret.className='g-fold-caret';caret.textContent=isOpen?'▾':'▸';
+    const name=document.createElement('span');name.className='g-fold-name';name.textContent=g.label;
+    const cnt=document.createElement('span');cnt.className='g-fold-cnt';cnt.textContent=usable+' סמלים';
+    hdr.appendChild(caret);hdr.appendChild(name);hdr.appendChild(cnt);
+    if(g.key!=='__none__'){
+      const delBtn=document.createElement('button');delBtn.className='g-fold-del';delBtn.textContent='🗑';delBtn.title='מחק תיקייה';
+      delBtn.addEventListener('click',e=>{e.stopPropagation();deleteFolder(g.key,g.label);});
+      hdr.appendChild(delBtn);
     }
-    const del=document.createElement('button');del.className='g-del';del.textContent='×';del.title='הסר';
-    del.addEventListener('click',()=>removeAsset(a.id));
-    item.appendChild(del);
-    if(a.type==='image'){
-      const edit=document.createElement('button');edit.className='g-edit';edit.textContent='✂';edit.title='חיתוך ומיקוד תמונה';
-      edit.addEventListener('click',()=>openCropModal(a.id));
-      item.appendChild(edit);
-    }
-    const nm=document.createElement('div');nm.className='g-name';nm.textContent=a.name;
-    item.appendChild(nm);
-    if(a.isCropSource){
-      const lbl=document.createElement('div');lbl.className='g-source-lbl';lbl.textContent='מקור';
-      item.appendChild(lbl);
-    }
-    grid.appendChild(item);
+    hdr.addEventListener('click',()=>{
+      if(_closedFolders.has(g.key))_closedFolders.delete(g.key);else _closedFolders.add(g.key);
+      renderGallery();
+    });
+    const body=document.createElement('div');body.className='g-fold-body';
+    body.style.display=isOpen?'flex':'none';
+    g.items.forEach(a=>body.appendChild(buildGalleryItem(a)));
+    wrap.appendChild(hdr);wrap.appendChild(body);
+    grid.appendChild(wrap);
   });
 }
 
@@ -1806,16 +1953,74 @@ function updateCounter(){
   document.getElementById('btn-create').disabled=false;
 }
 
-function removeAsset(id){
+async function removeAsset(id){
   const a=S.assets.find(x=>x.id===id);
   if(!a)return;
+  const nCrops=a.type==='image'?S.assets.filter(x=>x.type==='crop'&&x.srcAssetId===id).length:0;
+  const ok=await confirmDialog({
+    title:'מחיקת סמל',
+    body:`למחוק את "${a.name}"?`+(nCrops?`\nיימחקו גם ${nCrops} חיתוכים שנגזרו ממנו.`:''),
+    warn:cloudDeleteWarn()
+  });
+  if(!ok)return;
   if(a.type==='image'){
     URL.revokeObjectURL(a.url);
     S.assets=S.assets.filter(x=>!(x.type==='crop'&&x.srcAssetId===id));
   }
   S.assets=S.assets.filter(x=>x.id!==id);
   renderGallery();updateCounter();schedIdbSave();
+  flushCloudAfterDelete();
 }
+
+// מחיקה מקומית גוררת ניקוי מקביל בענן (cloudAutosave מסיר קבצים שאין להם asset מקומי).
+// כאן מריצים אותו מיד במקום להמתין ל-debounce של 25 שנ', כדי שהמחיקה תהיה מיידית גם בענן.
+function flushCloudAfterDelete(){
+  if(!isSignedIn())return;
+  clearTimeout(_cloudAutoTimer);
+  cloudAutosave(true);
+}
+
+// מוחק את כל הנכסים שמסומנים (אותו סימון שקובע "כלול במשחק")
+async function deleteSelected(){
+  const sel=S.assets.filter(a=>!a.isCropSource&&a.selected!==false);
+  if(!sel.length){toast('לא סומנו סמלים למחיקה','err');return;}
+  const ok=await confirmDialog({
+    title:'מחיקת סמלים מסומנים',
+    body:`${sel.length} סמלים מסומנים יימחקו מהמאגר.`,
+    warn:cloudDeleteWarn(),
+    okText:`מחק ${sel.length}`
+  });
+  if(!ok)return;
+  const ids=new Set(sel.map(a=>a.id));
+  sel.forEach(a=>{if(a.type==='image'&&a.url)URL.revokeObjectURL(a.url);});
+  S.assets=S.assets.filter(a=>!ids.has(a.id)&&!(a.type==='crop'&&ids.has(a.srcAssetId)));
+  renderGallery();updateCounter();schedIdbSave();
+  flushCloudAfterDelete();
+  toast(`${sel.length} סמלים נמחקו`,'ok');
+}
+
+// מוחק תיקיית העלאה שלמה — כולל תמונות המקור והחיתוכים שנגזרו מהן
+async function deleteFolder(fid,fname){
+  const items=S.assets.filter(a=>folderKey(a)===fid);
+  if(!items.length)return;
+  const nUse=items.filter(a=>!a.isCropSource).length;
+  const ok=await confirmDialog({
+    icon:'📁',
+    title:'מחיקת תיקייה',
+    body:`התיקייה "${fname}" ו-${nUse} הסמלים שבתוכה יימחקו.`,
+    warn:cloudDeleteWarn(),
+    okText:'מחק תיקייה'
+  });
+  if(!ok)return;
+  const ids=new Set(items.map(a=>a.id));
+  items.forEach(a=>{if(a.type==='image'&&a.url)URL.revokeObjectURL(a.url);});
+  S.assets=S.assets.filter(a=>!ids.has(a.id)&&!(a.type==='crop'&&ids.has(a.srcAssetId)));
+  _closedFolders.delete(fid);
+  renderGallery();updateCounter();schedIdbSave();
+  flushCloudAfterDelete();
+  toast(`התיקייה "${fname}" נמחקה`,'ok');
+}
+document.getElementById('btn-del-selected').addEventListener('click',deleteSelected);
 
 // ══ SHAPE ══
 document.getElementById('shp').addEventListener('click',e=>{
@@ -2760,7 +2965,7 @@ document.getElementById('btn-crop-add').addEventListener('click',()=>{
   CM.crops.forEach((c,i)=>{
     const fullEl=cropExtractFull(CM.srcImg,c);
     const thumb=cropExtractThumb(CM.srcImg,c);
-    S.assets.push({id:++S.idSeq,type:'crop',name:`${srcName} #${i+1}`,url:'',thumb,imgEl:fullEl,srcAssetId:srcId,selected:true});
+    S.assets.push({id:++S.idSeq,type:'crop',name:`${srcName} #${i+1}`,url:'',thumb,imgEl:fullEl,srcAssetId:srcId,selected:true,folder:asset&&asset.folder});
   });
   if(asset) asset.isCropSource=true;
   const nAdded=CM.crops.length;
@@ -2835,10 +3040,11 @@ async function loadPack(pk,btn){
   const orig=btn.innerHTML;
   btn.innerHTML='<span class="spin" style="border-color:rgba(67,56,202,.3);border-top-color:var(--indigo)"></span> טוען…';
   let ok=0,fail=0;
+  const folder=newFolder('חבילה: '+pk.name+' ·');
   for(const url of pk.images){
     try{
       const imgEl=await loadImgUrl(url);
-      S.assets.push({id:++S.idSeq,type:'image',name:pk.name+' '+(ok+1),url:'',thumb:makeThumb(imgEl),imgEl,selected:true});
+      S.assets.push({id:++S.idSeq,type:'image',name:pk.name+' '+(ok+1),url:'',thumb:makeThumb(imgEl),imgEl,selected:true,folder});
       ok++;
       renderGallery();updateCounter();
     }catch(e){fail++;console.warn('pack image failed:',url);}
