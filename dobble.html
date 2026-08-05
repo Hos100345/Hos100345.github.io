@@ -1218,13 +1218,13 @@ function dcfgSave(patch){
 <div class="modal-bg" id="upload-modal" hidden style="z-index:10003">
   <div class="modal-card" style="max-width:380px;text-align:center">
     <div style="font-size:2.4rem;line-height:1;margin-bottom:.5rem">🖼️</div>
-    <div style="font-size:1.05rem;font-weight:800;color:var(--indigo)">מעלה תמונות…</div>
+    <div id="up-title" style="font-size:1.05rem;font-weight:800;color:var(--indigo)">מעלה תמונות…</div>
     <div id="up-name" style="font-size:.78rem;color:var(--muted);margin-top:.35rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:ltr"></div>
     <div style="height:9px;background:var(--border);border-radius:100px;overflow:hidden;margin:.75rem 0 .45rem">
       <div id="up-bar" style="height:100%;width:0%;border-radius:100px;background:linear-gradient(90deg,var(--blue),var(--indigo));transition:width .18s ease"></div>
     </div>
     <div id="up-count" style="font-size:.85rem;font-weight:700;color:var(--indigo)">0 / 0</div>
-    <div style="font-size:.74rem;color:var(--muted);margin-top:.5rem;line-height:1.6">תמונות מאייפון (HEIC) עוברות המרה — זה עשוי לקחת כמה שניות לתמונה</div>
+    <div id="up-hint" style="font-size:.74rem;color:var(--muted);margin-top:.5rem;line-height:1.6">תמונות מאייפון (HEIC) עוברות המרה — זה עשוי לקחת כמה שניות לתמונה</div>
   </div>
 </div>
 
@@ -1492,7 +1492,13 @@ function currentMaxOrder(){
   }catch(e){return 0;}
 }
 window.currentMaxOrder=currentMaxOrder;
-function isWithinTier(order){return !!order&&order.total<=currentMaxOrder();}
+// במצב תמיכה המנהל מייצא קובץ עבור הלקוח לפי המנוי של הלקוח, לא לפי הקוד האישי שלו —
+// בלי החריג הזה, אם הקוד של המנהל עצמו לא פותח מספיק סמלים, "צור PDF" לא מייצר כלום
+// ופותח במקום זאת את חלון השדרוג/רכישה, ובלבול הזה נראה כאילו התהליך "נתקע".
+function isWithinTier(order){
+  if(window.__supportMode)return true;
+  return !!order&&order.total<=currentMaxOrder();
+}
 function needsWatermark(){return !isWithinTier(S.order);}
 
 // ══ SEEDED RANDOM ══
@@ -1663,7 +1669,12 @@ document.getElementById('uz-files-btn').addEventListener('click',()=>fiDocs.clic
 fiDocs.addEventListener('change',e=>{addFiles(e.target.files);fiDocs.value='';});
 
 // ── חלונית טעינה בזמן העלאה ──
-function uploadProgressOpen(total){
+// opts.title/opts.hint מאפשרים להשתמש באותו מודל להתקדמות גם בהקשרים שאינם העלאה
+// (למשל הורדת תמונות של לקוח למצב תמיכה) — בלי זה, ברירת המחדל נשארת טקסט ההעלאה הרגיל.
+function uploadProgressOpen(total,opts){
+  const o=opts||{};
+  document.getElementById('up-title').textContent=o.title||'מעלה תמונות…';
+  document.getElementById('up-hint').textContent=o.hint!=null?o.hint:'תמונות מאייפון (HEIC) עוברות המרה — זה עשוי לקחת כמה שניות לתמונה';
   document.getElementById('up-bar').style.width='0%';
   document.getElementById('up-count').textContent='0 / '+total;
   document.getElementById('up-name').textContent='';
@@ -3787,26 +3798,39 @@ async function openSubscriberDesigns(code){
   }
 }
 
+// fetch עם timeout — בלי זה, קישור חתום שנתקע (רשת איטית/פג תוקף) משאיר את הלולאה למטה
+// תלויה ב-await לנצח, ונראה למנהל כאילו המחשב "נתקע" בלי שום משוב.
+function fetchWithTimeout(url,ms){
+  const ctrl=new AbortController();
+  const t=setTimeout(()=>ctrl.abort(),ms);
+  return fetch(url,{signal:ctrl.signal}).finally(()=>clearTimeout(t));
+}
+
 // טוען עיצוב של מנוי (מוריד את התמונות מהקישורים החתומים) ומכניס אותו למחולל
 async function loadSubscriberDesign(idx){
   const dz=(window.__subDesigns||[])[idx];if(!dz)return;
-  toast('מוריד את התמונות של המנוי…','ok');
+  const imgs=(dz.images||[]).filter(im=>im.url);
+  if(!imgs.length){toast('לא נמצאו תמונות לעיצוב הזה','err');return;}
+  uploadProgressOpen(imgs.length,{title:'טוען את העיצוב של הלקוח…',hint:'מוריד את התמונות מהענן — תלוי במספר התמונות ובמהירות האינטרנט'});
   try{
     const rows=[];
-    for(const im of (dz.images||[])){
-      if(!im.url)continue;
+    let done=0;
+    for(const im of imgs){
+      uploadProgressStep(done,imgs.length,im.name);
       try{
-        const resp=await fetch(im.url);const blob=await resp.blob();
+        const resp=await fetchWithTimeout(im.url,20000);const blob=await resp.blob();
         const dataURL=await blobToDataURL(blob);
         rows.push({id:im.id,name:im.name,type:im.type,dataURL,srcAssetId:im.srcAssetId||undefined,isCropSource:im.isCropSource||false,selected:im.selected!==false});
       }catch(e){console.warn('sub img download',im.path,e);}
+      done++;uploadProgressStep(done,imgs.length,im.name);
     }
-    if(!rows.length){toast('לא נמצאו תמונות לעיצוב הזה','err');return;}
+    if(!rows.length){toast('הורדת התמונות נכשלה — נסה שוב','err');return;}
     enterSupportMode(window.__subDesignsCode||dz.name);   // מפעיל את שער ה-session-only לפני הטעינה (schedIdbSave הופך לא-פעיל)
     await applyDesignToState({name:dz.name,date:dz.created_at,rows,settings:dz.settings||{}});
     if(typeof closeAdminPanel==='function')closeAdminPanel();
     toast(`נטען העיצוב "${dz.name}" למצב תמיכה — לצפייה בלבד 🛟`,'ok');
   }catch(e){console.warn('loadSubscriberDesign:',e);exitSupportMode(true);toast('טעינת העיצוב נכשלה','err');}
+  finally{uploadProgressClose();}
 }
 
 // ── מצב תמיכה: מנהל צופה בעיצוב לקוח בזיכרון בלבד — session-only, לא נכתב ל-IDB/ענן (ראו schedIdbSave) ──
