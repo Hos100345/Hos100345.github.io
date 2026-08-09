@@ -1285,6 +1285,55 @@ function dcfgSave(patch){
   </div>
 </div>
 
+<!-- CUTOUT MODAL — הסרת רקע חכמה -->
+<div class="modal-bg" id="cutout-modal" hidden style="z-index:10003">
+  <div class="modal-card" style="max-width:640px;width:96%">
+    <div class="modal-hdr">
+      <div class="modal-title">🪄 הסרת רקע חכמה</div>
+      <button class="modal-x" id="cutout-x">✕</button>
+    </div>
+
+    <div style="font-size:.82rem;color:var(--muted);line-height:1.6;margin-bottom:.5rem">
+      צבעו בירוק על מה שרוצים <b>לשמור</b>, ובאדום על ה<b>רקע</b>. מספיקים קווים גסים — אפשר לתקן שוב ושוב.
+    </div>
+
+    <div class="tool-row" style="gap:.4rem;flex-wrap:wrap;margin-bottom:.5rem">
+      <div class="shape-grp" id="cut-brush-grp">
+        <button class="sbt on" data-b="fg">✅ לשמור</button>
+        <button class="sbt"    data-b="bg">❌ רקע</button>
+        <button class="sbt"    data-b="er">🧽 מחק סימון</button>
+      </div>
+    </div>
+
+    <div class="sl-row">
+      <div class="sl-lbl"><span>גודל מברשת</span><strong id="lbl-cut-brush">28</strong></div>
+      <input type="range" id="sl-cut-brush" min="8" max="70" step="2" value="28">
+    </div>
+    <div class="sl-row">
+      <div class="sl-lbl"><span>עדינות הגזירה</span><strong id="lbl-cut-fine">50</strong></div>
+      <input type="range" id="sl-cut-fine" min="0" max="100" step="5" value="50">
+    </div>
+
+    <div class="canvas-wrap" id="cutout-wrap" style="position:relative;touch-action:none">
+      <canvas id="cutout-canvas" style="max-width:100%;touch-action:none"></canvas>
+      <div id="cutout-busy" hidden style="position:absolute;inset:0;display:flex;align-items:center;
+        justify-content:center;background:rgba(255,255,255,.55);font-weight:700;color:var(--indigo)">מחשב…</div>
+    </div>
+
+    <div class="brow" style="justify-content:space-between;margin-top:.6rem;flex-wrap:wrap;gap:.4rem">
+      <div style="display:flex;gap:.4rem">
+        <button class="btn btn-ghost" id="btn-cut-undo">↩︎ בטל</button>
+        <button class="btn btn-ghost" id="btn-cut-reset">🔄 אפס</button>
+        <button class="btn btn-ghost" id="btn-cut-peek">👁 תוצאה</button>
+      </div>
+      <div style="display:flex;gap:.4rem">
+        <button class="btn btn-ghost" id="btn-cut-cancel">ביטול</button>
+        <button class="btn btn-ok"    id="btn-cut-ok">✅ אישור</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- AUTH MODAL (חשבון וסנכרון — Magic Link) -->
 <div class="modal-bg" id="auth-modal" hidden>
   <div class="modal-card" style="max-width:420px">
@@ -1649,6 +1698,20 @@ const CM={
   dispW:1,dispH:1,idSeq:0,
   selId:null,editMode:null,editHandle:null,editOrig:null,
 };
+
+// מצב מודל החיתוך החכם. חי רק כל עוד המודל פתוח; המסכה הסופית נשמרת על אובייקט ה-crop.
+const CUT={
+  cropId:null, work:null, W:0, H:0,      // קנבס עבודה מוקטן + מידותיו
+  rgb:null,                               // Uint8ClampedArray של תמונת העבודה
+  sFG:null, sBG:null,                     // Uint8Array סימוני משתמש
+  mask:null,                              // Uint8Array תוצאה (1=אובייקט)
+  brush:'fg', brushPx:28, fine:50,
+  drawing:false, lastX:0, lastY:0,
+  history:[],                             // ערימת snapshots של {sFG,sBG} — עד 12
+  peek:false, dispScale:1, busy:false, timer:0
+};
+const CUT_WORK_MAX=320;   // מימד מקסימלי לחישוב — איזון בין דיוק למהירות בנייד
+const CUT_HIST_MAX=12;
 
 // ══ NAV ══
 function goScr(n){
@@ -2896,9 +2959,18 @@ function removeBackground(cv,tolerance){
 
 function getRmbgTol(){return parseInt(document.getElementById('rng-rmbg-tol')?.value||35);}
 
-function cropExtractThumb(srcImg,crop){
-  const SZ=72;
+// לוגיקה משותפת לחילוץ סמל מ-crop — cropExtractThumb (72px) ו-cropExtractFull (IMG_PX) קוראים לה,
+// כדי שהתמונה הממוזערת תהיה זהה לתוצאה הסופית. useMask (חיתוך חכם) גובר על "הסר רקע" המהיר.
+function cropRender(srcImg,crop,SZ){
   const scX=imgNatW(srcImg)/CM.dispW,scY=imgNatH(srcImg)/CM.dispH;
+  if(crop.useMask&&crop.mask){
+    const cv=document.createElement('canvas');cv.width=cv.height=SZ;
+    const ctx=cv.getContext('2d');ctx.clearRect(0,0,SZ,SZ);
+    ctx.drawImage(srcImg,crop.x*scX,crop.y*scY,crop.w*scX,crop.h*scY,0,0,SZ,SZ);
+    cutApplyMaskFull(cv,crop.mask,crop.mw,crop.mh);
+    if(typeof trimAlphaSquare==='function')return trimAlphaSquare(cv,SZ,0.02);
+    return cv;
+  }
   const rmBg=document.getElementById('ck-rmbg').checked;
   if(rmBg){
     const tmp=document.createElement('canvas');tmp.width=tmp.height=SZ;
@@ -2915,26 +2987,8 @@ function cropExtractThumb(srcImg,crop){
   ctx.drawImage(srcImg,crop.x*scX,crop.y*scY,crop.w*scX,crop.h*scY,0,0,SZ,SZ);
   return cv;
 }
-
-function cropExtractFull(srcImg,crop){
-  const SZ=IMG_PX;
-  const scX=imgNatW(srcImg)/CM.dispW,scY=imgNatH(srcImg)/CM.dispH;
-  const rmBg=document.getElementById('ck-rmbg').checked;
-  if(rmBg){
-    const tmp=document.createElement('canvas');tmp.width=tmp.height=SZ;
-    tmp.getContext('2d').drawImage(srcImg,crop.x*scX,crop.y*scY,crop.w*scX,crop.h*scY,0,0,SZ,SZ);
-    removeBackground(tmp,getRmbgTol());
-    const cv=document.createElement('canvas');cv.width=cv.height=SZ;
-    const ctx=cv.getContext('2d');ctx.clearRect(0,0,SZ,SZ);
-    _clipShape(ctx,SZ,crop.shape);ctx.drawImage(tmp,0,0);
-    return cv;
-  }
-  const cv=document.createElement('canvas');cv.width=cv.height=SZ;
-  const ctx=cv.getContext('2d');ctx.clearRect(0,0,SZ,SZ);
-  _clipShape(ctx,SZ,crop.shape);
-  ctx.drawImage(srcImg,crop.x*scX,crop.y*scY,crop.w*scX,crop.h*scY,0,0,SZ,SZ);
-  return cv;
-}
+function cropExtractThumb(srcImg,crop){return cropRender(srcImg,crop,72);}
+function cropExtractFull(srcImg,crop){return cropRender(srcImg,crop,IMG_PX);}
 
 function renderModalCrops(){
   const strip=document.getElementById('modal-crops-strip');
@@ -2953,6 +3007,12 @@ function renderModalCrops(){
     const del=document.createElement('button');del.className='crop-del';del.textContent='×';
     del.addEventListener('click',()=>{CM.crops=CM.crops.filter(x=>x.id!==c.id);renderModalCrops();redrawCropCanvas();updateCropAddBtn();});
     wrap.appendChild(del);
+    const cut=document.createElement('button');
+    cut.className='crop-del';cut.textContent='✂︎';
+    cut.title='חיתוך חכם';
+    cut.style.cssText='top:auto;bottom:-5px;inset-inline-start:auto;inset-inline-end:-5px;background:'+(c.useMask?'#16a34a':'#4338CA');
+    cut.addEventListener('click',e=>{e.stopPropagation();openCutoutModal(c.id);});
+    wrap.appendChild(cut);
     strip.appendChild(wrap);
   });
   countEl.textContent=`${CM.crops.length} סמלים נבחרו`;
@@ -2966,7 +3026,405 @@ function closeCropModal(){
   document.getElementById('crop-modal').hidden=true;
   CM.srcImg=null;CM.crops=[];CM.dragging=false;CM.assetId=null;
   CM.selId=null;CM.editMode=null;CM.editHandle=null;CM.editOrig=null;
+  cutReleaseMemory();
 }
+
+// ══════════════════════════════════════════════════════════════════
+// ══ SMART CUTOUT — FG/BG brushes → geodesic distance + color model ══
+// ══════════════════════════════════════════════════════════════════
+
+function cutReleaseMemory(){
+  CUT.cropId=null;CUT.work=null;CUT.rgb=null;CUT.sFG=null;CUT.sBG=null;CUT.mask=null;
+  CUT.history=[];CUT.peek=false;CUT.drawing=false;
+}
+
+function openCutoutModal(cropId){
+  const c=CM.crops.find(x=>x.id===cropId);
+  if(!c||!CM.srcImg)return;
+  CUT.cropId=cropId;CUT.history=[];CUT.peek=false;CUT.brush='fg';CUT.busy=false;
+  document.querySelectorAll('#cut-brush-grp .sbt').forEach((b,i)=>b.classList.toggle('on',i===0));
+
+  // קנבס עבודה מוקטן — ריבועי, מוגבל ל-CUT_WORK_MAX בצד הארוך
+  const W=Math.min(CUT_WORK_MAX,Math.max(64,Math.round(c.w)));
+  CUT.W=W;CUT.H=W;
+  const work=document.createElement('canvas');work.width=W;work.height=W;
+  const wctx=work.getContext('2d');
+  const scX=imgNatW(CM.srcImg)/CM.dispW,scY=imgNatH(CM.srcImg)/CM.dispH;
+  wctx.drawImage(CM.srcImg,c.x*scX,c.y*scY,c.w*scX,c.h*scY,0,0,W,W);
+  CUT.work=work;
+  CUT.rgb=wctx.getImageData(0,0,W,W).data;
+
+  const n=W*W;
+  if(c.useMask&&c.sFG&&c.sBG&&c.sFG.length===n){
+    // ממשיכים לערוך סימונים קיימים מהמפגש הקודם
+    CUT.sFG=c.sFG.slice();CUT.sBG=c.sBG.slice();
+  }else{
+    CUT.sFG=new Uint8Array(n);CUT.sBG=new Uint8Array(n);
+    cutSeedDefaults();
+  }
+  CUT.mask=c.mask&&c.mask.length===n?c.mask.slice():new Uint8Array(n);
+
+  const modal=document.getElementById('cutout-modal');
+  modal.hidden=false;
+  cutSetupCanvas();
+  cutComputeMask();
+}
+
+// זרעים אוטומטיים: מסגרת=רקע, מלבן מרכזי 25%=אובייקט — נקודת פתיחה סבירה שהמשתמש מתקן
+function cutSeedDefaults(){
+  const W=CUT.W,H=CUT.H;
+  for(let x=0;x<W;x++){
+    for(let t=0;t<3;t++){CUT.sBG[t*W+x]=1;CUT.sBG[(H-1-t)*W+x]=1;}
+  }
+  for(let y=0;y<H;y++){
+    for(let t=0;t<3;t++){CUT.sBG[y*W+t]=1;CUT.sBG[y*W+(W-1-t)]=1;}
+  }
+  const mx0=Math.round(W*0.375),mx1=Math.round(W*0.625);
+  const my0=Math.round(H*0.375),my1=Math.round(H*0.625);
+  for(let y=my0;y<my1;y++)for(let x=mx0;x<mx1;x++)CUT.sFG[y*W+x]=1;
+}
+
+function cutSetupCanvas(){
+  const wrap=document.getElementById('cutout-wrap');
+  const oldCv=document.getElementById('cutout-canvas');
+  const cv=oldCv.cloneNode(false);
+  oldCv.replaceWith(cv);
+  const maxW=Math.min(wrap.clientWidth||520,520);
+  CUT.dispScale=maxW/CUT.W;
+  cv.width=Math.round(CUT.W*CUT.dispScale);
+  cv.height=Math.round(CUT.H*CUT.dispScale);
+  cv.style.maxWidth='100%';cv.style.cursor='crosshair';cv.style.touchAction='none';
+  cutRedraw();
+  cv.addEventListener('mousedown',e=>cutPointerDown(e.offsetX,e.offsetY));
+  cv.addEventListener('mousemove',e=>cutPointerMove(e.offsetX,e.offsetY));
+  window.addEventListener('mouseup',cutPointerUp);
+  cv.addEventListener('touchstart',e=>{e.preventDefault();const t=e.touches[0];const r=cv.getBoundingClientRect();cutPointerDown((t.clientX-r.left)*(cv.width/r.width),(t.clientY-r.top)*(cv.height/r.height));},{passive:false});
+  cv.addEventListener('touchmove',e=>{e.preventDefault();const t=e.touches[0];const r=cv.getBoundingClientRect();cutPointerMove((t.clientX-r.left)*(cv.width/r.width),(t.clientY-r.top)*(cv.height/r.height));},{passive:false});
+  cv.addEventListener('touchend',e=>{e.preventDefault();cutPointerUp();},{passive:false});
+}
+
+function cutPointerDown(dx,dy){
+  if(CUT.busy)return;
+  cutPushHistory();
+  CUT.drawing=true;CUT.lastX=dx;CUT.lastY=dy;
+  cutStampBrush(dx,dy);
+  cutRedraw();
+}
+function cutPointerMove(dx,dy){
+  if(!CUT.drawing)return;
+  cutStampLine(CUT.lastX,CUT.lastY,dx,dy);
+  CUT.lastX=dx;CUT.lastY=dy;
+  cutRedraw();
+}
+function cutPointerUp(){
+  if(!CUT.drawing)return;
+  CUT.drawing=false;
+  cutScheduleCompute();
+}
+
+function cutStampLine(x0,y0,x1,y1){
+  const d=Math.hypot(x1-x0,y1-y0);
+  const steps=Math.max(1,Math.ceil(d/2));
+  for(let i=0;i<=steps;i++)cutStampBrush(x0+(x1-x0)*i/steps,y0+(y1-y0)*i/steps);
+}
+function cutStampBrush(dx,dy){
+  const wx=dx/CUT.dispScale,wy=dy/CUT.dispScale;
+  const rr=CUT.brushPx/2/CUT.dispScale;
+  const W=CUT.W,H=CUT.H;
+  const x0=Math.max(0,Math.floor(wx-rr)),x1=Math.min(W-1,Math.ceil(wx+rr));
+  const y0=Math.max(0,Math.floor(wy-rr)),y1=Math.min(H-1,Math.ceil(wy+rr));
+  const rr2=rr*rr;
+  for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){
+    const ddx=x-wx,ddy=y-wy;
+    if(ddx*ddx+ddy*ddy>rr2)continue;
+    const idx=y*W+x;
+    if(CUT.brush==='fg'){CUT.sFG[idx]=1;CUT.sBG[idx]=0;}
+    else if(CUT.brush==='bg'){CUT.sBG[idx]=1;CUT.sFG[idx]=0;}
+    else{CUT.sFG[idx]=0;CUT.sBG[idx]=0;}
+  }
+}
+
+function cutPushHistory(){
+  CUT.history.push({sFG:CUT.sFG.slice(),sBG:CUT.sBG.slice()});
+  if(CUT.history.length>CUT_HIST_MAX)CUT.history.shift();
+}
+function cutUndo(){
+  const snap=CUT.history.pop();
+  if(!snap)return;
+  CUT.sFG=snap.sFG;CUT.sBG=snap.sBG;
+  cutRedraw();cutScheduleCompute();
+}
+function cutReset(){
+  cutPushHistory();
+  const n=CUT.W*CUT.H;
+  CUT.sFG=new Uint8Array(n);CUT.sBG=new Uint8Array(n);
+  cutSeedDefaults();
+  cutRedraw();cutScheduleCompute();
+}
+
+function cutScheduleCompute(){
+  clearTimeout(CUT.timer);
+  document.getElementById('cutout-busy').hidden=false;
+  CUT.timer=setTimeout(()=>{ cutComputeMask(); document.getElementById('cutout-busy').hidden=true; cutRedraw(); },50);
+}
+
+// ── תצוגה: תמונה + שכבת רקע אדומה שקופה + קווי סימון, או "תוצאה" (שחמט) ──
+function cutRedraw(){
+  const cv=document.getElementById('cutout-canvas');
+  if(!cv||!CUT.work)return;
+  const ctx=cv.getContext('2d');
+  const W=CUT.W,H=CUT.H,dw=cv.width,dh=cv.height;
+  ctx.clearRect(0,0,dw,dh);
+  ctx.imageSmoothingEnabled=false;
+
+  if(CUT.peek){
+    const sq=10;
+    for(let y=0;y<dh;y+=sq)for(let x=0;x<dw;x+=sq){
+      ctx.fillStyle=((x/sq+y/sq)%2===0)?'#e5e7eb':'#f9fafb';
+      ctx.fillRect(x,y,sq,sq);
+    }
+    const masked=document.createElement('canvas');masked.width=W;masked.height=H;
+    const mctx=masked.getContext('2d');
+    mctx.drawImage(CUT.work,0,0);
+    const id=mctx.getImageData(0,0,W,H);
+    for(let i=0;i<W*H;i++)id.data[i*4+3]=CUT.mask[i]?id.data[i*4+3]:0;
+    mctx.putImageData(id,0,0);
+    ctx.drawImage(masked,0,0,dw,dh);
+    return;
+  }
+
+  ctx.drawImage(CUT.work,0,0,dw,dh);
+  // שכבת רקע אדומה על מה שהאלגוריתם סיווג כרקע
+  const overlay=document.createElement('canvas');overlay.width=W;overlay.height=H;
+  const octx=overlay.getContext('2d');
+  const oid=octx.createImageData(W,H);
+  for(let i=0;i<W*H;i++){
+    if(!CUT.mask[i]){oid.data[i*4]=220;oid.data[i*4+1]=38;oid.data[i*4+2]=38;oid.data[i*4+3]=115;}
+  }
+  octx.putImageData(oid,0,0);
+  ctx.drawImage(overlay,0,0,dw,dh);
+
+  // קווי הסימון של המשתמש
+  const brushDisp=Math.max(2,CUT.brushPx);
+  ctx.save();
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    const idx=y*W+x;
+    if(CUT.sFG[idx]||CUT.sBG[idx]){
+      ctx.fillStyle=CUT.sFG[idx]?'rgba(34,197,94,.55)':'rgba(239,68,68,.55)';
+      ctx.fillRect(x*CUT.dispScale,y*CUT.dispScale,CUT.dispScale,CUT.dispScale);
+    }
+  }
+  ctx.restore();
+}
+
+// ── האלגוריתם: geodesic distance (chamfer, 3 איטרציות) + מודל צבע היסטוגרמה ──
+function cutComputeMask(){
+  const W=CUT.W,H=CUT.H,n=W*H,rgb=CUT.rgb;
+  const GAMMA=1+(CUT.fine||0)/25;
+
+  function colorDist(i,j){
+    const ii=i*4,jj=j*4;
+    const dr=rgb[ii]-rgb[jj],dg=rgb[ii+1]-rgb[jj+1],db=rgb[ii+2]-rgb[jj+2];
+    return Math.sqrt(dr*dr+dg*dg+db*db);
+  }
+  function w(i,j,diag){
+    const base=1+GAMMA*colorDist(i,j)/32;
+    return diag?base*1.414:base;
+  }
+
+  const dFG=new Float32Array(n).fill(Infinity);
+  const dBG=new Float32Array(n).fill(Infinity);
+  let hasFG=false;
+  for(let i=0;i<n;i++){
+    if(CUT.sFG[i]){dFG[i]=0;hasFG=true;}
+    if(CUT.sBG[i]){dBG[i]=0;}
+  }
+  if(!hasFG){
+    // ללא זרעי FG כלל (המשתמש מחק הכול) — נופלים חזרה לזרעים האוטומטיים לחישוב בלבד
+    const mx0=Math.round(W*0.375),mx1=Math.round(W*0.625);
+    const my0=Math.round(H*0.375),my1=Math.round(H*0.625);
+    for(let y=my0;y<my1;y++)for(let x=mx0;x<mx1;x++){dFG[y*W+x]=0;}
+  }
+
+  function relax(d){
+    // סריקה קדימה: שמאל, מעל, שני אלכסונים עליונים
+    for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+      const i=y*W+x;let v=d[i];
+      if(x>0)v=Math.min(v,d[i-1]+w(i,i-1,false));
+      if(y>0)v=Math.min(v,d[i-W]+w(i,i-W,false));
+      if(x>0&&y>0)v=Math.min(v,d[i-W-1]+w(i,i-W-1,true));
+      if(x<W-1&&y>0)v=Math.min(v,d[i-W+1]+w(i,i-W+1,true));
+      d[i]=v;
+    }
+    // סריקה אחורה: ימין, מתחת, שני אלכסונים תחתונים
+    for(let y=H-1;y>=0;y--)for(let x=W-1;x>=0;x--){
+      const i=y*W+x;let v=d[i];
+      if(x<W-1)v=Math.min(v,d[i+1]+w(i,i+1,false));
+      if(y<H-1)v=Math.min(v,d[i+W]+w(i,i+W,false));
+      if(x<W-1&&y<H-1)v=Math.min(v,d[i+W+1]+w(i,i+W+1,true));
+      if(x>0&&y<H-1)v=Math.min(v,d[i+W-1]+w(i,i+W-1,true));
+      d[i]=v;
+    }
+  }
+  for(let it=0;it<3;it++){relax(dFG);relax(dBG);}
+
+  // מודל צבע: היסטוגרמת 4 ביט/ערוץ מהזרעים
+  const hFG=new Int32Array(4096),hBG=new Int32Array(4096);
+  let maxCount=1;
+  for(let i=0;i<n;i++){
+    const ii=i*4;
+    const bin=((rgb[ii]>>4)<<8)|((rgb[ii+1]>>4)<<4)|(rgb[ii+2]>>4);
+    if(CUT.sFG[i]){hFG[bin]++;if(hFG[bin]>maxCount)maxCount=hFG[bin];}
+    if(CUT.sBG[i]){hBG[bin]++;if(hBG[bin]>maxCount)maxCount=hBG[bin];}
+  }
+  const logMax=Math.log(maxCount+1)||1;
+
+  const mask=new Uint8Array(n);
+  for(let i=0;i<n;i++){
+    const ii=i*4;
+    const bin=((rgb[ii]>>4)<<8)|((rgb[ii+1]>>4)<<4)|(rgb[ii+2]>>4);
+    const colorTerm=(Math.log(hBG[bin]+1)-Math.log(hFG[bin]+1))/logMax;
+    const df=dFG[i],db_=dBG[i];
+    const geo=(df-db_)/(df+db_+1);
+    const score=0.75*geo+0.25*colorTerm;
+    let isBG=score>0;
+    if(CUT.sFG[i])isBG=false;
+    if(CUT.sBG[i])isBG=true;
+    mask[i]=isBG?0:1;
+  }
+
+  cutMorphCleanup(mask,W,H);
+  CUT.mask=mask;
+}
+
+// ניקוי מורפולוגי: open→close (3×3), רכיבי קשירות (רק המכילים זרע FG / הגדול ביותר), מילוי חורים
+function cutMorphCleanup(mask,W,H){
+  function erodeDilate(src,dilate){
+    const out=new Uint8Array(src.length);
+    for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+      const i=y*W+x;
+      let v=dilate?0:1;
+      for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+        const xx=x+dx,yy=y+dy;
+        const nv=(xx<0||yy<0||xx>=W||yy>=H)?0:src[yy*W+xx];
+        v=dilate?Math.max(v,nv):Math.min(v,nv);
+      }
+      out[i]=v;
+    }
+    return out;
+  }
+  let m=erodeDilate(mask,false);      // open: erode
+  m=erodeDilate(m,true);              // open: dilate
+  m=erodeDilate(m,true);              // close: dilate
+  m=erodeDilate(m,false);             // close: erode
+
+  // רכיבי קשירות (BFS) — שומרים רכיבים שמכילים זרע FG; ואם אין זרעים כלל, את הגדול ביותר
+  const label=new Int32Array(m.length).fill(-1);
+  const comps=[];
+  for(let s=0;s<m.length;s++){
+    if(m[s]!==1||label[s]!==-1)continue;
+    const q=[s];label[s]=comps.length;let hasSeed=false,size=0;
+    while(q.length){
+      const i=q.pop();size++;
+      if(CUT.sFG[i])hasSeed=true;
+      const x=i%W,y=(i/W)|0;
+      const nbrs=[x>0?i-1:-1,x<W-1?i+1:-1,y>0?i-W:-1,y<H-1?i+W:-1];
+      for(const ni of nbrs){
+        if(ni>=0&&m[ni]===1&&label[ni]===-1){label[ni]=comps.length;q.push(ni);}
+      }
+    }
+    comps.push({hasSeed,size});
+  }
+  const anySeed=comps.some(c=>c.hasSeed);
+  let bestIdx=0;
+  if(!anySeed&&comps.length){
+    let bestSize=-1;
+    comps.forEach((c,idx)=>{if(c.size>bestSize){bestSize=c.size;bestIdx=idx;}});
+  }
+  for(let i=0;i<m.length;i++){
+    if(m[i]!==1)continue;
+    const keep=anySeed?comps[label[i]].hasSeed:(label[i]===bestIdx);
+    if(!keep)m[i]=0;
+  }
+
+  // מילוי חורים: flood-fill רקע מהמסגרת; כל רקע שלא הגיע אליו הפך FG (חור פנימי)
+  const bgReached=new Uint8Array(m.length);
+  const q2=[];
+  function seedBG(i){if(m[i]===0&&!bgReached[i]){bgReached[i]=1;q2.push(i);}}
+  for(let x=0;x<W;x++){seedBG(x);seedBG((H-1)*W+x);}
+  for(let y=1;y<H-1;y++){seedBG(y*W);seedBG(y*W+W-1);}
+  let qi=0;
+  while(qi<q2.length){
+    const i=q2[qi++];const x=i%W,y=(i/W)|0;
+    if(x>0)seedBG(i-1);if(x<W-1)seedBG(i+1);if(y>0)seedBG(i-W);if(y<H-1)seedBG(i+W);
+  }
+  for(let i=0;i<m.length;i++){if(m[i]===0&&!bgReached[i])m[i]=1;}
+
+  mask.set(m);
+}
+
+// החלה ברזולוציה מלאה: מגדילים את המסכה עם החלקה (feather חינם), ומכפילים באלפא הקיים
+function cutApplyMaskFull(cv,mask,mw,mh){
+  const W=cv.width,H=cv.height;
+  const mcv=document.createElement('canvas');mcv.width=mw;mcv.height=mh;
+  const mctx=mcv.getContext('2d');
+  const mid=mctx.createImageData(mw,mh);
+  for(let i=0;i<mw*mh;i++){const v=mask[i]?255:0;mid.data[i*4]=v;mid.data[i*4+1]=v;mid.data[i*4+2]=v;mid.data[i*4+3]=255;}
+  mctx.putImageData(mid,0,0);
+
+  const big=document.createElement('canvas');big.width=W;big.height=H;
+  const bctx=big.getContext('2d');
+  bctx.imageSmoothingEnabled=true;bctx.imageSmoothingQuality='high';
+  bctx.drawImage(mcv,0,0,W,H);
+  const bd=bctx.getImageData(0,0,W,H).data;
+
+  const ctx=cv.getContext('2d');
+  const id=ctx.getImageData(0,0,W,H);
+  const d=id.data;
+  const smoothstep=(e0,e1,x)=>{const t=Math.min(1,Math.max(0,(x-e0)/(e1-e0)));return t*t*(3-2*t);};
+  for(let i=0;i<W*H;i++){
+    const m=bd[i*4]/255;
+    d[i*4+3]=Math.round(d[i*4+3]*smoothstep(0.35,0.65,m));
+  }
+  ctx.putImageData(id,0,0);
+}
+
+// ── UI wiring ──
+document.getElementById('cut-brush-grp').addEventListener('click',e=>{
+  const b=e.target.closest('.sbt');if(!b)return;
+  document.querySelectorAll('#cut-brush-grp .sbt').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');CUT.brush=b.dataset.b;
+});
+document.getElementById('sl-cut-brush').addEventListener('input',function(){
+  CUT.brushPx=+this.value;document.getElementById('lbl-cut-brush').textContent=this.value;
+});
+document.getElementById('sl-cut-fine').addEventListener('input',function(){
+  CUT.fine=+this.value;document.getElementById('lbl-cut-fine').textContent=this.value;
+  cutScheduleCompute();
+});
+document.getElementById('btn-cut-undo').addEventListener('click',cutUndo);
+document.getElementById('btn-cut-reset').addEventListener('click',cutReset);
+document.getElementById('btn-cut-peek').addEventListener('click',function(){
+  CUT.peek=!CUT.peek;this.classList.toggle('on',CUT.peek);cutRedraw();
+});
+document.getElementById('btn-cut-cancel').addEventListener('click',()=>{
+  document.getElementById('cutout-modal').hidden=true;
+  cutReleaseMemory();
+});
+document.getElementById('cutout-x').addEventListener('click',()=>document.getElementById('btn-cut-cancel').click());
+document.getElementById('cutout-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)document.getElementById('btn-cut-cancel').click();});
+
+document.getElementById('btn-cut-ok').addEventListener('click',()=>{
+  const c=CM.crops.find(x=>x.id===CUT.cropId);
+  if(c){
+    c.useMask=true;c.mask=CUT.mask.slice();c.mw=CUT.W;c.mh=CUT.H;
+    c.sFG=CUT.sFG.slice();c.sBG=CUT.sBG.slice();
+    c.thumb=cropExtractThumb(CM.srcImg,c);
+  }
+  document.getElementById('cutout-modal').hidden=true;
+  cutReleaseMemory();
+  renderModalCrops();
+});
 
 document.getElementById('modal-tool-grp').addEventListener('click',e=>{
   const b=e.target.closest('.sbt');if(!b)return;
