@@ -3073,7 +3073,8 @@ async function loadPack(pk,btn){
   const folder=newFolder('חבילה: '+pk.name+' ·');
   for(const url of pk.images){
     try{
-      const imgEl=await loadImgUrl(url);
+      // תג <img> על URL מרוחק לא נחסם בזמן קבוע — בלי timeout, קישור שנתקע קופא כאן לנצח
+      const imgEl=await withTimeout(loadImgUrl(url),20000,'טעינת תמונה מהחבילה נתקעה (timeout)');
       S.assets.push({id:++S.idSeq,type:'image',name:pk.name+' '+(ok+1),url:'',thumb:makeThumb(imgEl),imgEl,selected:true,folder});
       ok++;
       renderGallery();updateCounter();
@@ -4146,9 +4147,13 @@ async function sbUploadRetry(path,dataURL,mime,tries=3){
   let blob;
   try{blob=dataURLtoBlob(dataURL);}catch(e){console.warn('bad dataURL',path,e);return false;}
   for(let i=0;i<tries;i++){
-    const{error}=await SB.storage.from(SB_BUCKET).upload(path,blob,{contentType:mime,upsert:true});
-    if(!error)return true;
-    console.warn('upload try',i+1,path,error);
+    // בלי timeout, העלאה שנתקעת (רשת איטית) משאירה את ה-await תלוי לנצח — אין error שיפעיל
+    // ניסיון חוזר, וכל הלולאה שקוראת לזה (cloudSaveDesign/cloudAutosave) קופאת על התמונה הזו.
+    try{
+      const{error}=await withTimeout(SB.storage.from(SB_BUCKET).upload(path,blob,{contentType:mime,upsert:true}),20000,'upload timeout');
+      if(!error)return true;
+      console.warn('upload try',i+1,path,error);
+    }catch(e){console.warn('upload try',i+1,path,e);}
     await new Promise(r=>setTimeout(r,400*(i+1)));
   }
   return false;
@@ -4256,7 +4261,8 @@ async function cloudFetchDesign(row){
   const rows=[];
   for(const im of images){
     try{
-      const{data,error}=await SB.storage.from(SB_BUCKET).download(im.path);
+      // אותה בעיה כמו בהעלאה — הורדה שנתקעת בלי timeout קופאת על התמונה הזו לנצח
+      const{data,error}=await withTimeout(SB.storage.from(SB_BUCKET).download(im.path),20000,'download timeout');
       if(error||!data)continue;
       const dataURL=await blobToDataURL(data);
       rows.push({id:im.id,name:im.name,type:im.type,dataURL,srcAssetId:im.srcAssetId||undefined,isCropSource:im.isCropSource||false,selected:im.selected!==false});
