@@ -118,7 +118,7 @@ Deno.serve(async (req) => {
 
       // תוקף/סטטוס/תיאור/מסלול מטבלת profiles
       const { data: profs } = ids.length
-        ? await admin.from('profiles').select('id,subscription_expires,subscriber_status,label,max_order').in('id', ids)
+        ? await admin.from('profiles').select('id,subscription_expires,subscriber_status,label,max_order,print_limit,print_count').in('id', ids)
         : { data: [] };
       const pmap = new Map((profs || []).map((p: any) => [p.id, p]));
 
@@ -166,6 +166,8 @@ Deno.serve(async (req) => {
           status: p.subscriber_status || 'active',
           label: p.label || null,
           maxOrder: p.max_order != null ? p.max_order : null,
+          printLimit: p.print_limit != null ? p.print_limit : null,
+          printCount: p.print_count || 0,
           usage,
           designsCount: dz.designsCount,
           symbolsCount: dz.symbolsCount,
@@ -235,6 +237,34 @@ Deno.serve(async (req) => {
       if (error) return json({ error: error.message }, 500);
       await logAudit('admin_set_expiry', code, { newExpiry });
       return json({ ok: true, expiry: newExpiry });
+    }
+
+    // הגבלת ייצוא/הדפסה עצמאית בבית — הגנה מפני שימוש לרעה. printLimit ריק/null = ללא הגבלה (ברירת מחדל).
+    // האכיפה בפועל היא ב-RPC נפרד (consume_print_quota, נקרא מהלקוח בכל ניסיון ייצוא) — זו רק קביעת המכסה.
+    if (action === 'set_print_limit') {
+      const code = String(body.code || '').trim();
+      const u = await findUserByCode(code);
+      if (!u) return json({ error: 'המנוי לא נמצא' }, 404);
+      let printLimit: number | null = null;
+      if (body.printLimit != null && body.printLimit !== '') {
+        printLimit = Number(body.printLimit);
+        if (!Number.isFinite(printLimit) || printLimit < 0) return json({ error: 'מספר לא תקין' }, 400);
+      }
+      const { error } = await admin.from('profiles').upsert({ id: u.id, print_limit: printLimit });
+      if (error) return json({ error: error.message }, 500);
+      await logAudit('admin_set_print_limit', code, { printLimit });
+      return json({ ok: true, printLimit });
+    }
+
+    // איפוס מונה ההדפסות שנוצלו — לשימוש כשהמנהל רוצה "לפתוח מכסה חדשה" למנוי בלי לשנות את הגבלת ה-max שלו.
+    if (action === 'reset_print_count') {
+      const code = String(body.code || '').trim();
+      const u = await findUserByCode(code);
+      if (!u) return json({ error: 'המנוי לא נמצא' }, 404);
+      const { error } = await admin.from('profiles').upsert({ id: u.id, print_count: 0 });
+      if (error) return json({ error: error.message }, 500);
+      await logAudit('admin_reset_print_count', code, {});
+      return json({ ok: true });
     }
 
     // חסימה/שחרור — המנהל עצמו לעולם לא בטבלת המנויים (דומיין @sub.* בלבד) כך שאינו יכול לחסום את עצמו דרך הפעולה הזו.
