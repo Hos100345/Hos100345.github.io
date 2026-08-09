@@ -1038,15 +1038,26 @@ function dcfgSave(patch){
           <div class="sb-t">גודל סמלים</div>
           <div class="sl-row">
             <div class="sl-lbl"><span>מינימום</span><strong id="lbl-mn">70%</strong></div>
-            <input type="range" id="sl-mn" min="50" max="100" value="70" step="5">
+            <input type="range" id="sl-mn" min="20" max="160" value="70" step="5">
           </div>
           <div class="sl-row">
             <div class="sl-lbl"><span>מקסימום</span><strong id="lbl-mx">130%</strong></div>
-            <input type="range" id="sl-mx" min="100" max="150" value="130" step="5">
+            <input type="range" id="sl-mx" min="40" max="300" value="130" step="5">
           </div>
           <div class="sl-row">
-            <div class="sl-lbl"><span>חפיפה</span><strong id="lbl-ov">0%</strong></div>
-            <input type="range" id="sl-ov" min="0" max="100" value="0" step="5">
+            <div class="sl-lbl"><span>חפיפה / מרווח</span><strong id="lbl-ov">צמוד</strong></div>
+            <input type="range" id="sl-ov" min="-100" max="100" value="0" step="5">
+          </div>
+          <label class="tool-row" style="gap:.45rem;cursor:pointer;margin-top:.4rem">
+            <input type="checkbox" id="ck-tight" checked style="width:16px;height:16px;accent-color:var(--indigo)">
+            <span style="font-size:.83rem;font-weight:700;color:var(--indigo)">🧩 חפיפה לפי צורת הסמל</span>
+          </label>
+          <label class="tool-row" style="gap:.45rem;cursor:pointer;margin-top:.25rem">
+            <input type="checkbox" id="ck-tightfill" style="width:16px;height:16px;accent-color:var(--indigo)">
+            <span style="font-size:.83rem;font-weight:700;color:var(--indigo)">📐 מילוי מיטבי של הקלף</span>
+          </label>
+          <div style="font-size:.75rem;color:var(--muted);line-height:1.5;margin-top:.3rem">
+            אפס = הסמלים נוגעים בדיוק · ימינה = נכנסים זה בזה · שמאלה = מתרחקים זה מזה
           </div>
         </div>
         <div class="sb-sec">
@@ -1574,9 +1585,19 @@ function buildLayouts(deck,seed,sMin,sMax){
 }
 
 // ══ SYMBOL POSITIONS ══
-// S.overlap (0–100, מהסליידר "חפיפה"): מקרב את הסמלים זה לזה בלי לשנות את גודלם —
-// ככל שגדל, כך קטן המרחק בין הסמלים ונוצרת חפיפה ויזואלית.
-function overlapFactor(){ return 1-(S.overlap||0)/100*.35; }
+// S.overlap (-100..100, מהסליידר "חפיפה / מרווח"): >0 מקרב סמלים (חפיפה), <0 מרחיק (מרווח).
+// טווח אסימטרי בכוונה: הסידור הישן (tightPack כבוי) בנוי סביב טבעות קבועות ולא יכול לספוג
+// התרחקות גדולה בלי לחרוג מגבול הקלף. כש-tightPack פעיל, זו רק נקודת פתיחה — contactFactor() קובע בפועל.
+function overlapFactor(){
+  const ov=S.overlap||0;
+  return ov>=0 ? 1-(ov/100)*.35 : 1+(-ov/100)*.20;
+}
+// מקדם המגע להרפיה מודעת-צורה (relaxSymbolPositions): חיובי=חפיפה (מתקרבים,k קטן),
+// אפס=מגע מדויק (k=1), שלילי=מרווח (מתרחקים,k גדול).
+function contactFactor(){
+  const ov=S.overlap||0;
+  return ov>=0 ? 1-(ov/100)*0.85 : 1+(-ov/100)*0.60;
+}
 
 function symPos(n,cx,cy,r){
   if(S.layoutMode==='peripheral') return symPosPeriph(n,cx,cy,r);
@@ -1605,6 +1626,111 @@ function symPosPeriph(n,cx,cy,r){
   const P=[],ringR=r*rr*overlapFactor(),hsz=r*hs;
   for(let i=0;i<n;i++){const a=i*2*Math.PI/n-Math.PI/2;P.push({x:cx+ringR*Math.cos(a),y:cy+ringR*Math.sin(a),hs:hsz});}
   return P;
+}
+
+// ══ SHAPE-AWARE PACKING (tightPack) ══
+const CIRCLE_META={hasAlpha:false,radial:CIRCLE_RADIAL()};
+
+// מרחק המגע הנדרש בין שני סמלים בזווית נתונה, לפי הפרופיל הרדיאלי שלהם.
+function reachAt(meta,rotation,angle,half){
+  const bins=64;
+  let a=angle-rotation;                       // לזווית העולם מחסירים את סיבוב הסמל
+  a=((a%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
+  const idx=Math.round(a/(Math.PI*2)*bins)%bins;
+  return meta.radial[idx]*half;
+}
+
+// הרפיה איטרטיבית: מתחילים מהמיקומים הקיימים של symPos() ודוחפים סמלים
+// עד שאף זוג לא חורג ממרחק המגע הנדרש. דטרמיניסטי לחלוטין — אין רנדום —
+// כדי שהתצוגה המקדימה וה-PDF יהיו זהים בדיוק. משנה pos במקום (x,y,hs).
+function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
+  const n=pos.length;
+  if(!n)return;
+  const metas=layout.syms.map(si=>{const img=imgs[si];return (img&&img.__symMeta)||CIRCLE_META;});
+  const rots=layout.tr.map(t=>t.ro);
+  const halves=pos.map((p,i)=>p.hs*layout.tr[i].sc);
+  const origX=pos.map(p=>p.x),origY=pos.map(p=>p.y);
+
+  function runPass(k){
+    const P=origX.map((x,i)=>({x,y:origY[i]}));
+    for(let it=0;it<80;it++){
+      for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){
+        let dx=P[j].x-P[i].x,dy=P[j].y-P[i].y,d=Math.hypot(dx,dy),ang;
+        if(d<1e-6){ang=i*2.4;dx=Math.cos(ang);dy=Math.sin(ang);d=0.01;}
+        else ang=Math.atan2(dy,dx);
+        const need=(reachAt(metas[i],rots[i],ang+Math.PI,halves[i])+reachAt(metas[j],rots[j],ang,halves[j]))*k;
+        if(d<need){
+          const push=(need-d)/2*0.6,ux=dx/d,uy=dy/d;
+          P[i].x-=ux*push;P[i].y-=uy*push;
+          P[j].x+=ux*push;P[j].y+=uy*push;
+        }
+      }
+      for(let i=0;i<n;i++){
+        const dx=P[i].x-cx,dy=P[i].y-cy,dist=Math.hypot(dx,dy);
+        if(dist<1e-6)continue;
+        const angOut=Math.atan2(dy,dx);
+        const reach=reachAt(metas[i],rots[i],angOut,halves[i]);
+        if(dist+reach>rSym){
+          const over=dist+reach-rSym,ux=dx/dist,uy=dy/dist;
+          P[i].x-=ux*over;P[i].y-=uy*over;
+        }
+      }
+    }
+    let maxViol=0;
+    for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){
+      const dx=P[j].x-P[i].x,dy=P[j].y-P[i].y,d=Math.hypot(dx,dy)||0.0001;
+      const ang=Math.atan2(dy,dx);
+      const need=(reachAt(metas[i],rots[i],ang+Math.PI,halves[i])+reachAt(metas[j],rots[j],ang,halves[j]))*k;
+      if(need-d>maxViol)maxViol=need-d;
+    }
+    for(let i=0;i<n;i++){
+      const dx=P[i].x-cx,dy=P[i].y-cy,dist=Math.hypot(dx,dy);
+      const angOut=dist<1e-6?0:Math.atan2(dy,dx);
+      const over=dist+reachAt(metas[i],rots[i],angOut,halves[i])-rSym;
+      if(over>maxViol)maxViol=over;
+    }
+    return{P,maxViol};
+  }
+
+  // נסיגה אוטומטית: אם k הנוכחי לא ניתן לסיפוק פיזית (בעיקר במרווח גדול), מקטינים
+  // אותו בהדרגה ומקבלים את הניסיון הכי טוב — עד 6 ניסיונות נוספים.
+  let k=contactFactor();
+  let best=runPass(k);
+  const tol=rSym*0.015;
+  for(let attempt=0;attempt<6&&best.maxViol>tol;attempt++){
+    k*=0.92;
+    const r=runPass(k);
+    if(r.maxViol<best.maxViol)best=r;
+  }
+
+  // בודק אם גורם גדילה גלובלי g (מכפיל את כל ה-half-ים) עדיין חוקי בעמדות שהתקבלו
+  function fits(g){
+    for(let i=0;i<n;i++){
+      const dx=best.P[i].x-cx,dy=best.P[i].y-cy,dist=Math.hypot(dx,dy);
+      const angOut=dist<1e-6?0:Math.atan2(dy,dx);
+      if(dist+reachAt(metas[i],rots[i],angOut,halves[i])*g>rSym*1.001)return false;
+    }
+    for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){
+      const dx=best.P[j].x-best.P[i].x,dy=best.P[j].y-best.P[i].y,d=Math.hypot(dx,dy)||0.0001;
+      const ang=Math.atan2(dy,dx);
+      const need=(reachAt(metas[i],rots[i],ang+Math.PI,halves[i])+reachAt(metas[j],rots[j],ang,halves[j]))*g*k;
+      if(d<need*0.999)return false;
+    }
+    return true;
+  }
+  // g<1: הגנה כללית מפני חריגה מחוץ לקלף בגדלים קיצוניים (תמיד פעיל).
+  // g>1: "מילוי מיטבי" — רק כשמסומן וכשאין מרווח שלילי (הם סותרים זה את זה).
+  let g=1;
+  if(!fits(1)){
+    let lo=0.45,hi=1;
+    for(let s=0;s<8;s++){const mid=(lo+hi)/2;if(fits(mid))lo=mid;else hi=mid;}
+    g=lo;
+  }else if(S.tightFill&&(S.overlap||0)>=0){
+    let lo=1,hi=1.5;
+    for(let s=0;s<8;s++){const mid=(lo+hi)/2;if(fits(mid))lo=mid;else hi=mid;}
+    g=lo;
+  }
+  for(let i=0;i<n;i++){pos[i].x=best.P[i].x;pos[i].y=best.P[i].y;pos[i].hs=pos[i].hs*g;}
 }
 
 // ══ DRAW CARD ══
@@ -1646,6 +1772,7 @@ function drawCard(canvas,layout,imgs,shape,hitIdx){
 
   const rSym=Math.max(r*.45,r-fw-S.symPad*ppMm);
   const pos=symPos(layout.syms.length,cx,cy,rSym);
+  if(S.tightPack)relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym);
   for(let i=0;i<layout.syms.length;i++){
     const si=layout.syms[i],pp=pos[i],t=layout.tr[i],img=imgs[si];
     if(!img)continue;
@@ -1656,7 +1783,11 @@ function drawCard(canvas,layout,imgs,shape,hitIdx){
       ctx.beginPath();ctx.arc(0,0,pp.hs*t.sc*1.35,0,Math.PI*2);
       ctx.fillStyle='rgba(253,224,71,.28)';ctx.fill();ctx.shadowBlur=0;
     }
-    if(S.symShape==='square')drawCover(ctx,img,-ds/2,-ds/2,ds);
+    const meta=img.__symMeta;
+    if(meta&&meta.hasAlpha){
+      // סמל עם שקיפות: הקנבס כבר גזור וממורכז לצורתו האמיתית (trimAlphaSquare) — אין חיתוך צורה
+      ctx.drawImage(img,-ds/2,-ds/2,ds,ds);
+    }else if(S.symShape==='square')drawCover(ctx,img,-ds/2,-ds/2,ds);
     else{ctx.save();ctx.beginPath();ctx.arc(0,0,ds/2,0,Math.PI*2);ctx.clip();drawCover(ctx,img,-ds/2,-ds/2,ds);ctx.restore();}
     ctx.restore();
   }
@@ -1683,6 +1814,7 @@ const S={
   assets:[],
   order:null,deck:[],layouts:[],imgEls:[],canvases:[],
   shape:'circle',symShape:'circle',sMin:.70,sMax:1.30,seed:1,layoutMode:'scatter',overlap:0,
+  tightPack:true,tightFill:false,   // חפיפה לפי צורת הסמל / מילוי מיטבי של הקלף
   sel:[],
   cardSizeMm:85,spacingMm:5,startPos:'center',
   crop:true,isSilhouette:false,
@@ -2135,13 +2267,31 @@ document.getElementById('layout-mode-grp').addEventListener('click',e=>{
 // ══ SLIDERS ══
 const slMn=document.getElementById('sl-mn'),slMx=document.getElementById('sl-mx');
 const lblMn=document.getElementById('lbl-mn'),lblMx=document.getElementById('lbl-mx');
-slMn.addEventListener('input',()=>{S.sMin=+slMn.value/100;lblMn.textContent=slMn.value+'%';});
-slMx.addEventListener('input',()=>{S.sMax=+slMx.value/100;lblMx.textContent=slMx.value+'%';});
+// המינימום לעולם לא עובר את המקסימום ולהפך — דוחפים את השני במקום לחסום את המשתמש
+slMn.addEventListener('input',()=>{
+  if(+slMn.value>+slMx.value){slMx.value=slMn.value;S.sMax=+slMx.value/100;lblMx.textContent=slMx.value+'%';}
+  S.sMin=+slMn.value/100;lblMn.textContent=slMn.value+'%';
+});
+slMx.addEventListener('input',()=>{
+  if(+slMx.value<+slMn.value){slMn.value=slMx.value;S.sMin=+slMn.value/100;lblMn.textContent=slMn.value+'%';}
+  S.sMax=+slMx.value/100;lblMx.textContent=slMx.value+'%';
+});
 slMn.addEventListener('change',()=>renderAll());
 slMx.addEventListener('change',()=>renderAll());
 
+// חפיפה/מרווח: v>0 חפיפה, v===0 צמוד, v<0 מרווח — תווית דינמית כי "-40%" לא מובן כשלעצמו
+function ovLabel(v){ return v>0?`חפיפה ${v}%`:(v<0?`מרווח ${-v}%`:'צמוד'); }
 const slOv=document.getElementById('sl-ov'),lblOv=document.getElementById('lbl-ov');
-slOv.addEventListener('input',()=>{S.overlap=+slOv.value;lblOv.textContent=slOv.value+'%';redrawCards();});
+const ckTight=document.getElementById('ck-tight'),ckTightFill=document.getElementById('ck-tightfill');
+slOv.addEventListener('input',()=>{
+  S.overlap=+slOv.value;lblOv.textContent=ovLabel(S.overlap);
+  // מרווח ו"מילוי מיטבי" סותרים זה את זה
+  ckTightFill.disabled=S.overlap<0;
+  if(S.overlap<0)ckTightFill.checked=false,S.tightFill=false;
+  redrawCards();
+});
+ckTight.addEventListener('change',()=>{S.tightPack=ckTight.checked;redrawCards();});
+ckTightFill.addEventListener('change',()=>{S.tightFill=ckTightFill.checked;redrawCards();});
 
 // ══ GENERATE ══
 document.getElementById('btn-create').addEventListener('click',generate);
@@ -2158,6 +2308,7 @@ async function generate(){
   S.layouts=buildLayouts(S.deck,S.seed,S.sMin,S.sMax);
   setp(15,'מכין תמונות…');
   S.imgEls=S.assets.filter(a=>!a.isCropSource&&a.selected!==false).slice(0,S.order.total).map(a=>a.imgEl);
+  prepareSymbolMeta();
   setp(35,'מצייר קלפים…');
   S.canvases=[];S.sel=[];
   const grid=document.getElementById('cgrid');
@@ -2740,6 +2891,84 @@ function canvasHasAlpha(cv){
   return false;
 }
 function dataURLMime(u){const m=/^data:([^;]+)/.exec(u||'');return m?m[1]:'image/jpeg';}
+
+// גוזרת קנבס לגבולות הפיקסלים הלא-שקופים ומרכזת אותו בריבוע SZ, בשמירת יחס.
+// ⚠️ "contain" ולא "cover" — כאן אסור לחתוך את האייקון. אין מתיחה, כך שאין עיוות.
+function trimAlphaSquare(cv,SZ,padPct){
+  padPct=padPct==null?0.02:padPct;
+  const W=cv.width,H=cv.height;
+  let minX=W,minY=H,maxX=-1,maxY=-1;
+  try{
+    const{data}=cv.getContext('2d').getImageData(0,0,W,H);
+    for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+      if(data[(y*W+x)*4+3]>10){
+        if(x<minX)minX=x;if(x>maxX)maxX=x;
+        if(y<minY)minY=y;if(y>maxY)maxY=y;
+      }
+    }
+  }catch(e){return cv;}                 // canvas tainted — הגנה, מחזירים כמו שהוא
+  if(maxX<minX||maxY<minY)return cv;    // מסכה ריקה — הגנה, מחזירים כמו שהוא
+  const bw=maxX-minX+1,bh=maxY-minY+1;
+  const content=Math.max(bw,bh);
+  const pad=SZ*padPct;
+  const scale=(SZ-2*pad)/content;
+  const dw=bw*scale,dh=bh*scale,dx=(SZ-dw)/2,dy=(SZ-dh)/2;
+  const out=document.createElement('canvas');out.width=out.height=SZ;
+  const ctx=out.getContext('2d');
+  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+  ctx.drawImage(cv,minX,minY,bw,bh,dx,dy,dw,dh);
+  return out;
+}
+
+// פרופיל רדיאלי לצורת הסמל: לכל אחת מ-64 זוויות, הרדיוס המקסימלי של פיקסל אטום,
+// מנורמל ל-[0..1] יחסית לחצי-הצלע. עיגול מלא / תמונה אטומה = כל הערכים 1.
+// נשמר cache על אלמנט הקנבס עצמו (cv.__symMeta) — נגזר, לא נכנס ל-S ולא נשמר לדיסק.
+function symbolShapeMeta(cv){
+  if(cv.__symMeta)return cv.__symMeta;
+  const N=64,bins=64;
+  let data;
+  try{
+    const tmp=document.createElement('canvas');tmp.width=tmp.height=N;
+    const tctx=tmp.getContext('2d');
+    tctx.drawImage(cv,0,0,N,N);
+    data=tctx.getImageData(0,0,N,N).data;
+  }catch(e){
+    const meta={hasAlpha:false,radial:CIRCLE_RADIAL()};
+    cv.__symMeta=meta;return meta;
+  }
+  let hasAlpha=false;
+  for(let i=3;i<data.length;i+=4){if(data[i]<250){hasAlpha=true;break;}}
+  let radial;
+  if(!hasAlpha){
+    radial=CIRCLE_RADIAL();
+  }else{
+    const raw=new Float32Array(bins);
+    const cx=N/2,cy=N/2,half=N/2;
+    for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+      const idx=(y*N+x)*4;
+      if(data[idx+3]<=10)continue;
+      const ddx=x+0.5-cx,ddy=y+0.5-cy;
+      const dist=Math.hypot(ddx,ddy)/half;
+      let ang=Math.atan2(ddy,ddx);if(ang<0)ang+=Math.PI*2;
+      const bin=Math.round(ang/(Math.PI*2)*bins)%bins;
+      if(dist>raw[bin])raw[bin]=dist;
+    }
+    radial=new Float32Array(bins);
+    for(let i=0;i<bins;i++){
+      const a=raw[(i-1+bins)%bins],b=raw[i],c=raw[(i+1)%bins];
+      radial[i]=Math.min(1,Math.max((a+b+c)/3,0.15));
+    }
+  }
+  const meta={hasAlpha,radial};
+  cv.__symMeta=meta;
+  return meta;
+}
+function CIRCLE_RADIAL(){const a=new Float32Array(64);a.fill(1);return a;}
+
+// מחשבת מטא-דאטה של צורה לכל סמל בחפיסה — פעם אחת אחרי בניית S.imgEls, לפני ציור הקלפים
+function prepareSymbolMeta(){
+  S.imgEls.forEach(img=>{if(img)symbolShapeMeta(img);});
+}
 
 function openCropModal(assetId){
   const asset=S.assets.find(a=>a.id===assetId);
@@ -3646,6 +3875,7 @@ async function saveDesign(){
     const settings={shape:S.shape,symShape:S.symShape,sMin:S.sMin,sMax:S.sMax,seed:S.seed,layoutMode:S.layoutMode,
       cardSizeMm:S.cardSizeMm,spacingMm:S.spacingMm,startPos:S.startPos,
       frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),symPad:S.symPad,overlap:S.overlap,
+      tightPack:S.tightPack,tightFill:S.tightFill,
       orderTotal:S.order?S.order.total:null};
     // שמירה מקומית — metadata בלבד (בלי dataURL), כדי לא לחרוג ממכסת האחסון של IndexedDB
     const date=new Date().toLocaleString('he-IL');
@@ -3676,6 +3906,7 @@ function buildDesignObject(name){
     settings:{shape:S.shape,symShape:S.symShape,sMin:S.sMin,sMax:S.sMax,seed:S.seed,layoutMode:S.layoutMode,
       cardSizeMm:S.cardSizeMm,spacingMm:S.spacingMm,startPos:S.startPos,
       frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),symPad:S.symPad,overlap:S.overlap,
+      tightPack:S.tightPack,tightFill:S.tightFill,
       orderTotal:S.order?S.order.total:null}};
 }
 
@@ -3738,7 +3969,10 @@ function applySettingsToUI(st){
   // סליידרים של גודל סמלים
   slMn.value=Math.round(st.sMin*100);lblMn.textContent=slMn.value+'%';
   slMx.value=Math.round(st.sMax*100);lblMx.textContent=slMx.value+'%';
-  slOv.value=st.overlap||0;lblOv.textContent=slOv.value+'%';
+  slOv.value=st.overlap??0;lblOv.textContent=ovLabel(+slOv.value);
+  ckTight.checked=st.tightPack!==false;
+  ckTightFill.checked=!!st.tightFill&&(st.overlap??0)>=0;
+  ckTightFill.disabled=(st.overlap??0)<0;
   // ייצוא
   slCardSize.value=st.cardSizeMm;lblCardSize.textContent=st.cardSizeMm+'mm';
   slSpacing.value=st.spacingMm;lblSpacing.textContent=st.spacingMm+'mm';
@@ -3778,7 +4012,8 @@ async function applyDesignToState(d){
   const st=d.settings||{};
   Object.assign(S,{shape:st.shape||'circle',symShape:st.symShape||'circle',sMin:st.sMin??.7,sMax:st.sMax??1.3,
     seed:st.seed||1,layoutMode:st.layoutMode||'scatter',cardSizeMm:st.cardSizeMm||85,
-    spacingMm:st.spacingMm??5,startPos:st.startPos||'center',symPad:st.symPad??2,overlap:st.overlap??0});
+    spacingMm:st.spacingMm??5,startPos:st.startPos||'center',symPad:st.symPad??2,overlap:st.overlap??0,
+    tightPack:st.tightPack!==false,tightFill:!!st.tightFill});
   if(st.frame)S.frame=Object.assign({},st.frame);
   if(st.bg)S.bg=Object.assign({},st.bg);
   applySettingsToUI(S);
@@ -4372,6 +4607,7 @@ function enterSupportMode(label){
     assets:S.assets.slice(),idSeq:S.idSeq,
     settings:{shape:S.shape,symShape:S.symShape,sMin:S.sMin,sMax:S.sMax,seed:S.seed,layoutMode:S.layoutMode,
       cardSizeMm:S.cardSizeMm,spacingMm:S.spacingMm,startPos:S.startPos,symPad:S.symPad,overlap:S.overlap,
+      tightPack:S.tightPack,tightFill:S.tightFill,
       frame:Object.assign({},S.frame),bg:Object.assign({},S.bg)}
   };
   window.__supportMode=true;
