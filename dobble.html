@@ -502,11 +502,13 @@ function dcfgSave(patch){
 
   function getManagedCodes(){try{return JSON.parse(localStorage.getItem('dobble_codes')||'[]');}catch{return[];}}
 
+  // מסתירים (לא מסירים מה-DOM!) — כדי ש-showLockScreen יוכל להציג את המסך שוב
+  // מאוחר יותר בתוך אותו טעינת עמוד (למשל "יש לי כבר קוד אחר" בחלון שדרוג בתוך המחולל)
   function removeLockScreen(cb){
     const ls=document.getElementById('lock-screen');
     if(!ls){cb&&cb();return;}
     ls.style.transition='opacity .4s';ls.style.opacity='0';
-    setTimeout(()=>{if(ls.parentNode)ls.remove();cb&&cb();},420);
+    setTimeout(()=>{ls.style.display='none';cb&&cb();},420);
   }
 
   function doUserUnlock(code,label,maxOrder){
@@ -604,7 +606,7 @@ function dcfgSave(patch){
 
   const lockScreenEl=document.getElementById('lock-screen');
   if(sessionStorage.getItem('dobble_unlocked')==='1'){
-    if(lockScreenEl)lockScreenEl.remove();
+    if(lockScreenEl)lockScreenEl.style.display='none';
     return;
   }
   // כניסה חסומה: מסך הנעילה נשאר גלוי (ברירת המחדל ב-HTML) עד שאחד משלושת המסלולים מצליח
@@ -4136,7 +4138,7 @@ function unlockFromSession(session,maxOrder){
   // רישום כניסה למעקב (גם למנויים שנכנסים בקוד/מייל — לא רק קוד מקומי)
   window.track&&window.track('unlock',{});
   ls.style.transition='opacity .4s';ls.style.opacity='0';
-  setTimeout(()=>{if(ls.parentNode)ls.remove();},420);
+  setTimeout(()=>{ls.style.display='none';},420);
   goScr(1);
   if(window._afterUnlock)window._afterUnlock();
 }
