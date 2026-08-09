@@ -3716,6 +3716,10 @@ async function renderSubscribers(){
           ${tierSelect}
           ${actBtn('extend30','⏰ +30 יום','#94a3b8')}
           ${actBtn('unlimited','♾️ ללא הגבלה','#94a3b8')}
+          <span style="display:inline-flex;align-items:center;gap:.3rem">
+            <input type="date" class="sub-exp-inp" value="${s.expiry?String(s.expiry).slice(0,10):''}" title="קביעת תאריך תפוגה מדויק" style="background:#0f172a;border:1px solid #334155;color:#a5b4fc;border-radius:8px;cursor:pointer;font-size:.72rem;padding:.28rem .4rem;font-family:inherit">
+            ${actBtn('set_expiry','📅 קבע תאריך','#a5b4fc')}
+          </span>
           ${disabled?actBtn('unblock','🔓 שחרר','#6ee7b7'):actBtn('block','🔒 חסום','#fca5a5')}
           ${actBtn('designs','📂 פתח לתמיכה','#93c5fd')}
           ${actBtn('delete','✕ מחק','#f87171')}
@@ -3739,6 +3743,18 @@ document.getElementById('adm-sub-tbl').addEventListener('click',async(e)=>{
   const action=btn.dataset.action;
   if(action==='designs'){openSubscriberDesigns(code);return;}
   if(action==='delete'){deleteSubscriber(code);return;}
+  if(action==='set_expiry'){
+    const inp=card.querySelector('.sub-exp-inp');
+    const val=inp&&inp.value;
+    if(!val){toast('בחר קודם תאריך בשדה שליד הכפתור','err');return;}
+    btn.disabled=true;
+    try{
+      await callManageSubscriber({action:'set_expiry',code,expiry:val});
+      toast('התוקף עודכן ✓','ok');
+      renderSubscribers();
+    }catch(err){toast('הפעולה נכשלה: '+(err.message||err),'err');btn.disabled=false;}
+    return;
+  }
   btn.disabled=true;
   try{
     if(action==='extend30')await callManageSubscriber({action:'extend',code,days:30});

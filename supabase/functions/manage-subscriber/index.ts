@@ -219,6 +219,24 @@ Deno.serve(async (req) => {
       return json({ ok: true, expiry: newExpiry });
     }
 
+    // קביעת תאריך תפוגה מדויק (לא הארכה יחסית) — למקרה שהמנהל רוצה תאריך ספציפי
+    // למנוי קיים, לא רק +days מהתוקף הנוכחי. expiry ריק/חסר = ללא הגבלה.
+    if (action === 'set_expiry') {
+      const code = String(body.code || '').trim();
+      const u = await findUserByCode(code);
+      if (!u) return json({ error: 'המנוי לא נמצא' }, 404);
+      let newExpiry: string | null = null;
+      if (body.expiry) {
+        const d = new Date(body.expiry);
+        if (isNaN(d.getTime())) return json({ error: 'תאריך לא תקין' }, 400);
+        newExpiry = d.toISOString();
+      }
+      const { error } = await admin.from('profiles').upsert({ id: u.id, subscription_expires: newExpiry });
+      if (error) return json({ error: error.message }, 500);
+      await logAudit('admin_set_expiry', code, { newExpiry });
+      return json({ ok: true, expiry: newExpiry });
+    }
+
     // חסימה/שחרור — המנהל עצמו לעולם לא בטבלת המנויים (דומיין @sub.* בלבד) כך שאינו יכול לחסום את עצמו דרך הפעולה הזו.
     if (action === 'block' || action === 'unblock') {
       const code = String(body.code || '').trim();
