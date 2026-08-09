@@ -1757,13 +1757,15 @@ async function addFiles(files){
         const thumb=makeThumb(imgEl);
         S.assets.push({id:++S.idSeq,type:'image',name:f.name,url,thumb,imgEl,selected:true,folder});
         okCount++;
-        renderGallery();updateCounter();
       }catch(e){URL.revokeObjectURL(url);failedNames.push(f.name);console.warn('upload failed:',f.name,e?.message||e);}
       done++;
       uploadProgressStep(done,total);
     }
   }finally{uploadProgressClose();}
-  if(okCount){toast(`נוספו ${okCount} תמונות למאגר ✓`,'ok');schedIdbSave();}
+  // renderGallery() משרטט מחדש את כל התמונונים בגלריה (לא רק את החדשות) — קריאה לה
+  // בתוך הלולאה, פעם לכל תמונה, הופכת העלאה של N תמונות לגלריה עם M תמונות קיימות
+  // ל-O(N×M) ציורי canvas, ומאיטה יותר ויותר ככל שהמאגר גדל. קריאה יחידה אחרי כל האצווה.
+  if(okCount){renderGallery();updateCounter();toast(`נוספו ${okCount} תמונות למאגר ✓`,'ok');schedIdbSave();}
   if(failedNames.length)alert(`${failedNames.length} תמונות לא נטענו:\n${failedNames.join('\n')}\n\nנסה פורמטים אחרים: PNG, JPG, WebP, SVG. אם התמונה מאייפון וסיומתה .jpg — ייתכן שהיא בפועל HEIC; נסה לשמור/לייצא אותה מחדש כ-JPG או PNG ולהעלות שוב. (הסיבה המדויקת לכשל מופיעה בקונסול)`);
 }
 
@@ -3081,10 +3083,12 @@ async function loadPack(pk,btn){
       const imgEl=await withTimeout(loadImgUrl(url),20000,'טעינת תמונה מהחבילה נתקעה (timeout)');
       S.assets.push({id:++S.idSeq,type:'image',name:pk.name+' '+(ok+1),url:'',thumb:makeThumb(imgEl),imgEl,selected:true,folder});
       ok++;
-      renderGallery();updateCounter();
     }catch(e){fail++;console.warn('pack image failed:',url);}
   }
   btn.disabled=false;btn.innerHTML=orig;
+  // כמו ב-addFiles: renderGallery() משרטט מחדש את כל הגלריה, לא רק תמונות חדשות —
+  // קריאה יחידה אחרי כל החבילה, לא פעם לכל תמונה בתוך הלולאה.
+  if(ok){renderGallery();updateCounter();}
   if(ok)schedIdbSave();
   if(ok&&!fail)toast(`חבילת "${pk.name}" נוספה — ${ok} תמונות ✓`,'ok');
   else if(ok)toast(`נוספו ${ok} תמונות, ${fail} נכשלו`,'err');
