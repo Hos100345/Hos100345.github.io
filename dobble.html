@@ -2470,6 +2470,18 @@ async function doExport(type){
     window.showUpgradeModal&&window.showUpgradeModal();
     return;
   }
+  // מכסת הדפסות/ייצואים בבית — קיימת רק למנויי Supabase Auth (profiles.print_limit, נקבע ע"י המנהל).
+  // אכיפה אטומית בשרת (RPC consume_print_quota, לא אמון בלקוח). תקלת רשת = fail-open, כמו שאר השרת;
+  // חוסמים רק על תשובה מפורשת ok:false. לא רץ במצב תמיכה — שם הייצוא הוא של המנהל עבור הלקוח.
+  if(isSignedIn()&&!window.__supportMode){
+    try{
+      const{data,error}=await SB.rpc('consume_print_quota');
+      if(!error&&data&&data.ok===false){
+        toast(`הגעת למכסת ההדפסות של המנוי שלך (${data.limit}). פנה/י אלינו לקבלת הדפסות נוספות`,'err');
+        return;
+      }
+    }catch(e){console.warn('consume_print_quota:',e);}
+  }
   resetExport();
   document.getElementById('exp-prog').classList.add('on');
   const setp=(p,t)=>{document.getElementById('exp-bar').style.width=p+'%';document.getElementById('exp-lbl').textContent=t;};
@@ -3708,7 +3720,8 @@ async function renderSubscribers(){
         <div style="display:flex;gap:1rem;flex-wrap:wrap;margin:.5rem 0;font-size:.74rem;color:#94a3b8">
           <span>🔓 ${usage.logins} כניסות</span>
           <span>🎲 ${usage.games} משחקים</span>
-          <span>🖨️ ${usage.prints} הדפסות</span>
+          <span>💬 ${usage.prints} בקשות הדפסה מקצועית</span>
+          <span title="ייצוא PDF/ZIP/DXF עצמאי בבית">🖨️ ${s.printCount||0} / ${s.printLimit!=null?s.printLimit:'∞'} הדפסות בבית</span>
           <span>📂 ${s.designsCount||0} עיצובים · ${s.symbolsCount||0} סמלים</span>
           <span>אחרון: ${s.lastSignIn?d(s.lastSignIn):'טרם נכנס'}</span>
         </div>
@@ -3719,6 +3732,11 @@ async function renderSubscribers(){
           <span style="display:inline-flex;align-items:center;gap:.3rem">
             <input type="date" class="sub-exp-inp" value="${s.expiry?String(s.expiry).slice(0,10):''}" title="קביעת תאריך תפוגה מדויק" style="background:#0f172a;border:1px solid #334155;color:#a5b4fc;border-radius:8px;cursor:pointer;font-size:.72rem;padding:.28rem .4rem;font-family:inherit">
             ${actBtn('set_expiry','📅 קבע תאריך','#a5b4fc')}
+          </span>
+          <span style="display:inline-flex;align-items:center;gap:.3rem" title="הגבלת מספר ייצואים (PDF/ZIP/DXF) עצמאיים בבית — ריק = ללא הגבלה">
+            <input type="number" min="0" class="sub-print-limit-inp" placeholder="∞" value="${s.printLimit!=null?s.printLimit:''}" style="width:3.6em;background:#0f172a;border:1px solid #334155;color:#a5b4fc;border-radius:8px;cursor:text;font-size:.72rem;padding:.28rem .4rem;font-family:inherit">
+            ${actBtn('set_print_limit','🖨️ הגבל הדפסות','#a5b4fc')}
+            ${actBtn('reset_print_count','↺ אפס מונה','#94a3b8')}
           </span>
           ${disabled?actBtn('unblock','🔓 שחרר','#6ee7b7'):actBtn('block','🔒 חסום','#fca5a5')}
           ${actBtn('designs','📂 פתח לתמיכה','#93c5fd')}
@@ -3751,6 +3769,26 @@ document.getElementById('adm-sub-tbl').addEventListener('click',async(e)=>{
     try{
       await callManageSubscriber({action:'set_expiry',code,expiry:val});
       toast('התוקף עודכן ✓','ok');
+      renderSubscribers();
+    }catch(err){toast('הפעולה נכשלה: '+(err.message||err),'err');btn.disabled=false;}
+    return;
+  }
+  if(action==='set_print_limit'){
+    const inp=card.querySelector('.sub-print-limit-inp');
+    const val=inp?inp.value.trim():'';
+    btn.disabled=true;
+    try{
+      await callManageSubscriber({action:'set_print_limit',code,printLimit:val===''?null:Number(val)});
+      toast(val===''?'ההגבלה הוסרה — ללא הגבלה ✓':`הוגבל ל-${val} הדפסות בבית ✓`,'ok');
+      renderSubscribers();
+    }catch(err){toast('הפעולה נכשלה: '+(err.message||err),'err');btn.disabled=false;}
+    return;
+  }
+  if(action==='reset_print_count'){
+    btn.disabled=true;
+    try{
+      await callManageSubscriber({action:'reset_print_count',code});
+      toast('המונה אופס ✓','ok');
       renderSubscribers();
     }catch(err){toast('הפעולה נכשלה: '+(err.message||err),'err');btn.disabled=false;}
     return;
