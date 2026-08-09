@@ -1048,6 +1048,10 @@ function dcfgSave(patch){
             <div class="sl-lbl"><span>חפיפה</span><strong id="lbl-ov">0%</strong></div>
             <input type="range" id="sl-ov" min="0" max="100" value="0" step="5">
           </div>
+          <div class="sl-row">
+            <div class="sl-lbl"><span>מרווח סמלים ← מסגרת</span><strong id="lbl-sympad">2מ"מ</strong></div>
+            <input type="range" id="sl-sympad" min="0" max="20" step="0.5" value="2">
+          </div>
         </div>
         <div class="sb-sec">
           <div class="sb-t">פעולות</div>
@@ -1117,8 +1121,6 @@ function dcfgSave(patch){
                 <input type="range" id="sl-fw" min="0" max="15" step="0.5" value="3">
                 <div class="sl-lbl"><span>עוצמת פיגמנט</span><strong id="lbl-fop">100%</strong></div>
                 <input type="range" id="sl-fop" min="0" max="100" step="1" value="100">
-                <div class="sl-lbl"><span>מרווח סמלים ← מסגרת</span><strong id="lbl-sympad">2מ"מ</strong></div>
-                <input type="range" id="sl-sympad" min="0" max="20" step="0.5" value="2">
                 <div class="swatch-row" id="sw-frame"></div>
                 <label class="cp-row"><span>צבע חופשי</span><input type="color" id="pick-frame" value="#4338CA"></label>
               </div>
