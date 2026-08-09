@@ -15,6 +15,27 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css?v=202607080728">
+  <style>
+    /* ── הרחבת "איך משחקים" לכל משחק — כפתור נגיש (details/summary), בלי JS ── */
+    .game-details{margin-top:.6rem;border-top:1px dashed var(--border);padding-top:.7rem}
+    .game-details summary{
+      cursor:pointer;font-weight:700;color:var(--indigo);list-style:none;
+      display:flex;align-items:center;gap:.4rem;user-select:none;
+    }
+    .game-details summary::-webkit-details-marker{display:none}
+    .game-details summary::after{content:'←';transition:transform .25s var(--transition)}
+    .game-details[open] summary::after{transform:rotate(90deg)}
+    .game-details-body{margin-top:.8rem;font-size:.94rem}
+    .game-goal{
+      background:var(--blue-light);color:var(--blue-dark);font-weight:700;
+      border-radius:.6rem;padding:.55rem .8rem;margin-bottom:.7rem;
+    }
+    .game-details-body .check-list{margin-bottom:.7rem}
+    .game-winner{
+      background:rgba(245,158,11,.14);color:#92400E;font-weight:700;
+      border-radius:.6rem;padding:.55rem .8rem;
+    }
+  </style>
 </head>
 <body>
 
@@ -137,22 +158,75 @@
           <div class="offer-card reveal">
             <span class="offer-card-icon" aria-hidden="true">🔵</span>
             <h3 class="offer-card-title">דאבל קלאסי</h3>
-            <p>מוצאים את הסמל המשותף בין שני קלפים במהירות וצועקים בשמו.</p>
+            <p>״מי רואה ראשון?״ — מוצאים את הסמל המשותף בין שני קלפים במהירות וצועקים בשמו.</p>
+            <details class="game-details">
+              <summary>איך משחקים?</summary>
+              <div class="game-details-body">
+                <div class="game-goal">🎯 המטרה: להיות הכי מהירים שמצאו את הציור הזהה!</div>
+                <ul class="check-list">
+                  <li>מניחים שני קלפים פתוחים על השולחן.</li>
+                  <li>כולם מסתכלים יחד.</li>
+                  <li>הילד הראשון שמזהה איזה ציור מופיע גם בקלף הזה וגם בקלף הזה — צועק בקול: "אבא!" או "כלב!".</li>
+                  <li>מי שצעק ראשון — מנצח בסיבוב! מניחים קלף חדש וממשיכים הלאה.</li>
+                </ul>
+              </div>
+            </details>
           </div>
           <div class="offer-card reveal">
             <span class="offer-card-icon" aria-hidden="true">🟢</span>
             <h3 class="offer-card-title">המגדל</h3>
-            <p>אוספים כמה שיותר קלפים מהקופה המרכזית.</p>
+            <p>״אוספים את כל הקלפים!״ — אוספים כמה שיותר קלפים מהקופה המרכזית.</p>
+            <details class="game-details">
+              <summary>איך משחקים?</summary>
+              <div class="game-details-body">
+                <div class="game-goal">🎯 המטרה: לאסוף אליכם כמה שיותר קלפים מהמגדל שבאמצע.</div>
+                <ul class="check-list">
+                  <li>שמים את כל החבילה במרכז השולחן כמו מגדל גבוה, כשהציורים פונים למעלה.</li>
+                  <li>כל שחקן מקבל קלף אחד ביד (או על השולחן לפניו).</li>
+                  <li>מסתכלים על הקלף שלכם ועל הקלף שבראש המגדל: מצאתם ציור זהה? צועקים את השם שלו ולוקחים את הקלף מראש המגדל אליכם!</li>
+                  <li>עכשיו יש קלף חדש בראש המגדל, והמשחק ממשיך במהירות.</li>
+                </ul>
+                <div class="game-winner">🏆 מנצח: מי שהצליח לאסוף את המגדל הכי גבוה של קלפים כשהקופה מסתיימת!</div>
+              </div>
+            </details>
           </div>
           <div class="offer-card reveal">
             <span class="offer-card-icon" aria-hidden="true">🟠</span>
             <h3 class="offer-card-title">הבאר</h3>
-            <p>מנסים להיפטר ראשונים מכל הקלפים ביד.</p>
+            <p>״לזרוק את הקלפים במהירות!״ — מנסים להיפטר ראשונים מכל הקלפים ביד.</p>
+            <details class="game-details">
+              <summary>איך משחקים?</summary>
+              <div class="game-details-body">
+                <div class="game-goal">🎯 המטרה: להיות הראשון שנפטר מכל הקלפים שלו ונשאר בלי כלום!</div>
+                <ul class="check-list">
+                  <li>מניחים קלף אחד בלבד במרכז השולחן (זה ה"בור" או "הבאר").</li>
+                  <li>מחלקים את כל שאר הקלפים שווה בשווה בין כל הילדים. כל אחד מניח את ערימת הקלפים שלו סגורה לפניו.</li>
+                  <li>כולם הופכים את הקלף העליון שלהם ביחד.</li>
+                  <li>ראיתם ציור זהה בין הקלף שלכם לבין הקלף שבמרכז? צועקים את השם וזורקים מהר את הקלף שלכם על הקלף שבמרכז!</li>
+                  <li>עכשיו הקלף שלכם הוא הקלף המרכזי החדש, וכולם מנסים להתאים אליו.</li>
+                </ul>
+                <div class="game-winner">🏆 מנצח: הילד הראשון שמסיים את כל הקלפים שהיו לו ביד!</div>
+              </div>
+            </details>
           </div>
           <div class="offer-card reveal">
             <span class="offer-card-icon" aria-hidden="true">🔴</span>
-            <h3 class="offer-card-title">השלישייה</h3>
-            <p>פותחים 9 קלפים על השולחן ומחפשים תמונה אחת שמופיעה ב-3 קלפים שונים בו-זמנית!</p>
+            <h3 class="offer-card-title">השלישייה (תפוס תשע)</h3>
+            <p>״בלש הציורים״ — פותחים 9 קלפים על השולחן ומחפשים תמונה אחת שמופיעה ב-3 קלפים שונים בו-זמנית!</p>
+            <details class="game-details">
+              <summary>איך משחקים?</summary>
+              <div class="game-details-body">
+                <div class="game-goal">🎯 המטרה: למצוא ציור אחד שמתחבא בשלושה קלפים שונים בו-זמנית!</div>
+                <ul class="check-list">
+                  <li>פותחים על השולחן 9 קלפים שסדורים יפה כמו משבצות (3 שורות של 3 קלפים).</li>
+                  <li>כולם מסתכלים יחד על תשעת הקלפים.</li>
+                  <li>מחפשים ציור מסוים שמופיע גם בקלף ראשון, גם בקלף שני וגם בקלף שלישי!</li>
+                  <li>מצאתם? צועקים את שם הציור, מצביעים על 3 הקלפים וזוכים בהם!</li>
+                  <li>השחקן שלקח את הקלפים משים במקומם 3 קלפים חדשים מהקופה.</li>
+                </ul>
+                <div class="game-winner">🏆 מנצח: מי שחיפש הכי טוב ואסף את מספר הקלפים הגבוה ביותר!</div>
+              </div>
+            </details>
           </div>
         </div>
       </div>
