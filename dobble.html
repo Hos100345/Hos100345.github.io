@@ -1092,12 +1092,12 @@ function dcfgSave(patch){
         <div class="og">
           <div class="og-t">גודל קלף</div>
           <div class="sl-lbl"><span>קוטר</span><strong id="lbl-card-size">85mm</strong></div>
-          <input type="range" id="sl-card-size" min="40" max="170" value="85" step="1">
+          <input type="range" id="sl-card-size" min="20" max="195" value="85" step="1">
         </div>
         <div class="og">
           <div class="og-t">מרווח בין קלפים</div>
           <div class="sl-lbl"><span>0 = צפיפות מקסימלית (Hex)</span><strong id="lbl-spacing">5mm</strong></div>
-          <input type="range" id="sl-spacing" min="0" max="20" value="5" step="1">
+          <input type="range" id="sl-spacing" min="0" max="40" value="5" step="1">
         </div>
         <div class="og">
           <div class="og-t">נקודת מוצא</div>
@@ -1125,11 +1125,11 @@ function dcfgSave(patch){
               <div class="dp-sec">
                 <div class="dp-sec-hd">מסגרת</div>
                 <div class="sl-lbl"><span>רוחב מסגרת</span><strong id="lbl-fw">3מ"מ</strong></div>
-                <input type="range" id="sl-fw" min="0" max="15" step="0.5" value="3">
+                <input type="range" id="sl-fw" min="0" max="25" step="0.5" value="3">
                 <div class="sl-lbl"><span>עוצמת פיגמנט</span><strong id="lbl-fop">100%</strong></div>
                 <input type="range" id="sl-fop" min="0" max="100" step="1" value="100">
                 <div class="sl-lbl"><span>מרווח סמלים ← מסגרת</span><strong id="lbl-sympad">2מ"מ</strong></div>
-                <input type="range" id="sl-sympad" min="0" max="20" step="0.5" value="2">
+                <input type="range" id="sl-sympad" min="0" max="35" step="0.5" value="2">
                 <div class="swatch-row" id="sw-frame"></div>
                 <label class="cp-row"><span>צבע חופשי</span><input type="color" id="pick-frame" value="#4338CA"></label>
               </div>
@@ -1277,7 +1277,7 @@ function dcfgSave(patch){
         </label>
         <div id="rmbg-tol-row" hidden style="display:flex;align-items:center;gap:.4rem;padding-right:.2rem">
           <span style="font-size:.75rem;color:#6b7280;white-space:nowrap">רגישות:</span>
-          <input type="range" id="rng-rmbg-tol" min="5" max="80" value="35" style="flex:1;min-width:70px;accent-color:var(--indigo)">
+          <input type="range" id="rng-rmbg-tol" min="2" max="140" value="35" style="flex:1;min-width:70px;accent-color:var(--indigo)">
           <span id="rmbg-tol-val" style="font-size:.78rem;color:var(--indigo);font-weight:700;width:2em;text-align:left">35</span>
         </div>
       </div>
@@ -2529,6 +2529,12 @@ function updatePaperPrev(){
       cx.stroke();
     }
     cx.setLineDash([]);
+  }
+  // אזהרה במקום דף ריק — הקלף גדול מכדי להיכנס לדף A4 בהגדרות הנוכחיות
+  if(perPage===0){
+    document.getElementById('prev-info').innerHTML=
+      '<span style="color:#b91c1c;font-weight:700">⚠️ הקלף גדול מדי לדף A4 בהגדרות האלה — הקטן/י את גודל הקלף או את המרווח</span>';
+    return;
   }
   const spacingLabel=S.spacingMm===0?'hex':S.spacingMm+'mm';
   document.getElementById('prev-info').textContent=
