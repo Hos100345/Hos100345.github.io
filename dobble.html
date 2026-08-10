@@ -1327,7 +1327,7 @@ function dcfgSave(patch){
 
     <div class="canvas-wrap" id="cutout-wrap" style="position:relative;touch-action:none">
       <canvas id="cutout-canvas" style="max-width:100%;touch-action:none"></canvas>
-      <div id="cutout-busy" hidden style="position:absolute;inset:0;display:flex;align-items:center;
+      <div id="cutout-busy" style="position:absolute;inset:0;display:none;align-items:center;
         justify-content:center;background:rgba(255,255,255,.55);font-weight:700;color:var(--indigo)">מחשב…</div>
     </div>
 
@@ -3303,6 +3303,7 @@ function openCutoutModal(cropId){
   modal.hidden=false;
   cutSetupCanvas();
   cutComputeMask();
+  cutRedraw();
 }
 
 // זרעים אוטומטיים: מסגרת=רקע, מלבן מרכזי 25%=אובייקט — נקודת פתיחה סבירה שהמשתמש מתקן
@@ -3399,8 +3400,8 @@ function cutReset(){
 
 function cutScheduleCompute(){
   clearTimeout(CUT.timer);
-  document.getElementById('cutout-busy').hidden=false;
-  CUT.timer=setTimeout(()=>{ cutComputeMask(); document.getElementById('cutout-busy').hidden=true; cutRedraw(); },50);
+  document.getElementById('cutout-busy').style.display='flex';
+  CUT.timer=setTimeout(()=>{ cutComputeMask(); document.getElementById('cutout-busy').style.display='none'; cutRedraw(); },50);
 }
 
 // ── תצוגה: תמונה + שכבת רקע אדומה שקופה + קווי סימון, או "תוצאה" (שחמט) ──
