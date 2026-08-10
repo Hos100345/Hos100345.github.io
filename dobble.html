@@ -3097,6 +3097,31 @@ function layoutEngine(){
   return{positions:filtered,cardMm:d};
 }
 
+// המרת מיקום קדמי למיקום הגב בעמוד ההפוך. גב אחיד לכל הקלפים ⇒ סדר הערימה לא משנה —
+// הדרישה היחידה היא שמספר עמודי הגב = מספר עמודי הקדמי, והמיקומים ממוראים כהלכה.
+// צד קצר (ברירת מחדל): היפוך אנכי (x,y)→(x,297−y). צד ארוך: היפוך אופקי (x,y)→(210−x,y).
+// הכיול (dx,dy) מפצה על סטיית הזנה של המדפסת, ומתווסף רק לגב.
+function backPos(p){
+  const f=S.back.duplex;
+  const x=f.flip==='long'?(A4_W-p.x):p.x;
+  const y=f.flip==='long'?p.y:(A4_H-p.y);
+  return{x:x+(f.dx||0),y:y+(f.dy||0)};
+}
+
+// רשימת עמודי הפלט לפי הסדר הנבחר — משותפת ל-PDF ולתצוגה המקדימה כדי ששתיהן יסכימו תמיד.
+// גב כבוי ⇒ רק עמודי קדמי, בדיוק כמו היום. גב פעיל: רציף (כל הקדמיים ואז כל האחוריים) או לסירוגין.
+function buildPrintPageOrder(numPages){
+  if(!S.back.enabled)return Array.from({length:numPages},(_,k)=>({type:'front',k}));
+  const arr=[];
+  if(S.back.duplex.order==='interleave'){
+    for(let k=0;k<numPages;k++){arr.push({type:'front',k});arr.push({type:'back',k});}
+  }else{
+    for(let k=0;k<numPages;k++)arr.push({type:'front',k});
+    for(let k=0;k<numPages;k++)arr.push({type:'back',k});
+  }
+  return arr;
+}
+
 // ══ PAPER PREVIEW ══
 function updatePaperPrev(){
   const{positions,cardMm}=layoutEngine();
@@ -3156,8 +3181,9 @@ function updatePaperPrev(){
     return;
   }
   const spacingLabel=S.spacingMm===0?'hex':S.spacingMm+'mm';
+  const backTxt=(S.back.enabled&&S.deck.length)?` · + ${pages} עמודי גב`:'';
   document.getElementById('prev-info').textContent=
-    `A4 · ${perPage} קלפים/עמוד · ${cardMm}mm · מרווח ${spacingLabel} · ${pages} ${pages!==1?'דפים':'דף'}`;
+    `A4 · ${perPage} קלפים/עמוד · ${cardMm}mm · מרווח ${spacingLabel} · ${pages} ${pages!==1?'דפים':'דף'}${backTxt}`;
 }
 
 // ══ EXPORT OPTIONS (V5 Parametric) ══
@@ -3182,6 +3208,7 @@ document.getElementById('chk-crop').addEventListener('change',e=>{S.crop=e.targe
 document.getElementById('chk-sil').addEventListener('change',e=>{
   S.isSilhouette=e.target.checked;
   document.getElementById('btn-dodxf').style.display=S.isSilhouette?'':'none';
+  if(S.isSilhouette&&S.back.enabled)toast('⚠️ שילוב Silhouette + גב מעוצב לא נתמך — הייצוא ייחסם','err');
   resetExport();
   updatePaperPrev();
 });
@@ -3521,6 +3548,7 @@ document.getElementById('back-modal').addEventListener('click',e=>{if(e.target==
 
 document.getElementById('chk-back-enabled').addEventListener('change',e=>{
   S.back.enabled=e.target.checked;
+  if(S.back.enabled&&S.isSilhouette)toast('⚠️ שילוב Silhouette + גב מעוצב לא נתמך — הייצוא ייחסם','err');
   markBackDirty();resetExport();
 });
 
@@ -3537,14 +3565,18 @@ document.getElementById('ppmodal').addEventListener('click',e=>{if(e.target===e.
 document.getElementById('pp-prev').addEventListener('click',()=>{if(_ppPage>0){_ppPage--;renderPP(_ppPage);}});
 document.getElementById('pp-next').addEventListener('click',()=>{
   const{positions}=layoutEngine();
-  const total=Math.ceil(S.canvases.length/Math.max(1,positions.length));
+  const numPages=Math.max(1,Math.ceil(S.canvases.length/Math.max(1,positions.length)));
+  const total=buildPrintPageOrder(numPages).length;
   if(_ppPage<total-1){_ppPage++;renderPP(_ppPage);}
 });
 
 function renderPP(page){
   const{positions,cardMm}=layoutEngine();
   const perPage=Math.max(1,positions.length);
-  const totalPages=Math.ceil(S.canvases.length/perPage);
+  const numPages=Math.max(1,Math.ceil(S.canvases.length/perPage));
+  const order=buildPrintPageOrder(numPages);
+  const totalPages=order.length;
+  const entry=order[page]||order[0];
   const modal=document.getElementById('ppmodal');
   const W=Math.min(420,Math.max(280,(modal.querySelector('.modal-card').clientWidth||452)-32));
   const H=Math.round(W*297/210);
@@ -3554,44 +3586,73 @@ function renderPP(page){
   const sc=W/210;
   ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
 
-  const start=page*perPage;
-  for(let i=0;i<perPage;i++){
-    const ci=start+i;
-    if(ci>=S.canvases.length)break;
-    const{x,y}=positions[i],d=cardMm*sc;
-    ctx.drawImage(S.canvases[ci],Math.round(x*sc-d/2),Math.round(y*sc-d/2),Math.round(d),Math.round(d));
-    if(S.crop&&!S.isSilhouette){
-      const cg=2*sc,cl=4*sc,lx=x*sc-d/2,ly=y*sc-d/2;
-      ctx.strokeStyle='rgba(0,0,0,.45)';ctx.lineWidth=.5;ctx.beginPath();
-      ctx.moveTo(lx-cg-cl,ly);ctx.lineTo(lx-cg,ly);
-      ctx.moveTo(lx,ly-cg-cl);ctx.lineTo(lx,ly-cg);
-      ctx.moveTo(lx+d+cg,ly);ctx.lineTo(lx+d+cg+cl,ly);
-      ctx.moveTo(lx+d,ly-cg-cl);ctx.lineTo(lx+d,ly-cg);
-      ctx.moveTo(lx-cg-cl,ly+d);ctx.lineTo(lx-cg,ly+d);
-      ctx.moveTo(lx,ly+d+cg);ctx.lineTo(lx,ly+d+cg+cl);
-      ctx.moveTo(lx+d+cg,ly+d);ctx.lineTo(lx+d+cg+cl,ly+d);
-      ctx.moveTo(lx+d,ly+d+cg);ctx.lineTo(lx+d,ly+d+cg+cl);
-      ctx.stroke();
+  if(entry.type==='front'){
+    const start=entry.k*perPage;
+    for(let i=0;i<perPage;i++){
+      const ci=start+i;
+      if(ci>=S.canvases.length)break;
+      const{x,y}=positions[i],d=cardMm*sc;
+      ctx.drawImage(S.canvases[ci],Math.round(x*sc-d/2),Math.round(y*sc-d/2),Math.round(d),Math.round(d));
+      if(S.crop&&!S.isSilhouette){
+        const cg=2*sc,cl=4*sc,lx=x*sc-d/2,ly=y*sc-d/2;
+        ctx.strokeStyle='rgba(0,0,0,.45)';ctx.lineWidth=.5;ctx.beginPath();
+        ctx.moveTo(lx-cg-cl,ly);ctx.lineTo(lx-cg,ly);
+        ctx.moveTo(lx,ly-cg-cl);ctx.lineTo(lx,ly-cg);
+        ctx.moveTo(lx+d+cg,ly);ctx.lineTo(lx+d+cg+cl,ly);
+        ctx.moveTo(lx+d,ly-cg-cl);ctx.lineTo(lx+d,ly-cg);
+        ctx.moveTo(lx-cg-cl,ly+d);ctx.lineTo(lx-cg,ly+d);
+        ctx.moveTo(lx,ly+d+cg);ctx.lineTo(lx,ly+d+cg+cl);
+        ctx.moveTo(lx+d+cg,ly+d);ctx.lineTo(lx+d+cg+cl,ly+d);
+        ctx.moveTo(lx+d,ly+d+cg);ctx.lineTo(lx+d,ly+d+cg+cl);
+        ctx.stroke();
+      }
+      if(S.isSilhouette){
+        ctx.strokeStyle='#f00';ctx.lineWidth=.6;
+        const r=cardMm/2*sc;ctx.beginPath();
+        if(S.shape==='circle')ctx.arc(x*sc,y*sc,r,0,Math.PI*2);
+        else{const sq=cardMm*0.94*sc,sqr=sq*0.09;rrect(ctx,x*sc-sq/2,y*sc-sq/2,sq,sq,sqr);}
+        ctx.stroke();
+      }
     }
     if(S.isSilhouette){
-      ctx.strokeStyle='#f00';ctx.lineWidth=.6;
-      const r=cardMm/2*sc;ctx.beginPath();
-      if(S.shape==='circle')ctx.arc(x*sc,y*sc,r,0,Math.PI*2);
-      else{const sq=cardMm*0.94*sc,sqr=sq*0.09;rrect(ctx,x*sc-sq/2,y*sc-sq/2,sq,sq,sqr);}
+      const off=10*sc,ms=6*sc,arm=20*sc;
+      ctx.fillStyle='#000';ctx.fillRect(off,off,ms,ms);
+      ctx.strokeStyle='#000';ctx.lineWidth=.7;ctx.beginPath();
+      ctx.moveTo(W-off,off);ctx.lineTo(W-off-arm,off);
+      ctx.moveTo(W-off,off);ctx.lineTo(W-off,off+arm);
+      ctx.moveTo(off,H-off);ctx.lineTo(off+arm,H-off);
+      ctx.moveTo(off,H-off);ctx.lineTo(off,H-off-arm);
       ctx.stroke();
     }
+  }else{
+    // עמוד גב — אותה backPos() ואותו grow כמו ב-PDF, אחרת התצוגה המקדימה תשקר
+    ensureBackCanvas();
+    const start=entry.k*perPage;
+    const count=Math.min(perPage,S.canvases.length-start);
+    const grow=S.back.duplex.grow||0;
+    for(let i=0;i<count;i++){
+      const bp=backPos(positions[i]);
+      const d=cardMm*sc,g=grow*sc;
+      ctx.drawImage(S.backCanvas,Math.round(bp.x*sc-d/2-g),Math.round(bp.y*sc-d/2-g),Math.round(d+2*g),Math.round(d+2*g));
+      if(S.crop){
+        const cg=2*sc,cl=4*sc,lx=bp.x*sc-d/2,ly=bp.y*sc-d/2;
+        ctx.strokeStyle='rgba(0,0,0,.45)';ctx.lineWidth=.5;ctx.beginPath();
+        ctx.moveTo(lx-cg-cl,ly);ctx.lineTo(lx-cg,ly);
+        ctx.moveTo(lx,ly-cg-cl);ctx.lineTo(lx,ly-cg);
+        ctx.moveTo(lx+d+cg,ly);ctx.lineTo(lx+d+cg+cl,ly);
+        ctx.moveTo(lx+d,ly-cg-cl);ctx.lineTo(lx+d,ly-cg);
+        ctx.moveTo(lx-cg-cl,ly+d);ctx.lineTo(lx-cg,ly+d);
+        ctx.moveTo(lx,ly+d+cg);ctx.lineTo(lx,ly+d+cg+cl);
+        ctx.moveTo(lx+d+cg,ly+d);ctx.lineTo(lx+d+cg+cl,ly+d);
+        ctx.moveTo(lx+d,ly+d+cg);ctx.lineTo(lx+d,ly+d+cg+cl);
+        ctx.stroke();
+      }
+    }
+    ctx.save();ctx.font='700 13px system-ui,Arial';ctx.fillStyle='#7c3aed';ctx.textAlign='center';
+    ctx.fillText(`גב · עמוד ${entry.k+1}`,W/2,18);
+    ctx.restore();
   }
-  if(S.isSilhouette){
-    const off=10*sc,ms=6*sc,arm=20*sc;
-    ctx.fillStyle='#000';ctx.fillRect(off,off,ms,ms);
-    ctx.strokeStyle='#000';ctx.lineWidth=.7;ctx.beginPath();
-    ctx.moveTo(W-off,off);ctx.lineTo(W-off-arm,off);
-    ctx.moveTo(W-off,off);ctx.lineTo(W-off,off+arm);
-    ctx.moveTo(off,H-off);ctx.lineTo(off+arm,H-off);
-    ctx.moveTo(off,H-off);ctx.lineTo(off,H-off-arm);
-    ctx.stroke();
-  }
-  document.getElementById('pp-info').textContent=`עמוד ${page+1} מתוך ${totalPages}`;
+  document.getElementById('pp-info').textContent=`עמוד ${page+1} מתוך ${totalPages}${entry.type==='back'?' (גב)':''}`;
   document.getElementById('pp-prev').disabled=page===0;
   document.getElementById('pp-next').disabled=page>=totalPages-1;
 }
@@ -3639,6 +3700,11 @@ async function expPDF(setp){
   const{positions,cardMm}=layoutEngine();
   const perPage=positions.length;
   if(!perPage){alert('גודל הקלף גדול מדי לדף A4 — אין מקום אף לקלף אחד.\nהקטן את גודל הקלף ונסה שוב.');return;}
+  const backOn=S.back.enabled;
+  if(backOn&&S.isSilhouette){
+    alert('שילוב "מצב Silhouette + גב מעוצב" לא נתמך — כבו את אחד מהם ונסו שוב.');
+    return;
+  }
   const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
   const tmp=document.createElement('canvas');tmp.width=tmp.height=CARD_PX;
 
@@ -3661,41 +3727,78 @@ async function expPDF(setp){
     pdf.line(off,A4_H-off,off,A4_H-off-arm);
   };
 
+  // 1) חלוקה לעמודים — pageCards[k] = מערך אינדקסים של קלפים בעמוד k
+  const numPages=Math.ceil(S.deck.length/perPage);
+  const pageCards=[];
   for(let i=0;i<S.deck.length;i++){
-    const pos=i%perPage;
-    if(i>0&&pos===0)pdf.addPage();
-    if(pos===0)addRegMarks();
-    const{x,y}=positions[pos];
-    const d=cardMm;
-    drawCard(tmp,S.layouts[i],S.imgEls,S.shape);
-    pdf.addImage(tmp.toDataURL('image/png',1),'PNG',x-d/2,y-d/2,d,d);
-    if(S.isSilhouette){
-      // Vector cut line so Silhouette Studio detects the card shape, not the PNG bounding box
-      pdf.setDrawColor(255,0,0);pdf.setLineWidth(0.25);
-      if(S.shape==='circle'){
-        pdf.circle(x,y,d/2,'S');
-      }else{
-        const sq=d*0.94,cr=sq*0.09;
-        pdf.roundedRect(x-sq/2,y-sq/2,sq,sq,cr,cr,'S');
+    const k=Math.floor(i/perPage);
+    (pageCards[k]||(pageCards[k]=[])).push(i);
+  }
+  // 2) פליטת עמודים לפי הסדר הנבחר — buildPrintPageOrder משותפת עם התצוגה המקדימה
+  const order=buildPrintPageOrder(numPages);
+  const totalCardUnits=S.deck.length*(backOn?2:1);
+  let cardsDone=0,firstPage=true;
+  let backURL=null,grow=0;
+  if(backOn){ensureBackCanvas();backURL=S.backCanvas.toDataURL('image/png',1);grow=S.back.duplex.grow||0;}
+
+  for(const entry of order){
+    if(!firstPage)pdf.addPage();
+    firstPage=false;
+    const idxs=pageCards[entry.k]||[];
+    if(entry.type==='front'){
+      addRegMarks();
+      for(let j=0;j<idxs.length;j++){
+        const i=idxs[j],{x,y}=positions[j],d=cardMm;
+        drawCard(tmp,S.layouts[i],S.imgEls,S.shape);
+        pdf.addImage(tmp.toDataURL('image/png',1),'PNG',x-d/2,y-d/2,d,d);
+        if(S.isSilhouette){
+          // Vector cut line so Silhouette Studio detects the card shape, not the PNG bounding box
+          pdf.setDrawColor(255,0,0);pdf.setLineWidth(0.25);
+          if(S.shape==='circle'){
+            pdf.circle(x,y,d/2,'S');
+          }else{
+            const sq=d*0.94,cr=sq*0.09;
+            pdf.roundedRect(x-sq/2,y-sq/2,sq,sq,cr,cr,'S');
+          }
+        }
+        if(S.crop&&!S.isSilhouette){
+          const cg=2,cl=4,lx=x-d/2,ly=y-d/2;
+          pdf.setDrawColor(0);pdf.setLineWidth(.25);
+          pdf.line(lx-cg-cl,ly,lx-cg,ly);pdf.line(lx,ly-cg-cl,lx,ly-cg);
+          pdf.line(lx+d+cg,ly,lx+d+cg+cl,ly);pdf.line(lx+d,ly-cg-cl,lx+d,ly-cg);
+          pdf.line(lx-cg-cl,ly+d,lx-cg,ly+d);pdf.line(lx,ly+d+cg,lx,ly+d+cg+cl);
+          pdf.line(lx+d+cg,ly+d,lx+d+cg+cl,ly+d);pdf.line(lx+d,ly+d+cg,lx+d,ly+d+cg+cl);
+        }
+        cardsDone++;
+        setp(3+Math.round(92*cardsDone/totalCardUnits),`עמוד ${entry.k+1} — קלף ${j+1}/${idxs.length}…`);
+        if(j%3===2)await tick();
+      }
+    }else{
+      // עמוד גב — אותם מיקומים ממוראים דרך backPos(), בגודל cardMm+2*grow
+      const sizeD=cardMm+2*grow;
+      for(let j=0;j<idxs.length;j++){
+        const bp=backPos(positions[j]);
+        pdf.addImage(backURL,'PNG',bp.x-sizeD/2,bp.y-sizeD/2,sizeD,sizeD);
+        if(S.crop){
+          const d=cardMm,cg=2,cl=4,lx=bp.x-d/2,ly=bp.y-d/2;
+          pdf.setDrawColor(0);pdf.setLineWidth(.25);
+          pdf.line(lx-cg-cl,ly,lx-cg,ly);pdf.line(lx,ly-cg-cl,lx,ly-cg);
+          pdf.line(lx+d+cg,ly,lx+d+cg+cl,ly);pdf.line(lx+d,ly-cg-cl,lx+d,ly-cg);
+          pdf.line(lx-cg-cl,ly+d,lx-cg,ly+d);pdf.line(lx,ly+d+cg,lx,ly+d+cg+cl);
+          pdf.line(lx+d+cg,ly+d,lx+d+cg+cl,ly+d);pdf.line(lx+d,ly+d+cg,lx+d,ly+d+cg+cl);
+        }
+        cardsDone++;
+        setp(3+Math.round(92*cardsDone/totalCardUnits),`גב · עמוד ${entry.k+1} — קלף ${j+1}/${idxs.length}…`);
+        if(j%3===2)await tick();
       }
     }
-    if(S.crop&&!S.isSilhouette){
-      const cg=2,cl=4,lx=x-d/2,ly=y-d/2;
-      pdf.setDrawColor(0);pdf.setLineWidth(.25);
-      pdf.line(lx-cg-cl,ly,lx-cg,ly);pdf.line(lx,ly-cg-cl,lx,ly-cg);
-      pdf.line(lx+d+cg,ly,lx+d+cg+cl,ly);pdf.line(lx+d,ly-cg-cl,lx+d,ly-cg);
-      pdf.line(lx-cg-cl,ly+d,lx-cg,ly+d);pdf.line(lx,ly+d+cg,lx,ly+d+cg+cl);
-      pdf.line(lx+d+cg,ly+d,lx+d+cg+cl,ly+d);pdf.line(lx+d,ly+d+cg,lx+d,ly+d+cg+cl);
-    }
-    setp(3+Math.round(92*(i+1)/S.deck.length),`עמוד ${Math.floor(i/perPage)+1} — קלף ${pos+1}/${perPage}…`);
-    if(i%3===2)await tick();
   }
   setp(98,'שומר…');
   const blob=pdf.output('blob');
   if(_exportUrl)URL.revokeObjectURL(_exportUrl);
   _exportUrl=URL.createObjectURL(blob);
   const lnk=document.getElementById('dl-link');
-  const fn=`dobble-${S.order.total}cards-${S.cardSizeMm}mm.pdf`;
+  const fn=`dobble-${S.order.total}cards-${S.cardSizeMm}mm${backOn?'-2sided':''}.pdf`;
   lnk.href=_exportUrl;lnk.download=fn;
   document.getElementById('dl-area').classList.add('on');
   logGame({total:S.order.total,cards:S.deck.length,sizeMm:S.cardSizeMm,filename:fn,type:'pdf'});
@@ -3706,22 +3809,73 @@ async function expZIP(setp){
   if(typeof JSZip==='undefined')throw new Error('ספריית JSZip לא נטענה — נדרש חיבור לאינטרנט');
   const zip=new JSZip(),folder=zip.folder('dobble-cards');
   const tmp=document.createElement('canvas');tmp.width=tmp.height=CARD_PX;
+  const backOn=S.back.enabled;
+  const totalUnits=S.deck.length+(backOn?1:0);
   for(let i=0;i<S.deck.length;i++){
     drawCard(tmp,S.layouts[i],S.imgEls,S.shape);
     folder.file(`card-${String(i+1).padStart(3,'0')}.png`,tmp.toDataURL('image/png',1).split(',')[1],{base64:true});
-    setp(3+Math.round(82*(i+1)/S.deck.length),`קלף ${i+1}/${S.deck.length}…`);
+    setp(3+Math.round(82*(i+1)/totalUnits),`קלף ${i+1}/${S.deck.length}…`);
     if(i%8===7)await tick();
+  }
+  if(backOn){
+    // גב אחיד לכל הקלפים — קובץ יחיד, לא משוכפל לכל קלף
+    ensureBackCanvas();
+    folder.file('card-back.png',S.backCanvas.toDataURL('image/png',1).split(',')[1],{base64:true});
+    setp(85,'גב הקלף…');
   }
   setp(90,'אורז קבצים…');
   const blob=await zip.generateAsync({type:'blob'});
   if(_exportUrl)URL.revokeObjectURL(_exportUrl);
   _exportUrl=URL.createObjectURL(blob);
   const lnk=document.getElementById('dl-link');
-  const fnz=`dobble-${S.order.total}cards.zip`;
+  const fnz=`dobble-${S.order.total}cards${backOn?'-2sided':''}.zip`;
   lnk.href=_exportUrl;lnk.download=fnz;
   document.getElementById('dl-area').classList.add('on');
   logGame({total:S.order.total,cards:S.deck.length,sizeMm:S.cardSizeMm,filename:fnz,type:'zip'});
   setp(100,'✅ מוכן!');
+}
+
+// ── דף כיול להדפסה דו-צדדית: סרגל מ"מ ממוספר בקצוות כל עמוד, לצורך כוונון dx/dy ──
+function drawCalibRuler(pdf){
+  pdf.setDrawColor(0);pdf.setLineWidth(0.15);pdf.setFontSize(6);pdf.setTextColor(0);
+  for(let x=0;x<=A4_W;x+=5){
+    const len=x%20===0?4:(x%10===0?2.5:1.5);
+    pdf.line(x,0,x,len);pdf.line(x,A4_H,x,A4_H-len);
+    if(x%20===0&&x>0&&x<A4_W){pdf.text(String(x),x,6,{align:'center'});pdf.text(String(x),x,A4_H-2,{align:'center'});}
+  }
+  for(let y=0;y<=A4_H;y+=5){
+    const len=y%20===0?4:(y%10===0?2.5:1.5);
+    pdf.line(0,y,len,y);pdf.line(A4_W,y,A4_W-len,y);
+    if(y%20===0&&y>0&&y<A4_H){pdf.text(String(y),2,y+1.5);pdf.text(String(y),A4_W-6,y+1.5);}
+  }
+}
+// PDF של 2 עמודים בלבד (קדמי + גב, באותה נקודה מדויקת דרך backPos) עם סרגל ממוספר —
+// הלקוח מדפיס, הופך, ומודד את הסטייה בין הסרגלים כדי לכייל dx/dy בטאב "הדפסה".
+function generateCalibrationPDF(){
+  if(!window.jspdf?.jsPDF){toast('ספריית jsPDF לא נטענה — נדרש חיבור לאינטרנט','err');return;}
+  const{jsPDF}=window.jspdf;
+  const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const cardMm=S.cardSizeMm,cx=A4_W/2,cy=A4_H/2;
+  ensureBackCanvas();
+  const tmp=document.createElement('canvas');tmp.width=tmp.height=CARD_PX;
+
+  drawCalibRuler(pdf);
+  if(S.layouts.length&&S.imgEls.length)drawCard(tmp,S.layouts[0],S.imgEls,S.shape);
+  else drawCard(tmp,{syms:[],tr:[]},[],S.shape);
+  pdf.addImage(tmp.toDataURL('image/png',1),'PNG',cx-cardMm/2,cy-cardMm/2,cardMm,cardMm);
+
+  pdf.addPage();
+  drawCalibRuler(pdf);
+  const bp=backPos({x:cx,y:cy});
+  const grow=S.back.duplex.grow||0,sizeD=cardMm+2*grow;
+  pdf.addImage(S.backCanvas.toDataURL('image/png',1),'PNG',bp.x-sizeD/2,bp.y-sizeD/2,sizeD,sizeD);
+
+  const blob=pdf.output('blob');
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='dobble-calibration.pdf';
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),4000);
+  toast('דף הכיול הופק — הדפיסו, הפכו לפי כיוון ההפיכה שבחרתם ומדדו את הסטייה','ok');
 }
 
 function generateDXF(){
