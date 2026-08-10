@@ -3615,8 +3615,10 @@ function openBackModal(){
   if(!backEditorAllowed()){window.showUpgradeModal&&window.showUpgradeModal();return;}
   _backSnapshot=JSON.parse(JSON.stringify(S.back));
   syncBackUIFromState();
-  markBackDirty();
+  // markBackDirty() מעדכן את תצוגת התצוגה-החיה רק אם המודל כבר גלוי — לכן חייב לבוא אחרי ה-unhide,
+  // אחרת בפתיחה הראשונה בכל סשן רואים עיגול לבן ריק במקום העיצוב האמיתי (ומזה גם לא צורת הריבוע).
   document.getElementById('back-modal').hidden=false;
+  markBackDirty();
 }
 function closeBackModal(save){
   if(!save&&_backSnapshot)S.back=mergeBack(_backSnapshot);
