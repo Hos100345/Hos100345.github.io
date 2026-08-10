@@ -4959,26 +4959,67 @@ function assetsToRows(){
   }));
 }
 
+// קידוד ה-dataURL של asset בודד, עם מטמון על האובייקט (a._enc).
+// ה-imgEl של asset מוקצה פעם אחת ביצירה ולעולם לא נדרס ולא מצוירים עליו מחדש (כל הנתיבים —
+// loadImgFile/loadImgUrl/cropRender — מחזירים קנבס חדש), ולכן ה-dataURL שלו קבוע לכל חיי ה-asset.
+// בלי המטמון כל שמירה (idbSave + cloudAutosave + buildDesignObject) מקודדת מחדש את *כל* המאגר:
+// נמדד ~2.0 שנ' ל-21 תמונות במעבד חנוק פי 4 (נייד בינוני), וגדל לינארית עם מספר התמונות.
+function assetEncoded(a){
+  if(a._enc)return a._enc;
+  // imgEl הוא כבר קנבס בכל הנתיבים — ההעתקה לקנבס נוסף הייתה עבודה כפולה (~240ms ל-21 תמונות)
+  let cv=a.imgEl;
+  if(!cv||typeof cv.toDataURL!=='function'){
+    const w=imgNatW(a.imgEl),h=imgNatH(a.imgEl);
+    cv=document.createElement('canvas');cv.width=w;cv.height=h;
+    cv.getContext('2d').drawImage(a.imgEl,0,0,w,h);
+  }
+  const isPng=a.type==='crop'||canvasHasAlpha(cv);   // crops תמיד PNG; images רק אם שקופים
+  a._enc={dataURL:cv.toDataURL(isPng?'image/png':'image/jpeg',.82)};
+  return a._enc;
+}
+
 // גרסה מלאה — כוללת dataURL. משמשת לגיבוי הרציף של המאגר הנוכחי (idbSave/idbLoad, כדי לשרוד
 // רענון דף) ולהעלאת תמונות אמיתיות לענן (buildDesignObject → cloudSaveDesign/cloudAutosave).
 function assetsToRowsWithImages(){
-  return S.assets.map(a=>{
-    const w=imgNatW(a.imgEl),h=imgNatH(a.imgEl);
-    const cv=document.createElement('canvas');cv.width=w;cv.height=h;
-    cv.getContext('2d').drawImage(a.imgEl,0,0,w,h);
-    const isPng=a.type==='crop'||canvasHasAlpha(cv);   // crops תמיד PNG; images רק אם שקופים
-    return{id:a.id,type:a.type,name:a.name,
-           dataURL:cv.toDataURL(isPng?'image/png':'image/jpeg',.82),
-           srcAssetId:a.srcAssetId||null,isCropSource:a.isCropSource||false,selected:a.selected!==false};
-  });
+  return S.assets.map(a=>({
+    id:a.id,type:a.type,name:a.name,
+    dataURL:assetEncoded(a).dataURL,
+    srcAssetId:a.srcAssetId||null,isCropSource:a.isCropSource||false,selected:a.selected!==false
+  }));
 }
-let _idbTimer=0;
+
+// מקדים את הקידוד לזמני סרק, אחד-אחד, במקום להשאיר בלוק סינכרוני אחד ארוך לרגע השמירה.
+// זו בדיוק ההעברה של עלות הגיבוי מ"תוך כדי ההעלאה" ל"תוך כדי העריכה": המשתמש רואה את הגלריה
+// מיד, והקידוד מתרחש בין פריימים כשהדפדפן פנוי — בלי לתקוע את הממשק.
+let _warmHandle=0;
+const _ricFn=window.requestIdleCallback||function(cb){return setTimeout(()=>cb({timeRemaining:()=>8}),60);};
+function warmEncodeCache(){
+  if(_warmHandle)return;
+  const step=deadline=>{
+    _warmHandle=0;
+    for(const a of S.assets){
+      if(a._enc)continue;
+      assetEncoded(a);
+      if(!deadline||deadline.timeRemaining()<=2)break;   // מוותרים על שאר הפריים, ממשיכים בסרק הבא
+    }
+    if(S.assets.some(a=>!a._enc))_warmHandle=_ricFn(step);
+  };
+  _warmHandle=_ricFn(step);
+}
+
+let _idbTimer=0,_idbWaits=0;
 function schedIdbSave(){
   // מצב תמיכה (מנהל צופה בעיצוב לקוח): לא כותבים כלום למאגר המקומי/לענן של המנהל — session-only.
   if(window.__supportMode)return;
-  clearTimeout(_idbTimer);_idbTimer=setTimeout(idbSave,800);schedCloudAutosave();
+  warmEncodeCache();
+  clearTimeout(_idbTimer);_idbWaits=0;_idbTimer=setTimeout(idbSave,800);schedCloudAutosave();
 }
 async function idbSave(){
+  // עדיין יש תמונות שלא קודדו — נותנים ל-warmEncodeCache לסיים בזמני סרק, במקום לקודד כאן את כל
+  // מה שנשאר בבלוק סינכרוני אחד ולתקוע את הממשק. תקרה (~12 שנ') כדי שהגיבוי לא יידחה לנצח.
+  if(_idbWaits<30&&S.assets.some(a=>!a._enc)){
+    _idbWaits++;clearTimeout(_idbTimer);_idbTimer=setTimeout(idbSave,400);return;
+  }
   try{
     const db=await idbOpen();
     const rows=assetsToRowsWithImages();   // גיבוי רציף — צריך תמונות מלאות כדי לשרוד רענון דף
