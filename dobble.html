@@ -1085,6 +1085,16 @@ function dcfgSave(patch){
           </div>
         </div>
         <div class="sb-sec">
+          <div class="sb-t">מרווח מהמסגרת</div>
+          <div class="sl-row">
+            <div class="sl-lbl"><span>מרווח סמלים ← מסגרת</span><strong id="lbl-sympad">2מ"מ</strong></div>
+            <input type="range" id="sl-sympad" min="0" max="30" step="0.5" value="2">
+          </div>
+          <div style="font-size:.75rem;color:var(--muted);line-height:1.5;margin-top:.3rem">
+            מרחק הסמלים מהמסגרת, במ"מ אמיתיים. הטווח מותאם אוטומטית לקוטר הקלף ולרוחב המסגרת.
+          </div>
+        </div>
+        <div class="sb-sec">
           <div class="sb-t">פעולות</div>
           <button class="btn btn-pur" id="btn-reshuffle" style="width:100%;justify-content:center;margin-bottom:.5rem">🔀 ערבב מחדש</button>
           <button class="btn btn-sec" id="btn-save-design" style="width:100%;justify-content:center;margin-bottom:.5rem">💾 שמור עיצוב</button>
@@ -1153,8 +1163,6 @@ function dcfgSave(patch){
                 <input type="range" id="sl-fw" min="0" max="25" step="0.5" value="3">
                 <div class="sl-lbl"><span>עוצמת פיגמנט</span><strong id="lbl-fop">100%</strong></div>
                 <input type="range" id="sl-fop" min="0" max="100" step="1" value="100">
-                <div class="sl-lbl"><span>מרווח סמלים ← מסגרת</span><strong id="lbl-sympad">2מ"מ</strong></div>
-                <input type="range" id="sl-sympad" min="0" max="35" step="0.5" value="2">
                 <div class="swatch-row" id="sw-frame"></div>
                 <label class="cp-row"><span>צבע חופשי</span><input type="color" id="pick-frame" value="#4338CA"></label>
               </div>
@@ -1937,7 +1945,7 @@ function drawCard(canvas,layout,imgs,shape,hitIdx){
     ctx.strokeStyle='rgba(0,0,0,.12)';ctx.lineWidth=1.5;ctx.stroke();
   }
 
-  const rSym=Math.max(r*.45,r-fw-S.symPad*ppMm);
+  const rSym=Math.max(r*.25,r-fw-S.symPad*ppMm);
   const pos=symPos(layout.syms.length,cx,cy,rSym);
   if(S.tightPack)relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym);
   for(let i=0;i<layout.syms.length;i++){
@@ -2526,7 +2534,7 @@ function withTimeout(promise,ms,msg){
 async function addFiles(files){
   const imgs=Array.from(files).filter(f=>f.type.startsWith('image/')||/\.(heic|heif|avif)$/i.test(f.name));
   if(!imgs.length){alert('נא לבחור קבצי תמונה (PNG, JPG, SVG, WebP)');return;}
-  const failedNames=[];
+  const failed=[];
   let okCount=0;
   const folder=newFolder('העלאה');
   const total=imgs.length;
@@ -2538,11 +2546,11 @@ async function addFiles(files){
       await new Promise(r=>requestAnimationFrame(()=>setTimeout(r,0)));
       const url=URL.createObjectURL(f);
       try{
-        const imgEl=await withTimeout(loadImgFile(f,url),30000,'תם הזמן הקצוב לטעינת התמונה');
+        const imgEl=await withTimeout(loadImgFile(f,url),60000,'תם הזמן הקצוב לטעינת התמונה');
         const thumb=makeThumb(imgEl);
         S.assets.push({id:++S.idSeq,type:'image',name:f.name,url,thumb,imgEl,selected:true,folder});
         okCount++;
-      }catch(e){URL.revokeObjectURL(url);failedNames.push(f.name);console.warn('upload failed:',f.name,e?.message||e);}
+      }catch(e){URL.revokeObjectURL(url);failed.push({file:f,name:f.name,reason:(e&&e.message)||'שגיאה לא ידועה'});console.warn('upload failed:',f.name,e);}
       done++;
       uploadProgressStep(done,total);
     }
@@ -2551,61 +2559,121 @@ async function addFiles(files){
   // בתוך הלולאה, פעם לכל תמונה, הופכת העלאה של N תמונות לגלריה עם M תמונות קיימות
   // ל-O(N×M) ציורי canvas, ומאיטה יותר ויותר ככל שהמאגר גדל. קריאה יחידה אחרי כל האצווה.
   if(okCount){renderGallery();updateCounter();toast(`נוספו ${okCount} תמונות למאגר ✓`,'ok');schedIdbSave();}
-  if(failedNames.length)alert(`${failedNames.length} תמונות לא נטענו:\n${failedNames.join('\n')}\n\nנסה פורמטים אחרים: PNG, JPG, WebP, SVG. אם התמונה מאייפון וסיומתה .jpg — ייתכן שהיא בפועל HEIC; נסה לשמור/לייצא אותה מחדש כ-JPG או PNG ולהעלות שוב. (הסיבה המדויקת לכשל מופיעה בקונסול)`);
+  if(failed.length)await reportFailedUploads(failed,folder);
+}
+
+// דיווח כשלים עם סיבה לכל קובץ + ניסיון חוזר על הכושלים בלבד
+async function reportFailedUploads(failed,folder,depth){
+  const lines=failed.map(x=>`• ${x.name} — ${x.reason}`).join('\n');
+  const again=await confirmDialog({
+    icon:'⚠️',
+    title:`${failed.length} תמונות לא נטענו`,
+    body:lines+'\n\nאפשר לנסות שוב (לרוב מדובר בעומס זיכרון רגעי). אם זה חוזר: פתחו את התמונה בגלריה, שמרו/ייצאו אותה כ-JPG או PNG והעלו מחדש. תמונות המגובות בענן — ודאו שהן הורדו למכשיר.',
+    okText:'נסה שוב',
+  });
+  if(!again||(depth||0)>=1)return;
+  const retryFiles=failed.map(x=>x.file);
+  const still=[];let ok=0;
+  uploadProgressOpen(retryFiles.length,{title:'מנסה שוב…',hint:''});
+  try{
+    let done=0;
+    for(const f of retryFiles){
+      uploadProgressStep(done,retryFiles.length,f.name);
+      await new Promise(r=>requestAnimationFrame(()=>setTimeout(r,0)));
+      const url=URL.createObjectURL(f);
+      try{
+        const imgEl=await withTimeout(loadImgFile(f,url),60000,'תם הזמן הקצוב לטעינת התמונה');
+        S.assets.push({id:++S.idSeq,type:'image',name:f.name,url,thumb:makeThumb(imgEl),imgEl,selected:true,folder});
+        ok++;
+      }catch(e){URL.revokeObjectURL(url);still.push({file:f,name:f.name,reason:(e&&e.message)||'שגיאה לא ידועה'});}
+      done++;uploadProgressStep(done,retryFiles.length);
+    }
+  }finally{uploadProgressClose();}
+  if(ok){renderGallery();updateCounter();toast(`נוספו ${ok} תמונות למאגר ✓`,'ok');schedIdbSave();}
+  if(still.length)await reportFailedUploads(still,folder,(depth||0)+1);
 }
 
 function isHeicFile(f){return /\.(heic|heif)$/i.test(f.name)||f.type==='image/heic'||f.type==='image/heif';}
-// זיהוי HEIC/HEIF לפי magic bytes (תיבת ftyp) — תופס קבצים עם סיומת שגויה (למשל HEIC בפועל עם סיומת .jpg, נפוץ ביציאה מאייפון)
-async function sniffHeic(f){
-  try{
-    const b=new Uint8Array(await f.slice(0,16).arrayBuffer());
-    if(b[4]!==0x66||b[5]!==0x74||b[6]!==0x79||b[7]!==0x70)return false; // "ftyp"
-    const brand=String.fromCharCode(b[8],b[9],b[10],b[11]);
-    return /^(heic|heix|hevc|hevx|heim|heis|hevm|hevs|mif1|msf1|heif)/.test(brand);
-  }catch{return false;}
-}
 async function ensureHeic2Any(){
   if(typeof heic2any!=='undefined')return true;
-  try{
-    await withTimeout(new Promise((res,rej)=>{
-      const s=document.createElement('script');
-      s.src='https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js';
-      s.onload=res;s.onerror=rej;document.head.appendChild(s);
-    }),15000,'טעינת ממיר HEIC נתקעה (רשת איטית/חסומה)');
-    return true;
-  }catch{return false;}
+  const urls=['https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js',
+              'https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js'];
+  for(const src of urls){
+    try{
+      await withTimeout(new Promise((res,rej)=>{
+        const s=document.createElement('script');s.src=src;
+        s.onload=res;s.onerror=()=>rej(new Error('load error'));document.head.appendChild(s);
+      }),15000,'טעינת ממיר HEIC נתקעה');
+      if(typeof heic2any!=='undefined')return true;
+    }catch(e){console.warn('heic2any CDN failed:',src,e?.message||e);}
+  }
+  return false;
 }
-async function convertHeicAndLoad(f){
+async function convertHeicAndLoad(src){
   const ok=await ensureHeic2Any();
   if(!ok)throw new Error('נדרש חיבור לאינטרנט לטעינת ממיר HEIC');
-  const result=await heic2any({blob:f,toType:'image/jpeg',quality:0.92});
+  const result=await heic2any({blob:src,toType:'image/jpeg',quality:0.92});
   const blob=Array.isArray(result)?result[0]:result;
   const jUrl=URL.createObjectURL(blob);
   try{return await loadImg(jUrl);}finally{URL.revokeObjectURL(jUrl);}
 }
 
-async function loadImgFile(f,url){
-  // HEIC/HEIF (iPhone photos): not supported natively on Android/Windows — convert via heic2any
-  // מזוהה לפי סיומת/type, ואם לא — לפי magic bytes (תופס קבצי HEIC עם סיומת .jpg שגויה)
-  if(isHeicFile(f)||await sniffHeic(f))return convertHeicAndLoad(f);
+// קריאת בייטים מיידית לזיכרון + retry: קבצים מהגלריה/הענן בנייד "מתים" בקריאה מאוחרת
+async function readFileBytes(f,tries){
+  let last;
+  for(let i=0;i<(tries||3);i++){
+    try{return await withTimeout(f.arrayBuffer(),20000,'קריאת הקובץ מהמכשיר נתקעה');}
+    catch(e){last=e;await new Promise(r=>setTimeout(r,250*(i+1)));}
+  }
+  throw new Error('לא ניתן לקרוא את הקובץ מהמכשיר ('+((last&&last.name)||'שגיאה')+') — ייתכן שהוא מגובה בענן ולא הורד למכשיר');
+}
+
+// זיהוי סוג אמיתי לפי magic bytes — f.type בנייד לעיתים ריק או שגוי
+function sniffMime(b){
+  if(b[0]===0x89&&b[1]===0x50&&b[2]===0x4E&&b[3]===0x47)return 'image/png';
+  if(b[0]===0xFF&&b[1]===0xD8&&b[2]===0xFF)return 'image/jpeg';
+  if(b[0]===0x47&&b[1]===0x49&&b[2]===0x46)return 'image/gif';
+  if(b[0]===0x52&&b[1]===0x49&&b[2]===0x46&&b[8]===0x57&&b[9]===0x45&&b[10]===0x42&&b[11]===0x50)return 'image/webp';
+  if(b[4]===0x66&&b[5]===0x74&&b[6]===0x79&&b[7]===0x70){
+    const brand=String.fromCharCode(b[8],b[9],b[10],b[11]);
+    if(/^(avif|avis)/.test(brand))return 'image/avif';
+    if(/^(heic|heix|hevc|hevx|heim|heis|hevm|hevs|mif1|msf1|heif)/.test(brand))return 'image/heic';
+  }
+  let head='';for(let i=0;i<Math.min(b.length,64);i++)head+=String.fromCharCode(b[i]);
+  head=head.toLowerCase();
+  if(head.includes('<svg')||head.includes('<?xml'))return 'image/svg+xml';
+  return '';
+}
+
+// פענוח מ-Blob בזיכרון, בגודל צד ארוך נתון
+async function decodeBlob(blob,maxSide){
   if(typeof createImageBitmap==='function'){
     try{
-      const bmp=await createImageBitmap(f);
-      const{w,h}=fitLongSide(bmp.width,bmp.height,LOAD_MAX);
+      const bmp=await withTimeout(createImageBitmap(blob),20000,'פענוח נתקע');
+      const{w,h}=fitLongSide(bmp.width,bmp.height,maxSide);
       const c=document.createElement('canvas');c.width=w;c.height=h;
       c.getContext('2d').drawImage(bmp,0,0,w,h);bmp.close&&bmp.close();return c;
-    }catch(e){console.warn('createImageBitmap failed:',f.name,e?.message||e);}
+    }catch(e){console.warn('createImageBitmap failed:',e?.message||e);}
   }
-  // Final fallback: via HTMLImageElement + blob URL
-  try{
-    return await loadImg(url);
-  }catch(e){
-    try{
-      return await convertHeicAndLoad(f); // מוצא אחרון: אולי HEIC מוסווה שה-sniff פספס
-    }catch{
-      throw new Error(`decode failed ${f.name} (type=${f.type||'?'}): ${e?.message||'load error'}`);
-    }
+  const u=URL.createObjectURL(blob);
+  try{return await withTimeout(loadImg(u,maxSide),20000,'פענוח נתקע');}
+  finally{URL.revokeObjectURL(u);}
+}
+
+async function loadImgFile(f,url){
+  const buf=await readFileBytes(f);
+  const head=new Uint8Array(buf.slice(0,32));
+  const mime=sniffMime(head)||((f.type&&f.type.startsWith('image/'))?f.type:'');
+  const blob=new Blob([buf],{type:mime||'application/octet-stream'});
+  if(mime==='image/heic'||(!mime&&isHeicFile(f)))return convertHeicAndLoad(blob);
+  let lastErr;
+  // הקטנה מדורגת: נפילה בגודל מלא בנייד היא כמעט תמיד לחץ זיכרון, לא פורמט פגום
+  for(const maxSide of [LOAD_MAX,900,600]){
+    try{return await decodeBlob(blob,maxSide);}
+    catch(e){lastErr=e;await new Promise(r=>setTimeout(r,120));}
   }
+  try{return await convertHeicAndLoad(blob);}   // מוצא אחרון: HEIC מוסווה
+  catch{throw new Error(`פענוח נכשל (${mime||f.type||'סוג לא מזוהה'}): ${lastErr&&lastErr.message||'שגיאת פענוח'}`);}
 }
 
 // ── לוגו לגב הקלף: נכנס דרך אותו צינור תמונות רגיל (type:'backlogo') כדי להסתנכרן ל-Storage
@@ -3189,7 +3257,13 @@ function updatePaperPrev(){
 // ══ EXPORT OPTIONS (V5 Parametric) ══
 const slCardSize=document.getElementById('sl-card-size');
 const lblCardSize=document.getElementById('lbl-card-size');
-slCardSize.addEventListener('input',()=>{S.cardSizeMm=+slCardSize.value;lblCardSize.textContent=slCardSize.value+'mm';updatePaperPrev();});
+let _cardSizeRedrawT=null;
+slCardSize.addEventListener('input',()=>{
+  S.cardSizeMm=+slCardSize.value;lblCardSize.textContent=slCardSize.value+'mm';
+  syncSymPadRange();updatePaperPrev();
+  clearTimeout(_cardSizeRedrawT);
+  _cardSizeRedrawT=setTimeout(()=>{redrawCards();},180);   // debounce — 57 קנבסים בנייד
+});
 slCardSize.addEventListener('change',resetExport);
 
 const slSpacing=document.getElementById('sl-spacing');
@@ -3238,6 +3312,7 @@ buildSwatches('sw-bg',BG_COLORS,()=>S.bg.color,c=>{S.bg.color=c;},'pick-bg');
 document.getElementById('sl-fw').addEventListener('input',e=>{
   S.frame.w=parseFloat(e.target.value);
   document.getElementById('lbl-fw').textContent=S.frame.w+'מ"מ';onDesignChange();
+  if(syncSymPadRange())redrawCards();
 });
 document.getElementById('sl-fop').addEventListener('input',e=>{
   S.frame.op=parseInt(e.target.value);
@@ -3247,6 +3322,17 @@ document.getElementById('sl-sympad').addEventListener('input',e=>{
   S.symPad=parseFloat(e.target.value);
   document.getElementById('lbl-sympad').textContent=S.symPad+'מ"מ';onDesignChange();
 });
+// טווח המרווח תלוי בקוטר הקלף וברוחב המסגרת — בלי סנכרון, חלק מהסליידר מת ולא משפיע
+function syncSymPadRange(){
+  const sl=document.getElementById('sl-sympad'),lbl=document.getElementById('lbl-sympad');
+  const maxPad=Math.max(1,Math.round((0.375*S.cardSizeMm-S.frame.w)*2)/2);
+  sl.max=maxPad;
+  if(S.symPad>maxPad){
+    S.symPad=maxPad;sl.value=maxPad;lbl.textContent=maxPad+'מ"מ';
+    return true;   // הערך נחתך — צריך רענון ציור
+  }
+  return false;
+}
 document.getElementById('sl-bop').addEventListener('input',e=>{
   S.bg.op=parseInt(e.target.value);
   document.getElementById('lbl-bop').textContent=S.bg.op+'%';onDesignChange();
@@ -3261,6 +3347,7 @@ document.getElementById('pick-bg').addEventListener('input',e=>{
   document.getElementById('sw-bg').querySelectorAll('.sw').forEach(s=>s.classList.remove('on'));
   onDesignChange();
 });
+syncSymPadRange();
 
 async function redrawCards(){
   if(!S.canvases.length)return;
@@ -3528,8 +3615,10 @@ function openBackModal(){
   if(!backEditorAllowed()){window.showUpgradeModal&&window.showUpgradeModal();return;}
   _backSnapshot=JSON.parse(JSON.stringify(S.back));
   syncBackUIFromState();
-  markBackDirty();
+  // markBackDirty() מעדכן את תצוגת התצוגה-החיה רק אם המודל כבר גלוי — לכן חייב לבוא אחרי ה-unhide,
+  // אחרת בפתיחה הראשונה בכל סשן רואים עיגול לבן ריק במקום העיצוב האמיתי (ומזה גם לא צורת הריבוע).
   document.getElementById('back-modal').hidden=false;
+  markBackDirty();
 }
 function closeBackModal(save){
   if(!save&&_backSnapshot)S.back=mergeBack(_backSnapshot);
@@ -5043,6 +5132,7 @@ function applySettingsToUI(st){
   document.getElementById('sl-fw').value=st.frame.w;document.getElementById('lbl-fw').textContent=st.frame.w+'מ"מ';
   document.getElementById('sl-fop').value=st.frame.op;document.getElementById('lbl-fop').textContent=st.frame.op+'%';
   document.getElementById('sl-sympad').value=st.symPad;document.getElementById('lbl-sympad').textContent=st.symPad+'מ"מ';
+  syncSymPadRange();
   document.getElementById('sl-bop').value=st.bg.op;document.getElementById('lbl-bop').textContent=st.bg.op+'%';
   document.getElementById('pick-frame').value=st.frame.color;
   document.getElementById('pick-bg').value=st.bg.color;
@@ -6101,12 +6191,12 @@ window._initAdminPanel=()=>{_admAuthed=true;openAdminPanel();};
 if(sessionStorage.getItem('dobble_unlocked')==='1'){idbLoad();}
 
 // ══ UTILS ══
-function loadImg(url){
+function loadImg(url,maxSide){
   return new Promise((res,rej)=>{
     const img=new Image();
     img.onload=()=>{
       try{
-        const{w,h}=fitLongSide(img.naturalWidth||img.width,img.naturalHeight||img.height,LOAD_MAX);
+        const{w,h}=fitLongSide(img.naturalWidth||img.width,img.naturalHeight||img.height,maxSide||LOAD_MAX);
         const c=document.createElement('canvas');c.width=w;c.height=h;
         c.getContext('2d').drawImage(img,0,0,w,h);res(c);
       }catch(e){rej(e);}
