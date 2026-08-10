@@ -1,84 +1,61 @@
-// create-payment — יוצר דרישת תשלום ב-Morning לפי הרמה שנבחרה, ומחזיר קישור תשלום.
-const GI_BASE = "https://api.greeninvoice.co.il/api/v1";
+// create-payment — SHIM לתאימות לאחור.
+//
+// הפונקציה המקורית (יצירת לינק תשלום דרך Morning API) חסומה מצד Morning לצמיתות
+// (errorCode 2600 — "אין מסוף סליקה פעיל"), והאתר עבר ל-4 לינקי תשלום קבועים.
+//
+// למה ה-shim הזה קיים: ללקוחות שהדפדפן שלהם עדיין מחזיק ב-cache גרסה ישנה של
+// dobble.html — אותה גרסה עדיין עושה POST לכאן ומצפה ל-{url}. במקום להחזיר שגיאה
+// ולחסום להם את התשלום, מחזירים את הלינק הקבוע הנכון לאותה מדרגה — כך דפדפן
+// עם cache ישן ממשיך לעבוד בלי שהלקוח יצטרך לנקות אותו.
+//
+// ⚠️ CORS חובה כאן, כולל מענה ל-OPTIONS: הלקוח שולח Content-Type/apikey/Authorization,
+// מה שמפעיל preflight. בלי הכותרות האלה הדפדפן חוסם את הקריאה והלקוח רואה
+// "Failed to fetch" בלבד — בלי שום דרך להבין מה נכשל. זה בדיוק מה ששבר תשלום אחד
+// בפועל: גרסה קודמת של הקובץ הזה החזירה 410 בלי CORS, שלושה preflight נדחו,
+// וה-POST האמיתי מעולם לא נשלח.
 
-// מדרגות המחיר: מספר קלפים → מחיר בש"ח
-const TIERS: Record<number, number> = { 13: 5, 21: 10, 31: 12, 57: 15 };
-
-const SUCCESS_URL = "https://hos100345.github.io/dobble.html?paid=1";
-const FAILURE_URL = "https://hos100345.github.io/dobble.html?paid=0";
+// חייב להישאר תואם ל-window.PAYMENT_LINKS ו-window.TIER_PRICES ב-dobble.html
+// ול-LINKS ב-morning-webhook (ה-allowlist שמעניק את הגישה בפועל).
+const PAYMENT_LINKS: Record<number, string> = {
+  13: "https://mrng.to/IC0mmKwgzj",
+  21: "https://mrng.to/feHfaA6vLA",
+  31: "https://mrng.to/4LjUZBvnND",
+  57: "https://mrng.to/9F19TfbGTa",
+};
+const TIER_PRICES: Record<number, number> = { 13: 5, 21: 10, 31: 12, 57: 15 };
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
-function json(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), { status, headers: { ...cors, "Content-Type": "application/json" } });
-}
 
-async function getMorningToken(): Promise<string> {
-  const res = await fetch(`${GI_BASE}/account/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id: Deno.env.get("GI_API_KEY"), secret: Deno.env.get("GI_API_SECRET") }),
+function json(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...cors, "Content-Type": "application/json" },
   });
-  if (!res.ok) throw new Error("morning_token_failed");
-  const data = await res.json();
-  return data.token ?? data?.data?.token;
 }
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
 
-  let body: Record<string, unknown> = {};
-  try { body = await req.json(); } catch { /* גוף ריק מותר */ }
-
-  const email = (typeof body.email === "string" ? body.email.trim() : "") || undefined;
-  const tier = Number(body.tier);
-
-  if (!TIERS[tier]) {
-    return json({ error: "bad_tier", allowed: Object.keys(TIERS) }, 400);
-  }
-  const price = TIERS[tier];
-  const description = `מנוי דובל — עד ${tier} קלפים`;
-
   try {
-    const token = await getMorningToken();
+    const body = await req.json().catch(() => ({}));
+    const tier = Number((body as Record<string, unknown>).tier);
+    const url = PAYMENT_LINKS[tier];
 
-    const payload: Record<string, unknown> = {
-      type: 320,
-      lang: "he",
-      currency: "ILS",
-      vatType: 0,
-      amount: price,
-      client: { name: email ?? "לקוח", emails: email ? [email] : [], add: true },
-      income: [{ description, quantity: 1, price, currency: "ILS", vatType: 0 }],
-      remarks: `dobble tier ${tier}`,
-      successUrl: `${SUCCESS_URL}&tier=${tier}`,
-      failureUrl: FAILURE_URL,
-    };
-
-    const res = await fetch(`${GI_BASE}/payments/form`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json().catch(() => ({}));
-
-    if (!res.ok) {
-      console.error("form error", res.status, JSON.stringify(data));
-      return json({ error: "form_failed", status: res.status, detail: data }, 502);
-    }
-
-    const url = (data as any).url ?? (data as any)?.data?.url ?? (data as any).form ?? null;
     if (!url) {
-      console.error("no url in response", JSON.stringify(data));
-      return json({ error: "no_url", raw: data }, 502);
+      return json({
+        error: "המדרגה שנבחרה אינה זמינה. רעננו את הדף (Ctrl+F5) ונסו שוב.",
+        validTiers: Object.keys(PAYMENT_LINKS),
+      }, 400);
     }
-    return json({ url, tier, price }, 200);
+
+    // אותו חוזה שהלקוח הישן מצפה לו: {url, tier, price} — והוא עושה location.href = url
+    return json({ url, tier, price: TIER_PRICES[tier], fixedLink: true });
   } catch (e) {
-    console.error("create-payment error:", e);
-    return json({ error: "server_error", detail: String(e) }, 500);
+    return json({ error: String((e as Error)?.message || e) }, 500);
   }
 });
