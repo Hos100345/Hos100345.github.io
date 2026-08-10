@@ -6188,16 +6188,42 @@ async function cloudDeleteDesign(row){
 }
 
 // סנכרון בכניסה: מעלה עיצובים מקומיים שעדיין לא בענן — כולל התמונות
+// ⚠️ מרוץ שגרם לכפילות עיצובים בענן: בטעינת דף עם סשן שמור, גם getSession().then וגם
+// onAuthStateChange('SIGNED_IN') קוראים ל-syncDesigns. שתי הריצות קראו את רשימת הענן
+// *לפני* שאחת מהן כתבה, שתיהן ראו את אותו עיצוב כחסר, ושתיהן העלו אותו — 3 ירי = 3 עותקים.
+// cloudSaveDesign עושה INSERT רגיל, אין שום דבר שעוצר את זה.
+// ההגנה: קריאות מקבילות מתקפלות לריצה אחת. ריצה עוקבת (אחרי שהראשונה סיימה) בטוחה —
+// היא כבר תראה את העיצוב ברשימת הענן ותדלג עליו.
+let _syncInFlight=null;
 async function syncDesigns(session){
   if(!SB||!session||!session.user)return;
   authSession=session;
+  if(_syncInFlight)return _syncInFlight;          // כבר רץ — לא מתחילים ריצה מקבילה
+  _syncInFlight=_syncDesignsInner(session);
+  try{ await _syncInFlight; } finally { _syncInFlight=null; }
+}
+async function _syncDesignsInner(session){
   const info=document.getElementById('auth-sync');
   try{
     const local=await getDesigns();
     const cloud=await cloudListDesigns();
     const have=new Set(cloud.map(c=>c.name));
     let uploaded=0;
-    for(const d of local){ if(!have.has(d.name)){ await cloudSaveDesign(d); uploaded++; } }
+    let skipped=0;
+    for(const d of local){
+      if(have.has(d.name))continue;
+      // ⚠️ saveDesign() כותב ל-IDB_DESIGNS שורות "רזות" בלבד (assetsToRows — בלי dataURL,
+      // כדי לא לחרוג ממכסת IndexedDB). cloudSaveDesign מעלה מ-row.dataURL, ולשורות האלה
+      // אין אחד — כך שכל התמונות נכשלות והשורה נשמרת בענן *ריקה*. גרוע יותר: מרגע שקיימת
+      // שורה ריקה בשם הזה, have.has(name) יהיה true לנצח והגיבוי האמיתי לעולם לא יקרה.
+      // עדיף לא ליצור אותה בכלל. (הגיבוי האמיתי מגיע מ-saveDesign עצמו ומ-cloudAutosave,
+      // ששניהם משתמשים ב-assetsToRowsWithImages ולכן כן נושאים תמונות.)
+      if(!(d.rows||[]).some(r=>r&&r.dataURL)){skipped++;continue;}
+      await cloudSaveDesign(d);
+      have.add(d.name);                            // גם מונע כפילות אם getDesigns החזיר שם פעמיים
+      uploaded++;
+    }
+    if(skipped)console.info(`syncDesigns: דילג על ${skipped} עיצובים מקומיים ללא תמונות (lean)`);
     const total=cloud.length+uploaded;
     if(info){info.style.color='#166534';info.innerHTML=`☁️ ${total} עיצובים בחשבון${uploaded?` (הועלו ${uploaded} כולל תמונות)`:''}`;}
     renderDesigns();
