@@ -1038,15 +1038,26 @@ function dcfgSave(patch){
           <div class="sb-t">גודל סמלים</div>
           <div class="sl-row">
             <div class="sl-lbl"><span>מינימום</span><strong id="lbl-mn">70%</strong></div>
-            <input type="range" id="sl-mn" min="50" max="100" value="70" step="5">
+            <input type="range" id="sl-mn" min="20" max="160" value="70" step="5">
           </div>
           <div class="sl-row">
             <div class="sl-lbl"><span>מקסימום</span><strong id="lbl-mx">130%</strong></div>
-            <input type="range" id="sl-mx" min="100" max="150" value="130" step="5">
+            <input type="range" id="sl-mx" min="40" max="300" value="130" step="5">
           </div>
           <div class="sl-row">
-            <div class="sl-lbl"><span>חפיפה</span><strong id="lbl-ov">0%</strong></div>
-            <input type="range" id="sl-ov" min="0" max="100" value="0" step="5">
+            <div class="sl-lbl"><span>חפיפה / מרווח</span><strong id="lbl-ov">צמוד</strong></div>
+            <input type="range" id="sl-ov" min="-100" max="100" value="0" step="5">
+          </div>
+          <label class="tool-row" style="gap:.45rem;cursor:pointer;margin-top:.4rem">
+            <input type="checkbox" id="ck-tight" checked style="width:16px;height:16px;accent-color:var(--indigo)">
+            <span style="font-size:.83rem;font-weight:700;color:var(--indigo)">🧩 חפיפה לפי צורת הסמל</span>
+          </label>
+          <label class="tool-row" style="gap:.45rem;cursor:pointer;margin-top:.25rem">
+            <input type="checkbox" id="ck-tightfill" style="width:16px;height:16px;accent-color:var(--indigo)">
+            <span style="font-size:.83rem;font-weight:700;color:var(--indigo)">📐 מילוי מיטבי של הקלף</span>
+          </label>
+          <div style="font-size:.75rem;color:var(--muted);line-height:1.5;margin-top:.3rem">
+            אפס = הסמלים נוגעים בדיוק · ימינה = נכנסים זה בזה · שמאלה = מתרחקים זה מזה
           </div>
         </div>
         <div class="sb-sec">
@@ -1081,12 +1092,12 @@ function dcfgSave(patch){
         <div class="og">
           <div class="og-t">גודל קלף</div>
           <div class="sl-lbl"><span>קוטר</span><strong id="lbl-card-size">85mm</strong></div>
-          <input type="range" id="sl-card-size" min="40" max="170" value="85" step="1">
+          <input type="range" id="sl-card-size" min="20" max="195" value="85" step="1">
         </div>
         <div class="og">
           <div class="og-t">מרווח בין קלפים</div>
           <div class="sl-lbl"><span>0 = צפיפות מקסימלית (Hex)</span><strong id="lbl-spacing">5mm</strong></div>
-          <input type="range" id="sl-spacing" min="0" max="20" value="5" step="1">
+          <input type="range" id="sl-spacing" min="0" max="40" value="5" step="1">
         </div>
         <div class="og">
           <div class="og-t">נקודת מוצא</div>
@@ -1114,11 +1125,11 @@ function dcfgSave(patch){
               <div class="dp-sec">
                 <div class="dp-sec-hd">מסגרת</div>
                 <div class="sl-lbl"><span>רוחב מסגרת</span><strong id="lbl-fw">3מ"מ</strong></div>
-                <input type="range" id="sl-fw" min="0" max="15" step="0.5" value="3">
+                <input type="range" id="sl-fw" min="0" max="25" step="0.5" value="3">
                 <div class="sl-lbl"><span>עוצמת פיגמנט</span><strong id="lbl-fop">100%</strong></div>
                 <input type="range" id="sl-fop" min="0" max="100" step="1" value="100">
                 <div class="sl-lbl"><span>מרווח סמלים ← מסגרת</span><strong id="lbl-sympad">2מ"מ</strong></div>
-                <input type="range" id="sl-sympad" min="0" max="20" step="0.5" value="2">
+                <input type="range" id="sl-sympad" min="0" max="35" step="0.5" value="2">
                 <div class="swatch-row" id="sw-frame"></div>
                 <label class="cp-row"><span>צבע חופשי</span><input type="color" id="pick-frame" value="#4338CA"></label>
               </div>
@@ -1266,7 +1277,7 @@ function dcfgSave(patch){
         </label>
         <div id="rmbg-tol-row" hidden style="display:flex;align-items:center;gap:.4rem;padding-right:.2rem">
           <span style="font-size:.75rem;color:#6b7280;white-space:nowrap">רגישות:</span>
-          <input type="range" id="rng-rmbg-tol" min="5" max="80" value="35" style="flex:1;min-width:70px;accent-color:var(--indigo)">
+          <input type="range" id="rng-rmbg-tol" min="2" max="140" value="35" style="flex:1;min-width:70px;accent-color:var(--indigo)">
           <span id="rmbg-tol-val" style="font-size:.78rem;color:var(--indigo);font-weight:700;width:2em;text-align:left">35</span>
         </div>
       </div>
@@ -1281,6 +1292,55 @@ function dcfgSave(patch){
     <div class="brow" style="justify-content:flex-end;margin-top:.65rem">
       <button class="btn btn-ghost" id="btn-crop-cancel">ביטול</button>
       <button class="btn btn-ok" id="btn-crop-add" disabled>✅ הוסף למאגר</button>
+    </div>
+  </div>
+</div>
+
+<!-- CUTOUT MODAL — הסרת רקע חכמה -->
+<div class="modal-bg" id="cutout-modal" hidden style="z-index:10003">
+  <div class="modal-card" style="max-width:640px;width:96%">
+    <div class="modal-hdr">
+      <div class="modal-title">🪄 הסרת רקע חכמה</div>
+      <button class="modal-x" id="cutout-x">✕</button>
+    </div>
+
+    <div style="font-size:.82rem;color:var(--muted);line-height:1.6;margin-bottom:.5rem">
+      צבעו בירוק על מה שרוצים <b>לשמור</b>, ובאדום על ה<b>רקע</b>. מספיקים קווים גסים — אפשר לתקן שוב ושוב.
+    </div>
+
+    <div class="tool-row" style="gap:.4rem;flex-wrap:wrap;margin-bottom:.5rem">
+      <div class="shape-grp" id="cut-brush-grp">
+        <button class="sbt on" data-b="fg">✅ לשמור</button>
+        <button class="sbt"    data-b="bg">❌ רקע</button>
+        <button class="sbt"    data-b="er">🧽 מחק סימון</button>
+      </div>
+    </div>
+
+    <div class="sl-row">
+      <div class="sl-lbl"><span>גודל מברשת</span><strong id="lbl-cut-brush">28</strong></div>
+      <input type="range" id="sl-cut-brush" min="8" max="70" step="2" value="28">
+    </div>
+    <div class="sl-row">
+      <div class="sl-lbl"><span>עדינות הגזירה</span><strong id="lbl-cut-fine">50</strong></div>
+      <input type="range" id="sl-cut-fine" min="0" max="100" step="5" value="50">
+    </div>
+
+    <div class="canvas-wrap" id="cutout-wrap" style="position:relative;touch-action:none">
+      <canvas id="cutout-canvas" style="max-width:100%;touch-action:none"></canvas>
+      <div id="cutout-busy" hidden style="position:absolute;inset:0;display:flex;align-items:center;
+        justify-content:center;background:rgba(255,255,255,.55);font-weight:700;color:var(--indigo)">מחשב…</div>
+    </div>
+
+    <div class="brow" style="justify-content:space-between;margin-top:.6rem;flex-wrap:wrap;gap:.4rem">
+      <div style="display:flex;gap:.4rem">
+        <button class="btn btn-ghost" id="btn-cut-undo">↩︎ בטל</button>
+        <button class="btn btn-ghost" id="btn-cut-reset">🔄 אפס</button>
+        <button class="btn btn-ghost" id="btn-cut-peek">👁 תוצאה</button>
+      </div>
+      <div style="display:flex;gap:.4rem">
+        <button class="btn btn-ghost" id="btn-cut-cancel">ביטול</button>
+        <button class="btn btn-ok"    id="btn-cut-ok">✅ אישור</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1525,9 +1585,19 @@ function buildLayouts(deck,seed,sMin,sMax){
 }
 
 // ══ SYMBOL POSITIONS ══
-// S.overlap (0–100, מהסליידר "חפיפה"): מקרב את הסמלים זה לזה בלי לשנות את גודלם —
-// ככל שגדל, כך קטן המרחק בין הסמלים ונוצרת חפיפה ויזואלית.
-function overlapFactor(){ return 1-(S.overlap||0)/100*.35; }
+// S.overlap (-100..100, מהסליידר "חפיפה / מרווח"): >0 מקרב סמלים (חפיפה), <0 מרחיק (מרווח).
+// טווח אסימטרי בכוונה: הסידור הישן (tightPack כבוי) בנוי סביב טבעות קבועות ולא יכול לספוג
+// התרחקות גדולה בלי לחרוג מגבול הקלף. כש-tightPack פעיל, זו רק נקודת פתיחה — contactFactor() קובע בפועל.
+function overlapFactor(){
+  const ov=S.overlap||0;
+  return ov>=0 ? 1-(ov/100)*.35 : 1+(-ov/100)*.20;
+}
+// מקדם המגע להרפיה מודעת-צורה (relaxSymbolPositions): חיובי=חפיפה (מתקרבים,k קטן),
+// אפס=מגע מדויק (k=1), שלילי=מרווח (מתרחקים,k גדול).
+function contactFactor(){
+  const ov=S.overlap||0;
+  return ov>=0 ? 1-(ov/100)*0.85 : 1+(-ov/100)*0.60;
+}
 
 function symPos(n,cx,cy,r){
   if(S.layoutMode==='peripheral') return symPosPeriph(n,cx,cy,r);
@@ -1556,6 +1626,111 @@ function symPosPeriph(n,cx,cy,r){
   const P=[],ringR=r*rr*overlapFactor(),hsz=r*hs;
   for(let i=0;i<n;i++){const a=i*2*Math.PI/n-Math.PI/2;P.push({x:cx+ringR*Math.cos(a),y:cy+ringR*Math.sin(a),hs:hsz});}
   return P;
+}
+
+// ══ SHAPE-AWARE PACKING (tightPack) ══
+const CIRCLE_META={hasAlpha:false,radial:CIRCLE_RADIAL()};
+
+// מרחק המגע הנדרש בין שני סמלים בזווית נתונה, לפי הפרופיל הרדיאלי שלהם.
+function reachAt(meta,rotation,angle,half){
+  const bins=64;
+  let a=angle-rotation;                       // לזווית העולם מחסירים את סיבוב הסמל
+  a=((a%(Math.PI*2))+Math.PI*2)%(Math.PI*2);
+  const idx=Math.round(a/(Math.PI*2)*bins)%bins;
+  return meta.radial[idx]*half;
+}
+
+// הרפיה איטרטיבית: מתחילים מהמיקומים הקיימים של symPos() ודוחפים סמלים
+// עד שאף זוג לא חורג ממרחק המגע הנדרש. דטרמיניסטי לחלוטין — אין רנדום —
+// כדי שהתצוגה המקדימה וה-PDF יהיו זהים בדיוק. משנה pos במקום (x,y,hs).
+function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
+  const n=pos.length;
+  if(!n)return;
+  const metas=layout.syms.map(si=>{const img=imgs[si];return (img&&img.__symMeta)||CIRCLE_META;});
+  const rots=layout.tr.map(t=>t.ro);
+  const halves=pos.map((p,i)=>p.hs*layout.tr[i].sc);
+  const origX=pos.map(p=>p.x),origY=pos.map(p=>p.y);
+
+  function runPass(k){
+    const P=origX.map((x,i)=>({x,y:origY[i]}));
+    for(let it=0;it<80;it++){
+      for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){
+        let dx=P[j].x-P[i].x,dy=P[j].y-P[i].y,d=Math.hypot(dx,dy),ang;
+        if(d<1e-6){ang=i*2.4;dx=Math.cos(ang);dy=Math.sin(ang);d=0.01;}
+        else ang=Math.atan2(dy,dx);
+        const need=(reachAt(metas[i],rots[i],ang+Math.PI,halves[i])+reachAt(metas[j],rots[j],ang,halves[j]))*k;
+        if(d<need){
+          const push=(need-d)/2*0.6,ux=dx/d,uy=dy/d;
+          P[i].x-=ux*push;P[i].y-=uy*push;
+          P[j].x+=ux*push;P[j].y+=uy*push;
+        }
+      }
+      for(let i=0;i<n;i++){
+        const dx=P[i].x-cx,dy=P[i].y-cy,dist=Math.hypot(dx,dy);
+        if(dist<1e-6)continue;
+        const angOut=Math.atan2(dy,dx);
+        const reach=reachAt(metas[i],rots[i],angOut,halves[i]);
+        if(dist+reach>rSym){
+          const over=dist+reach-rSym,ux=dx/dist,uy=dy/dist;
+          P[i].x-=ux*over;P[i].y-=uy*over;
+        }
+      }
+    }
+    let maxViol=0;
+    for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){
+      const dx=P[j].x-P[i].x,dy=P[j].y-P[i].y,d=Math.hypot(dx,dy)||0.0001;
+      const ang=Math.atan2(dy,dx);
+      const need=(reachAt(metas[i],rots[i],ang+Math.PI,halves[i])+reachAt(metas[j],rots[j],ang,halves[j]))*k;
+      if(need-d>maxViol)maxViol=need-d;
+    }
+    for(let i=0;i<n;i++){
+      const dx=P[i].x-cx,dy=P[i].y-cy,dist=Math.hypot(dx,dy);
+      const angOut=dist<1e-6?0:Math.atan2(dy,dx);
+      const over=dist+reachAt(metas[i],rots[i],angOut,halves[i])-rSym;
+      if(over>maxViol)maxViol=over;
+    }
+    return{P,maxViol};
+  }
+
+  // נסיגה אוטומטית: אם k הנוכחי לא ניתן לסיפוק פיזית (בעיקר במרווח גדול), מקטינים
+  // אותו בהדרגה ומקבלים את הניסיון הכי טוב — עד 6 ניסיונות נוספים.
+  let k=contactFactor();
+  let best=runPass(k);
+  const tol=rSym*0.015;
+  for(let attempt=0;attempt<6&&best.maxViol>tol;attempt++){
+    k*=0.92;
+    const r=runPass(k);
+    if(r.maxViol<best.maxViol)best=r;
+  }
+
+  // בודק אם גורם גדילה גלובלי g (מכפיל את כל ה-half-ים) עדיין חוקי בעמדות שהתקבלו
+  function fits(g){
+    for(let i=0;i<n;i++){
+      const dx=best.P[i].x-cx,dy=best.P[i].y-cy,dist=Math.hypot(dx,dy);
+      const angOut=dist<1e-6?0:Math.atan2(dy,dx);
+      if(dist+reachAt(metas[i],rots[i],angOut,halves[i])*g>rSym*1.001)return false;
+    }
+    for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){
+      const dx=best.P[j].x-best.P[i].x,dy=best.P[j].y-best.P[i].y,d=Math.hypot(dx,dy)||0.0001;
+      const ang=Math.atan2(dy,dx);
+      const need=(reachAt(metas[i],rots[i],ang+Math.PI,halves[i])+reachAt(metas[j],rots[j],ang,halves[j]))*g*k;
+      if(d<need*0.999)return false;
+    }
+    return true;
+  }
+  // g<1: הגנה כללית מפני חריגה מחוץ לקלף בגדלים קיצוניים (תמיד פעיל).
+  // g>1: "מילוי מיטבי" — רק כשמסומן וכשאין מרווח שלילי (הם סותרים זה את זה).
+  let g=1;
+  if(!fits(1)){
+    let lo=0.45,hi=1;
+    for(let s=0;s<8;s++){const mid=(lo+hi)/2;if(fits(mid))lo=mid;else hi=mid;}
+    g=lo;
+  }else if(S.tightFill&&(S.overlap||0)>=0){
+    let lo=1,hi=1.5;
+    for(let s=0;s<8;s++){const mid=(lo+hi)/2;if(fits(mid))lo=mid;else hi=mid;}
+    g=lo;
+  }
+  for(let i=0;i<n;i++){pos[i].x=best.P[i].x;pos[i].y=best.P[i].y;pos[i].hs=pos[i].hs*g;}
 }
 
 // ══ DRAW CARD ══
@@ -1597,6 +1772,7 @@ function drawCard(canvas,layout,imgs,shape,hitIdx){
 
   const rSym=Math.max(r*.45,r-fw-S.symPad*ppMm);
   const pos=symPos(layout.syms.length,cx,cy,rSym);
+  if(S.tightPack)relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym);
   for(let i=0;i<layout.syms.length;i++){
     const si=layout.syms[i],pp=pos[i],t=layout.tr[i],img=imgs[si];
     if(!img)continue;
@@ -1607,7 +1783,11 @@ function drawCard(canvas,layout,imgs,shape,hitIdx){
       ctx.beginPath();ctx.arc(0,0,pp.hs*t.sc*1.35,0,Math.PI*2);
       ctx.fillStyle='rgba(253,224,71,.28)';ctx.fill();ctx.shadowBlur=0;
     }
-    if(S.symShape==='square')drawCover(ctx,img,-ds/2,-ds/2,ds);
+    const meta=img.__symMeta;
+    if(meta&&meta.hasAlpha){
+      // סמל עם שקיפות: הקנבס כבר גזור וממורכז לצורתו האמיתית (trimAlphaSquare) — אין חיתוך צורה
+      ctx.drawImage(img,-ds/2,-ds/2,ds,ds);
+    }else if(S.symShape==='square')drawCover(ctx,img,-ds/2,-ds/2,ds);
     else{ctx.save();ctx.beginPath();ctx.arc(0,0,ds/2,0,Math.PI*2);ctx.clip();drawCover(ctx,img,-ds/2,-ds/2,ds);ctx.restore();}
     ctx.restore();
   }
@@ -1634,6 +1814,7 @@ const S={
   assets:[],
   order:null,deck:[],layouts:[],imgEls:[],canvases:[],
   shape:'circle',symShape:'circle',sMin:.70,sMax:1.30,seed:1,layoutMode:'scatter',overlap:0,
+  tightPack:true,tightFill:false,   // חפיפה לפי צורת הסמל / מילוי מיטבי של הקלף
   sel:[],
   cardSizeMm:85,spacingMm:5,startPos:'center',
   crop:true,isSilhouette:false,
@@ -1649,6 +1830,20 @@ const CM={
   dispW:1,dispH:1,idSeq:0,
   selId:null,editMode:null,editHandle:null,editOrig:null,
 };
+
+// מצב מודל החיתוך החכם. חי רק כל עוד המודל פתוח; המסכה הסופית נשמרת על אובייקט ה-crop.
+const CUT={
+  cropId:null, work:null, W:0, H:0,      // קנבס עבודה מוקטן + מידותיו
+  rgb:null,                               // Uint8ClampedArray של תמונת העבודה
+  sFG:null, sBG:null,                     // Uint8Array סימוני משתמש
+  mask:null,                              // Uint8Array תוצאה (1=אובייקט)
+  brush:'fg', brushPx:28, fine:50,
+  drawing:false, lastX:0, lastY:0,
+  history:[],                             // ערימת snapshots של {sFG,sBG} — עד 12
+  peek:false, dispScale:1, busy:false, timer:0
+};
+const CUT_WORK_MAX=320;   // מימד מקסימלי לחישוב — איזון בין דיוק למהירות בנייד
+const CUT_HIST_MAX=12;
 
 // ══ NAV ══
 function goScr(n){
@@ -2072,13 +2267,31 @@ document.getElementById('layout-mode-grp').addEventListener('click',e=>{
 // ══ SLIDERS ══
 const slMn=document.getElementById('sl-mn'),slMx=document.getElementById('sl-mx');
 const lblMn=document.getElementById('lbl-mn'),lblMx=document.getElementById('lbl-mx');
-slMn.addEventListener('input',()=>{S.sMin=+slMn.value/100;lblMn.textContent=slMn.value+'%';});
-slMx.addEventListener('input',()=>{S.sMax=+slMx.value/100;lblMx.textContent=slMx.value+'%';});
+// המינימום לעולם לא עובר את המקסימום ולהפך — דוחפים את השני במקום לחסום את המשתמש
+slMn.addEventListener('input',()=>{
+  if(+slMn.value>+slMx.value){slMx.value=slMn.value;S.sMax=+slMx.value/100;lblMx.textContent=slMx.value+'%';}
+  S.sMin=+slMn.value/100;lblMn.textContent=slMn.value+'%';
+});
+slMx.addEventListener('input',()=>{
+  if(+slMx.value<+slMn.value){slMn.value=slMx.value;S.sMin=+slMn.value/100;lblMn.textContent=slMn.value+'%';}
+  S.sMax=+slMx.value/100;lblMx.textContent=slMx.value+'%';
+});
 slMn.addEventListener('change',()=>renderAll());
 slMx.addEventListener('change',()=>renderAll());
 
+// חפיפה/מרווח: v>0 חפיפה, v===0 צמוד, v<0 מרווח — תווית דינמית כי "-40%" לא מובן כשלעצמו
+function ovLabel(v){ return v>0?`חפיפה ${v}%`:(v<0?`מרווח ${-v}%`:'צמוד'); }
 const slOv=document.getElementById('sl-ov'),lblOv=document.getElementById('lbl-ov');
-slOv.addEventListener('input',()=>{S.overlap=+slOv.value;lblOv.textContent=slOv.value+'%';redrawCards();});
+const ckTight=document.getElementById('ck-tight'),ckTightFill=document.getElementById('ck-tightfill');
+slOv.addEventListener('input',()=>{
+  S.overlap=+slOv.value;lblOv.textContent=ovLabel(S.overlap);
+  // מרווח ו"מילוי מיטבי" סותרים זה את זה
+  ckTightFill.disabled=S.overlap<0;
+  if(S.overlap<0)ckTightFill.checked=false,S.tightFill=false;
+  redrawCards();
+});
+ckTight.addEventListener('change',()=>{S.tightPack=ckTight.checked;redrawCards();});
+ckTightFill.addEventListener('change',()=>{S.tightFill=ckTightFill.checked;redrawCards();});
 
 // ══ GENERATE ══
 document.getElementById('btn-create').addEventListener('click',generate);
@@ -2095,6 +2308,7 @@ async function generate(){
   S.layouts=buildLayouts(S.deck,S.seed,S.sMin,S.sMax);
   setp(15,'מכין תמונות…');
   S.imgEls=S.assets.filter(a=>!a.isCropSource&&a.selected!==false).slice(0,S.order.total).map(a=>a.imgEl);
+  prepareSymbolMeta();
   setp(35,'מצייר קלפים…');
   S.canvases=[];S.sel=[];
   const grid=document.getElementById('cgrid');
@@ -2315,6 +2529,12 @@ function updatePaperPrev(){
       cx.stroke();
     }
     cx.setLineDash([]);
+  }
+  // אזהרה במקום דף ריק — הקלף גדול מכדי להיכנס לדף A4 בהגדרות הנוכחיות
+  if(perPage===0){
+    document.getElementById('prev-info').innerHTML=
+      '<span style="color:#b91c1c;font-weight:700">⚠️ הקלף גדול מדי לדף A4 בהגדרות האלה — הקטן/י את גודל הקלף או את המרווח</span>';
+    return;
   }
   const spacingLabel=S.spacingMm===0?'hex':S.spacingMm+'mm';
   document.getElementById('prev-info').textContent=
@@ -2678,6 +2898,84 @@ function canvasHasAlpha(cv){
 }
 function dataURLMime(u){const m=/^data:([^;]+)/.exec(u||'');return m?m[1]:'image/jpeg';}
 
+// גוזרת קנבס לגבולות הפיקסלים הלא-שקופים ומרכזת אותו בריבוע SZ, בשמירת יחס.
+// ⚠️ "contain" ולא "cover" — כאן אסור לחתוך את האייקון. אין מתיחה, כך שאין עיוות.
+function trimAlphaSquare(cv,SZ,padPct){
+  padPct=padPct==null?0.02:padPct;
+  const W=cv.width,H=cv.height;
+  let minX=W,minY=H,maxX=-1,maxY=-1;
+  try{
+    const{data}=cv.getContext('2d').getImageData(0,0,W,H);
+    for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+      if(data[(y*W+x)*4+3]>10){
+        if(x<minX)minX=x;if(x>maxX)maxX=x;
+        if(y<minY)minY=y;if(y>maxY)maxY=y;
+      }
+    }
+  }catch(e){return cv;}                 // canvas tainted — הגנה, מחזירים כמו שהוא
+  if(maxX<minX||maxY<minY)return cv;    // מסכה ריקה — הגנה, מחזירים כמו שהוא
+  const bw=maxX-minX+1,bh=maxY-minY+1;
+  const content=Math.max(bw,bh);
+  const pad=SZ*padPct;
+  const scale=(SZ-2*pad)/content;
+  const dw=bw*scale,dh=bh*scale,dx=(SZ-dw)/2,dy=(SZ-dh)/2;
+  const out=document.createElement('canvas');out.width=out.height=SZ;
+  const ctx=out.getContext('2d');
+  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+  ctx.drawImage(cv,minX,minY,bw,bh,dx,dy,dw,dh);
+  return out;
+}
+
+// פרופיל רדיאלי לצורת הסמל: לכל אחת מ-64 זוויות, הרדיוס המקסימלי של פיקסל אטום,
+// מנורמל ל-[0..1] יחסית לחצי-הצלע. עיגול מלא / תמונה אטומה = כל הערכים 1.
+// נשמר cache על אלמנט הקנבס עצמו (cv.__symMeta) — נגזר, לא נכנס ל-S ולא נשמר לדיסק.
+function symbolShapeMeta(cv){
+  if(cv.__symMeta)return cv.__symMeta;
+  const N=64,bins=64;
+  let data;
+  try{
+    const tmp=document.createElement('canvas');tmp.width=tmp.height=N;
+    const tctx=tmp.getContext('2d');
+    tctx.drawImage(cv,0,0,N,N);
+    data=tctx.getImageData(0,0,N,N).data;
+  }catch(e){
+    const meta={hasAlpha:false,radial:CIRCLE_RADIAL()};
+    cv.__symMeta=meta;return meta;
+  }
+  let hasAlpha=false;
+  for(let i=3;i<data.length;i+=4){if(data[i]<250){hasAlpha=true;break;}}
+  let radial;
+  if(!hasAlpha){
+    radial=CIRCLE_RADIAL();
+  }else{
+    const raw=new Float32Array(bins);
+    const cx=N/2,cy=N/2,half=N/2;
+    for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+      const idx=(y*N+x)*4;
+      if(data[idx+3]<=10)continue;
+      const ddx=x+0.5-cx,ddy=y+0.5-cy;
+      const dist=Math.hypot(ddx,ddy)/half;
+      let ang=Math.atan2(ddy,ddx);if(ang<0)ang+=Math.PI*2;
+      const bin=Math.round(ang/(Math.PI*2)*bins)%bins;
+      if(dist>raw[bin])raw[bin]=dist;
+    }
+    radial=new Float32Array(bins);
+    for(let i=0;i<bins;i++){
+      const a=raw[(i-1+bins)%bins],b=raw[i],c=raw[(i+1)%bins];
+      radial[i]=Math.min(1,Math.max((a+b+c)/3,0.15));
+    }
+  }
+  const meta={hasAlpha,radial};
+  cv.__symMeta=meta;
+  return meta;
+}
+function CIRCLE_RADIAL(){const a=new Float32Array(64);a.fill(1);return a;}
+
+// מחשבת מטא-דאטה של צורה לכל סמל בחפיסה — פעם אחת אחרי בניית S.imgEls, לפני ציור הקלפים
+function prepareSymbolMeta(){
+  S.imgEls.forEach(img=>{if(img)symbolShapeMeta(img);});
+}
+
 function openCropModal(assetId){
   const asset=S.assets.find(a=>a.id===assetId);
   if(!asset||asset.type!=='image')return;
@@ -2896,9 +3194,18 @@ function removeBackground(cv,tolerance){
 
 function getRmbgTol(){return parseInt(document.getElementById('rng-rmbg-tol')?.value||35);}
 
-function cropExtractThumb(srcImg,crop){
-  const SZ=72;
+// לוגיקה משותפת לחילוץ סמל מ-crop — cropExtractThumb (72px) ו-cropExtractFull (IMG_PX) קוראים לה,
+// כדי שהתמונה הממוזערת תהיה זהה לתוצאה הסופית. useMask (חיתוך חכם) גובר על "הסר רקע" המהיר.
+function cropRender(srcImg,crop,SZ){
   const scX=imgNatW(srcImg)/CM.dispW,scY=imgNatH(srcImg)/CM.dispH;
+  if(crop.useMask&&crop.mask){
+    const cv=document.createElement('canvas');cv.width=cv.height=SZ;
+    const ctx=cv.getContext('2d');ctx.clearRect(0,0,SZ,SZ);
+    ctx.drawImage(srcImg,crop.x*scX,crop.y*scY,crop.w*scX,crop.h*scY,0,0,SZ,SZ);
+    cutApplyMaskFull(cv,crop.mask,crop.mw,crop.mh);
+    if(typeof trimAlphaSquare==='function')return trimAlphaSquare(cv,SZ,0.02);
+    return cv;
+  }
   const rmBg=document.getElementById('ck-rmbg').checked;
   if(rmBg){
     const tmp=document.createElement('canvas');tmp.width=tmp.height=SZ;
@@ -2915,26 +3222,8 @@ function cropExtractThumb(srcImg,crop){
   ctx.drawImage(srcImg,crop.x*scX,crop.y*scY,crop.w*scX,crop.h*scY,0,0,SZ,SZ);
   return cv;
 }
-
-function cropExtractFull(srcImg,crop){
-  const SZ=IMG_PX;
-  const scX=imgNatW(srcImg)/CM.dispW,scY=imgNatH(srcImg)/CM.dispH;
-  const rmBg=document.getElementById('ck-rmbg').checked;
-  if(rmBg){
-    const tmp=document.createElement('canvas');tmp.width=tmp.height=SZ;
-    tmp.getContext('2d').drawImage(srcImg,crop.x*scX,crop.y*scY,crop.w*scX,crop.h*scY,0,0,SZ,SZ);
-    removeBackground(tmp,getRmbgTol());
-    const cv=document.createElement('canvas');cv.width=cv.height=SZ;
-    const ctx=cv.getContext('2d');ctx.clearRect(0,0,SZ,SZ);
-    _clipShape(ctx,SZ,crop.shape);ctx.drawImage(tmp,0,0);
-    return cv;
-  }
-  const cv=document.createElement('canvas');cv.width=cv.height=SZ;
-  const ctx=cv.getContext('2d');ctx.clearRect(0,0,SZ,SZ);
-  _clipShape(ctx,SZ,crop.shape);
-  ctx.drawImage(srcImg,crop.x*scX,crop.y*scY,crop.w*scX,crop.h*scY,0,0,SZ,SZ);
-  return cv;
-}
+function cropExtractThumb(srcImg,crop){return cropRender(srcImg,crop,72);}
+function cropExtractFull(srcImg,crop){return cropRender(srcImg,crop,IMG_PX);}
 
 function renderModalCrops(){
   const strip=document.getElementById('modal-crops-strip');
@@ -2953,6 +3242,12 @@ function renderModalCrops(){
     const del=document.createElement('button');del.className='crop-del';del.textContent='×';
     del.addEventListener('click',()=>{CM.crops=CM.crops.filter(x=>x.id!==c.id);renderModalCrops();redrawCropCanvas();updateCropAddBtn();});
     wrap.appendChild(del);
+    const cut=document.createElement('button');
+    cut.className='crop-del';cut.textContent='✂︎';
+    cut.title='חיתוך חכם';
+    cut.style.cssText='top:auto;bottom:-5px;inset-inline-start:auto;inset-inline-end:-5px;background:'+(c.useMask?'#16a34a':'#4338CA');
+    cut.addEventListener('click',e=>{e.stopPropagation();openCutoutModal(c.id);});
+    wrap.appendChild(cut);
     strip.appendChild(wrap);
   });
   countEl.textContent=`${CM.crops.length} סמלים נבחרו`;
@@ -2966,7 +3261,405 @@ function closeCropModal(){
   document.getElementById('crop-modal').hidden=true;
   CM.srcImg=null;CM.crops=[];CM.dragging=false;CM.assetId=null;
   CM.selId=null;CM.editMode=null;CM.editHandle=null;CM.editOrig=null;
+  cutReleaseMemory();
 }
+
+// ══════════════════════════════════════════════════════════════════
+// ══ SMART CUTOUT — FG/BG brushes → geodesic distance + color model ══
+// ══════════════════════════════════════════════════════════════════
+
+function cutReleaseMemory(){
+  CUT.cropId=null;CUT.work=null;CUT.rgb=null;CUT.sFG=null;CUT.sBG=null;CUT.mask=null;
+  CUT.history=[];CUT.peek=false;CUT.drawing=false;
+}
+
+function openCutoutModal(cropId){
+  const c=CM.crops.find(x=>x.id===cropId);
+  if(!c||!CM.srcImg)return;
+  CUT.cropId=cropId;CUT.history=[];CUT.peek=false;CUT.brush='fg';CUT.busy=false;
+  document.querySelectorAll('#cut-brush-grp .sbt').forEach((b,i)=>b.classList.toggle('on',i===0));
+
+  // קנבס עבודה מוקטן — ריבועי, מוגבל ל-CUT_WORK_MAX בצד הארוך
+  const W=Math.min(CUT_WORK_MAX,Math.max(64,Math.round(c.w)));
+  CUT.W=W;CUT.H=W;
+  const work=document.createElement('canvas');work.width=W;work.height=W;
+  const wctx=work.getContext('2d');
+  const scX=imgNatW(CM.srcImg)/CM.dispW,scY=imgNatH(CM.srcImg)/CM.dispH;
+  wctx.drawImage(CM.srcImg,c.x*scX,c.y*scY,c.w*scX,c.h*scY,0,0,W,W);
+  CUT.work=work;
+  CUT.rgb=wctx.getImageData(0,0,W,W).data;
+
+  const n=W*W;
+  if(c.useMask&&c.sFG&&c.sBG&&c.sFG.length===n){
+    // ממשיכים לערוך סימונים קיימים מהמפגש הקודם
+    CUT.sFG=c.sFG.slice();CUT.sBG=c.sBG.slice();
+  }else{
+    CUT.sFG=new Uint8Array(n);CUT.sBG=new Uint8Array(n);
+    cutSeedDefaults();
+  }
+  CUT.mask=c.mask&&c.mask.length===n?c.mask.slice():new Uint8Array(n);
+
+  const modal=document.getElementById('cutout-modal');
+  modal.hidden=false;
+  cutSetupCanvas();
+  cutComputeMask();
+}
+
+// זרעים אוטומטיים: מסגרת=רקע, מלבן מרכזי 25%=אובייקט — נקודת פתיחה סבירה שהמשתמש מתקן
+function cutSeedDefaults(){
+  const W=CUT.W,H=CUT.H;
+  for(let x=0;x<W;x++){
+    for(let t=0;t<3;t++){CUT.sBG[t*W+x]=1;CUT.sBG[(H-1-t)*W+x]=1;}
+  }
+  for(let y=0;y<H;y++){
+    for(let t=0;t<3;t++){CUT.sBG[y*W+t]=1;CUT.sBG[y*W+(W-1-t)]=1;}
+  }
+  const mx0=Math.round(W*0.375),mx1=Math.round(W*0.625);
+  const my0=Math.round(H*0.375),my1=Math.round(H*0.625);
+  for(let y=my0;y<my1;y++)for(let x=mx0;x<mx1;x++)CUT.sFG[y*W+x]=1;
+}
+
+function cutSetupCanvas(){
+  const wrap=document.getElementById('cutout-wrap');
+  const oldCv=document.getElementById('cutout-canvas');
+  const cv=oldCv.cloneNode(false);
+  oldCv.replaceWith(cv);
+  const maxW=Math.min(wrap.clientWidth||520,520);
+  CUT.dispScale=maxW/CUT.W;
+  cv.width=Math.round(CUT.W*CUT.dispScale);
+  cv.height=Math.round(CUT.H*CUT.dispScale);
+  cv.style.maxWidth='100%';cv.style.cursor='crosshair';cv.style.touchAction='none';
+  cutRedraw();
+  cv.addEventListener('mousedown',e=>cutPointerDown(e.offsetX,e.offsetY));
+  cv.addEventListener('mousemove',e=>cutPointerMove(e.offsetX,e.offsetY));
+  window.addEventListener('mouseup',cutPointerUp);
+  cv.addEventListener('touchstart',e=>{e.preventDefault();const t=e.touches[0];const r=cv.getBoundingClientRect();cutPointerDown((t.clientX-r.left)*(cv.width/r.width),(t.clientY-r.top)*(cv.height/r.height));},{passive:false});
+  cv.addEventListener('touchmove',e=>{e.preventDefault();const t=e.touches[0];const r=cv.getBoundingClientRect();cutPointerMove((t.clientX-r.left)*(cv.width/r.width),(t.clientY-r.top)*(cv.height/r.height));},{passive:false});
+  cv.addEventListener('touchend',e=>{e.preventDefault();cutPointerUp();},{passive:false});
+}
+
+function cutPointerDown(dx,dy){
+  if(CUT.busy)return;
+  cutPushHistory();
+  CUT.drawing=true;CUT.lastX=dx;CUT.lastY=dy;
+  cutStampBrush(dx,dy);
+  cutRedraw();
+}
+function cutPointerMove(dx,dy){
+  if(!CUT.drawing)return;
+  cutStampLine(CUT.lastX,CUT.lastY,dx,dy);
+  CUT.lastX=dx;CUT.lastY=dy;
+  cutRedraw();
+}
+function cutPointerUp(){
+  if(!CUT.drawing)return;
+  CUT.drawing=false;
+  cutScheduleCompute();
+}
+
+function cutStampLine(x0,y0,x1,y1){
+  const d=Math.hypot(x1-x0,y1-y0);
+  const steps=Math.max(1,Math.ceil(d/2));
+  for(let i=0;i<=steps;i++)cutStampBrush(x0+(x1-x0)*i/steps,y0+(y1-y0)*i/steps);
+}
+function cutStampBrush(dx,dy){
+  const wx=dx/CUT.dispScale,wy=dy/CUT.dispScale;
+  const rr=CUT.brushPx/2/CUT.dispScale;
+  const W=CUT.W,H=CUT.H;
+  const x0=Math.max(0,Math.floor(wx-rr)),x1=Math.min(W-1,Math.ceil(wx+rr));
+  const y0=Math.max(0,Math.floor(wy-rr)),y1=Math.min(H-1,Math.ceil(wy+rr));
+  const rr2=rr*rr;
+  for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){
+    const ddx=x-wx,ddy=y-wy;
+    if(ddx*ddx+ddy*ddy>rr2)continue;
+    const idx=y*W+x;
+    if(CUT.brush==='fg'){CUT.sFG[idx]=1;CUT.sBG[idx]=0;}
+    else if(CUT.brush==='bg'){CUT.sBG[idx]=1;CUT.sFG[idx]=0;}
+    else{CUT.sFG[idx]=0;CUT.sBG[idx]=0;}
+  }
+}
+
+function cutPushHistory(){
+  CUT.history.push({sFG:CUT.sFG.slice(),sBG:CUT.sBG.slice()});
+  if(CUT.history.length>CUT_HIST_MAX)CUT.history.shift();
+}
+function cutUndo(){
+  const snap=CUT.history.pop();
+  if(!snap)return;
+  CUT.sFG=snap.sFG;CUT.sBG=snap.sBG;
+  cutRedraw();cutScheduleCompute();
+}
+function cutReset(){
+  cutPushHistory();
+  const n=CUT.W*CUT.H;
+  CUT.sFG=new Uint8Array(n);CUT.sBG=new Uint8Array(n);
+  cutSeedDefaults();
+  cutRedraw();cutScheduleCompute();
+}
+
+function cutScheduleCompute(){
+  clearTimeout(CUT.timer);
+  document.getElementById('cutout-busy').hidden=false;
+  CUT.timer=setTimeout(()=>{ cutComputeMask(); document.getElementById('cutout-busy').hidden=true; cutRedraw(); },50);
+}
+
+// ── תצוגה: תמונה + שכבת רקע אדומה שקופה + קווי סימון, או "תוצאה" (שחמט) ──
+function cutRedraw(){
+  const cv=document.getElementById('cutout-canvas');
+  if(!cv||!CUT.work)return;
+  const ctx=cv.getContext('2d');
+  const W=CUT.W,H=CUT.H,dw=cv.width,dh=cv.height;
+  ctx.clearRect(0,0,dw,dh);
+  ctx.imageSmoothingEnabled=false;
+
+  if(CUT.peek){
+    const sq=10;
+    for(let y=0;y<dh;y+=sq)for(let x=0;x<dw;x+=sq){
+      ctx.fillStyle=((x/sq+y/sq)%2===0)?'#e5e7eb':'#f9fafb';
+      ctx.fillRect(x,y,sq,sq);
+    }
+    const masked=document.createElement('canvas');masked.width=W;masked.height=H;
+    const mctx=masked.getContext('2d');
+    mctx.drawImage(CUT.work,0,0);
+    const id=mctx.getImageData(0,0,W,H);
+    for(let i=0;i<W*H;i++)id.data[i*4+3]=CUT.mask[i]?id.data[i*4+3]:0;
+    mctx.putImageData(id,0,0);
+    ctx.drawImage(masked,0,0,dw,dh);
+    return;
+  }
+
+  ctx.drawImage(CUT.work,0,0,dw,dh);
+  // שכבת רקע אדומה על מה שהאלגוריתם סיווג כרקע
+  const overlay=document.createElement('canvas');overlay.width=W;overlay.height=H;
+  const octx=overlay.getContext('2d');
+  const oid=octx.createImageData(W,H);
+  for(let i=0;i<W*H;i++){
+    if(!CUT.mask[i]){oid.data[i*4]=220;oid.data[i*4+1]=38;oid.data[i*4+2]=38;oid.data[i*4+3]=115;}
+  }
+  octx.putImageData(oid,0,0);
+  ctx.drawImage(overlay,0,0,dw,dh);
+
+  // קווי הסימון של המשתמש
+  const brushDisp=Math.max(2,CUT.brushPx);
+  ctx.save();
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    const idx=y*W+x;
+    if(CUT.sFG[idx]||CUT.sBG[idx]){
+      ctx.fillStyle=CUT.sFG[idx]?'rgba(34,197,94,.55)':'rgba(239,68,68,.55)';
+      ctx.fillRect(x*CUT.dispScale,y*CUT.dispScale,CUT.dispScale,CUT.dispScale);
+    }
+  }
+  ctx.restore();
+}
+
+// ── האלגוריתם: geodesic distance (chamfer, 3 איטרציות) + מודל צבע היסטוגרמה ──
+function cutComputeMask(){
+  const W=CUT.W,H=CUT.H,n=W*H,rgb=CUT.rgb;
+  const GAMMA=1+(CUT.fine||0)/25;
+
+  function colorDist(i,j){
+    const ii=i*4,jj=j*4;
+    const dr=rgb[ii]-rgb[jj],dg=rgb[ii+1]-rgb[jj+1],db=rgb[ii+2]-rgb[jj+2];
+    return Math.sqrt(dr*dr+dg*dg+db*db);
+  }
+  function w(i,j,diag){
+    const base=1+GAMMA*colorDist(i,j)/32;
+    return diag?base*1.414:base;
+  }
+
+  const dFG=new Float32Array(n).fill(Infinity);
+  const dBG=new Float32Array(n).fill(Infinity);
+  let hasFG=false;
+  for(let i=0;i<n;i++){
+    if(CUT.sFG[i]){dFG[i]=0;hasFG=true;}
+    if(CUT.sBG[i]){dBG[i]=0;}
+  }
+  if(!hasFG){
+    // ללא זרעי FG כלל (המשתמש מחק הכול) — נופלים חזרה לזרעים האוטומטיים לחישוב בלבד
+    const mx0=Math.round(W*0.375),mx1=Math.round(W*0.625);
+    const my0=Math.round(H*0.375),my1=Math.round(H*0.625);
+    for(let y=my0;y<my1;y++)for(let x=mx0;x<mx1;x++){dFG[y*W+x]=0;}
+  }
+
+  function relax(d){
+    // סריקה קדימה: שמאל, מעל, שני אלכסונים עליונים
+    for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+      const i=y*W+x;let v=d[i];
+      if(x>0)v=Math.min(v,d[i-1]+w(i,i-1,false));
+      if(y>0)v=Math.min(v,d[i-W]+w(i,i-W,false));
+      if(x>0&&y>0)v=Math.min(v,d[i-W-1]+w(i,i-W-1,true));
+      if(x<W-1&&y>0)v=Math.min(v,d[i-W+1]+w(i,i-W+1,true));
+      d[i]=v;
+    }
+    // סריקה אחורה: ימין, מתחת, שני אלכסונים תחתונים
+    for(let y=H-1;y>=0;y--)for(let x=W-1;x>=0;x--){
+      const i=y*W+x;let v=d[i];
+      if(x<W-1)v=Math.min(v,d[i+1]+w(i,i+1,false));
+      if(y<H-1)v=Math.min(v,d[i+W]+w(i,i+W,false));
+      if(x<W-1&&y<H-1)v=Math.min(v,d[i+W+1]+w(i,i+W+1,true));
+      if(x>0&&y<H-1)v=Math.min(v,d[i+W-1]+w(i,i+W-1,true));
+      d[i]=v;
+    }
+  }
+  for(let it=0;it<3;it++){relax(dFG);relax(dBG);}
+
+  // מודל צבע: היסטוגרמת 4 ביט/ערוץ מהזרעים
+  const hFG=new Int32Array(4096),hBG=new Int32Array(4096);
+  let maxCount=1;
+  for(let i=0;i<n;i++){
+    const ii=i*4;
+    const bin=((rgb[ii]>>4)<<8)|((rgb[ii+1]>>4)<<4)|(rgb[ii+2]>>4);
+    if(CUT.sFG[i]){hFG[bin]++;if(hFG[bin]>maxCount)maxCount=hFG[bin];}
+    if(CUT.sBG[i]){hBG[bin]++;if(hBG[bin]>maxCount)maxCount=hBG[bin];}
+  }
+  const logMax=Math.log(maxCount+1)||1;
+
+  const mask=new Uint8Array(n);
+  for(let i=0;i<n;i++){
+    const ii=i*4;
+    const bin=((rgb[ii]>>4)<<8)|((rgb[ii+1]>>4)<<4)|(rgb[ii+2]>>4);
+    const colorTerm=(Math.log(hBG[bin]+1)-Math.log(hFG[bin]+1))/logMax;
+    const df=dFG[i],db_=dBG[i];
+    const geo=(df-db_)/(df+db_+1);
+    const score=0.75*geo+0.25*colorTerm;
+    let isBG=score>0;
+    if(CUT.sFG[i])isBG=false;
+    if(CUT.sBG[i])isBG=true;
+    mask[i]=isBG?0:1;
+  }
+
+  cutMorphCleanup(mask,W,H);
+  CUT.mask=mask;
+}
+
+// ניקוי מורפולוגי: open→close (3×3), רכיבי קשירות (רק המכילים זרע FG / הגדול ביותר), מילוי חורים
+function cutMorphCleanup(mask,W,H){
+  function erodeDilate(src,dilate){
+    const out=new Uint8Array(src.length);
+    for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+      const i=y*W+x;
+      let v=dilate?0:1;
+      for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+        const xx=x+dx,yy=y+dy;
+        const nv=(xx<0||yy<0||xx>=W||yy>=H)?0:src[yy*W+xx];
+        v=dilate?Math.max(v,nv):Math.min(v,nv);
+      }
+      out[i]=v;
+    }
+    return out;
+  }
+  let m=erodeDilate(mask,false);      // open: erode
+  m=erodeDilate(m,true);              // open: dilate
+  m=erodeDilate(m,true);              // close: dilate
+  m=erodeDilate(m,false);             // close: erode
+
+  // רכיבי קשירות (BFS) — שומרים רכיבים שמכילים זרע FG; ואם אין זרעים כלל, את הגדול ביותר
+  const label=new Int32Array(m.length).fill(-1);
+  const comps=[];
+  for(let s=0;s<m.length;s++){
+    if(m[s]!==1||label[s]!==-1)continue;
+    const q=[s];label[s]=comps.length;let hasSeed=false,size=0;
+    while(q.length){
+      const i=q.pop();size++;
+      if(CUT.sFG[i])hasSeed=true;
+      const x=i%W,y=(i/W)|0;
+      const nbrs=[x>0?i-1:-1,x<W-1?i+1:-1,y>0?i-W:-1,y<H-1?i+W:-1];
+      for(const ni of nbrs){
+        if(ni>=0&&m[ni]===1&&label[ni]===-1){label[ni]=comps.length;q.push(ni);}
+      }
+    }
+    comps.push({hasSeed,size});
+  }
+  const anySeed=comps.some(c=>c.hasSeed);
+  let bestIdx=0;
+  if(!anySeed&&comps.length){
+    let bestSize=-1;
+    comps.forEach((c,idx)=>{if(c.size>bestSize){bestSize=c.size;bestIdx=idx;}});
+  }
+  for(let i=0;i<m.length;i++){
+    if(m[i]!==1)continue;
+    const keep=anySeed?comps[label[i]].hasSeed:(label[i]===bestIdx);
+    if(!keep)m[i]=0;
+  }
+
+  // מילוי חורים: flood-fill רקע מהמסגרת; כל רקע שלא הגיע אליו הפך FG (חור פנימי)
+  const bgReached=new Uint8Array(m.length);
+  const q2=[];
+  function seedBG(i){if(m[i]===0&&!bgReached[i]){bgReached[i]=1;q2.push(i);}}
+  for(let x=0;x<W;x++){seedBG(x);seedBG((H-1)*W+x);}
+  for(let y=1;y<H-1;y++){seedBG(y*W);seedBG(y*W+W-1);}
+  let qi=0;
+  while(qi<q2.length){
+    const i=q2[qi++];const x=i%W,y=(i/W)|0;
+    if(x>0)seedBG(i-1);if(x<W-1)seedBG(i+1);if(y>0)seedBG(i-W);if(y<H-1)seedBG(i+W);
+  }
+  for(let i=0;i<m.length;i++){if(m[i]===0&&!bgReached[i])m[i]=1;}
+
+  mask.set(m);
+}
+
+// החלה ברזולוציה מלאה: מגדילים את המסכה עם החלקה (feather חינם), ומכפילים באלפא הקיים
+function cutApplyMaskFull(cv,mask,mw,mh){
+  const W=cv.width,H=cv.height;
+  const mcv=document.createElement('canvas');mcv.width=mw;mcv.height=mh;
+  const mctx=mcv.getContext('2d');
+  const mid=mctx.createImageData(mw,mh);
+  for(let i=0;i<mw*mh;i++){const v=mask[i]?255:0;mid.data[i*4]=v;mid.data[i*4+1]=v;mid.data[i*4+2]=v;mid.data[i*4+3]=255;}
+  mctx.putImageData(mid,0,0);
+
+  const big=document.createElement('canvas');big.width=W;big.height=H;
+  const bctx=big.getContext('2d');
+  bctx.imageSmoothingEnabled=true;bctx.imageSmoothingQuality='high';
+  bctx.drawImage(mcv,0,0,W,H);
+  const bd=bctx.getImageData(0,0,W,H).data;
+
+  const ctx=cv.getContext('2d');
+  const id=ctx.getImageData(0,0,W,H);
+  const d=id.data;
+  const smoothstep=(e0,e1,x)=>{const t=Math.min(1,Math.max(0,(x-e0)/(e1-e0)));return t*t*(3-2*t);};
+  for(let i=0;i<W*H;i++){
+    const m=bd[i*4]/255;
+    d[i*4+3]=Math.round(d[i*4+3]*smoothstep(0.35,0.65,m));
+  }
+  ctx.putImageData(id,0,0);
+}
+
+// ── UI wiring ──
+document.getElementById('cut-brush-grp').addEventListener('click',e=>{
+  const b=e.target.closest('.sbt');if(!b)return;
+  document.querySelectorAll('#cut-brush-grp .sbt').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');CUT.brush=b.dataset.b;
+});
+document.getElementById('sl-cut-brush').addEventListener('input',function(){
+  CUT.brushPx=+this.value;document.getElementById('lbl-cut-brush').textContent=this.value;
+});
+document.getElementById('sl-cut-fine').addEventListener('input',function(){
+  CUT.fine=+this.value;document.getElementById('lbl-cut-fine').textContent=this.value;
+  cutScheduleCompute();
+});
+document.getElementById('btn-cut-undo').addEventListener('click',cutUndo);
+document.getElementById('btn-cut-reset').addEventListener('click',cutReset);
+document.getElementById('btn-cut-peek').addEventListener('click',function(){
+  CUT.peek=!CUT.peek;this.classList.toggle('on',CUT.peek);cutRedraw();
+});
+document.getElementById('btn-cut-cancel').addEventListener('click',()=>{
+  document.getElementById('cutout-modal').hidden=true;
+  cutReleaseMemory();
+});
+document.getElementById('cutout-x').addEventListener('click',()=>document.getElementById('btn-cut-cancel').click());
+document.getElementById('cutout-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)document.getElementById('btn-cut-cancel').click();});
+
+document.getElementById('btn-cut-ok').addEventListener('click',()=>{
+  const c=CM.crops.find(x=>x.id===CUT.cropId);
+  if(c){
+    c.useMask=true;c.mask=CUT.mask.slice();c.mw=CUT.W;c.mh=CUT.H;
+    c.sFG=CUT.sFG.slice();c.sBG=CUT.sBG.slice();
+    c.thumb=cropExtractThumb(CM.srcImg,c);
+  }
+  document.getElementById('cutout-modal').hidden=true;
+  cutReleaseMemory();
+  renderModalCrops();
+});
 
 document.getElementById('modal-tool-grp').addEventListener('click',e=>{
   const b=e.target.closest('.sbt');if(!b)return;
@@ -3188,6 +3881,7 @@ async function saveDesign(){
     const settings={shape:S.shape,symShape:S.symShape,sMin:S.sMin,sMax:S.sMax,seed:S.seed,layoutMode:S.layoutMode,
       cardSizeMm:S.cardSizeMm,spacingMm:S.spacingMm,startPos:S.startPos,
       frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),symPad:S.symPad,overlap:S.overlap,
+      tightPack:S.tightPack,tightFill:S.tightFill,
       orderTotal:S.order?S.order.total:null};
     // שמירה מקומית — metadata בלבד (בלי dataURL), כדי לא לחרוג ממכסת האחסון של IndexedDB
     const date=new Date().toLocaleString('he-IL');
@@ -3218,6 +3912,7 @@ function buildDesignObject(name){
     settings:{shape:S.shape,symShape:S.symShape,sMin:S.sMin,sMax:S.sMax,seed:S.seed,layoutMode:S.layoutMode,
       cardSizeMm:S.cardSizeMm,spacingMm:S.spacingMm,startPos:S.startPos,
       frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),symPad:S.symPad,overlap:S.overlap,
+      tightPack:S.tightPack,tightFill:S.tightFill,
       orderTotal:S.order?S.order.total:null}};
 }
 
@@ -3280,7 +3975,10 @@ function applySettingsToUI(st){
   // סליידרים של גודל סמלים
   slMn.value=Math.round(st.sMin*100);lblMn.textContent=slMn.value+'%';
   slMx.value=Math.round(st.sMax*100);lblMx.textContent=slMx.value+'%';
-  slOv.value=st.overlap||0;lblOv.textContent=slOv.value+'%';
+  slOv.value=st.overlap??0;lblOv.textContent=ovLabel(+slOv.value);
+  ckTight.checked=st.tightPack!==false;
+  ckTightFill.checked=!!st.tightFill&&(st.overlap??0)>=0;
+  ckTightFill.disabled=(st.overlap??0)<0;
   // ייצוא
   slCardSize.value=st.cardSizeMm;lblCardSize.textContent=st.cardSizeMm+'mm';
   slSpacing.value=st.spacingMm;lblSpacing.textContent=st.spacingMm+'mm';
@@ -3320,7 +4018,8 @@ async function applyDesignToState(d){
   const st=d.settings||{};
   Object.assign(S,{shape:st.shape||'circle',symShape:st.symShape||'circle',sMin:st.sMin??.7,sMax:st.sMax??1.3,
     seed:st.seed||1,layoutMode:st.layoutMode||'scatter',cardSizeMm:st.cardSizeMm||85,
-    spacingMm:st.spacingMm??5,startPos:st.startPos||'center',symPad:st.symPad??2,overlap:st.overlap??0});
+    spacingMm:st.spacingMm??5,startPos:st.startPos||'center',symPad:st.symPad??2,overlap:st.overlap??0,
+    tightPack:st.tightPack!==false,tightFill:!!st.tightFill});
   if(st.frame)S.frame=Object.assign({},st.frame);
   if(st.bg)S.bg=Object.assign({},st.bg);
   applySettingsToUI(S);
@@ -3914,6 +4613,7 @@ function enterSupportMode(label){
     assets:S.assets.slice(),idSeq:S.idSeq,
     settings:{shape:S.shape,symShape:S.symShape,sMin:S.sMin,sMax:S.sMax,seed:S.seed,layoutMode:S.layoutMode,
       cardSizeMm:S.cardSizeMm,spacingMm:S.spacingMm,startPos:S.startPos,symPad:S.symPad,overlap:S.overlap,
+      tightPack:S.tightPack,tightFill:S.tightFill,
       frame:Object.assign({},S.frame),bg:Object.assign({},S.bg)}
   };
   window.__supportMode=true;
