@@ -2531,9 +2531,59 @@ function withTimeout(promise,ms,msg){
   ]);
 }
 
+// המספר הגדול ביותר של סמלים שמשחק דאבל יכול להשתמש בו — מגיע ממבנה GF(4) (ORDERS),
+// לא ממגבלה שבחרנו. כל מה שמעבר לזה לא יופיע בשום משחק, רק מאט שמירה ורינדור.
+const MAX_USABLE_SYMBOLS=ORDERS[ORDERS.length-1].total;   // 57
+
+// זיהוי כפילות: שם + גודל קובץ. נכסים ישנים (לפני שהתחלנו לשמור fsize) נבדקים לפי שם בלבד —
+// בתרחיש שגרם לבעיה (משתמש מעלה שוב את אותה אצווה אחרי תקיעה) השם תמיד זהה, ועדיף לתפוס
+// את זה מאשר לפספס. שני קבצים שונים באמת עם אותו שם — נדיר, והמשתמש מקבל דיווח מה דולג.
+function assetDupKey(name,size){return String(name||'')+'|'+(size==null?'':size);}
+function buildDupIndex(){
+  const s=new Set();
+  S.assets.forEach(a=>{
+    if(a.type!=='image')return;
+    s.add(assetDupKey(a.name,a.fsize));
+    if(a.fsize==null)s.add(assetDupKey(a.name,null));
+  });
+  return s;
+}
+
 async function addFiles(files){
-  const imgs=Array.from(files).filter(f=>f.type.startsWith('image/')||/\.(heic|heif|avif)$/i.test(f.name));
-  if(!imgs.length){alert('נא לבחור קבצי תמונה (PNG, JPG, SVG, WebP)');return;}
+  const picked=Array.from(files).filter(f=>f.type.startsWith('image/')||/\.(heic|heif|avif)$/i.test(f.name));
+  if(!picked.length){alert('נא לבחור קבצי תמונה (PNG, JPG, SVG, WebP)');return;}
+
+  // ── סינון כפילויות לפני שמתחילים לעבוד ──
+  // בלי זה, כל ניסיון חוזר אחרי תקיעה *הוסיף* את כל האצווה שוב במקום להחליף אותה,
+  // והמאגר תפח פי מספר הניסיונות (לקוח אמיתי הגיע כך לאלפי תמונות).
+  const dup=buildDupIndex();
+  const imgs=[];let skippedDup=0;
+  for(const f of picked){
+    if(dup.has(assetDupKey(f.name,f.size))||dup.has(assetDupKey(f.name,null))){skippedDup++;continue;}
+    dup.add(assetDupKey(f.name,f.size));   // גם מונע כפילות בתוך אותה בחירה
+    imgs.push(f);
+  }
+  if(!imgs.length){
+    toast(skippedDup?`כל ${skippedDup} התמונות כבר קיימות במאגר — לא נוסף כלום`:'לא נבחרו תמונות','err');
+    return;
+  }
+
+  // ── אזהרה כשהמאגר חורג ממה שהמחולל יכול לנצל ──
+  const usableNow=S.assets.filter(isSymbolAsset).length;
+  const totalAfter=usableNow+imgs.length;
+  if(totalAfter>MAX_USABLE_SYMBOLS){
+    const ok=await confirmDialog({
+      icon:'⚠️',
+      title:'יותר תמונות ממה שהמשחק משתמש',
+      body:`אחרי ההעלאה יהיו במאגר ${totalAfter} סמלים, אבל משחק דאבל משתמש לכל היותר ב-${MAX_USABLE_SYMBOLS}. `
+          +`התמונות שמעבר לכך לא יופיעו באף משחק — הן רק יאטו את השמירה ואת הגלריה.\n\n`
+          +`אפשר להמשיך ולבחור אחר כך אילו סמלים ייכנסו, או לבטל ולהעלות פחות תמונות.`,
+      warn:imgs.length>200?`שים לב: ${imgs.length} תמונות בהעלאה אחת — זה עלול לקחת זמן רב מאוד.`:'',
+      okText:'המשך בכל זאת'
+    });
+    if(!ok)return;
+  }
+
   const failed=[];
   let okCount=0;
   const folder=newFolder('העלאה');
@@ -2548,7 +2598,7 @@ async function addFiles(files){
       try{
         const imgEl=await withTimeout(loadImgFile(f,url),60000,'תם הזמן הקצוב לטעינת התמונה');
         const thumb=makeThumb(imgEl);
-        S.assets.push({id:++S.idSeq,type:'image',name:f.name,url,thumb,imgEl,selected:true,folder});
+        S.assets.push({id:++S.idSeq,type:'image',name:f.name,fsize:f.size,url,thumb,imgEl,selected:true,folder});
         okCount++;
       }catch(e){URL.revokeObjectURL(url);failed.push({file:f,name:f.name,reason:(e&&e.message)||'שגיאה לא ידועה'});console.warn('upload failed:',f.name,e);}
       done++;
@@ -2558,7 +2608,18 @@ async function addFiles(files){
   // renderGallery() משרטט מחדש את כל התמונונים בגלריה (לא רק את החדשות) — קריאה לה
   // בתוך הלולאה, פעם לכל תמונה, הופכת העלאה של N תמונות לגלריה עם M תמונות קיימות
   // ל-O(N×M) ציורי canvas, ומאיטה יותר ויותר ככל שהמאגר גדל. קריאה יחידה אחרי כל האצווה.
-  if(okCount){renderGallery();updateCounter();toast(`נוספו ${okCount} תמונות למאגר ✓`,'ok');schedIdbSave();}
+  if(okCount){
+    renderGallery();updateCounter();
+    toast(`נוספו ${okCount} תמונות למאגר ✓`+(skippedDup?` · דילגנו על ${skippedDup} שכבר היו`:''),'ok');
+    schedIdbSave();
+  }else if(skippedDup){
+    toast(`דילגנו על ${skippedDup} תמונות שכבר קיימות במאגר`,'ok');
+  }
+  // תזכורת אחרי ההעלאה — כדי שהמשתמש יבין שהעודף לא ייכנס לשום משחק, וידע לבחור/למחוק.
+  const usableAfter=S.assets.filter(isSymbolAsset).length;
+  if(usableAfter>MAX_USABLE_SYMBOLS){
+    toast(`במאגר ${usableAfter} סמלים — המשחק ישתמש עד ${MAX_USABLE_SYMBOLS}. סמנו אילו להשתמש, או מחקו תיקיות מיותרות 🗂️`,'err');
+  }
   if(failed.length)await reportFailedUploads(failed,folder);
 }
 
@@ -4984,6 +5045,7 @@ function assetsToRowsWithImages(){
   return S.assets.map(a=>({
     id:a.id,type:a.type,name:a.name,
     dataURL:assetEncoded(a).dataURL,
+    fsize:a.fsize==null?null:a.fsize,        // נשמר כדי שזיהוי הכפילויות ישרוד רענון דף
     srcAssetId:a.srcAssetId||null,isCropSource:a.isCropSource||false,selected:a.selected!==false
   }));
 }
@@ -5039,7 +5101,7 @@ async function idbLoad(){
       try{
         const imgEl=await loadImg(d.dataURL);
         const thumb=makeThumb(imgEl);
-        S.assets.push({id:d.id,type:d.type,name:d.name,url:'',thumb,imgEl,
+        S.assets.push({id:d.id,type:d.type,name:d.name,fsize:d.fsize==null?undefined:d.fsize,url:'',thumb,imgEl,
                         srcAssetId:d.srcAssetId||undefined,isCropSource:d.isCropSource||false,selected:d.selected!==false});
         if(d.id>=S.idSeq)S.idSeq=d.id;
       }catch(e){console.warn('idbLoad item:',e);}
