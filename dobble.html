@@ -2509,6 +2509,9 @@ function newFolder(label){
 function folderKey(a){return(a.folder&&a.folder.id)||'__none__';}
 function folderLabel(a){return(a.folder&&a.folder.name)||'מאגר כללי';}
 
+// נכס שנספר כסמל משחק. לוגו-גב ותמונת-מקור-לחיתוך אינם סמלים.
+function isSymbolAsset(a){return !a.isCropSource&&a.type!=='backlogo';}
+
 const _closedFolders=new Set();   // תיקיות מתחילות פתוחות כברירת מחדל; כאן נשמרות רק אלה שנסגרו ידנית
 
 // בלי timeout, בקשה שנתקעת (רשת איטית/CDN חסום) משאירה את ה-await תלוי לנצח —
@@ -2605,6 +2608,35 @@ async function loadImgFile(f,url){
   }
 }
 
+// ── לוגו לגב הקלף: נכנס דרך אותו צינור תמונות רגיל (type:'backlogo') כדי להסתנכרן ל-Storage
+// ולא כ-base64 ב-JSONB. isSymbolAsset() דואג שהוא לעולם לא ייספר כסמל משחק או יוצג בגלריה.
+async function setBackLogoFromFile(f){
+  const url=URL.createObjectURL(f);
+  try{
+    const imgEl=await withTimeout(loadImgFile(f,url),30000,'תם הזמן הקצוב לטעינת הלוגו');
+    removeBackLogo();
+    const thumb=makeThumb(imgEl);
+    const asset={id:++S.idSeq,type:'backlogo',name:f.name,url,thumb,imgEl,selected:true};
+    S.assets.push(asset);
+    S.back.logoAssetId=asset.id;
+    markBackDirty();schedIdbSave();
+    return asset;
+  }catch(e){
+    URL.revokeObjectURL(url);
+    console.warn('logo upload failed:',e?.message||e);
+    toast('העלאת הלוגו נכשלה — נסו קובץ אחר','err');
+    return null;
+  }
+}
+function removeBackLogo(){
+  const prev=S.assets.find(a=>a.type==='backlogo');
+  if(prev){
+    if(prev.url)URL.revokeObjectURL(prev.url);
+    S.assets=S.assets.filter(a=>a.id!==prev.id);
+  }
+  S.back.logoAssetId=null;
+}
+
 function makeThumb(imgEl){
   const c=document.createElement('canvas');c.width=c.height=72;
   drawCover(c.getContext('2d'),imgEl,0,0,72);
@@ -2654,15 +2686,17 @@ function renderGallery(){
 
   // תצוגה מקובצת לפי תיקיות העלאה — למנויים מחוברים בלבד (אין לה תועלת אמיתית למשתמש מקומי
   // עם קוד גישה בודד). משתמש לא מחובר ממשיך לראות גלריה שטוחה בדיוק כמו היום.
+  // הלוגו לגב הקלף מנוהל רק מתוך עורך הגב — אף פעם לא בגלריה הרגילה
+  const galleryAssets=S.assets.filter(a=>a.type!=='backlogo');
   if(!isSignedIn()){
     grid.classList.remove('foldered');
-    S.assets.forEach(a=>grid.appendChild(buildGalleryItem(a)));
+    galleryAssets.forEach(a=>grid.appendChild(buildGalleryItem(a)));
     return;
   }
 
   grid.classList.add('foldered');
   const groups=new Map();
-  S.assets.forEach(a=>{
+  galleryAssets.forEach(a=>{
     const k=folderKey(a);
     if(!groups.has(k))groups.set(k,{key:k,label:folderLabel(a),items:[]});
     groups.get(k).items.push(a);
@@ -2670,7 +2704,7 @@ function renderGallery(){
   groups.forEach(g=>{
     const wrap=document.createElement('div');wrap.className='g-folder';
     const isOpen=!_closedFolders.has(g.key);
-    const usable=g.items.filter(a=>!a.isCropSource).length;
+    const usable=g.items.filter(isSymbolAsset).length;
     const hdr=document.createElement('div');hdr.className='g-fold-hdr';
     const caret=document.createElement('span');caret.className='g-fold-caret';caret.textContent=isOpen?'▾':'▸';
     const name=document.createElement('span');name.className='g-fold-name';name.textContent=g.label;
@@ -2707,16 +2741,16 @@ document.getElementById('crop-hint-x').addEventListener('click',()=>{
 });
 
 document.getElementById('btn-select-all').addEventListener('click',()=>{
-  S.assets.forEach(a=>{if(!a.isCropSource)a.selected=true;});
+  S.assets.forEach(a=>{if(isSymbolAsset(a))a.selected=true;});
   renderGallery();updateCounter();schedIdbSave();
 });
 document.getElementById('btn-clear-all').addEventListener('click',()=>{
-  S.assets.forEach(a=>{if(!a.isCropSource)a.selected=false;});
+  S.assets.forEach(a=>{if(isSymbolAsset(a))a.selected=false;});
   renderGallery();updateCounter();schedIdbSave();
 });
 
 function updateCounter(){
-  const usable=S.assets.filter(a=>!a.isCropSource);
+  const usable=S.assets.filter(isSymbolAsset);
   const n=usable.filter(a=>a.selected!==false).length;
   const nSrc=S.assets.filter(a=>a.isCropSource).length;
   document.getElementById('gallery-count').textContent=nSrc?`${n} סמלים · ${nSrc} מקורות`:`${n} סמלים`;
@@ -2788,7 +2822,7 @@ function flushCloudAfterDelete(){
 
 // מוחק את כל הנכסים שמסומנים (אותו סימון שקובע "כלול במשחק")
 async function deleteSelected(){
-  const sel=S.assets.filter(a=>!a.isCropSource&&a.selected!==false);
+  const sel=S.assets.filter(a=>isSymbolAsset(a)&&a.selected!==false);
   if(!sel.length){toast('לא סומנו סמלים למחיקה','err');return;}
   const ok=await confirmDialog({
     title:'מחיקת סמלים מסומנים',
@@ -2809,7 +2843,7 @@ async function deleteSelected(){
 async function deleteFolder(fid,fname){
   const items=S.assets.filter(a=>folderKey(a)===fid);
   if(!items.length)return;
-  const nUse=items.filter(a=>!a.isCropSource).length;
+  const nUse=items.filter(isSymbolAsset).length;
   const ok=await confirmDialog({
     icon:'📁',
     title:'מחיקת תיקייה',
@@ -2892,7 +2926,7 @@ async function generate(){
   S.seed=Math.floor(Math.random()*90000)+10000;
   S.layouts=buildLayouts(S.deck,S.seed,S.sMin,S.sMax);
   setp(15,'מכין תמונות…');
-  S.imgEls=S.assets.filter(a=>!a.isCropSource&&a.selected!==false).slice(0,S.order.total).map(a=>a.imgEl);
+  S.imgEls=S.assets.filter(a=>isSymbolAsset(a)&&a.selected!==false).slice(0,S.order.total).map(a=>a.imgEl);
   prepareSymbolMeta();
   setp(35,'מצייר קלפים…');
   S.canvases=[];S.sel=[];
@@ -4445,7 +4479,7 @@ async function idbLoad(){
         if(d.id>=S.idSeq)S.idSeq=d.id;
       }catch(e){console.warn('idbLoad item:',e);}
     }
-    if(S.assets.length){renderGallery();updateCounter();toast(`המאגר שוחזר — ${S.assets.filter(a=>!a.isCropSource).length} סמלים 📦`,'ok');}
+    if(S.assets.length){renderGallery();updateCounter();toast(`המאגר שוחזר — ${S.assets.filter(isSymbolAsset).length} סמלים 📦`,'ok');}
   }catch(e){console.warn('idbLoad:',e);}
 }
 async function idbClear(){
