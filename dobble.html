@@ -273,6 +273,30 @@
     .cp-row{display:flex;align-items:center;gap:.55rem;font-size:.8rem;color:var(--muted);margin:.25rem 0;cursor:pointer}
     .cp-row input[type=color]{width:30px;height:26px;border:none;padding:1px;border-radius:6px;cursor:pointer;background:none;flex-shrink:0}
 
+    /* ── עורך גב הקלף ── */
+    .back-live{display:flex;justify-content:center;margin-bottom:.75rem}
+    .back-live canvas{width:190px;height:190px;border-radius:50%;box-shadow:var(--sh);background:#fff}
+    .back-live canvas.sq{border-radius:14px}
+    .back-presets-row{display:flex;gap:.5rem;overflow-x:auto;padding-bottom:.5rem;margin-bottom:.6rem}
+    .back-preset-btn{flex-shrink:0;background:rgba(255,255,255,.55);border:1.5px solid rgba(67,56,202,.3);border-radius:100px;padding:.4rem .95rem;font-family:inherit;font-size:.8rem;font-weight:700;color:var(--indigo);cursor:pointer;white-space:nowrap;transition:all var(--tr)}
+    .back-preset-btn.on,.back-preset-btn:hover{background:var(--indigo);color:#fff;border-color:var(--indigo)}
+    .back-tabs{display:flex;gap:.3rem;overflow-x:auto;padding-bottom:.4rem;margin-bottom:.7rem;border-bottom:1.5px solid var(--border)}
+    .back-tab{flex-shrink:0;background:none;border:none;font-family:inherit;font-size:.83rem;font-weight:700;color:var(--muted);padding:.45rem .8rem;cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;transition:all var(--tr);white-space:nowrap}
+    .back-tab.on{color:var(--indigo);border-color:var(--indigo)}
+    .back-tabpage{display:none}
+    .back-tabpage.on{display:flex;flex-direction:column;gap:.6rem}
+    .back-sym-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem}
+    .back-sym-btn{aspect-ratio:1;background:rgba(255,255,255,.55);border:1.5px solid var(--border);border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--tr);padding:.3rem}
+    .back-sym-btn canvas{width:100%;height:100%}
+    .back-sym-btn.on{border-color:var(--indigo);background:rgba(67,56,202,.1);box-shadow:0 0 0 2px rgba(67,56,202,.25)}
+    .back-frame-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem}
+    .back-frame-btn{background:rgba(255,255,255,.55);border:1.5px solid var(--border);border-radius:10px;cursor:pointer;padding:.5rem .3rem;font-size:.72rem;font-weight:700;color:var(--muted);transition:all var(--tr)}
+    .back-frame-btn.on{border-color:var(--indigo);background:rgba(67,56,202,.1);color:var(--indigo)}
+    .back-quick-row{display:flex;flex-wrap:wrap;gap:.4rem}
+    .back-quick-btn{background:rgba(255,255,255,.55);border:1.5px solid rgba(67,56,202,.25);border-radius:100px;padding:.3rem .8rem;font-family:inherit;font-size:.75rem;font-weight:700;color:var(--indigo);cursor:pointer}
+    .back-quick-btn:hover{background:rgba(67,56,202,.15)}
+    .back-logo-prev{width:80px;height:80px;border-radius:50%;border:1.5px dashed var(--border);object-fit:cover;background:rgba(255,255,255,.5)}
+
     /* ── SPINNER ── */
     .spin{display:inline-block;width:15px;height:15px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .6s linear infinite}
     @keyframes sp{to{transform:rotate(360deg)}}
@@ -1064,6 +1088,7 @@ function dcfgSave(patch){
           <div class="sb-t">פעולות</div>
           <button class="btn btn-pur" id="btn-reshuffle" style="width:100%;justify-content:center;margin-bottom:.5rem">🔀 ערבב מחדש</button>
           <button class="btn btn-sec" id="btn-save-design" style="width:100%;justify-content:center;margin-bottom:.5rem">💾 שמור עיצוב</button>
+          <button class="btn btn-pur" id="btn-back-design" style="width:100%;justify-content:center;margin-bottom:.5rem">🎴 עצב את גב הקלף</button>
           <button class="btn btn-ghost" id="btn-send-stuck" style="width:100%;justify-content:center;margin-bottom:.5rem">🆘 תקוע/ה? שלח את העבודה להושעיה</button>
           <button class="btn btn-ghost" id="btn-b1" style="width:100%;justify-content:center;font-size:.82rem">← חזרה להעלאה</button>
         </div>
@@ -1143,6 +1168,14 @@ function dcfgSave(patch){
             </div>
           </details>
         </div>
+        <div class="og">
+          <div class="og-t">גב הקלף</div>
+          <div class="tog-row">
+            <label class="tswitch"><input type="checkbox" id="chk-back-enabled"><span class="tslider"></span></label>
+            <span class="tog-lbl">הדפסה דו-צדדית (גב מעוצב)</span>
+          </div>
+          <button class="btn btn-sec" id="btn-back-design-2" style="width:100%;justify-content:center;margin-top:.6rem">🎴 ערוך גב</button>
+        </div>
       </div>
       <div>
         <div class="og-t">תצוגה מקדימה (A4)</div>
@@ -1206,6 +1239,140 @@ function dcfgSave(patch){
         <span id="pp-info" style="font-size:.85rem;font-weight:700;color:var(--muted);min-width:8rem;text-align:center"></span>
         <button class="btn btn-ghost" id="pp-next" style="padding:.35rem .8rem">הבא ›</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- BACK DESIGNER MODAL -->
+<div class="modal-bg" id="back-modal" hidden>
+  <div class="modal-card" style="max-width:520px;width:96%">
+    <div class="modal-hdr">
+      <div class="modal-title">🎴 עיצוב גב הקלף</div>
+      <button class="modal-x" id="back-modal-x">✕</button>
+    </div>
+
+    <div class="back-live"><canvas id="back-live-canvas" width="220" height="220"></canvas></div>
+    <div class="back-presets-row" id="back-presets-row"></div>
+    <div class="back-tabs" id="back-tabs">
+      <button class="back-tab on" data-tab="bg">רקע</button>
+      <button class="back-tab" data-tab="frame">מסגרת</button>
+      <button class="back-tab" data-tab="symbol">סמל</button>
+      <button class="back-tab" data-tab="text">כיתוב</button>
+      <button class="back-tab" data-tab="logo">לוגו</button>
+      <button class="back-tab" data-tab="print">הדפסה</button>
+    </div>
+
+    <div class="back-tabpage on" id="back-tab-bg">
+      <div class="og-t">מצב רקע</div>
+      <div class="shape-grp" id="back-bg-mode-grp">
+        <button class="sbt on" data-mode="solid" style="flex:1">אחיד</button>
+        <button class="sbt" data-mode="radial" style="flex:1">רדיאלי</button>
+        <button class="sbt" data-mode="diag" style="flex:1">אלכסוני</button>
+      </div>
+      <div class="og-t" style="margin-top:.5rem">צבע ראשי</div>
+      <div class="swatch-row" id="back-bg-sw1"></div>
+      <label class="cp-row"><span>צבע חופשי</span><input type="color" id="back-bg-pick1" value="#4338CA"></label>
+      <div class="og-t" id="back-bg-c2-lbl" style="margin-top:.5rem">צבע משני (גרדיאנט)</div>
+      <div class="swatch-row" id="back-bg-sw2"></div>
+      <label class="cp-row"><span>צבע חופשי</span><input type="color" id="back-bg-pick2" value="#818CF8"></label>
+      <div class="og-t" style="margin-top:.5rem">דוגמה</div>
+      <div class="back-sym-grid" id="back-pattern-grid"></div>
+      <div class="swatch-row" id="back-pattern-sw"></div>
+      <label class="cp-row"><span>צבע חופשי</span><input type="color" id="back-pattern-pick" value="#FFFFFF"></label>
+      <div class="sl-lbl"><span>שקיפות דוגמה</span><strong id="lbl-back-pattern-op">14%</strong></div>
+      <input type="range" id="back-pattern-op" min="0" max="100" step="1" value="14">
+      <div class="sl-lbl"><span>קנה מידה</span><strong id="lbl-back-pattern-scale">100%</strong></div>
+      <input type="range" id="back-pattern-scale" min="40" max="220" step="5" value="100">
+    </div>
+
+    <div class="back-tabpage" id="back-tab-frame">
+      <div class="og-t">סגנון מסגרת</div>
+      <div class="back-frame-grid" id="back-frame-grid"></div>
+      <div class="og-t" style="margin-top:.5rem">צבע</div>
+      <div class="swatch-row" id="back-frame-sw"></div>
+      <label class="cp-row"><span>צבע חופשי</span><input type="color" id="back-frame-pick" value="#FFFFFF"></label>
+      <div class="sl-lbl"><span>רוחב</span><strong id="lbl-back-frame-w">3מ"מ</strong></div>
+      <input type="range" id="back-frame-w" min="0" max="15" step="0.5" value="3">
+      <div class="sl-lbl"><span>שקיפות</span><strong id="lbl-back-frame-op">100%</strong></div>
+      <input type="range" id="back-frame-op" min="0" max="100" step="1" value="100">
+    </div>
+
+    <div class="back-tabpage" id="back-tab-symbol">
+      <div class="og-t">סמל מרכזי</div>
+      <div class="back-sym-grid" id="back-sym-grid"></div>
+      <div class="og-t" style="margin-top:.5rem">צבע</div>
+      <div class="swatch-row" id="back-sym-sw"></div>
+      <label class="cp-row"><span>צבע חופשי</span><input type="color" id="back-sym-pick" value="#FFFFFF"></label>
+      <div class="sl-lbl"><span>גודל</span><strong id="lbl-back-sym-size">46%</strong></div>
+      <input type="range" id="back-sym-size" min="0" max="90" step="1" value="46">
+      <div class="sl-lbl"><span>היסט אנכי</span><strong id="lbl-back-sym-dy">0%</strong></div>
+      <input type="range" id="back-sym-dy" min="-60" max="60" step="1" value="0">
+    </div>
+
+    <div class="back-tabpage" id="back-tab-text">
+      <div class="og-t">טקסט ראשי</div>
+      <input type="text" id="back-text-main" class="adm-inp" style="color:inherit;background:rgba(255,255,255,.6);border-color:var(--border)" placeholder="למשל: מזל טוב">
+      <div class="og-t" style="margin-top:.5rem">טקסט משני</div>
+      <input type="text" id="back-text-sub" class="adm-inp" style="color:inherit;background:rgba(255,255,255,.6);border-color:var(--border)" placeholder="למשל: שם הילד/ה">
+      <div class="back-quick-row" id="back-text-quick" style="margin-top:.5rem"></div>
+      <div class="og-t" style="margin-top:.5rem">גופן</div>
+      <div class="shape-grp" id="back-text-font-grp">
+        <button class="sbt on" data-font="sans" style="flex:1">רגיל</button>
+        <button class="sbt" data-font="serif" style="flex:1">קלאסי</button>
+        <button class="sbt" data-font="round" style="flex:1">עגול</button>
+      </div>
+      <div class="og-t" style="margin-top:.5rem">צבע</div>
+      <div class="swatch-row" id="back-text-sw"></div>
+      <label class="cp-row"><span>צבע חופשי</span><input type="color" id="back-text-pick" value="#FFFFFF"></label>
+      <div class="sl-lbl"><span>גודל</span><strong id="lbl-back-text-size">11%</strong></div>
+      <input type="range" id="back-text-size" min="4" max="22" step="0.5" value="11">
+      <div class="sl-lbl"><span>היסט אנכי</span><strong id="lbl-back-text-dy">34%</strong></div>
+      <input type="range" id="back-text-dy" min="-60" max="70" step="1" value="34">
+    </div>
+
+    <div class="back-tabpage" id="back-tab-logo">
+      <div class="og-t">לוגו (אופציונלי)</div>
+      <div style="display:flex;align-items:center;gap:.8rem">
+        <canvas class="back-logo-prev" id="back-logo-prev" width="80" height="80"></canvas>
+        <div style="display:flex;flex-direction:column;gap:.4rem">
+          <button class="btn btn-sec" id="back-logo-btn" type="button">📤 העלה לוגו</button>
+          <button class="btn btn-ghost" id="back-logo-remove" type="button" style="display:none">🗑 הסר לוגו</button>
+        </div>
+        <input type="file" id="back-logo-file" accept="image/*" hidden>
+      </div>
+      <div class="sl-lbl" style="margin-top:.6rem"><span>גודל</span><strong id="lbl-back-logo-size">40%</strong></div>
+      <input type="range" id="back-logo-size" min="0" max="90" step="1" value="40">
+      <div class="sl-lbl"><span>היסט אנכי</span><strong id="lbl-back-logo-dy">0%</strong></div>
+      <input type="range" id="back-logo-dy" min="-60" max="60" step="1" value="0">
+    </div>
+
+    <div class="back-tabpage" id="back-tab-print">
+      <div class="og-t">כיוון הפיכת הדף</div>
+      <div class="shape-grp" id="back-flip-grp">
+        <button class="sbt on" data-flip="short" style="flex:1">↕ צד קצר</button>
+        <button class="sbt" data-flip="long" style="flex:1">↔ צד ארוך</button>
+      </div>
+      <div style="font-size:.75rem;color:var(--muted);margin:.4rem 0">אחרי שהדף יוצא מהמדפסת, הפכו אותו כמו דף במחברת (מלמעלה למטה) והחזירו אותו למגש.</div>
+      <div class="og-t" style="margin-top:.4rem">סדר עמודים בקובץ</div>
+      <div class="shape-grp" id="back-order-grp">
+        <button class="sbt on" data-order="sequential" style="flex:1">קדמי ואז גב</button>
+        <button class="sbt" data-order="interleave" style="flex:1">לסירוגין</button>
+      </div>
+      <div class="og-t" style="margin-top:.5rem">כוונון עדין (מ"מ)</div>
+      <div class="sl-lbl"><span>הזזה אופקית (dx)</span><strong id="lbl-back-dx">0</strong></div>
+      <input type="range" id="back-dx" min="-5" max="5" step="0.5" value="0">
+      <div class="sl-lbl"><span>הזזה אנכית (dy)</span><strong id="lbl-back-dy">0</strong></div>
+      <input type="range" id="back-dy" min="-5" max="5" step="0.5" value="0">
+      <button class="btn btn-ghost" id="back-duplex-reset" type="button" style="align-self:flex-start;font-size:.78rem;padding:.35rem .8rem">↺ אפס כוונון</button>
+      <div class="sl-lbl" style="margin-top:.4rem"><span>הגדלת גב (bleed)</span><strong id="lbl-back-grow">0.6מ"מ</strong></div>
+      <input type="range" id="back-grow" min="0" max="3" step="0.1" value="0.6">
+      <button class="btn btn-sec" id="back-calib-btn" type="button" style="margin-top:.6rem">📐 הפק דף כיול (2 עמודים)</button>
+      <div style="font-size:.72rem;color:var(--muted);line-height:1.6">הדפיסו את דף הכיול, הפכו אותו, ומדדו את הסטייה בין הסרגלים — הזינו אותה כאן בכוונון העדין.</div>
+    </div>
+
+    <div class="brow" style="justify-content:flex-end;margin-top:.8rem">
+      <button class="btn btn-ghost" id="back-cancel">ביטול</button>
+      <button class="btn btn-ok" id="back-save">✅ שמור</button>
     </div>
   </div>
 </div>
@@ -1809,6 +1976,423 @@ function drawWatermark(ctx,cx,cy,r,isC,sq,sqx,sqy,sqcr,sz){
   ctx.restore();
 }
 
+// ══ CARD BACK — עורך גב הקלף (הדפסה דו-צדדית) ══
+// כל הסמלים/מסגרות/דוגמאות כאן מקוריים ונכתבים בקוד — אין ולא יהיה כאן שימוש
+// בלוגו/סמל/עיצוב של Dobble, Spot-It, Asmodee או Zygomatic.
+
+// כל draw() מצפה ל-ctx שכבר עבר translate למרכז הסמל ו-scale(size,size), ומצייר בטווח [-1..1].
+function starPath(ctx,spikes,outerR,innerR,rot){
+  rot=rot||-Math.PI/2;
+  ctx.beginPath();
+  for(let i=0;i<spikes*2;i++){
+    const rr=i%2===0?outerR:innerR;
+    const a=rot+i*Math.PI/spikes;
+    const x=Math.cos(a)*rr,y=Math.sin(a)*rr;
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.closePath();
+}
+function heartPath(ctx,s){
+  s=s||1;
+  ctx.beginPath();
+  ctx.moveTo(0,0.32*s);
+  ctx.bezierCurveTo(-0.95*s,-0.42*s,-0.55*s,-1.05*s,0,-0.42*s);
+  ctx.bezierCurveTo(0.55*s,-1.05*s,0.95*s,-0.42*s,0,0.32*s);
+  ctx.closePath();
+}
+const BACK_SYMBOLS=[
+  {id:'sparkle',name:'ניצוץ',draw(ctx){
+    starPath(ctx,4,0.95,0.16);ctx.fill();
+    ctx.save();ctx.rotate(Math.PI/4);starPath(ctx,4,0.42,0.09);ctx.fill();ctx.restore();
+  }},
+  {id:'star5',name:'כוכב',draw(ctx){starPath(ctx,5,0.95,0.38);ctx.fill();}},
+  {id:'heart',name:'לב',draw(ctx){heartPath(ctx,0.85);ctx.fill();}},
+  {id:'flower8',name:'פרח',draw(ctx){
+    for(let i=0;i<8;i++){
+      ctx.save();ctx.rotate(i*Math.PI/4);
+      ctx.beginPath();ctx.ellipse(0,-0.5,0.26,0.5,0,0,Math.PI*2);ctx.fill();
+      ctx.restore();
+    }
+    ctx.beginPath();ctx.arc(0,0,0.24,0,Math.PI*2);ctx.fill();
+  }},
+  {id:'sun',name:'שמש',draw(ctx){
+    for(let i=0;i<8;i++){
+      ctx.save();ctx.rotate(i*Math.PI/4);
+      ctx.beginPath();ctx.moveTo(-0.1,-0.55);ctx.lineTo(0.1,-0.55);ctx.lineTo(0,-0.98);ctx.closePath();ctx.fill();
+      ctx.restore();
+    }
+    ctx.beginPath();ctx.arc(0,0,0.55,0,Math.PI*2);ctx.fill();
+  }},
+  {id:'moon',name:'ירח',draw(ctx){
+    ctx.save();
+    ctx.beginPath();ctx.arc(0,0,0.9,0,Math.PI*2);
+    ctx.arc(0.38,-0.12,0.78,0,Math.PI*2,true);
+    ctx.fill('evenodd');
+    ctx.restore();
+  }},
+  {id:'clover',name:'תלתן',draw(ctx){
+    const d=0.46;
+    [[0,-d],[d,0],[0,d],[-d,0]].forEach(([ox,oy])=>{
+      ctx.beginPath();ctx.arc(ox,oy,0.5,0,Math.PI*2);ctx.fill();
+    });
+    ctx.save();ctx.rotate(Math.PI/4);ctx.fillRect(-0.09,0,0.18,0.62);ctx.restore();
+  }},
+  {id:'diamond',name:'יהלום',draw(ctx){
+    ctx.beginPath();ctx.moveTo(0,-0.95);ctx.lineTo(0.68,0);ctx.lineTo(0,0.95);ctx.lineTo(-0.68,0);ctx.closePath();ctx.fill();
+  }},
+  {id:'balloon',name:'בלון',draw(ctx){
+    ctx.beginPath();ctx.ellipse(0,-0.18,0.62,0.72,0,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.moveTo(-0.13,0.5);ctx.lineTo(0.13,0.5);ctx.lineTo(0,0.68);ctx.closePath();ctx.fill();
+    ctx.save();ctx.lineWidth=0.045;ctx.strokeStyle=ctx.fillStyle;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(0,0.68);ctx.bezierCurveTo(0.14,0.8,-0.1,0.9,0,1.0);ctx.stroke();
+    ctx.restore();
+  }},
+  {id:'gift',name:'מתנה',draw(ctx){
+    ctx.fillRect(-0.68,-0.12,1.36,0.95);
+    ctx.fillRect(-0.68,-0.32,1.36,0.2);
+    ctx.fillRect(-0.11,-0.32,0.22,1.27);
+    ctx.beginPath();ctx.arc(-0.28,-0.42,0.24,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(0.28,-0.42,0.24,0,Math.PI*2);ctx.fill();
+  }},
+  {id:'crown',name:'כתר',draw(ctx){
+    ctx.beginPath();
+    ctx.moveTo(-0.8,0.55);ctx.lineTo(0.8,0.55);ctx.lineTo(0.8,-0.05);
+    ctx.lineTo(0.4,0.2);ctx.lineTo(0.22,-0.5);
+    ctx.lineTo(0,0.05);ctx.lineTo(-0.22,-0.5);ctx.lineTo(-0.4,0.2);
+    ctx.lineTo(-0.8,-0.05);ctx.closePath();ctx.fill();
+    [-0.8,0,0.8].forEach((x,i)=>{const yy=i===1?0.05:-0.05;
+      ctx.beginPath();ctx.arc(i===1?0:x,i===1?-0.6:-0.06+((i===0)?0:0),0.11,0,Math.PI*2);ctx.fill();});
+    ctx.beginPath();ctx.arc(0,-0.62,0.12,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(-0.8,-0.08,0.1,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(0.8,-0.08,0.1,0,Math.PI*2);ctx.fill();
+  }},
+  {id:'note',name:'תו',draw(ctx){
+    ctx.save();ctx.translate(-0.15,0.5);ctx.rotate(-0.15);
+    ctx.beginPath();ctx.ellipse(0,0,0.32,0.24,0,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+    ctx.fillRect(0.12,-0.85,0.11,1.25);
+    ctx.beginPath();ctx.moveTo(0.23,-0.85);ctx.bezierCurveTo(0.75,-0.65,0.7,-0.15,0.23,-0.25);ctx.closePath();ctx.fill();
+  }},
+  {id:'snow',name:'פתית',draw(ctx){
+    ctx.save();ctx.lineWidth=0.09;ctx.strokeStyle=ctx.fillStyle;ctx.lineCap='round';
+    for(let i=0;i<6;i++){
+      ctx.save();ctx.rotate(i*Math.PI/3);
+      ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(0,-0.95);ctx.stroke();
+      [0.35,0.6].forEach(t=>{
+        ctx.beginPath();ctx.moveTo(0,-t);ctx.lineTo(-0.22,-t-0.2);ctx.moveTo(0,-t);ctx.lineTo(0.22,-t-0.2);ctx.stroke();
+      });
+      ctx.restore();
+    }
+    ctx.restore();
+  }},
+  {id:'smile',name:'חיוך',draw(ctx){
+    ctx.save();ctx.lineWidth=0.1;ctx.strokeStyle=ctx.fillStyle;ctx.lineCap='round';
+    ctx.beginPath();ctx.arc(0,0,0.92,0,Math.PI*2);ctx.stroke();
+    ctx.beginPath();ctx.arc(-0.32,-0.18,0.1,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(0.32,-0.18,0.1,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(0,0.05,0.5,0.15*Math.PI,0.85*Math.PI);ctx.stroke();
+    ctx.restore();
+  }},
+  {id:'spiral',name:'ספירלה',draw(ctx){
+    ctx.save();ctx.lineWidth=0.11;ctx.strokeStyle=ctx.fillStyle;ctx.lineCap='round';
+    ctx.beginPath();
+    const turns=2.4,steps=90;
+    for(let i=0;i<=steps;i++){
+      const t=i/steps,a=t*turns*Math.PI*2,rr=t*0.92;
+      const x=Math.cos(a)*rr,y=Math.sin(a)*rr;
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }},
+  {id:'none',name:'ללא',draw(){}}
+];
+
+const BACK_FRAMES=[
+  {id:'none',name:'ללא'},{id:'single',name:'קו יחיד'},{id:'double',name:'קו כפול'},
+  {id:'dashed',name:'מקווקו'},{id:'beads',name:'חרוזים'},{id:'scallop',name:'גלי'},
+  {id:'zigzag',name:'זיגזג'},{id:'corners',name:'פינות'}
+];
+
+const BACK_PATTERNS=[
+  {id:'none',name:'ללא'},{id:'dots',name:'נקודות'},{id:'stripes',name:'פסים'},
+  {id:'checker',name:'משבצות'},{id:'confetti',name:'קונפטי'},
+  {id:'stars',name:'כוכבונים'},{id:'grid',name:'רשת'},{id:'waves',name:'גלים'}
+];
+
+const BACK_PRESETS=[
+  {id:'classic',name:'קלאסי',apply(){return{bg:{mode:'radial',c1:'#4338CA',c2:'#1E1B4B'},pattern:{id:'none',color:'#FFFFFF',op:14,scale:100},frame:{id:'double',color:'#FFFFFF',w:3,op:100},symbol:{id:'sparkle',color:'#FFFFFF',size:46,op:100,dy:0}};}},
+  {id:'party',name:'מסיבה',apply(){return{bg:{mode:'diag',c1:'#DB2777',c2:'#7C3AED'},pattern:{id:'confetti',color:'#FFFFFF',op:55,scale:110},frame:{id:'dashed',color:'#FFFFFF',w:2.5,op:100},symbol:{id:'balloon',color:'#FDE047',size:50,op:100,dy:0}};}},
+  {id:'birthday',name:'יום הולדת',apply(){return{bg:{mode:'radial',c1:'#EC4899',c2:'#A855F7'},pattern:{id:'stars',color:'#FFFFFF',op:20,scale:90},frame:{id:'beads',color:'#FDE047',w:3,op:100},symbol:{id:'crown',color:'#FDE047',size:44,op:100,dy:-4},text:{main:'מזל טוב',sub:'',font:'round',color:'#FFFFFF',size:11,dy:36}};}},
+  {id:'kids',name:'ילדים',apply(){return{bg:{mode:'solid',c1:'#FDE68A',c2:'#93C5FD'},pattern:{id:'dots',color:'#FFFFFF',op:35,scale:80},frame:{id:'scallop',color:'#38BDF8',w:3,op:100},symbol:{id:'smile',color:'#0369A1',size:48,op:100,dy:0}};}},
+  {id:'elegant',name:'אלגנטי',apply(){return{bg:{mode:'solid',c1:'#0F172A',c2:'#0F172A'},pattern:{id:'none',color:'#D4AF37',op:10,scale:100},frame:{id:'corners',color:'#D4AF37',w:2.5,op:100},symbol:{id:'diamond',color:'#D4AF37',size:40,op:100,dy:0}};}},
+  {id:'nature',name:'טבע',apply(){return{bg:{mode:'diag',c1:'#15803D',c2:'#84CC16'},pattern:{id:'waves',color:'#FFFFFF',op:16,scale:120},frame:{id:'single',color:'#FFFFFF',w:2.5,op:100},symbol:{id:'clover',color:'#FFFFFF',size:42,op:100,dy:0}};}}
+];
+
+function backDefaults(){
+  return{
+    enabled:false,
+    preset:'classic',
+    bg:{mode:'solid',c1:'#4338CA',c2:'#818CF8'},
+    pattern:{id:'none',color:'#FFFFFF',op:14,scale:100},
+    frame:{id:'double',color:'#FFFFFF',w:3,op:100},
+    symbol:{id:'sparkle',color:'#FFFFFF',size:46,op:100,dy:0},
+    logoAssetId:null,logoSize:40,logoDy:0,
+    text:{main:'',sub:'',font:'sans',color:'#FFFFFF',size:11,dy:34},
+    duplex:{flip:'short',dx:0,dy:0,grow:0.6,order:'sequential'}
+  };
+}
+// מיזוג עומק-2 מול ברירות מחדל — עיצוב ישן בלי back (או עם שדות חסרים) לא קורס
+function mergeBack(saved){
+  const d=backDefaults();
+  if(!saved||typeof saved!=='object')return d;
+  const out=Object.assign({},d,saved);
+  ['bg','pattern','frame','symbol','text','duplex'].forEach(k=>{out[k]=Object.assign({},d[k],saved[k]||{});});
+  return out;
+}
+
+const BACK_FONT_STACK={sans:"system-ui,'Segoe UI',Arial,sans-serif",serif:"Georgia,'Times New Roman',serif",round:"'Varela Round','Comic Sans MS',system-ui"};
+
+// ── דוגמאות רקע: אריח נבנה פעם אחת, מוקאש לפי id+color+scale. קונפטי דטרמיניסטי (sr, seed 7777) ──
+const _patternTileCache={};
+function getPatternTile(p){
+  const key=p.id+'|'+p.color+'|'+p.scale;
+  if(_patternTileCache[key])return _patternTileCache[key];
+  const base=60,sz=Math.max(10,Math.round(base*(p.scale/100)));
+  const tile=document.createElement('canvas');tile.width=tile.height=sz;
+  const c=tile.getContext('2d');
+  c.fillStyle=p.color;c.strokeStyle=p.color;
+  switch(p.id){
+    case 'dots':
+      c.beginPath();c.arc(sz*.25,sz*.25,sz*.1,0,Math.PI*2);c.fill();
+      c.beginPath();c.arc(sz*.75,sz*.75,sz*.1,0,Math.PI*2);c.fill();
+      break;
+    case 'stripes':
+      c.fillRect(0,0,sz*.5,sz);
+      break;
+    case 'checker':
+      c.fillRect(0,0,sz*.5,sz*.5);c.fillRect(sz*.5,sz*.5,sz*.5,sz*.5);
+      break;
+    case 'confetti':
+      for(let i=0;i<9;i++){
+        const seed=7777+i*17;
+        const rx=sr(seed)*sz,ry=sr(seed+3)*sz,rr=sz*(0.05+sr(seed+5)*0.06),rot=sr(seed+7)*Math.PI*2;
+        c.save();c.translate(rx,ry);c.rotate(rot);c.fillRect(-rr,-rr*.4,rr*2,rr*.8);c.restore();
+      }
+      break;
+    case 'stars':
+      starPathAbs(c,sz*.5,sz*.5,sz*.22,sz*.1);c.fill();
+      break;
+    case 'grid':
+      c.lineWidth=Math.max(1,sz*.05);c.strokeRect(0,0,sz,sz);
+      break;
+    case 'waves':
+      c.lineWidth=Math.max(1,sz*.07);
+      c.beginPath();c.moveTo(0,sz*.5);
+      c.bezierCurveTo(sz*.25,sz*.15,sz*.25,sz*.85,sz*.5,sz*.5);
+      c.bezierCurveTo(sz*.75,sz*.15,sz*.75,sz*.85,sz,sz*.5);
+      c.stroke();
+      break;
+  }
+  _patternTileCache[p.id+'|'+p.color+'|'+p.scale]=tile;
+  return tile;
+}
+function starPathAbs(ctx,cx,cy,outerR,innerR){
+  ctx.beginPath();
+  for(let i=0;i<10;i++){
+    const rr=i%2===0?outerR:innerR,a=-Math.PI/2+i*Math.PI/5;
+    const x=cx+Math.cos(a)*rr,y=cy+Math.sin(a)*rr;
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.closePath();
+}
+
+// SDF של ריבוע מעוגל — נקודת הגבול בזווית נתונה ממרכזו (עובד גם לצורת המרובע של הקלף)
+function roundedBoxBoundary(halfSize,cr,angle){
+  const dx=Math.cos(angle),dy=Math.sin(angle);
+  const sdf=(t)=>{
+    const px=Math.abs(t*dx)-(halfSize-cr),py=Math.abs(t*dy)-(halfSize-cr);
+    const ax=Math.max(px,0),ay=Math.max(py,0);
+    return Math.hypot(ax,ay)+Math.min(Math.max(px,py),0)-cr;
+  };
+  let lo=0,hi=halfSize*1.6;
+  for(let i=0;i<26;i++){const mid=(lo+hi)/2;if(sdf(mid)<0)lo=mid;else hi=mid;}
+  return{x:lo*dx,y:lo*dy};
+}
+function backBoundaryPoint(isC,r,sqHalf,sqcr,angle){
+  return isC?{x:r*Math.cos(angle),y:r*Math.sin(angle)}:roundedBoxBoundary(sqHalf,sqcr,angle);
+}
+
+function drawBackBg(ctx,cx,cy,r,sz,isC,sq,sqx,sqy,sqcr,bg){
+  ctx.save();ctx.beginPath();
+  if(isC)ctx.arc(cx,cy,r,0,Math.PI*2);else rrect(ctx,sqx,sqy,sq,sq,sqcr);
+  ctx.clip();
+  let fill;
+  if(bg.mode==='radial'){const g=ctx.createRadialGradient(cx,cy,0,cx,cy,r);g.addColorStop(0,bg.c1);g.addColorStop(1,bg.c2);fill=g;}
+  else if(bg.mode==='diag'){const g=ctx.createLinearGradient(cx-r,cy-r,cx+r,cy+r);g.addColorStop(0,bg.c1);g.addColorStop(1,bg.c2);fill=g;}
+  else fill=bg.c1;
+  ctx.fillStyle=fill;ctx.fillRect(0,0,sz,sz);
+  ctx.restore();
+}
+
+function drawBackFrame(ctx,cx,cy,r,isC,sq,sqx,sqy,sqcr,frame,ppMm){
+  if(frame.id==='none'||frame.op<=0)return;
+  const w=Math.max(0,frame.w)*ppMm;
+  if(w<0.5)return;
+  const sqHalf=sq/2;
+  const path=(inset)=>{ctx.beginPath();
+    if(isC)ctx.arc(cx,cy,Math.max(1,r-inset),0,Math.PI*2);
+    else rrect(ctx,sqx+inset,sqy+inset,Math.max(1,sq-2*inset),Math.max(1,sq-2*inset),Math.max(0,sqcr-inset));
+  };
+  ctx.save();
+  ctx.beginPath();
+  if(isC)ctx.arc(cx,cy,r,0,Math.PI*2);else rrect(ctx,sqx,sqy,sq,sq,sqcr);
+  ctx.clip();
+  ctx.globalAlpha=frame.op/100;
+  ctx.strokeStyle=frame.color;ctx.fillStyle=frame.color;ctx.lineCap='round';ctx.setLineDash([]);
+  const bp=(inset,angle)=>{const p=backBoundaryPoint(isC,r-inset,sqHalf-inset,Math.max(0,sqcr-inset),angle);return{x:cx+p.x,y:cy+p.y};};
+  switch(frame.id){
+    case 'single':
+      path(w/2);ctx.lineWidth=w;ctx.stroke();
+      break;
+    case 'double':{
+      const wSub=Math.max(0.6,w/3);
+      path(wSub/2);ctx.lineWidth=wSub;ctx.stroke();
+      path(wSub*2.4);ctx.lineWidth=wSub;ctx.stroke();
+      break;}
+    case 'dashed':
+      path(w/2);ctx.lineWidth=w;ctx.setLineDash([w*2.4,w*1.7]);ctx.stroke();ctx.setLineDash([]);
+      break;
+    case 'beads':{
+      const inset=w*0.9,beadR=w*0.55;
+      const circ=isC?2*Math.PI*(r-inset):4*(sq-2*inset);
+      const n=Math.max(10,Math.round(circ/(beadR*2.6)));
+      for(let i=0;i<n;i++){const pt=bp(inset,i*2*Math.PI/n);ctx.beginPath();ctx.arc(pt.x,pt.y,beadR,0,Math.PI*2);ctx.fill();}
+      break;}
+    case 'scallop':{
+      const inset=w*0.9,bumpR=w*0.9;
+      const circ=isC?2*Math.PI*(r-inset):4*(sq-2*inset);
+      const n=Math.max(10,Math.round(circ/(bumpR*2.1)));
+      ctx.lineWidth=Math.max(0.6,w*0.35);
+      for(let i=0;i<n;i++){const pt=bp(inset,i*2*Math.PI/n);ctx.beginPath();ctx.arc(pt.x,pt.y,bumpR,0,Math.PI*2);ctx.stroke();}
+      break;}
+    case 'zigzag':{
+      const inA=w*0.35,inB=w*1.6;
+      const circ=isC?2*Math.PI*(r-inA):4*(sq-2*inA);
+      const n=Math.max(14,Math.round(circ/(w*2)));
+      ctx.lineWidth=Math.max(0.6,w*0.4);ctx.beginPath();
+      for(let i=0;i<=n;i++){const pt=bp(i%2===0?inA:inB,i*2*Math.PI/n);i===0?ctx.moveTo(pt.x,pt.y):ctx.lineTo(pt.x,pt.y);}
+      ctx.closePath();ctx.stroke();
+      break;}
+    case 'corners':{
+      const arm=Math.max(r,sqHalf)*0.32,inset=w*0.9;
+      ctx.lineWidth=Math.max(0.8,w*0.55);
+      [0,1,2,3].forEach(qi=>{
+        const baseA=qi*Math.PI/2+Math.PI/4;
+        const p0=bp(inset,baseA);
+        ctx.save();ctx.translate(p0.x,p0.y);ctx.rotate(baseA+Math.PI/2);
+        ctx.beginPath();ctx.moveTo(-arm/2,0);ctx.lineTo(arm/2,0);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(0,-arm/2);ctx.lineTo(0,arm/2);ctx.stroke();
+        ctx.restore();
+      });
+      break;}
+  }
+  ctx.restore();
+}
+
+function drawBackText(ctx,cx,cy,r,text){
+  if(!text.main&&!text.sub)return;
+  ctx.save();
+  ctx.textAlign='center';ctx.direction='rtl';
+  const sizePx=Math.max(4,r*text.size/100),font=BACK_FONT_STACK[text.font]||BACK_FONT_STACK.sans;
+  const y0=cy+r*text.dy/100;
+  const drawLine=(str,y,sizeMul)=>{
+    if(!str)return;
+    const fs=Math.round(sizePx*sizeMul);
+    ctx.font=`800 ${fs}px ${font}`;
+    ctx.lineWidth=Math.max(1,fs*0.03);
+    ctx.strokeStyle='rgba(0,0,0,.35)';ctx.textBaseline='middle';
+    ctx.strokeText(str,cx,y);
+    ctx.fillStyle=text.color;
+    ctx.fillText(str,cx,y);
+  };
+  drawLine(text.main,y0,1);
+  if(text.sub)drawLine(text.sub,y0+sizePx*0.95,0.62);
+  ctx.restore();
+}
+
+// מצייר את גב הקלף — משקף בדיוק את הגיאומטריה של drawCard כדי שהצדדים יתאימו
+function drawCardBack(canvas){
+  const ctx=canvas.getContext('2d'),sz=canvas.width,cx=sz/2,cy=sz/2,r=sz/2-7;
+  const isC=S.shape==='circle';
+  const sq=r*1.88,sqx=cx-sq/2,sqy=cy-sq/2,sqcr=sq*.09;
+  const ppMm=(sz-14)/Math.max(1,S.cardSizeMm);
+  const B=S.back;
+  ctx.clearRect(0,0,sz,sz);
+
+  drawBackBg(ctx,cx,cy,r,sz,isC,sq,sqx,sqy,sqcr,B.bg);
+
+  if(B.pattern.id!=='none'&&B.pattern.op>0){
+    ctx.save();ctx.beginPath();
+    if(isC)ctx.arc(cx,cy,r,0,Math.PI*2);else rrect(ctx,sqx,sqy,sq,sq,sqcr);
+    ctx.clip();
+    ctx.globalAlpha=B.pattern.op/100;
+    ctx.fillStyle=ctx.createPattern(getPatternTile(B.pattern),'repeat');
+    ctx.fillRect(0,0,sz,sz);
+    ctx.restore();
+  }
+
+  drawBackFrame(ctx,cx,cy,r,isC,sq,sqx,sqy,sqcr,B.frame,ppMm);
+
+  if(B.symbol.id!=='none'&&B.symbol.op>0){
+    const sym=BACK_SYMBOLS.find(s=>s.id===B.symbol.id);
+    if(sym){
+      const sSize=r*B.symbol.size/100,sDy=r*B.symbol.dy/100;
+      ctx.save();
+      ctx.translate(cx,cy+sDy);ctx.scale(sSize,sSize);
+      ctx.fillStyle=B.symbol.color;ctx.strokeStyle=B.symbol.color;
+      ctx.globalAlpha=B.symbol.op/100;
+      sym.draw(ctx);
+      ctx.restore();
+    }
+  }
+
+  if(B.logoAssetId){
+    const logoAsset=S.assets.find(a=>a.id===B.logoAssetId&&a.type==='backlogo');
+    if(logoAsset&&logoAsset.imgEl){
+      const lSize=r*B.logoSize/100*2,lDy=r*B.logoDy/100;
+      if(lSize>1){
+        ctx.save();
+        ctx.beginPath();ctx.arc(cx,cy+lDy,lSize/2,0,Math.PI*2);ctx.clip();
+        drawCover(ctx,logoAsset.imgEl,cx-lSize/2,cy+lDy-lSize/2,lSize);
+        ctx.restore();
+      }
+    }
+  }
+
+  drawBackText(ctx,cx,cy,r,B.text);
+
+  if(needsWatermark())drawWatermark(ctx,cx,cy,r,isC,sq,sqx,sqy,sqcr,sz);
+}
+
+function ensureBackCanvas(){
+  if(!S.backCanvas){S.backCanvas=document.createElement('canvas');S.backCanvas.width=S.backCanvas.height=CARD_PX;}
+  return S.backCanvas;
+}
+// נקרא מכל שינוי בעורך הגב — מצייר מחדש את קנבס הגב (הייצוא משתמש בו ישירות, פעם אחת לכל העמודים)
+function markBackDirty(){
+  drawCardBack(ensureBackCanvas());
+  const modal=document.getElementById('back-modal');
+  const live=document.getElementById('back-live-canvas');
+  if(live&&modal&&!modal.hidden){
+    live.classList.toggle('sq',S.shape!=='circle');
+    const lctx=live.getContext('2d');
+    lctx.clearRect(0,0,live.width,live.height);
+    lctx.drawImage(S.backCanvas,0,0,live.width,live.height);
+  }
+  if(document.getElementById('s3').classList.contains('on'))updatePaperPrev();
+}
+
 // ══ STATE ══
 const S={
   assets:[],
@@ -1822,6 +2406,7 @@ const S={
   symPad:2,
   bg:{color:'#FFFEF5',op:100},
   idSeq:0,
+  back:backDefaults(),backCanvas:null,   // backCanvas לעולם לא נשמר — נגזר תמיד מ-back דרך markBackDirty()
 };
 
 const CM={
@@ -1924,6 +2509,9 @@ function newFolder(label){
 function folderKey(a){return(a.folder&&a.folder.id)||'__none__';}
 function folderLabel(a){return(a.folder&&a.folder.name)||'מאגר כללי';}
 
+// נכס שנספר כסמל משחק. לוגו-גב ותמונת-מקור-לחיתוך אינם סמלים.
+function isSymbolAsset(a){return !a.isCropSource&&a.type!=='backlogo';}
+
 const _closedFolders=new Set();   // תיקיות מתחילות פתוחות כברירת מחדל; כאן נשמרות רק אלה שנסגרו ידנית
 
 // בלי timeout, בקשה שנתקעת (רשת איטית/CDN חסום) משאירה את ה-await תלוי לנצח —
@@ -2020,6 +2608,35 @@ async function loadImgFile(f,url){
   }
 }
 
+// ── לוגו לגב הקלף: נכנס דרך אותו צינור תמונות רגיל (type:'backlogo') כדי להסתנכרן ל-Storage
+// ולא כ-base64 ב-JSONB. isSymbolAsset() דואג שהוא לעולם לא ייספר כסמל משחק או יוצג בגלריה.
+async function setBackLogoFromFile(f){
+  const url=URL.createObjectURL(f);
+  try{
+    const imgEl=await withTimeout(loadImgFile(f,url),30000,'תם הזמן הקצוב לטעינת הלוגו');
+    removeBackLogo();
+    const thumb=makeThumb(imgEl);
+    const asset={id:++S.idSeq,type:'backlogo',name:f.name,url,thumb,imgEl,selected:true};
+    S.assets.push(asset);
+    S.back.logoAssetId=asset.id;
+    markBackDirty();schedIdbSave();
+    return asset;
+  }catch(e){
+    URL.revokeObjectURL(url);
+    console.warn('logo upload failed:',e?.message||e);
+    toast('העלאת הלוגו נכשלה — נסו קובץ אחר','err');
+    return null;
+  }
+}
+function removeBackLogo(){
+  const prev=S.assets.find(a=>a.type==='backlogo');
+  if(prev){
+    if(prev.url)URL.revokeObjectURL(prev.url);
+    S.assets=S.assets.filter(a=>a.id!==prev.id);
+  }
+  S.back.logoAssetId=null;
+}
+
 function makeThumb(imgEl){
   const c=document.createElement('canvas');c.width=c.height=72;
   drawCover(c.getContext('2d'),imgEl,0,0,72);
@@ -2069,15 +2686,17 @@ function renderGallery(){
 
   // תצוגה מקובצת לפי תיקיות העלאה — למנויים מחוברים בלבד (אין לה תועלת אמיתית למשתמש מקומי
   // עם קוד גישה בודד). משתמש לא מחובר ממשיך לראות גלריה שטוחה בדיוק כמו היום.
+  // הלוגו לגב הקלף מנוהל רק מתוך עורך הגב — אף פעם לא בגלריה הרגילה
+  const galleryAssets=S.assets.filter(a=>a.type!=='backlogo');
   if(!isSignedIn()){
     grid.classList.remove('foldered');
-    S.assets.forEach(a=>grid.appendChild(buildGalleryItem(a)));
+    galleryAssets.forEach(a=>grid.appendChild(buildGalleryItem(a)));
     return;
   }
 
   grid.classList.add('foldered');
   const groups=new Map();
-  S.assets.forEach(a=>{
+  galleryAssets.forEach(a=>{
     const k=folderKey(a);
     if(!groups.has(k))groups.set(k,{key:k,label:folderLabel(a),items:[]});
     groups.get(k).items.push(a);
@@ -2085,7 +2704,7 @@ function renderGallery(){
   groups.forEach(g=>{
     const wrap=document.createElement('div');wrap.className='g-folder';
     const isOpen=!_closedFolders.has(g.key);
-    const usable=g.items.filter(a=>!a.isCropSource).length;
+    const usable=g.items.filter(isSymbolAsset).length;
     const hdr=document.createElement('div');hdr.className='g-fold-hdr';
     const caret=document.createElement('span');caret.className='g-fold-caret';caret.textContent=isOpen?'▾':'▸';
     const name=document.createElement('span');name.className='g-fold-name';name.textContent=g.label;
@@ -2122,16 +2741,16 @@ document.getElementById('crop-hint-x').addEventListener('click',()=>{
 });
 
 document.getElementById('btn-select-all').addEventListener('click',()=>{
-  S.assets.forEach(a=>{if(!a.isCropSource)a.selected=true;});
+  S.assets.forEach(a=>{if(isSymbolAsset(a))a.selected=true;});
   renderGallery();updateCounter();schedIdbSave();
 });
 document.getElementById('btn-clear-all').addEventListener('click',()=>{
-  S.assets.forEach(a=>{if(!a.isCropSource)a.selected=false;});
+  S.assets.forEach(a=>{if(isSymbolAsset(a))a.selected=false;});
   renderGallery();updateCounter();schedIdbSave();
 });
 
 function updateCounter(){
-  const usable=S.assets.filter(a=>!a.isCropSource);
+  const usable=S.assets.filter(isSymbolAsset);
   const n=usable.filter(a=>a.selected!==false).length;
   const nSrc=S.assets.filter(a=>a.isCropSource).length;
   document.getElementById('gallery-count').textContent=nSrc?`${n} סמלים · ${nSrc} מקורות`:`${n} סמלים`;
@@ -2203,7 +2822,7 @@ function flushCloudAfterDelete(){
 
 // מוחק את כל הנכסים שמסומנים (אותו סימון שקובע "כלול במשחק")
 async function deleteSelected(){
-  const sel=S.assets.filter(a=>!a.isCropSource&&a.selected!==false);
+  const sel=S.assets.filter(a=>isSymbolAsset(a)&&a.selected!==false);
   if(!sel.length){toast('לא סומנו סמלים למחיקה','err');return;}
   const ok=await confirmDialog({
     title:'מחיקת סמלים מסומנים',
@@ -2224,7 +2843,7 @@ async function deleteSelected(){
 async function deleteFolder(fid,fname){
   const items=S.assets.filter(a=>folderKey(a)===fid);
   if(!items.length)return;
-  const nUse=items.filter(a=>!a.isCropSource).length;
+  const nUse=items.filter(isSymbolAsset).length;
   const ok=await confirmDialog({
     icon:'📁',
     title:'מחיקת תיקייה',
@@ -2307,7 +2926,7 @@ async function generate(){
   S.seed=Math.floor(Math.random()*90000)+10000;
   S.layouts=buildLayouts(S.deck,S.seed,S.sMin,S.sMax);
   setp(15,'מכין תמונות…');
-  S.imgEls=S.assets.filter(a=>!a.isCropSource&&a.selected!==false).slice(0,S.order.total).map(a=>a.imgEl);
+  S.imgEls=S.assets.filter(a=>isSymbolAsset(a)&&a.selected!==false).slice(0,S.order.total).map(a=>a.imgEl);
   prepareSymbolMeta();
   setp(35,'מצייר קלפים…');
   S.canvases=[];S.sel=[];
@@ -2478,6 +3097,31 @@ function layoutEngine(){
   return{positions:filtered,cardMm:d};
 }
 
+// המרת מיקום קדמי למיקום הגב בעמוד ההפוך. גב אחיד לכל הקלפים ⇒ סדר הערימה לא משנה —
+// הדרישה היחידה היא שמספר עמודי הגב = מספר עמודי הקדמי, והמיקומים ממוראים כהלכה.
+// צד קצר (ברירת מחדל): היפוך אנכי (x,y)→(x,297−y). צד ארוך: היפוך אופקי (x,y)→(210−x,y).
+// הכיול (dx,dy) מפצה על סטיית הזנה של המדפסת, ומתווסף רק לגב.
+function backPos(p){
+  const f=S.back.duplex;
+  const x=f.flip==='long'?(A4_W-p.x):p.x;
+  const y=f.flip==='long'?p.y:(A4_H-p.y);
+  return{x:x+(f.dx||0),y:y+(f.dy||0)};
+}
+
+// רשימת עמודי הפלט לפי הסדר הנבחר — משותפת ל-PDF ולתצוגה המקדימה כדי ששתיהן יסכימו תמיד.
+// גב כבוי ⇒ רק עמודי קדמי, בדיוק כמו היום. גב פעיל: רציף (כל הקדמיים ואז כל האחוריים) או לסירוגין.
+function buildPrintPageOrder(numPages){
+  if(!S.back.enabled)return Array.from({length:numPages},(_,k)=>({type:'front',k}));
+  const arr=[];
+  if(S.back.duplex.order==='interleave'){
+    for(let k=0;k<numPages;k++){arr.push({type:'front',k});arr.push({type:'back',k});}
+  }else{
+    for(let k=0;k<numPages;k++)arr.push({type:'front',k});
+    for(let k=0;k<numPages;k++)arr.push({type:'back',k});
+  }
+  return arr;
+}
+
 // ══ PAPER PREVIEW ══
 function updatePaperPrev(){
   const{positions,cardMm}=layoutEngine();
@@ -2537,8 +3181,9 @@ function updatePaperPrev(){
     return;
   }
   const spacingLabel=S.spacingMm===0?'hex':S.spacingMm+'mm';
+  const backTxt=(S.back.enabled&&S.deck.length)?` · + ${pages} עמודי גב`:'';
   document.getElementById('prev-info').textContent=
-    `A4 · ${perPage} קלפים/עמוד · ${cardMm}mm · מרווח ${spacingLabel} · ${pages} ${pages!==1?'דפים':'דף'}`;
+    `A4 · ${perPage} קלפים/עמוד · ${cardMm}mm · מרווח ${spacingLabel} · ${pages} ${pages!==1?'דפים':'דף'}${backTxt}`;
 }
 
 // ══ EXPORT OPTIONS (V5 Parametric) ══
@@ -2563,6 +3208,7 @@ document.getElementById('chk-crop').addEventListener('change',e=>{S.crop=e.targe
 document.getElementById('chk-sil').addEventListener('change',e=>{
   S.isSilhouette=e.target.checked;
   document.getElementById('btn-dodxf').style.display=S.isSilhouette?'':'none';
+  if(S.isSilhouette&&S.back.enabled)toast('⚠️ שילוב Silhouette + גב מעוצב לא נתמך — הייצוא ייחסם','err');
   resetExport();
   updatePaperPrev();
 });
@@ -2625,6 +3271,287 @@ async function redrawCards(){
 }
 function onDesignChange(){resetExport();redrawCards();updatePaperPrev();}
 
+// ══ עורך גב הקלף ══
+const BACK_COLORS=['#FFFFFF','#000000','#1E1B4B','#4338CA','#818CF8','#7C3AED','#DB2777','#EC4899',
+  '#EF4444','#B91C1C','#F59E0B','#FDE047','#15803D','#84CC16','#0EA5E9','#0369A1','#D4AF37'];
+const BACK_QUICK_TEXTS=['מזל טוב','יום הולדת שמח','כל הכבוד','לזכר','בהצלחה'];
+let _backSnapshot=null;
+
+// הפיצ'ר למנויים בלבד — אותו פרדיקט שכבר משמש את תצוגת התיקיות המקובצות (renderGallery).
+// השער הזה הוא UI בלבד; האכיפה האמיתית היא ב-doExport (isWithinTier + consume_print_quota
+// בצד השרת), כך שאין כאן הפרה של עקרון "אימות בצד שרת בלבד".
+function backEditorAllowed(){return isSignedIn()||window.__supportMode;}
+
+function buildSwatchesGeneric(containerId,colors,pickerId,onPick){
+  const el=document.getElementById(containerId),pick=document.getElementById(pickerId);
+  el.innerHTML='';
+  colors.forEach(c=>{
+    const sw=document.createElement('button');
+    sw.type='button';sw.className='sw';sw.dataset.c=c;sw.style.background=c;
+    if(c==='#FFFFFF')sw.style.boxShadow='0 1px 3px rgba(0,0,0,.25),inset 0 0 0 1px #ddd';
+    sw.addEventListener('click',()=>{
+      pick.value=c;onPick(c);
+      el.querySelectorAll('.sw').forEach(s=>s.classList.toggle('on',s===sw));
+    });
+    el.appendChild(sw);
+  });
+}
+function syncSwatchRow(containerId,color){
+  document.getElementById(containerId).querySelectorAll('.sw').forEach(s=>s.classList.toggle('on',s.dataset.c===color));
+}
+function buildIconGrid(container,items,onPick,previewFn){
+  container.innerHTML='';
+  items.forEach(it=>{
+    const b=document.createElement('button');
+    b.type='button';b.className='back-sym-btn';b.title=it.name;b.dataset.id=it.id;
+    const cv=document.createElement('canvas');cv.width=cv.height=48;
+    previewFn(cv,it);
+    b.appendChild(cv);
+    b.addEventListener('click',()=>onPick(it.id));
+    container.appendChild(b);
+  });
+}
+function setIconGridActive(container,activeId){
+  container.querySelectorAll('.back-sym-btn').forEach(b=>b.classList.toggle('on',b.dataset.id===activeId));
+}
+function symbolPreview(cv,sym){
+  const ctx=cv.getContext('2d');ctx.clearRect(0,0,48,48);
+  ctx.save();ctx.translate(24,24);ctx.scale(17,17);
+  ctx.fillStyle='#4338CA';ctx.strokeStyle='#4338CA';
+  sym.draw(ctx);
+  ctx.restore();
+}
+function patternPreview(cv,p){
+  const ctx=cv.getContext('2d');ctx.clearRect(0,0,48,48);
+  ctx.fillStyle='#EEF2FF';ctx.fillRect(0,0,48,48);
+  if(p.id!=='none'){
+    ctx.fillStyle=ctx.createPattern(getPatternTile({id:p.id,color:'#4338CA',scale:100}),'repeat');
+    ctx.fillRect(0,0,48,48);
+  }else{
+    ctx.fillStyle='#9ca3af';ctx.font='10px sans-serif';ctx.textAlign='center';ctx.fillText('ללא',24,27);
+  }
+}
+buildIconGrid(document.getElementById('back-sym-grid'),BACK_SYMBOLS,
+  id=>{S.back.symbol.id=id;setIconGridActive(document.getElementById('back-sym-grid'),id);markBackDirty();},symbolPreview);
+buildIconGrid(document.getElementById('back-pattern-grid'),BACK_PATTERNS,
+  id=>{S.back.pattern.id=id;setIconGridActive(document.getElementById('back-pattern-grid'),id);markBackDirty();},patternPreview);
+(function(){
+  const grid=document.getElementById('back-frame-grid');
+  BACK_FRAMES.forEach(fr=>{
+    const b=document.createElement('button');
+    b.type='button';b.className='back-frame-btn';b.textContent=fr.name;b.dataset.id=fr.id;
+    b.addEventListener('click',()=>{
+      S.back.frame.id=fr.id;
+      grid.querySelectorAll('.back-frame-btn').forEach(x=>x.classList.toggle('on',x===b));
+      markBackDirty();
+    });
+    grid.appendChild(b);
+  });
+})();
+(function(){
+  const row=document.getElementById('back-presets-row');
+  BACK_PRESETS.forEach(p=>{
+    const b=document.createElement('button');
+    b.type='button';b.className='back-preset-btn';b.textContent=p.name;b.dataset.id=p.id;
+    b.addEventListener('click',()=>applyBackPreset(p));
+    row.appendChild(b);
+  });
+})();
+(function(){
+  const row=document.getElementById('back-text-quick');
+  BACK_QUICK_TEXTS.forEach(t=>{
+    const b=document.createElement('button');b.type='button';b.className='back-quick-btn';b.textContent=t;
+    b.addEventListener('click',()=>{document.getElementById('back-text-main').value=t;S.back.text.main=t;markBackDirty();});
+    row.appendChild(b);
+  });
+})();
+
+buildSwatchesGeneric('back-bg-sw1',BACK_COLORS,'back-bg-pick1',c=>{S.back.bg.c1=c;markBackDirty();});
+buildSwatchesGeneric('back-bg-sw2',BACK_COLORS,'back-bg-pick2',c=>{S.back.bg.c2=c;markBackDirty();});
+buildSwatchesGeneric('back-pattern-sw',BACK_COLORS,'back-pattern-pick',c=>{S.back.pattern.color=c;markBackDirty();});
+buildSwatchesGeneric('back-frame-sw',BACK_COLORS,'back-frame-pick',c=>{S.back.frame.color=c;markBackDirty();});
+buildSwatchesGeneric('back-sym-sw',BACK_COLORS,'back-sym-pick',c=>{S.back.symbol.color=c;markBackDirty();});
+buildSwatchesGeneric('back-text-sw',BACK_COLORS,'back-text-pick',c=>{S.back.text.color=c;markBackDirty();});
+
+document.getElementById('back-bg-pick1').addEventListener('input',e=>{S.back.bg.c1=e.target.value;syncSwatchRow('back-bg-sw1',null);markBackDirty();});
+document.getElementById('back-bg-pick2').addEventListener('input',e=>{S.back.bg.c2=e.target.value;syncSwatchRow('back-bg-sw2',null);markBackDirty();});
+document.getElementById('back-pattern-pick').addEventListener('input',e=>{S.back.pattern.color=e.target.value;syncSwatchRow('back-pattern-sw',null);markBackDirty();});
+document.getElementById('back-frame-pick').addEventListener('input',e=>{S.back.frame.color=e.target.value;syncSwatchRow('back-frame-sw',null);markBackDirty();});
+document.getElementById('back-sym-pick').addEventListener('input',e=>{S.back.symbol.color=e.target.value;syncSwatchRow('back-sym-sw',null);markBackDirty();});
+document.getElementById('back-text-pick').addEventListener('input',e=>{S.back.text.color=e.target.value;syncSwatchRow('back-text-sw',null);markBackDirty();});
+
+document.getElementById('back-bg-mode-grp').addEventListener('click',e=>{
+  const b=e.target.closest('.sbt');if(!b)return;
+  document.querySelectorAll('#back-bg-mode-grp .sbt').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');S.back.bg.mode=b.dataset.mode;markBackDirty();
+});
+document.getElementById('back-pattern-op').addEventListener('input',e=>{
+  S.back.pattern.op=parseInt(e.target.value);document.getElementById('lbl-back-pattern-op').textContent=S.back.pattern.op+'%';markBackDirty();
+});
+document.getElementById('back-pattern-scale').addEventListener('input',e=>{
+  S.back.pattern.scale=parseInt(e.target.value);document.getElementById('lbl-back-pattern-scale').textContent=S.back.pattern.scale+'%';markBackDirty();
+});
+document.getElementById('back-frame-w').addEventListener('input',e=>{
+  S.back.frame.w=parseFloat(e.target.value);document.getElementById('lbl-back-frame-w').textContent=S.back.frame.w+'מ"מ';markBackDirty();
+});
+document.getElementById('back-frame-op').addEventListener('input',e=>{
+  S.back.frame.op=parseInt(e.target.value);document.getElementById('lbl-back-frame-op').textContent=S.back.frame.op+'%';markBackDirty();
+});
+document.getElementById('back-sym-size').addEventListener('input',e=>{
+  S.back.symbol.size=parseInt(e.target.value);document.getElementById('lbl-back-sym-size').textContent=S.back.symbol.size+'%';markBackDirty();
+});
+document.getElementById('back-sym-dy').addEventListener('input',e=>{
+  S.back.symbol.dy=parseInt(e.target.value);document.getElementById('lbl-back-sym-dy').textContent=S.back.symbol.dy+'%';markBackDirty();
+});
+document.getElementById('back-text-main').addEventListener('input',e=>{S.back.text.main=e.target.value;markBackDirty();});
+document.getElementById('back-text-sub').addEventListener('input',e=>{S.back.text.sub=e.target.value;markBackDirty();});
+document.getElementById('back-text-font-grp').addEventListener('click',e=>{
+  const b=e.target.closest('.sbt');if(!b)return;
+  document.querySelectorAll('#back-text-font-grp .sbt').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');S.back.text.font=b.dataset.font;markBackDirty();
+});
+document.getElementById('back-text-size').addEventListener('input',e=>{
+  S.back.text.size=parseFloat(e.target.value);document.getElementById('lbl-back-text-size').textContent=S.back.text.size+'%';markBackDirty();
+});
+document.getElementById('back-text-dy').addEventListener('input',e=>{
+  S.back.text.dy=parseInt(e.target.value);document.getElementById('lbl-back-text-dy').textContent=S.back.text.dy+'%';markBackDirty();
+});
+
+function updateLogoPreview(){
+  const cv=document.getElementById('back-logo-prev'),ctx=cv.getContext('2d');
+  ctx.clearRect(0,0,80,80);
+  const asset=S.assets.find(a=>a.id===S.back.logoAssetId&&a.type==='backlogo');
+  const removeBtn=document.getElementById('back-logo-remove');
+  if(asset&&asset.imgEl){drawCover(ctx,asset.imgEl,0,0,80);removeBtn.style.display='';}
+  else{ctx.fillStyle='#e5e7eb';ctx.fillRect(0,0,80,80);removeBtn.style.display='none';}
+}
+document.getElementById('back-logo-btn').addEventListener('click',()=>document.getElementById('back-logo-file').click());
+document.getElementById('back-logo-file').addEventListener('change',async e=>{
+  const f=e.target.files&&e.target.files[0];e.target.value='';
+  if(!f)return;
+  await setBackLogoFromFile(f);
+  updateLogoPreview();
+});
+document.getElementById('back-logo-remove').addEventListener('click',()=>{
+  removeBackLogo();updateLogoPreview();markBackDirty();schedIdbSave();
+});
+document.getElementById('back-logo-size').addEventListener('input',e=>{
+  S.back.logoSize=parseInt(e.target.value);document.getElementById('lbl-back-logo-size').textContent=S.back.logoSize+'%';markBackDirty();
+});
+document.getElementById('back-logo-dy').addEventListener('input',e=>{
+  S.back.logoDy=parseInt(e.target.value);document.getElementById('lbl-back-logo-dy').textContent=S.back.logoDy+'%';markBackDirty();
+});
+
+document.getElementById('back-flip-grp').addEventListener('click',e=>{
+  const b=e.target.closest('.sbt');if(!b)return;
+  document.querySelectorAll('#back-flip-grp .sbt').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');S.back.duplex.flip=b.dataset.flip;
+});
+document.getElementById('back-order-grp').addEventListener('click',e=>{
+  const b=e.target.closest('.sbt');if(!b)return;
+  document.querySelectorAll('#back-order-grp .sbt').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');S.back.duplex.order=b.dataset.order;
+});
+document.getElementById('back-dx').addEventListener('input',e=>{
+  S.back.duplex.dx=parseFloat(e.target.value);document.getElementById('lbl-back-dx').textContent=S.back.duplex.dx;
+});
+document.getElementById('back-dy').addEventListener('input',e=>{
+  S.back.duplex.dy=parseFloat(e.target.value);document.getElementById('lbl-back-dy').textContent=S.back.duplex.dy;
+});
+document.getElementById('back-duplex-reset').addEventListener('click',()=>{
+  S.back.duplex.dx=0;S.back.duplex.dy=0;
+  document.getElementById('back-dx').value=0;document.getElementById('lbl-back-dx').textContent='0';
+  document.getElementById('back-dy').value=0;document.getElementById('lbl-back-dy').textContent='0';
+});
+document.getElementById('back-grow').addEventListener('input',e=>{
+  S.back.duplex.grow=parseFloat(e.target.value);document.getElementById('lbl-back-grow').textContent=S.back.duplex.grow+'מ"מ';
+});
+document.getElementById('back-calib-btn').addEventListener('click',()=>{
+  if(typeof generateCalibrationPDF==='function')generateCalibrationPDF();
+});
+
+document.getElementById('back-tabs').addEventListener('click',e=>{
+  const b=e.target.closest('.back-tab');if(!b)return;
+  document.querySelectorAll('.back-tab').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('.back-tabpage').forEach(p=>p.classList.toggle('on',p.id==='back-tab-'+b.dataset.tab));
+});
+
+function applyBackPreset(p){
+  const patch=p.apply();
+  const keepMain=S.back.text.main,keepSub=S.back.text.sub;
+  const keepDuplex=Object.assign({},S.back.duplex);
+  const keepLogo={logoAssetId:S.back.logoAssetId,logoSize:S.back.logoSize,logoDy:S.back.logoDy};
+  S.back=mergeBack(Object.assign({preset:p.id},patch));
+  S.back.duplex=keepDuplex;
+  Object.assign(S.back,keepLogo);
+  if(!(patch.text&&patch.text.main))S.back.text.main=keepMain;
+  if(!(patch.text&&patch.text.sub))S.back.text.sub=keepSub;
+  syncBackUIFromState();
+  markBackDirty();
+}
+
+function syncBackUIFromState(){
+  const B=S.back;
+  document.querySelectorAll('#back-presets-row .back-preset-btn').forEach(b=>b.classList.toggle('on',b.dataset.id===B.preset));
+  document.querySelectorAll('#back-bg-mode-grp .sbt').forEach(b=>b.classList.toggle('on',b.dataset.mode===B.bg.mode));
+  document.getElementById('back-bg-pick1').value=B.bg.c1;syncSwatchRow('back-bg-sw1',B.bg.c1);
+  document.getElementById('back-bg-pick2').value=B.bg.c2;syncSwatchRow('back-bg-sw2',B.bg.c2);
+  setIconGridActive(document.getElementById('back-pattern-grid'),B.pattern.id);
+  document.getElementById('back-pattern-pick').value=B.pattern.color;syncSwatchRow('back-pattern-sw',B.pattern.color);
+  document.getElementById('back-pattern-op').value=B.pattern.op;document.getElementById('lbl-back-pattern-op').textContent=B.pattern.op+'%';
+  document.getElementById('back-pattern-scale').value=B.pattern.scale;document.getElementById('lbl-back-pattern-scale').textContent=B.pattern.scale+'%';
+  document.querySelectorAll('#back-frame-grid .back-frame-btn').forEach(b=>b.classList.toggle('on',b.dataset.id===B.frame.id));
+  document.getElementById('back-frame-pick').value=B.frame.color;syncSwatchRow('back-frame-sw',B.frame.color);
+  document.getElementById('back-frame-w').value=B.frame.w;document.getElementById('lbl-back-frame-w').textContent=B.frame.w+'מ"מ';
+  document.getElementById('back-frame-op').value=B.frame.op;document.getElementById('lbl-back-frame-op').textContent=B.frame.op+'%';
+  setIconGridActive(document.getElementById('back-sym-grid'),B.symbol.id);
+  document.getElementById('back-sym-pick').value=B.symbol.color;syncSwatchRow('back-sym-sw',B.symbol.color);
+  document.getElementById('back-sym-size').value=B.symbol.size;document.getElementById('lbl-back-sym-size').textContent=B.symbol.size+'%';
+  document.getElementById('back-sym-dy').value=B.symbol.dy;document.getElementById('lbl-back-sym-dy').textContent=B.symbol.dy+'%';
+  document.getElementById('back-text-main').value=B.text.main;
+  document.getElementById('back-text-sub').value=B.text.sub;
+  document.querySelectorAll('#back-text-font-grp .sbt').forEach(b=>b.classList.toggle('on',b.dataset.font===B.text.font));
+  document.getElementById('back-text-pick').value=B.text.color;syncSwatchRow('back-text-sw',B.text.color);
+  document.getElementById('back-text-size').value=B.text.size;document.getElementById('lbl-back-text-size').textContent=B.text.size+'%';
+  document.getElementById('back-text-dy').value=B.text.dy;document.getElementById('lbl-back-text-dy').textContent=B.text.dy+'%';
+  updateLogoPreview();
+  document.getElementById('back-logo-size').value=B.logoSize;document.getElementById('lbl-back-logo-size').textContent=B.logoSize+'%';
+  document.getElementById('back-logo-dy').value=B.logoDy;document.getElementById('lbl-back-logo-dy').textContent=B.logoDy+'%';
+  document.querySelectorAll('#back-flip-grp .sbt').forEach(b=>b.classList.toggle('on',b.dataset.flip===B.duplex.flip));
+  document.querySelectorAll('#back-order-grp .sbt').forEach(b=>b.classList.toggle('on',b.dataset.order===B.duplex.order));
+  document.getElementById('back-dx').value=B.duplex.dx;document.getElementById('lbl-back-dx').textContent=B.duplex.dx;
+  document.getElementById('back-dy').value=B.duplex.dy;document.getElementById('lbl-back-dy').textContent=B.duplex.dy;
+  document.getElementById('back-grow').value=B.duplex.grow;document.getElementById('lbl-back-grow').textContent=B.duplex.grow+'מ"מ';
+}
+
+function openBackModal(){
+  if(!backEditorAllowed()){window.showUpgradeModal&&window.showUpgradeModal();return;}
+  _backSnapshot=JSON.parse(JSON.stringify(S.back));
+  syncBackUIFromState();
+  markBackDirty();
+  document.getElementById('back-modal').hidden=false;
+}
+function closeBackModal(save){
+  if(!save&&_backSnapshot)S.back=mergeBack(_backSnapshot);
+  _backSnapshot=null;
+  document.getElementById('back-modal').hidden=true;
+  document.getElementById('chk-back-enabled').checked=!!S.back.enabled;
+  markBackDirty();
+  if(save){schedIdbSave();toast('עיצוב הגב נשמר ✓','ok');}
+}
+document.getElementById('btn-back-design').addEventListener('click',openBackModal);
+document.getElementById('btn-back-design-2').addEventListener('click',openBackModal);
+document.getElementById('back-modal-x').addEventListener('click',()=>closeBackModal(false));
+document.getElementById('back-cancel').addEventListener('click',()=>closeBackModal(false));
+document.getElementById('back-save').addEventListener('click',()=>closeBackModal(true));
+document.getElementById('back-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeBackModal(false);});
+
+document.getElementById('chk-back-enabled').addEventListener('change',e=>{
+  S.back.enabled=e.target.checked;
+  if(S.back.enabled&&S.isSilhouette)toast('⚠️ שילוב Silhouette + גב מעוצב לא נתמך — הייצוא ייחסם','err');
+  markBackDirty();resetExport();
+});
+
 // ══ PRINT PREVIEW ══
 let _ppPage=0;
 document.getElementById('btn-prevprint').addEventListener('click',()=>{
@@ -2638,14 +3565,18 @@ document.getElementById('ppmodal').addEventListener('click',e=>{if(e.target===e.
 document.getElementById('pp-prev').addEventListener('click',()=>{if(_ppPage>0){_ppPage--;renderPP(_ppPage);}});
 document.getElementById('pp-next').addEventListener('click',()=>{
   const{positions}=layoutEngine();
-  const total=Math.ceil(S.canvases.length/Math.max(1,positions.length));
+  const numPages=Math.max(1,Math.ceil(S.canvases.length/Math.max(1,positions.length)));
+  const total=buildPrintPageOrder(numPages).length;
   if(_ppPage<total-1){_ppPage++;renderPP(_ppPage);}
 });
 
 function renderPP(page){
   const{positions,cardMm}=layoutEngine();
   const perPage=Math.max(1,positions.length);
-  const totalPages=Math.ceil(S.canvases.length/perPage);
+  const numPages=Math.max(1,Math.ceil(S.canvases.length/perPage));
+  const order=buildPrintPageOrder(numPages);
+  const totalPages=order.length;
+  const entry=order[page]||order[0];
   const modal=document.getElementById('ppmodal');
   const W=Math.min(420,Math.max(280,(modal.querySelector('.modal-card').clientWidth||452)-32));
   const H=Math.round(W*297/210);
@@ -2655,44 +3586,73 @@ function renderPP(page){
   const sc=W/210;
   ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
 
-  const start=page*perPage;
-  for(let i=0;i<perPage;i++){
-    const ci=start+i;
-    if(ci>=S.canvases.length)break;
-    const{x,y}=positions[i],d=cardMm*sc;
-    ctx.drawImage(S.canvases[ci],Math.round(x*sc-d/2),Math.round(y*sc-d/2),Math.round(d),Math.round(d));
-    if(S.crop&&!S.isSilhouette){
-      const cg=2*sc,cl=4*sc,lx=x*sc-d/2,ly=y*sc-d/2;
-      ctx.strokeStyle='rgba(0,0,0,.45)';ctx.lineWidth=.5;ctx.beginPath();
-      ctx.moveTo(lx-cg-cl,ly);ctx.lineTo(lx-cg,ly);
-      ctx.moveTo(lx,ly-cg-cl);ctx.lineTo(lx,ly-cg);
-      ctx.moveTo(lx+d+cg,ly);ctx.lineTo(lx+d+cg+cl,ly);
-      ctx.moveTo(lx+d,ly-cg-cl);ctx.lineTo(lx+d,ly-cg);
-      ctx.moveTo(lx-cg-cl,ly+d);ctx.lineTo(lx-cg,ly+d);
-      ctx.moveTo(lx,ly+d+cg);ctx.lineTo(lx,ly+d+cg+cl);
-      ctx.moveTo(lx+d+cg,ly+d);ctx.lineTo(lx+d+cg+cl,ly+d);
-      ctx.moveTo(lx+d,ly+d+cg);ctx.lineTo(lx+d,ly+d+cg+cl);
-      ctx.stroke();
+  if(entry.type==='front'){
+    const start=entry.k*perPage;
+    for(let i=0;i<perPage;i++){
+      const ci=start+i;
+      if(ci>=S.canvases.length)break;
+      const{x,y}=positions[i],d=cardMm*sc;
+      ctx.drawImage(S.canvases[ci],Math.round(x*sc-d/2),Math.round(y*sc-d/2),Math.round(d),Math.round(d));
+      if(S.crop&&!S.isSilhouette){
+        const cg=2*sc,cl=4*sc,lx=x*sc-d/2,ly=y*sc-d/2;
+        ctx.strokeStyle='rgba(0,0,0,.45)';ctx.lineWidth=.5;ctx.beginPath();
+        ctx.moveTo(lx-cg-cl,ly);ctx.lineTo(lx-cg,ly);
+        ctx.moveTo(lx,ly-cg-cl);ctx.lineTo(lx,ly-cg);
+        ctx.moveTo(lx+d+cg,ly);ctx.lineTo(lx+d+cg+cl,ly);
+        ctx.moveTo(lx+d,ly-cg-cl);ctx.lineTo(lx+d,ly-cg);
+        ctx.moveTo(lx-cg-cl,ly+d);ctx.lineTo(lx-cg,ly+d);
+        ctx.moveTo(lx,ly+d+cg);ctx.lineTo(lx,ly+d+cg+cl);
+        ctx.moveTo(lx+d+cg,ly+d);ctx.lineTo(lx+d+cg+cl,ly+d);
+        ctx.moveTo(lx+d,ly+d+cg);ctx.lineTo(lx+d,ly+d+cg+cl);
+        ctx.stroke();
+      }
+      if(S.isSilhouette){
+        ctx.strokeStyle='#f00';ctx.lineWidth=.6;
+        const r=cardMm/2*sc;ctx.beginPath();
+        if(S.shape==='circle')ctx.arc(x*sc,y*sc,r,0,Math.PI*2);
+        else{const sq=cardMm*0.94*sc,sqr=sq*0.09;rrect(ctx,x*sc-sq/2,y*sc-sq/2,sq,sq,sqr);}
+        ctx.stroke();
+      }
     }
     if(S.isSilhouette){
-      ctx.strokeStyle='#f00';ctx.lineWidth=.6;
-      const r=cardMm/2*sc;ctx.beginPath();
-      if(S.shape==='circle')ctx.arc(x*sc,y*sc,r,0,Math.PI*2);
-      else{const sq=cardMm*0.94*sc,sqr=sq*0.09;rrect(ctx,x*sc-sq/2,y*sc-sq/2,sq,sq,sqr);}
+      const off=10*sc,ms=6*sc,arm=20*sc;
+      ctx.fillStyle='#000';ctx.fillRect(off,off,ms,ms);
+      ctx.strokeStyle='#000';ctx.lineWidth=.7;ctx.beginPath();
+      ctx.moveTo(W-off,off);ctx.lineTo(W-off-arm,off);
+      ctx.moveTo(W-off,off);ctx.lineTo(W-off,off+arm);
+      ctx.moveTo(off,H-off);ctx.lineTo(off+arm,H-off);
+      ctx.moveTo(off,H-off);ctx.lineTo(off,H-off-arm);
       ctx.stroke();
     }
+  }else{
+    // עמוד גב — אותה backPos() ואותו grow כמו ב-PDF, אחרת התצוגה המקדימה תשקר
+    ensureBackCanvas();
+    const start=entry.k*perPage;
+    const count=Math.min(perPage,S.canvases.length-start);
+    const grow=S.back.duplex.grow||0;
+    for(let i=0;i<count;i++){
+      const bp=backPos(positions[i]);
+      const d=cardMm*sc,g=grow*sc;
+      ctx.drawImage(S.backCanvas,Math.round(bp.x*sc-d/2-g),Math.round(bp.y*sc-d/2-g),Math.round(d+2*g),Math.round(d+2*g));
+      if(S.crop){
+        const cg=2*sc,cl=4*sc,lx=bp.x*sc-d/2,ly=bp.y*sc-d/2;
+        ctx.strokeStyle='rgba(0,0,0,.45)';ctx.lineWidth=.5;ctx.beginPath();
+        ctx.moveTo(lx-cg-cl,ly);ctx.lineTo(lx-cg,ly);
+        ctx.moveTo(lx,ly-cg-cl);ctx.lineTo(lx,ly-cg);
+        ctx.moveTo(lx+d+cg,ly);ctx.lineTo(lx+d+cg+cl,ly);
+        ctx.moveTo(lx+d,ly-cg-cl);ctx.lineTo(lx+d,ly-cg);
+        ctx.moveTo(lx-cg-cl,ly+d);ctx.lineTo(lx-cg,ly+d);
+        ctx.moveTo(lx,ly+d+cg);ctx.lineTo(lx,ly+d+cg+cl);
+        ctx.moveTo(lx+d+cg,ly+d);ctx.lineTo(lx+d+cg+cl,ly+d);
+        ctx.moveTo(lx+d,ly+d+cg);ctx.lineTo(lx+d,ly+d+cg+cl);
+        ctx.stroke();
+      }
+    }
+    ctx.save();ctx.font='700 13px system-ui,Arial';ctx.fillStyle='#7c3aed';ctx.textAlign='center';
+    ctx.fillText(`גב · עמוד ${entry.k+1}`,W/2,18);
+    ctx.restore();
   }
-  if(S.isSilhouette){
-    const off=10*sc,ms=6*sc,arm=20*sc;
-    ctx.fillStyle='#000';ctx.fillRect(off,off,ms,ms);
-    ctx.strokeStyle='#000';ctx.lineWidth=.7;ctx.beginPath();
-    ctx.moveTo(W-off,off);ctx.lineTo(W-off-arm,off);
-    ctx.moveTo(W-off,off);ctx.lineTo(W-off,off+arm);
-    ctx.moveTo(off,H-off);ctx.lineTo(off+arm,H-off);
-    ctx.moveTo(off,H-off);ctx.lineTo(off,H-off-arm);
-    ctx.stroke();
-  }
-  document.getElementById('pp-info').textContent=`עמוד ${page+1} מתוך ${totalPages}`;
+  document.getElementById('pp-info').textContent=`עמוד ${page+1} מתוך ${totalPages}${entry.type==='back'?' (גב)':''}`;
   document.getElementById('pp-prev').disabled=page===0;
   document.getElementById('pp-next').disabled=page>=totalPages-1;
 }
@@ -2740,6 +3700,11 @@ async function expPDF(setp){
   const{positions,cardMm}=layoutEngine();
   const perPage=positions.length;
   if(!perPage){alert('גודל הקלף גדול מדי לדף A4 — אין מקום אף לקלף אחד.\nהקטן את גודל הקלף ונסה שוב.');return;}
+  const backOn=S.back.enabled;
+  if(backOn&&S.isSilhouette){
+    alert('שילוב "מצב Silhouette + גב מעוצב" לא נתמך — כבו את אחד מהם ונסו שוב.');
+    return;
+  }
   const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
   const tmp=document.createElement('canvas');tmp.width=tmp.height=CARD_PX;
 
@@ -2762,41 +3727,78 @@ async function expPDF(setp){
     pdf.line(off,A4_H-off,off,A4_H-off-arm);
   };
 
+  // 1) חלוקה לעמודים — pageCards[k] = מערך אינדקסים של קלפים בעמוד k
+  const numPages=Math.ceil(S.deck.length/perPage);
+  const pageCards=[];
   for(let i=0;i<S.deck.length;i++){
-    const pos=i%perPage;
-    if(i>0&&pos===0)pdf.addPage();
-    if(pos===0)addRegMarks();
-    const{x,y}=positions[pos];
-    const d=cardMm;
-    drawCard(tmp,S.layouts[i],S.imgEls,S.shape);
-    pdf.addImage(tmp.toDataURL('image/png',1),'PNG',x-d/2,y-d/2,d,d);
-    if(S.isSilhouette){
-      // Vector cut line so Silhouette Studio detects the card shape, not the PNG bounding box
-      pdf.setDrawColor(255,0,0);pdf.setLineWidth(0.25);
-      if(S.shape==='circle'){
-        pdf.circle(x,y,d/2,'S');
-      }else{
-        const sq=d*0.94,cr=sq*0.09;
-        pdf.roundedRect(x-sq/2,y-sq/2,sq,sq,cr,cr,'S');
+    const k=Math.floor(i/perPage);
+    (pageCards[k]||(pageCards[k]=[])).push(i);
+  }
+  // 2) פליטת עמודים לפי הסדר הנבחר — buildPrintPageOrder משותפת עם התצוגה המקדימה
+  const order=buildPrintPageOrder(numPages);
+  const totalCardUnits=S.deck.length*(backOn?2:1);
+  let cardsDone=0,firstPage=true;
+  let backURL=null,grow=0;
+  if(backOn){ensureBackCanvas();backURL=S.backCanvas.toDataURL('image/png',1);grow=S.back.duplex.grow||0;}
+
+  for(const entry of order){
+    if(!firstPage)pdf.addPage();
+    firstPage=false;
+    const idxs=pageCards[entry.k]||[];
+    if(entry.type==='front'){
+      addRegMarks();
+      for(let j=0;j<idxs.length;j++){
+        const i=idxs[j],{x,y}=positions[j],d=cardMm;
+        drawCard(tmp,S.layouts[i],S.imgEls,S.shape);
+        pdf.addImage(tmp.toDataURL('image/png',1),'PNG',x-d/2,y-d/2,d,d);
+        if(S.isSilhouette){
+          // Vector cut line so Silhouette Studio detects the card shape, not the PNG bounding box
+          pdf.setDrawColor(255,0,0);pdf.setLineWidth(0.25);
+          if(S.shape==='circle'){
+            pdf.circle(x,y,d/2,'S');
+          }else{
+            const sq=d*0.94,cr=sq*0.09;
+            pdf.roundedRect(x-sq/2,y-sq/2,sq,sq,cr,cr,'S');
+          }
+        }
+        if(S.crop&&!S.isSilhouette){
+          const cg=2,cl=4,lx=x-d/2,ly=y-d/2;
+          pdf.setDrawColor(0);pdf.setLineWidth(.25);
+          pdf.line(lx-cg-cl,ly,lx-cg,ly);pdf.line(lx,ly-cg-cl,lx,ly-cg);
+          pdf.line(lx+d+cg,ly,lx+d+cg+cl,ly);pdf.line(lx+d,ly-cg-cl,lx+d,ly-cg);
+          pdf.line(lx-cg-cl,ly+d,lx-cg,ly+d);pdf.line(lx,ly+d+cg,lx,ly+d+cg+cl);
+          pdf.line(lx+d+cg,ly+d,lx+d+cg+cl,ly+d);pdf.line(lx+d,ly+d+cg,lx+d,ly+d+cg+cl);
+        }
+        cardsDone++;
+        setp(3+Math.round(92*cardsDone/totalCardUnits),`עמוד ${entry.k+1} — קלף ${j+1}/${idxs.length}…`);
+        if(j%3===2)await tick();
+      }
+    }else{
+      // עמוד גב — אותם מיקומים ממוראים דרך backPos(), בגודל cardMm+2*grow
+      const sizeD=cardMm+2*grow;
+      for(let j=0;j<idxs.length;j++){
+        const bp=backPos(positions[j]);
+        pdf.addImage(backURL,'PNG',bp.x-sizeD/2,bp.y-sizeD/2,sizeD,sizeD);
+        if(S.crop){
+          const d=cardMm,cg=2,cl=4,lx=bp.x-d/2,ly=bp.y-d/2;
+          pdf.setDrawColor(0);pdf.setLineWidth(.25);
+          pdf.line(lx-cg-cl,ly,lx-cg,ly);pdf.line(lx,ly-cg-cl,lx,ly-cg);
+          pdf.line(lx+d+cg,ly,lx+d+cg+cl,ly);pdf.line(lx+d,ly-cg-cl,lx+d,ly-cg);
+          pdf.line(lx-cg-cl,ly+d,lx-cg,ly+d);pdf.line(lx,ly+d+cg,lx,ly+d+cg+cl);
+          pdf.line(lx+d+cg,ly+d,lx+d+cg+cl,ly+d);pdf.line(lx+d,ly+d+cg,lx+d,ly+d+cg+cl);
+        }
+        cardsDone++;
+        setp(3+Math.round(92*cardsDone/totalCardUnits),`גב · עמוד ${entry.k+1} — קלף ${j+1}/${idxs.length}…`);
+        if(j%3===2)await tick();
       }
     }
-    if(S.crop&&!S.isSilhouette){
-      const cg=2,cl=4,lx=x-d/2,ly=y-d/2;
-      pdf.setDrawColor(0);pdf.setLineWidth(.25);
-      pdf.line(lx-cg-cl,ly,lx-cg,ly);pdf.line(lx,ly-cg-cl,lx,ly-cg);
-      pdf.line(lx+d+cg,ly,lx+d+cg+cl,ly);pdf.line(lx+d,ly-cg-cl,lx+d,ly-cg);
-      pdf.line(lx-cg-cl,ly+d,lx-cg,ly+d);pdf.line(lx,ly+d+cg,lx,ly+d+cg+cl);
-      pdf.line(lx+d+cg,ly+d,lx+d+cg+cl,ly+d);pdf.line(lx+d,ly+d+cg,lx+d,ly+d+cg+cl);
-    }
-    setp(3+Math.round(92*(i+1)/S.deck.length),`עמוד ${Math.floor(i/perPage)+1} — קלף ${pos+1}/${perPage}…`);
-    if(i%3===2)await tick();
   }
   setp(98,'שומר…');
   const blob=pdf.output('blob');
   if(_exportUrl)URL.revokeObjectURL(_exportUrl);
   _exportUrl=URL.createObjectURL(blob);
   const lnk=document.getElementById('dl-link');
-  const fn=`dobble-${S.order.total}cards-${S.cardSizeMm}mm.pdf`;
+  const fn=`dobble-${S.order.total}cards-${S.cardSizeMm}mm${backOn?'-2sided':''}.pdf`;
   lnk.href=_exportUrl;lnk.download=fn;
   document.getElementById('dl-area').classList.add('on');
   logGame({total:S.order.total,cards:S.deck.length,sizeMm:S.cardSizeMm,filename:fn,type:'pdf'});
@@ -2807,22 +3809,73 @@ async function expZIP(setp){
   if(typeof JSZip==='undefined')throw new Error('ספריית JSZip לא נטענה — נדרש חיבור לאינטרנט');
   const zip=new JSZip(),folder=zip.folder('dobble-cards');
   const tmp=document.createElement('canvas');tmp.width=tmp.height=CARD_PX;
+  const backOn=S.back.enabled;
+  const totalUnits=S.deck.length+(backOn?1:0);
   for(let i=0;i<S.deck.length;i++){
     drawCard(tmp,S.layouts[i],S.imgEls,S.shape);
     folder.file(`card-${String(i+1).padStart(3,'0')}.png`,tmp.toDataURL('image/png',1).split(',')[1],{base64:true});
-    setp(3+Math.round(82*(i+1)/S.deck.length),`קלף ${i+1}/${S.deck.length}…`);
+    setp(3+Math.round(82*(i+1)/totalUnits),`קלף ${i+1}/${S.deck.length}…`);
     if(i%8===7)await tick();
+  }
+  if(backOn){
+    // גב אחיד לכל הקלפים — קובץ יחיד, לא משוכפל לכל קלף
+    ensureBackCanvas();
+    folder.file('card-back.png',S.backCanvas.toDataURL('image/png',1).split(',')[1],{base64:true});
+    setp(85,'גב הקלף…');
   }
   setp(90,'אורז קבצים…');
   const blob=await zip.generateAsync({type:'blob'});
   if(_exportUrl)URL.revokeObjectURL(_exportUrl);
   _exportUrl=URL.createObjectURL(blob);
   const lnk=document.getElementById('dl-link');
-  const fnz=`dobble-${S.order.total}cards.zip`;
+  const fnz=`dobble-${S.order.total}cards${backOn?'-2sided':''}.zip`;
   lnk.href=_exportUrl;lnk.download=fnz;
   document.getElementById('dl-area').classList.add('on');
   logGame({total:S.order.total,cards:S.deck.length,sizeMm:S.cardSizeMm,filename:fnz,type:'zip'});
   setp(100,'✅ מוכן!');
+}
+
+// ── דף כיול להדפסה דו-צדדית: סרגל מ"מ ממוספר בקצוות כל עמוד, לצורך כוונון dx/dy ──
+function drawCalibRuler(pdf){
+  pdf.setDrawColor(0);pdf.setLineWidth(0.15);pdf.setFontSize(6);pdf.setTextColor(0);
+  for(let x=0;x<=A4_W;x+=5){
+    const len=x%20===0?4:(x%10===0?2.5:1.5);
+    pdf.line(x,0,x,len);pdf.line(x,A4_H,x,A4_H-len);
+    if(x%20===0&&x>0&&x<A4_W){pdf.text(String(x),x,6,{align:'center'});pdf.text(String(x),x,A4_H-2,{align:'center'});}
+  }
+  for(let y=0;y<=A4_H;y+=5){
+    const len=y%20===0?4:(y%10===0?2.5:1.5);
+    pdf.line(0,y,len,y);pdf.line(A4_W,y,A4_W-len,y);
+    if(y%20===0&&y>0&&y<A4_H){pdf.text(String(y),2,y+1.5);pdf.text(String(y),A4_W-6,y+1.5);}
+  }
+}
+// PDF של 2 עמודים בלבד (קדמי + גב, באותה נקודה מדויקת דרך backPos) עם סרגל ממוספר —
+// הלקוח מדפיס, הופך, ומודד את הסטייה בין הסרגלים כדי לכייל dx/dy בטאב "הדפסה".
+function generateCalibrationPDF(){
+  if(!window.jspdf?.jsPDF){toast('ספריית jsPDF לא נטענה — נדרש חיבור לאינטרנט','err');return;}
+  const{jsPDF}=window.jspdf;
+  const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const cardMm=S.cardSizeMm,cx=A4_W/2,cy=A4_H/2;
+  ensureBackCanvas();
+  const tmp=document.createElement('canvas');tmp.width=tmp.height=CARD_PX;
+
+  drawCalibRuler(pdf);
+  if(S.layouts.length&&S.imgEls.length)drawCard(tmp,S.layouts[0],S.imgEls,S.shape);
+  else drawCard(tmp,{syms:[],tr:[]},[],S.shape);
+  pdf.addImage(tmp.toDataURL('image/png',1),'PNG',cx-cardMm/2,cy-cardMm/2,cardMm,cardMm);
+
+  pdf.addPage();
+  drawCalibRuler(pdf);
+  const bp=backPos({x:cx,y:cy});
+  const grow=S.back.duplex.grow||0,sizeD=cardMm+2*grow;
+  pdf.addImage(S.backCanvas.toDataURL('image/png',1),'PNG',bp.x-sizeD/2,bp.y-sizeD/2,sizeD,sizeD);
+
+  const blob=pdf.output('blob');
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='dobble-calibration.pdf';
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),4000);
+  toast('דף הכיול הופק — הדפיסו, הפכו לפי כיוון ההפיכה שבחרתם ומדדו את הסטייה','ok');
 }
 
 function generateDXF(){
@@ -3861,7 +4914,7 @@ async function idbLoad(){
         if(d.id>=S.idSeq)S.idSeq=d.id;
       }catch(e){console.warn('idbLoad item:',e);}
     }
-    if(S.assets.length){renderGallery();updateCounter();toast(`המאגר שוחזר — ${S.assets.filter(a=>!a.isCropSource).length} סמלים 📦`,'ok');}
+    if(S.assets.length){renderGallery();updateCounter();toast(`המאגר שוחזר — ${S.assets.filter(isSymbolAsset).length} סמלים 📦`,'ok');}
   }catch(e){console.warn('idbLoad:',e);}
 }
 async function idbClear(){
@@ -3883,6 +4936,7 @@ async function saveDesign(){
       cardSizeMm:S.cardSizeMm,spacingMm:S.spacingMm,startPos:S.startPos,
       frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),symPad:S.symPad,overlap:S.overlap,
       tightPack:S.tightPack,tightFill:S.tightFill,
+      back:JSON.parse(JSON.stringify(S.back)),
       orderTotal:S.order?S.order.total:null};
     // שמירה מקומית — metadata בלבד (בלי dataURL), כדי לא לחרוג ממכסת האחסון של IndexedDB
     const date=new Date().toLocaleString('he-IL');
@@ -3914,6 +4968,7 @@ function buildDesignObject(name){
       cardSizeMm:S.cardSizeMm,spacingMm:S.spacingMm,startPos:S.startPos,
       frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),symPad:S.symPad,overlap:S.overlap,
       tightPack:S.tightPack,tightFill:S.tightFill,
+      back:JSON.parse(JSON.stringify(S.back)),
       orderTotal:S.order?S.order.total:null}};
 }
 
@@ -4023,6 +5078,14 @@ async function applyDesignToState(d){
     tightPack:st.tightPack!==false,tightFill:!!st.tightFill});
   if(st.frame)S.frame=Object.assign({},st.frame);
   if(st.bg)S.bg=Object.assign({},st.bg);
+  S.back=mergeBack(st.back);
+  // אם ה-asset של הלוגו לא שרד (למשל עיצוב ישן/גיבוי חלקי) — מנתקים את ההפניה בלי לשבור את הטעינה
+  if(S.back.logoAssetId&&!S.assets.some(a=>a.id===S.back.logoAssetId&&a.type==='backlogo')){
+    S.back.logoAssetId=null;
+    toast('לוגו הגב לא נמצא בגיבוי — יש להעלות אותו מחדש בעורך הגב','err');
+  }
+  document.getElementById('chk-back-enabled').checked=!!S.back.enabled;
+  markBackDirty();
   applySettingsToUI(S);
   resetGenerated();
   goScr(1);
@@ -4615,7 +5678,8 @@ function enterSupportMode(label){
     settings:{shape:S.shape,symShape:S.symShape,sMin:S.sMin,sMax:S.sMax,seed:S.seed,layoutMode:S.layoutMode,
       cardSizeMm:S.cardSizeMm,spacingMm:S.spacingMm,startPos:S.startPos,symPad:S.symPad,overlap:S.overlap,
       tightPack:S.tightPack,tightFill:S.tightFill,
-      frame:Object.assign({},S.frame),bg:Object.assign({},S.bg)}
+      frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),
+      back:JSON.parse(JSON.stringify(S.back))}
   };
   window.__supportMode=true;
   const label2=document.getElementById('support-mini-label');if(label2)label2.textContent=label||'לקוח';
@@ -4627,6 +5691,9 @@ window.exitSupportMode=function(silent){
   if(_supportSnapshot){
     S.assets=_supportSnapshot.assets;S.idSeq=_supportSnapshot.idSeq;
     Object.assign(S,_supportSnapshot.settings);
+    S.back=mergeBack(_supportSnapshot.settings.back);
+    document.getElementById('chk-back-enabled').checked=!!S.back.enabled;
+    markBackDirty();
     applySettingsToUI(S);
     renderGallery();updateCounter();resetGenerated();goScr(1);
     _supportSnapshot=null;
