@@ -11,7 +11,10 @@
 - ספריות: jsPDF, JSZip, Supabase, heic2any (המרת HEIC מ-iPhone).
 - Supabase: project ref `sccivxenkyzxolpraexf`, region `eu-west-2`. auth = Magic Link (מייל, בלי סיסמאות).
 
-## סטטוס עבודה נוכחי (מעודכן 2026-08-09 — עדכנו את זה בכל סבב עבודה)
+## סטטוס עבודה נוכחי (מעודכן 2026-08-11 — עדכנו את זה בכל סבב עבודה)
+
+### בעבודה — טרם מוזג
+- **ai-gateway v1, שלב 1/6 (ברנץ' `claude/ai-gateway-multi-provider-gp1y3g`)** — Edge Function חדש `supabase/functions/ai-gateway` שישמש שער AI משותף לכל המחוללים העתידיים (רביעיות ראשון). בשלב הזה: מתאם Anthropic בלבד (`providers/anthropic.ts`, tool-use כפוי לפי סכמה), action יחיד `quartets.plan_game`, אימות `auth.getUser()` + מכסה יומית לפי role (`admin`/`subscriber`/`free`) דרך RPC `ai_quota_left`, ולידציית payload קשיחה, ולוג ל-`ai_usage`. לקוח משותף `js/ai-client.js`. סכמת ה-DB ב-`supabase/sql/2026-08-11_ai_gateway.sql` — **טרם הורצה** (צריך `execute_sql` דרך MCP בסשן Claude.ai), והפונקציה **טרם נפרסה** (`deploy_edge_function`). ריבוי ספקים (Google/OpenAI), טבלת ניתוב `ai_routes`, שרשרת fallback ומצב השוואה (`_compare` + `admin/ai-lab.html`) — לא במימוש הזה, מתוכננים לשלבים הבאים. **אין למזג בלי אישור מפורש.**
 
 ### מוזג ל-main ופעיל באתר
 - **מודל גישה מדורג (PR #19)** — הכניסה חסומה. שלושה מסלולים: קוד קיים / הרשמה חינם (7 קלפים, `max_order:7`) / רכישת מנוי (13/21/31/57 קלפים). ראו "מונטיזציה" למטה.
