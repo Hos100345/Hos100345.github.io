@@ -218,8 +218,10 @@
     .g-fold-caret{font-size:.8rem;color:var(--indigo);width:.9rem;flex-shrink:0}
     .g-fold-name{font-size:.82rem;font-weight:700;color:var(--indigo);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
     .g-fold-cnt{font-size:.72rem;color:var(--muted);flex-shrink:0}
-    .g-fold-del{background:none;border:none;cursor:pointer;font-size:.9rem;line-height:1;padding:.15rem .25rem;flex-shrink:0;opacity:.65}
-    .g-fold-del:hover{opacity:1}
+    /* יעד מגע מלא (44px) ומופרד מהכותרת: הכותרת כולה פותחת/סוגרת את התיקייה, וכפתור מחיקה
+       זעיר בתוכה נלחץ בטעות בנייד — לחיצה אחת מוטעית מוחקת אצווה שלמה. */
+    .g-fold-del{background:rgba(153,27,27,.08);border:1px solid rgba(153,27,27,.22);border-radius:100px;cursor:pointer;font-size:.95rem;line-height:1;min-width:44px;min-height:36px;margin-inline-start:.35rem;flex-shrink:0;opacity:.8}
+    .g-fold-del:hover{opacity:1;background:rgba(153,27,27,.16)}
     .g-fold-body{display:flex;gap:.6rem;flex-wrap:wrap;padding:.55rem .7rem .8rem;align-items:flex-start;border-top:1px solid rgba(255,255,255,.6)}
 
     /* ── V4: EXTRACTOR (used in crop modal) ── */
@@ -312,6 +314,8 @@
     .toast.show{opacity:1;transform:translateX(50%) translateY(0)}
     .toast.ok{background:rgba(5,102,72,.92)}
     .toast.err{background:rgba(153,27,27,.92)}
+    .toast-act{margin-inline-start:.7rem;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.45);color:#fff;font-family:inherit;font-size:.85rem;font-weight:800;padding:.3rem .85rem;border-radius:100px;cursor:pointer;min-height:32px}
+    .toast-act:hover{background:rgba(255,255,255,.3)}
 
     /* ── חבילות תמונות מוכנות ── */
     .packs{margin-top:.9rem}
@@ -958,8 +962,10 @@ function dcfgSave(patch){
       <div class="uz-ico">🖼️</div>
       <div class="uz-t">גרור/י תמונות לכאן</div>
       <div class="uz-s">או לחץ/י לבחירת קבצים · כל העלאה מצטברת למאגר</div>
-      <div class="uz-hint">PNG · JPG · SVG · WebP · ניתן לבחור מספר קבצים</div>
-      <input type="file" id="fi" multiple accept="image/*" style="display:none">
+      <div class="uz-hint">JPG · PNG · HEIC (אייפון) · WebP · AVIF · GIF · BMP · SVG · ניתן לבחור מספר קבצים</div>
+      <!-- image/* לבדו לא מספיק: בחלק מבוררי הקבצים בנייד ובענן (Drive/OneDrive) HEIC/HEIF/AVIF
+           מגיעים בלי MIME ונחסמים מהבחירה. הסיומות המפורשות פותחות אותם. -->
+      <input type="file" id="fi" multiple accept="image/*,.heic,.heif,.avif,.jfif,.jpe,.bmp,.tif,.tiff,.svg,.webp,.gif,.png,.jpg,.jpeg" style="display:none">
     </div>
     <button type="button" id="uz-files-btn" class="uz-files-btn" style="margin-top:.5rem;width:100%;padding:.55rem;border:1px dashed var(--line,#ccc);border-radius:.6rem;background:transparent;cursor:pointer;font-size:.9rem">📁 בחירת קבצים מרובים (שיאומי / אנדרואיד)</button>
     <input type="file" id="fiDocs" multiple style="display:none">
@@ -2549,9 +2555,26 @@ function buildDupIndex(){
   return s;
 }
 
+// סינון ראשוני של קבצים שנבחרו. f.type אינו אמין: בנייד ובקבצים שמגיעים מבורר ענן הוא לעיתים
+// קרובות ריק לגמרי, וסינון לפיו זרק תמונות תקינות עוד לפני שניסינו לפענח אותן. לכן פוסלים כאן
+// רק מה שידוע בוודאות שאינו תמונה (וידאו/PDF/ZIP וכו'), וכל השאר עובר ל-loadImgFile — שם כבר
+// יש זיהוי לפי magic bytes ודיווח כשל מפורט לכל קובץ.
+const NON_IMAGE_RE=/\.(mp4|mov|avi|mkv|webm|mp3|wav|m4a|pdf|zip|rar|7z|docx?|xlsx?|pptx?|txt|csv|json|html?|exe|apk|dmg)$/i;
+function looksLikeImage(f){
+  if(f.type&&f.type.startsWith('image/'))return true;
+  if(f.type&&/^(video|audio|application|text)\//.test(f.type))
+    return /\.(heic|heif|avif|svg)$/i.test(f.name);   // svg מגיע כ-text/xml, heic כ-application/octet-stream
+  return !NON_IMAGE_RE.test(f.name);
+}
+
 async function addFiles(files){
-  const picked=Array.from(files).filter(f=>f.type.startsWith('image/')||/\.(heic|heif|avif)$/i.test(f.name));
-  if(!picked.length){alert('נא לבחור קבצי תמונה (PNG, JPG, SVG, WebP)');return;}
+  const all=Array.from(files);
+  const picked=all.filter(looksLikeImage);
+  if(!picked.length){
+    alert('לא נמצאו קבצי תמונה בבחירה.\n\nנתמכים: JPG, PNG, HEIC/HEIF (אייפון), WebP, AVIF, GIF, BMP, TIFF, SVG.');
+    return;
+  }
+  const rejected=all.length-picked.length;
 
   // ── סינון כפילויות לפני שמתחילים לעבוד ──
   // בלי זה, כל ניסיון חוזר אחרי תקיעה *הוסיף* את כל האצווה שוב במקום להחליף אותה,
@@ -2620,6 +2643,7 @@ async function addFiles(files){
   if(usableAfter>MAX_USABLE_SYMBOLS){
     toast(`במאגר ${usableAfter} סמלים — המשחק ישתמש עד ${MAX_USABLE_SYMBOLS}. סמנו אילו להשתמש, או מחקו תיקיות מיותרות 🗂️`,'err');
   }
+  if(rejected)toast(`${rejected} קבצים שאינם תמונות דולגו`,'err');
   if(failed.length)await reportFailedUploads(failed,folder);
 }
 
@@ -2644,7 +2668,7 @@ async function reportFailedUploads(failed,folder,depth){
       const url=URL.createObjectURL(f);
       try{
         const imgEl=await withTimeout(loadImgFile(f,url),60000,'תם הזמן הקצוב לטעינת התמונה');
-        S.assets.push({id:++S.idSeq,type:'image',name:f.name,url,thumb:makeThumb(imgEl),imgEl,selected:true,folder});
+        S.assets.push({id:++S.idSeq,type:'image',name:f.name,fsize:f.size,url,thumb:makeThumb(imgEl),imgEl,selected:true,folder});
         ok++;
       }catch(e){URL.revokeObjectURL(url);still.push({file:f,name:f.name,reason:(e&&e.message)||'שגיאה לא ידועה'});}
       done++;uploadProgressStep(done,retryFiles.length);
@@ -2695,6 +2719,9 @@ function sniffMime(b){
   if(b[0]===0xFF&&b[1]===0xD8&&b[2]===0xFF)return 'image/jpeg';
   if(b[0]===0x47&&b[1]===0x49&&b[2]===0x46)return 'image/gif';
   if(b[0]===0x52&&b[1]===0x49&&b[2]===0x46&&b[8]===0x57&&b[9]===0x45&&b[10]===0x42&&b[11]===0x50)return 'image/webp';
+  if(b[0]===0x42&&b[1]===0x4D)return 'image/bmp';
+  if((b[0]===0x49&&b[1]===0x49&&b[2]===0x2A&&b[3]===0x00)||(b[0]===0x4D&&b[1]===0x4D&&b[2]===0x00&&b[3]===0x2A))return 'image/tiff';
+  if(b[0]===0x00&&b[1]===0x00&&b[2]===0x01&&b[3]===0x00)return 'image/x-icon';
   if(b[4]===0x66&&b[5]===0x74&&b[6]===0x79&&b[7]===0x70){
     const brand=String.fromCharCode(b[8],b[9],b[10],b[11]);
     if(/^(avif|avis)/.test(brand))return 'image/avif';
@@ -2734,7 +2761,13 @@ async function loadImgFile(f,url){
     catch(e){lastErr=e;await new Promise(r=>setTimeout(r,120));}
   }
   try{return await convertHeicAndLoad(blob);}   // מוצא אחרון: HEIC מוסווה
-  catch{throw new Error(`פענוח נכשל (${mime||f.type||'סוג לא מזוהה'}): ${lastErr&&lastErr.message||'שגיאת פענוח'}`);}
+  catch{
+    // TIFF ו-ICO אינם נתמכים בדפדפני Chrome/Firefox כלל — אין טעם להאשים "שגיאת פענוח",
+    // המשתמש צריך לדעת שהפתרון הוא להמיר את הקובץ ולא לנסות שוב.
+    if(mime==='image/tiff'||mime==='image/x-icon')
+      throw new Error(`פורמט ${mime==='image/tiff'?'TIFF':'ICO'} אינו נתמך בדפדפן — שמרו את התמונה כ-JPG או PNG והעלו שוב`);
+    throw new Error(`פענוח נכשל (${mime||f.type||'סוג לא מזוהה'}): ${lastErr&&lastErr.message||'שגיאת פענוח'}`);
+  }
 }
 
 // ── לוגו לגב הקלף: נכנס דרך אותו צינור תמונות רגיל (type:'backlogo') כדי להסתנכרן ל-Storage
@@ -2840,7 +2873,8 @@ function renderGallery(){
     const cnt=document.createElement('span');cnt.className='g-fold-cnt';cnt.textContent=usable+' סמלים';
     hdr.appendChild(caret);hdr.appendChild(name);hdr.appendChild(cnt);
     if(g.key!=='__none__'){
-      const delBtn=document.createElement('button');delBtn.className='g-fold-del';delBtn.textContent='🗑';delBtn.title='מחק תיקייה';
+      const delBtn=document.createElement('button');delBtn.className='g-fold-del';delBtn.textContent='🗑';
+      delBtn.title=`מחק את כל ${usable} הסמלים בתיקייה "${g.label}"`;
       delBtn.addEventListener('click',e=>{e.stopPropagation();deleteFolder(g.key,g.label);});
       hdr.appendChild(delBtn);
     }
@@ -2922,6 +2956,28 @@ function updateCounter(){
   document.getElementById('btn-create').disabled=false;
 }
 
+// ── ביטול מחיקה ──
+// מחיקה בגלריה בלתי הפיכה: flushCloudAfterDelete מוחק את הקבצים גם מהענן מיד. שלושת כפתורי
+// המחיקה יושבים צמוד לאזורי לחיצה תמימים (ה-🗑 של התיקייה בתוך הכותרת שפותחת אותה, ו"מחק
+// מסומנים" שמוחק את כל המאגר כי כל העלאה מסומנת כברירת מחדל), ולקוח אמיתי איבד כך אצווה שלמה.
+// הנכסים עצמם נשמרים בזיכרון — imgEl ו-thumb הם קנבסים מפוענחים, ולכן ההחזרה מלאה. ה-url
+// (blob URL) כבר בוטל ואינו נדרש: שום נתיב ציור לא קורא אותו.
+let _undoBuf=null;
+function stashDeleted(assets){
+  assets.forEach(a=>{a.url='';});
+  _undoBuf=assets.slice();
+}
+function undoDelete(){
+  const back=(_undoBuf||[]).filter(a=>!S.assets.some(x=>x.id===a.id));
+  _undoBuf=null;
+  if(!back.length){toast('אין מה להחזיר','err');return;}
+  S.assets=S.assets.concat(back);
+  back.forEach(a=>{if(a.id>=S.idSeq)S.idSeq=a.id;});
+  renderGallery();updateCounter();schedIdbSave();
+  flushCloudAfterDelete();   // מעלה אותם חזרה לענן באותו מסלול שמחק אותם
+  toast(`${back.length} סמלים הוחזרו ↩`,'ok');
+}
+
 async function removeAsset(id){
   const a=S.assets.find(x=>x.id===id);
   if(!a)return;
@@ -2932,13 +2988,14 @@ async function removeAsset(id){
     warn:cloudDeleteWarn()
   });
   if(!ok)return;
-  if(a.type==='image'){
-    URL.revokeObjectURL(a.url);
-    S.assets=S.assets.filter(x=>!(x.type==='crop'&&x.srcAssetId===id));
-  }
-  S.assets=S.assets.filter(x=>x.id!==id);
+  const gone=S.assets.filter(x=>x.id===id||(a.type==='image'&&x.type==='crop'&&x.srcAssetId===id));
+  if(a.type==='image')URL.revokeObjectURL(a.url);
+  const goneIds=new Set(gone.map(x=>x.id));
+  S.assets=S.assets.filter(x=>!goneIds.has(x.id));
+  stashDeleted(gone);
   renderGallery();updateCounter();schedIdbSave();
   flushCloudAfterDelete();
+  toast(`"${a.name}" נמחק`,'ok',{label:'בטל ↩',fn:undoDelete});
 }
 
 // מחיקה מקומית גוררת ניקוי מקביל בענן (cloudAutosave מסיר קבצים שאין להם asset מקומי).
@@ -2962,10 +3019,12 @@ async function deleteSelected(){
   if(!ok)return;
   const ids=new Set(sel.map(a=>a.id));
   sel.forEach(a=>{if(a.type==='image'&&a.url)URL.revokeObjectURL(a.url);});
+  const gone=S.assets.filter(a=>ids.has(a.id)||(a.type==='crop'&&ids.has(a.srcAssetId)));
   S.assets=S.assets.filter(a=>!ids.has(a.id)&&!(a.type==='crop'&&ids.has(a.srcAssetId)));
+  stashDeleted(gone);
   renderGallery();updateCounter();schedIdbSave();
   flushCloudAfterDelete();
-  toast(`${sel.length} סמלים נמחקו`,'ok');
+  toast(`${gone.length} סמלים נמחקו`,'ok',{label:'בטל ↩',fn:undoDelete});
 }
 
 // מוחק תיקיית העלאה שלמה — כולל תמונות המקור והחיתוכים שנגזרו מהן
@@ -2983,11 +3042,13 @@ async function deleteFolder(fid,fname){
   if(!ok)return;
   const ids=new Set(items.map(a=>a.id));
   items.forEach(a=>{if(a.type==='image'&&a.url)URL.revokeObjectURL(a.url);});
+  const gone=S.assets.filter(a=>ids.has(a.id)||(a.type==='crop'&&ids.has(a.srcAssetId)));
   S.assets=S.assets.filter(a=>!ids.has(a.id)&&!(a.type==='crop'&&ids.has(a.srcAssetId)));
   _closedFolders.delete(fid);
+  stashDeleted(gone);
   renderGallery();updateCounter();schedIdbSave();
   flushCloudAfterDelete();
-  toast(`התיקייה "${fname}" נמחקה`,'ok');
+  toast(`התיקייה "${fname}" נמחקה (${gone.length} סמלים)`,'ok',{label:'בטל ↩',fn:undoDelete});
 }
 document.getElementById('btn-del-selected').addEventListener('click',deleteSelected);
 
@@ -4911,13 +4972,23 @@ document.getElementById('btn-crop-add').addEventListener('click',()=>{
 
 // ══ TOAST — פידבק מיידי ══
 let _toastTimer=0;
-function toast(msg,type){
+// action (אופציונלי): {label,fn} — מוסיף כפתור פעולה להודעה ומאריך אותה, כדי שאפשר יהיה
+// להציע "בטל" אחרי מחיקה. בלי pointer-events:auto ה-CSS של .toast חוסם את הלחיצה.
+function toast(msg,type,action){
   let t=document.getElementById('toast');
   if(!t){t=document.createElement('div');t.id='toast';t.className='toast';t.setAttribute('role','status');document.body.appendChild(t);}
   t.textContent=msg;
+  const act=action&&action.label&&typeof action.fn==='function'?action:null;
+  if(act){
+    const b=document.createElement('button');
+    b.type='button';b.className='toast-act';b.textContent=act.label;
+    b.addEventListener('click',()=>{clearTimeout(_toastTimer);t.classList.remove('show');t.style.pointerEvents='';act.fn();});
+    t.appendChild(b);
+    t.style.pointerEvents='auto';
+  }else t.style.pointerEvents='';
   t.className='toast show'+(type?' '+type:'');
   clearTimeout(_toastTimer);
-  _toastTimer=setTimeout(()=>{t.classList.remove('show');},2400);
+  _toastTimer=setTimeout(()=>{t.classList.remove('show');t.style.pointerEvents='';},act?10000:2400);
 }
 
 // ══ 3D TILT — תחושת קלף פיזי ══
@@ -5046,6 +5117,8 @@ function assetsToRowsWithImages(){
     id:a.id,type:a.type,name:a.name,
     dataURL:assetEncoded(a).dataURL,
     fsize:a.fsize==null?null:a.fsize,        // נשמר כדי שזיהוי הכפילויות ישרוד רענון דף
+    folder:a.folder||null,                   // בלי זה כל המאגר קורס ל"מאגר כללי" אחרי רענון,
+                                             // והתמונה שהמשתמש חיפש בתיקייה שלה פשוט נעלמת משם
     srcAssetId:a.srcAssetId||null,isCropSource:a.isCropSource||false,selected:a.selected!==false
   }));
 }
@@ -5090,23 +5163,41 @@ async function idbSave(){
     await new Promise(r=>{tx.oncomplete=r;tx.onerror=()=>r();});
   }catch(e){console.warn('idbSave:',e);}
 }
-async function idbLoad(){
+// idbLoad מוסיף ל-S.assets (push) ולא מאפס אותו — ולכן הוא חייב לרוץ פעם אחת בלבד לכל טעינת דף.
+// שני נתיבים קוראים לו: אתחול (sessionStorage.dobble_unlocked==='1') ו-window._afterUnlock, וזה
+// האחרון נקרא גם מ-unlockFromSession, שרץ כש-Supabase משחזר סשן ומפעיל onAuthStateChange('SIGNED_IN').
+// כשמשתמש מחובר רענן דף, שניהם רצו — וכל תמונה במאגר הופיעה פעמיים, נשמרה כפולה חזרה ל-IDB,
+// והוכפלה שוב בטעינה הבאה. השומר כאן מחזיר את אותה הבטחה במקום להריץ מחדש.
+let _idbLoadOnce=null;
+function idbLoad(){
+  if(!_idbLoadOnce)_idbLoadOnce=_idbLoadInner();
+  return _idbLoadOnce;
+}
+async function _idbLoadInner(){
   try{
     const db=await idbOpen();
     const tx=db.transaction(IDB_STORE,'readonly');
     const req=tx.objectStore(IDB_STORE).get('all');
     const rows=await new Promise(r=>{req.onsuccess=e=>r(e.target.result);req.onerror=()=>r(null);});
     if(!rows||!rows.length)return;
+    // ריפוי עצמי למאגרים שכבר הוכפלו ע"י הבאג: שורות עם id שכבר קיים מדולגות, והשמירה
+    // הבאה (schedIdbSave למטה) כותבת ל-IDB את הגרסה הנקייה במקום הכפולה.
+    const seen=new Set(S.assets.map(a=>a.id));
+    let dupSkipped=0;
     for(const d of rows){
+      if(seen.has(d.id)){dupSkipped++;continue;}
+      seen.add(d.id);
       try{
         const imgEl=await loadImg(d.dataURL);
         const thumb=makeThumb(imgEl);
         S.assets.push({id:d.id,type:d.type,name:d.name,fsize:d.fsize==null?undefined:d.fsize,url:'',thumb,imgEl,
+                        folder:d.folder||undefined,
                         srcAssetId:d.srcAssetId||undefined,isCropSource:d.isCropSource||false,selected:d.selected!==false});
         if(d.id>=S.idSeq)S.idSeq=d.id;
       }catch(e){console.warn('idbLoad item:',e);}
     }
     if(S.assets.length){renderGallery();updateCounter();toast(`המאגר שוחזר — ${S.assets.filter(isSymbolAsset).length} סמלים 📦`,'ok');}
+    if(dupSkipped){console.warn('idbLoad: skipped',dupSkipped,'duplicate rows');schedIdbSave();}
   }catch(e){console.warn('idbLoad:',e);}
 }
 async function idbClear(){
@@ -5257,6 +5348,7 @@ async function applyDesignToState(d){
     try{
       const imgEl=await loadImg(row.dataURL);
       S.assets.push({id:row.id,type:row.type,name:row.name,url:'',thumb:makeThumb(imgEl),imgEl,
+                      fsize:row.fsize==null?undefined:row.fsize,folder:row.folder||undefined,
                       srcAssetId:row.srcAssetId||undefined,isCropSource:row.isCropSource||false,selected:row.selected!==false});
       if(row.id>=S.idSeq)S.idSeq=row.id;
     }catch(e){console.warn('applyDesign item:',e);}
