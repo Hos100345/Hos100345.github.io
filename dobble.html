@@ -1821,9 +1821,9 @@ function reachAt(meta,rotation,angle,half){
   return meta.radial[idx]*half;
 }
 
-// הרפיה איטרטיבית: מתחילים מהמיקומים הקיימים של symPos() ודוחפים סמלים
-// עד שאף זוג לא חורג ממרחק המגע הנדרש. דטרמיניסטי לחלוטין — אין רנדום —
-// כדי שהתצוגה המקדימה וה-PDF יהיו זהים בדיוק. משנה pos במקום (x,y,hs).
+// הרפיה איטרטיבית מודעת-צורה: מתחילים מהמיקומים של symPos() ודוחפים סמלים עד
+// שאף זוג לא חורג ממרחק המגע הנדרש. דטרמיניסטי לחלוטין — אין רנדום — כדי
+// שהתצוגה המקדימה וה-PDF יהיו זהים בדיוק. משנה pos במקום (x,y,hs).
 function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
   const n=pos.length;
   if(!n)return;
@@ -1831,10 +1831,32 @@ function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
   const rots=layout.tr.map(t=>t.ro);
   const halves=pos.map((p,i)=>p.hs*layout.tr[i].sc);
   const origX=pos.map(p=>p.x),origY=pos.map(p=>p.y);
+  const kT=contactFactor();          // יעד המגע האמיתי — לעולם לא יורד, גם כשההרפיה מתפשרת
+  const tol=rSym*0.015;
 
-  function runPass(k){
-    const P=origX.map((x,i)=>({x,y:origY[i]}));
-    for(let it=0;it<80;it++){
+  // ההפרה הגרועה ביותר של פריסה נתונה מול יעד k (זוגות + גבול הקלף)
+  function violation(P,k){
+    let mv=0;
+    for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){
+      const dx=P[j].x-P[i].x,dy=P[j].y-P[i].y,d=Math.hypot(dx,dy)||1e-4;
+      const ang=Math.atan2(dy,dx);
+      const need=(reachAt(metas[i],rots[i],ang+Math.PI,halves[i])+reachAt(metas[j],rots[j],ang,halves[j]))*k;
+      if(need-d>mv)mv=need-d;
+    }
+    for(let i=0;i<n;i++){
+      const dx=P[i].x-cx,dy=P[i].y-cy,dist=Math.hypot(dx,dy);
+      const angOut=dist<1e-6?0:Math.atan2(dy,dx);
+      const over=dist+reachAt(metas[i],rots[i],angOut,halves[i])-rSym;
+      if(over>mv)mv=over;
+    }
+    return mv;
+  }
+
+  // מעבר הרפיה יחיד מנקודת פתיחה נתונה. יציאה מוקדמת כשאין יותר דחיפות.
+  function runPass(k,X0,Y0){
+    const P=X0.map((x,i)=>({x,y:Y0[i]}));
+    for(let it=0;it<90;it++){
+      let moved=0;
       for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){
         let dx=P[j].x-P[i].x,dy=P[j].y-P[i].y,d=Math.hypot(dx,dy),ang;
         if(d<1e-6){ang=i*2.4;dx=Math.cos(ang);dy=Math.sin(ang);d=0.01;}
@@ -1844,6 +1866,7 @@ function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
           const push=(need-d)/2*0.6,ux=dx/d,uy=dy/d;
           P[i].x-=ux*push;P[i].y-=uy*push;
           P[j].x+=ux*push;P[j].y+=uy*push;
+          if(push>rSym*1e-4)moved++;
         }
       }
       for(let i=0;i<n;i++){
@@ -1853,65 +1876,86 @@ function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
         const reach=reachAt(metas[i],rots[i],angOut,halves[i]);
         if(dist+reach>rSym){
           const over=dist+reach-rSym,ux=dx/dist,uy=dy/dist;
-          P[i].x-=ux*over;P[i].y-=uy*over;
+          P[i].x-=ux*over;P[i].y-=uy*over;moved++;
         }
       }
+      if(!moved)break;
     }
-    let maxViol=0;
-    for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){
-      const dx=P[j].x-P[i].x,dy=P[j].y-P[i].y,d=Math.hypot(dx,dy)||0.0001;
-      const ang=Math.atan2(dy,dx);
-      const need=(reachAt(metas[i],rots[i],ang+Math.PI,halves[i])+reachAt(metas[j],rots[j],ang,halves[j]))*k;
-      if(need-d>maxViol)maxViol=need-d;
+    return P;
+  }
+
+  // נקודות פתיחה חלופיות ("לולאת ניסיונות מחדש" מהאפיון) — דטרמיניסטיות לחלוטין:
+  // סיבוב קשיח של הפריסה ההתחלתית + פיזור רדיאלי. אין Math.random בשום שלב.
+  function variant(v){
+    const X=[],Y=[],rot=v*(Math.PI*2/7),cs=Math.cos(rot),sn=Math.sin(rot);
+    const spread=v>=2?1.10:1;
+    for(let i=0;i<n;i++){
+      const dx=(origX[i]-cx)*spread,dy=(origY[i]-cy)*spread;
+      X.push(cx+dx*cs-dy*sn);Y.push(cy+dx*sn+dy*cs);
     }
+    return{X,Y};
+  }
+
+  // חיפוש: 4 נקודות פתיחה × 4 מעברים עם נסיגה הדרגתית ב-k. תקרה קבועה = 16 מעברים,
+  // ולכן אין שום מסלול ללולאה אינסופית. עוצרים מוקדם ברגע שנמצאה פריסה נקייה.
+  let best=null,bestViol=Infinity;
+  for(let v=0;v<4;v++){
+    const st=variant(v);
+    let k=kT;
+    for(let a=0;a<4;a++){
+      const P=runPass(k,st.X,st.Y);
+      const mv=violation(P,kT);
+      if(mv<bestViol){bestViol=mv;best=P;}
+      if(bestViol<=tol)break;
+      k*=0.92;
+    }
+    if(bestViol<=tol)break;
+  }
+
+  // ── סגירה אנליטית: הערובה ל-0% חפיפה ו-0 חריגה, בצעד יחיד ──
+  // need_ij ו-reach_i לינאריים במקדם g, ולכן
+  //   g = min( d_ij / need_ij ,  (rSym − dist_i) / reach_i )
+  // הוא בדיוק המקדם הגדול ביותר שעדיין חוקי. O(n²), בלי איטרציות, בלי סיכון לקיפאון.
+  function exactShrink(P){
+    let g=1;
     for(let i=0;i<n;i++){
       const dx=P[i].x-cx,dy=P[i].y-cy,dist=Math.hypot(dx,dy);
       const angOut=dist<1e-6?0:Math.atan2(dy,dx);
-      const over=dist+reachAt(metas[i],rots[i],angOut,halves[i])-rSym;
-      if(over>maxViol)maxViol=over;
-    }
-    return{P,maxViol};
-  }
-
-  // נסיגה אוטומטית: אם k הנוכחי לא ניתן לסיפוק פיזית (בעיקר במרווח גדול), מקטינים
-  // אותו בהדרגה ומקבלים את הניסיון הכי טוב — עד 6 ניסיונות נוספים.
-  let k=contactFactor();
-  let best=runPass(k);
-  const tol=rSym*0.015;
-  for(let attempt=0;attempt<6&&best.maxViol>tol;attempt++){
-    k*=0.92;
-    const r=runPass(k);
-    if(r.maxViol<best.maxViol)best=r;
-  }
-
-  // בודק אם גורם גדילה גלובלי g (מכפיל את כל ה-half-ים) עדיין חוקי בעמדות שהתקבלו
-  function fits(g){
-    for(let i=0;i<n;i++){
-      const dx=best.P[i].x-cx,dy=best.P[i].y-cy,dist=Math.hypot(dx,dy);
-      const angOut=dist<1e-6?0:Math.atan2(dy,dx);
-      if(dist+reachAt(metas[i],rots[i],angOut,halves[i])*g>rSym*1.001)return false;
+      const reach=reachAt(metas[i],rots[i],angOut,halves[i]);
+      if(reach>1e-9&&dist+reach>rSym)g=Math.min(g,Math.max(0,(rSym-dist)/reach));
     }
     for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){
-      const dx=best.P[j].x-best.P[i].x,dy=best.P[j].y-best.P[i].y,d=Math.hypot(dx,dy)||0.0001;
+      const dx=P[j].x-P[i].x,dy=P[j].y-P[i].y,d=Math.hypot(dx,dy);
       const ang=Math.atan2(dy,dx);
-      const need=(reachAt(metas[i],rots[i],ang+Math.PI,halves[i])+reachAt(metas[j],rots[j],ang,halves[j]))*g*k;
-      if(d<need*0.999)return false;
+      const need=(reachAt(metas[i],rots[i],ang+Math.PI,halves[i])+reachAt(metas[j],rots[j],ang,halves[j]))*kT;
+      if(need>1e-9&&d<need)g=Math.min(g,d/need);
     }
-    return true;
+    return Math.max(0.20,Math.min(1,g));
   }
-  // g<1: הגנה כללית מפני חריגה מחוץ לקלף בגדלים קיצוניים (תמיד פעיל).
-  // g>1: "מילוי מיטבי" — רק כשמסומן וכשאין מרווח שלילי (הם סותרים זה את זה).
-  let g=1;
-  if(!fits(1)){
-    let lo=0.45,hi=1;
-    for(let s=0;s<8;s++){const mid=(lo+hi)/2;if(fits(mid))lo=mid;else hi=mid;}
-    g=lo;
-  }else if(S.tightFill&&(S.overlap||0)>=0){
+  let g=exactShrink(best);
+
+  // "מילוי מיטבי": רק כשאין שום הפרה (g===1) וכשאין מרווח שלילי — הגדלה עד הגבול החוקי.
+  if(g>=1&&S.tightFill&&(S.overlap||0)>=0){
+    const fits=q=>{
+      for(let i=0;i<n;i++){
+        const dx=best[i].x-cx,dy=best[i].y-cy,dist=Math.hypot(dx,dy);
+        const angOut=dist<1e-6?0:Math.atan2(dy,dx);
+        if(dist+reachAt(metas[i],rots[i],angOut,halves[i])*q>rSym*1.001)return false;
+      }
+      for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){
+        const dx=best[j].x-best[i].x,dy=best[j].y-best[i].y,d=Math.hypot(dx,dy)||1e-4;
+        const ang=Math.atan2(dy,dx);
+        const need=(reachAt(metas[i],rots[i],ang+Math.PI,halves[i])+reachAt(metas[j],rots[j],ang,halves[j]))*q*kT;
+        if(d<need*0.999)return false;
+      }
+      return true;
+    };
     let lo=1,hi=1.5;
-    for(let s=0;s<8;s++){const mid=(lo+hi)/2;if(fits(mid))lo=mid;else hi=mid;}
+    for(let s=0;s<10;s++){const mid=(lo+hi)/2;if(fits(mid))lo=mid;else hi=mid;}
     g=lo;
   }
-  for(let i=0;i<n;i++){pos[i].x=best.P[i].x;pos[i].y=best.P[i].y;pos[i].hs=pos[i].hs*g;}
+
+  for(let i=0;i<n;i++){pos[i].x=best[i].x;pos[i].y=best[i].y;pos[i].hs=pos[i].hs*g;}
 }
 
 // ══ גיאומטריית קלף אחידה ══
