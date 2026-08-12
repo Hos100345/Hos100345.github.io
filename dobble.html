@@ -977,7 +977,7 @@ function dcfgSave(patch){
       <div class="uz-ico">🖼️</div>
       <div class="uz-t">גרור/י תמונות לכאן</div>
       <div class="uz-s">או לחץ/י לבחירת קבצים · כל העלאה מצטברת למאגר</div>
-      <div class="uz-hint">JPG · PNG · HEIC (אייפון) · WebP · AVIF · GIF · BMP · SVG · ניתן לבחור מספר קבצים</div>
+      <div class="uz-hint">JPG · PNG · HEIC (אייפון) · WebP · AVIF · GIF · BMP · TIFF · SVG · ניתן לבחור מספר קבצים</div>
       <!-- image/* לבדו לא מספיק: בחלק מבוררי הקבצים בנייד ובענן (Drive/OneDrive) HEIC/HEIF/AVIF
            מגיעים בלי MIME ונחסמים מהבחירה. הסיומות המפורשות פותחות אותם. -->
       <input type="file" id="fi" multiple accept="image/*,.heic,.heif,.avif,.jfif,.jpe,.bmp,.tif,.tiff,.svg,.webp,.gif,.png,.jpg,.jpeg" style="display:none">
@@ -1763,6 +1763,19 @@ function dcfgSave(patch){
         <button class="btn btn-pri" onclick="adminExportConfig()" style="font-size:.82rem">📥 יצוא קובץ הגדרות לגיטהאב</button>
       </div>
       <div id="adm-packs-msg" class="adm-hint2" style="min-height:1.2em"></div>
+    </div>
+
+    <div class="adm-sec">
+      <h3>🩺 בדיקה עצמית — העלאת תמונות</h3>
+      <div class="adm-hint2">מריץ קובץ אמיתי מכל פורמט דרך אותו צינור העלאה שהלקוח משתמש בו, ובודק שהתמונה
+        באמת פוענחה — <strong>במכשיר ובדפדפן שבהם אתה נמצא כרגע</strong>. תמיכה בפורמטים משתנה בין
+        מכשירים, ולכן הרצה כאן היא התשובה האמיתית ללקוח שמדווח "התמונה לא נטענת". לא נוגע במאגר.</div>
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.7rem;align-items:center">
+        <button class="btn btn-pri" id="adm-selftest-run" style="font-size:.82rem">▶️ הרץ בדיקה</button>
+        <button class="btn btn-ghost" id="adm-selftest-copy" style="font-size:.77rem;padding:.32rem .8rem;color:#a5b4fc;border-color:#334155" hidden>📋 העתק דוח</button>
+        <span id="adm-selftest-sum" style="color:#a5b4fc;font-size:.82rem"></span>
+      </div>
+      <div id="adm-selftest-out" style="margin-top:.8rem"></div>
     </div>
 
     <div class="adm-sec">
@@ -2904,28 +2917,72 @@ async function reportFailedUploads(failed,folder,depth){
 }
 
 function isHeicFile(f){return /\.(heic|heif)$/i.test(f.name)||f.type==='image/heic'||f.type==='image/heif';}
-async function ensureHeic2Any(){
-  if(typeof heic2any!=='undefined')return true;
-  const urls=['https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js',
-              'https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js'];
-  for(const src of urls){
-    try{
-      await withTimeout(new Promise((res,rej)=>{
-        const s=document.createElement('script');s.src=src;
-        s.onload=res;s.onerror=()=>rej(new Error('load error'));document.head.appendChild(s);
-      }),15000,'טעינת ממיר HEIC נתקעה');
-      if(typeof heic2any!=='undefined')return true;
-    }catch(e){console.warn('heic2any CDN failed:',src,e?.message||e);}
-  }
-  return false;
+
+// טוען ספריית פענוח חיצונית פעם אחת, לפי סדר: קודם מהאתר עצמו (vendor/), ורק אם היא חסרה
+// שם — מ-CDN. הסדר הזה חשוב: HEIC הוא הפורמט של כל תמונה מאייפון, וכשהוא היה תלוי אך ורק
+// ב-CDN חיצוני, כל תקלת רשת/חסימה הפכה את כל התמונות מאייפון לבלתי ניתנות להעלאה.
+// _libLoads מונע טעינה כפולה כששני קבצים מאותו סוג נטענים במקביל.
+const _libLoads={};
+function loadLibOnce(key,check,urls,label){
+  if(check())return Promise.resolve(true);
+  if(_libLoads[key])return _libLoads[key];
+  _libLoads[key]=(async()=>{
+    for(const src of urls){
+      try{
+        await withTimeout(new Promise((res,rej)=>{
+          const s=document.createElement('script');s.src=src;
+          s.onload=res;s.onerror=()=>rej(new Error('load error'));document.head.appendChild(s);
+        }),20000,label+' נתקעה');
+        if(check())return true;
+      }catch(e){console.warn(label+' failed:',src,e?.message||e);}
+    }
+    _libLoads[key]=null;   // מאפשר ניסיון חוזר אחרי שהרשת חוזרת
+    return false;
+  })();
+  return _libLoads[key];
+}
+
+function ensureHeic2Any(){
+  return loadLibOnce('heic',()=>typeof heic2any!=='undefined',
+    ['vendor/heic2any.min.js',
+     'https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js',
+     'https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js'],'טעינת ממיר HEIC');
 }
 async function convertHeicAndLoad(src){
   const ok=await ensureHeic2Any();
-  if(!ok)throw new Error('נדרש חיבור לאינטרנט לטעינת ממיר HEIC');
+  if(!ok)throw new Error('לא הצלחנו לטעון את ממיר ה-HEIC — בדקו את חיבור האינטרנט ונסו שוב');
   const result=await heic2any({blob:src,toType:'image/jpeg',quality:0.92});
   const blob=Array.isArray(result)?result[0]:result;
   const jUrl=URL.createObjectURL(blob);
   try{return await loadImg(jUrl);}finally{URL.revokeObjectURL(jUrl);}
+}
+
+// TIFF אינו נתמך בשום דפדפן מלבד Safari — Chrome ו-Firefox פשוט לא מפענחים אותו.
+// UTIF מפענח baseline TIFF (כולל LZW ו-PackBits) ב-JS, כך שסריקות וקבצים מדפוס עובדים.
+function ensureUTIF(){
+  return loadLibOnce('tiff',()=>typeof UTIF!=='undefined',
+    ['vendor/UTIF.js',
+     'https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.js',
+     'https://unpkg.com/utif@3.1.0/UTIF.js'],'טעינת ממיר TIFF');
+}
+async function convertTiffAndLoad(blob){
+  const ok=await ensureUTIF();
+  if(!ok)throw new Error('לא הצלחנו לטעון את ממיר ה-TIFF — בדקו את חיבור האינטרנט ונסו שוב');
+  const buf=await blob.arrayBuffer();
+  const ifds=UTIF.decode(buf);
+  if(!ifds||!ifds.length)throw new Error('קובץ TIFF פגום');
+  UTIF.decodeImage(buf,ifds[0],ifds);
+  const rgba=UTIF.toRGBA8(ifds[0]);
+  const sw=ifds[0].width,sh=ifds[0].height;
+  if(!sw||!sh||!rgba||!rgba.length)throw new Error('קובץ TIFF פגום');
+  const full=document.createElement('canvas');full.width=sw;full.height=sh;
+  full.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(rgba.buffer||rgba),sw,sh),0,0);
+  // אותה הקטנה שכל שאר הפורמטים עוברים — סריקות TIFF הן לרוב ענקיות
+  const{w,h}=fitLongSide(sw,sh,LOAD_MAX);
+  if(w===sw&&h===sh)return full;
+  const c=document.createElement('canvas');c.width=w;c.height=h;
+  c.getContext('2d').drawImage(full,0,0,w,h);
+  return c;
 }
 
 // קריאת בייטים מיידית לזיכרון + retry: קבצים מהגלריה/הענן בנייד "מתים" בקריאה מאוחרת
@@ -2979,6 +3036,7 @@ async function loadImgFile(f,url){
   const mime=sniffMime(head)||((f.type&&f.type.startsWith('image/'))?f.type:'');
   const blob=new Blob([buf],{type:mime||'application/octet-stream'});
   if(mime==='image/heic'||(!mime&&isHeicFile(f)))return convertHeicAndLoad(blob);
+  if(mime==='image/tiff'||(!mime&&/\.(tif|tiff)$/i.test(f.name)))return convertTiffAndLoad(blob);
   let lastErr;
   // הקטנה מדורגת: נפילה בגודל מלא בנייד היא כמעט תמיד לחץ זיכרון, לא פורמט פגום
   for(const maxSide of [LOAD_MAX,900,600]){
@@ -2986,13 +3044,7 @@ async function loadImgFile(f,url){
     catch(e){lastErr=e;await new Promise(r=>setTimeout(r,120));}
   }
   try{return await convertHeicAndLoad(blob);}   // מוצא אחרון: HEIC מוסווה
-  catch{
-    // TIFF ו-ICO אינם נתמכים בדפדפני Chrome/Firefox כלל — אין טעם להאשים "שגיאת פענוח",
-    // המשתמש צריך לדעת שהפתרון הוא להמיר את הקובץ ולא לנסות שוב.
-    if(mime==='image/tiff'||mime==='image/x-icon')
-      throw new Error(`פורמט ${mime==='image/tiff'?'TIFF':'ICO'} אינו נתמך בדפדפן — שמרו את התמונה כ-JPG או PNG והעלו שוב`);
-    throw new Error(`פענוח נכשל (${mime||f.type||'סוג לא מזוהה'}): ${lastErr&&lastErr.message||'שגיאת פענוח'}`);
-  }
+  catch{throw new Error(`פענוח נכשל (${mime||f.type||'סוג לא מזוהה'}): ${lastErr&&lastErr.message||'שגיאת פענוח'}`);}
 }
 
 // ── לוגו לגב הקלף: נכנס דרך אותו צינור תמונות רגיל (type:'backlogo') כדי להסתנכרן ל-Storage
@@ -6035,6 +6087,114 @@ function adminRenderGames(){
     </tr>`).join('')
   }</tbody></table>`;
 }
+
+// ══ בדיקה עצמית — צינור העלאת התמונות ══
+// דגימות אמיתיות (לא placeholder) של כל פורמט נתמך, מקודדות base64. כל דגימה נארזת ל-File
+// ועוברת דרך looksLikeImage + loadImgFile — בדיוק אותן פונקציות שמריצות כל העלאה של לקוח —
+// ואז נבדק שהתוצאה היא קנבס עם מידות אמיתיות ולא אובייקט ריק.
+//
+// כל פורמט נבדק פעמיים: פעם עם MIME תקין, ופעם עם MIME ריק. הריצה השנייה היא העיקר —
+// בוררי קבצים בנייד ובענן מוסרים את ה-MIME, וזה בדיוק מה שגרם לתמונות תקינות להיזרק.
+const SELFTEST_SAMPLES=[
+  {l:'JPEG',x:'jpg',m:'image/jpeg',d:'/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAMABADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDFupmi27QDnPWi1maXduAGMdKmZFb7yg49RQqKv3VAz6CuL63hPqPsPZfvf5vnf8tD9O+pY3+0PrHtv3X8n/btvz1P/9k='},
+  {l:'PNG',x:'png',m:'image/png',d:'iVBORw0KGgoAAAANSUhEUgAAABAAAAAMCAYAAABr5z2BAAAALUlEQVR4nGP8YGPzn4ECwESJZqoYwIIu4CO3AK+GLY8SqOuCUQMYGBiHfkICAKylB+cXgDukAAAAAElFTkSuQmCC'},
+  {l:'GIF',x:'gif',m:'image/gif',d:'R0lGODdhEAAMAIEAAPA8PDxa3AAAAAAAACwAAAAAEAAMAAAIJwABCBxIsKDBgwgTHgzAsCFDhA4dQoz4cCHFABMpZoyosKPHjwYDAgA7'},
+  {l:'WebP',x:'webp',m:'image/webp',d:'UklGRoYAAABXRUJQVlA4IHoAAABQAwCdASoQAAwAAUAmJbACdD3//QA/wG9AeyB5TIOywTlSAAD+nvUrzjV17yxliaf/+XMWv22KChEv/+lyLX77gq3z/iF4HNt2VduGK9waBD//Sw/7AHRCvMjpj//0sP+0d0Qk1Qyo//92xXvpyLuT3+tS8eJ/64KAAA=='},
+  {l:'AVIF',x:'avif',m:'image/avif',d:'AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZk1BMUIAAADrbWV0YQAAAAAAAAAhaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAAAAAAAOcGl0bQAAAAAAAQAAAB5pbG9jAAAAAEQAAAEAAQAAAAEAAAETAAAARgAAAChpaW5mAAAAAAABAAAAGmluZmUCAAAAAAEAAGF2MDFDb2xvcgAAAABqaXBycAAAAEtpcGNvAAAAFGlzcGUAAAAAAAAAEAAAAAwAAAAQcGl4aQAAAAADCAgIAAAADGF2MUOBAAwAAAAAE2NvbHJuY2x4AAEADQAGgAAAABdpcG1hAAAAAAAAAAEAAQQBAoMEAAAATm1kYXQSAAoJGAz+2iAhoNCAMjdF4eHhiGEkkkmUAAACjhHM7cV8rpMfG+bLMdjDV0f+RXURRpB8JSqY3bzkELqVqcsXKN8sDhjQ'},
+  {l:'HEIC',x:'heic',m:'image/heic',d:'AAAAHGZ0eXBoZWljAAAAAG1pZjFoZWljbWlhZgAAAXxtZXRhAAAAAAAAACFoZGxyAAAAAAAAAABwaWN0AAAAAAAAAAAAAAAAAAAAACJpbG9jAAAAAERAAAEAAQAAAAABoAABAAAAAAAAAIQAAAAjaWluZgAAAAAAAQAAABVpbmZlAgAAAAABAABodmMxAAAAAA5waXRtAAAAAAABAAAA/GlwcnAAAADcaXBjbwAAAHVodmNDAQNwAAAAAAAAAAAAHvAA/P34+AAADwNgAAEAGEABDAH//wNwAAADAJAAAAMAAAMAHroCQGEAAQApQgEBA3AAAAMAkAAAAwAAAwAeoCCBBZbqrprm4CGgwIAAAAyAAAADAIRiAAEABkQBwXPBiQAAABNjb2xybmNseAABAA0ABoAAAAAUaXNwZQAAAAAAAABAAAAAQAAAAChjbGFwAAAAEAAAAAEAAAAMAAAAAf///9AAAAAC////zAAAAAIAAAAQcGl4aQAAAAADCAgIAAAAGGlwbWEAAAAAAAAAAQABBYECAwWEAAAAjG1kYXQAAACAKAGvCch7gwNA41ScaB5bCK7bZzq8d/V+SyJCt4lbGKj/m6y1coNTcUNn0+U6eLw3djC7cUfIBCpHL6kWQkM7goUXQ835HVPjXLxjgEgzDjRdH0J8GSWJSfEowWPXGtnl9LciodyA8a7LM/+Zf1huDiL1FM4i8dtqNoCHgitZ4pA='},
+  {l:'BMP',x:'bmp',m:'image/bmp',d:'Qk12AgAAAAAAADYAAAAoAAAAEAAAAAwAAAABABgAAAAAAEACAADEDgAAxA4AAAAAAAAAAAAAPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzw3Fo83Fo83Fo83Fo83Fo83Fo83Fo83Fo8PDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzw3Fo83Fo83Fo83Fo83Fo83Fo83Fo83Fo8PDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzw3Fo83Fo83Fo83Fo83Fo83Fo83Fo83Fo8PDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzw3Fo83Fo83Fo83Fo83Fo83Fo83Fo83Fo8PDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzw3Fo83Fo83Fo83Fo83Fo83Fo83Fo83Fo8PDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzw3Fo83Fo83Fo83Fo83Fo83Fo83Fo83Fo8PDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzwPDzw'},
+  {l:'TIFF',x:'tif',m:'image/tiff',d:'SUkqAGgAAACAPAeDyBQSBwWEQeFQaGQmGwuHRGIROHxWJRaKReNRmORiBlpuDyQSKQyOTSWURuPQWSS2Ty6USSVSqYTWXyeZx2bTGbymOzSezuYTmPUKgzif0mV0qiU2mU+l1GnDyAgKAAABAwABAAAAEAAAAAEBAwABAAAADAAAAAIBAwADAAAA5gAAAAMBAwABAAAABQAAAAYBAwABAAAAAgAAABEBBAABAAAACAAAABUBAwABAAAAAwAAABYBAwABAAAADAAAABcBBAABAAAAYAAAABwBAwABAAAAAQAAAAAAAAAIAAgACAA='},
+  {l:'ICO',x:'ico',m:'image/x-icon',d:'AAABAAEAEBAAAAAAIABnAAAAFgAAAIlQTkcNChoKAAAADUlIRFIAAAAQAAAAEAgGAAAAH/P/YQAAAC5JREFUeJxj/GBj85+BAsBEiebBYQALuoCP3AK8GrY8SqCuC0YNGAwGMI7mBQYAIXsH7/n0Le0AAAAASUVORK5CYII='},
+  {l:'SVG',x:'svg',m:'image/svg+xml',d:'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxMiI+PHJlY3Qgd2lkdGg9IjE2IiBoZWlnaHQ9IjEyIiBmaWxsPSIjZjAzYzNjIi8+PHJlY3QgeD0iNCIgeT0iMyIgd2lkdGg9IjgiIGhlaWdodD0iNiIgZmlsbD0iIzNjNWFkYyIvPjwvc3ZnPg=='}
+];
+// בקרה שלילית: אלה *חייבים* להידחות. בדיקה שרק מאשרת קבלה תעבור גם אם הסינון מקבל הכל.
+const SELFTEST_REJECTS=[
+  {l:'טקסט',x:'txt',m:'text/plain',d:'aGVsbG8gd29ybGQgdGhpcyBpcyBub3QgYW4gaW1hZ2U='},
+  {l:'PDF',x:'pdf',m:'application/pdf',d:'JVBERi0xLjQKJcTl8uXrp/Og0MTGCg=='},
+  {l:'וידאו',x:'mp4',m:'video/mp4',d:'AAAAGGZ0eXBtcDQyAAAAAG1wNDJpc29t'},
+];
+
+function _b64ToFile(b64,name,mime){
+  const bin=atob(b64),u=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
+  return new File([u],name,mime?{type:mime}:{});
+}
+
+// מריץ דגימה אחת דרך הצינור האמיתי ומחזיר תוצאה מפורטת
+async function _selftestOne(s,withMime){
+  const f=_b64ToFile(s.d,'selftest.'+s.x,withMime?s.m:'');
+  const t0=performance.now();
+  if(!looksLikeImage(f))return{ok:false,stage:'סינון',err:'הקובץ נדחה לפני הפענוח',ms:performance.now()-t0};
+  const url=URL.createObjectURL(f);
+  try{
+    const el=await withTimeout(loadImgFile(f,url),45000,'תם הזמן הקצוב');
+    const w=imgNatW(el),h=imgNatH(el);
+    if(!w||!h)return{ok:false,stage:'פענוח',err:'התקבל קנבס ריק',ms:performance.now()-t0};
+    return{ok:true,w,h,ms:performance.now()-t0};
+  }catch(e){return{ok:false,stage:'פענוח',err:(e&&e.message)||'שגיאה',ms:performance.now()-t0};}
+  finally{URL.revokeObjectURL(url);}
+}
+
+let _selftestBusy=false;
+async function runUploadSelfTest(){
+  if(_selftestBusy)return;
+  _selftestBusy=true;
+  const out=document.getElementById('adm-selftest-out');
+  const sum=document.getElementById('adm-selftest-sum');
+  const btn=document.getElementById('adm-selftest-run');
+  const copyBtn=document.getElementById('adm-selftest-copy');
+  btn.disabled=true;btn.textContent='⏳ בודק…';copyBtn.hidden=true;
+  const rows=[];
+  const cell=(r)=>r.ok?`<span style="color:#4ade80">✓ ${r.text||(r.w+'×'+r.h)}</span>`
+                     :`<span style="color:#fca5a5" title="${(r.err||'').replace(/"/g,'&quot;')}">✕ ${r.stage}</span>`;
+  const draw=()=>{
+    out.innerHTML='<table style="width:100%;border-collapse:collapse;font-size:.8rem">'
+      +'<tr style="color:#94a3b8;text-align:right"><th style="padding:.3rem">פורמט</th>'
+      +'<th style="padding:.3rem">עם סוג קובץ</th><th style="padding:.3rem">בלי סוג קובץ</th>'
+      +'<th style="padding:.3rem">זמן</th><th style="padding:.3rem">פירוט</th></tr>'
+      +rows.map(r=>`<tr style="border-top:1px solid #334155">
+          <td style="padding:.3rem;font-weight:700;color:#e2e8f0">${r.label}</td>
+          <td style="padding:.3rem">${r.a?cell(r.a):'…'}</td>
+          <td style="padding:.3rem">${r.b?cell(r.b):'…'}</td>
+          <td style="padding:.3rem;color:#94a3b8">${r.a?Math.round(Math.max(r.a.ms,(r.b||r.a).ms))+'ms':''}</td>
+          <td style="padding:.3rem;color:#94a3b8;font-size:.74rem">${r.note||''}</td></tr>`).join('')
+      +'</table>';
+  };
+  // ── פורמטים שאמורים לעבוד ──
+  for(const s of SELFTEST_SAMPLES){
+    const row={label:s.l,note:''};rows.push(row);draw();
+    row.a=await _selftestOne(s,true);
+    row.b=await _selftestOne(s,false);
+    if(!row.a.ok||!row.b.ok)row.note=(row.a.err||row.b.err||'').slice(0,90);
+    draw();
+  }
+  // ── קבצים שחייבים להידחות ──
+  for(const s of SELFTEST_REJECTS){
+    const row={label:s.l+' (חייב להידחות)',note:''};rows.push(row);draw();
+    const a=await _selftestOne(s,true),b=await _selftestOne(s,false);
+    // כאן ההצלחה היא כישלון: מצפים שהקובץ *לא* ייטען, ולכן ההיגיון הפוך
+    row.a={ok:!a.ok,text:'נדחה כנדרש',ms:a.ms,stage:'התקבל בטעות',err:'קובץ שאינו תמונה התקבל'};
+    row.b={ok:!b.ok,text:'נדחה כנדרש',ms:b.ms,stage:'התקבל בטעות',err:'קובץ שאינו תמונה התקבל'};
+    if(a.ok||b.ok)row.note='קובץ שאינו תמונה לא נחסם';
+    draw();
+  }
+  const bad=rows.filter(r=>!(r.a&&r.a.ok)||!(r.b&&r.b.ok));
+  sum.innerHTML=bad.length
+    ?`<span style="color:#fca5a5">${bad.length} מתוך ${rows.length} נכשלו</span>`
+    :`<span style="color:#4ade80">כל ${rows.length} הבדיקות עברו ✓</span>`;
+  btn.disabled=false;btn.textContent='▶️ הרץ שוב';
+  copyBtn.hidden=false;
+  // דוח טקסט להעתקה — כדי שאפשר יהיה לשלוח אותו בוואטסאפ כשלקוח מדווח על תקלה
+  copyBtn.onclick=()=>{
+    const txt=['בדיקה עצמית — העלאת תמונות','דפדפן: '+navigator.userAgent,'תאריך: '+new Date().toLocaleString('he-IL'),'']
+      .concat(rows.map(r=>`${r.label}: עם סוג=${r.a&&r.a.ok?'תקין':'נכשל'} | בלי סוג=${r.b&&r.b.ok?'תקין':'נכשל'}${r.note?' — '+r.note:''}`))
+      .concat(['',bad.length?`${bad.length} כשלים`:'הכל תקין']).join('\n');
+    (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject())
+      .then(()=>toast('הדוח הועתק ✓','ok')).catch(()=>{alert(txt);});
+  };
+  _selftestBusy=false;
+}
+document.getElementById('adm-selftest-run').addEventListener('click',runUploadSelfTest);
 
 function adminExportCSV(){
   const games=getGameLog();
