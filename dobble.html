@@ -165,6 +165,15 @@
     .cw:hover{box-shadow:var(--shl)}
     .cw.s1{border-color:var(--blue);box-shadow:0 0 0 5px rgba(37,99,235,.2)}
     .cw.s2{border-color:var(--purple);box-shadow:0 0 0 5px rgba(124,58,237,.2)}
+    .cslot{position:relative;aspect-ratio:1}
+    .cslot>.cw{width:100%;height:100%}
+    .card-edit-btn{position:absolute;top:5px;inset-inline-start:5px;z-index:3;width:30px;height:30px;border-radius:50%;border:none;background:rgba(255,255,255,.93);box-shadow:0 2px 7px rgba(20,16,60,.25);color:var(--indigo);font-size:.88rem;line-height:1;padding:0;cursor:pointer;opacity:0;transition:opacity var(--tr),transform var(--tr)}
+    .cslot:hover .card-edit-btn{opacity:1}
+    .card-edit-btn:active{transform:scale(.88)}
+    @media (hover:none){.card-edit-btn{opacity:.85}}
+    .ce-wrap{position:relative;margin:0 auto;border-radius:50%;overflow:hidden;box-shadow:var(--sh);touch-action:none;background:#fff}
+    .ce-wrap.sq{border-radius:14px}
+    .ce-wrap canvas{width:100%;height:100%;display:block}
 
     /* ── VERIFY MODAL ── */
     .modal-bg{position:fixed;inset:0;background:rgba(20,16,60,.45);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);z-index:500;display:flex;align-items:center;justify-content:center;padding:1rem;overflow-y:auto;-webkit-overflow-scrolling:touch}
@@ -1070,6 +1079,7 @@ function dcfgSave(patch){
             <div class="sl-lbl"><span>מינימום</span><strong id="lbl-mn">70%</strong></div>
             <input type="range" id="sl-mn" min="20" max="160" value="70" step="5">
           </div>
+          <div id="mn-auto-hint" style="display:none;font-size:.72rem;color:var(--indigo);font-weight:700;margin:-.45rem 0 .6rem">⚙️ הותאם אוטומטית לגודל המקסימלי</div>
           <div class="sl-row">
             <div class="sl-lbl"><span>מקסימום</span><strong id="lbl-mx">130%</strong></div>
             <input type="range" id="sl-mx" min="40" max="300" value="130" step="5">
@@ -1406,6 +1416,36 @@ function dcfgSave(patch){
         <div class="mc-txt" id="mc-txt">—</div>
       </div>
       <div class="mcw" id="mcw2"><canvas id="mc2" width="280" height="280"></canvas><div class="mc-lbl">קלף ב</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- CARD EDIT MODAL -->
+<div class="modal-bg" id="cemodal" hidden style="z-index:10002">
+  <div class="modal-card" style="max-width:440px">
+    <div class="modal-hdr">
+      <div class="modal-title">✏️ עריכת קלף <span id="ce-idx"></span></div>
+      <button class="modal-x" id="ce-x">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:.7rem;align-items:center">
+      <div class="ce-wrap" id="ce-wrap" style="width:min(76vw,340px);height:min(76vw,340px)">
+        <canvas id="ce-cv" width="720" height="720"></canvas>
+      </div>
+      <div style="font-size:.78rem;color:var(--muted);text-align:center;line-height:1.55">
+        לחצו על סמל כדי לבחור אותו · גררו כדי להזיז · הסרגל משנה גודל<br>
+        השינויים חלים על הקלף הזה בלבד
+      </div>
+      <div id="ce-warn" style="display:none;font-size:.8rem;font-weight:800;color:#B91C1C;text-align:center">⚠️ יש חפיפה בין סמלים בקלף</div>
+      <div id="ce-ctl" style="display:none;width:100%">
+        <div class="sl-row">
+          <div class="sl-lbl"><span>גודל הסמל שנבחר</span><strong id="ce-lbl">100%</strong></div>
+          <input type="range" id="ce-sl" min="30" max="220" step="5" value="100">
+        </div>
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;width:100%">
+        <button class="pack-btn" id="ce-reset-one" type="button">↩️ אפס סמל</button>
+        <button class="pack-btn" id="ce-reset-all" type="button">🧹 אפס קלף</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1761,7 +1801,7 @@ function buildLayouts(deck,seed,sMin,sMax){
     const sh=[...syms];
     for(let i=sh.length-1;i>0;i--){const j=Math.floor(sr(base*100+i)*(i+1));[sh[i],sh[j]]=[sh[j],sh[i]];}
     const tr=sh.map((_,si)=>({sc:sMin+sr(base*200+si*7)*range,ro:sr(base*300+si*13+7)*Math.PI*2}));
-    return{syms:sh,tr};
+    return{syms:sh,tr,ci};   // ci = אינדקס הקלף — נדרש לשליפת התאמות ידניות (S.cardEdits)
   });
 }
 
@@ -1821,9 +1861,9 @@ function reachAt(meta,rotation,angle,half){
   return meta.radial[idx]*half;
 }
 
-// הרפיה איטרטיבית: מתחילים מהמיקומים הקיימים של symPos() ודוחפים סמלים
-// עד שאף זוג לא חורג ממרחק המגע הנדרש. דטרמיניסטי לחלוטין — אין רנדום —
-// כדי שהתצוגה המקדימה וה-PDF יהיו זהים בדיוק. משנה pos במקום (x,y,hs).
+// הרפיה איטרטיבית מודעת-צורה: מתחילים מהמיקומים של symPos() ודוחפים סמלים עד
+// שאף זוג לא חורג ממרחק המגע הנדרש. דטרמיניסטי לחלוטין — אין רנדום — כדי
+// שהתצוגה המקדימה וה-PDF יהיו זהים בדיוק. משנה pos במקום (x,y,hs).
 function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
   const n=pos.length;
   if(!n)return;
@@ -1831,10 +1871,32 @@ function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
   const rots=layout.tr.map(t=>t.ro);
   const halves=pos.map((p,i)=>p.hs*layout.tr[i].sc);
   const origX=pos.map(p=>p.x),origY=pos.map(p=>p.y);
+  const kT=contactFactor();          // יעד המגע האמיתי — לעולם לא יורד, גם כשההרפיה מתפשרת
+  const tol=rSym*0.015;
 
-  function runPass(k){
-    const P=origX.map((x,i)=>({x,y:origY[i]}));
-    for(let it=0;it<80;it++){
+  // ההפרה הגרועה ביותר של פריסה נתונה מול יעד k (זוגות + גבול הקלף)
+  function violation(P,k){
+    let mv=0;
+    for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){
+      const dx=P[j].x-P[i].x,dy=P[j].y-P[i].y,d=Math.hypot(dx,dy)||1e-4;
+      const ang=Math.atan2(dy,dx);
+      const need=(reachAt(metas[i],rots[i],ang+Math.PI,halves[i])+reachAt(metas[j],rots[j],ang,halves[j]))*k;
+      if(need-d>mv)mv=need-d;
+    }
+    for(let i=0;i<n;i++){
+      const dx=P[i].x-cx,dy=P[i].y-cy,dist=Math.hypot(dx,dy);
+      const angOut=dist<1e-6?0:Math.atan2(dy,dx);
+      const over=dist+reachAt(metas[i],rots[i],angOut,halves[i])-rSym;
+      if(over>mv)mv=over;
+    }
+    return mv;
+  }
+
+  // מעבר הרפיה יחיד מנקודת פתיחה נתונה. יציאה מוקדמת כשאין יותר דחיפות.
+  function runPass(k,X0,Y0){
+    const P=X0.map((x,i)=>({x,y:Y0[i]}));
+    for(let it=0;it<90;it++){
+      let moved=0;
       for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){
         let dx=P[j].x-P[i].x,dy=P[j].y-P[i].y,d=Math.hypot(dx,dy),ang;
         if(d<1e-6){ang=i*2.4;dx=Math.cos(ang);dy=Math.sin(ang);d=0.01;}
@@ -1844,6 +1906,7 @@ function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
           const push=(need-d)/2*0.6,ux=dx/d,uy=dy/d;
           P[i].x-=ux*push;P[i].y-=uy*push;
           P[j].x+=ux*push;P[j].y+=uy*push;
+          if(push>rSym*1e-4)moved++;
         }
       }
       for(let i=0;i<n;i++){
@@ -1853,65 +1916,174 @@ function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
         const reach=reachAt(metas[i],rots[i],angOut,halves[i]);
         if(dist+reach>rSym){
           const over=dist+reach-rSym,ux=dx/dist,uy=dy/dist;
-          P[i].x-=ux*over;P[i].y-=uy*over;
+          P[i].x-=ux*over;P[i].y-=uy*over;moved++;
         }
       }
+      if(!moved)break;
     }
-    let maxViol=0;
-    for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){
-      const dx=P[j].x-P[i].x,dy=P[j].y-P[i].y,d=Math.hypot(dx,dy)||0.0001;
-      const ang=Math.atan2(dy,dx);
-      const need=(reachAt(metas[i],rots[i],ang+Math.PI,halves[i])+reachAt(metas[j],rots[j],ang,halves[j]))*k;
-      if(need-d>maxViol)maxViol=need-d;
+    return P;
+  }
+
+  // נקודות פתיחה חלופיות ("לולאת ניסיונות מחדש" מהאפיון) — דטרמיניסטיות לחלוטין:
+  // סיבוב קשיח של הפריסה ההתחלתית + פיזור רדיאלי. אין Math.random בשום שלב.
+  function variant(v){
+    const X=[],Y=[],rot=v*(Math.PI*2/7),cs=Math.cos(rot),sn=Math.sin(rot);
+    const spread=v>=2?1.10:1;
+    for(let i=0;i<n;i++){
+      const dx=(origX[i]-cx)*spread,dy=(origY[i]-cy)*spread;
+      X.push(cx+dx*cs-dy*sn);Y.push(cy+dx*sn+dy*cs);
     }
+    return{X,Y};
+  }
+
+  // חיפוש: 4 נקודות פתיחה × 4 מעברים עם נסיגה הדרגתית ב-k. תקרה קבועה = 16 מעברים,
+  // ולכן אין שום מסלול ללולאה אינסופית. עוצרים מוקדם ברגע שנמצאה פריסה נקייה.
+  let best=null,bestViol=Infinity;
+  for(let v=0;v<4;v++){
+    const st=variant(v);
+    let k=kT;
+    for(let a=0;a<4;a++){
+      const P=runPass(k,st.X,st.Y);
+      const mv=violation(P,kT);
+      if(mv<bestViol){bestViol=mv;best=P;}
+      if(bestViol<=tol)break;
+      k*=0.92;
+    }
+    if(bestViol<=tol)break;
+  }
+
+  // ── סגירה אנליטית: הערובה ל-0% חפיפה ו-0 חריגה, בצעד יחיד ──
+  // need_ij ו-reach_i לינאריים במקדם g, ולכן
+  //   g = min( d_ij / need_ij ,  (rSym − dist_i) / reach_i )
+  // הוא בדיוק המקדם הגדול ביותר שעדיין חוקי. O(n²), בלי איטרציות, בלי סיכון לקיפאון.
+  function exactShrink(P){
+    let g=1;
     for(let i=0;i<n;i++){
       const dx=P[i].x-cx,dy=P[i].y-cy,dist=Math.hypot(dx,dy);
       const angOut=dist<1e-6?0:Math.atan2(dy,dx);
-      const over=dist+reachAt(metas[i],rots[i],angOut,halves[i])-rSym;
-      if(over>maxViol)maxViol=over;
-    }
-    return{P,maxViol};
-  }
-
-  // נסיגה אוטומטית: אם k הנוכחי לא ניתן לסיפוק פיזית (בעיקר במרווח גדול), מקטינים
-  // אותו בהדרגה ומקבלים את הניסיון הכי טוב — עד 6 ניסיונות נוספים.
-  let k=contactFactor();
-  let best=runPass(k);
-  const tol=rSym*0.015;
-  for(let attempt=0;attempt<6&&best.maxViol>tol;attempt++){
-    k*=0.92;
-    const r=runPass(k);
-    if(r.maxViol<best.maxViol)best=r;
-  }
-
-  // בודק אם גורם גדילה גלובלי g (מכפיל את כל ה-half-ים) עדיין חוקי בעמדות שהתקבלו
-  function fits(g){
-    for(let i=0;i<n;i++){
-      const dx=best.P[i].x-cx,dy=best.P[i].y-cy,dist=Math.hypot(dx,dy);
-      const angOut=dist<1e-6?0:Math.atan2(dy,dx);
-      if(dist+reachAt(metas[i],rots[i],angOut,halves[i])*g>rSym*1.001)return false;
+      const reach=reachAt(metas[i],rots[i],angOut,halves[i]);
+      if(reach>1e-9&&dist+reach>rSym)g=Math.min(g,Math.max(0,(rSym-dist)/reach));
     }
     for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){
-      const dx=best.P[j].x-best.P[i].x,dy=best.P[j].y-best.P[i].y,d=Math.hypot(dx,dy)||0.0001;
+      const dx=P[j].x-P[i].x,dy=P[j].y-P[i].y,d=Math.hypot(dx,dy);
       const ang=Math.atan2(dy,dx);
-      const need=(reachAt(metas[i],rots[i],ang+Math.PI,halves[i])+reachAt(metas[j],rots[j],ang,halves[j]))*g*k;
-      if(d<need*0.999)return false;
+      const need=(reachAt(metas[i],rots[i],ang+Math.PI,halves[i])+reachAt(metas[j],rots[j],ang,halves[j]))*kT;
+      if(need>1e-9&&d<need)g=Math.min(g,d/need);
     }
-    return true;
+    return Math.max(0.20,Math.min(1,g));
   }
-  // g<1: הגנה כללית מפני חריגה מחוץ לקלף בגדלים קיצוניים (תמיד פעיל).
-  // g>1: "מילוי מיטבי" — רק כשמסומן וכשאין מרווח שלילי (הם סותרים זה את זה).
-  let g=1;
-  if(!fits(1)){
-    let lo=0.45,hi=1;
-    for(let s=0;s<8;s++){const mid=(lo+hi)/2;if(fits(mid))lo=mid;else hi=mid;}
-    g=lo;
-  }else if(S.tightFill&&(S.overlap||0)>=0){
+  let g=exactShrink(best);
+
+  // "מילוי מיטבי": רק כשאין שום הפרה (g===1) וכשאין מרווח שלילי — הגדלה עד הגבול החוקי.
+  if(g>=1&&S.tightFill&&(S.overlap||0)>=0){
+    const fits=q=>{
+      for(let i=0;i<n;i++){
+        const dx=best[i].x-cx,dy=best[i].y-cy,dist=Math.hypot(dx,dy);
+        const angOut=dist<1e-6?0:Math.atan2(dy,dx);
+        if(dist+reachAt(metas[i],rots[i],angOut,halves[i])*q>rSym*1.001)return false;
+      }
+      for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){
+        const dx=best[j].x-best[i].x,dy=best[j].y-best[i].y,d=Math.hypot(dx,dy)||1e-4;
+        const ang=Math.atan2(dy,dx);
+        const need=(reachAt(metas[i],rots[i],ang+Math.PI,halves[i])+reachAt(metas[j],rots[j],ang,halves[j]))*q*kT;
+        if(d<need*0.999)return false;
+      }
+      return true;
+    };
     let lo=1,hi=1.5;
-    for(let s=0;s<8;s++){const mid=(lo+hi)/2;if(fits(mid))lo=mid;else hi=mid;}
+    for(let s=0;s<10;s++){const mid=(lo+hi)/2;if(fits(mid))lo=mid;else hi=mid;}
     g=lo;
   }
-  for(let i=0;i<n;i++){pos[i].x=best.P[i].x;pos[i].y=best.P[i].y;pos[i].hs=pos[i].hs*g;}
+
+  for(let i=0;i<n;i++){pos[i].x=best[i].x;pos[i].y=best[i].y;pos[i].hs=pos[i].hs*g;}
+}
+
+// ══ גיאומטריית קלף אחידה ══
+// מקור אמת יחיד לכל חישובי המידות — drawCard, עורך הקלף הבודד וייצוא ה-PDF
+// חייבים לקבל בדיוק את אותם מספרים, אחרת התצוגה והקובץ יסטו זה מזה.
+function cardGeom(sz){
+  const cx=sz/2,cy=sz/2,r=sz/2-7;
+  const sq=r*1.88,sqx=cx-sq/2,sqy=cy-sq/2,sqcr=sq*.09;
+  const ppMm=(sz-14)/Math.max(1,S.cardSizeMm),fw=S.frame.w*ppMm;
+  const rSym=Math.max(r*.25,r-fw-S.symPad*ppMm);
+  return{cx,cy,r,sq,sqx,sqy,sqcr,ppMm,fw,rSym};
+}
+
+// ══ פריסה מנורמלת + cache ══
+// הפריסה מחושבת ביחידות rSym סביב (0,0) ונשמרת על אובייקט ה-layout.
+// יתרון כפול: (א) אותה פריסה בדיוק בכל רזולוציה — תצוגה 220px ו-PDF 1400px זהים;
+// (ב) החישוב הכבד (4 נקודות פתיחה × 4 מעברים) רץ פעם אחת לקלף, לא בכל ציור מחדש.
+function packSignature(n){
+  return [n,S.layoutMode,S.overlap,S.tightPack?1:0,S.tightFill?1:0,S.metaVer||0].join('|');
+}
+function packNormalized(layout,imgs){
+  const n=layout.syms.length;
+  if(!n)return[];
+  const sig=packSignature(n)+'|'+layout.tr.map(t=>t.sc.toFixed(4)+','+t.ro.toFixed(4)).join(';');
+  const c=layout.__pack;
+  if(c&&c.sig===sig)return c.pos;
+  const pos=symPos(n,0,0,1);
+  if(S.tightPack)relaxSymbolPositions(pos,layout,imgs,0,0,1);
+  else clampInsideCard(pos,layout,1);
+  layout.__pack={sig,pos};
+  return pos;
+}
+
+// הגנת גבול למצב הישן (tightPack כבוי): כיווץ אחיד כך שאף סמל לא יחרוג מהקלף.
+function clampInsideCard(pos,layout,rSym){
+  let g=1;
+  for(let i=0;i<pos.length;i++){
+    const half=pos[i].hs*layout.tr[i].sc;
+    if(half<=1e-9)continue;
+    const d=Math.hypot(pos[i].x,pos[i].y);
+    if(d+half>rSym)g=Math.min(g,Math.max(0,(rSym-d)/half));
+  }
+  if(g<1){g=Math.max(g,0.20);for(const p of pos)p.hs*=g;}
+}
+
+// מיקומים אבסולוטיים לקנבס בגודל sz — כולל התאמות ידניות ברמת קלף בודד.
+function computeCardPositions(layout,imgs,sz){
+  const G=cardGeom(sz);
+  const npos=packNormalized(layout,imgs);
+  const pos=npos.map(p=>({x:G.cx+p.x*G.rSym,y:G.cy+p.y*G.rSym,hs:p.hs*G.rSym}));
+  applyCardEdits(pos,layout,G);
+  return{pos,G};
+}
+
+// החלת התאמות ידניות של קלף בודד. dx/dy ביחידות rSym כדי שהעריכה תיראה זהה
+// בתצוגה המקדימה (≈220px), בעורך (720px) ובקובץ ה-PDF (רזולוציית הדפסה).
+function applyCardEdits(pos,layout,G){
+  const ed=(layout&&layout.ci!=null&&S.cardEdits)?S.cardEdits[layout.ci]:null;
+  if(!ed)return;
+  for(let i=0;i<pos.length;i++){
+    const o=ed[i];if(!o)continue;
+    if(o.s)pos[i].hs*=o.s;
+    if(o.dx)pos[i].x+=o.dx*G.rSym;
+    if(o.dy)pos[i].y+=o.dy*G.rSym;
+  }
+}
+
+// מחזיר Set של slot-ים חורגים — לחיווי ויזואלי בעורך בלבד. לא משפיע על הציור עצמו.
+// היעד הוא contactFactor() ולא 1, כדי שחפיפה שהמשתמש ביקש במפורש בסליידר לא תסומן באדום.
+function cardViolations(layout,imgs,pos,G){
+  const bad=new Set(),n=pos.length;
+  if(!n)return bad;
+  const metas=layout.syms.map(si=>{const im=imgs[si];return (im&&im.__symMeta)||CIRCLE_META;});
+  const rots=layout.tr.map(t=>t.ro);
+  const halves=pos.map((p,i)=>p.hs*layout.tr[i].sc);
+  const kT=contactFactor();
+  for(let i=0;i<n;i++){
+    const dx=pos[i].x-G.cx,dy=pos[i].y-G.cy,dist=Math.hypot(dx,dy);
+    const angOut=dist<1e-6?0:Math.atan2(dy,dx);
+    if(dist+reachAt(metas[i],rots[i],angOut,halves[i])>G.rSym*1.01)bad.add(i);
+  }
+  for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){
+    const dx=pos[j].x-pos[i].x,dy=pos[j].y-pos[i].y,d=Math.hypot(dx,dy);
+    const ang=Math.atan2(dy,dx);
+    const need=(reachAt(metas[i],rots[i],ang+Math.PI,halves[i])+reachAt(metas[j],rots[j],ang,halves[j]))*kT;
+    if(d<need*0.99){bad.add(i);bad.add(j);}
+  }
+  return bad;
 }
 
 // ══ DRAW CARD ══
@@ -1924,10 +2096,11 @@ function rrect(ctx,x,y,w,h,cr){
 
 function drawCard(canvas,layout,imgs,shape,hitIdx){
   hitIdx=hitIdx==null?-1:hitIdx;
-  const ctx=canvas.getContext('2d'),sz=canvas.width,cx=sz/2,cy=sz/2,r=sz/2-7;
+  const ctx=canvas.getContext('2d'),sz=canvas.width;
+  const G=cardGeom(sz);
+  const cx=G.cx,cy=G.cy,r=G.r,sq=G.sq,sqx=G.sqx,sqy=G.sqy,sqcr=G.sqcr;
   ctx.clearRect(0,0,sz,sz);
   const isC=shape==='circle';
-  const sq=r*1.88,sqx=cx-sq/2,sqy=cy-sq/2,sqcr=sq*.09;
 
   // Background (configurable color + opacity)
   ctx.save();ctx.beginPath();
@@ -1936,7 +2109,7 @@ function drawCard(canvas,layout,imgs,shape,hitIdx){
   ctx.fillRect(0,0,sz,sz);ctx.globalAlpha=1;ctx.restore();
 
   // Frame (configurable width, color, opacity)
-  const ppMm=(sz-14)/Math.max(1,S.cardSizeMm),fw=S.frame.w*ppMm;
+  const ppMm=G.ppMm,fw=G.fw;
   if(fw>0.5&&S.frame.op>0){
     ctx.save();ctx.beginPath();
     if(isC)ctx.arc(cx,cy,r,0,Math.PI*2);else rrect(ctx,sqx,sqy,sq,sq,sqcr);
@@ -1951,9 +2124,7 @@ function drawCard(canvas,layout,imgs,shape,hitIdx){
     ctx.strokeStyle='rgba(0,0,0,.12)';ctx.lineWidth=1.5;ctx.stroke();
   }
 
-  const rSym=Math.max(r*.25,r-fw-S.symPad*ppMm);
-  const pos=symPos(layout.syms.length,cx,cy,rSym);
-  if(S.tightPack)relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym);
+  const pos=computeCardPositions(layout,imgs,sz).pos;
   for(let i=0;i<layout.syms.length;i++){
     const si=layout.syms[i],pp=pos[i],t=layout.tr[i],img=imgs[si];
     if(!img)continue;
@@ -2414,6 +2585,8 @@ const S={
   shape:'circle',symShape:'circle',sMin:.70,sMax:1.30,seed:1,layoutMode:'scatter',overlap:0,
   tightPack:true,tightFill:false,   // חפיפה לפי צורת הסמל / מילוי מיטבי של הקלף
   sel:[],
+  cardEdits:{},   // { [cardIdx]: { [slot]: {s,dx,dy} } } — התאמות ידניות לקלף בודד. dx/dy ביחידות rSym.
+  metaVer:0,
   cardSizeMm:85,spacingMm:5,startPos:'center',
   crop:true,isSilhouette:false,
   frame:{w:3,color:'#4338CA',op:100},
@@ -3076,6 +3249,39 @@ document.getElementById('layout-mode-grp').addEventListener('click',e=>{
 // ══ SLIDERS ══
 const slMn=document.getElementById('sl-mn'),slMx=document.getElementById('sl-mx');
 const lblMn=document.getElementById('lbl-mn'),lblMx=document.getElementById('lbl-mx');
+
+// ── התאמה אוטומטית של הגודל המינימלי ──
+// כשמגדילים את המקסימום, שטח הסמלים הצפוי גדל ריבועית ומהר מאוד עובר את שטח הקלף.
+// במקום לתת לזה לגלוש, פותרים אנליטית את המינימום הגדול ביותר שעדיין נכנס:
+//   E[sc²] של התפלגות אחידה ב-[mn,mx] הוא (mx² + mx·mn + mn²)/3
+//   הדרישה: Σhᵢ² · E[sc²] · k² ≤ EFF   →   משוואה ריבועית ב-mn.
+// המינימום יורד בלבד, לעולם לא עולה — כדי לא לדרוס בחירה מודעת של המשתמש.
+function autoMinCap(sMax){
+  const n=S.order?S.order.spc:0;
+  if(!n)return 0.20;
+  const H=symPos(n,0,0,1).map(p=>p.hs);
+  const sumH2=H.reduce((a,h)=>a+h*h,0);
+  if(sumH2<=0)return 0.20;
+  const k=Math.max(0.35,contactFactor());
+  const EFF=S.tightPack?0.80:0.62;              // יעילות אריזה מעשית בתוך עיגול
+  const target=EFF/(sumH2*k*k);                 // התקרה של E[sc²]
+  const c=sMax*sMax-3*target;
+  const disc=sMax*sMax-4*c;
+  if(disc<=0)return 0.20;
+  const mn=(-sMax+Math.sqrt(disc))/2;
+  return Math.max(0.20,Math.min(sMax,mn));
+}
+function applyAutoMin(){
+  const hint=document.getElementById('mn-auto-hint');
+  const capPct=Math.max(20,Math.min(160,Math.floor(autoMinCap(+slMx.value/100)*20)*5));
+  slMn.max=String(capPct);
+  if(+slMn.value>capPct){
+    slMn.value=String(capPct);
+    S.sMin=capPct/100;
+    lblMn.textContent=capPct+'%';
+    if(hint)hint.style.display='block';
+  }else if(hint)hint.style.display='none';
+}
 // המינימום לעולם לא עובר את המקסימום ולהפך — דוחפים את השני במקום לחסום את המשתמש
 slMn.addEventListener('input',()=>{
   if(+slMn.value>+slMx.value){slMx.value=slMn.value;S.sMax=+slMx.value/100;lblMx.textContent=slMx.value+'%';}
@@ -3084,6 +3290,7 @@ slMn.addEventListener('input',()=>{
 slMx.addEventListener('input',()=>{
   if(+slMx.value<+slMn.value){slMn.value=slMx.value;S.sMin=+slMn.value/100;lblMn.textContent=slMn.value+'%';}
   S.sMax=+slMx.value/100;lblMx.textContent=slMx.value+'%';
+  applyAutoMin();                       // עדכון בזמן אמת — דרישה 2 באפיון
 });
 slMn.addEventListener('change',()=>renderAll());
 slMx.addEventListener('change',()=>renderAll());
@@ -3097,9 +3304,10 @@ slOv.addEventListener('input',()=>{
   // מרווח ו"מילוי מיטבי" סותרים זה את זה
   ckTightFill.disabled=S.overlap<0;
   if(S.overlap<0)ckTightFill.checked=false,S.tightFill=false;
+  applyAutoMin();                       // ← חדש
   redrawCards();
 });
-ckTight.addEventListener('change',()=>{S.tightPack=ckTight.checked;redrawCards();});
+ckTight.addEventListener('change',()=>{S.tightPack=ckTight.checked;applyAutoMin();redrawCards();});
 ckTightFill.addEventListener('change',()=>{S.tightFill=ckTightFill.checked;redrawCards();});
 
 // ══ GENERATE ══
@@ -3113,7 +3321,9 @@ async function generate(){
   const setp=(p,t)=>{document.getElementById('gen-bar').style.width=p+'%';document.getElementById('gen-lbl').textContent=t;};
   setp(5,'מחשב מטריצת קלפים…');
   S.deck=genDeck(S.order.q);
+  applyAutoMin();                       // S.order זמין רק עכשיו — התאמה ראשונית לפי מספר הסמלים
   S.seed=Math.floor(Math.random()*90000)+10000;
+  S.cardEdits={};
   S.layouts=buildLayouts(S.deck,S.seed,S.sMin,S.sMax);
   setp(15,'מכין תמונות…');
   S.imgEls=S.assets.filter(a=>isSymbolAsset(a)&&a.selected!==false).slice(0,S.order.total).map(a=>a.imgEl);
@@ -3128,7 +3338,15 @@ async function generate(){
     const w=document.createElement('div');w.className='cw';w.dataset.i=i;w.appendChild(c);
     w.style.animationDelay=Math.min(i*22,900)+'ms';
     attachTilt(w);
-    w.addEventListener('click',()=>onCardClick(i));grid.appendChild(w);
+    w.addEventListener('click',()=>onCardClick(i));
+    // עוטפים ב-.cslot כדי שכפתור העריכה לא ייחתך ע"י ה-overflow:hidden העגול של .cw,
+    // ושלא יימחק ע"י איפוסי className='cw' בזרימת בחירת הזוגות (onCardClick/closeModal).
+    const slot=document.createElement('div');slot.className='cslot';slot.appendChild(w);
+    const eb=document.createElement('button');
+    eb.type='button';eb.className='card-edit-btn';eb.title='ערוך קלף';eb.textContent='✏️';
+    eb.addEventListener('click',ev=>{ev.stopPropagation();openCardEditor(i);});
+    slot.appendChild(eb);
+    grid.appendChild(slot);
     setp(35+Math.round(65*(i+1)/S.deck.length),`מצייר קלף ${i+1}/${S.deck.length}…`);
     if(i%6===5)await tick();
   }
@@ -3158,6 +3376,7 @@ document.getElementById('btn-reshuffle').addEventListener('click',async()=>{
   const btn=document.getElementById('btn-reshuffle');
   btn.disabled=true;btn.innerHTML='<span class="spin"></span> מערבב…';
   S.seed=Math.floor(Math.random()*90000)+10000;
+  S.cardEdits={};
   await renderAll();
   btn.disabled=false;btn.innerHTML='🔀 ערבב מחדש';
   toast('הקלפים עורבבו מחדש ✓','ok');
@@ -3208,13 +3427,139 @@ function closeModal(){
   S.sel=[];
 }
 
+// ══ עורך קלף בודד ══
+const CE={idx:-1,slot:-1,drag:false,px:0,py:0};
+function ceCv(){return document.getElementById('ce-cv');}
+function ceEdits(){if(!S.cardEdits[CE.idx])S.cardEdits[CE.idx]={};return S.cardEdits[CE.idx];}
+function ceSlotObj(slot){const e=ceEdits();return e[slot]||(e[slot]={s:1,dx:0,dy:0});}
+
+function openCardEditor(i){
+  if(!S.layouts[i]||!S.canvases[i])return;
+  CE.idx=i;CE.slot=-1;CE.drag=false;
+  document.getElementById('ce-idx').textContent='#'+(i+1);
+  document.getElementById('ce-wrap').className='ce-wrap'+(S.shape==='square'?' sq':'');
+  document.getElementById('cemodal').hidden=false;
+  ceRender();
+}
+function ceClose(){document.getElementById('cemodal').hidden=true;CE.idx=-1;CE.slot=-1;CE.drag=false;}
+
+function ceRender(){
+  if(CE.idx<0)return;
+  const cv=ceCv(),layout=S.layouts[CE.idx];
+  drawCard(cv,layout,S.imgEls,S.shape);
+  const ctx=cv.getContext('2d');
+  const r=computeCardPositions(layout,S.imgEls,cv.width);
+  const bad=cardViolations(layout,S.imgEls,r.pos,r.G);
+  for(let i=0;i<r.pos.length;i++){
+    const rr=r.pos[i].hs*layout.tr[i].sc;
+    if(bad.has(i)){
+      ctx.beginPath();ctx.arc(r.pos[i].x,r.pos[i].y,rr*1.06,0,Math.PI*2);
+      ctx.strokeStyle='#DC2626';ctx.lineWidth=cv.width*.008;ctx.stroke();
+    }
+    if(i===CE.slot){
+      ctx.beginPath();ctx.arc(r.pos[i].x,r.pos[i].y,rr*1.15,0,Math.PI*2);
+      ctx.strokeStyle='#4338CA';ctx.lineWidth=cv.width*.010;
+      ctx.setLineDash([cv.width*.022,cv.width*.016]);ctx.stroke();ctx.setLineDash([]);
+    }
+  }
+  document.getElementById('ce-warn').style.display=bad.size?'block':'none';
+  const ctl=document.getElementById('ce-ctl');
+  if(CE.slot>=0){
+    ctl.style.display='block';
+    const s=Math.round(((ceEdits()[CE.slot]||{}).s||1)*100);
+    document.getElementById('ce-sl').value=String(s);
+    document.getElementById('ce-lbl').textContent=s+'%';
+  }else ctl.style.display='none';
+}
+
+// מונע חריגה מגבול הקלף: מושכים את הסמל פנימה במקום לאפשר לו לצאת (דרישה 4 באפיון)
+function ceClampSlot(slot){
+  const cv=ceCv(),layout=S.layouts[CE.idx];
+  const r=computeCardPositions(layout,S.imgEls,cv.width);
+  const rr=r.pos[slot].hs*layout.tr[slot].sc;
+  const dx=r.pos[slot].x-r.G.cx,dy=r.pos[slot].y-r.G.cy,dist=Math.hypot(dx,dy);
+  const over=dist+rr-r.G.rSym;
+  if(over>0&&dist>1e-6){
+    const o=ceSlotObj(slot);
+    o.dx=(o.dx||0)-(dx/dist)*over/r.G.rSym;
+    o.dy=(o.dy||0)-(dy/dist)*over/r.G.rSym;
+  }
+}
+function ceHit(mx,my){
+  const cv=ceCv(),layout=S.layouts[CE.idx];
+  const r=computeCardPositions(layout,S.imgEls,cv.width);
+  for(let i=r.pos.length-1;i>=0;i--){        // מהאחרון שצויר (העליון) לראשון
+    const rr=r.pos[i].hs*layout.tr[i].sc;
+    if(Math.hypot(mx-r.pos[i].x,my-r.pos[i].y)<=rr)return i;
+  }
+  return -1;
+}
+function ceXY(ev){
+  const cv=ceCv(),b=cv.getBoundingClientRect();
+  return{x:(ev.clientX-b.left)/b.width*cv.width,y:(ev.clientY-b.top)/b.height*cv.height};
+}
+// מסנכרן את הקלף האמיתי בגריד ומסמן את הייצוא כלא-מעודכן
+function ceCommit(){
+  if(CE.idx<0)return;
+  if(S.canvases[CE.idx])drawCard(S.canvases[CE.idx],S.layouts[CE.idx],S.imgEls,S.shape);
+  resetExport();
+  if(typeof schedIdbSave==='function')schedIdbSave();
+}
+
+(function ceBind(){
+  const cv=ceCv();
+  cv.addEventListener('pointerdown',ev=>{
+    if(CE.idx<0)return;
+    ev.preventDefault();
+    const p=ceXY(ev),h=ceHit(p.x,p.y);
+    if(h<0){CE.slot=-1;ceRender();return;}
+    CE.slot=h;CE.drag=true;CE.px=p.x;CE.py=p.y;
+    if(cv.setPointerCapture)try{cv.setPointerCapture(ev.pointerId);}catch(e){}
+    ceRender();
+  });
+  cv.addEventListener('pointermove',ev=>{
+    if(!CE.drag||CE.slot<0)return;
+    ev.preventDefault();
+    const p=ceXY(ev),G=cardGeom(cv.width),o=ceSlotObj(CE.slot);
+    o.dx=(o.dx||0)+(p.x-CE.px)/G.rSym;
+    o.dy=(o.dy||0)+(p.y-CE.py)/G.rSym;
+    CE.px=p.x;CE.py=p.y;
+    ceClampSlot(CE.slot);
+    ceRender();
+  });
+  const up=()=>{if(CE.drag){CE.drag=false;ceCommit();}};
+  cv.addEventListener('pointerup',up);
+  cv.addEventListener('pointercancel',up);
+  cv.addEventListener('pointerleave',up);
+
+  document.getElementById('ce-sl').addEventListener('input',()=>{
+    if(CE.slot<0)return;
+    const v=+document.getElementById('ce-sl').value;
+    document.getElementById('ce-lbl').textContent=v+'%';
+    ceSlotObj(CE.slot).s=v/100;
+    ceClampSlot(CE.slot);
+    ceRender();
+  });
+  document.getElementById('ce-sl').addEventListener('change',ceCommit);
+  document.getElementById('ce-reset-one').addEventListener('click',()=>{
+    if(CE.idx<0||CE.slot<0)return;
+    delete ceEdits()[CE.slot];ceRender();ceCommit();
+  });
+  document.getElementById('ce-reset-all').addEventListener('click',()=>{
+    if(CE.idx<0)return;
+    delete S.cardEdits[CE.idx];CE.slot=-1;ceRender();ceCommit();
+  });
+  document.getElementById('ce-x').addEventListener('click',ceClose);
+  document.getElementById('cemodal').addEventListener('click',e=>{if(e.target===e.currentTarget)ceClose();});
+})();
+
 // ══ BACK / NAV ══
 document.getElementById('btn-b1').addEventListener('click',()=>{goScr(1);resetGenerated();});
 document.getElementById('btn-b2').addEventListener('click',()=>{goScr(2);resetExport();});
 document.getElementById('btn-goexp').addEventListener('click',()=>{updatePaperPrev();goScr(3);});
 
 function resetGenerated(){
-  Object.assign(S,{order:null,deck:[],layouts:[],imgEls:[],canvases:[],sel:[]});
+  Object.assign(S,{order:null,deck:[],layouts:[],imgEls:[],canvases:[],sel:[],cardEdits:{}});
   document.getElementById('vmodal').hidden=true;
   document.getElementById('cgrid').innerHTML='';
   document.getElementById('prev-wrap').style.display='none';
@@ -3224,7 +3569,7 @@ function resetGenerated(){
 function resetState(){
   idbClear();
   S.assets.forEach(a=>{if(a.type==='image')URL.revokeObjectURL(a.url);});
-  Object.assign(S,{assets:[],order:null,deck:[],layouts:[],imgEls:[],canvases:[],sel:[],seed:1,idSeq:0});
+  Object.assign(S,{assets:[],order:null,deck:[],layouts:[],imgEls:[],canvases:[],sel:[],seed:1,idSeq:0,cardEdits:{}});
   fi.value='';
   document.getElementById('rec').classList.remove('on');
   document.getElementById('btn-create').disabled=true;
@@ -4237,6 +4582,7 @@ function CIRCLE_RADIAL(){const a=new Float32Array(64);a.fill(1);return a;}
 
 // מחשבת מטא-דאטה של צורה לכל סמל בחפיסה — פעם אחת אחרי בניית S.imgEls, לפני ציור הקלפים
 function prepareSymbolMeta(){
+  S.metaVer=(S.metaVer||0)+1;   // מבטל את ה-cache של הפריסה כשמטא-הצורה של הסמלים השתנה
   S.imgEls.forEach(img=>{if(img)symbolShapeMeta(img);});
 }
 
@@ -5220,6 +5566,7 @@ async function saveDesign(){
       frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),symPad:S.symPad,overlap:S.overlap,
       tightPack:S.tightPack,tightFill:S.tightFill,
       back:JSON.parse(JSON.stringify(S.back)),
+      cardEdits:JSON.parse(JSON.stringify(S.cardEdits||{})),
       orderTotal:S.order?S.order.total:null};
     // שמירה מקומית — metadata בלבד (בלי dataURL), כדי לא לחרוג ממכסת האחסון של IndexedDB
     const date=new Date().toLocaleString('he-IL');
@@ -5252,6 +5599,7 @@ function buildDesignObject(name){
       frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),symPad:S.symPad,overlap:S.overlap,
       tightPack:S.tightPack,tightFill:S.tightFill,
       back:JSON.parse(JSON.stringify(S.back)),
+      cardEdits:JSON.parse(JSON.stringify(S.cardEdits||{})),
       orderTotal:S.order?S.order.total:null}};
 }
 
@@ -5330,6 +5678,7 @@ function applySettingsToUI(st){
   document.getElementById('sl-bop').value=st.bg.op;document.getElementById('lbl-bop').textContent=st.bg.op+'%';
   document.getElementById('pick-frame').value=st.frame.color;
   document.getElementById('pick-bg').value=st.bg.color;
+  applyAutoMin();
 }
 
 // טעינת מבנה עיצוב {name,rows,settings} לתוך מצב האפליקציה
@@ -5360,7 +5709,7 @@ async function applyDesignToState(d){
   Object.assign(S,{shape:st.shape||'circle',symShape:st.symShape||'circle',sMin:st.sMin??.7,sMax:st.sMax??1.3,
     seed:st.seed||1,layoutMode:st.layoutMode||'scatter',cardSizeMm:st.cardSizeMm||85,
     spacingMm:st.spacingMm??5,startPos:st.startPos||'center',symPad:st.symPad??2,overlap:st.overlap??0,
-    tightPack:st.tightPack!==false,tightFill:!!st.tightFill});
+    tightPack:st.tightPack!==false,tightFill:!!st.tightFill,cardEdits:st.cardEdits||{}});
   if(st.frame)S.frame=Object.assign({},st.frame);
   if(st.bg)S.bg=Object.assign({},st.bg);
   S.back=mergeBack(st.back);
@@ -5964,7 +6313,8 @@ function enterSupportMode(label){
       cardSizeMm:S.cardSizeMm,spacingMm:S.spacingMm,startPos:S.startPos,symPad:S.symPad,overlap:S.overlap,
       tightPack:S.tightPack,tightFill:S.tightFill,
       frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),
-      back:JSON.parse(JSON.stringify(S.back))}
+      back:JSON.parse(JSON.stringify(S.back)),
+      cardEdits:JSON.parse(JSON.stringify(S.cardEdits||{}))}
   };
   window.__supportMode=true;
   const label2=document.getElementById('support-mini-label');if(label2)label2.textContent=label||'לקוח';
