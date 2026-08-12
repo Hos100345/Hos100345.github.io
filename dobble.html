@@ -1070,6 +1070,7 @@ function dcfgSave(patch){
             <div class="sl-lbl"><span>מינימום</span><strong id="lbl-mn">70%</strong></div>
             <input type="range" id="sl-mn" min="20" max="160" value="70" step="5">
           </div>
+          <div id="mn-auto-hint" style="display:none;font-size:.72rem;color:var(--indigo);font-weight:700;margin:-.45rem 0 .6rem">⚙️ הותאם אוטומטית לגודל המקסימלי</div>
           <div class="sl-row">
             <div class="sl-lbl"><span>מקסימום</span><strong id="lbl-mx">130%</strong></div>
             <input type="range" id="sl-mx" min="40" max="300" value="130" step="5">
@@ -3171,6 +3172,39 @@ document.getElementById('layout-mode-grp').addEventListener('click',e=>{
 // ══ SLIDERS ══
 const slMn=document.getElementById('sl-mn'),slMx=document.getElementById('sl-mx');
 const lblMn=document.getElementById('lbl-mn'),lblMx=document.getElementById('lbl-mx');
+
+// ── התאמה אוטומטית של הגודל המינימלי ──
+// כשמגדילים את המקסימום, שטח הסמלים הצפוי גדל ריבועית ומהר מאוד עובר את שטח הקלף.
+// במקום לתת לזה לגלוש, פותרים אנליטית את המינימום הגדול ביותר שעדיין נכנס:
+//   E[sc²] של התפלגות אחידה ב-[mn,mx] הוא (mx² + mx·mn + mn²)/3
+//   הדרישה: Σhᵢ² · E[sc²] · k² ≤ EFF   →   משוואה ריבועית ב-mn.
+// המינימום יורד בלבד, לעולם לא עולה — כדי לא לדרוס בחירה מודעת של המשתמש.
+function autoMinCap(sMax){
+  const n=S.order?S.order.spc:0;
+  if(!n)return 0.20;
+  const H=symPos(n,0,0,1).map(p=>p.hs);
+  const sumH2=H.reduce((a,h)=>a+h*h,0);
+  if(sumH2<=0)return 0.20;
+  const k=Math.max(0.35,contactFactor());
+  const EFF=S.tightPack?0.80:0.62;              // יעילות אריזה מעשית בתוך עיגול
+  const target=EFF/(sumH2*k*k);                 // התקרה של E[sc²]
+  const c=sMax*sMax-3*target;
+  const disc=sMax*sMax-4*c;
+  if(disc<=0)return 0.20;
+  const mn=(-sMax+Math.sqrt(disc))/2;
+  return Math.max(0.20,Math.min(sMax,mn));
+}
+function applyAutoMin(){
+  const hint=document.getElementById('mn-auto-hint');
+  const capPct=Math.max(20,Math.min(160,Math.floor(autoMinCap(+slMx.value/100)*20)*5));
+  slMn.max=String(capPct);
+  if(+slMn.value>capPct){
+    slMn.value=String(capPct);
+    S.sMin=capPct/100;
+    lblMn.textContent=capPct+'%';
+    if(hint)hint.style.display='block';
+  }else if(hint)hint.style.display='none';
+}
 // המינימום לעולם לא עובר את המקסימום ולהפך — דוחפים את השני במקום לחסום את המשתמש
 slMn.addEventListener('input',()=>{
   if(+slMn.value>+slMx.value){slMx.value=slMn.value;S.sMax=+slMx.value/100;lblMx.textContent=slMx.value+'%';}
@@ -3179,6 +3213,7 @@ slMn.addEventListener('input',()=>{
 slMx.addEventListener('input',()=>{
   if(+slMx.value<+slMn.value){slMn.value=slMx.value;S.sMin=+slMn.value/100;lblMn.textContent=slMn.value+'%';}
   S.sMax=+slMx.value/100;lblMx.textContent=slMx.value+'%';
+  applyAutoMin();                       // עדכון בזמן אמת — דרישה 2 באפיון
 });
 slMn.addEventListener('change',()=>renderAll());
 slMx.addEventListener('change',()=>renderAll());
@@ -3192,9 +3227,10 @@ slOv.addEventListener('input',()=>{
   // מרווח ו"מילוי מיטבי" סותרים זה את זה
   ckTightFill.disabled=S.overlap<0;
   if(S.overlap<0)ckTightFill.checked=false,S.tightFill=false;
+  applyAutoMin();                       // ← חדש
   redrawCards();
 });
-ckTight.addEventListener('change',()=>{S.tightPack=ckTight.checked;redrawCards();});
+ckTight.addEventListener('change',()=>{S.tightPack=ckTight.checked;applyAutoMin();redrawCards();});
 ckTightFill.addEventListener('change',()=>{S.tightFill=ckTightFill.checked;redrawCards();});
 
 // ══ GENERATE ══
@@ -3208,6 +3244,7 @@ async function generate(){
   const setp=(p,t)=>{document.getElementById('gen-bar').style.width=p+'%';document.getElementById('gen-lbl').textContent=t;};
   setp(5,'מחשב מטריצת קלפים…');
   S.deck=genDeck(S.order.q);
+  applyAutoMin();                       // S.order זמין רק עכשיו — התאמה ראשונית לפי מספר הסמלים
   S.seed=Math.floor(Math.random()*90000)+10000;
   S.layouts=buildLayouts(S.deck,S.seed,S.sMin,S.sMax);
   setp(15,'מכין תמונות…');
@@ -5426,6 +5463,7 @@ function applySettingsToUI(st){
   document.getElementById('sl-bop').value=st.bg.op;document.getElementById('lbl-bop').textContent=st.bg.op+'%';
   document.getElementById('pick-frame').value=st.frame.color;
   document.getElementById('pick-bg').value=st.bg.color;
+  applyAutoMin();
 }
 
 // טעינת מבנה עיצוב {name,rows,settings} לתוך מצב האפליקציה
