@@ -1761,7 +1761,7 @@ function buildLayouts(deck,seed,sMin,sMax){
     const sh=[...syms];
     for(let i=sh.length-1;i>0;i--){const j=Math.floor(sr(base*100+i)*(i+1));[sh[i],sh[j]]=[sh[j],sh[i]];}
     const tr=sh.map((_,si)=>({sc:sMin+sr(base*200+si*7)*range,ro:sr(base*300+si*13+7)*Math.PI*2}));
-    return{syms:sh,tr};
+    return{syms:sh,tr,ci};   // ci = אינדקס הקלף — נדרש לשליפת התאמות ידניות (S.cardEdits)
   });
 }
 
@@ -1914,6 +1914,58 @@ function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
   for(let i=0;i<n;i++){pos[i].x=best.P[i].x;pos[i].y=best.P[i].y;pos[i].hs=pos[i].hs*g;}
 }
 
+// ══ גיאומטריית קלף אחידה ══
+// מקור אמת יחיד לכל חישובי המידות — drawCard, עורך הקלף הבודד וייצוא ה-PDF
+// חייבים לקבל בדיוק את אותם מספרים, אחרת התצוגה והקובץ יסטו זה מזה.
+function cardGeom(sz){
+  const cx=sz/2,cy=sz/2,r=sz/2-7;
+  const sq=r*1.88,sqx=cx-sq/2,sqy=cy-sq/2,sqcr=sq*.09;
+  const ppMm=(sz-14)/Math.max(1,S.cardSizeMm),fw=S.frame.w*ppMm;
+  const rSym=Math.max(r*.25,r-fw-S.symPad*ppMm);
+  return{cx,cy,r,sq,sqx,sqy,sqcr,ppMm,fw,rSym};
+}
+
+// ══ פריסה מנורמלת + cache ══
+// הפריסה מחושבת ביחידות rSym סביב (0,0) ונשמרת על אובייקט ה-layout.
+// יתרון כפול: (א) אותה פריסה בדיוק בכל רזולוציה — תצוגה 220px ו-PDF 1400px זהים;
+// (ב) החישוב הכבד (4 נקודות פתיחה × 4 מעברים) רץ פעם אחת לקלף, לא בכל ציור מחדש.
+function packSignature(n){
+  return [n,S.layoutMode,S.overlap,S.tightPack?1:0,S.tightFill?1:0,S.metaVer||0].join('|');
+}
+function packNormalized(layout,imgs){
+  const n=layout.syms.length;
+  if(!n)return[];
+  const sig=packSignature(n)+'|'+layout.tr.map(t=>t.sc.toFixed(4)+','+t.ro.toFixed(4)).join(';');
+  const c=layout.__pack;
+  if(c&&c.sig===sig)return c.pos;
+  const pos=symPos(n,0,0,1);
+  if(S.tightPack)relaxSymbolPositions(pos,layout,imgs,0,0,1);
+  else clampInsideCard(pos,layout,1);
+  layout.__pack={sig,pos};
+  return pos;
+}
+
+// הגנת גבול למצב הישן (tightPack כבוי): כיווץ אחיד כך שאף סמל לא יחרוג מהקלף.
+function clampInsideCard(pos,layout,rSym){
+  let g=1;
+  for(let i=0;i<pos.length;i++){
+    const half=pos[i].hs*layout.tr[i].sc;
+    if(half<=1e-9)continue;
+    const d=Math.hypot(pos[i].x,pos[i].y);
+    if(d+half>rSym)g=Math.min(g,Math.max(0,(rSym-d)/half));
+  }
+  if(g<1){g=Math.max(g,0.20);for(const p of pos)p.hs*=g;}
+}
+
+// מיקומים אבסולוטיים לקנבס בגודל sz — כולל התאמות ידניות ברמת קלף בודד.
+function computeCardPositions(layout,imgs,sz){
+  const G=cardGeom(sz);
+  const npos=packNormalized(layout,imgs);
+  const pos=npos.map(p=>({x:G.cx+p.x*G.rSym,y:G.cy+p.y*G.rSym,hs:p.hs*G.rSym}));
+  applyCardEdits(pos,layout,G);
+  return{pos,G};
+}
+
 // ══ DRAW CARD ══
 function rrect(ctx,x,y,w,h,cr){
   ctx.moveTo(x+cr,y);ctx.lineTo(x+w-cr,y);ctx.arcTo(x+w,y,x+w,y+cr,cr);
@@ -1924,10 +1976,11 @@ function rrect(ctx,x,y,w,h,cr){
 
 function drawCard(canvas,layout,imgs,shape,hitIdx){
   hitIdx=hitIdx==null?-1:hitIdx;
-  const ctx=canvas.getContext('2d'),sz=canvas.width,cx=sz/2,cy=sz/2,r=sz/2-7;
+  const ctx=canvas.getContext('2d'),sz=canvas.width;
+  const G=cardGeom(sz);
+  const cx=G.cx,cy=G.cy,r=G.r,sq=G.sq,sqx=G.sqx,sqy=G.sqy,sqcr=G.sqcr;
   ctx.clearRect(0,0,sz,sz);
   const isC=shape==='circle';
-  const sq=r*1.88,sqx=cx-sq/2,sqy=cy-sq/2,sqcr=sq*.09;
 
   // Background (configurable color + opacity)
   ctx.save();ctx.beginPath();
@@ -1936,7 +1989,7 @@ function drawCard(canvas,layout,imgs,shape,hitIdx){
   ctx.fillRect(0,0,sz,sz);ctx.globalAlpha=1;ctx.restore();
 
   // Frame (configurable width, color, opacity)
-  const ppMm=(sz-14)/Math.max(1,S.cardSizeMm),fw=S.frame.w*ppMm;
+  const ppMm=G.ppMm,fw=G.fw;
   if(fw>0.5&&S.frame.op>0){
     ctx.save();ctx.beginPath();
     if(isC)ctx.arc(cx,cy,r,0,Math.PI*2);else rrect(ctx,sqx,sqy,sq,sq,sqcr);
@@ -1951,9 +2004,7 @@ function drawCard(canvas,layout,imgs,shape,hitIdx){
     ctx.strokeStyle='rgba(0,0,0,.12)';ctx.lineWidth=1.5;ctx.stroke();
   }
 
-  const rSym=Math.max(r*.25,r-fw-S.symPad*ppMm);
-  const pos=symPos(layout.syms.length,cx,cy,rSym);
-  if(S.tightPack)relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym);
+  const pos=computeCardPositions(layout,imgs,sz).pos;
   for(let i=0;i<layout.syms.length;i++){
     const si=layout.syms[i],pp=pos[i],t=layout.tr[i],img=imgs[si];
     if(!img)continue;
@@ -4237,6 +4288,7 @@ function CIRCLE_RADIAL(){const a=new Float32Array(64);a.fill(1);return a;}
 
 // מחשבת מטא-דאטה של צורה לכל סמל בחפיסה — פעם אחת אחרי בניית S.imgEls, לפני ציור הקלפים
 function prepareSymbolMeta(){
+  S.metaVer=(S.metaVer||0)+1;   // מבטל את ה-cache של הפריסה כשמטא-הצורה של הסמלים השתנה
   S.imgEls.forEach(img=>{if(img)symbolShapeMeta(img);});
 }
 
