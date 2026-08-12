@@ -2011,6 +2011,42 @@ function computeCardPositions(layout,imgs,sz){
   return{pos,G};
 }
 
+// החלת התאמות ידניות של קלף בודד. dx/dy ביחידות rSym כדי שהעריכה תיראה זהה
+// בתצוגה המקדימה (≈220px), בעורך (720px) ובקובץ ה-PDF (רזולוציית הדפסה).
+function applyCardEdits(pos,layout,G){
+  const ed=(layout&&layout.ci!=null&&S.cardEdits)?S.cardEdits[layout.ci]:null;
+  if(!ed)return;
+  for(let i=0;i<pos.length;i++){
+    const o=ed[i];if(!o)continue;
+    if(o.s)pos[i].hs*=o.s;
+    if(o.dx)pos[i].x+=o.dx*G.rSym;
+    if(o.dy)pos[i].y+=o.dy*G.rSym;
+  }
+}
+
+// מחזיר Set של slot-ים חורגים — לחיווי ויזואלי בעורך בלבד. לא משפיע על הציור עצמו.
+// היעד הוא contactFactor() ולא 1, כדי שחפיפה שהמשתמש ביקש במפורש בסליידר לא תסומן באדום.
+function cardViolations(layout,imgs,pos,G){
+  const bad=new Set(),n=pos.length;
+  if(!n)return bad;
+  const metas=layout.syms.map(si=>{const im=imgs[si];return (im&&im.__symMeta)||CIRCLE_META;});
+  const rots=layout.tr.map(t=>t.ro);
+  const halves=pos.map((p,i)=>p.hs*layout.tr[i].sc);
+  const kT=contactFactor();
+  for(let i=0;i<n;i++){
+    const dx=pos[i].x-G.cx,dy=pos[i].y-G.cy,dist=Math.hypot(dx,dy);
+    const angOut=dist<1e-6?0:Math.atan2(dy,dx);
+    if(dist+reachAt(metas[i],rots[i],angOut,halves[i])>G.rSym*1.01)bad.add(i);
+  }
+  for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){
+    const dx=pos[j].x-pos[i].x,dy=pos[j].y-pos[i].y,d=Math.hypot(dx,dy);
+    const ang=Math.atan2(dy,dx);
+    const need=(reachAt(metas[i],rots[i],ang+Math.PI,halves[i])+reachAt(metas[j],rots[j],ang,halves[j]))*kT;
+    if(d<need*0.99){bad.add(i);bad.add(j);}
+  }
+  return bad;
+}
+
 // ══ DRAW CARD ══
 function rrect(ctx,x,y,w,h,cr){
   ctx.moveTo(x+cr,y);ctx.lineTo(x+w-cr,y);ctx.arcTo(x+w,y,x+w,y+cr,cr);
@@ -2510,6 +2546,8 @@ const S={
   shape:'circle',symShape:'circle',sMin:.70,sMax:1.30,seed:1,layoutMode:'scatter',overlap:0,
   tightPack:true,tightFill:false,   // חפיפה לפי צורת הסמל / מילוי מיטבי של הקלף
   sel:[],
+  cardEdits:{},   // { [cardIdx]: { [slot]: {s,dx,dy} } } — התאמות ידניות לקלף בודד. dx/dy ביחידות rSym.
+  metaVer:0,
   cardSizeMm:85,spacingMm:5,startPos:'center',
   crop:true,isSilhouette:false,
   frame:{w:3,color:'#4338CA',op:100},
@@ -3246,6 +3284,7 @@ async function generate(){
   S.deck=genDeck(S.order.q);
   applyAutoMin();                       // S.order זמין רק עכשיו — התאמה ראשונית לפי מספר הסמלים
   S.seed=Math.floor(Math.random()*90000)+10000;
+  S.cardEdits={};
   S.layouts=buildLayouts(S.deck,S.seed,S.sMin,S.sMax);
   setp(15,'מכין תמונות…');
   S.imgEls=S.assets.filter(a=>isSymbolAsset(a)&&a.selected!==false).slice(0,S.order.total).map(a=>a.imgEl);
@@ -3290,6 +3329,7 @@ document.getElementById('btn-reshuffle').addEventListener('click',async()=>{
   const btn=document.getElementById('btn-reshuffle');
   btn.disabled=true;btn.innerHTML='<span class="spin"></span> מערבב…';
   S.seed=Math.floor(Math.random()*90000)+10000;
+  S.cardEdits={};
   await renderAll();
   btn.disabled=false;btn.innerHTML='🔀 ערבב מחדש';
   toast('הקלפים עורבבו מחדש ✓','ok');
@@ -3346,7 +3386,7 @@ document.getElementById('btn-b2').addEventListener('click',()=>{goScr(2);resetEx
 document.getElementById('btn-goexp').addEventListener('click',()=>{updatePaperPrev();goScr(3);});
 
 function resetGenerated(){
-  Object.assign(S,{order:null,deck:[],layouts:[],imgEls:[],canvases:[],sel:[]});
+  Object.assign(S,{order:null,deck:[],layouts:[],imgEls:[],canvases:[],sel:[],cardEdits:{}});
   document.getElementById('vmodal').hidden=true;
   document.getElementById('cgrid').innerHTML='';
   document.getElementById('prev-wrap').style.display='none';
@@ -3356,7 +3396,7 @@ function resetGenerated(){
 function resetState(){
   idbClear();
   S.assets.forEach(a=>{if(a.type==='image')URL.revokeObjectURL(a.url);});
-  Object.assign(S,{assets:[],order:null,deck:[],layouts:[],imgEls:[],canvases:[],sel:[],seed:1,idSeq:0});
+  Object.assign(S,{assets:[],order:null,deck:[],layouts:[],imgEls:[],canvases:[],sel:[],seed:1,idSeq:0,cardEdits:{}});
   fi.value='';
   document.getElementById('rec').classList.remove('on');
   document.getElementById('btn-create').disabled=true;
@@ -5353,6 +5393,7 @@ async function saveDesign(){
       frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),symPad:S.symPad,overlap:S.overlap,
       tightPack:S.tightPack,tightFill:S.tightFill,
       back:JSON.parse(JSON.stringify(S.back)),
+      cardEdits:JSON.parse(JSON.stringify(S.cardEdits||{})),
       orderTotal:S.order?S.order.total:null};
     // שמירה מקומית — metadata בלבד (בלי dataURL), כדי לא לחרוג ממכסת האחסון של IndexedDB
     const date=new Date().toLocaleString('he-IL');
@@ -5385,6 +5426,7 @@ function buildDesignObject(name){
       frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),symPad:S.symPad,overlap:S.overlap,
       tightPack:S.tightPack,tightFill:S.tightFill,
       back:JSON.parse(JSON.stringify(S.back)),
+      cardEdits:JSON.parse(JSON.stringify(S.cardEdits||{})),
       orderTotal:S.order?S.order.total:null}};
 }
 
@@ -5494,7 +5536,7 @@ async function applyDesignToState(d){
   Object.assign(S,{shape:st.shape||'circle',symShape:st.symShape||'circle',sMin:st.sMin??.7,sMax:st.sMax??1.3,
     seed:st.seed||1,layoutMode:st.layoutMode||'scatter',cardSizeMm:st.cardSizeMm||85,
     spacingMm:st.spacingMm??5,startPos:st.startPos||'center',symPad:st.symPad??2,overlap:st.overlap??0,
-    tightPack:st.tightPack!==false,tightFill:!!st.tightFill});
+    tightPack:st.tightPack!==false,tightFill:!!st.tightFill,cardEdits:st.cardEdits||{}});
   if(st.frame)S.frame=Object.assign({},st.frame);
   if(st.bg)S.bg=Object.assign({},st.bg);
   S.back=mergeBack(st.back);
@@ -6098,7 +6140,8 @@ function enterSupportMode(label){
       cardSizeMm:S.cardSizeMm,spacingMm:S.spacingMm,startPos:S.startPos,symPad:S.symPad,overlap:S.overlap,
       tightPack:S.tightPack,tightFill:S.tightFill,
       frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),
-      back:JSON.parse(JSON.stringify(S.back))}
+      back:JSON.parse(JSON.stringify(S.back)),
+      cardEdits:JSON.parse(JSON.stringify(S.cardEdits||{}))}
   };
   window.__supportMode=true;
   const label2=document.getElementById('support-mini-label');if(label2)label2.textContent=label||'לקוח';
