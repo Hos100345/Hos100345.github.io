@@ -165,6 +165,15 @@
     .cw:hover{box-shadow:var(--shl)}
     .cw.s1{border-color:var(--blue);box-shadow:0 0 0 5px rgba(37,99,235,.2)}
     .cw.s2{border-color:var(--purple);box-shadow:0 0 0 5px rgba(124,58,237,.2)}
+    .cslot{position:relative;aspect-ratio:1}
+    .cslot>.cw{width:100%;height:100%}
+    .card-edit-btn{position:absolute;top:5px;inset-inline-start:5px;z-index:3;width:30px;height:30px;border-radius:50%;border:none;background:rgba(255,255,255,.93);box-shadow:0 2px 7px rgba(20,16,60,.25);color:var(--indigo);font-size:.88rem;line-height:1;padding:0;cursor:pointer;opacity:0;transition:opacity var(--tr),transform var(--tr)}
+    .cslot:hover .card-edit-btn{opacity:1}
+    .card-edit-btn:active{transform:scale(.88)}
+    @media (hover:none){.card-edit-btn{opacity:.85}}
+    .ce-wrap{position:relative;margin:0 auto;border-radius:50%;overflow:hidden;box-shadow:var(--sh);touch-action:none;background:#fff}
+    .ce-wrap.sq{border-radius:14px}
+    .ce-wrap canvas{width:100%;height:100%;display:block}
 
     /* ── VERIFY MODAL ── */
     .modal-bg{position:fixed;inset:0;background:rgba(20,16,60,.45);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);z-index:500;display:flex;align-items:center;justify-content:center;padding:1rem;overflow-y:auto;-webkit-overflow-scrolling:touch}
@@ -1407,6 +1416,36 @@ function dcfgSave(patch){
         <div class="mc-txt" id="mc-txt">—</div>
       </div>
       <div class="mcw" id="mcw2"><canvas id="mc2" width="280" height="280"></canvas><div class="mc-lbl">קלף ב</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- CARD EDIT MODAL -->
+<div class="modal-bg" id="cemodal" hidden style="z-index:10002">
+  <div class="modal-card" style="max-width:440px">
+    <div class="modal-hdr">
+      <div class="modal-title">✏️ עריכת קלף <span id="ce-idx"></span></div>
+      <button class="modal-x" id="ce-x">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:.7rem;align-items:center">
+      <div class="ce-wrap" id="ce-wrap" style="width:min(76vw,340px);height:min(76vw,340px)">
+        <canvas id="ce-cv" width="720" height="720"></canvas>
+      </div>
+      <div style="font-size:.78rem;color:var(--muted);text-align:center;line-height:1.55">
+        לחצו על סמל כדי לבחור אותו · גררו כדי להזיז · הסרגל משנה גודל<br>
+        השינויים חלים על הקלף הזה בלבד
+      </div>
+      <div id="ce-warn" style="display:none;font-size:.8rem;font-weight:800;color:#B91C1C;text-align:center">⚠️ יש חפיפה בין סמלים בקלף</div>
+      <div id="ce-ctl" style="display:none;width:100%">
+        <div class="sl-row">
+          <div class="sl-lbl"><span>גודל הסמל שנבחר</span><strong id="ce-lbl">100%</strong></div>
+          <input type="range" id="ce-sl" min="30" max="220" step="5" value="100">
+        </div>
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;width:100%">
+        <button class="pack-btn" id="ce-reset-one" type="button">↩️ אפס סמל</button>
+        <button class="pack-btn" id="ce-reset-all" type="button">🧹 אפס קלף</button>
+      </div>
     </div>
   </div>
 </div>
@@ -3299,7 +3338,15 @@ async function generate(){
     const w=document.createElement('div');w.className='cw';w.dataset.i=i;w.appendChild(c);
     w.style.animationDelay=Math.min(i*22,900)+'ms';
     attachTilt(w);
-    w.addEventListener('click',()=>onCardClick(i));grid.appendChild(w);
+    w.addEventListener('click',()=>onCardClick(i));
+    // עוטפים ב-.cslot כדי שכפתור העריכה לא ייחתך ע"י ה-overflow:hidden העגול של .cw,
+    // ושלא יימחק ע"י איפוסי className='cw' בזרימת בחירת הזוגות (onCardClick/closeModal).
+    const slot=document.createElement('div');slot.className='cslot';slot.appendChild(w);
+    const eb=document.createElement('button');
+    eb.type='button';eb.className='card-edit-btn';eb.title='ערוך קלף';eb.textContent='✏️';
+    eb.addEventListener('click',ev=>{ev.stopPropagation();openCardEditor(i);});
+    slot.appendChild(eb);
+    grid.appendChild(slot);
     setp(35+Math.round(65*(i+1)/S.deck.length),`מצייר קלף ${i+1}/${S.deck.length}…`);
     if(i%6===5)await tick();
   }
@@ -3379,6 +3426,132 @@ function closeModal(){
   S.sel.forEach(i=>document.querySelector(`.cw[data-i="${i}"]`).className='cw');
   S.sel=[];
 }
+
+// ══ עורך קלף בודד ══
+const CE={idx:-1,slot:-1,drag:false,px:0,py:0};
+function ceCv(){return document.getElementById('ce-cv');}
+function ceEdits(){if(!S.cardEdits[CE.idx])S.cardEdits[CE.idx]={};return S.cardEdits[CE.idx];}
+function ceSlotObj(slot){const e=ceEdits();return e[slot]||(e[slot]={s:1,dx:0,dy:0});}
+
+function openCardEditor(i){
+  if(!S.layouts[i]||!S.canvases[i])return;
+  CE.idx=i;CE.slot=-1;CE.drag=false;
+  document.getElementById('ce-idx').textContent='#'+(i+1);
+  document.getElementById('ce-wrap').className='ce-wrap'+(S.shape==='square'?' sq':'');
+  document.getElementById('cemodal').hidden=false;
+  ceRender();
+}
+function ceClose(){document.getElementById('cemodal').hidden=true;CE.idx=-1;CE.slot=-1;CE.drag=false;}
+
+function ceRender(){
+  if(CE.idx<0)return;
+  const cv=ceCv(),layout=S.layouts[CE.idx];
+  drawCard(cv,layout,S.imgEls,S.shape);
+  const ctx=cv.getContext('2d');
+  const r=computeCardPositions(layout,S.imgEls,cv.width);
+  const bad=cardViolations(layout,S.imgEls,r.pos,r.G);
+  for(let i=0;i<r.pos.length;i++){
+    const rr=r.pos[i].hs*layout.tr[i].sc;
+    if(bad.has(i)){
+      ctx.beginPath();ctx.arc(r.pos[i].x,r.pos[i].y,rr*1.06,0,Math.PI*2);
+      ctx.strokeStyle='#DC2626';ctx.lineWidth=cv.width*.008;ctx.stroke();
+    }
+    if(i===CE.slot){
+      ctx.beginPath();ctx.arc(r.pos[i].x,r.pos[i].y,rr*1.15,0,Math.PI*2);
+      ctx.strokeStyle='#4338CA';ctx.lineWidth=cv.width*.010;
+      ctx.setLineDash([cv.width*.022,cv.width*.016]);ctx.stroke();ctx.setLineDash([]);
+    }
+  }
+  document.getElementById('ce-warn').style.display=bad.size?'block':'none';
+  const ctl=document.getElementById('ce-ctl');
+  if(CE.slot>=0){
+    ctl.style.display='block';
+    const s=Math.round(((ceEdits()[CE.slot]||{}).s||1)*100);
+    document.getElementById('ce-sl').value=String(s);
+    document.getElementById('ce-lbl').textContent=s+'%';
+  }else ctl.style.display='none';
+}
+
+// מונע חריגה מגבול הקלף: מושכים את הסמל פנימה במקום לאפשר לו לצאת (דרישה 4 באפיון)
+function ceClampSlot(slot){
+  const cv=ceCv(),layout=S.layouts[CE.idx];
+  const r=computeCardPositions(layout,S.imgEls,cv.width);
+  const rr=r.pos[slot].hs*layout.tr[slot].sc;
+  const dx=r.pos[slot].x-r.G.cx,dy=r.pos[slot].y-r.G.cy,dist=Math.hypot(dx,dy);
+  const over=dist+rr-r.G.rSym;
+  if(over>0&&dist>1e-6){
+    const o=ceSlotObj(slot);
+    o.dx=(o.dx||0)-(dx/dist)*over/r.G.rSym;
+    o.dy=(o.dy||0)-(dy/dist)*over/r.G.rSym;
+  }
+}
+function ceHit(mx,my){
+  const cv=ceCv(),layout=S.layouts[CE.idx];
+  const r=computeCardPositions(layout,S.imgEls,cv.width);
+  for(let i=r.pos.length-1;i>=0;i--){        // מהאחרון שצויר (העליון) לראשון
+    const rr=r.pos[i].hs*layout.tr[i].sc;
+    if(Math.hypot(mx-r.pos[i].x,my-r.pos[i].y)<=rr)return i;
+  }
+  return -1;
+}
+function ceXY(ev){
+  const cv=ceCv(),b=cv.getBoundingClientRect();
+  return{x:(ev.clientX-b.left)/b.width*cv.width,y:(ev.clientY-b.top)/b.height*cv.height};
+}
+// מסנכרן את הקלף האמיתי בגריד ומסמן את הייצוא כלא-מעודכן
+function ceCommit(){
+  if(CE.idx<0)return;
+  if(S.canvases[CE.idx])drawCard(S.canvases[CE.idx],S.layouts[CE.idx],S.imgEls,S.shape);
+  resetExport();
+  if(typeof schedIdbSave==='function')schedIdbSave();
+}
+
+(function ceBind(){
+  const cv=ceCv();
+  cv.addEventListener('pointerdown',ev=>{
+    if(CE.idx<0)return;
+    ev.preventDefault();
+    const p=ceXY(ev),h=ceHit(p.x,p.y);
+    if(h<0){CE.slot=-1;ceRender();return;}
+    CE.slot=h;CE.drag=true;CE.px=p.x;CE.py=p.y;
+    if(cv.setPointerCapture)try{cv.setPointerCapture(ev.pointerId);}catch(e){}
+    ceRender();
+  });
+  cv.addEventListener('pointermove',ev=>{
+    if(!CE.drag||CE.slot<0)return;
+    ev.preventDefault();
+    const p=ceXY(ev),G=cardGeom(cv.width),o=ceSlotObj(CE.slot);
+    o.dx=(o.dx||0)+(p.x-CE.px)/G.rSym;
+    o.dy=(o.dy||0)+(p.y-CE.py)/G.rSym;
+    CE.px=p.x;CE.py=p.y;
+    ceClampSlot(CE.slot);
+    ceRender();
+  });
+  const up=()=>{if(CE.drag){CE.drag=false;ceCommit();}};
+  cv.addEventListener('pointerup',up);
+  cv.addEventListener('pointercancel',up);
+  cv.addEventListener('pointerleave',up);
+
+  document.getElementById('ce-sl').addEventListener('input',()=>{
+    if(CE.slot<0)return;
+    const v=+document.getElementById('ce-sl').value;
+    document.getElementById('ce-lbl').textContent=v+'%';
+    ceSlotObj(CE.slot).s=v/100;
+    ceClampSlot(CE.slot);
+    ceRender();
+  });
+  document.getElementById('ce-sl').addEventListener('change',ceCommit);
+  document.getElementById('ce-reset-one').addEventListener('click',()=>{
+    if(CE.idx<0||CE.slot<0)return;
+    delete ceEdits()[CE.slot];ceRender();ceCommit();
+  });
+  document.getElementById('ce-reset-all').addEventListener('click',()=>{
+    if(CE.idx<0)return;
+    delete S.cardEdits[CE.idx];CE.slot=-1;ceRender();ceCommit();
+  });
+  document.getElementById('ce-x').addEventListener('click',ceClose);
+  document.getElementById('cemodal').addEventListener('click',e=>{if(e.target===e.currentTarget)ceClose();});
+})();
 
 // ══ BACK / NAV ══
 document.getElementById('btn-b1').addEventListener('click',()=>{goScr(1);resetGenerated();});
