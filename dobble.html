@@ -979,6 +979,10 @@ function dcfgSave(patch){
     <button type="button" id="uz-files-btn" class="uz-files-btn" style="margin-top:.5rem;width:100%;padding:.55rem;border:1px dashed var(--line,#ccc);border-radius:.6rem;background:transparent;cursor:pointer;font-size:.9rem">📁 בחירת קבצים מרובים (שיאומי / אנדרואיד)</button>
     <input type="file" id="fiDocs" multiple style="display:none">
 
+    <!-- ── יצירת סמלים ב-AI — שלב 0, מנהל בלבד. מוסתר לגמרי (לא רק מושבת) כשאין הרשאה;
+         השער האמיתי בצד שרת (image-gateway), זה רק תצוגה — ראו js/ai-symbols.js ── -->
+    <button type="button" id="ai-symbols-btn" class="btn btn-sec" hidden style="width:100%;justify-content:center;margin-top:.5rem">✨ יצירת סמלים ב-AI (מנהל)</button>
+
     <!-- ── חבילות תמונות מוכנות ── -->
     <div id="packs-wrap" class="packs" style="display:none">
       <div class="og-t" style="margin-top:.4rem">🧰 או התחילו מחבילה מוכנה</div>
@@ -1475,6 +1479,34 @@ function dcfgSave(patch){
       <button type="button" class="btn btn-ghost" id="cfm-no">ביטול</button>
       <button type="button" class="btn" id="cfm-yes" style="background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff">מחק</button>
     </div>
+  </div>
+</div>
+
+<!-- AI SYMBOLS MODAL — שלב 0, מנהל בלבד (js/ai-symbols.js) -->
+<div class="modal-bg" id="ai-symbols-modal" hidden style="z-index:10002">
+  <div class="modal-card" style="max-width:640px">
+    <div class="modal-hdr">
+      <div class="modal-title">✨ יצירת סמלים ב-AI</div>
+      <button type="button" class="btn btn-ghost" id="ai-sym-x" style="padding:.35rem .8rem;min-height:auto">✕</button>
+    </div>
+    <p class="box-s" style="margin-top:0">שורה לכל סמל: תיאור בעברית, ואופציונלית אחריו פסיק ותרגום לאנגלית. לדוגמה: <code>אריה, lion</code></p>
+    <textarea id="ai-sym-ta" rows="6" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:var(--rs);padding:.6rem .7rem;font-family:inherit;font-size:.88rem;resize:vertical" placeholder="אריה, lion&#10;פרפר&#10;כדור כדורגל, soccer ball"></textarea>
+    <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.7rem">
+      <label style="flex:1;min-width:140px;font-size:.8rem;color:var(--muted)">סגנון
+        <select id="ai-sym-style" style="width:100%;margin-top:.25rem;padding:.5rem;border:1px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:.88rem"></select>
+      </label>
+      <label style="width:120px;font-size:.8rem;color:var(--muted)">seed
+        <input type="number" id="ai-sym-seed" style="width:100%;margin-top:.25rem;padding:.5rem;border:1px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:.88rem">
+      </label>
+    </div>
+    <button type="button" class="btn btn-cta" id="ai-sym-go" style="width:100%;justify-content:center;margin-top:.8rem">✨ יצירה</button>
+    <div id="ai-sym-barwrap" style="display:none;margin-top:.7rem">
+      <div style="height:9px;background:var(--border);border-radius:100px;overflow:hidden">
+        <div id="ai-sym-bar" style="height:100%;width:0%;border-radius:100px;background:linear-gradient(90deg,var(--blue),var(--indigo));transition:width .18s ease"></div>
+      </div>
+      <div id="ai-sym-status" style="font-size:.8rem;color:var(--muted);margin-top:.4rem"></div>
+    </div>
+    <div id="ai-sym-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:.5rem;margin-top:.8rem"></div>
   </div>
 </div>
 
@@ -2819,6 +2851,10 @@ async function addFiles(files){
   if(rejected)toast(`${rejected} קבצים שאינם תמונות דולגו`,'err');
   if(failed.length)await reportFailedUploads(failed,folder);
 }
+
+// גשר ל-js/ai-symbols.js — נקודת כניסה מפורשת ויציבה לתור העלאה, בתבנית window.dobbleUnlock.
+// אין להוציא את S החוצה באותה דרך — S הוא const ולא ייחשף כך.
+window.dobbleAddFiles=function(files){ return addFiles(files); };
 
 // דיווח כשלים עם סיבה לכל קובץ + ניסיון חוזר על הכושלים בלבד
 async function reportFailedUploads(failed,folder,depth){
@@ -6427,6 +6463,7 @@ function updateAuthUI(session){
   }
   renderDesigns();   // מרענן את רשימת העיצובים (מקומי + ענן)
   if(typeof refreshSubscribersUI==='function')refreshSubscribersUI();
+  if(typeof window.dobbleRefreshAiButton==='function')window.dobbleRefreshAiButton();
 }
 
 document.getElementById('auth-send').addEventListener('click',async()=>{
@@ -6777,5 +6814,6 @@ function loadImg(url,maxSide){
 }
 function tick(){return new Promise(r=>setTimeout(r,0));}
 </script>
+<script src="js/ai-symbols.js"></script>
 </body>
 </html>

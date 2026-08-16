@@ -11,7 +11,10 @@
 - ספריות: jsPDF, JSZip, Supabase, heic2any (המרת HEIC מ-iPhone).
 - Supabase: project ref `sccivxenkyzxolpraexf`, region `eu-west-2`. auth = Magic Link (מייל, בלי סיסמאות).
 
-## סטטוס עבודה נוכחי (מעודכן 2026-08-09 — עדכנו את זה בכל סבב עבודה)
+## סטטוס עבודה נוכחי (מעודכן 2026-08-16 — עדכנו את זה בכל סבב עבודה)
+
+### בפיתוח (ברנץ' `claude/ai-symbols-stage-0-5h6bh5`, טרם מוזג)
+- **מחולל סמלים ב-AI — שלב 0 (מנהל בלבד)** — Edge Function חדש `image-gateway` (Pollinations, קאש+מדידה ב-`ai_image_log`, בקט פרטי `ai-symbols`), שער אמיתי בצד שרת לפי `ADMIN_EMAILS`. בפרונט: `js/ai-symbols.js` + כפתור מוסתר-לגמרי ל-non-admin ליד `uz`, גשר `window.dobbleAddFiles`. **Secrets עדיין לא הוגדרו בדשבורד** (`POLLINATIONS_TOKEN`, `ADMIN_EMAILS`) — בלעדיהם הפונקציה תיכשל בזמן ריצה. ראו "Edge Functions" ו-"Supabase — סכמה" למטה.
 
 ### מוזג ל-main ופעיל באתר
 - **מודל גישה מדורג (PR #19)** — הכניסה חסומה. שלושה מסלולים: קוד קיים / הרשמה חינם (7 קלפים, `max_order:7`) / רכישת מנוי (13/21/31/57 קלפים). ראו "מונטיזציה" למטה.
@@ -103,11 +106,11 @@
 - כניסה/יציאה: `enterSupportMode()`/`exitSupportMode()`. היציאה משחזרת snapshot מדויק של מצב המנהל — **`S.frame`/`S.bg` מועתקים ללא fallback ל-null**, כי הם נגישים בלי הגנה בכל קוד הציור.
 
 ## Supabase — סכמה ופונקציות
-- **טבלאות:** `profiles` (מנויי Auth legacy; `subscription_expires`, `subscriber_status`, `label`, `max_order`, `print_limit`, `print_count`) · `designs` (עיצובים שמורים) · `events` (מעקב פעילות + audit של פעולות מנהל, עמודת `actor`) · `dobble_access_codes` (**המנגנון הנוכחי** — `code`, `type`, `max_order`, `expires_at`, `usage_limit`, `current_usage`, `created_for`, `is_active`) · `dobble_transactions` (עסקאות Morning — `customer_email`, `amount`, `tier`, `status`, `claimed_at`, `claimed_code`).
-- **Storage bucket `symbols`:** תמונות פרטיות לכל משתמש (`public=false`).
+- **טבלאות:** `profiles` (מנויי Auth legacy; `subscription_expires`, `subscriber_status`, `label`, `max_order`, `print_limit`, `print_count`) · `designs` (עיצובים שמורים) · `events` (מעקב פעילות + audit של פעולות מנהל, עמודת `actor`) · `dobble_access_codes` (**המנגנון הנוכחי** — `code`, `type`, `max_order`, `expires_at`, `usage_limit`, `current_usage`, `created_for`, `is_active`) · `dobble_transactions` (עסקאות Morning — `customer_email`, `amount`, `tier`, `status`, `claimed_at`, `claimed_code`) · `ai_image_log` (חדש, שלב 0 מחולל AI — קאש+מדידה, `cache_key`/`prompt`/`storage_path`/`hits`/`est_cost_usd`, SELECT למנהל בלבד).
+- **Storage bucket `symbols`:** תמונות פרטיות לכל משתמש (`public=false`). **Storage bucket `ai-symbols`** (חדש): פלט מחולל ה-AI, פרטי, נכתב רק דרך service_role מ-`image-gateway`.
 - **RPC:** `redeem_access_code` · `register_free_code` · `claim_access_code` · `consume_print_quota` (מכסת הדפסות, ראו למעלה).
 
-### Edge Functions — 5 בשימוש
+### Edge Functions — 6 בשימוש
 | פונקציה | תפקיד |
 |---|---|
 | `validate-code` | בודק קוד מול `dobble_access_codes` (RPC `redeem_access_code`), מחזיר `max_order` |
@@ -115,8 +118,9 @@
 | `claim-code` | אחרי תשלום — RPC `claim_access_code`, מאתר עסקה `paid` לפי אימייל, מחזיר `max_order` |
 | `manage-subscriber` | ניהול מנויים, **מנהל בלבד** (service_role). 11 פעולות: `create`/`delete`/`list`/`set_tier`/`extend`/`set_expiry`/`set_print_limit`/`reset_print_count`/`block`/`unblock`/`subscriber-designs`. כל פעולה נרשמת ל-audit |
 | `morning-webhook` | `payment/received` מ-Morning. `verify_jwt=false` (חובה — Morning לא שולח JWT). allowlist של productId |
+| `image-gateway` | (חדש, שלב 0) יצירת סמלי AI דרך Pollinations, **מנהל בלבד** לפי `ADMIN_EMAILS`. קאש+מדידה ב-`ai_image_log`, פלט ב-bucket `ai-symbols`. Secrets נדרשים: `POLLINATIONS_TOKEN`, `ADMIN_EMAILS` — **טרם הוגדרו בדשבורד**, הפונקציה תיכשל בלעדיהם |
 
-הפרונט קורא **רק** ל-4 הראשונות; `morning-webhook` נקרא מ-Morning בלבד.
+הפרונט קורא **רק** לחמש הראשונות (`morning-webhook` נקרא מ-Morning בלבד); `image-gateway` נקרא רק מ-`js/ai-symbols.js` שגלוי למנהל בלבד.
 
 ### ⛔ Edge Functions שפרשו — אל תחזירו לשימוש
 נוטרלו (מחזירות 410) ב-09/08. **עדיין קיימות בדשבורד** — MCP לא יכול למחוק פונקציות, ו-`api.supabase.com` חסום מהסביבה המרוחקת. מחיקה סופית = ידנית מהדשבורד.
