@@ -14,9 +14,10 @@
 ## סטטוס עבודה נוכחי (מעודכן 2026-08-16 — עדכנו את זה בכל סבב עבודה)
 
 ### בפיתוח (ברנץ' `claude/ai-symbols-stage-0-5h6bh5`, טרם מוזג)
-- **מחולל סמלים ב-AI — שלב 0 (מנהל בלבד)** — Edge Function חדש `image-gateway` (Pollinations, קאש+מדידה ב-`ai_image_log`, בקט פרטי `ai-symbols`), שער אמיתי בצד שרת לפי `ADMIN_EMAILS`. בפרונט: `js/ai-symbols.js` + כפתור מוסתר-לגמרי ל-non-admin ליד `uz`, גשר `window.dobbleAddFiles`. **Secrets עדיין לא הוגדרו בדשבורד** (`POLLINATIONS_TOKEN`, `ADMIN_EMAILS`) — בלעדיהם הפונקציה תיכשל בזמן ריצה. ראו "Edge Functions" ו-"Supabase — סכמה" למטה.
+- **hotfix: `.btn[hidden]`** — כפתור AI-symbols (למנהל בלבד) הוצג בפועל לכל משתמש כי `.btn{display:inline-flex}` גובר על `[hidden]` — ראו "כלל `[hidden]` על `.btn`" למטה. עומד לבדו, לא משולב עם עבודת ספק הסגנונות.
 
 ### מוזג ל-main ופעיל באתר
+- **מחולל סמלים ב-AI — שלב 0, מנהל בלבד (PR #58)** — Edge Function חדש `image-gateway` (Pollinations, קאש+מדידה ב-`ai_image_log`, בקט פרטי `ai-symbols`), שער אמיתי בצד שרת לפי `ADMIN_EMAILS`. בפרונט: `js/ai-symbols.js` + כפתור ליד `uz`, גשר `window.dobbleAddFiles`. **Secrets עדיין לא הוגדרו בדשבורד** (`POLLINATIONS_TOKEN`, `ADMIN_EMAILS`) — בלעדיהם הפונקציה תיכשל בזמן ריצה. ⚠️ באג בכפתור בגרסה הממוזגת — ראו "בפיתוח" למעלה.
 - **מודל גישה מדורג (PR #19)** — הכניסה חסומה. שלושה מסלולים: קוד קיים / הרשמה חינם (7 קלפים, `max_order:7`) / רכישת מנוי (13/21/31/57 קלפים). ראו "מונטיזציה" למטה.
 - **מעבר ללינקי תשלום קבועים (PR #33/#34)** — `create-payment` הוחלף ב-4 לינקי Morning קבועים. ראו "מונטיזציה".
 - **דשבורד מנהל מאוחד (PR #35)** — כרטיס לקוח עם שימוש/עיצובים, פעולות בלחיצה, ומצב תמיכה. ראו "מצב תמיכה" למטה.
@@ -39,6 +40,8 @@
 `renderGallery()` משרטט מחדש את **כל** הגלריה (canvas לכל פריט), לא רק חדשים. קריאה לה בתוך הלולאה הופכת העלאת N תמונות עם M קיימות ל-O(N×M) — ההעלאה נעשית איטית יותר ויותר ככל שמאגר הלקוח גדל, בלי ששום דבר בקובץ השתנה. קוראים לה **פעם אחת אחרי כל האצווה** (`addFiles`, `loadPack`). `updateCropHint()` מגיע דרך `updateCounter()`, אז אין צורך לקרוא לו בנפרד.
 
 **כלל fail-open** — תקלת רשת/שגיאת RPC לא חוסמת לקוח משלם. חוסמים רק על תשובת שרת מפורשת (`ok:false`). עקבי ב-`subscriptionGate()` וב-`consume_print_quota`.
+
+**כלל `[hidden]` על `.btn`** — `.btn{display:inline-flex}` (specificity מחלקה) גובר על ברירת המחדל של הדפדפן `[hidden]{display:none}` (UA stylesheet, לא נספר בתחרות specificity מול author styles) — `<button class="btn ..." hidden>` נשאר **גלוי**. קרה בפועל: כפתור AI-symbols המיועד למנהל בלבד הוצג לכל משתמש (PR #58, לא נתפס לפני המיזוג). התיקון: `.btn[hidden]{display:none}` — כללי על כל `.btn`, לא רק על המקרה שהתגלה, כי המלכודת חוזרת בכל כפתור עתידי שמסתמך על `hidden`. הכלל כבר גובר בספציפיות על `.btn` לבד — **בלי `!important`**. תקדים דומה קיים ב-`.modal-bg[hidden]{display:none}`.
 
 ## ⛔ אילוצים קריטיים בקוד הפרונט — לא לגעת
 1. **מתמטיקת GF(4)** של Dobble היא load-bearing. אין לשנות אותה בשום מצב.

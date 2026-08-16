@@ -20,7 +20,7 @@
   ];
   const RATE_LIMIT_MS=2000;   // קצב קבוע — יש טוקן בצד שרת, קצב סביר בלי סיכון חסימה
 
-  let btn,modal,closeBtn,ta,styleSel,seedInp,goBtn,barWrap,bar,statusEl,grid;
+  let btn,modal,closeBtn,ta,styleSel,seedInp,goBtn,barWrap,bar,statusEl,grid,lastFailed=[];
 
   function notify(msg,type){
     if(typeof window.toast==='function')window.toast(msg,type);
