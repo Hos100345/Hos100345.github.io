@@ -113,6 +113,11 @@
 
     /* ── BUTTONS ── */
     .btn{display:inline-flex;align-items:center;gap:.4rem;padding:.7rem 1.6rem;border-radius:100px;font-size:.9rem;font-weight:700;font-family:inherit;cursor:pointer;border:none;transition:all var(--tr);white-space:nowrap;text-decoration:none;min-height:44px}
+    /* ה-display:inline-flex למעלה גובר על ברירת המחדל של הדפדפן ל-[hidden] (display:none) —
+       כל <button class="btn" hidden> נשאר גלוי בלי הכלל הזה. כללי, לא רק לכפתור ספציפי,
+       כי המלכודת חוזרת בכל כפתור עתידי שמסתמך על hidden. .btn[hidden] כבר גובר על .btn
+       בספציפיות (מחלקה+תכונה מול מחלקה בלבד) — אין צורך ב-!important. */
+    .btn[hidden]{display:none}
     .btn:not(:disabled):active{transform:scale(.96);transition-duration:.06s}
     .btn:disabled{opacity:.38;cursor:not-allowed!important;transform:none!important;box-shadow:none!important}
     .btn-cta{background:linear-gradient(135deg,var(--gold),#d97706);color:#fff;font-size:1.05rem;padding:.8rem 2.25rem}
