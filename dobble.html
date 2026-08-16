@@ -408,8 +408,9 @@
 <body>
 
 <!-- CONFIG (קודים, וואטסאפ, חבילות) -->
-<script src="js/dobble-config.js"></script>
-<script src="js/supabase-config.js"></script>
+<!-- ?v=N — מעלים את המספר בכל שינוי בקובץ, אחרת הדפדפן יגיש גרסה ישנה מהמטמון -->
+<script src="js/dobble-config.js?v=1"></script>
+<script src="js/supabase-config.js?v=1"></script>
 <script>
 // קונפיג בזמן ריצה: ברירות מחדל ← קובץ הקונפיג ← עריכות מקומיות מפאנל הניהול
 window.DCFG=(function(){
@@ -6819,6 +6820,7 @@ function loadImg(url,maxSide){
 }
 function tick(){return new Promise(r=>setTimeout(r,0));}
 </script>
-<script src="js/ai-symbols.js"></script>
+<!-- ?v=N — מעלים את המספר בכל שינוי בקובץ, אחרת הדפדפן יגיש גרסה ישנה מהמטמון -->
+<script src="js/ai-symbols.js?v=2"></script>
 </body>
 </html>
