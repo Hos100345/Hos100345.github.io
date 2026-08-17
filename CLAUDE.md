@@ -11,13 +11,13 @@
 - ספריות: jsPDF, JSZip, Supabase, heic2any (המרת HEIC מ-iPhone).
 - Supabase: project ref `sccivxenkyzxolpraexf`, region `eu-west-2`. auth = Magic Link (מייל, בלי סיסמאות).
 
-## סטטוס עבודה נוכחי (מעודכן 2026-08-16 — עדכנו את זה בכל סבב עבודה)
+## סטטוס עבודה נוכחי (מעודכן 2026-08-17 — עדכנו את זה בכל סבב עבודה)
 
-### בפיתוח (ברנץ' `claude/ai-symbols-stage-0-5h6bh5`, טרם מוזג)
-- **hotfix: `.btn[hidden]`** — כפתור AI-symbols (למנהל בלבד) הוצג בפועל לכל משתמש כי `.btn{display:inline-flex}` גובר על `[hidden]` — ראו "כלל `[hidden]` על `.btn`" למטה. עומד לבדו, לא משולב עם עבודת ספק הסגנונות.
+### בפיתוח (ברנץ' `claude/ai-symbols-translate-fix`, טרם מוזג)
+- **תיקון: תרגום/אימות/הצגת שגיאות במחולל הסמלים** — `translateToEnglish` דילג על תרגום ל-`lion` (טקסט שכבר אנגלי) ונכשל תמיד כי קריאת `text.pollinations.ai` שלחה טוקן כפרמטר-URL במקום `Authorization: Bearer`. שלושה תיקונים ב-`image-gateway`: (1) בדיקת `\u0590-\u05FF` — קלט בלי תו עברי מדלג על התרגום לגמרי, (2) `Authorization: Bearer` + גוף תשובה בשגיאה, (3) `&token=` בקריאת התמונה רק כשיש טוקן (לא נוגע ב-`generateImageBytes` שעובד). בפרונט: פאנל שגיאות גלוי (`#ai-sym-fails`) מציג "שם — סיבה" לכל פריט שנכשל, לא רק ספירה. `?v=3`. **צעד פריסה נוסף נדרש אחרי המיזוג:** `deploy_edge_function` מפורש דרך MCP — לא אוטומטי מ-GitHub.
 
 ### מוזג ל-main ופעיל באתר
-- **מחולל סמלים ב-AI — שלב 0, מנהל בלבד (PR #58)** — Edge Function חדש `image-gateway` (Pollinations, קאש+מדידה ב-`ai_image_log`, בקט פרטי `ai-symbols`), שער אמיתי בצד שרת לפי `ADMIN_EMAILS`. בפרונט: `js/ai-symbols.js` + כפתור ליד `uz`, גשר `window.dobbleAddFiles`. **Secrets עדיין לא הוגדרו בדשבורד** (`POLLINATIONS_TOKEN`, `ADMIN_EMAILS`) — בלעדיהם הפונקציה תיכשל בזמן ריצה. ⚠️ באג בכפתור בגרסה הממוזגת — ראו "בפיתוח" למעלה.
+- **מחולל סמלים ב-AI — שלב 0, מנהל בלבד (PR #58–#60)** — Edge Function חדש `image-gateway` (Pollinations, קאש+מדידה ב-`ai_image_log`, בקט פרטי `ai-symbols`), שער אמיתי בצד שרת לפי `ADMIN_EMAILS`. בפרונט: `js/ai-symbols.js` + כפתור ליד `uz`, גשר `window.dobbleAddFiles`. **Secrets מוגדרים** (`POLLINATIONS_TOKEN`, `ADMIN_EMAILS`) — יצירת תמונה עם קלט מהצורה "עברית, English" עובדת ומאומתת מול `ai_image_log`. תיקוני `.btn[hidden]` ו-`?v=` cache busting נכללים (PR #59/#60). ⚠️ נתיב התרגום (קלט בעברית או אנגלית בלבד, בלי פסיק) עדיין שבור בגרסה הממוזגת — ראו "בפיתוח" למעלה.
 - **מודל גישה מדורג (PR #19)** — הכניסה חסומה. שלושה מסלולים: קוד קיים / הרשמה חינם (7 קלפים, `max_order:7`) / רכישת מנוי (13/21/31/57 קלפים). ראו "מונטיזציה" למטה.
 - **מעבר ללינקי תשלום קבועים (PR #33/#34)** — `create-payment` הוחלף ב-4 לינקי Morning קבועים. ראו "מונטיזציה".
 - **דשבורד מנהל מאוחד (PR #35)** — כרטיס לקוח עם שימוש/עיצובים, פעולות בלחיצה, ומצב תמיכה. ראו "מצב תמיכה" למטה.
@@ -123,7 +123,7 @@
 | `claim-code` | אחרי תשלום — RPC `claim_access_code`, מאתר עסקה `paid` לפי אימייל, מחזיר `max_order` |
 | `manage-subscriber` | ניהול מנויים, **מנהל בלבד** (service_role). 11 פעולות: `create`/`delete`/`list`/`set_tier`/`extend`/`set_expiry`/`set_print_limit`/`reset_print_count`/`block`/`unblock`/`subscriber-designs`. כל פעולה נרשמת ל-audit |
 | `morning-webhook` | `payment/received` מ-Morning. `verify_jwt=false` (חובה — Morning לא שולח JWT). allowlist של productId |
-| `image-gateway` | (חדש, שלב 0) יצירת סמלי AI דרך Pollinations, **מנהל בלבד** לפי `ADMIN_EMAILS`. קאש+מדידה ב-`ai_image_log`, פלט ב-bucket `ai-symbols`. Secrets נדרשים: `POLLINATIONS_TOKEN`, `ADMIN_EMAILS` — **טרם הוגדרו בדשבורד**, הפונקציה תיכשל בלעדיהם |
+| `image-gateway` | יצירת סמלי AI דרך Pollinations, **מנהל בלבד** לפי `ADMIN_EMAILS`. קאש+מדידה ב-`ai_image_log`, פלט ב-bucket `ai-symbols`. Secrets מוגדרים (`POLLINATIONS_TOKEN`, `ADMIN_EMAILS`). ⚠️ נתיב התרגום (`translateToEnglish`) שבור כשאין פסיק בקלט — ראו "בפיתוח" בסטטוס למעלה |
 
 הפרונט קורא **רק** לחמש הראשונות (`morning-webhook` נקרא מ-Morning בלבד); `image-gateway` נקרא רק מ-`js/ai-symbols.js` שגלוי למנהל בלבד.
 

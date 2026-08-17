@@ -66,13 +66,19 @@ async function sha256Hex(text: string): Promise<string> {
 function sleep(ms: number) { return new Promise((r) => setTimeout(r, ms)); }
 
 async function translateToEnglish(hebrew: string): Promise<string> {
+  // אין תו עברי — אין מה לתרגם (קלט שכבר באנגלית לא צריך לעבור דרך שירות התרגום בכלל)
+  if (!/[\u0590-\u05FF]/.test(hebrew)) return hebrew;
   const prompt = `Translate this Hebrew word or short phrase to a short English noun phrase suitable for `
     + `an image generation prompt. Respond with ONLY the English translation, no punctuation, no quotes, `
     + `no explanation: "${hebrew}"`;
-  const url = `https://text.pollinations.ai/${encodeURIComponent(prompt)}`
-    + `?token=${encodeURIComponent(POLLINATIONS_TOKEN)}`;
-  const resp = await fetch(url);
-  if (!resp.ok) throw new Error('תרגום נכשל: ' + resp.status);
+  const url = `https://text.pollinations.ai/${encodeURIComponent(prompt)}`;
+  const headers: Record<string, string> = {};
+  if (POLLINATIONS_TOKEN) headers['Authorization'] = `Bearer ${POLLINATIONS_TOKEN}`;
+  const resp = await fetch(url, { headers });
+  if (!resp.ok) {
+    const body = (await resp.text().catch(() => '')).slice(0, 200);
+    throw new Error(`תרגום נכשל (${resp.status}): ${body}`);
+  }
   const out = (await resp.text()).trim().replace(/^["']|["']$/g, '');
   if (!out) throw new Error('תרגום ריק');
   return out;
@@ -81,7 +87,7 @@ async function translateToEnglish(hebrew: string): Promise<string> {
 async function generateImageBytes(prompt: string, seed: number): Promise<Uint8Array> {
   const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}`
     + `?width=768&height=768&model=flux&nologo=true&safe=true&seed=${seed}`
-    + `&token=${encodeURIComponent(POLLINATIONS_TOKEN)}`;
+    + (POLLINATIONS_TOKEN ? `&token=${encodeURIComponent(POLLINATIONS_TOKEN)}` : '');
   const delays = [1000, 2000, 4000, 8000];
   let lastErr = '';
   for (let attempt = 0; attempt <= delays.length; attempt++) {
