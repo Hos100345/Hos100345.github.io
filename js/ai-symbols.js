@@ -20,7 +20,7 @@
   ];
   const RATE_LIMIT_MS=2000;   // קצב קבוע — יש טוקן בצד שרת, קצב סביר בלי סיכון חסימה
 
-  let btn,modal,closeBtn,ta,styleSel,seedInp,goBtn,barWrap,bar,statusEl,grid,lastFailed=[];
+  let btn,modal,closeBtn,ta,styleSel,seedInp,goBtn,barWrap,bar,statusEl,grid,failsEl,lastFailed=[];
 
   function notify(msg,type){
     if(typeof window.toast==='function')window.toast(msg,type);
@@ -96,6 +96,7 @@
     bar.style.width='0%';
     const files=[];
     const failed=[];
+    failsEl.hidden=true;failsEl.style.display='none';failsEl.textContent='';
     let done=0;
     for(const item of items){
       statusEl.textContent=`מייצר ${done+1}/${items.length}: ${item.he}…`;
@@ -110,8 +111,9 @@
         files.push(file);
         addPreviewTile(data.url,item.he,true);
       }catch(e){
-        failed.push(item);
-        addPreviewTile(null,item.he+' — '+((e&&e.message)||'שגיאה'),false);
+        const reason=(e&&e.message)||'שגיאה לא ידועה';
+        failed.push({item,reason});
+        addPreviewTile(null,item.he+' — '+reason,false);
       }
       done++;
       bar.style.width=Math.round(done/items.length*100)+'%';
@@ -125,7 +127,10 @@
       : `הושלם: ${files.length} סמלים נוספו למאגר ✓`;
     goBtn.disabled=false;
     if(failed.length){
-      ta.value=failed.map(x=>x.he+(x.en?(', '+x.en):'')).join('\n');
+      // הסיבה המדויקת מהשרת חייבת להגיע למסך — לא רק לספירה — אחרת כל אבחון חוזר לניחוש.
+      failsEl.textContent=failed.map(x=>`${x.item.he} — ${x.reason}`).join('\n');
+      failsEl.hidden=false;failsEl.style.display='block';
+      ta.value=failed.map(x=>x.item.he+(x.item.en?(', '+x.item.en):'')).join('\n');
     }
   }
 
@@ -136,6 +141,7 @@
     statusEl.textContent='';
     barWrap.style.display='none';
     bar.style.width='0%';
+    failsEl.hidden=true;failsEl.style.display='none';failsEl.textContent='';
     lastFailed=[];
     modal.hidden=false;
     ta.focus();
@@ -168,6 +174,7 @@
     bar=document.getElementById('ai-sym-bar');
     statusEl=document.getElementById('ai-sym-status');
     grid=document.getElementById('ai-sym-grid');
+    failsEl=document.getElementById('ai-sym-fails');
 
     styleSel.innerHTML=STYLES.map(s=>`<option value="${s.value}">${s.label}</option>`).join('');
 
