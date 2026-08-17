@@ -5,7 +5,8 @@
 //
 // פריסה: MCP בלבד (Claude Code לא מגיע ל-Supabase).
 // Secrets נדרשים (Edge Functions → Secrets):
-//   POLLINATIONS_TOKEN — טוקן Pollinations
+//   POLLINATIONS_TOKEN — טוקן Pollinations, ליצירת התמונות בלבד
+//   ANTHROPIC_API_KEY   — לתרגום עברית→אנגלית ולמחולל הנושאים (action:'theme')
 //   ADMIN_EMAILS        — מיילים מופרדים בפסיקים (ברירת מחדל: hoshaya@gmail.com)
 // ============================================================
 
@@ -14,7 +15,23 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const ADMIN_EMAILS = (Deno.env.get('ADMIN_EMAILS') || 'hoshaya@gmail.com')
   .split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
 const POLLINATIONS_TOKEN = Deno.env.get('POLLINATIONS_TOKEN') || '';
+const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY') || '';
+const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
+const ANTHROPIC_MODEL = 'claude-haiku-4-5-20251001';
 const BUCKET = 'ai-symbols';
+
+function anthropicHeaders() {
+  return {
+    'x-api-key': ANTHROPIC_API_KEY,
+    'anthropic-version': '2023-06-01',
+    'content-type': 'application/json',
+  };
+}
+
+// נרמול מפתח הקאש: רווחי קצה מוסרים, רצף רווחים מתכווץ לאחד
+function normalizeKey(s: string): string {
+  return s.trim().replace(/\s+/g, ' ');
+}
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -65,22 +82,54 @@ async function sha256Hex(text: string): Promise<string> {
 
 function sleep(ms: number) { return new Promise((r) => setTimeout(r, ms)); }
 
-async function translateToEnglish(hebrew: string): Promise<string> {
-  // אין תו עברי — אין מה לתרגם (קלט שכבר באנגלית לא צריך לעבור דרך שירות התרגום בכלל)
+async function translateToEnglish(hebrew: string, admin: any): Promise<string> {
+  // 1. אין תו עברי — אין מה לתרגם, ואין סיבה לשלם על קריאה
   if (!/[\u0590-\u05FF]/.test(hebrew)) return hebrew;
-  const prompt = `Translate this Hebrew word or short phrase to a short English noun phrase suitable for `
-    + `an image generation prompt. Respond with ONLY the English translation, no punctuation, no quotes, `
-    + `no explanation: "${hebrew}"`;
-  const url = `https://text.pollinations.ai/${encodeURIComponent(prompt)}`;
-  const headers: Record<string, string> = {};
-  if (POLLINATIONS_TOKEN) headers['Authorization'] = `Bearer ${POLLINATIONS_TOKEN}`;
-  const resp = await fetch(url, { headers });
+
+  const key = normalizeKey(hebrew);
+
+  // 2. קאש
+  const { data: cached } = await admin.from('ai_translation_cache')
+    .select('source_he,english,hits').eq('source_he', key).maybeSingle();
+  if (cached?.english) {
+    await admin.from('ai_translation_cache')
+      .update({ hits: (cached.hits || 0) + 1 }).eq('source_he', key);
+    return cached.english;
+  }
+
+  // 3. תרגום בתשלום
+  if (!ANTHROPIC_API_KEY) {
+    throw new Error('חסר ANTHROPIC_API_KEY ב-Secrets — תרגום מעברית אינו זמין');
+  }
+
+  const resp = await fetch(ANTHROPIC_URL, {
+    method: 'POST',
+    headers: anthropicHeaders(),
+    body: JSON.stringify({
+      model: ANTHROPIC_MODEL,
+      max_tokens: 64,
+      system: 'You translate Hebrew words or short phrases into a short English noun phrase '
+        + 'suitable for an image-generation prompt. Reply with ONLY the English noun phrase. '
+        + 'No quotes, no punctuation, no explanation. If the input names a Jewish or Israeli '
+        + 'concept with no common English word, give a short visual description of the object '
+        + 'instead of transliterating it.',
+      messages: [{ role: 'user', content: key }],
+    }),
+  });
+
   if (!resp.ok) {
     const body = (await resp.text().catch(() => '')).slice(0, 200);
     throw new Error(`תרגום נכשל (${resp.status}): ${body}`);
   }
-  const out = (await resp.text()).trim().replace(/^["']|["']$/g, '');
+
+  const data = await resp.json();
+  const out = String(data?.content?.[0]?.text || '').trim().replace(/^["']|["']$/g, '');
   if (!out) throw new Error('תרגום ריק');
+
+  // 4. שמירה לקאש. כישלון כאן לא מפיל את הבקשה — התרגום כבר בידינו.
+  await admin.from('ai_translation_cache')
+    .upsert({ source_he: key, english: out, hits: 0 }, { onConflict: 'source_he' });
+
   return out;
 }
 
@@ -98,6 +147,77 @@ async function generateImageBytes(prompt: string, seed: number): Promise<Uint8Ar
     if (attempt < delays.length) await sleep(delays[attempt]);
   }
   throw new Error('יצירת התמונה נכשלה: ' + lastErr);
+}
+
+async function generateTheme(topic: string, count: number): Promise<Array<{he:string,en:string}>> {
+  if (!ANTHROPIC_API_KEY) {
+    throw new Error('חסר ANTHROPIC_API_KEY ב-Secrets — מחולל הנושאים אינו זמין');
+  }
+
+  const system = [
+    'You generate item lists for a children\'s picture-matching card game (Dobble/Spot-It).',
+    'Return ONLY a JSON array. No markdown fences, no prose, no explanation.',
+    'Each element: {"he":"<Hebrew name>","en":"<English noun phrase for an image generator>"}',
+    '',
+    'HARD RULES:',
+    '1. Every item must be a concrete, physical object that can be drawn as a single clear symbol.',
+    '   Reject abstractions. "happiness" or "freedom" cannot be drawn as a recognizable icon.',
+    '   If the topic is abstract, choose concrete objects that represent it.',
+    '2. Items must be visually distinct from each other. Do not include both "cat" and "kitten",',
+    '   or several items that would render as similar silhouettes.',
+    '3. Hebrew names must be short and natural for young children, 1-2 words.',
+    '4. English must describe the object visually, never a transliteration.',
+    '   For Jewish or Israeli concepts with no common English word, describe the object.',
+    '   Example: "לולב" -> "green palm frond", not "lulav".',
+    '5. Return exactly the requested number of items. No duplicates.',
+  ].join('\n');
+
+  const resp = await fetch(ANTHROPIC_URL, {
+    method: 'POST',
+    headers: anthropicHeaders(),
+    body: JSON.stringify({
+      model: ANTHROPIC_MODEL,
+      max_tokens: 2000,
+      system,
+      messages: [{ role: 'user', content: `Topic: ${topic}\nNumber of items: ${count}` }],
+    }),
+  });
+
+  if (!resp.ok) {
+    const body = (await resp.text().catch(() => '')).slice(0, 200);
+    throw new Error(`יצירת הנושא נכשלה (${resp.status}): ${body}`);
+  }
+
+  const data = await resp.json();
+  let raw = String(data?.content?.[0]?.text || '').trim();
+
+  // הסרת גדרות markdown אם המודל הוסיף אותן בכל זאת
+  raw = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+
+  let items: any;
+  try {
+    items = JSON.parse(raw);
+  } catch {
+    throw new Error('התשובה מהמודל אינה JSON תקין');
+  }
+  if (!Array.isArray(items)) throw new Error('התשובה מהמודל אינה רשימה');
+
+  // ניקוי, סינון תוכן, והסרת כפילויות
+  const seen = new Set<string>();
+  const clean: Array<{he:string,en:string}> = [];
+  for (const it of items) {
+    const he = normalizeKey(String(it?.he || ''));
+    const en = normalizeKey(String(it?.en || ''));
+    if (!he || !en) continue;
+    if (violatesContentPolicy(he, en)) continue;
+    if (seen.has(he)) continue;
+    seen.add(he);
+    clean.push({ he, en });
+    if (clean.length >= count) break;
+  }
+
+  if (!clean.length) throw new Error('לא התקבלו פריטים תקינים');
+  return clean;
 }
 
 Deno.serve(async (req) => {
@@ -119,6 +239,19 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
+
+    if (body.action === 'theme') {
+      const topic = normalizeKey(String(body.topic || ''));
+      if (!topic || topic.length > 120) return json({ error: 'נושא חסר או ארוך מדי' }, 400);
+      if (violatesContentPolicy(topic)) {
+        return json({ error: 'הנושא אינו מתאים למשחק ילדים' }, 400);
+      }
+      let count = Number.isFinite(Number(body.count)) ? Math.trunc(Number(body.count)) : 12;
+      count = Math.max(1, Math.min(57, count));
+      const items = await generateTheme(topic, count);
+      return json({ items });
+    }
+
     if (body.action !== 'generate') return json({ error: 'unknown action' }, 400);
 
     const textHe = String(body.text || '').trim();
@@ -135,7 +268,7 @@ Deno.serve(async (req) => {
     // ── 4. תרגום עברית→אנגלית אם לא סופק ──
     let subject = englishIn;
     if (!subject) {
-      subject = await translateToEnglish(textHe);
+      subject = await translateToEnglish(textHe, admin);
       if (violatesContentPolicy(subject)) {
         return json({ error: 'התיאור אינו מתאים למשחק ילדים' }, 400);
       }

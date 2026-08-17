@@ -1496,6 +1496,15 @@ function dcfgSave(patch){
       <button type="button" class="btn btn-ghost" id="ai-sym-x" style="padding:.35rem .8rem;min-height:auto">✕</button>
     </div>
     <p class="box-s" style="margin-top:0">שורה לכל סמל: תיאור בעברית, ואופציונלית אחריו פסיק ותרגום לאנגלית. לדוגמה: <code>אריה, lion</code></p>
+    <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:flex-end;margin-bottom:.6rem">
+      <label style="flex:1;min-width:180px;font-size:.8rem;color:var(--muted)">נושא למשחק
+        <input type="text" id="ai-sym-topic" style="width:100%;margin-top:.25rem;padding:.5rem;border:1px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:.88rem" placeholder="נושא למשחק — למשל: חיות, אותיות, כלי תחבורה">
+      </label>
+      <label style="width:90px;font-size:.8rem;color:var(--muted)">כמות
+        <input type="number" id="ai-sym-count" min="1" max="57" value="12" style="width:100%;margin-top:.25rem;padding:.5rem;border:1px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:.88rem">
+      </label>
+      <button type="button" class="btn btn-sec" id="ai-sym-theme-btn" style="white-space:nowrap">✨ צור רשימה</button>
+    </div>
     <textarea id="ai-sym-ta" rows="6" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:var(--rs);padding:.6rem .7rem;font-family:inherit;font-size:.88rem;resize:vertical" placeholder="אריה, lion&#10;פרפר&#10;כדור כדורגל, soccer ball"></textarea>
     <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.7rem">
       <label style="flex:1;min-width:140px;font-size:.8rem;color:var(--muted)">סגנון
@@ -6822,6 +6831,6 @@ function loadImg(url,maxSide){
 function tick(){return new Promise(r=>setTimeout(r,0));}
 </script>
 <!-- ?v=N — מעלים את המספר בכל שינוי בקובץ, אחרת הדפדפן יגיש גרסה ישנה מהמטמון -->
-<script src="js/ai-symbols.js?v=3"></script>
+<script src="js/ai-symbols.js?v=4"></script>
 </body>
 </html>

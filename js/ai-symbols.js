@@ -20,7 +20,7 @@
   ];
   const RATE_LIMIT_MS=2000;   // קצב קבוע — יש טוקן בצד שרת, קצב סביר בלי סיכון חסימה
 
-  let btn,modal,closeBtn,ta,styleSel,seedInp,goBtn,barWrap,bar,statusEl,grid,failsEl,lastFailed=[];
+  let btn,modal,closeBtn,ta,styleSel,seedInp,goBtn,barWrap,bar,statusEl,grid,failsEl,topicInp,countInp,themeBtn,lastFailed=[];
 
   function notify(msg,type){
     if(typeof window.toast==='function')window.toast(msg,type);
@@ -65,6 +65,60 @@
     const data=await res.json().catch(()=>({}));
     if(!res.ok)throw new Error(data.error||('שגיאה '+res.status));
     return data;   // {url, cached, cacheKey}
+  }
+
+  async function callTheme(topic,count){
+    const cfg=window.SUPABASE_CONFIG||{};
+    const base=cfg.url||'';
+    if(!base||!window.SB||!window.authSession)throw new Error('צריך להתחבר כמנהל');
+    let res;
+    try{
+      res=await fetch(base+'/functions/v1/image-gateway',{
+        method:'POST',
+        headers:{'Content-Type':'application/json',
+          'Authorization':'Bearer '+window.authSession.access_token,
+          'apikey':cfg.anonKey||''},
+        body:JSON.stringify({action:'theme',topic,count})
+      });
+    }catch(err){
+      throw new Error('לא הצלחתי להגיע ל-image-gateway. ודאו ב-Supabase שהפונקציה פרוסה ושיש חיבור לאינטרנט.');
+    }
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok)throw new Error(data.error||('שגיאה '+res.status));
+    return data.items||[];
+  }
+
+  // מילוי שדה הטקסט הרב-שורתי דורס תוכן קיים — מבקשים אישור קודם, לא דורסים בשקט
+  async function confirmOverwrite(){
+    if(!ta.value.trim())return true;
+    if(typeof window.confirmDialog==='function'){
+      return await window.confirmDialog({
+        icon:'⚠️',
+        title:'להחליף את הרשימה הקיימת?',
+        body:'בתיבת הטקסט כבר יש תוכן. יצירת רשימה חדשה תדרוס אותו.',
+        okText:'החלף'
+      });
+    }
+    return confirm('להחליף את התוכן הקיים בתיבת הטקסט?');
+  }
+
+  async function onTheme(){
+    const topic=(topicInp.value||'').trim();
+    if(!topic){ notify('נא להזין נושא','err'); return; }
+    const count=Math.max(1,Math.min(57,Number(countInp.value)||12));
+    if(!(await confirmOverwrite()))return;
+    const prevLabel=themeBtn.textContent;
+    themeBtn.disabled=true;themeBtn.textContent='יוצר…';
+    failsEl.hidden=true;failsEl.style.display='none';failsEl.textContent='';
+    try{
+      const items=await callTheme(topic,count);
+      ta.value=items.map(it=>it.he+(it.en?(', '+it.en):'')).join('\n');
+    }catch(e){
+      failsEl.textContent=(e&&e.message)||'שגיאה לא ידועה';
+      failsEl.hidden=false;failsEl.style.display='block';
+    }finally{
+      themeBtn.disabled=false;themeBtn.textContent=prevLabel;
+    }
   }
 
   async function urlToFile(url,name){
@@ -136,6 +190,8 @@
 
   function openModal(){
     ta.value='';
+    topicInp.value='';
+    countInp.value='12';
     seedInp.value=String(Math.floor(Math.random()*1000000));
     grid.innerHTML='';
     statusEl.textContent='';
@@ -175,6 +231,9 @@
     statusEl=document.getElementById('ai-sym-status');
     grid=document.getElementById('ai-sym-grid');
     failsEl=document.getElementById('ai-sym-fails');
+    topicInp=document.getElementById('ai-sym-topic');
+    countInp=document.getElementById('ai-sym-count');
+    themeBtn=document.getElementById('ai-sym-theme-btn');
 
     styleSel.innerHTML=STYLES.map(s=>`<option value="${s.value}">${s.label}</option>`).join('');
 
@@ -182,6 +241,7 @@
     closeBtn.addEventListener('click',closeModal);
     modal.addEventListener('click',e=>{ if(e.target===modal)closeModal(); });
     goBtn.addEventListener('click',onGo);
+    themeBtn.addEventListener('click',onTheme);
 
     refreshVisibility();
   }

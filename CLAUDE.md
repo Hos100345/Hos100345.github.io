@@ -13,11 +13,11 @@
 
 ## סטטוס עבודה נוכחי (מעודכן 2026-08-17 — עדכנו את זה בכל סבב עבודה)
 
-### בפיתוח (ברנץ' `claude/ai-symbols-translate-fix`, טרם מוזג)
-- **תיקון: תרגום/אימות/הצגת שגיאות במחולל הסמלים** — `translateToEnglish` דילג על תרגום ל-`lion` (טקסט שכבר אנגלי) ונכשל תמיד כי קריאת `text.pollinations.ai` שלחה טוקן כפרמטר-URL במקום `Authorization: Bearer`. שלושה תיקונים ב-`image-gateway`: (1) בדיקת `\u0590-\u05FF` — קלט בלי תו עברי מדלג על התרגום לגמרי, (2) `Authorization: Bearer` + גוף תשובה בשגיאה, (3) `&token=` בקריאת התמונה רק כשיש טוקן (לא נוגע ב-`generateImageBytes` שעובד). בפרונט: פאנל שגיאות גלוי (`#ai-sym-fails`) מציג "שם — סיבה" לכל פריט שנכשל, לא רק ספירה. `?v=3`. **צעד פריסה נוסף נדרש אחרי המיזוג:** `deploy_edge_function` מפורש דרך MCP — לא אוטומטי מ-GitHub.
+### בפיתוח (ברנץ' `claude/anthropic-translate-and-themes`, טרם מוזג)
+- **תרגום עבר ל-Anthropic + מחולל נושאים** — `text.pollinations.ai` הודיע רשמית על הוצאה משימוש לקוראים מאומתים (402 + `deprecation_notice`, לא תקלה בקוד). `translateToEnglish` עבר ל-`api.anthropic.com` (`claude-haiku-4-5-20251001`) עם קאש ב-`ai_translation_cache` (טבלה חדשה, נוצרה דרך MCP). נוסף `action:'theme'` — מקבל נושא חופשי + כמות, מחזיר רשימת פריטים דו-לשוניים (`{he,en}`) מוכנים מראש, בלי שלב תרגום נפרד. בפרונט: שורת "נושא למשחק" + כפתור "✨ צור רשימה" מעל תיבת הטקסט הקיימת — ממלאת אותה בפורמט `עברית, English` הרגיל, לא מייצרת תמונות ישירות. `?v=4`. **דורש `ANTHROPIC_API_KEY` כ-Secret** (בנוסף ל-`POLLINATIONS_TOKEN`, שנשאר נדרש רק ליצירת התמונות). **צעד פריסה נוסף נדרש אחרי המיזוג:** `deploy_edge_function` מפורש דרך MCP — לא אוטומטי מ-GitHub.
 
 ### מוזג ל-main ופעיל באתר
-- **מחולל סמלים ב-AI — שלב 0, מנהל בלבד (PR #58–#60)** — Edge Function חדש `image-gateway` (Pollinations, קאש+מדידה ב-`ai_image_log`, בקט פרטי `ai-symbols`), שער אמיתי בצד שרת לפי `ADMIN_EMAILS`. בפרונט: `js/ai-symbols.js` + כפתור ליד `uz`, גשר `window.dobbleAddFiles`. **Secrets מוגדרים** (`POLLINATIONS_TOKEN`, `ADMIN_EMAILS`) — יצירת תמונה עם קלט מהצורה "עברית, English" עובדת ומאומתת מול `ai_image_log`. תיקוני `.btn[hidden]` ו-`?v=` cache busting נכללים (PR #59/#60). ⚠️ נתיב התרגום (קלט בעברית או אנגלית בלבד, בלי פסיק) עדיין שבור בגרסה הממוזגת — ראו "בפיתוח" למעלה.
+- **מחולל סמלים ב-AI — שלב 0, מנהל בלבד (PR #58–#61)** — Edge Function חדש `image-gateway` (קאש+מדידה ב-`ai_image_log`, בקט פרטי `ai-symbols`), שער אמיתי בצד שרת לפי `ADMIN_EMAILS`. בפרונט: `js/ai-symbols.js` + כפתור ליד `uz`, גשר `window.dobbleAddFiles`, פאנל שגיאות גלוי (`#ai-sym-fails`). **Secrets מוגדרים** (`POLLINATIONS_TOKEN`, `ADMIN_EMAILS`) — יצירת תמונות עובדת ומאומתת מול `ai_image_log`. תיקוני `.btn[hidden]` ו-`?v=` cache busting נכללים (PR #59/#60). ⚠️ נתיב התרגום (`text.pollinations.ai`) הוצא משימוש ע"י הספק (402) — ראו "בפיתוח" למעלה.
 - **מודל גישה מדורג (PR #19)** — הכניסה חסומה. שלושה מסלולים: קוד קיים / הרשמה חינם (7 קלפים, `max_order:7`) / רכישת מנוי (13/21/31/57 קלפים). ראו "מונטיזציה" למטה.
 - **מעבר ללינקי תשלום קבועים (PR #33/#34)** — `create-payment` הוחלף ב-4 לינקי Morning קבועים. ראו "מונטיזציה".
 - **דשבורד מנהל מאוחד (PR #35)** — כרטיס לקוח עם שימוש/עיצובים, פעולות בלחיצה, ומצב תמיכה. ראו "מצב תמיכה" למטה.
@@ -111,7 +111,7 @@
 - כניסה/יציאה: `enterSupportMode()`/`exitSupportMode()`. היציאה משחזרת snapshot מדויק של מצב המנהל — **`S.frame`/`S.bg` מועתקים ללא fallback ל-null**, כי הם נגישים בלי הגנה בכל קוד הציור.
 
 ## Supabase — סכמה ופונקציות
-- **טבלאות:** `profiles` (מנויי Auth legacy; `subscription_expires`, `subscriber_status`, `label`, `max_order`, `print_limit`, `print_count`) · `designs` (עיצובים שמורים) · `events` (מעקב פעילות + audit של פעולות מנהל, עמודת `actor`) · `dobble_access_codes` (**המנגנון הנוכחי** — `code`, `type`, `max_order`, `expires_at`, `usage_limit`, `current_usage`, `created_for`, `is_active`) · `dobble_transactions` (עסקאות Morning — `customer_email`, `amount`, `tier`, `status`, `claimed_at`, `claimed_code`) · `ai_image_log` (חדש, שלב 0 מחולל AI — קאש+מדידה, `cache_key`/`prompt`/`storage_path`/`hits`/`est_cost_usd`, SELECT למנהל בלבד).
+- **טבלאות:** `profiles` (מנויי Auth legacy; `subscription_expires`, `subscriber_status`, `label`, `max_order`, `print_limit`, `print_count`) · `designs` (עיצובים שמורים) · `events` (מעקב פעילות + audit של פעולות מנהל, עמודת `actor`) · `dobble_access_codes` (**המנגנון הנוכחי** — `code`, `type`, `max_order`, `expires_at`, `usage_limit`, `current_usage`, `created_for`, `is_active`) · `dobble_transactions` (עסקאות Morning — `customer_email`, `amount`, `tier`, `status`, `claimed_at`, `claimed_code`) · `ai_image_log` (מחולל AI — קאש+מדידה, `cache_key`/`prompt`/`storage_path`/`hits`/`est_cost_usd`, SELECT למנהל בלבד) · `ai_translation_cache` (חדש — קאש תרגומי עברית→אנגלית, `source_he`/`english`/`hits`, SELECT למנהל בלבד).
 - **Storage bucket `symbols`:** תמונות פרטיות לכל משתמש (`public=false`). **Storage bucket `ai-symbols`** (חדש): פלט מחולל ה-AI, פרטי, נכתב רק דרך service_role מ-`image-gateway`.
 - **RPC:** `redeem_access_code` · `register_free_code` · `claim_access_code` · `consume_print_quota` (מכסת הדפסות, ראו למעלה).
 
@@ -123,7 +123,7 @@
 | `claim-code` | אחרי תשלום — RPC `claim_access_code`, מאתר עסקה `paid` לפי אימייל, מחזיר `max_order` |
 | `manage-subscriber` | ניהול מנויים, **מנהל בלבד** (service_role). 11 פעולות: `create`/`delete`/`list`/`set_tier`/`extend`/`set_expiry`/`set_print_limit`/`reset_print_count`/`block`/`unblock`/`subscriber-designs`. כל פעולה נרשמת ל-audit |
 | `morning-webhook` | `payment/received` מ-Morning. `verify_jwt=false` (חובה — Morning לא שולח JWT). allowlist של productId |
-| `image-gateway` | יצירת סמלי AI דרך Pollinations, **מנהל בלבד** לפי `ADMIN_EMAILS`. קאש+מדידה ב-`ai_image_log`, פלט ב-bucket `ai-symbols`. Secrets מוגדרים (`POLLINATIONS_TOKEN`, `ADMIN_EMAILS`). ⚠️ נתיב התרגום (`translateToEnglish`) שבור כשאין פסיק בקלט — ראו "בפיתוח" בסטטוס למעלה |
+| `image-gateway` | יצירת סמלי AI דרך Pollinations (`?token=`, מאומת עובד — לא לגעת), **מנהל בלבד** לפי `ADMIN_EMAILS`. קאש+מדידה ב-`ai_image_log`, פלט ב-bucket `ai-symbols`. תרגום עברית→אנגלית + `action:'theme'` דרך Anthropic (`ANTHROPIC_API_KEY`), קאש תרגום ב-`ai_translation_cache`. `text.pollinations.ai` **לא בשימוש עוד** — הוצא משימוש ע"י הספק (402) |
 
 הפרונט קורא **רק** לחמש הראשונות (`morning-webhook` נקרא מ-Morning בלבד); `image-gateway` נקרא רק מ-`js/ai-symbols.js` שגלוי למנהל בלבד.
 
