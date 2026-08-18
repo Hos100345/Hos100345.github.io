@@ -6599,6 +6599,34 @@ function unlockFromSession(session,maxOrder){
   if(window._afterUnlock)window._afterUnlock();
 }
 
+// מיישר את המסלול בסשן לפי המנוי שבחשבון — בלי לגעת במסך, בנעילה או ב-goScr.
+// משמש כשהמשתמש כבר בתוך האפליקציה (נכנס בקוד) ורק מתחבר לחשבון לגיבוי/סנכרון.
+// ⛔ רק מעלה מסלול, לעולם לא מוריד — כדי שהתחברות לחשבון לא תוריד בטעות
+//    מסלול שכבר הושג בקוד גישה תקף.
+async function applySessionTier(session){
+  try{
+    const gate=await subscriptionGate(session);
+    if(!gate||!gate.ok)return;
+    const t=tierFromGate(session,gate);
+    if(t==null)return;
+    const cur=parseInt(sessionStorage.getItem('dobble_max_order')||'0',10)||0;
+    if(t>cur)sessionStorage.setItem('dobble_max_order',String(t));
+  }catch(e){console.warn('applySessionTier:',e);}
+}
+
+// המסלול שהחשבון מקנה. מרכז במקום אחד את מה שהיה מפוזר כברירות מחדל בתוך
+// unlockFromSession, ומשמר *בדיוק* את ההתנהגות הקיימת:
+//   · חשבון מנהל                       → 57
+//   · חשבון מנוי (מייל סינתטי @sub)    → profiles.max_order, וברירת מחדל 57
+//   · מייל אמיתי של לקוח               → 57
+// (שאלת המדיניות מה מייל אמיתי *צריך* להקנות פתוחה ומחוץ להיקף התיקון הזה.)
+function tierFromGate(session,gate){
+  const email=String((session&&session.user&&session.user.email)||'').toLowerCase();
+  if(typeof adminEmails==='function'&&adminEmails().includes(email))return 57;
+  if(isSubscriberEmail(email))return gate.maxOrder!=null?gate.maxOrder:57;
+  return 57;
+}
+
 // ── המרות dataURL ⇄ Blob ──
 function dataURLtoBlob(dataURL){
   const [head,b64]=dataURL.split(',');
@@ -6797,13 +6825,29 @@ if(SB){
     // הסשן משמש רק לזיהוי מנהל ולסנכרון העיצובים ברקע.
     if(data.session){ syncDesigns(data.session); }
   });
+  // supabase-js פולט SIGNED_IN שוב ושוב: רענון טוקן, חזרת מיקוד ללשונית, סנכרון בין
+  // לשוניות, וטעינת דף עם סשן שמור. בלי המנעול הזה כל פליטה הריצה את unlockFromSession,
+  // שמסתיים ב-goScr(1) — וזרק את המשתמש ממסך הייצוא בחזרה למסך 1 באמצע העבודה,
+  // וגם רשם אירוע unlock כפול בכל פעם.
+  let _authHandledUid=null;
   SB.auth.onAuthStateChange((event,session)=>{
     updateAuthUI(session);
-    if(event==='SIGNED_IN'){
-      guardedUnlock(session).then(ok=>{   // בודק תוקף מנוי; אם תקין — פותח את האפליקציה
-        if(ok){ toast('התחברת — טוען את העיצובים שלך ☁️','ok'); syncDesigns(session); }
+    if(event==='SIGNED_OUT'){_authHandledUid=null;return;}
+    if(event!=='SIGNED_IN'||!session||!session.user)return;
+    const uid=session.user.id;
+    if(uid===_authHandledUid)return;              // אותו משתמש, פליטה חוזרת — מתעלמים
+    _authHandledUid=uid;
+    if(sessionStorage.getItem('dobble_unlocked')==='1'){
+      // כבר בתוך האפליקציה — מחברים לחשבון בלי לאפס מסך ובלי לגעת בנעילה
+      applySessionTier(session).then(()=>{
+        toast('התחברת — מסנכרן את העיצובים שלך ☁️','ok');
+        syncDesigns(session);
       });
+      return;
     }
+    guardedUnlock(session).then(ok=>{   // בודק תוקף מנוי; אם תקין — פותח את האפליקציה
+      if(ok){ toast('התחברת — טוען את העיצובים שלך ☁️','ok'); syncDesigns(session); }
+    });
   });
 }
 
