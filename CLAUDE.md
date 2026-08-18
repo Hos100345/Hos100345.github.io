@@ -7,17 +7,17 @@
 - **URLs:** `hos100345.github.io/dobble.html` == `www.hoshaya.co.il/dobble.html`. בנוסף `dobble-info.html` — עמוד שיווקי/הסבר ללקוחות (מקושר מ-`index.html` ומחלון הפתיחה של המחולל).
 
 ## Stack
-- Vanilla JS + Canvas, קובץ יחיד (~4340 שורות). ללא framework, ללא build step.
+- Vanilla JS + Canvas, קובץ יחיד (6880 שורות). ללא framework, ללא build step.
 - ספריות: jsPDF, JSZip, Supabase, heic2any (המרת HEIC מ-iPhone).
 - Supabase: project ref `sccivxenkyzxolpraexf`, region `eu-west-2`. auth = Magic Link (מייל, בלי סיסמאות).
 
-## סטטוס עבודה נוכחי (מעודכן 2026-08-17 — עדכנו את זה בכל סבב עבודה)
-
-### בפיתוח (ברנץ' `claude/anthropic-translate-and-themes`, טרם מוזג)
-- **תרגום עבר ל-Anthropic + מחולל נושאים** — `text.pollinations.ai` הודיע רשמית על הוצאה משימוש לקוראים מאומתים (402 + `deprecation_notice`, לא תקלה בקוד). `translateToEnglish` עבר ל-`api.anthropic.com` (`claude-haiku-4-5-20251001`) עם קאש ב-`ai_translation_cache` (טבלה חדשה, נוצרה דרך MCP). נוסף `action:'theme'` — מקבל נושא חופשי + כמות, מחזיר רשימת פריטים דו-לשוניים (`{he,en}`) מוכנים מראש, בלי שלב תרגום נפרד. בפרונט: שורת "נושא למשחק" + כפתור "✨ צור רשימה" מעל תיבת הטקסט הקיימת — ממלאת אותה בפורמט `עברית, English` הרגיל, לא מייצרת תמונות ישירות. `?v=4`. **דורש `ANTHROPIC_API_KEY` כ-Secret** (בנוסף ל-`POLLINATIONS_TOKEN`, שנשאר נדרש רק ליצירת התמונות). **צעד פריסה נוסף נדרש אחרי המיזוג:** `deploy_edge_function` מפורש דרך MCP — לא אוטומטי מ-GitHub.
+## סטטוס עבודה נוכחי (מעודכן 2026-08-18 — עדכנו את זה בכל סבב עבודה)
 
 ### מוזג ל-main ופעיל באתר
-- **מחולל סמלים ב-AI — שלב 0, מנהל בלבד (PR #58–#61)** — Edge Function חדש `image-gateway` (קאש+מדידה ב-`ai_image_log`, בקט פרטי `ai-symbols`), שער אמיתי בצד שרת לפי `ADMIN_EMAILS`. בפרונט: `js/ai-symbols.js` + כפתור ליד `uz`, גשר `window.dobbleAddFiles`, פאנל שגיאות גלוי (`#ai-sym-fails`). **Secrets מוגדרים** (`POLLINATIONS_TOKEN`, `ADMIN_EMAILS`) — יצירת תמונות עובדת ומאומתת מול `ai_image_log`. תיקוני `.btn[hidden]` ו-`?v=` cache busting נכללים (PR #59/#60). ⚠️ נתיב התרגום (`text.pollinations.ai`) הוצא משימוש ע"י הספק (402) — ראו "בפיתוח" למעלה.
+- **תרגום עברית ומחולל נושאים דרך Anthropic (PR #61/#62)** — `text.pollinations.ai` הוצא משימוש ע"י הספק (402 + `deprecation_notice`). `translateToEnglish` עבר ל-`api.anthropic.com` (`claude-haiku-4-5-20251001`) עם קאש ב-`ai_translation_cache`. נוסף `action:'theme'` — נושא חופשי + כמות ← רשימת פריטים דו-לשונית `{he,en}` שממלאת את תיבת הטקסט. `?v=4`. **`image-gateway` נפרס בפועל (גרסה 7, 17.8) והקוד בשרת זהה לגיט — אומת דרך MCP.** יצירת התמונות עצמן ממשיכה דרך Pollinations עם `?token=`.
+- **תיקון כניסה חוזרת (PR #63)** — מניעת איפוס מסך ואירוע unlock כפול בכל פליטת `SIGNED_IN` חוזרת (`_authHandledUid`).
+- **מחולל סמלים ב-AI — שלב 0, מנהל בלבד (PR #58–#61)** — Edge Function חדש `image-gateway` (קאש+מדידה ב-`ai_image_log`, בקט פרטי `ai-symbols`), שער אמיתי בצד שרת לפי `ADMIN_EMAILS`. בפרונט: `js/ai-symbols.js` + כפתור ליד `uz`, גשר `window.dobbleAddFiles`, פאנל שגיאות גלוי (`#ai-sym-fails`). **Secrets מוגדרים** (`POLLINATIONS_TOKEN`, `ADMIN_EMAILS`) — יצירת תמונות עובדת ומאומתת מול `ai_image_log`. תיקוני `.btn[hidden]` ו-`?v=` cache busting נכללים (PR #59/#60).
+- ⚠️ **בדיקת קבלה לא בוצעה עדיין** — `ai_translation_cache` ריקה (0 שורות) ו-`ai_image_log` מכיל רק 5 רשומות ישנות. לפני פתיחה למנויים: לבדוק תרגום עברית (כולל מקרי הקצה `חנוכייה`/`לולב`), קאש-היט, `action:'theme'`, וחפיסה מלאה עד PDF/הדפסה. זו משימת בדיקה ידנית בדפדפן, לא סבב פיתוח.
 - **מודל גישה מדורג (PR #19)** — הכניסה חסומה. שלושה מסלולים: קוד קיים / הרשמה חינם (7 קלפים, `max_order:7`) / רכישת מנוי (13/21/31/57 קלפים). ראו "מונטיזציה" למטה.
 - **מעבר ללינקי תשלום קבועים (PR #33/#34)** — `create-payment` הוחלף ב-4 לינקי Morning קבועים. ראו "מונטיזציה".
 - **דשבורד מנהל מאוחד (PR #35)** — כרטיס לקוח עם שימוש/עיצובים, פעולות בלחיצה, ומצב תמיכה. ראו "מצב תמיכה" למטה.
@@ -156,6 +156,11 @@
 - ברנץ' ייעודי `claude/<שם-מתאר>`. לפני commit: `git diff --stat` + `node --check` על כל בלוק סקריפט.
 - commit → push → פתיחת PR. **אין למזג ל-`main` בלי אישור מפורש של הושעיה.**
 - פיתוח incremental — רכיב אחד עובד במלואו לפני המעבר לבא.
+
+### ניקוי ברנצ'ים
+- ברנץ' שה-PR שלו מוזג — למחוק מיד אחרי המיזוג. היסטוריית ה-PR נשמרת ב-GitHub בלי קשר.
+- **מגבלת סביבה מרוחקת: אי אפשר למחוק ברנצ'ים מכאן.** `git push origin --delete` מחזיר 403 מה-proxy, וכלי ה-MCP של GitHub לא כוללים מחיקת ref (`create_branch` קיים, אין `delete_branch`). מחיקה = ידנית ב-GitHub (Settings→Branches או ברשימת ה-branches), או דרך `gh`/git ממכונה עם הרשאות כתיבה אמיתיות.
+- אומתו 56 ברנצ'ים בטוחים למחיקה (47 מוזגים במלואם + 5 שתוכנם כבר ב-main בדרך אחרת + 4 ישנים של אתר הבלונים שאושרו). המחיקה עצמה לא בוצעה — מגבלת הסביבה למעלה.
 
 ## Supabase (MCP)
 - העדף `execute_sql` לכל DDL / שינויי schema / אימות מצב (אמין יותר בנייד מ-`apply_migration`).
