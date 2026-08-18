@@ -6501,7 +6501,7 @@ async function renderCustomers(q){
           </span>
           <span style="display:inline-flex;align-items:center;gap:.3rem">
             <input type="text" class="cust-code-inp" placeholder="קוד ללקוח" style="background:#0f172a;border:1px solid #334155;color:#a5b4fc;border-radius:8px;font-size:.72rem;padding:.28rem .4rem;font-family:inherit;direction:ltr;min-width:110px">
-            <input type="number" min="0" class="cust-months-inp" placeholder="∞" title="חודשים עד תפוגה, ריק = ללא הגבלה" style="width:3.6em;background:#0f172a;border:1px solid #334155;color:#a5b4fc;border-radius:8px;font-size:.72rem;padding:.28rem .4rem;font-family:inherit">
+            <input type="number" min="1" max="24" value="1" class="cust-months-inp" title="חודשים עד תפוגה (1–24, ברירת מחדל 1)" style="width:3.6em;background:#0f172a;border:1px solid #334155;color:#a5b4fc;border-radius:8px;font-size:.72rem;padding:.28rem .4rem;font-family:inherit">
             <button class="cust-act" data-action="code-issue" style="background:none;border:1px solid #334155;color:#6ee7b7;border-radius:8px;cursor:pointer;font-size:.74rem;padding:.28rem .6rem">🎟️ הנפק קוד</button>
           </span>
         </div>`:''}
@@ -6579,7 +6579,7 @@ document.getElementById('adm-cust-res').addEventListener('click',async(e)=>{
     if(!ok)return;
     btn.disabled=true;
     try{
-      await callManageCustomers({action:'code-issue',code,email,maxOrder,months:monthsVal===''?null:Number(monthsVal)});
+      await callManageCustomers({action:'code-issue',code,email,maxOrder,months:monthsVal===''?1:Number(monthsVal)});
       toast('הקוד הונפק ✓','ok');
       renderCustomers(curQ);
     }catch(err){toast('הפעולה נכשלה: '+(err.message||err),'err');btn.disabled=false;}
