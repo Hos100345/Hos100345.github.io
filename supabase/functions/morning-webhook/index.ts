@@ -37,6 +37,9 @@ Deno.serve(async (req) => {
   const firstTx = txArr[0] ?? {};
 
   const email: string | null = p.payer?.email ?? firstTx?.payer?.email ?? null;
+  // הטלפון מגיע מ-Morning בכל תשלום. נשמר כספרות בלבד — ההמרה ל-972 נעשית בתצוגה.
+  // בלעדיו אין דרך ליצור קשר עם לקוח שנתקע (קרה בפועל: תשלום 3.8 שלא נוצל).
+  const phone: string | null = p.payer?.phone ?? firstTx?.payer?.phone ?? null;
   const amount: number | null =
     (typeof p.total === "number" ? p.total : null) ??
     (typeof firstTx?.total === "number" ? firstTx.total : null);
@@ -62,6 +65,7 @@ Deno.serve(async (req) => {
       provider: "morning",
       external_id: extId,
       customer_email: email ? String(email).toLowerCase().trim() : null,
+      customer_phone: phone ? String(phone).replace(/\D/g, '') : null,
       amount,
       tier,
       currency: "ILS",
