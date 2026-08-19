@@ -1018,6 +1018,9 @@ function dcfgSave(patch){
          השער האמיתי בצד שרת (image-gateway), זה רק תצוגה — ראו js/ai-symbols.js ── -->
     <button type="button" id="ai-symbols-btn" class="btn btn-sec" hidden style="width:100%;justify-content:center;margin-top:.5rem">✨ יצירת סמלים ב-AI (מנהל)</button>
 
+    <!-- ── ספריית סמלים — חיפוש בעברית + בורר סגנון, זמינה לכל הלקוחות (js/emoji-lib.js) ── -->
+    <button type="button" id="emoji-lib-btn" class="btn btn-sec" style="width:100%;justify-content:center;margin-top:.5rem">🔎 ספריית סמלים</button>
+
     <!-- ── חבילות תמונות מוכנות ── -->
     <div id="packs-wrap" class="packs" style="display:none">
       <div class="og-t" style="margin-top:.4rem">🧰 או התחילו מחבילה מוכנה</div>
@@ -1567,6 +1570,28 @@ function dcfgSave(patch){
     </div>
     <div id="ai-sym-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:.5rem;margin-top:.8rem"></div>
     <div id="ai-sym-fails" style="display:none;margin-top:.6rem;font-size:.78rem;color:#b91c1c;background:#fef2f2;border:1px solid #fca5a5;border-radius:var(--rs);padding:.55rem .7rem;line-height:1.6;white-space:pre-line"></div>
+  </div>
+</div>
+
+<!-- EMOJI LIBRARY MODAL — חיפוש סמלים בעברית + בורר סגנון, זמין לכל הלקוחות (js/emoji-lib.js) -->
+<div class="modal-bg" id="emoji-lib-modal" hidden style="z-index:10002">
+  <div class="modal-card" style="max-width:640px">
+    <div class="modal-hdr">
+      <div class="modal-title">🔎 ספריית סמלים</div>
+      <button type="button" class="btn btn-ghost" id="emoji-lib-x" style="padding:.35rem .8rem;min-height:auto">✕</button>
+    </div>
+    <input type="text" id="emoji-lib-q" placeholder="חפשו סמל בעברית… למשל: חנוכיה, אריה, כבאית"
+      style="width:100%;box-sizing:border-box;padding:.6rem .8rem;border:1px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:.95rem">
+    <div id="emoji-lib-styles" class="shape-grp" style="width:100%;margin-top:.6rem"></div>
+    <div id="emoji-lib-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:.5rem;margin-top:.8rem;max-height:340px;overflow-y:auto"></div>
+    <div id="emoji-lib-empty" hidden style="text-align:center;padding:1.4rem .5rem;color:var(--muted)">
+      <div style="margin-bottom:.6rem">לא נמצא סמל מתאים</div>
+      <button type="button" class="btn btn-sec" id="emoji-lib-ai-btn" style="justify-content:center">✨ צור ב-AI</button>
+    </div>
+    <button type="button" class="btn btn-cta" id="emoji-lib-add" style="width:100%;justify-content:center;margin-top:.8rem" disabled>הוסף נבחרים (0)</button>
+    <div style="font-size:.62rem;color:var(--muted);text-align:center;margin-top:.6rem">
+      אייקונים: Twemoji (CC-BY 4.0) · OpenMoji (CC-BY-SA 4.0) · Noto Emoji (Apache 2.0)
+    </div>
   </div>
 </div>
 
@@ -7530,5 +7555,6 @@ function tick(){return new Promise(r=>setTimeout(r,0));}
 </script>
 <!-- ?v=N — מעלים את המספר בכל שינוי בקובץ, אחרת הדפדפן יגיש גרסה ישנה מהמטמון -->
 <script src="js/ai-symbols.js?v=4"></script>
+<script src="js/emoji-lib.js?v=1"></script>
 </body>
 </html>
