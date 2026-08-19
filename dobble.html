@@ -706,6 +706,17 @@ function dcfgSave(patch){
     if(!base||!key){msg.textContent='השירות אינו זמין כרגע';return;}
     const btn=document.getElementById('free-go');btn.disabled=true;
     msg.style.color='#a5b4fc';msg.textContent='נרשם/ת…';
+    // בדיקת התנגשות עם חשבון מנוי ישן ({code}@sub.hoshaya.co.il) — קוד כזה מכניס
+    // את הלקוח לחשבון של מישהו אחר. תקלת רשת בבדיקה עצמה = fail-open, לא חוסמים הרשמה.
+    try{
+      if(SB){
+        const{data:collides}=await SB.rpc('code_collides_with_subscriber',{p_code:code});
+        if(collides){
+          msg.style.color='#fca5a5';msg.textContent='הקוד הזה כבר תפוס. בחרו קוד אחר — עדיף לא מספר טלפון.';
+          btn.disabled=false;return;
+        }
+      }
+    }catch(e){console.warn('code_collides_with_subscriber:',e);}
     try{
       const res=await fetch(base+'/functions/v1/register-free',{
         method:'POST',
@@ -866,6 +877,17 @@ function dcfgSave(patch){
     if(!base||!key){msg.style.color='#b91c1c';msg.textContent='השירות אינו זמין כרגע';return;}
     const btn=document.getElementById('claim-go');btn.disabled=true;
     msg.style.color='var(--muted)';msg.textContent='בודק…';
+    // בדיקת התנגשות עם חשבון מנוי ישן ({code}@sub.hoshaya.co.il) — קוד כזה מכניס
+    // את הלקוח לחשבון של מישהו אחר. תקלת רשת בבדיקה עצמה = fail-open, לא חוסמים.
+    try{
+      if(SB){
+        const{data:collides}=await SB.rpc('code_collides_with_subscriber',{p_code:code});
+        if(collides){
+          msg.style.color='#b91c1c';msg.textContent='הקוד הזה כבר תפוס. בחרו קוד אחר — עדיף לא מספר טלפון.';
+          btn.disabled=false;return;
+        }
+      }
+    }catch(e){console.warn('code_collides_with_subscriber:',e);}
     try{
       const res=await fetch(base+'/functions/v1/claim-code',{
         method:'POST',
@@ -1016,6 +1038,7 @@ function dcfgSave(patch){
         <button type="button" class="g-bulk-btn" id="btn-select-all">☑️ סמן הכל</button>
         <button type="button" class="g-bulk-btn" id="btn-clear-all">◻️ נקה הכל</button>
         <button type="button" class="g-bulk-btn danger" id="btn-del-selected">🗑 מחק מסומנים</button>
+        <button type="button" class="g-bulk-btn" id="btn-cloud-save">☁️ לשמור בענן?</button>
         <span class="g-sel-count" id="g-sel-count"></span>
       </div>
       <div class="gallery-grid" id="gallery-grid"></div>
@@ -1647,6 +1670,28 @@ function dcfgSave(patch){
       <div class="adm-hint2" style="text-align:center;margin-bottom:1rem;color:var(--muted)">העיצובים והתמונות מגובים לחשבון וזמינים מכל מכשיר.</div>
       <button class="btn btn-ghost" id="auth-signout" style="width:100%;justify-content:center">התנתקות</button>
     </div>
+  </div>
+</div>
+
+<!-- ── שמירה בענן — כפתור ייעודי בסרגל הגלריה, ללא חשבון. חיבור מייל = גיבוי/סנכרון
+     בלבד; המסלול לא משתנה (מדיניות 18.8.2026 — my_access_tier לא נוגע פה, זה רק UI) ── -->
+<div class="modal-bg" id="cloudsave-modal" hidden>
+  <div class="modal-card" style="max-width:420px">
+    <div class="modal-hdr">
+      <div class="modal-title">☁️ שמירה בענן — חינם</div>
+      <button class="modal-x" id="cloudsave-x">✕</button>
+    </div>
+    <p style="font-size:.9rem;color:var(--muted);line-height:1.6;margin-bottom:1rem">
+      חברו כתובת מייל והעיצובים שלכם יישמרו אונליין. תוכלו להמשיך מכל מכשיר, וגם אם תאבדו את הטלפון העבודה לא תלך לאיבוד.<br>
+      <strong>המסלול שלכם לא משתנה — המייל משמש לגיבוי בלבד.</strong>
+    </p>
+    <div class="adm-field">
+      <label for="cloudsave-email">המייל שלכם</label>
+      <input id="cloudsave-email" type="email" inputmode="email" placeholder="name@example.com"
+        style="width:100%;padding:.6rem .8rem;border-radius:var(--rs);border:1.5px solid var(--border);font-family:inherit;font-size:1rem;direction:ltr;text-align:left;background:rgba(255,255,255,.85);outline:none">
+    </div>
+    <button class="btn btn-ok" id="cloudsave-send" style="width:100%;justify-content:center">✉️ שלחו לי קישור כניסה</button>
+    <div id="cloudsave-msg" style="font-size:.85rem;min-height:1.3em;margin-top:.6rem;text-align:center"></div>
   </div>
 </div>
 
@@ -6700,6 +6745,7 @@ function updateAuthUI(session){
   renderDesigns();   // מרענן את רשימת העיצובים (מקומי + ענן)
   if(typeof refreshSubscribersUI==='function')refreshSubscribersUI();
   if(typeof window.dobbleRefreshAiButton==='function')window.dobbleRefreshAiButton();
+  updateCloudSaveBtn();
 }
 
 document.getElementById('auth-send').addEventListener('click',async()=>{
@@ -6716,6 +6762,71 @@ document.getElementById('auth-send').addEventListener('click',async()=>{
   }catch(e){msg.style.color='#b91c1c';msg.textContent='שגיאה בשליחה: '+(e.message||e);}
   btn.disabled=false;
 });
+
+// ── כפתור "שמור בענן" בסרגל הגלריה ── מחובר: שומר ישירות (cloudSaveDesign הקיים).
+// לא מחובר: פותח מודאל חיבור-מייל ייעודי (cloudsave-modal, לא auth-modal הכללי) —
+// עם ההסבר המפורש שהמסלול לא משתנה. אחרי SIGNED_IN, שומר אוטומטית את העיצוב הנוכחי
+// (דגל dobble_pending_cloud_save ב-localStorage — לא sessionStorage, כי קליק על קישור
+// הכניסה מהמייל פעמים רבות פותח טאב חדש שלא חולק sessionStorage עם הטאב המקורי).
+function updateCloudSaveBtn(){
+  const btn=document.getElementById('btn-cloud-save');
+  if(!btn)return;
+  btn.textContent=isSignedIn()?'☁️ שמור בענן':'☁️ לשמור בענן?';
+}
+
+document.getElementById('btn-cloud-save').addEventListener('click',async()=>{
+  if(!S.assets.length){toast('אין תמונות במאגר — העלו תמונות קודם','err');return;}
+  if(isSignedIn()){
+    const defName='העיצוב שלי '+new Date().toLocaleDateString('he-IL');
+    const name=(prompt('שם לעיצוב:',defName)||'').trim();
+    if(!name)return;
+    try{
+      await cloudSaveDesign(buildDesignObject(name));
+      toast(`העיצוב "${name}" נשמר בענן ☁️`,'ok');
+      renderDesigns();
+    }catch(e){console.warn('cloud save:',e);toast('השמירה בענן נכשלה','err');}
+    return;
+  }
+  document.getElementById('cloudsave-modal').hidden=false;
+});
+
+const cloudsaveModal=document.getElementById('cloudsave-modal');
+document.getElementById('cloudsave-x').addEventListener('click',()=>{cloudsaveModal.hidden=true;});
+cloudsaveModal.addEventListener('click',e=>{if(e.target===e.currentTarget)cloudsaveModal.hidden=true;});
+document.getElementById('cloudsave-send').addEventListener('click',async()=>{
+  const msg=document.getElementById('cloudsave-msg');
+  const email=document.getElementById('cloudsave-email').value.trim();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){msg.style.color='#b91c1c';msg.textContent='נא להזין כתובת מייל תקינה';return;}
+  if(!SB){msg.style.color='#b91c1c';msg.textContent='הסנכרון אינו זמין כרגע — נסו שוב מאוחר יותר';return;}
+  const btn=document.getElementById('cloudsave-send');btn.disabled=true;
+  msg.style.color='var(--muted)';msg.textContent='שולח…';
+  try{
+    localStorage.setItem('dobble_pending_cloud_save','1');
+    const{error}=await SB.auth.signInWithOtp({email,options:{emailRedirectTo:location.href}});
+    if(error)throw error;
+    msg.style.color='#166534';msg.textContent='📩 שלחנו קישור כניסה למייל — פִּתחו אותו מהמכשיר הזה. העיצוב יישמר אוטומטית ברגע שתתחברו.';
+  }catch(e){
+    localStorage.removeItem('dobble_pending_cloud_save');
+    msg.style.color='#b91c1c';msg.textContent='שגיאה בשליחה: '+(e.message||e);
+  }
+  btn.disabled=false;
+});
+
+// נקרא אחרי כל SIGNED_IN (משני המסלולים — כבר בתוך האפליקציה / כניסה טרייה מקישור).
+// idbLoad() ממוזגת (_idbLoadOnce) — קריאה נוספת כאן בטוחה גם אם כבר רצה קודם.
+async function maybeAutoSaveAfterCloudConnect(){
+  if(localStorage.getItem('dobble_pending_cloud_save')!=='1')return;
+  localStorage.removeItem('dobble_pending_cloud_save');
+  try{
+    await idbLoad();
+    if(!S.assets.length)return;
+    const name='העיצוב שלי '+new Date().toLocaleDateString('he-IL');
+    await cloudSaveDesign(buildDesignObject(name));
+    renderDesigns();
+    toast(`העיצוב "${name}" נשמר בענן ☁️`,'ok');
+    if(cloudsaveModal)cloudsaveModal.hidden=true;
+  }catch(e){console.warn('maybeAutoSaveAfterCloudConnect:',e);}
+}
 
 document.getElementById('auth-signout').addEventListener('click',async()=>{
   if(SB)await SB.auth.signOut();
@@ -6827,7 +6938,7 @@ async function applySessionTier(session){
   try{
     const gate=await subscriptionGate(session);
     if(!gate||!gate.ok)return;
-    const t=tierFromGate(session,gate);
+    const t=await tierFromGate(session,gate);
     if(t==null)return;
     const cur=parseInt(sessionStorage.getItem('dobble_max_order')||'0',10)||0;
     if(t>cur)sessionStorage.setItem('dobble_max_order',String(t));
@@ -6835,16 +6946,23 @@ async function applySessionTier(session){
 }
 
 // המסלול שהחשבון מקנה. מרכז במקום אחד את מה שהיה מפוזר כברירות מחדל בתוך
-// unlockFromSession, ומשמר *בדיוק* את ההתנהגות הקיימת:
+// unlockFromSession:
 //   · חשבון מנהל                       → 57
 //   · חשבון מנוי (מייל סינתטי @sub)    → profiles.max_order, וברירת מחדל 57
-//   · מייל אמיתי של לקוח               → 57
-// (שאלת המדיניות מה מייל אמיתי *צריך* להקנות פתוחה ומחוץ להיקף התיקון הזה.)
-function tierFromGate(session,gate){
+//   · מייל אמיתי של לקוח               → my_access_tier() לפי קוד הגישה שלו;
+//     null (אין קוד מתאים, או תקלת רשת) → לא לשנות כלום (caller עוצר על t==null).
+// מדיניות (הכרעת הושעיה, 18.8.2026): חיבור מייל = גיבוי/סנכרון בלבד, לא שדרוג מסלול.
+// עד עכשיו הוחזר כאן 57 קשיח לכל מייל אמיתי — לקוח חינמי שחיבר מייל קיבל הכול בחינם.
+async function tierFromGate(session,gate){
   const email=String((session&&session.user&&session.user.email)||'').toLowerCase();
   if(typeof adminEmails==='function'&&adminEmails().includes(email))return 57;
   if(isSubscriberEmail(email))return gate.maxOrder!=null?gate.maxOrder:57;
-  return 57;
+  try{
+    if(!SB)return null;
+    const{data,error}=await SB.rpc('my_access_tier');
+    if(error){console.warn('my_access_tier:',error);return null;}
+    return data==null?null:Number(data);
+  }catch(e){console.warn('my_access_tier:',e);return null;}
 }
 
 // ── המרות dataURL ⇄ Blob ──
@@ -7062,11 +7180,12 @@ if(SB){
       applySessionTier(session).then(()=>{
         toast('התחברת — מסנכרן את העיצובים שלך ☁️','ok');
         syncDesigns(session);
+        maybeAutoSaveAfterCloudConnect();
       });
       return;
     }
     guardedUnlock(session).then(ok=>{   // בודק תוקף מנוי; אם תקין — פותח את האפליקציה
-      if(ok){ toast('התחברת — טוען את העיצובים שלך ☁️','ok'); syncDesigns(session); }
+      if(ok){ toast('התחברת — טוען את העיצובים שלך ☁️','ok'); syncDesigns(session); maybeAutoSaveAfterCloudConnect(); }
     });
   });
 }
