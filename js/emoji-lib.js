@@ -22,17 +22,20 @@
       label:'מעוגל וצבעוני',
       credit:'Twemoji — CC-BY 4.0',
       url:(hex)=>`${CDN}jdecked/twemoji@main/assets/svg/${hex.toLowerCase()}.svg`,
+      thumb:(hex)=>`${CDN}jdecked/twemoji@main/assets/72x72/${hex.toLowerCase()}.png`,
     },
     openmoji:{
       label:'קווי ורך',
       credit:'OpenMoji — CC-BY-SA 4.0',
       // OpenMoji דורש HEX באותיות גדולות — שונה מ-Twemoji/Noto. מקור קבוע לשגיאות 404 אם מתבלבלים.
       url:(hex)=>`${CDN}hfg-gmuend/openmoji@master/color/618x618/${hex.toUpperCase()}.png`,
+      thumb:(hex)=>`${CDN}hfg-gmuend/openmoji@master/color/72x72/${hex.toUpperCase()}.png`,
     },
     noto:{
       label:'נקי ומודרני',
       credit:'Noto Emoji — Apache 2.0',
       url:(hex)=>`${CDN}googlefonts/noto-emoji@main/svg/emoji_u${hex.toLowerCase()}.svg`,
+      thumb:(hex)=>`${CDN}googlefonts/noto-emoji@main/png/72/emoji_u${hex.toLowerCase()}.png`,
     },
   };
   const DEFAULT_STYLE='twemoji';
@@ -129,10 +132,14 @@
       return;
     }
     emptyBox.hidden=true;
+    // תצוגה מקדימה = thumb 72px מהסגנון הנבחר, לא r.c (תו המערכת) — אחרת החלפת
+    // סגנון לא נראית משתנה בכלל, גם כשההוספה בפועל כן משתמשת בסגנון הנכון.
     grid.innerHTML=hits.map(r=>{
       const sel=selected.has(r.h);
       return `<div class="emo-tile" data-hex="${r.h}" style="cursor:pointer;text-align:center;padding:.5rem .3rem;border-radius:var(--rs);border:2px solid ${sel?'var(--indigo)':'var(--border)'};background:${sel?'rgba(99,102,241,.08)':'transparent'}">
-        <div style="font-size:1.8rem;line-height:1.2">${r.c}</div>
+        <img src="${STYLES[curStyle].thumb(r.h)}" alt="${escHtml(r.n)}" loading="lazy"
+             width="44" height="44" data-cp="${r.c}"
+             style="width:44px;height:44px;object-fit:contain;display:block;margin:0 auto">
         <div style="font-size:.68rem;color:var(--muted);margin-top:.2rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(r.n)}</div>
       </div>`;
     }).join('');
@@ -156,7 +163,21 @@
     const b=e.target.closest('.sbt');if(!b)return;
     curStyle=b.dataset.style;
     renderStylePills();
+    renderResults(currentQuery());   // מרענן את התמונות בפועל — לא רק את הכפתור הפעיל
     // בכוונה לא מאפסים את selected — החלפת סגנון לא מאפסת בחירה.
+  }
+
+  // תמונה שבורה ברשת (סמל שחסר בסט הנוכחי) נופלת לתו האימוג'י של המערכת.
+  // מאזין מואצל על הרשת, לא onerror inline לכל <img> — 'error' לא עולה בבועות,
+  // capture:true חובה כדי לתפוס אותו במיכל.
+  function onGridError(e){
+    const img=e.target;
+    if(!img||img.tagName!=='IMG'||img.dataset.fellBack)return;
+    img.dataset.fellBack='1';
+    const span=document.createElement('span');
+    span.textContent=img.dataset.cp||'';
+    span.style.cssText='font-size:2rem;line-height:44px;display:block;text-align:center';
+    img.replaceWith(span);
   }
 
   async function onAdd(){
@@ -232,6 +253,7 @@
     });
     stylesWrap.addEventListener('click',onStylesClick);
     grid.addEventListener('click',onGridClick);
+    grid.addEventListener('error',onGridError,true);   // capture — 'error' לא עולה בבועות
     addBtn.addEventListener('click',onAdd);
     emptyAiBtn.addEventListener('click',openAiFallback);
   }
