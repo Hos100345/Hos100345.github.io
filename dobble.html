@@ -896,11 +896,18 @@ function dcfgSave(patch){
       });
       const data=await res.json().catch(()=>({}));
       if(data&&data.ok){
-        msg.style.color='#166534';msg.textContent='הקוד נשמר! נכנסים…';
+        // השרת הוא מקור האמת לגבי הקוד. אם ללקוח כבר היה קוד פעיל, השרת משדרג
+        // אותו ומחזיר אותו כאן — במקום ליצור קוד שני מנותק. הנפילה לאחור ל-code
+        // שהוקלד שומרת על תאימות לשרת שעדיין לא עודכן.
+        const finalCode=(data.code||code);
+        msg.style.color='#166534';
+        msg.textContent = finalCode!==code
+          ? 'הקוד הקיים שלך "'+finalCode+'" שודרג! נכנסים…'
+          : 'הקוד נשמר! נכנסים…';
         try{localStorage.removeItem('dobble_pay_email');}catch(e){}
         setTimeout(()=>{
           m.hidden=true;
-          window.dobbleUnlock&&window.dobbleUnlock(code,'מנוי חודשי',data.max_order);
+          window.dobbleUnlock&&window.dobbleUnlock(finalCode,'מנוי חודשי',data.max_order);
           try{
             const url=new URL(location.href);
             url.searchParams.delete('paid');url.searchParams.delete('tier');
