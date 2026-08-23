@@ -175,6 +175,9 @@
 - `verify_jwt=false` נדרש ל-`morning-webhook` (Morning לא שולח JWT). לכל השאר `true`.
 - **מגבלות סביבה מרוחקת:** `api.supabase.com` ו-`*.supabase.co` ו-`hos100345.github.io` חסומים במדיניות הרשת (403 CONNECT). לכן: אין CLI, אין מחיקת פונקציות, ואי אפשר לאמת את האתר החי מכאן — רק דרך כלי ה-MCP. לדווח, לא לעקוף.
 
+## נתוני build — `js/emoji-he.json`
+`js/emoji-he.json` (אינדקס עברי לספריית הסמלים — סמל, קוד הקסדצימלי, שם עברי, מילות חיפוש) **נוצר מ-CLDR** (`unicode-org/cldr` → `common/annotations/he.xml`) ע"י `tools/build-emoji-index.py`. **אין לערוך אותו ידנית — להריץ מחדש את הסקריפט.** `python3 tools/build-emoji-index.py`. נכון ל-18.8.2026: 1,536 רשומות, `main` של CLDR הוא ענף חי כך שמספר שונה בעתיד תקין (סטייה גדולה מ-1,400–1,700 מצביעה על שינוי במבנה ה-XML, לא לסמוך על הסקריפט בלי בדיקה).
+
 ## Workflow (git)
 - ברנץ' ייעודי `claude/<שם-מתאר>`. לפני commit: `git diff --stat` + `node --check` על כל בלוק סקריפט.
 - commit → push → פתיחת PR. **אין למזג ל-`main` בלי אישור מפורש של הושעיה.**
