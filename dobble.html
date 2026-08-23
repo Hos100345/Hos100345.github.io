@@ -1776,6 +1776,12 @@ function dcfgSave(patch){
           </div>
         </div>
         <div style="margin-bottom:.65rem">
+          <div style="font-size:.7rem;color:#64748b;margin-bottom:.28rem">המייל של הלקוח/ה <span style="color:#fca5a5">(חובה)</span></div>
+          <input class="adm-inp" id="adm-sub-email" type="email" inputmode="email"
+                 autocomplete="off" placeholder="name@example.com" style="direction:ltr;text-align:left">
+          <div style="font-size:.68rem;color:#64748b;margin-top:.22rem">בלי זה אי אפשר לקשר תשלום לחשבון או לשחזר סיסמה</div>
+        </div>
+        <div style="margin-bottom:.65rem">
           <div style="font-size:.7rem;color:#64748b;margin-bottom:.28rem">שם / תיאור (אופציונלי)</div>
           <input class="adm-inp" id="adm-sub-label" placeholder="לדוג׳: רחל כהן">
         </div>
@@ -6408,6 +6414,9 @@ async function renderSubscribers(){
           <div>
             <div style="font-family:monospace;color:#e2e8f0;font-weight:700;letter-spacing:.03em">${admEsc(s.code)}</div>
             ${s.label?`<div style="color:#64748b;font-size:.75rem">${admEsc(s.label)}</div>`:''}
+            ${s.contactEmail
+              ? `<div style="color:#93c5fd;font-size:.72rem;direction:ltr;text-align:right">${admEsc(s.contactEmail)}</div>`
+              : `<div style="color:#fbbf24;font-size:.72rem">⚠️ אין מייל — לא ניתן לקשר תשלום</div>`}
           </div>
           <div style="display:flex;gap:.35rem;flex-wrap:wrap">${expTag}<span class="adm-tag" style="background:#1e293b;color:#93c5fd">${ADM_TIER_LABELS[curTier]}</span></div>
         </div>
@@ -6423,6 +6432,7 @@ async function renderSubscribers(){
           ${tierSelect}
           ${actBtn('extend30','⏰ +30 יום','#94a3b8')}
           ${actBtn('unlimited','♾️ ללא הגבלה','#94a3b8')}
+          ${s.contactEmail?'':actBtn('setemail','📧 הוסף מייל','#fbbf24')}
           <span style="display:inline-flex;align-items:center;gap:.3rem">
             <input type="date" class="sub-exp-inp" value="${s.expiry?String(s.expiry).slice(0,10):''}" title="קביעת תאריך תפוגה מדויק" style="background:#0f172a;border:1px solid #334155;color:#a5b4fc;border-radius:8px;cursor:pointer;font-size:.72rem;padding:.28rem .4rem;font-family:inherit">
             ${actBtn('set_expiry','📅 קבע תאריך','#a5b4fc')}
@@ -6485,6 +6495,19 @@ document.getElementById('adm-sub-tbl').addEventListener('click',async(e)=>{
       toast('המונה אופס ✓','ok');
       renderSubscribers();
     }catch(err){toast('הפעולה נכשלה: '+(err.message||err),'err');btn.disabled=false;}
+    return;
+  }
+  if(action==='setemail'){
+    const email=prompt('המייל של הלקוח/ה עבור הקוד "'+code+'":');
+    if(email===null)return;
+    const e2=email.trim().toLowerCase();
+    if(!ADM_EMAIL_RE.test(e2)){toast('מייל לא תקין','err');return;}
+    btn.disabled=true;
+    try{
+      await callManageSubscriber({action:'set_contact_email',code,email:e2});
+      toast('המייל נשמר ✅','ok');
+      renderSubscribers();
+    }catch(err){toast('שמירה נכשלה: '+(err.message||err),'err');btn.disabled=false;}
     return;
   }
   btn.disabled=true;
@@ -6614,17 +6637,30 @@ window.exitSupportMode=function(silent){
 };
 (function(){const b=document.getElementById('support-mini-exit');if(b)b.addEventListener('click',()=>window.exitSupportMode());})();
 
+// בדיקת מייל בסיסית. מטרתה לתפוס שגיאות הקלדה לפני קריאת רשת, לא לאמת קיום תיבה.
+// האכיפה האמיתית היא בשרת (manage-subscriber v16) — כאן זה רק שיפור חוויה.
+const ADM_EMAIL_RE=/^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
 async function createSubscriber(){
   const msg=document.getElementById('adm-sub-msg');
   const code=document.getElementById('adm-sub-code').value.trim();
+  const email=document.getElementById('adm-sub-email').value.trim().toLowerCase();
   const label=document.getElementById('adm-sub-label').value.trim();
   const expiry=document.getElementById('adm-sub-exp').value;
   if(code.length<6){msg.style.color='#fca5a5';msg.textContent='הקוד חייב 6 תווים לפחות';return;}
+  if(!ADM_EMAIL_RE.test(email)){
+    msg.style.color='#fca5a5';
+    msg.textContent='חובה להזין מייל תקין של הלקוח/ה — בלעדיו אי אפשר לקשר תשלום לחשבון';
+    document.getElementById('adm-sub-email').focus();
+    return;
+  }
   msg.style.color='#a5b4fc';msg.textContent='יוצר…';
   try{
-    await callManageSubscriber({action:'create',code,label,expiry:expiry||null});
+    await callManageSubscriber({action:'create',code,email,label,expiry:expiry||null});
     msg.style.color='#6ee7b7';msg.textContent=`✅ המנוי נוצר — הקוד "${code}" מוכן לחלוקה`;
-    document.getElementById('adm-sub-code').value='';document.getElementById('adm-sub-label').value='';document.getElementById('adm-sub-exp').value='';
+    ['adm-sub-code','adm-sub-email','adm-sub-label','adm-sub-exp'].forEach(id=>{
+      const el=document.getElementById(id);if(el)el.value='';
+    });
     renderSubscribers();
   }catch(e){msg.style.color='#fca5a5';msg.textContent='⚠️ '+e.message;}
 }
