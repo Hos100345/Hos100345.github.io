@@ -6020,7 +6020,7 @@ async function applyDesignToState(d){
     }catch(e){console.warn('applyDesign item:',e);}
   }
   if(missingImages>0){
-    toast('יש לי תמונה שנשמרה, אבל היא לא מצאו בחומר הגיבוי. אנא העלו את הקובץ שוב.','err');
+    toast(`${missingImages} תמונות לא נמצאו בגיבוי המקומי ולא שוחזרו. חברו מייל כדי שהתמונות יגובו לחשבון, או העלו אותן מחדש.`,'err');
   }
   const st=d.settings||{};
   Object.assign(S,{shape:st.shape||'circle',symShape:st.symShape||'circle',sMin:st.sMin??.7,sMax:st.sMax??1.3,
@@ -6040,7 +6040,9 @@ async function applyDesignToState(d){
   applySettingsToUI(S);
   resetGenerated();
   goScr(1);
-  schedIdbSave();
+  // אין לדרוס את גיבוי מאגר-העבודה במאגר ריק. אם לא שוחזר אף נכס, הכתיבה הזו
+  // הייתה מוחקת לצמיתות את התמונות ששרדו רענון דף — נזק חמור בהרבה מטעינה שנכשלה.
+  if(S.assets.length)schedIdbSave();
 }
 
 async function loadDesign(name){
@@ -6054,6 +6056,13 @@ async function loadDesign(name){
       const c=cloud.find(x=>x.name===name);
       if(c){await loadCloudDesign(c);return;}
     }catch(e){console.warn('loadDesign cloud fallback:',e);}
+  }
+  // ⛔ עצירה לפני נזק. applyDesignToState מאפס את S.assets ומסיים ב-schedIdbSave(),
+  // שדורס את IDB_STORE — הגיבוי היחיד ששורד רענון דף ללקוח בלי חשבון. בעיצוב רזה
+  // שאין לו מקור תמונות, הטעינה הייתה מוחקת את עבודת הלקוח ולא טוענת כלום במקומה.
+  if(!hasImages){
+    toast('לא נמצאו התמונות של העיצוב הזה במכשיר. הן נשמרות בחשבון בלבד — התחברו במייל כדי לשחזר, או העלו את התמונות מחדש. העבודה הנוכחית שלכם נשמרה ולא נמחקה.','err');
+    return;
   }
   await applyDesignToState(d);
   toast(`העיצוב "${name}" נטען — לחצו "ייצר משחק" 🎨`,'ok');
