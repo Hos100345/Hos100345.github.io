@@ -17,6 +17,9 @@
 
   const CDN='https://cdn.jsdelivr.net/gh/';
 
+  // רצף קודפוינטים בפורמט של Noto: אותיות קטנות, קו תחתון כמפריד.
+  const notoHex=(hex)=>String(hex).toLowerCase().replace(/-/g,'_');
+
   const STYLES={
     twemoji:{
       label:'מעוגל וצבעוני',
@@ -34,8 +37,11 @@
     noto:{
       label:'נקי ומודרני',
       credit:'Noto Emoji — Apache 2.0',
-      url:(hex)=>`${CDN}googlefonts/noto-emoji@main/svg/emoji_u${hex.toLowerCase()}.svg`,
-      thumb:(hex)=>`${CDN}googlefonts/noto-emoji@main/png/72/emoji_u${hex.toLowerCase()}.png`,
+      // ⛔ Noto מפריד קודפוינטים בקו תחתון, בעוד Twemoji ו-OpenMoji מפרידים במקף.
+      // בלי ההמרה הזו 184 מתוך 1,536 הסמלים (רצפי ZWJ — משפחות, מקצועות, דגלים)
+      // מחזירים 404 בסגנון הזה בלבד. אומת מול השרת, לא הנחה.
+      url:(hex)=>`${CDN}googlefonts/noto-emoji@main/svg/emoji_u${notoHex(hex)}.svg`,
+      thumb:(hex)=>`${CDN}googlefonts/noto-emoji@main/png/72/emoji_u${notoHex(hex)}.png`,
     },
   };
   const DEFAULT_STYLE='twemoji';
