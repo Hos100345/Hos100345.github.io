@@ -4125,7 +4125,11 @@ let _backSnapshot=null;
 // הפיצ'ר למנויים בלבד — אותו פרדיקט שכבר משמש את תצוגת התיקיות המקובצות (renderGallery).
 // השער הזה הוא UI בלבד; האכיפה האמיתית היא ב-doExport (isWithinTier + consume_print_quota
 // בצד השרת), כך שאין כאן הפרה של עקרון "אימות בצד שרת בלבד".
-function backEditorAllowed(){return isSignedIn()||window.__supportMode;}
+// עיצוב גב הקלף הוא פיצ'ר בתשלום, לא פיצ'ר של בעלי חשבון. תשלום מעניק
+// קוד גישה ולא חשבון Auth, ולכן isSignedIn() לבדו חסם לקוחות משלמים
+// והציג להם חלון "מעבר לתשלום" אחרי שכבר שילמו. currentMaxOrder() הוא
+// אותו מקור אמת שבו משתמש isWithinTier() לייצוא — עקבי לשני מסלולי הכניסה.
+function backEditorAllowed(){return currentMaxOrder()>7||isSignedIn()||window.__supportMode;}
 
 // מקור האמת לברירות המחדל הוא ה-HTML עצמו (attribute value=), ולא טבלה מקבילה
 // שתיפרד ממנו בעדכון הבא. defaultValue מחזיר בדיוק את מה שכתוב ב-attribute.
