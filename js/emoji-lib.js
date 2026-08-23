@@ -108,15 +108,27 @@
   // ── DOM ──
   let btn,modal,closeBtn,qInp,stylesWrap,grid,emptyBox,emptyAiBtn,addBtn;
   let curStyle=DEFAULT_STYLE;
-  const selected=new Map();   // hex -> rec
+  // מפתח = hex|style, לא hex בלבד — אחרת אותו סמל בשני סגנונות נחשב לאותה
+  // בחירה (לחיצה שנייה מבטלת במקום להוסיף וריאנט), והסגנון פר-סמל אובד לגמרי
+  // עד onAdd (שם היה נלקח curStyle הנוכחי, לא הסגנון שבו נבחר כל סמל).
+  const selected=new Map();   // 'hex|style' -> {rec,style}
   let searchTimer=0;
+
+  function selKey(hex,styleKey){return hex+'|'+styleKey;}
 
   function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
+  function selCountFor(styleKey){
+    let n=0;
+    for(const k of selected.keys())if(k.endsWith('|'+styleKey))n++;
+    return n;
+  }
+
   function renderStylePills(){
-    stylesWrap.innerHTML=Object.keys(STYLES).map(key=>
-      `<button type="button" class="sbt${key===curStyle?' on':''}" data-style="${key}" style="flex:1">${escHtml(STYLES[key].label)}</button>`
-    ).join('');
+    stylesWrap.innerHTML=Object.keys(STYLES).map(key=>{
+      const n=selCountFor(key);
+      return `<button type="button" class="sbt${key===curStyle?' on':''}" data-style="${key}" style="flex:1">${escHtml(STYLES[key].label)}${n?` (${n})`:''}</button>`;
+    }).join('');
   }
 
   function updateAddBtn(){
@@ -135,12 +147,15 @@
     // תצוגה מקדימה = thumb 72px מהסגנון הנבחר, לא r.c (תו המערכת) — אחרת החלפת
     // סגנון לא נראית משתנה בכלל, גם כשההוספה בפועל כן משתמשת בסגנון הנכון.
     grid.innerHTML=hits.map(r=>{
-      const sel=selected.has(r.h);
+      // הסימון תלוי בסגנון הנוכחי בלבד — סמל שנבחר ב"מעוגל" לא מסומן כשעוברים
+      // ל"נקי", כי זה וריאנט אחר, לא אותה בחירה.
+      const sel=selected.has(selKey(r.h,curStyle));
       return `<div class="emo-tile" data-hex="${r.h}" style="cursor:pointer;text-align:center;padding:.5rem .3rem;border-radius:var(--rs);border:2px solid ${sel?'var(--indigo)':'var(--border)'};background:${sel?'rgba(99,102,241,.08)':'transparent'}">
         <img src="${STYLES[curStyle].thumb(r.h)}" alt="${escHtml(r.n)}" loading="lazy"
              width="44" height="44" data-cp="${r.c}"
              style="width:44px;height:44px;object-fit:contain;display:block;margin:0 auto">
         <div style="font-size:.68rem;color:var(--muted);margin-top:.2rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(r.n)}</div>
+        ${sel?`<div style="font-size:.58rem;color:var(--indigo);font-weight:700">${escHtml(STYLES[curStyle].label)}</div>`:''}
       </div>`;
     }).join('');
   }
@@ -150,12 +165,14 @@
   function onGridClick(e){
     const tile=e.target.closest('.emo-tile');if(!tile)return;
     const hex=tile.dataset.hex;
-    if(selected.has(hex))selected.delete(hex);
+    const key=selKey(hex,curStyle);
+    if(selected.has(key))selected.delete(key);
     else{
       const rec=INDEX.find(r=>r.h===hex);
-      if(rec)selected.set(hex,rec);
+      if(rec)selected.set(key,{rec,style:curStyle});
     }
     renderResults(currentQuery());
+    renderStylePills();   // מעדכן את המונה (N) על כפתור הסגנון הנוכחי
     updateAddBtn();
   }
 
@@ -182,14 +199,14 @@
 
   async function onAdd(){
     if(!selected.size)return;
-    const recs=Array.from(selected.values());
+    const entries=Array.from(selected.values());   // [{rec,style}], לא רק rec — כל וריאנט בסגנון שנבחר בו
     addBtn.disabled=true;
     const prevLabel=addBtn.textContent;
     addBtn.textContent='מוסיף…';
     const files=[];
     const failed=[];
-    for(const rec of recs){
-      try{files.push(await toFile(rec,curStyle));}
+    for(const{rec,style}of entries){
+      try{files.push(await toFile(rec,style));}   // הסגנון שהוריאנט הזה נבחר בו — לא הסגנון הפעיל כרגע במודאל
       catch(e){failed.push(rec.n+' — '+((e&&e.message)||e));}
     }
     if(files.length)await window.dobbleAddFiles(files);
@@ -199,6 +216,7 @@
     }
     selected.clear();
     renderResults(currentQuery());
+    renderStylePills();
     updateAddBtn();
     addBtn.textContent=prevLabel;
   }
