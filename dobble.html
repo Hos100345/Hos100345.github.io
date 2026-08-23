@@ -1132,6 +1132,8 @@ function dcfgSave(patch){
           <div style="font-size:.75rem;color:var(--muted);line-height:1.5;margin-top:.3rem">
             אפס = הסמלים נוגעים בדיוק · ימינה = נכנסים זה בזה · שמאלה = מתרחקים זה מזה
           </div>
+          <button class="btn btn-ghost" type="button" data-reset="sl-mn,sl-mx,sl-ov"
+                  style="width:100%;justify-content:center;margin-top:.5rem;font-size:.8rem">↺ ברירת מחדל</button>
         </div>
         <div class="sb-sec">
           <div class="sb-t">מרווח מהמסגרת</div>
@@ -1142,6 +1144,8 @@ function dcfgSave(patch){
           <div style="font-size:.75rem;color:var(--muted);line-height:1.5;margin-top:.3rem">
             מרחק הסמלים מהמסגרת, במ"מ אמיתיים. הטווח מותאם אוטומטית לקוטר הקלף ולרוחב המסגרת.
           </div>
+          <button class="btn btn-ghost" type="button" data-reset="sl-sympad"
+                  style="width:100%;justify-content:center;margin-top:.5rem;font-size:.8rem">↺ ברירת מחדל</button>
         </div>
         <div class="sb-sec">
           <div class="sb-t">פעולות</div>
@@ -1168,15 +1172,25 @@ function dcfgSave(patch){
 <!-- ══ SCREEN 3: EXPORT ══ -->
 <section id="s3" class="scr">
   <div class="box">
-    <h2 class="box-h">ייצוא וידפוס</h2>
+    <h2 class="box-h">ייצוא והדפסה</h2>
     <p class="box-s">בחר/י פריסה ואפשרויות הדפסה, ואז לחץ/י על הפקת הקובץ.</p>
 
     <div class="exp-grid">
       <div>
         <div class="og">
           <div class="og-t">גודל קלף</div>
+          <div class="shape-grp" id="perpage-grp" style="width:100%;margin-bottom:.5rem">
+            <button class="sbt" data-pp="1"  style="flex:1">1</button>
+            <button class="sbt" data-pp="2"  style="flex:1">2</button>
+            <button class="sbt" data-pp="4"  style="flex:1">4</button>
+            <button class="sbt on" data-pp="6" style="flex:1">6</button>
+            <button class="sbt" data-pp="9"  style="flex:1">9</button>
+          </div>
+          <div style="font-size:.75rem;color:var(--muted);margin:-.25rem 0 .5rem">קלפים בדף A4</div>
           <div class="sl-lbl"><span>קוטר</span><strong id="lbl-card-size">85mm</strong></div>
           <input type="range" id="sl-card-size" min="20" max="195" value="85" step="1">
+          <button class="btn btn-ghost" type="button" data-reset="sl-card-size,sl-spacing"
+                  style="width:100%;justify-content:center;margin-top:.5rem;font-size:.8rem">↺ ברירת מחדל</button>
         </div>
         <div class="og">
           <div class="og-t">מרווח בין קלפים</div>
@@ -3451,15 +3465,40 @@ function applyAutoMin(){
     if(hint)hint.style.display='block';
   }else if(hint)hint.style.display='none';
 }
+// הרמז הקיים (#mn-auto-hint) סטטי ולכן נבלע. הבהוב קצר הופך אותו לשינוי שמורגש.
+let _hintT=null;
+function flashAutoMinHint(){
+  const hint=document.getElementById('mn-auto-hint');
+  if(!hint)return;
+  hint.style.display='block';
+  hint.style.transition='none';
+  hint.style.opacity='0.35';
+  requestAnimationFrame(()=>{hint.style.transition='opacity .25s';hint.style.opacity='1';});
+  clearTimeout(_hintT);
+  _hintT=setTimeout(()=>{if(+slMn.value>=+slMn.max)return;hint.style.display='none';},2600);
+}
 // המינימום לעולם לא עובר את המקסימום ולהפך — דוחפים את השני במקום לחסום את המשתמש
+// תצוגה חיה בזמן גרירה, בדיוק כמו sl-ov שמתחת. renderAll() כבד מדי ל-input בנייד
+// (הוא בונה מחדש את כל הקנבסים), ולכן: input → redrawCards ב-debounce, change → renderAll.
+let _symSizeT=null;
+function schedSymRedraw(){
+  clearTimeout(_symSizeT);
+  _symSizeT=setTimeout(()=>{redrawCards();},180);   // אותו debounce כמו sl-card-size
+}
 slMn.addEventListener('input',()=>{
   if(+slMn.value>+slMx.value){slMx.value=slMn.value;S.sMax=+slMx.value/100;lblMx.textContent=slMx.value+'%';}
   S.sMin=+slMn.value/100;lblMn.textContent=slMn.value+'%';
+  applyAutoMin();                       // גם כאן — התקרה תלויה גם במינימום
+  schedSymRedraw();
 });
 slMx.addEventListener('input',()=>{
+  const prevMn=slMn.value;
   if(+slMx.value<+slMn.value){slMn.value=slMx.value;S.sMin=+slMn.value/100;lblMn.textContent=slMn.value+'%';}
   S.sMax=+slMx.value/100;lblMx.textContent=slMx.value+'%';
   applyAutoMin();                       // עדכון בזמן אמת — דרישה 2 באפיון
+  // applyAutoMin עלול להוריד את המינימום; בלי הודעה זה נראה כמו סליידר תקול
+  if(slMn.value!==prevMn)flashAutoMinHint();
+  schedSymRedraw();
 });
 slMn.addEventListener('change',()=>renderAll());
 slMx.addEventListener('change',()=>renderAll());
@@ -3757,6 +3796,22 @@ function resetExport(){
   if(_exportUrl){URL.revokeObjectURL(_exportUrl);_exportUrl=null;}
   document.getElementById('exp-prog').classList.remove('on');
   document.getElementById('dl-area').classList.remove('on');
+  const dl=document.getElementById('dl-done');if(dl)dl.remove();
+}
+// אנדרואיד/iOS מורידים בשקט; טוסט חולף לא מספיק כדי שהמשתמש ידע שהקובץ אצלו.
+function showDownloadDone(name){
+  const host=document.getElementById('exp-prog');
+  if(!host){toast('הקובץ ירד למכשיר ✅','ok');return;}
+  const box=document.createElement('div');
+  box.id='dl-done';
+  box.style.cssText='margin-top:.6rem;padding:.7rem .8rem;border-radius:.6rem;background:#ecfdf5;border:1px solid #6ee7b7;font-size:.85rem;line-height:1.6';
+  box.innerHTML='<strong>✅ הקובץ ירד למכשיר</strong><br>'+
+    (name?'<span style="direction:ltr;display:inline-block;font-weight:700">'+
+      name.replace(/[<>&]/g,'')+'</span><br>':'')+
+    '<span style="color:#065f46">חפש/י אותו בתיקיית ההורדות (Downloads) או בהתראות של הדפדפן.</span>'+
+    '<br><button type="button" class="btn btn-ghost" style="margin-top:.5rem;font-size:.78rem" onclick="this.closest(\'#dl-done\').remove()">סגור</button>';
+  const old=document.getElementById('dl-done');if(old)old.remove();
+  host.insertAdjacentElement('afterend',box);
 }
 
 // ══ LAYOUT ENGINE (V5 Parametric) ══
@@ -3888,6 +3943,10 @@ function updatePaperPrev(){
   const backTxt=(S.back.enabled&&S.deck.length)?` · + ${pages} עמודי גב`:'';
   document.getElementById('prev-info').textContent=
     `A4 · ${perPage} קלפים/עמוד · ${cardMm}mm · מרווח ${spacingLabel} · ${pages} ${pages!==1?'דפים':'דף'}${backTxt}`;
+  if(perPage>0&&perPage<3&&S.deck.length>6){
+    document.getElementById('prev-info').insertAdjacentHTML('beforeend',
+      `<div style="color:#b45309;font-weight:700;margin-top:.35rem">⚠️ רק ${perPage} בדף — ${pages} דפים. לחצ/י "6" למעלה לפריסה חסכונית</div>`);
+  }
 }
 
 // ══ EXPORT OPTIONS (V5 Parametric) ══
@@ -3896,15 +3955,46 @@ const lblCardSize=document.getElementById('lbl-card-size');
 let _cardSizeRedrawT=null;
 slCardSize.addEventListener('input',()=>{
   S.cardSizeMm=+slCardSize.value;lblCardSize.textContent=slCardSize.value+'mm';
-  syncSymPadRange();updatePaperPrev();
+  syncSymPadRange();updatePaperPrev();markPerPageActive();
   clearTimeout(_cardSizeRedrawT);
   _cardSizeRedrawT=setTimeout(()=>{redrawCards();},180);   // debounce — 57 קנבסים בנייד
 });
 slCardSize.addEventListener('change',resetExport);
 
+// ── קלפים בדף ──
+// אין ל-layoutEngine() פרמטרים; הוא קורא את S.cardSizeMm ו-S.spacingMm.
+// לכן סורקים קוטרים מלמעלה למטה ולוקחים את הראשון שמייצר לפחות target מקומות.
+// סריקה ולא נוסחה — כדי לא לשכפל את לוגיקת האריזה (hex/רשת) ולסטות ממנה בעתיד.
+function cardSizeForPerPage(target){
+  const keep=S.cardSizeMm;
+  let best=null;
+  for(let d=195;d>=20;d--){
+    S.cardSizeMm=d;
+    if(layoutEngine().positions.length>=target){best=d;break;}
+  }
+  S.cardSizeMm=keep;
+  return best;
+}
+function markPerPageActive(){
+  const n=layoutEngine().positions.length;
+  document.querySelectorAll('#perpage-grp .sbt').forEach(b=>{
+    b.classList.toggle('on',+b.dataset.pp===n);
+  });
+}
+document.getElementById('perpage-grp').addEventListener('click',e=>{
+  const b=e.target.closest('.sbt');if(!b)return;
+  const d=cardSizeForPerPage(+b.dataset.pp);
+  if(d==null){toast('לא ניתן להגיע למספר הזה עם המרווח הנוכחי — הקטן/י את המרווח','err');return;}
+  S.cardSizeMm=d;
+  slCardSize.value=String(d);
+  lblCardSize.textContent=d+'mm';
+  syncSymPadRange();updatePaperPrev();markPerPageActive();
+  redrawCards();resetExport();
+});
+
 const slSpacing=document.getElementById('sl-spacing');
 const lblSpacing=document.getElementById('lbl-spacing');
-slSpacing.addEventListener('input',()=>{S.spacingMm=+slSpacing.value;lblSpacing.textContent=slSpacing.value+'mm';updatePaperPrev();});
+slSpacing.addEventListener('input',()=>{S.spacingMm=+slSpacing.value;lblSpacing.textContent=slSpacing.value+'mm';updatePaperPrev();markPerPageActive();});
 slSpacing.addEventListener('change',resetExport);
 
 document.getElementById('startpos-grp').addEventListener('click',e=>{
@@ -4004,6 +4094,24 @@ let _backSnapshot=null;
 // השער הזה הוא UI בלבד; האכיפה האמיתית היא ב-doExport (isWithinTier + consume_print_quota
 // בצד השרת), כך שאין כאן הפרה של עקרון "אימות בצד שרת בלבד".
 function backEditorAllowed(){return isSignedIn()||window.__supportMode;}
+
+// מקור האמת לברירות המחדל הוא ה-HTML עצמו (attribute value=), ולא טבלה מקבילה
+// שתיפרד ממנו בעדכון הבא. defaultValue מחזיר בדיוק את מה שכתוב ב-attribute.
+function resetSliders(ids){
+  ids.forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.value=el.defaultValue;
+    el.dispatchEvent(new Event('input',{bubbles:true}));
+    el.dispatchEvent(new Event('change',{bubbles:true}));
+  });
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-reset]');
+  if(!b)return;
+  resetSliders(b.dataset.reset.split(',').map(s=>s.trim()));
+  toast('אופס לברירת המחדל ↺','ok');
+});
 
 function buildSwatchesGeneric(containerId,colors,pickerId,onPick){
   const el=document.getElementById(containerId),pick=document.getElementById(pickerId);
@@ -4412,7 +4520,7 @@ async function doExport(type){
     if(type==='pdf')await expPDF(setp);
     else if(type==='zip')await expZIP(setp);
     else await expDXF(setp);
-    toast('הקובץ מוכן להורדה ✅','ok');
+    showDownloadDone(S._lastFile||'');
   }catch(err){
     document.getElementById('exp-prog').classList.remove('on');
     alert(`שגיאה בייצוא:\n${err.message||err}\n\nודא שהדף נטען עם חיבור לאינטרנט (נדרש jsPDF / JSZip).`);
@@ -4527,6 +4635,7 @@ async function expPDF(setp){
   lnk.href=_exportUrl;lnk.download=fn;
   document.getElementById('dl-area').classList.add('on');
   logGame({total:S.order.total,cards:S.deck.length,sizeMm:S.cardSizeMm,filename:fn,type:'pdf'});
+  S._lastFile=fn;
   setp(100,'✅ מוכן!');
 }
 
@@ -4557,6 +4666,7 @@ async function expZIP(setp){
   lnk.href=_exportUrl;lnk.download=fnz;
   document.getElementById('dl-area').classList.add('on');
   logGame({total:S.order.total,cards:S.deck.length,sizeMm:S.cardSizeMm,filename:fnz,type:'zip'});
+  S._lastFile=fnz;
   setp(100,'✅ מוכן!');
 }
 
@@ -4648,8 +4758,10 @@ async function expDXF(setp){
   if(_exportUrl)URL.revokeObjectURL(_exportUrl);
   _exportUrl=URL.createObjectURL(blob);
   const lnk=document.getElementById('dl-link');
-  lnk.href=_exportUrl;lnk.download=`dobble-${S.order.total}cards-cutlines.dxf`;
+  const fnd=`dobble-${S.order.total}cards-cutlines.dxf`;
+  lnk.href=_exportUrl;lnk.download=fnd;
   document.getElementById('dl-area').classList.add('on');
+  S._lastFile=fnd;
   setp(100,'✅ מוכן!');
 }
 
