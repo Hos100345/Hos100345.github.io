@@ -4006,29 +4006,41 @@ function updatePaperPrev(){
 }
 
 // ══ איכות הייצוא + אומדן משקל ══
-// אומדן משקל ה-PDF: בונה PDF אמיתי עם קלף אחד ומודד אותו. מדידת toBlob() על
-// הקנבס נכשלה בסטייה של 60–89%, כי הבתים שנמדדו אינם הבתים שנכנסים לקובץ
-// (jsPDF לא שמר על דחיסת ה-PNG המקורית ללא compress:true). כאן זה אותו נתיב
-// קוד בדיוק (jsPDF, compress:true, JPEG באיכות הדפסה), ולכן האומדן לא יכול
-// להתנתק מהמציאות.
+// אומדן משקל ה-PDF: בונה PDF אמיתי ומודד אותו. מדידת toBlob() על הקנבס נכשלה
+// בסטייה של 60–89%, כי הבתים שנמדדו אינם הבתים שנכנסים לקובץ (jsPDF לא שמר על
+// דחיסת ה-PNG המקורית ללא compress:true). אחרי הוספת compress:true התגלה שורש
+// שני: jsPDF מדדפ תמונות זהות — ב-expPDF ה-backURL מוטמע *פעם אחת* בפועל למרות
+// ש-addImage נקרא עליו unique-per-position פעמים (אומת: 5 קריאות addImage על
+// אותה תמונה יוצרות PDF כמעט זהה לגודל לקריאה בודדת, לא פי 5). לכן הגב נספר
+// כאן פעם אחת בלבד, לא deck.length פעמים כמו החזית (שהיא שונה אמיתית בכל קלף).
 async function estimatePdfBytes(px){
   if(!S.deck||!S.deck.length||!window.jspdf?.jsPDF)return null;
   try{
     const{jsPDF}=window.jspdf;
     const jpg=S.exportQuality==='print';
+    const d=S.cardSizeMm;
+    const empty=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true})
+                  .output('blob').size;
+
     const cv=document.createElement('canvas');cv.width=cv.height=px;
     drawCard(cv,S.layouts[0],S.imgEls,S.shape);
     flattenToWhiteIfJpg(cv,jpg);
-    const probe=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
-    const d=S.cardSizeMm;
-    probe.addImage(jpg?cv.toDataURL('image/jpeg',0.92):cv.toDataURL('image/png',1),
-                   jpg?'JPEG':'PNG',10,10,d,d);
-    const one=probe.output('blob').size;
-    const empty=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true})
-                  .output('blob').size;
-    const perCard=Math.max(0,one-empty);
-    const units=S.deck.length*(S.back.enabled?2:1);
-    return Math.round(empty+perCard*units);
+    const frontProbe=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
+    frontProbe.addImage(jpg?cv.toDataURL('image/jpeg',0.92):cv.toDataURL('image/png',1),
+                         jpg?'JPEG':'PNG',10,10,d,d);
+    const frontCost=Math.max(0,frontProbe.output('blob').size-empty);
+
+    let backCost=0;
+    if(S.back.enabled){
+      const bcv=document.createElement('canvas');bcv.width=bcv.height=px;
+      drawCardBack(bcv);
+      flattenToWhiteIfJpg(bcv,jpg);
+      const backProbe=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
+      backProbe.addImage(jpg?bcv.toDataURL('image/jpeg',0.92):bcv.toDataURL('image/png',1),
+                          jpg?'JPEG':'PNG',10,10,d,d);
+      backCost=Math.max(0,backProbe.output('blob').size-empty);
+    }
+    return Math.round(empty+frontCost*S.deck.length+backCost);
   }catch(e){console.warn('estimatePdfBytes:',e);return null;}
 }
 
