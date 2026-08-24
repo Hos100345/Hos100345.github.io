@@ -4006,26 +4006,30 @@ function updatePaperPrev(){
 }
 
 // ══ איכות הייצוא + אומדן משקל ══
-// אומדן משקל הייצוא. מודד 3 קלפים אמיתיים במקום להעריך לפי רזולוציה —
-// משקל PNG תלוי בתוכן (תמונה מפורטת מול צללית) ופער של פי 3 הוא רגיל.
-async function estimateExportBytes(px,type){
-  if(!S.deck||!S.deck.length)return null;
-  const cv=document.createElement('canvas');cv.width=cv.height=px;
-  const n=Math.min(3,S.deck.length);
-  let bytes=0,ok=0;
-  for(let i=0;i<n;i++){
-    drawCard(cv,S.layouts[i],S.imgEls,S.shape);
-    const b=await new Promise(r=>cv.toBlob(r,'image/png'));
-    if(b){bytes+=b.size;ok++;}
-    await tick();
-  }
-  if(!ok)return null;
-  const per=bytes/ok;
-  // PDF: הגב נוסף כתמונה לכל קלף. ZIP: הגב הוא קובץ אחד בלבד.
-  const units=type==='zip'
-    ? S.deck.length+(S.back.enabled?1:0)
-    : S.deck.length*(S.back.enabled?2:1);
-  return Math.round(per*units*1.05);   // ~5% תקורה של המכולה
+// אומדן משקל ה-PDF: בונה PDF אמיתי עם קלף אחד ומודד אותו. מדידת toBlob() על
+// הקנבס נכשלה בסטייה של 60–89%, כי הבתים שנמדדו אינם הבתים שנכנסים לקובץ
+// (jsPDF לא שמר על דחיסת ה-PNG המקורית ללא compress:true). כאן זה אותו נתיב
+// קוד בדיוק (jsPDF, compress:true, JPEG באיכות הדפסה), ולכן האומדן לא יכול
+// להתנתק מהמציאות.
+async function estimatePdfBytes(px){
+  if(!S.deck||!S.deck.length||!window.jspdf?.jsPDF)return null;
+  try{
+    const{jsPDF}=window.jspdf;
+    const jpg=S.exportQuality==='print';
+    const cv=document.createElement('canvas');cv.width=cv.height=px;
+    drawCard(cv,S.layouts[0],S.imgEls,S.shape);
+    flattenToWhiteIfJpg(cv,jpg);
+    const probe=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
+    const d=S.cardSizeMm;
+    probe.addImage(jpg?cv.toDataURL('image/jpeg',0.92):cv.toDataURL('image/png',1),
+                   jpg?'JPEG':'PNG',10,10,d,d);
+    const one=probe.output('blob').size;
+    const empty=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true})
+                  .output('blob').size;
+    const perCard=Math.max(0,one-empty);
+    const units=S.deck.length*(S.back.enabled?2:1);
+    return Math.round(empty+perCard*units);
+  }catch(e){console.warn('estimatePdfBytes:',e);return null;}
 }
 
 function fmtSize(bytes){
@@ -4047,10 +4051,10 @@ async function refreshQualityNote(){
   _estBusy=true;
   const q=S.exportQuality;
   const base=q==='print'
-    ? '300 DPI — חד בהדפסה ביתית ובבית דפוס.'
+    ? '300 DPI — חד בהדפסה ביתית ובבית דפוס. הרקע מסביב לקלף נשמר לבן — מתאים להדפסה על נייר לבן.'
     : 'מתאים לצפייה במסך ולשיתוף מהיר. להדפסה איכותית בחרו "איכות הדפסה".';
   note.textContent=base+' מחשב משקל…';
-  const bytes=await estimateExportBytes(EXPORT_PX[q]||CARD_PX,'pdf');
+  const bytes=await estimatePdfBytes(EXPORT_PX[q]||CARD_PX);
   _estBusy=false;
   if(_estQueued){_estQueued=false;refreshQualityNote();return;}
   if(bytes==null){note.textContent=base;return;}
@@ -4651,6 +4655,19 @@ async function doExport(type){
   }
 }
 
+// JPEG אינו תומך ב-alpha, ואזור השקיפות מחוץ לצורת הקלף (drawCard/drawCardBack מתחילים
+// ב-clearRect, אז אי אפשר למלא לבן לפני הציור — הוא יימחק) יוצא שחור. ממלאים לבן *מאחורי*
+// מה שכבר צויר (destination-over) — לבן = צבע הדף, ולכן חזותית זהה בהדפסה על נייר לבן.
+function flattenToWhiteIfJpg(canvas,jpg){
+  if(!jpg)return;
+  const ctx=canvas.getContext('2d');
+  ctx.save();
+  ctx.globalCompositeOperation='destination-over';
+  ctx.fillStyle='#ffffff';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.restore();
+}
+
 async function expPDF(setp){
   if(!window.jspdf?.jsPDF)throw new Error('ספריית jsPDF לא נטענה — נדרש חיבור לאינטרנט');
   const{jsPDF}=window.jspdf;
@@ -4662,8 +4679,11 @@ async function expPDF(setp){
     alert('שילוב "מצב Silhouette + גב מעוצב" לא נתמך — כבו את אחד מהם ונסו שוב.');
     return;
   }
-  const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  // compress:true — בלעדיו jsPDF מטמיע את ה-image streams בלי דחיסה כלל, ומשקל
+  // ה-PDF נגזר מהרזולוציה ולא מהתוכן. זה מה שהפיק 105MB ל-21 קלפים ב-1120px.
+  const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
   const px=EXPORT_PX[S.exportQuality]||CARD_PX;
+  const jpg=S.exportQuality==='print';
   const tmp=document.createElement('canvas');tmp.width=tmp.height=px;
 
   const addRegMarks=()=>{
@@ -4702,7 +4722,9 @@ async function expPDF(setp){
   if(backOn){
     const backTmp=document.createElement('canvas');backTmp.width=backTmp.height=px;
     drawCardBack(backTmp);
-    backURL=backTmp.toDataURL('image/png',1);grow=S.back.duplex.grow||0;
+    flattenToWhiteIfJpg(backTmp,jpg);
+    backURL=jpg?backTmp.toDataURL('image/jpeg',0.92):backTmp.toDataURL('image/png',1);
+    grow=S.back.duplex.grow||0;
   }
 
   for(const entry of order){
@@ -4714,7 +4736,9 @@ async function expPDF(setp){
       for(let j=0;j<idxs.length;j++){
         const i=idxs[j],{x,y}=positions[j],d=cardMm;
         drawCard(tmp,S.layouts[i],S.imgEls,S.shape);
-        pdf.addImage(tmp.toDataURL('image/png',1),'PNG',x-d/2,y-d/2,d,d);
+        flattenToWhiteIfJpg(tmp,jpg);
+        pdf.addImage(jpg?tmp.toDataURL('image/jpeg',0.92):tmp.toDataURL('image/png',1),
+                     jpg?'JPEG':'PNG',x-d/2,y-d/2,d,d);
         if(S.isSilhouette){
           // Vector cut line so Silhouette Studio detects the card shape, not the PNG bounding box
           pdf.setDrawColor(255,0,0);pdf.setLineWidth(0.25);
@@ -4825,7 +4849,7 @@ function drawCalibRuler(pdf){
 function generateCalibrationPDF(){
   if(!window.jspdf?.jsPDF){toast('ספריית jsPDF לא נטענה — נדרש חיבור לאינטרנט','err');return;}
   const{jsPDF}=window.jspdf;
-  const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
   const cardMm=S.cardSizeMm,cx=A4_W/2,cy=A4_H/2;
   ensureBackCanvas();
   const tmp=document.createElement('canvas');tmp.width=tmp.height=CARD_PX;
