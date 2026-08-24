@@ -1033,6 +1033,17 @@ function dcfgSave(patch){
       <div class="packs-grid" id="designs-grid"></div>
     </div>
 
+    <!-- ── קובץ עיצוב נייד — גיבוי שלא תלוי בחשבון, בדפדפן או במכשיר ── -->
+    <div class="og-t" style="margin-top:.6rem">📦 גיבוי לקובץ</div>
+    <div class="brow" style="gap:.4rem">
+      <button type="button" class="btn btn-sec" id="btn-export-design">⬇️ שמור לקובץ</button>
+      <button type="button" class="btn btn-sec" id="btn-import-design">⬆️ טען מקובץ</button>
+    </div>
+    <input type="file" id="import-design-file" accept=".zip,application/zip" style="display:none">
+    <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem;line-height:1.5">
+      הקובץ מכיל את התמונות וההגדרות. שמרו אותו אצלכם — אפשר לטעון אותו בכל מכשיר.
+    </div>
+
     <!-- ── Inline Active Gallery ── -->
     <div id="gallery" class="gallery" style="display:none">
       <div class="gallery-hdr">
@@ -6056,6 +6067,99 @@ function buildDesignObject(name){
       cardEdits:JSON.parse(JSON.stringify(S.cardEdits||{})),
       orderTotal:S.order?S.order.total:null}};
 }
+
+// ── קובץ עיצוב נייד ──────────────────────────────────────────────────────
+// גיבוי שאינו תלוי בחשבון, בענן או ב-IndexedDB. saveDesign() שומר metadata בלבד
+// (מגבלת מכסה, PR #24) ולכן ללקוח בלי חשבון אין שום דרך לשחזר את התמונות שלו.
+// כאן התמונות נכנסות לקובץ עצמו. זמין לכל הלקוחות — גיבוי אינו פיצ'ר פרימיום.
+const DESIGN_FILE_V=1;
+
+async function exportDesignFile(){
+  if(!S.assets.length){toast('אין תמונות במאגר — העלו תמונות קודם','err');return;}
+  if(typeof JSZip==='undefined'){toast('ספריית JSZip לא נטענה — נדרש חיבור לאינטרנט','err');return;}
+  const defName='העיצוב שלי '+new Date().toLocaleDateString('he-IL');
+  const name=(prompt('שם לקובץ העיצוב:',defName)||'').trim();
+  if(!name)return;
+  try{
+    toast('מכין את הקובץ…','ok');
+    const base=buildDesignObject(name);      // rows כולל dataURL
+    const zip=new JSZip(),imgs=zip.folder('images');
+    const rows=[];
+    for(const r of base.rows){
+      const m=/^data:(image\/(png|jpeg));base64,(.+)$/.exec(r.dataURL||'');
+      if(!m){console.warn('exportDesignFile: skipping row',r.id);continue;}
+      const ext=m[2]==='png'?'png':'jpg';
+      const path='images/'+r.id+'.'+ext;
+      imgs.file(r.id+'.'+ext,m[3],{base64:true});
+      const {dataURL,...meta}=r;
+      rows.push(Object.assign(meta,{file:path}));
+      await tick();
+    }
+    if(!rows.length){toast('לא נמצאו תמונות לשמירה','err');return;}
+    zip.file('design.json',JSON.stringify(
+      {app:'dobble',v:DESIGN_FILE_V,name,date:base.date,settings:base.settings,rows},null,1));
+    const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=name.replace(/[\\/:*?"<>|]/g,'-')+'.dobble.zip';
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),60000);
+    S._lastFile=a.download;S._lastSize=blob.size;
+    // showDownloadDone() מוסיף אל תוך #exp-prog (מסך 3, הייצוא) — כפתורי הגיבוי
+    // יושבים במסך 1 (העלאה), אז שם הפאנל ייכנס לחלק מוסתר של הדף ולא יראה אותו
+    // אף אחד. toast עם המשקל בפועל נראה תמיד, בלי קשר למסך הנוכחי.
+    toast(`הקובץ "${a.download}" ירד — ${fmtSize(blob.size)} ✓`,'ok');
+  }catch(e){console.error(e);toast('שמירת הקובץ נכשלה: '+(e.message||e),'err');}
+}
+
+// ⛔ אסור לגעת ב-S.assets עד שכל התמונות פוענחו בהצלחה — זו בדיוק התקלה שסגרנו
+// ב-PR #75 (applyDesignToState מאפס את המאגר בשורה השנייה). ייבוא של קובץ פגום
+// או חלקי חייב להיכשל מבלי שהמאגר הקיים ייגע.
+async function importDesignFile(file){
+  if(typeof JSZip==='undefined'){toast('ספריית JSZip לא נטענה — נדרש חיבור לאינטרנט','err');return;}
+  try{
+    toast('קורא את הקובץ…','ok');
+    const zip=await JSZip.loadAsync(file);
+    const jf=zip.file('design.json');
+    if(!jf)throw new Error('זה לא קובץ עיצוב של המחולל');
+    const meta=JSON.parse(await jf.async('string'));
+    if(meta.app!=='dobble')throw new Error('זה לא קובץ עיצוב של המחולל');
+    if(!(meta.v<=DESIGN_FILE_V))throw new Error('הקובץ נוצר בגרסה חדשה יותר — עדכנו את הדף ונסו שוב');
+    if(!Array.isArray(meta.rows)||!meta.rows.length)throw new Error('הקובץ לא מכיל תמונות');
+
+    // בונים הכל קודם. רק אם הכל הצליח — נוגעים במצב.
+    const rows=[];
+    for(const r of meta.rows){
+      const f=r.file&&zip.file(r.file);
+      if(!f){console.warn('importDesignFile: missing',r.file);continue;}
+      const b64=await f.async('base64');
+      const mime=/\.png$/i.test(r.file)?'image/png':'image/jpeg';
+      const {file:_drop,...keep}=r;
+      rows.push(Object.assign(keep,{dataURL:'data:'+mime+';base64,'+b64}));
+      await tick();
+    }
+    if(!rows.length)throw new Error('לא נמצאה אף תמונה תקינה בקובץ');
+    if(rows.length<meta.rows.length){
+      toast(`${meta.rows.length-rows.length} תמונות חסרות בקובץ ולא ייובאו`,'err');
+    }
+    if(S.assets.length&&!confirm(
+      `טעינת הקובץ תחליף את ${S.assets.length} התמונות שבמאגר כרגע. להמשיך?`))return;
+
+    await applyDesignToState({name:meta.name,rows,settings:meta.settings});
+    toast(`"${meta.name}" נטען מהקובץ — לחצו "ייצר משחק" 🎨`,'ok');
+  }catch(e){
+    console.error(e);
+    toast('טעינת הקובץ נכשלה: '+(e.message||e)+' — המאגר הקיים לא השתנה','err');
+  }
+}
+document.getElementById('btn-export-design').addEventListener('click',exportDesignFile);
+document.getElementById('btn-import-design').addEventListener('click',()=>
+  document.getElementById('import-design-file').click());
+document.getElementById('import-design-file').addEventListener('change',e=>{
+  const f=e.target.files&&e.target.files[0];
+  e.target.value='';                      // כדי שבחירת אותו קובץ שוב תפעיל את האירוע
+  if(f)importDesignFile(f);
+});
 
 // "תקוע/ה? שלח להושעיה" — שומר את העבודה לענן ופותח וואטסאפ עם הקוד ושם העיצוב
 async function sendStuckToAdmin(){
