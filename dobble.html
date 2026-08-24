@@ -1267,6 +1267,13 @@ function dcfgSave(patch){
       </div>
     </div>
 
+    <div class="og-t" style="margin-top:.8rem">איכות הייצוא</div>
+    <div class="shape-grp" id="exp-quality" style="width:100%">
+      <button type="button" class="sbt on" data-q="fast">רגיל</button>
+      <button type="button" class="sbt" data-q="print">איכות הדפסה</button>
+    </div>
+    <div id="exp-quality-note" style="font-size:.72rem;color:var(--muted);margin-top:.35rem;line-height:1.5"></div>
+
     <div class="brow">
       <button class="btn btn-sec" id="btn-prevprint">👁 תצוגה מקדימה</button>
       <button class="btn btn-pri" id="btn-doexp">⚙️ צור PDF</button>
@@ -1911,6 +1918,10 @@ const SB_BUCKET='symbols';
 // ══ MATH ══
 const ORDERS=[{q:2,total:7,spc:3},{q:3,total:13,spc:4},{q:4,total:21,spc:5},{q:5,total:31,spc:6},{q:7,total:57,spc:8}];
 const CARD_PX=500;
+// איכות הייצוא — נבחרת ע"י הלקוח במסך הייצוא. CARD_PX נשאר 500 לתצוגה
+// המקדימה בגלריה (מהירות) ומשמש כברירת מחדל.
+// 1120 = 300 DPI בקלף הגדול ביותר (95mm). מתחת לזה ההדפסה מטושטשת.
+const EXPORT_PX={fast:500,print:1120};
 const IMG_PX=400;
 const LOAD_MAX=1200; // צד ארוך מקסימלי בטעינה — שומר על יחס גובה-רוחב (לא כופה ריבוע)
 const A4_W=210,A4_H=297;
@@ -2771,7 +2782,7 @@ const S={
   sel:[],
   cardEdits:{},   // { [cardIdx]: { [slot]: {s,dx,dy} } } — התאמות ידניות לקלף בודד. dx/dy ביחידות rSym.
   metaVer:0,
-  cardSizeMm:85,spacingMm:5,startPos:'center',
+  cardSizeMm:85,spacingMm:5,startPos:'center',exportQuality:'fast',
   crop:true,isSilhouette:false,
   frame:{w:3,color:'#4338CA',op:100},
   symPad:2,
@@ -3808,7 +3819,7 @@ function ceCommit(){
 // ══ BACK / NAV ══
 document.getElementById('btn-b1').addEventListener('click',()=>{goScr(1);resetGenerated();});
 document.getElementById('btn-b2').addEventListener('click',()=>{goScr(2);resetExport();});
-document.getElementById('btn-goexp').addEventListener('click',()=>{updatePaperPrev();goScr(3);});
+document.getElementById('btn-goexp').addEventListener('click',()=>{updatePaperPrev();goScr(3);refreshQualityNote();});
 
 function resetGenerated(){
   Object.assign(S,{order:null,deck:[],layouts:[],imgEls:[],canvases:[],sel:[],cardEdits:{}});
@@ -3852,6 +3863,7 @@ function showDownloadDone(name){
   box.innerHTML='<strong>✅ הקובץ ירד למכשיר</strong><br>'+
     (name?'<span style="direction:ltr;display:inline-block;font-weight:700">'+
       name.replace(/[<>&]/g,'')+'</span><br>':'')+
+    (S._lastSize?'<span style="color:#065f46;font-weight:700">'+fmtSize(S._lastSize)+'</span><br>':'')+
     '<span style="color:#065f46">חפש/י אותו בתיקיית ההורדות (Downloads) או בהתראות של הדפדפן.</span>'+
     '<br><button type="button" class="btn btn-ghost" style="margin-top:.5rem;font-size:.78rem" onclick="this.closest(\'#dl-done\').remove()">סגור</button>';
   const old=document.getElementById('dl-done');if(old)old.remove();
@@ -3992,6 +4004,86 @@ function updatePaperPrev(){
       `<div style="color:#b45309;font-weight:700;margin-top:.35rem">⚠️ רק ${perPage} בדף — ${pages} דפים. לחצ/י "6" למעלה לפריסה חסכונית</div>`);
   }
 }
+
+// ══ איכות הייצוא + אומדן משקל ══
+// אומדן משקל ה-PDF: בונה PDF אמיתי ומודד אותו. מדידת toBlob() על הקנבס נכשלה
+// בסטייה של 60–89%, כי הבתים שנמדדו אינם הבתים שנכנסים לקובץ (jsPDF לא שמר על
+// דחיסת ה-PNG המקורית ללא compress:true). אחרי הוספת compress:true התגלה שורש
+// שני: jsPDF מדדפ תמונות זהות — ב-expPDF ה-backURL מוטמע *פעם אחת* בפועל למרות
+// ש-addImage נקרא עליו unique-per-position פעמים (אומת: 5 קריאות addImage על
+// אותה תמונה יוצרות PDF כמעט זהה לגודל לקריאה בודדת, לא פי 5). לכן הגב נספר
+// כאן פעם אחת בלבד, לא deck.length פעמים כמו החזית (שהיא שונה אמיתית בכל קלף).
+async function estimatePdfBytes(px){
+  if(!S.deck||!S.deck.length||!window.jspdf?.jsPDF)return null;
+  try{
+    const{jsPDF}=window.jspdf;
+    const jpg=S.exportQuality==='print';
+    const d=S.cardSizeMm;
+    const empty=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true})
+                  .output('blob').size;
+
+    const cv=document.createElement('canvas');cv.width=cv.height=px;
+    drawCard(cv,S.layouts[0],S.imgEls,S.shape);
+    flattenToWhiteIfJpg(cv,jpg);
+    const frontProbe=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
+    frontProbe.addImage(jpg?cv.toDataURL('image/jpeg',0.92):cv.toDataURL('image/png',1),
+                         jpg?'JPEG':'PNG',10,10,d,d);
+    const frontCost=Math.max(0,frontProbe.output('blob').size-empty);
+
+    let backCost=0;
+    if(S.back.enabled){
+      const bcv=document.createElement('canvas');bcv.width=bcv.height=px;
+      drawCardBack(bcv);
+      flattenToWhiteIfJpg(bcv,jpg);
+      const backProbe=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
+      backProbe.addImage(jpg?bcv.toDataURL('image/jpeg',0.92):bcv.toDataURL('image/png',1),
+                          jpg?'JPEG':'PNG',10,10,d,d);
+      backCost=Math.max(0,backProbe.output('blob').size-empty);
+    }
+    return Math.round(empty+frontCost*S.deck.length+backCost);
+  }catch(e){console.warn('estimatePdfBytes:',e);return null;}
+}
+
+function fmtSize(bytes){
+  if(bytes==null)return '';
+  if(bytes<1024*1024)return Math.round(bytes/1024)+' KB';
+  const mb=bytes/(1024*1024);
+  return (mb<10?mb.toFixed(1):Math.round(mb))+' MB';
+}
+
+// אזהרת נייד: קבצים כבדים נכשלים בנייד הרבה יותר מבמחשב — זיכרון מוגבל,
+// ספארי במיוחד. עדיף להזהיר מראש מאשר שהייצוא ייתקע באמצע.
+const isMobileDevice=()=>/Android|iPhone|iPad|iPod/i.test(navigator.userAgent||'');
+
+let _estBusy=false,_estQueued=false;
+async function refreshQualityNote(){
+  if(_estBusy){_estQueued=true;return;}
+  const note=document.getElementById('exp-quality-note');
+  if(!note)return;
+  _estBusy=true;
+  const q=S.exportQuality;
+  const base=q==='print'
+    ? '300 DPI — חד בהדפסה ביתית ובבית דפוס. הרקע מסביב לקלף נשמר לבן — מתאים להדפסה על נייר לבן.'
+    : 'מתאים לצפייה במסך ולשיתוף מהיר. להדפסה איכותית בחרו "איכות הדפסה".';
+  note.textContent=base+' מחשב משקל…';
+  const bytes=await estimatePdfBytes(EXPORT_PX[q]||CARD_PX);
+  _estBusy=false;
+  if(_estQueued){_estQueued=false;refreshQualityNote();return;}
+  if(bytes==null){note.textContent=base;return;}
+  let txt=base+` · משקל משוער ל-PDF: כ-${fmtSize(bytes)}`;
+  if(isMobileDevice()&&bytes>25*1024*1024){
+    txt+=' ⚠️ קובץ כבד לנייד — מומלץ לייצא מהמחשב, או לבחור "רגיל".';
+  }
+  note.textContent=txt;
+}
+document.getElementById('exp-quality').addEventListener('click',e=>{
+  const b=e.target.closest('.sbt');if(!b)return;
+  document.querySelectorAll('#exp-quality .sbt').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  S.exportQuality=b.dataset.q;
+  resetExport();
+  refreshQualityNote();
+});
 
 // ══ EXPORT OPTIONS (V5 Parametric) ══
 const slCardSize=document.getElementById('sl-card-size');
@@ -4575,6 +4667,19 @@ async function doExport(type){
   }
 }
 
+// JPEG אינו תומך ב-alpha, ואזור השקיפות מחוץ לצורת הקלף (drawCard/drawCardBack מתחילים
+// ב-clearRect, אז אי אפשר למלא לבן לפני הציור — הוא יימחק) יוצא שחור. ממלאים לבן *מאחורי*
+// מה שכבר צויר (destination-over) — לבן = צבע הדף, ולכן חזותית זהה בהדפסה על נייר לבן.
+function flattenToWhiteIfJpg(canvas,jpg){
+  if(!jpg)return;
+  const ctx=canvas.getContext('2d');
+  ctx.save();
+  ctx.globalCompositeOperation='destination-over';
+  ctx.fillStyle='#ffffff';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.restore();
+}
+
 async function expPDF(setp){
   if(!window.jspdf?.jsPDF)throw new Error('ספריית jsPDF לא נטענה — נדרש חיבור לאינטרנט');
   const{jsPDF}=window.jspdf;
@@ -4586,8 +4691,12 @@ async function expPDF(setp){
     alert('שילוב "מצב Silhouette + גב מעוצב" לא נתמך — כבו את אחד מהם ונסו שוב.');
     return;
   }
-  const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-  const tmp=document.createElement('canvas');tmp.width=tmp.height=CARD_PX;
+  // compress:true — בלעדיו jsPDF מטמיע את ה-image streams בלי דחיסה כלל, ומשקל
+  // ה-PDF נגזר מהרזולוציה ולא מהתוכן. זה מה שהפיק 105MB ל-21 קלפים ב-1120px.
+  const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
+  const px=EXPORT_PX[S.exportQuality]||CARD_PX;
+  const jpg=S.exportQuality==='print';
+  const tmp=document.createElement('canvas');tmp.width=tmp.height=px;
 
   const addRegMarks=()=>{
     if(!S.isSilhouette)return;
@@ -4620,7 +4729,15 @@ async function expPDF(setp){
   const totalCardUnits=S.deck.length*(backOn?2:1);
   let cardsDone=0,firstPage=true;
   let backURL=null,grow=0;
-  if(backOn){ensureBackCanvas();backURL=S.backCanvas.toDataURL('image/png',1);grow=S.back.duplex.grow||0;}
+  // מציירים לקנבס זמני נפרד בגודל px, לא ל-S.backCanvas (שנשאר תמיד CARD_PX לעורך
+  // הגב) — אחרת בהדפסה דו-צדדית באיכות גבוהה הגב יצא מטושטש על אותו דף כמו החזית.
+  if(backOn){
+    const backTmp=document.createElement('canvas');backTmp.width=backTmp.height=px;
+    drawCardBack(backTmp);
+    flattenToWhiteIfJpg(backTmp,jpg);
+    backURL=jpg?backTmp.toDataURL('image/jpeg',0.92):backTmp.toDataURL('image/png',1);
+    grow=S.back.duplex.grow||0;
+  }
 
   for(const entry of order){
     if(!firstPage)pdf.addPage();
@@ -4631,7 +4748,9 @@ async function expPDF(setp){
       for(let j=0;j<idxs.length;j++){
         const i=idxs[j],{x,y}=positions[j],d=cardMm;
         drawCard(tmp,S.layouts[i],S.imgEls,S.shape);
-        pdf.addImage(tmp.toDataURL('image/png',1),'PNG',x-d/2,y-d/2,d,d);
+        flattenToWhiteIfJpg(tmp,jpg);
+        pdf.addImage(jpg?tmp.toDataURL('image/jpeg',0.92):tmp.toDataURL('image/png',1),
+                     jpg?'JPEG':'PNG',x-d/2,y-d/2,d,d);
         if(S.isSilhouette){
           // Vector cut line so Silhouette Studio detects the card shape, not the PNG bounding box
           pdf.setDrawColor(255,0,0);pdf.setLineWidth(0.25);
@@ -4684,13 +4803,15 @@ async function expPDF(setp){
   document.getElementById('dl-area').classList.add('on');
   logGame({total:S.order.total,cards:S.deck.length,sizeMm:S.cardSizeMm,filename:fn,type:'pdf'});
   S._lastFile=fn;
+  S._lastSize=blob.size;
   setp(100,'✅ מוכן!');
 }
 
 async function expZIP(setp){
   if(typeof JSZip==='undefined')throw new Error('ספריית JSZip לא נטענה — נדרש חיבור לאינטרנט');
   const zip=new JSZip(),folder=zip.folder('dobble-cards');
-  const tmp=document.createElement('canvas');tmp.width=tmp.height=CARD_PX;
+  const px=EXPORT_PX[S.exportQuality]||CARD_PX;
+  const tmp=document.createElement('canvas');tmp.width=tmp.height=px;
   const backOn=S.back.enabled;
   const totalUnits=S.deck.length+(backOn?1:0);
   for(let i=0;i<S.deck.length;i++){
@@ -4700,9 +4821,11 @@ async function expZIP(setp){
     if(i%8===7)await tick();
   }
   if(backOn){
-    // גב אחיד לכל הקלפים — קובץ יחיד, לא משוכפל לכל קלף
-    ensureBackCanvas();
-    folder.file('card-back.png',S.backCanvas.toDataURL('image/png',1).split(',')[1],{base64:true});
+    // גב אחיד לכל הקלפים — קובץ יחיד, לא משוכפל לכל קלף. קנבס זמני נפרד באותו px
+    // כמו החזית, לא S.backCanvas (שנשאר CARD_PX לעורך) — אותה סיבה כמו ב-expPDF.
+    const backTmp=document.createElement('canvas');backTmp.width=backTmp.height=px;
+    drawCardBack(backTmp);
+    folder.file('card-back.png',backTmp.toDataURL('image/png',1).split(',')[1],{base64:true});
     setp(85,'גב הקלף…');
   }
   setp(90,'אורז קבצים…');
@@ -4715,6 +4838,7 @@ async function expZIP(setp){
   document.getElementById('dl-area').classList.add('on');
   logGame({total:S.order.total,cards:S.deck.length,sizeMm:S.cardSizeMm,filename:fnz,type:'zip'});
   S._lastFile=fnz;
+  S._lastSize=blob.size;
   setp(100,'✅ מוכן!');
 }
 
@@ -4737,7 +4861,7 @@ function drawCalibRuler(pdf){
 function generateCalibrationPDF(){
   if(!window.jspdf?.jsPDF){toast('ספריית jsPDF לא נטענה — נדרש חיבור לאינטרנט','err');return;}
   const{jsPDF}=window.jspdf;
-  const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
   const cardMm=S.cardSizeMm,cx=A4_W/2,cy=A4_H/2;
   ensureBackCanvas();
   const tmp=document.createElement('canvas');tmp.width=tmp.height=CARD_PX;
@@ -4810,6 +4934,7 @@ async function expDXF(setp){
   lnk.href=_exportUrl;lnk.download=fnd;
   document.getElementById('dl-area').classList.add('on');
   S._lastFile=fnd;
+  S._lastSize=blob.size;
   setp(100,'✅ מוכן!');
 }
 
