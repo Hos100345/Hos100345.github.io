@@ -2174,9 +2174,13 @@ function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
 // מקור אמת יחיד לכל חישובי המידות — drawCard, עורך הקלף הבודד וייצוא ה-PDF
 // חייבים לקבל בדיוק את אותם מספרים, אחרת התצוגה והקובץ יסטו זה מזה.
 function cardGeom(sz){
-  const cx=sz/2,cy=sz/2,r=sz/2-7;
+  // המרווח היה 7px מוחלטים — 1.4% מהקלף ב-500px אבל 0.625% ב-1120px, מה שגרם
+  // לסטייה של 1.59% ב-ppMm בין איכויות הייצוא ולפריסה שונה במקצת בכל אחת.
+  // 7/500 = 0.014 בדיוק, ולכן ב-sz=500 התוצאה זהה לחלוטין להתנהגות הקודמת.
+  const M=sz*0.014;
+  const cx=sz/2,cy=sz/2,r=sz/2-M;
   const sq=r*1.88,sqx=cx-sq/2,sqy=cy-sq/2,sqcr=sq*.09;
-  const ppMm=(sz-14)/Math.max(1,S.cardSizeMm),fw=S.frame.w*ppMm;
+  const ppMm=(sz-2*M)/Math.max(1,S.cardSizeMm),fw=S.frame.w*ppMm;
   const rSym=Math.max(r*.25,r-fw-S.symPad*ppMm);
   return{cx,cy,r,sq,sqx,sqy,sqcr,ppMm,fw,rSym};
 }
@@ -2512,10 +2516,14 @@ const BACK_FONT_STACK={sans:"system-ui,'Segoe UI',Arial,sans-serif",serif:"Georg
 
 // ── דוגמאות רקע: אריח נבנה פעם אחת, מוקאש לפי id+color+scale. קונפטי דטרמיניסטי (sr, seed 7777) ──
 const _patternTileCache={};
-function getPatternTile(p){
-  const key=p.id+'|'+p.color+'|'+p.scale;
+// px = רזולוציית הקנבס שהתבנית תמולא עליו. base=60 היה מוחלט, ולכן באיכות
+// הדפסה (1120) התקבלו פי 2.28 אריחים לרוחב הקלף והתבנית נראתה דחוסה וזעירה.
+// ברירת המחדל CARD_PX משמרת התנהגות זהה לחלוטין לכל הקוראים הקיימים.
+function getPatternTile(p,px){
+  const target=px||CARD_PX;
+  const key=p.id+'|'+p.color+'|'+p.scale+'|'+target;
   if(_patternTileCache[key])return _patternTileCache[key];
-  const base=60,sz=Math.max(10,Math.round(base*(p.scale/100)));
+  const base=60*(target/CARD_PX),sz=Math.max(10,Math.round(base*(p.scale/100)));
   const tile=document.createElement('canvas');tile.width=tile.height=sz;
   const c=tile.getContext('2d');
   c.fillStyle=p.color;c.strokeStyle=p.color;
@@ -2551,7 +2559,7 @@ function getPatternTile(p){
       c.stroke();
       break;
   }
-  _patternTileCache[p.id+'|'+p.color+'|'+p.scale]=tile;
+  _patternTileCache[key]=tile;
   return tile;
 }
 function starPathAbs(ctx,cx,cy,outerR,innerR){
@@ -2680,10 +2688,14 @@ function drawBackText(ctx,cx,cy,r,text){
 
 // מצייר את גב הקלף — משקף בדיוק את הגיאומטריה של drawCard כדי שהצדדים יתאימו
 function drawCardBack(canvas){
-  const ctx=canvas.getContext('2d'),sz=canvas.width,cx=sz/2,cy=sz/2,r=sz/2-7;
+  // אותו מרווח יחסי כמו ב-cardGeom — החזית והגב חייבים להסכים על הגאומטריה,
+  // אחרת בהדפסה דו-צדדית הם לא יתלכדו.
+  const ctx=canvas.getContext('2d'),sz=canvas.width;
+  const M=sz*0.014;
+  const cx=sz/2,cy=sz/2,r=sz/2-M;
   const isC=S.shape==='circle';
   const sq=r*1.88,sqx=cx-sq/2,sqy=cy-sq/2,sqcr=sq*.09;
-  const ppMm=(sz-14)/Math.max(1,S.cardSizeMm);
+  const ppMm=(sz-2*M)/Math.max(1,S.cardSizeMm);
   const B=S.back;
   ctx.clearRect(0,0,sz,sz);
 
@@ -2694,7 +2706,7 @@ function drawCardBack(canvas){
     if(isC)ctx.arc(cx,cy,r,0,Math.PI*2);else rrect(ctx,sqx,sqy,sq,sq,sqcr);
     ctx.clip();
     ctx.globalAlpha=B.pattern.op/100;
-    ctx.fillStyle=ctx.createPattern(getPatternTile(B.pattern),'repeat');
+    ctx.fillStyle=ctx.createPattern(getPatternTile(B.pattern,sz),'repeat');
     ctx.fillRect(0,0,sz,sz);
     ctx.restore();
   }
