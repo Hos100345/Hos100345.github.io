@@ -3871,6 +3871,10 @@ function resetState(){
 let _exportUrl=null;
 function resetExport(){
   if(_exportUrl){URL.revokeObjectURL(_exportUrl);_exportUrl=null;}
+  // ה-Blob של הייצוא הקודם יכול להיות עשרות מגה. בלי השחרור הזה הוא נשאר
+  // תלוי בזיכרון גם אחרי שהלקוח יצר חפיסה חדשה — ודווקא בספארי בנייד,
+  // שם לחץ זיכרון הוא אחד החשודים בכשלי ייצוא.
+  S._lastBlob=null;S._lastFile='';S._lastSize=0;
   document.getElementById('exp-prog').classList.remove('on');
   document.getElementById('dl-area').classList.remove('on');
   const dl=document.getElementById('dl-done');if(dl)dl.remove();
@@ -4829,6 +4833,10 @@ async function expPDF(setp){
   logGame({total:S.order.total,cards:S.deck.length,sizeMm:S.cardSizeMm,filename:fn,type:'pdf'});
   S._lastFile=fn;
   S._lastSize=blob.size;
+  // הייצוא לא נמדד בשרת עד היום — logGame כותב ל-localStorage בלבד. בלי
+  // המדידה הזו אין מכנה ל-share-ok ואי אפשר לדעת אם התיקון לאייפון עבד.
+  window.track&&window.track('export',{cards:S.deck.length,symbols:S.order?S.order.spc:'',
+    detail:`pdf · ${S.exportQuality} · ${fmtSize(blob.size)}`});
   refreshShareBtn();
   setp(100,'✅ מוכן!');
 }
@@ -4868,6 +4876,8 @@ async function expZIP(setp){
   logGame({total:S.order.total,cards:S.deck.length,sizeMm:S.cardSizeMm,filename:fnz,type:'zip'});
   S._lastFile=fnz;
   S._lastSize=blob.size;
+  window.track&&window.track('export',{cards:S.deck.length,symbols:S.order?S.order.spc:'',
+    detail:`zip · ${S.exportQuality} · ${fmtSize(blob.size)}`});
   refreshShareBtn();
   setp(100,'✅ מוכן!');
 }
@@ -4968,6 +4978,8 @@ async function expDXF(setp){
   document.getElementById('dl-area').classList.add('on');
   S._lastFile=fnd;
   S._lastSize=blob.size;
+  window.track&&window.track('export',{cards:S.deck.length,symbols:S.order?S.order.spc:'',
+    detail:`dxf · ${fmtSize(blob.size)}`});
   refreshShareBtn();
   setp(100,'✅ מוכן!');
 }
@@ -7338,6 +7350,9 @@ function refreshShareBtn(){
   const ok=canShareExport();
   b.hidden=!ok;
   if(tip)tip.hidden=!ok;
+  // מדווח פעם אחת לכל ייצוא: האם המכשיר תומך בשיתוף קבצים. זו התשובה
+  // לשאלה "האם הפתרון בכלל רלוונטי אצל לקוחות אייפון אמיתיים".
+  window.track&&window.track('share-available',{detail:(ok?'yes':'no')+' · '+(S._lastFile||'')});
 }
 
 document.getElementById('dl-share').addEventListener('click',async()=>{
@@ -7345,9 +7360,11 @@ document.getElementById('dl-share').addEventListener('click',async()=>{
   try{
     const f=new File([S._lastBlob],S._lastFile,{type:S._lastBlob.type||'application/octet-stream'});
     await navigator.share({files:[f],title:S._lastFile});
+    window.track&&window.track('share-ok',{detail:S._lastFile||''});
   }catch(e){
     if(e&&e.name==='AbortError')return;      // הלקוח סגר את הגיליון — לא שגיאה
     console.warn('share failed:',e);
+    window.track&&window.track('share-fail',{detail:((e&&e.name)||'error')+' · '+(S._lastFile||'')});
     toast('השיתוף לא זמין כרגע — נסו את כפתור ההורדה','err');
   }
 });
