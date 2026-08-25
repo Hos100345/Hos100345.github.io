@@ -1045,6 +1045,7 @@ function dcfgSave(patch){
     <div class="brow" style="gap:.4rem">
       <button type="button" class="btn btn-sec" id="btn-export-design">⬇️ שמור לקובץ</button>
       <button type="button" class="btn btn-sec" id="btn-import-design">⬆️ טען מקובץ</button>
+      <button type="button" class="btn btn-ok" id="btn-share-design" hidden>📤 שמירה לקבצים / שיתוף</button>
     </div>
     <input type="file" id="import-design-file" accept=".zip,application/zip" style="display:none">
     <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem;line-height:1.5">
@@ -3875,6 +3876,7 @@ function resetExport(){
   // תלוי בזיכרון גם אחרי שהלקוח יצר חפיסה חדשה — ודווקא בספארי בנייד,
   // שם לחץ זיכרון הוא אחד החשודים בכשלי ייצוא.
   S._lastBlob=null;S._lastFile='';S._lastSize=0;
+  const sd=document.getElementById('btn-share-design');if(sd)sd.hidden=true;
   document.getElementById('exp-prog').classList.remove('on');
   document.getElementById('dl-area').classList.remove('on');
   const dl=document.getElementById('dl-done');if(dl)dl.remove();
@@ -6140,6 +6142,12 @@ async function exportDesignFile(){
     document.body.appendChild(a);a.click();a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),60000);
     S._lastFile=a.download;S._lastSize=blob.size;
+    // נשמר כדי ש-navigator.share יוכל להיקרא ישירות מתוך אירוע הלחיצה.
+    // קריאה אחרי await מאבדת את ה-user gesture ו-iOS דוחה אותה.
+    S._lastBlob=blob;
+    refreshShareDesignBtn();
+    window.track&&window.track('export',{cards:S.assets.length,symbols:'',
+      detail:`designfile · ${fmtSize(blob.size)}`});
     // showDownloadDone() מוסיף אל תוך #exp-prog (מסך 3, הייצוא) — כפתורי הגיבוי
     // יושבים במסך 1 (העלאה), אז שם הפאנל ייכנס לחלק מוסתר של הדף ולא יראה אותו
     // אף אחד. toast עם המשקל בפועל נראה תמיד, בלי קשר למסך הנוכחי.
@@ -6194,6 +6202,30 @@ document.getElementById('import-design-file').addEventListener('change',e=>{
   const f=e.target.files&&e.target.files[0];
   e.target.value='';                      // כדי שבחירת אותו קובץ שוב תפעיל את האירוע
   if(f)importDesignFile(f);
+});
+
+// כפתור שיתוף נפרד לקובץ העיצוב: #dl-share יושב במסך הייצוא ואינו גלוי
+// כאן. משתמש באותה בדיקת יכולת (canShareExport) ובאותה טלמטריה.
+function refreshShareDesignBtn(){
+  const b=document.getElementById('btn-share-design');
+  if(!b)return;
+  const ok=canShareExport();
+  b.hidden=!ok;
+  window.track&&window.track('share-available',{detail:(ok?'yes':'no')+' · '+(S._lastFile||'')});
+}
+
+document.getElementById('btn-share-design').addEventListener('click',async()=>{
+  // ⛔ אין await לפני navigator.share.
+  try{
+    const f=new File([S._lastBlob],S._lastFile,{type:S._lastBlob.type||'application/zip'});
+    await navigator.share({files:[f],title:S._lastFile});
+    window.track&&window.track('share-ok',{detail:S._lastFile||''});
+  }catch(e){
+    if(e&&e.name==='AbortError')return;
+    console.warn('share design failed:',e);
+    window.track&&window.track('share-fail',{detail:((e&&e.name)||'error')+' · '+(S._lastFile||'')});
+    toast('השיתוף לא זמין כרגע — נסו את כפתור השמירה','err');
+  }
 });
 
 // "תקוע/ה? שלח להושעיה" — שומר את העבודה לענן ופותח וואטסאפ עם הקוד ושם העיצוב
