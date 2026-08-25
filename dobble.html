@@ -1308,6 +1308,10 @@ function dcfgSave(patch){
     <div class="dl-area" id="dl-area">
       <span style="font-size:.875rem;color:var(--green);font-weight:700">✅ הקובץ מוכן!</span>
       <a class="btn btn-ok" id="dl-link" href="#" download>📥 הורד קובץ</a>
+      <button class="btn btn-ok" id="dl-share" type="button" hidden>📤 שמירה לקבצים / שיתוף</button>
+      <div id="dl-ios-tip" style="font-size:.75rem;color:var(--muted);line-height:1.5;margin-top:.3rem" hidden>
+        באייפון עדיף "שמירה לקבצים" — כך הקובץ נשמר ואפשר למצוא אותו אחר כך.
+      </div>
       <button class="btn btn-sec" id="btn-print-order-2">🚚 או: הדפסה ומשלוח עד הבית</button>
     </div>
   </div>
@@ -4815,6 +4819,9 @@ async function expPDF(setp){
   const blob=pdf.output('blob');
   if(_exportUrl)URL.revokeObjectURL(_exportUrl);
   _exportUrl=URL.createObjectURL(blob);
+  // נשמר כדי ש-navigator.share יוכל להיקרא ישירות מתוך אירוע הלחיצה.
+  // קריאה אחרי await מאבדת את ה-user gesture ו-iOS דוחה אותה.
+  S._lastBlob=blob;
   const lnk=document.getElementById('dl-link');
   const fn=`dobble-${S.order.total}cards-${S.cardSizeMm}mm${backOn?'-2sided':''}.pdf`;
   lnk.href=_exportUrl;lnk.download=fn;
@@ -4822,6 +4829,7 @@ async function expPDF(setp){
   logGame({total:S.order.total,cards:S.deck.length,sizeMm:S.cardSizeMm,filename:fn,type:'pdf'});
   S._lastFile=fn;
   S._lastSize=blob.size;
+  refreshShareBtn();
   setp(100,'✅ מוכן!');
 }
 
@@ -4850,6 +4858,9 @@ async function expZIP(setp){
   const blob=await zip.generateAsync({type:'blob'});
   if(_exportUrl)URL.revokeObjectURL(_exportUrl);
   _exportUrl=URL.createObjectURL(blob);
+  // נשמר כדי ש-navigator.share יוכל להיקרא ישירות מתוך אירוע הלחיצה.
+  // קריאה אחרי await מאבדת את ה-user gesture ו-iOS דוחה אותה.
+  S._lastBlob=blob;
   const lnk=document.getElementById('dl-link');
   const fnz=`dobble-${S.order.total}cards${backOn?'-2sided':''}.zip`;
   lnk.href=_exportUrl;lnk.download=fnz;
@@ -4857,6 +4868,7 @@ async function expZIP(setp){
   logGame({total:S.order.total,cards:S.deck.length,sizeMm:S.cardSizeMm,filename:fnz,type:'zip'});
   S._lastFile=fnz;
   S._lastSize=blob.size;
+  refreshShareBtn();
   setp(100,'✅ מוכן!');
 }
 
@@ -4947,12 +4959,16 @@ async function expDXF(setp){
   const blob=new Blob([dxf],{type:'application/dxf'});
   if(_exportUrl)URL.revokeObjectURL(_exportUrl);
   _exportUrl=URL.createObjectURL(blob);
+  // נשמר כדי ש-navigator.share יוכל להיקרא ישירות מתוך אירוע הלחיצה.
+  // קריאה אחרי await מאבדת את ה-user gesture ו-iOS דוחה אותה.
+  S._lastBlob=blob;
   const lnk=document.getElementById('dl-link');
   const fnd=`dobble-${S.order.total}cards-cutlines.dxf`;
   lnk.href=_exportUrl;lnk.download=fnd;
   document.getElementById('dl-area').classList.add('on');
   S._lastFile=fnd;
   S._lastSize=blob.size;
+  refreshShareBtn();
   setp(100,'✅ מוכן!');
 }
 
@@ -7299,6 +7315,40 @@ document.getElementById('adm-gate-inp').addEventListener('input',function(){
   }else if(this.value.length>=Math.max(String(DCFG.adminCode).length,10)){
     document.getElementById('adm-gate-msg').textContent='קוד שגוי';
     setTimeout(()=>{this.value='';document.getElementById('adm-gate-msg').textContent='';},800);
+  }
+});
+
+// ── שמירה לקבצים באייפון ─────────────────────────────────────────────────
+// ספארי מתעלם כמעט תמיד מ-download על blob של PDF ופותח אותו בכרטיסייה במקום
+// לשמור. הלקוח רואה את הקובץ, יוצא, ולא מוצא כלום — כי באמת לא נשמר קובץ.
+// גיליון השיתוף של iOS הוא הדרך היחידה שבה המשתמש באמת שומר ויודע איפה.
+// בדיקת יכולת ולא זיהוי מכשיר: זיהוי User-Agent מתיישן, canShare לא.
+function canShareExport(){
+  try{
+    if(!S._lastBlob||!S._lastFile)return false;
+    if(!navigator.canShare||!navigator.share)return false;
+    const f=new File([S._lastBlob],S._lastFile,{type:S._lastBlob.type||'application/octet-stream'});
+    return navigator.canShare({files:[f]});
+  }catch(e){return false;}
+}
+
+function refreshShareBtn(){
+  const b=document.getElementById('dl-share'),tip=document.getElementById('dl-ios-tip');
+  if(!b)return;
+  const ok=canShareExport();
+  b.hidden=!ok;
+  if(tip)tip.hidden=!ok;
+}
+
+document.getElementById('dl-share').addEventListener('click',async()=>{
+  // ⛔ אין await לפני navigator.share — הקריאה חייבת לצאת מתוך אירוע הלחיצה.
+  try{
+    const f=new File([S._lastBlob],S._lastFile,{type:S._lastBlob.type||'application/octet-stream'});
+    await navigator.share({files:[f],title:S._lastFile});
+  }catch(e){
+    if(e&&e.name==='AbortError')return;      // הלקוח סגר את הגיליון — לא שגיאה
+    console.warn('share failed:',e);
+    toast('השיתוף לא זמין כרגע — נסו את כפתור ההורדה','err');
   }
 });
 
