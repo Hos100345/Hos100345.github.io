@@ -499,7 +499,12 @@ function dcfgSave(patch){
   <div class="modal-card" style="max-width:420px;width:94%;text-align:center">
     <div style="font-size:2.6rem;margin-bottom:.3rem">🔒</div>
     <div style="font-size:1.3rem;font-weight:800;margin-bottom:.5rem">המשחק הזה דורש שדרוג</div>
-    <div style="color:var(--muted);font-size:.96rem;line-height:1.6;margin-bottom:1rem">הקוד שלך פותח עד <b id="upg-current"></b> קלפים. אפשר להמשיך לצפות בתצוגה מקדימה, ולשדרג להורדה:</div>
+    <div style="color:var(--muted);font-size:.96rem;line-height:1.6;margin-bottom:.7rem">הקוד שלך פותח עד <b id="upg-current"></b> קלפים. אפשר להמשיך לצפות בתצוגה מקדימה, ולשדרג להורדה:</div>
+    <div style="background:var(--purple-light);border-radius:var(--rs);padding:.7rem .85rem;margin-bottom:.9rem;font-size:.88rem;line-height:1.65;text-align:right">
+      <b>רוצים רק משחק אחד? זה בדיוק זה.</b><br>
+      משלמים פעם אחת, ובמשך חודש יוצרים ומדפיסים כמה משחקים שרוצים.
+      <b>אין חיוב חוזר</b> — אחרי חודש פשוט נגמר, אלא אם תבחרו לחדש.
+    </div>
     <div id="upg-tiers" style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:.8rem"></div>
     <div id="upg-email-wrap" hidden>
       <div style="text-align:right;margin-bottom:.5rem">
@@ -520,7 +525,7 @@ function dcfgSave(patch){
   <div class="modal-card" style="max-width:420px;width:94%;text-align:center">
     <div style="font-size:2.6rem;margin-bottom:.3rem">🎉</div>
     <div style="font-size:1.3rem;font-weight:800;margin-bottom:.5rem">התשלום התקבל — בחר/י קוד אישי</div>
-    <div style="color:var(--muted);font-size:.96rem;line-height:1.6;margin-bottom:1rem">הקוד הזה יהיה מפתח הכניסה שלך למנוי החודשי בכל ביקור הבא.</div>
+    <div style="color:var(--muted);font-size:.96rem;line-height:1.6;margin-bottom:1rem">הקוד הזה יהיה מפתח הכניסה שלך בחודש הקרוב. שמרו אותו.</div>
     <div style="text-align:right;margin-bottom:.6rem">
       <label for="claim-email" style="display:block;font-size:.85rem;color:var(--muted);margin-bottom:.3rem">האימייל ששילמת/ה איתו</label>
       <input id="claim-email" type="email" inputmode="email" placeholder="name@example.com"
@@ -766,7 +771,9 @@ function dcfgSave(patch){
       const tier=Number(tierStr);
       const b=document.createElement('button');
       b.type='button';
-      b.textContent=`עד ${tier} קלפים — ${price} ₪ לחודש`;
+      // "לחודש" נקרא כמו מנוי מתחדש, ואין כזה — התשלום חד-פעמי והגישה פגה מעצמה.
+      b.innerHTML=`<div>עד ${tier} קלפים · ${price} ₪</div>`+
+                  `<div style="font-size:.75rem;font-weight:500;opacity:.75;margin-top:.15rem">תשלום חד-פעמי · חודש גישה</div>`;
       b.style.cssText=dark
         ? 'width:100%;padding:.6rem .8rem;border-radius:14px;border:2px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff;font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;transition:all .15s'
         : 'width:100%;padding:.6rem .8rem;border-radius:14px;border:2px solid var(--border);background:transparent;color:var(--text);font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;transition:all .15s';
@@ -907,7 +914,7 @@ function dcfgSave(patch){
         try{localStorage.removeItem('dobble_pay_email');}catch(e){}
         setTimeout(()=>{
           m.hidden=true;
-          window.dobbleUnlock&&window.dobbleUnlock(finalCode,'מנוי חודשי',data.max_order);
+          window.dobbleUnlock&&window.dobbleUnlock(finalCode,'גישה מלאה',data.max_order);
           try{
             const url=new URL(location.href);
             url.searchParams.delete('paid');url.searchParams.delete('tier');
@@ -1159,7 +1166,7 @@ function dcfgSave(patch){
         <div class="sb-sec">
           <div class="sb-t">מרווח מהמסגרת</div>
           <div class="sl-row">
-            <div class="sl-lbl"><span>מרווח סמלים ← מסגרת</span><strong id="lbl-sympad">2מ"מ</strong></div>
+            <div class="sl-lbl"><span>מרווח סמלים ← מסגרת</span><strong id="lbl-sympad">2 מ"מ</strong></div>
             <input type="range" id="sl-sympad" min="0" max="30" step="0.5" value="2">
           </div>
           <div style="font-size:.75rem;color:var(--muted);line-height:1.5;margin-top:.3rem">
@@ -1208,14 +1215,14 @@ function dcfgSave(patch){
             <button class="sbt" data-pp="9"  style="flex:1">9</button>
           </div>
           <div style="font-size:.75rem;color:var(--muted);margin:-.25rem 0 .5rem">קלפים בדף A4</div>
-          <div class="sl-lbl"><span>קוטר</span><strong id="lbl-card-size">85mm</strong></div>
+          <div class="sl-lbl"><span>קוטר</span><strong id="lbl-card-size">85 מ"מ</strong></div>
           <input type="range" id="sl-card-size" min="20" max="195" value="85" step="1">
           <button class="btn btn-ghost" type="button" data-reset="sl-card-size,sl-spacing"
                   style="width:100%;justify-content:center;margin-top:.5rem;font-size:.8rem">↺ ברירת מחדל</button>
         </div>
         <div class="og">
           <div class="og-t">מרווח בין קלפים</div>
-          <div class="sl-lbl"><span>0 = צפיפות מקסימלית (Hex)</span><strong id="lbl-spacing">5mm</strong></div>
+          <div class="sl-lbl"><span>0 = צפיפות מקסימלית (Hex)</span><strong id="lbl-spacing">5 מ"מ</strong></div>
           <input type="range" id="sl-spacing" min="0" max="40" value="5" step="1">
         </div>
         <div class="og">
@@ -1243,7 +1250,7 @@ function dcfgSave(patch){
             <div class="dp-inner">
               <div class="dp-sec">
                 <div class="dp-sec-hd">מסגרת</div>
-                <div class="sl-lbl"><span>רוחב מסגרת</span><strong id="lbl-fw">3מ"מ</strong></div>
+                <div class="sl-lbl"><span>רוחב מסגרת</span><strong id="lbl-fw">3 מ"מ</strong></div>
                 <input type="range" id="sl-fw" min="0" max="25" step="0.5" value="3">
                 <div class="sl-lbl"><span>עוצמת פיגמנט</span><strong id="lbl-fop">100%</strong></div>
                 <input type="range" id="sl-fop" min="0" max="100" step="1" value="100">
@@ -1390,7 +1397,7 @@ function dcfgSave(patch){
       <div class="og-t" style="margin-top:.5rem">צבע</div>
       <div class="swatch-row" id="back-frame-sw"></div>
       <label class="cp-row"><span>צבע חופשי</span><input type="color" id="back-frame-pick" value="#FFFFFF"></label>
-      <div class="sl-lbl"><span>רוחב</span><strong id="lbl-back-frame-w">3מ"מ</strong></div>
+      <div class="sl-lbl"><span>רוחב</span><strong id="lbl-back-frame-w">3 מ"מ</strong></div>
       <input type="range" id="back-frame-w" min="0" max="15" step="0.5" value="3">
       <div class="sl-lbl"><span>שקיפות</span><strong id="lbl-back-frame-op">100%</strong></div>
       <input type="range" id="back-frame-op" min="0" max="100" step="1" value="100">
@@ -1463,7 +1470,7 @@ function dcfgSave(patch){
       <div class="sl-lbl"><span>הזזה אנכית (dy)</span><strong id="lbl-back-dy">0</strong></div>
       <input type="range" id="back-dy" min="-5" max="5" step="0.5" value="0">
       <button class="btn btn-ghost" id="back-duplex-reset" type="button" style="align-self:flex-start;font-size:.78rem;padding:.35rem .8rem">↺ אפס כוונון</button>
-      <div class="sl-lbl" style="margin-top:.4rem"><span>הגדלת גב (bleed)</span><strong id="lbl-back-grow">0.6מ"מ</strong></div>
+      <div class="sl-lbl" style="margin-top:.4rem"><span>הגדלת גב (bleed)</span><strong id="lbl-back-grow">0.6 מ"מ</strong></div>
       <input type="range" id="back-grow" min="0" max="3" step="0.1" value="0.6">
       <button class="btn btn-sec" id="back-calib-btn" type="button" style="margin-top:.6rem">📐 הפק דף כיול (2 עמודים)</button>
       <div style="font-size:.72rem;color:var(--muted);line-height:1.6">הדפיסו את דף הכיול, הפכו אותו, ומדדו את הסטייה בין הסרגלים — הזינו אותה כאן בכוונון העדין.</div>
@@ -4006,10 +4013,10 @@ function updatePaperPrev(){
       '<span style="color:#b91c1c;font-weight:700">⚠️ הקלף גדול מדי לדף A4 בהגדרות האלה — הקטן/י את גודל הקלף או את המרווח</span>';
     return;
   }
-  const spacingLabel=S.spacingMm===0?'hex':S.spacingMm+'mm';
+  const spacingLabel=S.spacingMm===0?'hex':S.spacingMm+' מ"מ';
   const backTxt=(S.back.enabled&&S.deck.length)?` · + ${pages} עמודי גב`:'';
   document.getElementById('prev-info').textContent=
-    `A4 · ${perPage} קלפים/עמוד · ${cardMm}mm · מרווח ${spacingLabel} · ${pages} ${pages!==1?'דפים':'דף'}${backTxt}`;
+    `A4 · ${perPage} קלפים/עמוד · ${cardMm} מ"מ · מרווח ${spacingLabel} · ${pages} ${pages!==1?'דפים':'דף'}${backTxt}`;
   if(perPage>0&&perPage<3&&S.deck.length>6){
     document.getElementById('prev-info').insertAdjacentHTML('beforeend',
       `<div style="color:#b45309;font-weight:700;margin-top:.35rem">⚠️ רק ${perPage} בדף — ${pages} דפים. לחצ/י "6" למעלה לפריסה חסכונית</div>`);
@@ -4101,7 +4108,7 @@ const slCardSize=document.getElementById('sl-card-size');
 const lblCardSize=document.getElementById('lbl-card-size');
 let _cardSizeRedrawT=null;
 slCardSize.addEventListener('input',()=>{
-  S.cardSizeMm=+slCardSize.value;lblCardSize.textContent=slCardSize.value+'mm';
+  S.cardSizeMm=+slCardSize.value;lblCardSize.textContent=slCardSize.value+' מ"מ';
   syncSymPadRange();updatePaperPrev();markPerPageActive();
   clearTimeout(_cardSizeRedrawT);
   _cardSizeRedrawT=setTimeout(()=>{redrawCards();},180);   // debounce — 57 קנבסים בנייד
@@ -4134,14 +4141,14 @@ document.getElementById('perpage-grp').addEventListener('click',e=>{
   if(d==null){toast('לא ניתן להגיע למספר הזה עם המרווח הנוכחי — הקטן/י את המרווח','err');return;}
   S.cardSizeMm=d;
   slCardSize.value=String(d);
-  lblCardSize.textContent=d+'mm';
+  lblCardSize.textContent=d+' מ"מ';
   syncSymPadRange();updatePaperPrev();markPerPageActive();
   redrawCards();resetExport();
 });
 
 const slSpacing=document.getElementById('sl-spacing');
 const lblSpacing=document.getElementById('lbl-spacing');
-slSpacing.addEventListener('input',()=>{S.spacingMm=+slSpacing.value;lblSpacing.textContent=slSpacing.value+'mm';updatePaperPrev();markPerPageActive();});
+slSpacing.addEventListener('input',()=>{S.spacingMm=+slSpacing.value;lblSpacing.textContent=slSpacing.value+' מ"מ';updatePaperPrev();markPerPageActive();});
 slSpacing.addEventListener('change',resetExport);
 
 document.getElementById('startpos-grp').addEventListener('click',e=>{
@@ -4184,7 +4191,7 @@ buildSwatches('sw-bg',BG_COLORS,()=>S.bg.color,c=>{S.bg.color=c;},'pick-bg');
 
 document.getElementById('sl-fw').addEventListener('input',e=>{
   S.frame.w=parseFloat(e.target.value);
-  document.getElementById('lbl-fw').textContent=S.frame.w+'מ"מ';onDesignChange();
+  document.getElementById('lbl-fw').textContent=S.frame.w+' מ"מ';onDesignChange();
   if(syncSymPadRange())redrawCards();
 });
 document.getElementById('sl-fop').addEventListener('input',e=>{
@@ -4193,7 +4200,7 @@ document.getElementById('sl-fop').addEventListener('input',e=>{
 });
 document.getElementById('sl-sympad').addEventListener('input',e=>{
   S.symPad=parseFloat(e.target.value);
-  document.getElementById('lbl-sympad').textContent=S.symPad+'מ"מ';onDesignChange();
+  document.getElementById('lbl-sympad').textContent=S.symPad+' מ"מ';onDesignChange();
 });
 // טווח המרווח תלוי בקוטר הקלף וברוחב המסגרת — בלי סנכרון, חלק מהסליידר מת ולא משפיע
 function syncSymPadRange(){
@@ -4201,7 +4208,7 @@ function syncSymPadRange(){
   const maxPad=Math.max(1,Math.round((0.375*S.cardSizeMm-S.frame.w)*2)/2);
   sl.max=maxPad;
   if(S.symPad>maxPad){
-    S.symPad=maxPad;sl.value=maxPad;lbl.textContent=maxPad+'מ"מ';
+    S.symPad=maxPad;sl.value=maxPad;lbl.textContent=maxPad+' מ"מ';
     return true;   // הערך נחתך — צריך רענון ציור
   }
   return false;
@@ -4374,7 +4381,7 @@ document.getElementById('back-pattern-scale').addEventListener('input',e=>{
   S.back.pattern.scale=parseInt(e.target.value);document.getElementById('lbl-back-pattern-scale').textContent=S.back.pattern.scale+'%';markBackDirty();
 });
 document.getElementById('back-frame-w').addEventListener('input',e=>{
-  S.back.frame.w=parseFloat(e.target.value);document.getElementById('lbl-back-frame-w').textContent=S.back.frame.w+'מ"מ';markBackDirty();
+  S.back.frame.w=parseFloat(e.target.value);document.getElementById('lbl-back-frame-w').textContent=S.back.frame.w+' מ"מ';markBackDirty();
 });
 document.getElementById('back-frame-op').addEventListener('input',e=>{
   S.back.frame.op=parseInt(e.target.value);document.getElementById('lbl-back-frame-op').textContent=S.back.frame.op+'%';markBackDirty();
@@ -4446,7 +4453,7 @@ document.getElementById('back-duplex-reset').addEventListener('click',()=>{
   document.getElementById('back-dy').value=0;document.getElementById('lbl-back-dy').textContent='0';
 });
 document.getElementById('back-grow').addEventListener('input',e=>{
-  S.back.duplex.grow=parseFloat(e.target.value);document.getElementById('lbl-back-grow').textContent=S.back.duplex.grow+'מ"מ';
+  S.back.duplex.grow=parseFloat(e.target.value);document.getElementById('lbl-back-grow').textContent=S.back.duplex.grow+' מ"מ';
 });
 document.getElementById('back-calib-btn').addEventListener('click',()=>{
   if(typeof generateCalibrationPDF==='function')generateCalibrationPDF();
@@ -4484,7 +4491,7 @@ function syncBackUIFromState(){
   document.getElementById('back-pattern-scale').value=B.pattern.scale;document.getElementById('lbl-back-pattern-scale').textContent=B.pattern.scale+'%';
   document.querySelectorAll('#back-frame-grid .back-frame-btn').forEach(b=>b.classList.toggle('on',b.dataset.id===B.frame.id));
   document.getElementById('back-frame-pick').value=B.frame.color;syncSwatchRow('back-frame-sw',B.frame.color);
-  document.getElementById('back-frame-w').value=B.frame.w;document.getElementById('lbl-back-frame-w').textContent=B.frame.w+'מ"מ';
+  document.getElementById('back-frame-w').value=B.frame.w;document.getElementById('lbl-back-frame-w').textContent=B.frame.w+' מ"מ';
   document.getElementById('back-frame-op').value=B.frame.op;document.getElementById('lbl-back-frame-op').textContent=B.frame.op+'%';
   setIconGridActive(document.getElementById('back-sym-grid'),B.symbol.id);
   document.getElementById('back-sym-pick').value=B.symbol.color;syncSwatchRow('back-sym-sw',B.symbol.color);
@@ -4503,7 +4510,7 @@ function syncBackUIFromState(){
   document.querySelectorAll('#back-order-grp .sbt').forEach(b=>b.classList.toggle('on',b.dataset.order===B.duplex.order));
   document.getElementById('back-dx').value=B.duplex.dx;document.getElementById('lbl-back-dx').textContent=B.duplex.dx;
   document.getElementById('back-dy').value=B.duplex.dy;document.getElementById('lbl-back-dy').textContent=B.duplex.dy;
-  document.getElementById('back-grow').value=B.duplex.grow;document.getElementById('lbl-back-grow').textContent=B.duplex.grow+'מ"מ';
+  document.getElementById('back-grow').value=B.duplex.grow;document.getElementById('lbl-back-grow').textContent=B.duplex.grow+' מ"מ';
 }
 
 function openBackModal(){
@@ -6225,13 +6232,13 @@ function applySettingsToUI(st){
   ckTightFill.checked=!!st.tightFill&&(st.overlap??0)>=0;
   ckTightFill.disabled=(st.overlap??0)<0;
   // ייצוא
-  slCardSize.value=st.cardSizeMm;lblCardSize.textContent=st.cardSizeMm+'mm';
-  slSpacing.value=st.spacingMm;lblSpacing.textContent=st.spacingMm+'mm';
+  slCardSize.value=st.cardSizeMm;lblCardSize.textContent=st.cardSizeMm+' מ"מ';
+  slSpacing.value=st.spacingMm;lblSpacing.textContent=st.spacingMm+' מ"מ';
   document.querySelectorAll('#startpos-grp .sbt').forEach(b=>b.classList.toggle('on',b.dataset.sp===st.startPos));
   // עיצוב קלף
-  document.getElementById('sl-fw').value=st.frame.w;document.getElementById('lbl-fw').textContent=st.frame.w+'מ"מ';
+  document.getElementById('sl-fw').value=st.frame.w;document.getElementById('lbl-fw').textContent=st.frame.w+' מ"מ';
   document.getElementById('sl-fop').value=st.frame.op;document.getElementById('lbl-fop').textContent=st.frame.op+'%';
-  document.getElementById('sl-sympad').value=st.symPad;document.getElementById('lbl-sympad').textContent=st.symPad+'מ"מ';
+  document.getElementById('sl-sympad').value=st.symPad;document.getElementById('lbl-sympad').textContent=st.symPad+' מ"מ';
   syncSymPadRange();
   document.getElementById('sl-bop').value=st.bg.op;document.getElementById('lbl-bop').textContent=st.bg.op+'%';
   document.getElementById('pick-frame').value=st.frame.color;
