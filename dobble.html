@@ -1297,8 +1297,12 @@ function dcfgSave(patch){
       <button class="btn btn-sec" id="btn-prevprint">👁 תצוגה מקדימה</button>
       <button class="btn btn-pri" id="btn-doexp">⚙️ צור PDF</button>
       <button class="btn btn-out" id="btn-dozip">🗜️ צור ZIP (PNG)</button>
+      <button class="btn btn-out" id="btn-doprint">📦 PDF לבית דפוס</button>
       <button class="btn btn-ok" id="btn-dodxf" style="display:none">✂️ ייצא DXF לחיתוך</button>
       <button class="btn btn-ghost" id="btn-b2">← חזרה לעריכה</button>
+    </div>
+    <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem;line-height:1.5">
+      📦 לבית דפוס: עמוד לכל קלף · בליד 4 מ"מ · 300 DPI · העמוד האחרון הוא הגב.
     </div>
 
     <div class="exp-prog" id="exp-prog">
@@ -4662,6 +4666,7 @@ function renderPP(page){
 document.getElementById('btn-doexp').addEventListener('click',()=>doExport('pdf'));
 document.getElementById('btn-dozip').addEventListener('click',()=>doExport('zip'));
 document.getElementById('btn-dodxf').addEventListener('click',()=>doExport('dxf'));
+document.getElementById('btn-doprint').addEventListener('click',()=>doExport('print'));
 
 async function doExport(type){
   if(!isWithinTier(S.order)){
@@ -4687,6 +4692,7 @@ async function doExport(type){
   try{
     if(type==='pdf')await expPDF(setp);
     else if(type==='zip')await expZIP(setp);
+    else if(type==='print')await expPrintPDF(setp);
     else await expDXF(setp);
     showDownloadDone(S._lastFile||'');
   }catch(err){
@@ -4840,6 +4846,80 @@ async function expPDF(setp){
   window.track&&window.track('export',{cards:S.deck.length,symbols:S.order?S.order.spc:'',
     detail:`pdf · ${S.exportQuality} · ${fmtSize(blob.size)}`});
   refreshShareBtn();
+  setp(100,'✅ מוכן!');
+}
+
+// הגדרות בית דפוס. ערכים משתנים בין ספקים — לא לפזר בקוד.
+const PRINT_SHOP={
+  bleedMm:4,          // בליד מכל צד
+  jpegQuality:0.95,   // גבוה מ-0.92 של expPDF — זה הולך לדפוס אמיתי
+  minDpi:300,
+  maxPx:3000          // תקרת זיכרון. שני קנבסים פתוחים בו-זמנית
+};
+
+function renderBleedPair(drawFn,pxTrim,pxPage,jpg){
+  const big=document.createElement('canvas');big.width=big.height=pxPage;
+  const trim=document.createElement('canvas');trim.width=trim.height=pxTrim;
+  drawFn(big);drawFn(trim);
+  flattenToWhiteIfJpg(big,jpg);
+  flattenToWhiteIfJpg(trim,jpg);
+  return{big,trim};
+}
+
+async function expPrintPDF(setp){
+  if(!window.jspdf?.jsPDF)throw new Error('ספריית jsPDF לא נטענה — נדרש חיבור לאינטרנט');
+  if(!S.deck?.length)throw new Error('אין משחק לייצוא — לחצו "ייצר משחק" קודם');
+  if(S.isSilhouette)throw new Error('מצב Silhouette לא מיועד לבית דפוס — כבו אותו ונסו שוב');
+  if(!S.back.enabled)throw new Error('בית הדפוס דורש עיצוב גב. הפעילו את עורך הגב ונסו שוב');
+  const{jsPDF}=window.jspdf;
+  const trimMm=S.cardSizeMm;
+  const bleedMm=PRINT_SHOP.bleedMm;
+  const pageMm=trimMm+2*bleedMm;
+  // pxTrim נגזר מדרישת ה-DPI ולא מקבוע. EXPORT_PX.print הוא רצפה בלבד:
+  // לקלף קטן הוא כבר מספיק, לקלף גדול הוא נמוך מדי וחייב לעלות.
+  const pxTrimIdeal=Math.ceil(trimMm/25.4*PRINT_SHOP.minDpi);
+  const pxTrim=Math.min(PRINT_SHOP.maxPx,Math.max(EXPORT_PX.print,pxTrimIdeal));
+  const pxPage=Math.round(pxTrim*pageMm/trimMm);
+  const dpi=Math.round(pxTrim/trimMm*25.4);
+  if(pxTrimIdeal>PRINT_SHOP.maxPx){
+    toast(`קלף ${trimMm} מ"מ גדול מאוד — הייצוא ייעשה ב-${dpi} DPI במקום ${PRINT_SHOP.minDpi}. לאיכות מלאה הקטינו את הקלף.`,'err');
+  }
+  const jpg=true;
+  const pdf=new jsPDF({orientation:'portrait',unit:'mm',
+                       format:[pageMm,pageMm],compress:true});
+  const totalUnits=S.deck.length+1;
+  for(let i=0;i<S.deck.length;i++){
+    if(i>0)pdf.addPage([pageMm,pageMm]);
+    const{big,trim}=renderBleedPair(cv=>drawCard(cv,S.layouts[i],S.imgEls,S.shape),pxTrim,pxPage,jpg);
+    pdf.addImage(big.toDataURL('image/jpeg',PRINT_SHOP.jpegQuality),'JPEG',0,0,pageMm,pageMm);
+    pdf.addImage(trim.toDataURL('image/jpeg',PRINT_SHOP.jpegQuality),'JPEG',bleedMm,bleedMm,trimMm,trimMm);
+    big.width=big.height=trim.width=trim.height=0;      // ⛔ שחרור זיכרון — לא אופציונלי
+    setp(3+Math.round(92*(i+1)/totalUnits),`קלף ${i+1}/${S.deck.length}…`);
+    if(i%3===2)await tick();
+  }
+  pdf.addPage([pageMm,pageMm]);
+  {
+    const{big,trim}=renderBleedPair(cv=>drawCardBack(cv),pxTrim,pxPage,jpg);
+    pdf.addImage(big.toDataURL('image/jpeg',PRINT_SHOP.jpegQuality),'JPEG',0,0,pageMm,pageMm);
+    pdf.addImage(trim.toDataURL('image/jpeg',PRINT_SHOP.jpegQuality),'JPEG',bleedMm,bleedMm,trimMm,trimMm);
+    big.width=big.height=trim.width=trim.height=0;
+  }
+  setp(98,'שומר…');
+  const shapeLabel=S.shape==='circle'?'circle':'square';
+  const fn=`dobble-print-${S.deck.length}cards-${trimMm}mm-${shapeLabel}-bleed${bleedMm}.pdf`;
+  const blob=pdf.output('blob');
+  if(_exportUrl)URL.revokeObjectURL(_exportUrl);
+  _exportUrl=URL.createObjectURL(blob);
+  const lnk=document.getElementById('dl-link');
+  lnk.href=_exportUrl;lnk.download=fn;
+  document.getElementById('dl-area').classList.add('on');
+  logGame({total:S.order.total,cards:S.deck.length,sizeMm:trimMm,filename:fn,type:'print-pdf'});
+  S._lastFile=fn;
+  S._lastSize=blob.size;
+  S._lastBlob=blob;
+  refreshShareBtn();
+  window.track&&window.track('export',{cards:S.deck.length,symbols:S.order?S.order.spc:'',
+    detail:`print-pdf · ${dpi}dpi · ${fmtSize(blob.size)}`});
   setp(100,'✅ מוכן!');
 }
 
