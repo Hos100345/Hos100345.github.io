@@ -223,8 +223,6 @@ const SIZE = {
   usableH: 297 - MARGIN.top - MARGIN.bottom  // 253
 };
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
-// חוקית אם היא נכנסת לדף באחד משני הכיוונים
-const fitsPage = (a,b) => (a <= SIZE.usableW && b <= SIZE.usableH) || (b <= SIZE.usableW && a <= SIZE.usableH);
 
 const singleCanvas = document.getElementById('single-canvas');
 const singleCtx = singleCanvas.getContext('2d');
@@ -547,12 +545,15 @@ function drawSingle(){
 // זה מה שמאפשר לקרוא ל-drawSheet בכל שינוי בלי להקפיא את הדפדפן.
 let tileCache = null;
 function invalidateTile(){ tileCache = null; }
+const TILE_PAD = 0.2; // 20% מרווח לצורות שגולשות מהמסגרת בכוונה (heart/wave/cloud) ולעובי קו החיתוך
+
 function buildTile(scale){
   const {w:natW, h:natH} = natDims();
+  const padX = natW*TILE_PAD*scale, padY = natH*TILE_PAD*scale;
   const c = document.createElement('canvas');
-  c.width = Math.max(1, Math.round(natW*scale));
-  c.height = Math.max(1, Math.round(natH*scale));
-  renderStickerContent(c.getContext('2d'), 0, 0, c.width, c.height, 0.8);
+  c.width = Math.max(1, Math.round(natW*scale + padX*2));
+  c.height = Math.max(1, Math.round(natH*scale + padY*2));
+  renderStickerContent(c.getContext('2d'), padX, padY, natW*scale, natH*scale, 0.8);
   return c;
 }
 
