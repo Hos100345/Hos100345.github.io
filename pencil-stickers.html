@@ -4,8 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Silhouette - מעצב מדבקות חכם לעפרונות</title>
-<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700;800&family=Heebo:wght@400;700;900&family=Rubik:wght@400;700&family=Varela+Round&family=Amatic+SC:wght@700&family=Fredoka:wght@400;700&family=Secular+One&family=Alef:wght@400;700&family=Playpen+Sans+Hebrew:wght@400;700&family=Suez+One&family=Karantina:wght@400;700&family=Miriam+Libre:wght@400;700&family=Rubik+Doodle+Shadow&family=Rubik+Wet+Paint&display=swap" rel="stylesheet">
+<!-- רק Heebo, גופן הממשק עצמו (כותרות/תוויות/כפתורים) — לא גופני המדבקה.
+     34 גופני המדבקה נטענים עצלים דרך js/hebrew-fonts.js, רק כשנבחרים בפועל. -->
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="js/hebrew-fonts.js"></script>
 <style>
   *{box-sizing:border-box} body{margin:0;font-family:Heebo,system-ui;background:#f8fafc;color:#1e293b}
   header{padding:12px 16px;background:#fff;border-bottom:2px solid #e2e8f0;position:sticky;top:0;z-index:30;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
@@ -39,6 +42,18 @@
   .emoji-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;max-height:260px;overflow:auto;padding:4px}
   .emoji-btn{font-size:24px;padding:8px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;cursor:pointer;transition:transform 0.1s}
   .emoji-btn:hover{background:#f1f5f9;transform:scale(1.1)}
+
+  .font-picker{border:1px solid #cbd5e1;border-radius:8px;background:#fff;text-align:center;overflow:hidden}
+  .font-arrow{display:block;width:100%;min-height:44px;border:none;background:transparent;font-size:15px;color:#0f172a;cursor:pointer;touch-action:none}
+  .font-arrow:hover{background:#f1f5f9}
+  .font-arrow:disabled{opacity:.3;cursor:default;background:transparent}
+  .font-picker-name{font-size:22px;min-height:30px;padding:2px 8px;transition:opacity .15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .font-picker-meta{font-size:11px;color:#64748b;padding-bottom:4px;font-family:Heebo,sans-serif}
+  .font-all-cat h3{font-size:12px;color:#64748b;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin:0 0 8px}
+  .font-chip-row{display:flex;flex-wrap:wrap;gap:8px}
+  .font-chip{padding:8px 14px;border:2px solid #e2e8f0;border-radius:8px;background:#f8fafc;cursor:pointer;font-size:16px;min-width:64px;text-align:center;opacity:.4;transition:opacity .2s}
+  .font-chip.loaded{opacity:1}
+  .font-chip.selected{border-color:#0f172a}
 </style>
 </head>
 <body>
@@ -96,29 +111,6 @@
         <input type="text" id="sel-text-input">
         <div class="row" style="margin-top:6px">
           <div>
-            <label style="font-size:11px">פונט:</label>
-            <select id="sel-font">
-              <optgroup label="ידידותי ועגול">
-                <option value="Heebo">היבו (Heebo)</option>
-                <option value="Assistant">אסיסטנט (Assistant)</option>
-                <option value="Rubik">רוביק (Rubik)</option>
-                <option value="Varela Round">וורלה (Varela Round)</option>
-                <option value="Fredoka">פרדוקה (Fredoka)</option>
-                <option value="Secular One">סקולר (Secular One)</option>
-                <option value="Alef">אלף (Alef)</option>
-                <option value="Playpen Sans Hebrew">כתב יד ילדותי (Playpen Sans Hebrew)</option>
-              </optgroup>
-              <optgroup label="כותרות ואפקטים">
-                <option value="Amatic SC">אמטיק (Amatic SC)</option>
-                <option value="Suez One">סואץ (Suez One)</option>
-                <option value="Karantina">קרנטינה (Karantina)</option>
-                <option value="Miriam Libre">מרים (Miriam Libre)</option>
-                <option value="Rubik Doodle Shadow">קשקוש עם צל (Rubik Doodle Shadow)</option>
-                <option value="Rubik Wet Paint">צבע נוזל (Rubik Wet Paint)</option>
-              </optgroup>
-            </select>
-          </div>
-          <div>
             <label style="font-size:11px">מסגרת אות:</label>
             <select id="sel-stroke">
               <option value="white">לבנה בולטת</option>
@@ -126,6 +118,17 @@
               <option value="black">שחורה</option>
             </select>
           </div>
+        </div>
+
+        <div style="margin-top:8px">
+          <label style="font-size:11px">פונט:</label>
+          <div class="font-picker">
+            <button type="button" class="font-arrow" id="font-prev" aria-label="הפונט הקודם">▲</button>
+            <div class="font-picker-name" id="font-picker-name">היבו</div>
+            <div class="font-picker-meta" id="font-picker-meta">1 / 34 · רגיל</div>
+            <button type="button" class="font-arrow" id="font-next" aria-label="הפונט הבא">▼</button>
+          </div>
+          <button type="button" class="btn" id="font-picker-all" style="width:100%;margin-top:6px;font-size:12px">כל הפונטים</button>
         </div>
       </div>
       <div class="row" style="margin-top:8px">
@@ -243,6 +246,17 @@
   </div>
 </div>
 
+<!-- חלונית כל הפונטים -->
+<div class="modal-overlay" id="font-all-modal">
+  <div class="modal" style="max-width:640px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h2 style="margin:0">כל הפונטים</h2>
+      <button class="btn" id="close-font-all-modal" style="padding:2px 8px;">✕</button>
+    </div>
+    <div id="font-all-list" style="max-height:60vh;overflow:auto;display:flex;flex-direction:column;gap:16px;padding:4px"></div>
+  </div>
+</div>
+
 <script>
 // px למ"מ נגזר מהקנבס עצמו (A4 = 210 מ"מ רוחב) — לא מקבוע מרחף.
 // זה מה שהיה חסר: PX_PER_MM הישן היה קבוע יחיד (300dpi) שהוכפל שוב ב-*2 בכל
@@ -340,13 +354,13 @@ function updateSelectedControls(){
   const l = getLayer(selectedId);
   const panel = document.getElementById('selected-controls');
   const textEditBox = document.getElementById('text-edit-box');
+  syncFontPicker(); // גם כשאין שכבה נבחרת/היא לא טקסט — מציג את הפקד במצב מושבת
   if(!l){ panel.style.display='none'; return; }
   panel.style.display='flex';
 
   if(l.type==='text'){
     textEditBox.style.display='block';
     document.getElementById('sel-text-input').value = l.text||'';
-    document.getElementById('sel-font').value = l.font||'Heebo';
     document.getElementById('sel-stroke').value = l.stroke||'white';
   } else {
     textEditBox.style.display='none';
@@ -523,7 +537,11 @@ function renderStickerContent(ctx, boxX, boxY, boxW, boxH, scaleFactor = 1){
       }
     }else{
       const fSize = boxH * 0.45 * l.scale * scaleFactor;
-      ctx.font = `700 ${Math.max(8, fSize)}px '${l.font||'Heebo'}', sans-serif`;
+      // פונט חד-משקלי (b:false) לא יודפס מודגש — אחרת הדפדפן מייצר bold סינתטי מכוער בקנבס.
+      const fontFam = l.font||'Heebo';
+      const fRec = HebrewFonts.FONTS.find(r=>r.f===fontFam);
+      const fWeight = (fRec && !fRec.b) ? 400 : 700;
+      ctx.font = `${fWeight} ${Math.max(8, fSize)}px '${fontFam}', sans-serif`;
       ctx.textAlign='center'; ctx.textBaseline='middle';
       if(l.stroke==='white' || l.stroke==='black'){
         ctx.strokeStyle = l.stroke==='white' ? '#fff' : '#000';
@@ -927,8 +945,164 @@ document.getElementById('fit-70').addEventListener('click', ()=>{
 });
 
 document.getElementById('sel-text-input').addEventListener('input', e=>{ const l=getLayer(selectedId); if(l && l.type==='text'){ l.text=e.target.value; drawSingle(); schedSheet(); } });
-document.getElementById('sel-font').addEventListener('change', e=>{ const l=getLayer(selectedId); if(l && l.type==='text'){ l.font=e.target.value; drawSingle(); schedSheet(); } });
 document.getElementById('sel-stroke').addEventListener('change', e=>{ const l=getLayer(selectedId); if(l && l.type==='text'){ l.stroke=e.target.value; drawSingle(); schedSheet(); } });
+
+// ===== פקד בחירת פונט (חצים + "כל הפונטים") =====
+
+let fontPickerIndex = 0; // אינדקס נוכחי ב-HebrewFonts.FONTS, בהתאם לשכבה הנבחרת
+let fontStepTimer = 0;
+
+function renderFontName(family, loaded){
+  const rec = HebrewFonts.FONTS.find(r=>r.f===family);
+  const nameEl = document.getElementById('font-picker-name');
+  const metaEl = document.getElementById('font-picker-meta');
+  nameEl.textContent = rec ? rec.he : family;
+  nameEl.style.fontFamily = `"${family}", Heebo, sans-serif`;
+  nameEl.style.opacity = loaded ? '1' : '.45';
+  if(rec){
+    const idx = HebrewFonts.FONTS.indexOf(rec);
+    metaEl.textContent = `${idx+1} / ${HebrewFonts.FONTS.length} · ${HebrewFonts.CATS[rec.c]}`;
+  }
+}
+
+// מציגה את פקד הפונט במצב שתואם לשכבה הנבחרת כרגע (או מושבת אם אין שכבת
+// טקסט נבחרת). נקראת מ-updateSelectedControls בכל שינוי בחירה.
+function syncFontPicker(){
+  const l = getLayer(selectedId);
+  const prevBtn = document.getElementById('font-prev'), nextBtn = document.getElementById('font-next');
+  const nameEl = document.getElementById('font-picker-name'), metaEl = document.getElementById('font-picker-meta');
+  if(!l || l.type !== 'text'){
+    nameEl.textContent = 'בחר שכבת טקסט';
+    nameEl.style.opacity = '.5'; nameEl.style.fontFamily = 'Heebo, sans-serif';
+    metaEl.textContent = '';
+    prevBtn.disabled = true; nextBtn.disabled = true;
+    return;
+  }
+  prevBtn.disabled = false; nextBtn.disabled = false;
+  const family = l.font || 'Heebo';
+  const idx = HebrewFonts.FONTS.findIndex(r=>r.f===family);
+  fontPickerIndex = idx >= 0 ? idx : 0;
+  renderFontName(family, false);
+  HebrewFonts.load(family)
+    .then(()=>{ const cur = getLayer(selectedId); if(cur===l && cur.font===family) renderFontName(family, true); })
+    .catch(()=>{});
+}
+
+// hops סופר דילוגים אוטומטיים על פונטים שנכשלו (למשל בלי אינטרנט), כדי
+// שהשרשרת תיעצר אחרי הקפה מלאה של הרשימה ולא תרוץ לנצח.
+async function setFont(family, hops = 0){
+  const l = getLayer(selectedId);
+  if(!l || l.type !== 'text') return;
+  l.font = family;
+  renderFontName(family, false); // השם מתחלף מיד, ב-opacity מופחת
+
+  try { await HebrewFonts.load(family); }
+  catch(e){
+    if(hops < HebrewFonts.FONTS.length){
+      const idx = HebrewFonts.FONTS.findIndex(r=>r.f===family);
+      const next = HebrewFonts.FONTS[(idx+1+HebrewFonts.FONTS.length)%HebrewFonts.FONTS.length];
+      fontPickerIndex = HebrewFonts.FONTS.indexOf(next);
+      setFont(next.f, hops+1); // פונט שבור — דלג הלאה, בלי הודעת שגיאה
+    }
+    return;
+  }
+
+  if(l.font !== family) return; // המשתמש כבר עבר הלאה — אל תצייר גופן ישן
+  renderFontName(family, true); // opacity מלא
+  invalidateTile();
+  drawSingle();
+  schedSheet();
+}
+
+// צעד אחד ברשימה (מעגלי). השם מתחלף מיד; הטעינה בפועל (setFont) נדחית
+// ב-250ms כדי שלחיצה ממושכת על הרבה פונטים לא תפתח עשרות בקשות רשת מקבילות.
+function stepFont(dir){
+  const l = getLayer(selectedId);
+  if(!l || l.type !== 'text') return;
+  const n = HebrewFonts.FONTS.length;
+  fontPickerIndex = (fontPickerIndex + dir + n) % n;
+  const rec = HebrewFonts.FONTS[fontPickerIndex];
+  renderFontName(rec.f, false);
+  clearTimeout(fontStepTimer);
+  fontStepTimer = setTimeout(()=> setFont(rec.f), 250);
+}
+
+// לחיצה ממושכת: צעד מיידי, המתנה 400ms, ואז צעד כל 180ms עד שחרור.
+function wireFontArrow(btn, dir){
+  let holdTimer = 0, repeatTimer = 0;
+  function start(){
+    stepFont(dir);
+    holdTimer = setTimeout(()=>{ repeatTimer = setInterval(()=>stepFont(dir), 180); }, 400);
+  }
+  function stop(){ clearTimeout(holdTimer); clearInterval(repeatTimer); }
+  btn.addEventListener('pointerdown', e=>{ e.preventDefault(); start(); });
+  btn.addEventListener('pointerup', stop);
+  btn.addEventListener('pointerleave', stop);
+  btn.addEventListener('pointercancel', stop);
+}
+wireFontArrow(document.getElementById('font-prev'), -1);
+wireFontArrow(document.getElementById('font-next'), 1);
+
+// חלונית "כל הפונטים" — 34 צ'יפים מקובצים לפי קטגוריה, כל אחד מציג את
+// הטקסט של המשתמש עצמו. טעינה עצלה עם IntersectionObserver: צ'יפ שלא
+// נטען = דהוי; צ'יפ שנכשל = מוסתר לגמרי, לא מוצג שבור.
+function buildFontAllList(){
+  const l = getLayer(selectedId);
+  const sampleText = (l && l.type==='text' && l.text) ? l.text : 'אבגד';
+  const currentFont = (l && l.type==='text') ? (l.font||'Heebo') : null;
+  const list = document.getElementById('font-all-list');
+  list.innerHTML = '';
+
+  const obs = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(!entry.isIntersecting) return;
+      const chip = entry.target;
+      obs.unobserve(chip);
+      const family = chip.dataset.font;
+      HebrewFonts.load(family).then(()=>{
+        chip.style.fontFamily = `"${family}", Heebo, sans-serif`;
+        chip.classList.add('loaded');
+      }).catch(()=>{ chip.style.display = 'none'; });
+    });
+  }, {root: list, rootMargin: '100px'});
+
+  Object.keys(HebrewFonts.CATS).forEach(catKey=>{
+    const fonts = HebrewFonts.list(catKey);
+    if(!fonts.length) return;
+    const catDiv = document.createElement('div');
+    catDiv.className = 'font-all-cat';
+    const h = document.createElement('h3');
+    h.textContent = HebrewFonts.CATS[catKey];
+    catDiv.appendChild(h);
+    const row = document.createElement('div');
+    row.className = 'font-chip-row';
+    fonts.forEach(rec=>{
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'font-chip' + (rec.f===currentFont ? ' selected' : '');
+      chip.dataset.font = rec.f;
+      chip.textContent = sampleText;
+      chip.title = rec.he;
+      chip.addEventListener('click', ()=>{
+        setFont(rec.f);
+        document.getElementById('font-all-modal').style.display = 'none';
+      });
+      row.appendChild(chip);
+      obs.observe(chip);
+    });
+    catDiv.appendChild(row);
+    list.appendChild(catDiv);
+  });
+}
+document.getElementById('font-picker-all').addEventListener('click', ()=>{
+  const l = getLayer(selectedId);
+  if(!l || l.type !== 'text') return;
+  buildFontAllList();
+  document.getElementById('font-all-modal').style.display = 'flex';
+});
+document.getElementById('close-font-all-modal').addEventListener('click', ()=>{
+  document.getElementById('font-all-modal').style.display = 'none';
+});
 
 document.getElementById('sel-dup').addEventListener('click', ()=>{
   const l=getLayer(selectedId); if(!l) return;
@@ -1020,9 +1194,11 @@ document.getElementById('export-png').addEventListener('click', ()=>{
 
 // קנבס לא טוען פונטים מעצמו — בלי זה, ציור 300 DPI ראשון (לפני שהתצוגה כבר
 // "חיממה" את הפונט) יוצא בברירת המחדל בשקט, בלי שום שגיאה.
+// עובר דרך HebrewFonts.load ולא document.fonts.load ישירות — אחרת ה-<link>
+// עצמו אף פעם לא יוזרק אם המשתמש עוד לא בחר בפונט הזה בפועל.
 async function ensureFonts(){
   const fams = [...new Set(layers.filter(l=>l.type==='text').map(l=>l.font||'Heebo'))];
-  await Promise.all(fams.map(f=>document.fonts.load(`700 40px "${f}"`, 'אבגד').catch(()=>{})));
+  await Promise.all(fams.map(f=>HebrewFonts.load(f).catch(()=>{})));
 }
 
 // קובץ הדפסה — A4 מלא ב-300 DPI, כולל סימני רישום (בניגוד ל-SVG לחיתוך).
@@ -1133,6 +1309,10 @@ syncSizeInputs();
 updateSelectedControls();
 drawSingle();
 drawSheet();
+
+// ציור נוסף אחרי שהפונטים התייצבו — בלעדיו הפתיחה הראשונה מציגה גופן חלופי
+// עד לפעולה הראשונה של המשתמש.
+document.fonts.ready.then(()=>{ invalidateTile(); drawSingle(); drawSheet(); });
 </script>
 </body>
 </html>
