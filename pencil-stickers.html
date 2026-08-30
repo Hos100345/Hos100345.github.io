@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Silhouette - מעצב מדבקות חכם לעפרונות</title>
 <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700;800&family=Heebo:wght@400;700;900&family=Rubik:wght@400;700&family=Varela+Round&family=Amatic+SC:wght@700&family=Fredoka:wght@400;700&family=Secular+One&family=Alef:wght@400;700&family=Playpen+Sans+Hebrew:wght@400;700&family=Suez+One&family=Karantina:wght@400;700&family=Miriam+Libre:wght@400;700&family=Rubik+Doodle+Shadow&family=Rubik+Wet+Paint&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   *{box-sizing:border-box} body{margin:0;font-family:Heebo,system-ui;background:#f8fafc;color:#1e293b}
   header{padding:12px 16px;background:#fff;border-bottom:2px solid #e2e8f0;position:sticky;top:0;z-index:30;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
@@ -46,6 +47,7 @@
   <div style="font-weight:900;font-size:16px;">✏️ Silhouette - מעצב מדבקות לעפרונות</div>
   <div class="row" style="width:auto">
     <button class="btn btn-primary" id="export-svg">📥 הורד קובץ חיתוך (SVG)</button>
+    <button class="btn btn-primary" id="export-print-pdf" style="background:#7c3aed;border-color:#7c3aed">🖨️ קובץ הדפסה (PDF)</button>
     <button class="btn" id="export-png">🖼️ תמונה (PNG)</button>
   </div>
 </header>
@@ -165,6 +167,54 @@
       <div class="count-box" id="count-box" style="margin-top:6px"></div>
     </div>
 
+    <!-- פאנל הדפסה וחיתוך -->
+    <div class="panel">
+      <h2>3️⃣ הדפסה וחיתוך</h2>
+
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;cursor:pointer">
+        <input type="checkbox" id="print-outline" style="width:auto">
+        הדפס את קו החיתוך האדום
+      </label>
+      <div class="hint">כבוי כברירת מחדל — מיועד למסלול Trace ב-Studio בלבד (זיהוי הקו המודפס כקו חיתוך). במסלול הרגיל (ייבוא קובץ ה-SVG) הקו מיותר ואפילו יפריע.</div>
+
+      <button class="btn" id="export-calibration-pdf" style="width:100%">📏 עמוד כיול (בדיקת קנה מידה)</button>
+      <div class="hint">קובץ החיתוך (SVG) מכיל קווי חיתוך בלבד — בלי סימני רישום. ב-Silhouette Studio: ייבא → הפעל סימני רישום (M) → Restore Defaults. הסימנים של Studio יתלכדו עם אלה שמודפסים כאן בקובץ ההדפסה, כי שניהם נגזרים מאותן הגדרות.</div>
+
+      <details style="margin-top:4px">
+        <summary style="cursor:pointer;font-weight:800;font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:.5px">⚙️ סימני רישום (מתקדם)</summary>
+        <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
+          <div class="row">
+            <div>
+              <label style="font-size:11px">מרחק משפה (מ"מ)</label>
+              <input type="number" id="reg-inset" step="0.1" value="15.9">
+            </div>
+            <div>
+              <label style="font-size:11px">אורך זרוע (מ"מ)</label>
+              <input type="number" id="reg-length" step="0.1" value="20">
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label style="font-size:11px">עובי קו (מ"מ)</label>
+              <input type="number" id="reg-thickness" step="0.1" value="1.3">
+            </div>
+            <div>
+              <label style="font-size:11px">ריבוע פינה (מ"מ)</label>
+              <input type="number" id="reg-square" step="0.1" value="5">
+            </div>
+          </div>
+          <div>
+            <label style="font-size:11px">כמות סימנים</label>
+            <select id="reg-count">
+              <option value="3">3</option>
+              <option value="4">4 (CAMEO 5a ואילך)</option>
+            </select>
+          </div>
+          <div class="hint">להתאמה מדויקת: פתח ב-Silhouette Studio דף A4, הפעל סימני רישום, לחץ Restore Defaults וקרא את Length / Thickness / Inset. אם הערכים באינצ'ים — הכפל ב-25.4 והזן כאן.</div>
+        </div>
+      </details>
+    </div>
+
   </div>
 
   <!-- מרכז: תצוגה מקדימה -->
@@ -207,21 +257,33 @@ let layers = [
 let selectedId = 'text1';
 // lenMm/widMm במ"מ ישירים — במקום גובה+יחס. יחס לא מסוגל לבטא "מקסימום מדבקה
 // אחת בדף" או "מינימום 10 מ"מ" בלי חישוב הפוך בכל מקום.
-let state = { radius:3, lenMm:33.6, widMm:12, inset:8, shape:'banner', orient:'auto' };
+// printOutline: האם קו החיתוך האדום מודפס בפועל (כבוי כברירת מחדל — מסלול
+// ה-SVG לא צריך אותו; מסלול Trace ב-Studio כן).
+let state = { radius:3, lenMm:33.6, widMm:12, shape:'banner', orient:'auto', printOutline:false };
 
 // מרווח בטחון קבוע — סטיית החיתוך של הפלוטר היא ±0.5 מ"מ, אז 1 מ"מ הוא המינימום הבטוח
 // שמונע מהסכין לנגוס במדבקה השכנה. לא ניתן לשינוי מהממשק.
 const GAP_MM = 1;
-// שוליים לפי אזור הסימנים של Silhouette — לא אחידים (הראש/צדדים צרים מהתחתית).
-const MARGIN = { top:19, right:19, bottom:25, left:19 };
 
-// גבולות המידה הפיזית: מינימום 10 מ"מ בשתי הצלעות (מתחת לזה סטיית החיתוך
-// של הפלוטר, ±0.5 מ"מ, לא מאפשרת קילוף), ומקסימום = מדבקה אחת שלמה בדף.
-const SIZE = {
-  min: 10,
-  usableW: 210 - MARGIN.left - MARGIN.right, // 172
-  usableH: 297 - MARGIN.top - MARGIN.bottom  // 253
-};
+// סימני הרישום של Silhouette. ברירות המחדל הן של Studio עצמו (0.625"/0.787"),
+// אבל משתנות בין דגם מכונה וגרסת Studio — לכן ניתנות לעריכה בפאנל "מתקדם".
+let REG = { inset:15.9, length:20, thickness:1.3, square:5, count:3 };
+
+// MARGIN/SIZE נגזרים מ-REG, לא קבועים — recomputeMargins() ממלאת אותם מחדש
+// (במקום להחליף את האובייקטים) כדי שכל שאר הקוד שמחזיק רפרנס ל-MARGIN/SIZE
+// ימשיך לעבוד בלי שינוי בכל אתר קריאה.
+// זרועות ה-L רצות לאורך שפת הדף, לא לתוכו — העומק הפנימי של סימן הוא
+// inset+thickness בלבד, ה-length לא נכנס לחישוב השוליים.
+const MARGIN = { top:0, right:0, bottom:0, left:0 };
+const SIZE = { min:10, usableW:0, usableH:0 };
+function recomputeMargins(){
+  MARGIN.top = MARGIN.left = MARGIN.right = REG.inset + REG.thickness + 4;
+  MARGIN.bottom = REG.inset + REG.thickness + 8; // תוספת לאזור הגלגלות בהזנה
+  SIZE.usableW = 210 - MARGIN.left - MARGIN.right;
+  SIZE.usableH = 297 - MARGIN.top - MARGIN.bottom;
+}
+recomputeMargins();
+
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
 const singleCanvas = document.getElementById('single-canvas');
@@ -435,7 +497,10 @@ function renderStickerContent(ctx, boxX, boxY, boxW, boxH, scaleFactor = 1){
   ctx.setLineDash([]);
 
   traceStickerPath(ctx, boxX, boxY, boxW, boxH);
-  ctx.fillStyle='#fff'; ctx.fill(); ctx.stroke();
+  ctx.fillStyle='#fff'; ctx.fill();
+  // הדילוג הוא על קו החיתוך האדום בלבד — ה-fill הלבן וה-clip נשארים תמיד,
+  // אחרת המדבקה מאבדת רקע והשכבות גולשות החוצה.
+  if(state.printOutline) ctx.stroke();
   ctx.clip();
 
   const sorted = [...layers].sort((a,b)=>a.z-b.z);
@@ -557,44 +622,41 @@ function buildTile(scale){
   return c;
 }
 
-function drawSheet(){
-  const W = a4Canvas.width, H = a4Canvas.height;
-  a4Ctx.clearRect(0,0,W,H);
-  a4Ctx.fillStyle='#fff'; a4Ctx.fillRect(0,0,W,H);
+// מצייר את שלושת/ארבעת סימני הרישום בהגדרות REG הנוכחיות. משותף בין התצוגה
+// המקדימה, קובץ ההדפסה ועמוד הכיול — כדי שלא ייסטו זה מזה כמו שהגיליון
+// וה-SVG סטו לפני PR #86.
+function drawRegMarks(ctx, scale, W, H){
+  const insetPx = REG.inset * scale;
+  const lLenPx = REG.length * scale;
+  const thickPx = REG.thickness * scale;
+  const sqPx = REG.square * scale;
 
-  const scale = pxPerMm(a4Canvas); // px/מ"מ האמיתי של הקנבס הזה, לא קבוע גלובלי
+  ctx.save();
+  ctx.fillStyle='#000'; ctx.strokeStyle='#000'; ctx.lineWidth=thickPx;
+  ctx.fillRect(insetPx, insetPx, sqPx, sqPx);
+  ctx.beginPath(); ctx.moveTo(W-insetPx, insetPx); ctx.lineTo(W-insetPx-lLenPx, insetPx); ctx.moveTo(W-insetPx, insetPx); ctx.lineTo(W-insetPx, insetPx+lLenPx); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(insetPx, H-insetPx); ctx.lineTo(insetPx+lLenPx, H-insetPx); ctx.moveTo(insetPx, H-insetPx); ctx.lineTo(insetPx, H-insetPx-lLenPx); ctx.stroke();
+  if(REG.count >= 4){
+    ctx.beginPath(); ctx.moveTo(W-insetPx, H-insetPx); ctx.lineTo(W-insetPx-lLenPx, H-insetPx); ctx.moveTo(W-insetPx, H-insetPx); ctx.lineTo(W-insetPx, H-insetPx-lLenPx); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// ציור טהור — בלי שום גישה ל-a4Canvas ובלי עדכוני DOM. ctx/scale/W/H
+// מגיעים מבחוץ כדי שאותה לוגיקה תשרת גם את התצוגה המקדימה וגם את קובץ
+// ההדפסה ב-300 DPI (קנבס אחר לגמרי).
+function drawSheetTo(ctx, scale, W, H){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H);
+
+  drawRegMarks(ctx, scale, W, H);
+
   const L = layout(); // מ"מ בלבד — אותו מקור אמת שמשמש גם את export-svg
-  const {w:natW, h:natH} = natDims();
+  if(L.total === 0) return;
 
-  const insetPx = state.inset * scale;
-  const lLenPx = 12 * scale;
-  const thickPx = 0.8 * scale;
-  const sqPx = 5 * scale;
   const gapPx = L.g * scale;
   const leftPx = L.left * scale, topPx = L.top * scale;
   const frameWPx = L.w * scale, frameHPx = L.h * scale;
-
-  a4Ctx.save();
-  a4Ctx.fillStyle='#000'; a4Ctx.strokeStyle='#000'; a4Ctx.lineWidth=thickPx;
-  a4Ctx.fillRect(insetPx, insetPx, sqPx, sqPx);
-  a4Ctx.beginPath(); a4Ctx.moveTo(W-insetPx, insetPx); a4Ctx.lineTo(W-insetPx-lLenPx, insetPx); a4Ctx.moveTo(W-insetPx, insetPx); a4Ctx.lineTo(W-insetPx, insetPx+lLenPx); a4Ctx.stroke();
-  a4Ctx.beginPath(); a4Ctx.moveTo(insetPx, H-insetPx); a4Ctx.lineTo(insetPx+lLenPx, H-insetPx); a4Ctx.moveTo(insetPx, H-insetPx); a4Ctx.lineTo(insetPx, H-insetPx-lLenPx); a4Ctx.stroke();
-  a4Ctx.restore();
-
-  const orientLabel = L.rot ? 'לרוחב' : 'לאורך';
-  const orientPrefix = state.orient === 'auto' ? `אוטומטי בחר: ${orientLabel}` : `${orientLabel} (נבחר ידנית)`;
-  document.getElementById('stats').textContent = `גודל פיזי סופי: ${natW.toFixed(1)}×${natH} מ"מ`;
-
-  // clamp() כבר אמור למנוע total===0 (הגבולות ב-SIZE נגזרים מאותם MARGIN), אבל
-  // זו הגנה נוספת מפורשת — אם בכל זאת קרה, לא מציירים גיליון ריק בשקט.
-  if(L.total === 0){
-    document.getElementById('orient-info').textContent = '';
-    document.getElementById('count-box').textContent = 'המדבקה גדולה מדי לדף';
-    a4Canvas.classList.remove('pending');
-    return;
-  }
-  document.getElementById('orient-info').textContent = `${orientPrefix} · ${L.total} מדבקות`;
-  document.getElementById('count-box').textContent = `${L.cols} עמודות × ${L.rows} שורות = ${L.total} מדבקות בדף!`;
 
   if(!tileCache) tileCache = buildTile(scale);
   const tile = tileCache;
@@ -604,15 +666,37 @@ function drawSheet(){
     for(let c=0; c<L.cols; c++){
       const cx = leftPx + c*(frameWPx + gapPx) + frameWPx/2;
       const cy = topPx + r*(frameHPx + gapPx) + frameHPx/2;
-      a4Ctx.save();
-      a4Ctx.translate(cx, cy);
-      if(L.rot) a4Ctx.rotate(Math.PI/2);
-      a4Ctx.drawImage(tile, -tile.width/2, -tile.height/2);
-      a4Ctx.restore();
+      ctx.save();
+      ctx.translate(cx, cy);
+      if(L.rot) ctx.rotate(Math.PI/2);
+      ctx.drawImage(tile, -tile.width/2, -tile.height/2);
+      ctx.restore();
       renderedCount++;
     }
   }
   console.assert(L.total === renderedCount, 'layout() total אינו תואם למספר המדבקות שצוירו בפועל', L.total, renderedCount);
+}
+
+// עוטפת: מציירת לתצוגה המקדימה הגלובלית ומעדכנת את ה-DOM. drawSheetTo
+// עצמה לא נוגעת ב-DOM בכלל.
+function drawSheet(){
+  drawSheetTo(a4Ctx, pxPerMm(a4Canvas), a4Canvas.width, a4Canvas.height);
+
+  const L = layout();
+  const {w:natW, h:natH} = natDims();
+  document.getElementById('stats').textContent = `גודל פיזי סופי: ${natW.toFixed(1)}×${natH} מ"מ`;
+
+  // clamp() כבר אמור למנוע total===0 (הגבולות ב-SIZE נגזרים מאותם MARGIN), אבל
+  // זו הגנה נוספת מפורשת — אם בכל זאת קרה, לא מציירים גיליון ריק בשקט.
+  if(L.total === 0){
+    document.getElementById('orient-info').textContent = '';
+    document.getElementById('count-box').textContent = 'המדבקה גדולה מדי לדף';
+  } else {
+    const orientLabel = L.rot ? 'לרוחב' : 'לאורך';
+    const orientPrefix = state.orient === 'auto' ? `אוטומטי בחר: ${orientLabel}` : `${orientLabel} (נבחר ידנית)`;
+    document.getElementById('orient-info').textContent = `${orientPrefix} · ${L.total} מדבקות`;
+    document.getElementById('count-box').textContent = `${L.cols} עמודות × ${L.rows} שורות = ${L.total} מדבקות בדף!`;
+  }
   a4Canvas.classList.remove('pending');
 }
 
@@ -902,7 +986,6 @@ document.getElementById('export-svg').addEventListener('click', ()=>{
   const L = layout();
   if(L.total === 0){ alert('המדבקה גדולה מדי לדף — אין מה לייצא.'); return; }
   const Wmm=210, Hmm=297;
-  const inset=state.inset;
   const frameH = L.h, frameW = L.w, safeGap = L.g;
   const printableLeft = L.left, printableTop = L.top;
   const cols = L.cols, rows = L.rows;
@@ -911,12 +994,11 @@ document.getElementById('export-svg').addEventListener('click', ()=>{
   const {w:natW, h:natH} = natDims();
   const rotDeg = L.rot ? 90 : 0;
 
+  // בלי סימני רישום כאן בכוונה: ב-Silhouette Studio כל קו ב-SVG מיובא הופך
+  // לקו חיתוך, בלי קשר לצבע — סימנים בקובץ הזה ייחתכו מהדף ויהרסו את
+  // ההתאמה. הסימנים שייכים אך ורק לקובץ ההדפסה (PDF); Studio מייצר משלו,
+  // והם מתלכדים כי שני הצדדים משתמשים באותם ערכי REG.
   let svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${Wmm}mm" height="${Hmm}mm" viewBox="0 0 ${Wmm} ${Hmm}">\n`;
-  svg+=`  <g fill="black" stroke="black" stroke-width="0.8">\n`;
-  svg+=`    <rect x="${inset}" y="${inset}" width="5" height="5"/>\n`;
-  svg+=`    <path d="M${Wmm-inset},${inset} h-12 M${Wmm-inset},${inset} v12" fill="none"/>\n`;
-  svg+=`    <path d="M${inset},${Hmm-inset} h12 M${inset},${Hmm-inset} v-12" fill="none"/>\n`;
-  svg+=`  </g>\n`;
   svg+=`  <g stroke="#ff0000" stroke-width="0.1" fill="none">\n`;
 
   for(let r=0; r<rows; r++){
@@ -935,6 +1017,115 @@ document.getElementById('export-svg').addEventListener('click', ()=>{
 document.getElementById('export-png').addEventListener('click', ()=>{
   const a=document.createElement('a'); a.href=a4Canvas.toDataURL('image/png'); a.download='pencil-stickers-preview.png'; a.click();
 });
+
+// קנבס לא טוען פונטים מעצמו — בלי זה, ציור 300 DPI ראשון (לפני שהתצוגה כבר
+// "חיממה" את הפונט) יוצא בברירת המחדל בשקט, בלי שום שגיאה.
+async function ensureFonts(){
+  const fams = [...new Set(layers.filter(l=>l.type==='text').map(l=>l.font||'Heebo'))];
+  await Promise.all(fams.map(f=>document.fonts.load(`700 40px "${f}"`, 'אבגד').catch(()=>{})));
+}
+
+// קובץ הדפסה — A4 מלא ב-300 DPI, כולל סימני רישום (בניגוד ל-SVG לחיתוך).
+document.getElementById('export-print-pdf').addEventListener('click', async ()=>{
+  const L = layout();
+  if(L.total === 0){ alert('המדבקה גדולה מדי לדף — אין מה לייצא.'); return; }
+  await ensureFonts();
+  try{
+    const cv = document.createElement('canvas');
+    cv.width = 2480; cv.height = 3508;              // A4 ב-300 DPI
+    const ctx = cv.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0,0,cv.width,cv.height);
+    invalidateTile();                                // האריח במטמון הוא ברזולוציית התצוגה
+    drawSheetTo(ctx, cv.width/210, cv.width, cv.height);
+    invalidateTile();                                // ולהחזיר לרזולוציית התצוגה
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({unit:'mm', format:'a4', orientation:'portrait'});
+    pdf.addImage(cv.toDataURL('image/png'), 'PNG', 0, 0, 210, 297);
+    pdf.save('pencil-stickers-print.pdf');
+  }catch(err){
+    alert('הייצוא נכשל — כנראה חוסר זיכרון. נסה ממחשב, או הקטן את מספר המדבקות.');
+    console.error(err);
+  }
+});
+
+// עמוד כיול — קו אופקי ואנכי של 100.0 מ"מ בדיוק + סימני הרישום הנוכחיים,
+// כדי שהושעיה יוכל לאמת תוך 20 שניות שההדפסה יצאה בקנה מידה 100%.
+document.getElementById('export-calibration-pdf').addEventListener('click', ()=>{
+  try{
+    const cv = document.createElement('canvas');
+    cv.width = 2480; cv.height = 3508;
+    const ctx = cv.getContext('2d');
+    const scale = cv.width/210;
+    ctx.fillStyle = '#fff'; ctx.fillRect(0,0,cv.width,cv.height);
+    drawRegMarks(ctx, scale, cv.width, cv.height);
+
+    const mm = v => v*scale;
+    ctx.strokeStyle = '#000'; ctx.fillStyle = '#000'; ctx.lineWidth = mm(0.3);
+    ctx.textAlign = 'center';
+
+    // קו אופקי 100 מ"מ
+    const hy = mm(100), hx0 = mm(55), hx1 = mm(155);
+    ctx.beginPath(); ctx.moveTo(hx0,hy); ctx.lineTo(hx1,hy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(hx0,hy-mm(3)); ctx.lineTo(hx0,hy+mm(3)); ctx.moveTo(hx1,hy-mm(3)); ctx.lineTo(hx1,hy+mm(3)); ctx.stroke();
+    ctx.font = `${Math.round(mm(4))}px Heebo, sans-serif`;
+    ctx.fillText('100.0 מ"מ', (hx0+hx1)/2, hy-mm(4));
+
+    // קו אנכי 100 מ"מ
+    const vx = mm(150), vy0 = mm(140), vy1 = mm(240);
+    ctx.beginPath(); ctx.moveTo(vx,vy0); ctx.lineTo(vx,vy1); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(vx-mm(3),vy0); ctx.lineTo(vx+mm(3),vy0); ctx.moveTo(vx-mm(3),vy1); ctx.lineTo(vx+mm(3),vy1); ctx.stroke();
+    ctx.save(); ctx.translate(vx+mm(8), (vy0+vy1)/2); ctx.rotate(-Math.PI/2); ctx.fillText('100.0 מ"מ', 0, 0); ctx.restore();
+
+    ctx.font = `${Math.round(mm(3.5))}px Heebo, sans-serif`;
+    ctx.fillText('מדוד את הקווים בסרגל. אם אינם 100 מ"מ — קנה המידה בהדפסה אינו 100%.', mm(105), mm(270));
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({unit:'mm', format:'a4', orientation:'portrait'});
+    pdf.addImage(cv.toDataURL('image/png'), 'PNG', 0, 0, 210, 297);
+    pdf.save('pencil-stickers-calibration.pdf');
+  }catch(err){
+    alert('הייצוא נכשל — כנראה חוסר זיכרון. נסה ממחשב.');
+    console.error(err);
+  }
+});
+
+document.getElementById('print-outline').addEventListener('change', e=>{
+  state.printOutline = e.target.checked;
+  drawSingle();
+  schedSheet();
+});
+
+document.getElementById('reg-inset').addEventListener('input', e=>{
+  REG.inset = parseFloat(e.target.value) || REG.inset;
+  applyRegChange();
+});
+document.getElementById('reg-length').addEventListener('input', e=>{
+  REG.length = parseFloat(e.target.value) || REG.length;
+  applyRegChange();
+});
+document.getElementById('reg-thickness').addEventListener('input', e=>{
+  REG.thickness = parseFloat(e.target.value) || REG.thickness;
+  applyRegChange();
+});
+document.getElementById('reg-square').addEventListener('input', e=>{
+  REG.square = parseFloat(e.target.value) || REG.square;
+  applyRegChange();
+});
+document.getElementById('reg-count').addEventListener('change', e=>{
+  REG.count = parseInt(e.target.value);
+  applyRegChange();
+});
+
+// שינוי בסימני הרישום משנה את MARGIN/SIZE (השטח השמיש עצמו) — צריך לחשב
+// מחדש, ולוודא שהמידה הנוכחית עדיין בגבולות (הם עלולים להצטמצם או לגדול).
+function applyRegChange(){
+  recomputeMargins();
+  state.lenMm = clamp(state.lenMm, SIZE.min, SIZE.usableH);
+  state.widMm = clamp(state.widMm, SIZE.min, SIZE.usableW);
+  syncSizeInputs();
+  drawSingle();
+  schedSheet();
+}
 
 // התחלה ראשונית
 document.getElementById('radius-box').style.display = 'none';
