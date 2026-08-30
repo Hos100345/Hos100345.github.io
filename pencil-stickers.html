@@ -23,6 +23,8 @@
   input[type="range"]{width:100%;height:24px;accent-color:#0f172a}
   input[type="text"],select{width:100%;padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;font-family:inherit;background:#fff}
   input[type="text"]:focus,select:focus{outline:none;border-color:#0f172a}
+  input[type="number"]{width:100%;padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;font-family:inherit;background:#fff}
+  input[type="number"].at-limit{border-color:#ea580c;color:#ea580c}
   .row{display:flex;gap:8px} .row>*{flex:1}
   #single-canvas{width:100%;height:220px;border:2px solid #0f172a;border-radius:12px;background:#fff;touch-action:none;cursor:crosshair;display:block;box-shadow:inset 0 2px 4px rgba(0,0,0,0.03)}
   #a4-canvas{width:100%;max-width:800px;height:auto;background:#fff;box-shadow:0 4px 20px rgba(0,0,0,0.1);display:block;margin:0 auto;border-radius:4px;transition:opacity .15s}
@@ -74,11 +76,6 @@
       <div class="slider-box" id="radius-box">
         <label><span>עיגול פינות</span><span id="radius-val">3 מ"מ</span></label>
         <input type="range" id="radius" min="0" max="10" value="3" step="0.5">
-      </div>
-
-      <div class="slider-box">
-        <label><span>יחס אורך ביחס לגובה (פרופורציה)</span><span id="ratio-val">2.8x</span></label>
-        <input type="range" id="sticker-ratio" min="1.0" max="4.5" value="2.8" step="0.1">
       </div>
 
       <div class="row">
@@ -138,15 +135,21 @@
     <!-- פאנל גודל פיזי וחישוב הגיליון — הגיליון מתעדכן אוטומטית, בלי כפתור -->
     <div class="panel">
       <h2>2️⃣ גודל פיזי סופי וחישוב דף</h2>
-      <div class="slider-box">
-        <label><span>גובה פיזי סופי למדבקה</span><span id="h-val">12 מ"מ</span></label>
-        <input type="range" id="sticker-h" min="6" max="35" value="12" step="1">
-        <div style="font-size:11px; color:#64748b; margin-top:4px">הרוחב יחושב אוטומטית באופן פרופורציונלי למבנה שהגדרת למעלה (<span id="calc-w-val">34 מ"מ</span>).</div>
+      <div class="row">
+        <div id="len-field">
+          <label style="font-size:11px">אורך (מ"מ)</label>
+          <input type="number" id="len-mm" min="10" step="0.5" value="33.6">
+        </div>
+        <div>
+          <label style="font-size:11px" id="wid-mm-label">רוחב (מ"מ)</label>
+          <input type="number" id="wid-mm" min="10" step="0.5" value="12">
+        </div>
       </div>
+      <div class="hint">גרור את הידית הכהה בפינת התצוגה המקדימה לשינוי חופשי, או הזן מספרים כאן. מינימום 10 מ"מ לכל צלע, מקסימום מדבקה אחת שלמה בדף.</div>
 
       <div class="row" style="margin-top:6px">
-        <button class="btn btn-primary" id="fit-50" style="font-size:12px;background:#4f46e5;border-color:#4f46e5">🎯 גובה מהיר 10 מ"מ</button>
-        <button class="btn btn-primary" id="fit-70" style="font-size:12px;background:#059669;border-color:#059669">🎯 גובה מהיר 12 מ"מ</button>
+        <button class="btn btn-primary" id="fit-50" style="font-size:12px;background:#4f46e5;border-color:#4f46e5">🎯 מדבקה קטנה 28×10</button>
+        <button class="btn btn-primary" id="fit-70" style="font-size:12px;background:#059669;border-color:#059669">🎯 מדבקה בינונית 33.6×12</button>
       </div>
 
       <div style="margin-top:6px">
@@ -202,7 +205,9 @@ let layers = [
   {id:'text1', type:'text', text:'הושעיה וולמן', x:0.58, y:0.5, scale:0.75, rot:0, z:1, font:'Heebo', color:'#0f172a', stroke:'white'}
 ];
 let selectedId = 'text1';
-let state = { radius:3, stickerH:12, ratio:2.8, inset:8, shape:'banner', orient:'auto' };
+// lenMm/widMm במ"מ ישירים — במקום גובה+יחס. יחס לא מסוגל לבטא "מקסימום מדבקה
+// אחת בדף" או "מינימום 10 מ"מ" בלי חישוב הפוך בכל מקום.
+let state = { radius:3, lenMm:33.6, widMm:12, inset:8, shape:'banner', orient:'auto' };
 
 // מרווח בטחון קבוע — סטיית החיתוך של הפלוטר היא ±0.5 מ"מ, אז 1 מ"מ הוא המינימום הבטוח
 // שמונע מהסכין לנגוס במדבקה השכנה. לא ניתן לשינוי מהממשק.
@@ -210,22 +215,35 @@ const GAP_MM = 1;
 // שוליים לפי אזור הסימנים של Silhouette — לא אחידים (הראש/צדדים צרים מהתחתית).
 const MARGIN = { top:19, right:19, bottom:25, left:19 };
 
+// גבולות המידה הפיזית: מינימום 10 מ"מ בשתי הצלעות (מתחת לזה סטיית החיתוך
+// של הפלוטר, ±0.5 מ"מ, לא מאפשרת קילוף), ומקסימום = מדבקה אחת שלמה בדף.
+const SIZE = {
+  min: 10,
+  usableW: 210 - MARGIN.left - MARGIN.right, // 172
+  usableH: 297 - MARGIN.top - MARGIN.bottom  // 253
+};
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+// חוקית אם היא נכנסת לדף באחד משני הכיוונים
+const fitsPage = (a,b) => (a <= SIZE.usableW && b <= SIZE.usableH) || (b <= SIZE.usableW && a <= SIZE.usableH);
+
 const singleCanvas = document.getElementById('single-canvas');
 const singleCtx = singleCanvas.getContext('2d');
 const a4Canvas = document.getElementById('a4-canvas');
 const a4Ctx = a4Canvas.getContext('2d');
 
-function getStickerWidth(){
+// המידות הטבעיות (לא מסובבות) של המדבקה. עיגול: קוטר יחיד (widMm), אחרת
+// lenMm/widMm ישירות.
+function natDims(){
   if(state.shape === 'circle'){
-    return state.stickerH; // עיגול מושלם רוחב שווה לגובה
+    return { w: state.widMm, h: state.widMm };
   }
-  return state.stickerH * state.ratio;
+  return { w: state.lenMm, h: state.widMm };
 }
 
 // מחשבת כמה מדבקות נכנסות בכיוון נתון. rot=false: המדבקה בכיוון הטבעי שלה
 // (לאורך). rot=true: מסובבת 90° (לרוחב) — לכן w/h מתחלפים.
 function packing(rot){
-  const sw = getStickerWidth(), sh = state.stickerH;
+  const {w:sw, h:sh} = natDims();
   const w = rot ? sh : sw, h = rot ? sw : sh;
   const uW = 210 - MARGIN.left - MARGIN.right;
   const uH = 297 - MARGIN.top - MARGIN.bottom;
@@ -467,15 +485,25 @@ function drawSingle(){
   for(let i=0;i<W;i+=20) singleCtx.fillRect(i,0,1,H);
   for(let i=0;i<H;i+=20) singleCtx.fillRect(0,i,W,1);
 
-  const stickerWVal = getStickerWidth();
-  const currentRatio = stickerWVal / state.stickerH;
-  const aspect = 1 / currentRatio;
+  const {w:natW, h:natH} = natDims();
+  const aspect = natH / natW;
 
   let boxW = W * 0.75, boxH = boxW * aspect;
   if(boxH > H * 0.7){ boxH = H * 0.7; boxW = boxH / aspect; }
   const boxX = (W - boxW)/2, boxY = (H - boxH)/2;
 
   renderStickerContent(singleCtx, boxX, boxY, boxW, boxH, 1.2);
+
+  // ידית שינוי מידה של המדבקה עצמה (לא של שכבה) — פינה ימנית-תחתונה של הקופסה.
+  // כתומה כשמגיעים לגבול המינימום/מקסימום, כדי שהמשתמש יבין שהיא "נדבקה" בכוונה.
+  const atLimit = state.widMm<=SIZE.min+0.001 || (state.shape!=='circle' && state.lenMm<=SIZE.min+0.001)
+    || natW>=SIZE.usableH-0.001 || natH>=SIZE.usableW-0.001;
+  singleCtx.fillStyle = atLimit ? '#ea580c' : '#0f172a';
+  singleCtx.beginPath(); singleCtx.arc(boxX+boxW, boxY+boxH, 8, 0, Math.PI*2); singleCtx.fill();
+  singleCtx.strokeStyle='#fff'; singleCtx.lineWidth=2; singleCtx.stroke();
+  singleCtx.strokeStyle = atLimit ? '#ea580c' : '#0f172a'; singleCtx.lineWidth=1.5; singleCtx.setLineDash([3,2]);
+  singleCtx.strokeRect(boxX, boxY, boxW, boxH);
+  singleCtx.setLineDash([]);
 
   const activeLayer = getLayer(selectedId);
   if(activeLayer){
@@ -520,7 +548,7 @@ function drawSingle(){
 let tileCache = null;
 function invalidateTile(){ tileCache = null; }
 function buildTile(scale){
-  const natW = getStickerWidth(), natH = state.stickerH;
+  const {w:natW, h:natH} = natDims();
   const c = document.createElement('canvas');
   c.width = Math.max(1, Math.round(natW*scale));
   c.height = Math.max(1, Math.round(natH*scale));
@@ -535,7 +563,7 @@ function drawSheet(){
 
   const scale = pxPerMm(a4Canvas); // px/מ"מ האמיתי של הקנבס הזה, לא קבוע גלובלי
   const L = layout(); // מ"מ בלבד — אותו מקור אמת שמשמש גם את export-svg
-  const natW = getStickerWidth(), natH = state.stickerH;
+  const {w:natW, h:natH} = natDims();
 
   const insetPx = state.inset * scale;
   const lLenPx = 12 * scale;
@@ -552,12 +580,20 @@ function drawSheet(){
   a4Ctx.beginPath(); a4Ctx.moveTo(insetPx, H-insetPx); a4Ctx.lineTo(insetPx+lLenPx, H-insetPx); a4Ctx.moveTo(insetPx, H-insetPx); a4Ctx.lineTo(insetPx, H-insetPx-lLenPx); a4Ctx.stroke();
   a4Ctx.restore();
 
-  document.getElementById('calc-w-val').textContent = natW.toFixed(1) + ' מ"מ';
   const orientLabel = L.rot ? 'לרוחב' : 'לאורך';
   const orientPrefix = state.orient === 'auto' ? `אוטומטי בחר: ${orientLabel}` : `${orientLabel} (נבחר ידנית)`;
+  document.getElementById('stats').textContent = `גודל פיזי סופי: ${natW.toFixed(1)}×${natH} מ"מ`;
+
+  // clamp() כבר אמור למנוע total===0 (הגבולות ב-SIZE נגזרים מאותם MARGIN), אבל
+  // זו הגנה נוספת מפורשת — אם בכל זאת קרה, לא מציירים גיליון ריק בשקט.
+  if(L.total === 0){
+    document.getElementById('orient-info').textContent = '';
+    document.getElementById('count-box').textContent = 'המדבקה גדולה מדי לדף';
+    a4Canvas.classList.remove('pending');
+    return;
+  }
   document.getElementById('orient-info').textContent = `${orientPrefix} · ${L.total} מדבקות`;
   document.getElementById('count-box').textContent = `${L.cols} עמודות × ${L.rows} שורות = ${L.total} מדבקות בדף!`;
-  document.getElementById('stats').textContent = `גודל פיזי סופי: ${natW.toFixed(1)}×${natH} מ"מ | ${L.cols}×${L.rows} מדבקות בגיליון A4`;
 
   if(!tileCache) tileCache = buildTile(scale);
   const tile = tileCache;
@@ -596,13 +632,13 @@ function schedSheet(){
 let interactionMode = null;
 let dragStart = {x:0, y:0};
 let initialLayerState = null;
+let resizeStart = null; // מצב התחלתי של גרירת ידית שינוי המידה (interactionMode==='resizeSticker')
 
 singleCanvas.addEventListener('pointerdown', e=>{
   const rect = singleCanvas.getBoundingClientRect();
   const W = singleCanvas.width, H = singleCanvas.height;
-  const stickerWVal = getStickerWidth();
-  const currentRatio = stickerWVal / state.stickerH;
-  const aspect = 1 / currentRatio;
+  const {w:natW, h:natH} = natDims();
+  const aspect = natH / natW;
 
   let boxW = W * 0.75, boxH = boxW * aspect;
   if(boxH > H * 0.7){ boxH = H * 0.7; boxW = boxH / aspect; }
@@ -610,6 +646,16 @@ singleCanvas.addEventListener('pointerdown', e=>{
 
   const x = (e.clientX-rect.left)/rect.width * W;
   const y = (e.clientY-rect.top)/rect.height * H;
+
+  // ידית שינוי מידה של המדבקה — פינה ימנית-תחתונה של הקופסה, קודמת לכל
+  // ידית שכבה כי היא שולטת בגבול הפיזי של כל הקופסה.
+  if(Math.hypot(x - (boxX+boxW), y - (boxY+boxH)) < 14){
+    interactionMode = 'resizeSticker';
+    singleCanvas.setPointerCapture(e.pointerId);
+    dragStart = {x, y};
+    resizeStart = { scale: boxW/natW, lenMm: state.lenMm, widMm: state.widMm };
+    return;
+  }
 
   const activeLayer = getLayer(selectedId);
   if(activeLayer){
@@ -674,19 +720,35 @@ function initDrag(e, layer, x, y){
 
 singleCanvas.addEventListener('pointermove', e=>{
   if(!interactionMode) return;
-  const l = getLayer(selectedId); if(!l) return;
   const W = singleCanvas.width, H = singleCanvas.height;
-  const stickerWVal = getStickerWidth();
-  const currentRatio = stickerWVal / state.stickerH;
-  const aspect = 1 / currentRatio;
+  const rect = singleCanvas.getBoundingClientRect();
+  const x = (e.clientX-rect.left)/rect.width * W;
+  const y = (e.clientY-rect.top)/rect.height * H;
+
+  if(interactionMode === 'resizeSticker'){
+    // scale (px/מ"מ) נקבע פעם אחת בתחילת הגרירה — אין צורך לחשב boxW/boxH מחדש בכל תזוזה
+    const scale = resizeStart.scale;
+    const dLen = (x - dragStart.x) / scale;
+    const dWid = (y - dragStart.y) / scale;
+    if(state.shape === 'circle'){
+      state.widMm = clamp(resizeStart.widMm + dLen, SIZE.min, SIZE.usableW);
+    } else {
+      state.lenMm = clamp(resizeStart.lenMm + dLen, SIZE.min, SIZE.usableH);
+      state.widMm = clamp(resizeStart.widMm + dWid, SIZE.min, SIZE.usableW);
+    }
+    syncSizeInputs();
+    drawSingle();
+    schedSheet();
+    return;
+  }
+
+  const l = getLayer(selectedId); if(!l) return;
+  const {w:natW, h:natH} = natDims();
+  const aspect = natH / natW;
 
   let boxW = W * 0.75, boxH = boxW * aspect;
   if(boxH > H * 0.7){ boxH = H * 0.7; boxW = boxH / aspect; }
   const boxX = (W - boxW)/2, boxY = (H - boxH)/2;
-
-  const rect = singleCanvas.getBoundingClientRect();
-  const x = (e.clientX-rect.left)/rect.width * W;
-  const y = (e.clientY-rect.top)/rect.height * H;
 
   if(interactionMode === 'move'){
     const dx = x - dragStart.x;
@@ -714,9 +776,25 @@ singleCanvas.addEventListener('pointermove', e=>{
 singleCanvas.addEventListener('pointerup', ()=>{ interactionMode = null; schedSheet(); });
 
 // האזנות פקדים
+// מציגה את lenMm/widMm הנוכחיים בשדות, מסתירה את שדה האורך לעיגול (קוטר יחיד),
+// ומסמנת בכתום שדה שנמצא בדיוק על גבול המינימום/מקסימום שלו.
+function syncSizeInputs(){
+  const isCircle = state.shape === 'circle';
+  const lenInput = document.getElementById('len-mm'), widInput = document.getElementById('wid-mm');
+  lenInput.value = state.lenMm.toFixed(1);
+  widInput.value = state.widMm.toFixed(1);
+  document.getElementById('len-field').style.display = isCircle ? 'none' : '';
+  document.getElementById('wid-mm-label').textContent = isCircle ? 'קוטר (מ"מ)' : 'רוחב (מ"מ)';
+  const lenAtLimit = !isCircle && (state.lenMm <= SIZE.min+0.001 || state.lenMm >= SIZE.usableH-0.001);
+  const widAtLimit = state.widMm <= SIZE.min+0.001 || state.widMm >= SIZE.usableW-0.001;
+  lenInput.classList.toggle('at-limit', lenAtLimit);
+  widInput.classList.toggle('at-limit', widAtLimit);
+}
+
 document.getElementById('sticker-shape').addEventListener('change', e=>{
   state.shape = e.target.value;
   document.getElementById('radius-box').style.display = (state.shape === 'rounded') ? 'block' : 'none';
+  syncSizeInputs();
   drawSingle();
   schedSheet();
 });
@@ -728,16 +806,16 @@ document.getElementById('radius').addEventListener('input', e=>{
   schedSheet();
 });
 
-document.getElementById('sticker-ratio').addEventListener('input', e=>{
-  state.ratio = parseFloat(e.target.value);
-  document.getElementById('ratio-val').textContent = state.ratio.toFixed(1) + 'x';
+document.getElementById('len-mm').addEventListener('input', e=>{
+  state.lenMm = clamp(parseFloat(e.target.value) || SIZE.min, SIZE.min, SIZE.usableH);
+  syncSizeInputs();
   drawSingle();
   schedSheet();
 });
 
-document.getElementById('sticker-h').addEventListener('input', e=>{
-  state.stickerH = parseInt(e.target.value);
-  document.getElementById('h-val').textContent = e.target.value + ' מ"מ';
+document.getElementById('wid-mm').addEventListener('input', e=>{
+  state.widMm = clamp(parseFloat(e.target.value) || SIZE.min, SIZE.min, SIZE.usableW);
+  syncSizeInputs();
   drawSingle();
   schedSheet();
 });
@@ -748,17 +826,17 @@ document.getElementById('orient-select').addEventListener('change', e=>{
 });
 
 document.getElementById('fit-50').addEventListener('click', ()=>{
-  state.stickerH = 10;
-  document.getElementById('sticker-h').value = state.stickerH;
-  document.getElementById('h-val').textContent = state.stickerH + ' מ"מ';
+  state.lenMm = clamp(28, SIZE.min, SIZE.usableH);
+  state.widMm = clamp(10, SIZE.min, SIZE.usableW);
+  syncSizeInputs();
   drawSingle();
   schedSheet();
 });
 
 document.getElementById('fit-70').addEventListener('click', ()=>{
-  state.stickerH = 12;
-  document.getElementById('sticker-h').value = state.stickerH;
-  document.getElementById('h-val').textContent = state.stickerH + ' מ"מ';
+  state.lenMm = clamp(33.6, SIZE.min, SIZE.usableH);
+  state.widMm = clamp(12, SIZE.min, SIZE.usableW);
+  syncSizeInputs();
   drawSingle();
   schedSheet();
 });
@@ -820,15 +898,16 @@ fileInput.addEventListener('change', e=>{
 // יצוא SVG מדויק — משתמש באותה layout() בדיוק כמו התצוגה המקדימה,
 // כדי שמספר הצורות בקובץ יהיה זהה תמיד למה שמוצג ב-count-box.
 document.getElementById('export-svg').addEventListener('click', ()=>{
+  const L = layout();
+  if(L.total === 0){ alert('המדבקה גדולה מדי לדף — אין מה לייצא.'); return; }
   const Wmm=210, Hmm=297;
   const inset=state.inset;
-  const L = layout();
   const frameH = L.h, frameW = L.w, safeGap = L.g;
   const printableLeft = L.left, printableTop = L.top;
   const cols = L.cols, rows = L.rows;
   // המידות הטבעיות (לא מוחלפות) של המדבקה — הצורה תמיד מצוירת בכיוון הזה,
   // ואז מסובבת כיחידה שלמה ב-<g transform> אם L.rot דורש זאת.
-  const natW = getStickerWidth(), natH = state.stickerH;
+  const {w:natW, h:natH} = natDims();
   const rotDeg = L.rot ? 90 : 0;
 
   let svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${Wmm}mm" height="${Hmm}mm" viewBox="0 0 ${Wmm} ${Hmm}">\n`;
@@ -858,6 +937,7 @@ document.getElementById('export-png').addEventListener('click', ()=>{
 
 // התחלה ראשונית
 document.getElementById('radius-box').style.display = 'none';
+syncSizeInputs();
 updateSelectedControls();
 drawSingle();
 drawSheet();
