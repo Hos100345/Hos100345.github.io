@@ -189,8 +189,11 @@
 </div>
 
 <script>
-const PX_PER_MM = 300/25.4;
-const mmToPx = m => { const v = parseFloat(m)*PX_PER_MM/2; return isNaN(v)?0:v; };
+// px למ"מ נגזר מהקנבס עצמו (A4 = 210 מ"מ רוחב) — לא מקבוע מרחף.
+// זה מה שהיה חסר: PX_PER_MM הישן היה קבוע יחיד (300dpi) שהוכפל שוב ב-*2 בכל
+// אתר קריאה, בעוד קנבס הגיליון בפועל הוא ברזולוציה אחרת — ומכאן שהתצוגה
+// המקדימה ציירה כל מדבקה פי 2 גדולה מהמידה שהוזנה.
+const pxPerMm = cv => cv.width / 210;
 
 let layers = [
   {id:'icon1', type:'icon', emoji:'⭐', x:0.15, y:0.5, scale:0.55, rot:0, z:0, image:null},
@@ -209,6 +212,21 @@ function getStickerWidth(){
     return state.stickerH; // עיגול מושלם רוחב שווה לגובה
   }
   return state.stickerH * state.ratio;
+}
+
+// מקור אמת יחיד לפריסת הגיליון — הכול במ"מ אמיתיים, ללא שום פיקסלים.
+// גם drawSheet (תצוגה מקדימה) וגם export-svg (קובץ החיתוך) קוראים לפונקציה
+// הזו ולא מחשבים cols/rows בעצמם — כדי שמה שרואים בתצוגה יהיה תמיד בדיוק
+// מה שנחתך בפועל.
+function layout(){
+  const w = getStickerWidth(), h = state.stickerH, g = state.gap;
+  const margin = state.inset + 12 + 5; // inset + אורך זרוע הסימון (12) + מרווח בטחון (5), אחיד בכל הצדדים
+  const left = margin, top = margin;
+  const usableW = 210 - left*2;
+  const usableH = 297 - top*2;
+  const cols = Math.max(1, Math.floor((usableW + g) / (w + g)));
+  const rows = Math.max(1, Math.floor((usableH + g) / (h + g)));
+  return {left, top, w, h, g, cols, rows, total: cols*rows};
 }
 
 function getLayer(id){ return layers.find(l=>l.id===id); }
@@ -427,18 +445,16 @@ function drawSheet(){
   a4Ctx.clearRect(0,0,W,H);
   a4Ctx.fillStyle='#fff'; a4Ctx.fillRect(0,0,W,H);
 
-  const insetPx = mmToPx(state.inset*2);
-  const lLenPx = mmToPx(12*2);
-  const thickPx = mmToPx(0.8*2);
-  const sqPx = mmToPx(5*2);
-  const safeGap = mmToPx(state.gap*2);
+  const scale = pxPerMm(a4Canvas); // px/מ"מ האמיתי של הקנבס הזה, לא קבוע גלובלי
+  const L = layout(); // מ"מ בלבד — אותו מקור אמת שמשמש גם את export-svg
 
-  const printableLeft = insetPx + lLenPx + 5;
-  const printableTop = insetPx + lLenPx + 5;
-  const printableRight = W - (insetPx + lLenPx + 5);
-  const printableBottom = H - (insetPx + lLenPx + 25);
-  const printableW = printableRight - printableLeft;
-  const printableH = printableBottom - printableTop;
+  const insetPx = state.inset * scale;
+  const lLenPx = 12 * scale;
+  const thickPx = 0.8 * scale;
+  const sqPx = 5 * scale;
+  const gapPx = L.g * scale;
+  const leftPx = L.left * scale, topPx = L.top * scale;
+  const frameWPx = L.w * scale, frameHPx = L.h * scale;
 
   a4Ctx.save();
   a4Ctx.fillStyle='#000'; a4Ctx.strokeStyle='#000'; a4Ctx.lineWidth=thickPx;
@@ -447,27 +463,20 @@ function drawSheet(){
   a4Ctx.beginPath(); a4Ctx.moveTo(insetPx, H-insetPx); a4Ctx.lineTo(insetPx+lLenPx, H-insetPx); a4Ctx.moveTo(insetPx, H-insetPx); a4Ctx.lineTo(insetPx, H-insetPx-lLenPx); a4Ctx.stroke();
   a4Ctx.restore();
 
-  const stickerWVal = getStickerWidth();
-  const frameWPx = mmToPx(stickerWVal * 2);
-  const frameHPx = mmToPx(state.stickerH * 2);
+  document.getElementById('calc-w-val').textContent = L.w.toFixed(1) + ' מ"מ';
+  document.getElementById('count-box').textContent = `${L.cols} עמודות × ${L.rows} שורות = ${L.total} מדבקות בדף!`;
+  document.getElementById('stats').textContent = `גודל פיזי סופי: ${L.w.toFixed(1)}×${L.h} מ"מ | ${L.cols}×${L.rows} מדבקות בגיליון A4`;
 
-  document.getElementById('calc-w-val').textContent = stickerWVal.toFixed(1) + ' מ"מ';
-
-  const cols = Math.max(1, Math.floor((printableW + safeGap) / (frameWPx + safeGap)));
-  const rows = Math.max(1, Math.floor((printableH + safeGap) / (frameHPx + safeGap)));
-  const total = cols * rows;
-
-  document.getElementById('count-box').textContent = `${cols} עמודות × ${rows} שורות = ${total} מדבקות בדף!`;
-  document.getElementById('stats').textContent = `גודל פיזי סופי: ${stickerWVal.toFixed(1)}×${state.stickerH} מ"מ | ${cols}×${rows} מדבקות בגיליון A4`;
-
-  for(let r=0; r<rows; r++){
-    for(let c=0; c<cols; c++){
-      const x = printableLeft + c*(frameWPx + safeGap);
-      const y = printableTop + r*(frameHPx + safeGap);
-      if(y + frameHPx > printableBottom + 10) continue;
+  let renderedCount = 0;
+  for(let r=0; r<L.rows; r++){
+    for(let c=0; c<L.cols; c++){
+      const x = leftPx + c*(frameWPx + gapPx);
+      const y = topPx + r*(frameHPx + gapPx);
       renderStickerContent(a4Ctx, x, y, frameWPx, frameHPx, 0.8);
+      renderedCount++;
     }
   }
+  console.assert(L.total === renderedCount, 'layout() total אינו תואם למספר המדבקות שצוירו בפועל', L.total, renderedCount);
 }
 
 // אינטראקציה בקנבס יחיד
@@ -692,19 +701,15 @@ fileInput.addEventListener('change', e=>{
   fileInput.value='';
 });
 
-// יצוא SVG מדויק
+// יצוא SVG מדויק — משתמש באותה layout() בדיוק כמו התצוגה המקדימה,
+// כדי שמספר הצורות בקובץ יהיה זהה תמיד למה שמוצג ב-count-box.
 document.getElementById('export-svg').addEventListener('click', ()=>{
   const Wmm=210, Hmm=297;
-  const frameH = state.stickerH;
-  const frameW = getStickerWidth();
-  const safeGap = state.gap;
-  const inset=state.inset, lLen=12;
-  const printableLeft = inset + lLen + 5;
-  const printableTop = inset + lLen + 5;
-  const printableW = Wmm - printableLeft*2;
-  const printableH = Hmm - printableTop*2 - 25;
-  const cols = Math.floor((printableW+safeGap)/(frameW+safeGap));
-  const rows = Math.floor((printableH+safeGap)/(frameH+safeGap));
+  const inset=state.inset;
+  const L = layout();
+  const frameH = L.h, frameW = L.w, safeGap = L.g;
+  const printableLeft = L.left, printableTop = L.top;
+  const cols = L.cols, rows = L.rows;
 
   let svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${Wmm}mm" height="${Hmm}mm" viewBox="0 0 ${Wmm} ${Hmm}">\n`;
   svg+=`  <g fill="black" stroke="black" stroke-width="0.8">\n`;
