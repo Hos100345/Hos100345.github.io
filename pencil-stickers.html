@@ -173,9 +173,9 @@
 
       <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;cursor:pointer">
         <input type="checkbox" id="print-outline" style="width:auto">
-        הדפס את קו החיתוך האדום
+        הדפס את קו החיתוך האדום בקובץ ההדפסה
       </label>
-      <div class="hint">כבוי כברירת מחדל — מיועד למסלול Trace ב-Studio בלבד (זיהוי הקו המודפס כקו חיתוך). במסלול הרגיל (ייבוא קובץ ה-SVG) הקו מיותר ואפילו יפריע.</div>
+      <div class="hint">בתצוגה על המסך הקו תמיד מוצג. כבוי כברירת מחדל בקובץ ההדפסה — מיועד למסלול Trace ב-Studio בלבד (זיהוי הקו המודפס כקו חיתוך). במסלול הרגיל (ייבוא קובץ ה-SVG) הקו מיותר ואפילו יפריע.</div>
 
       <button class="btn" id="export-calibration-pdf" style="width:100%">📏 עמוד כיול (בדיקת קנה מידה)</button>
       <div class="hint">קובץ החיתוך (SVG) מכיל קווי חיתוך בלבד — בלי סימני רישום. ב-Silhouette Studio: ייבא → הפעל סימני רישום (M) → Restore Defaults. הסימנים של Studio יתלכדו עם אלה שמודפסים כאן בקובץ ההדפסה, כי שניהם נגזרים מאותן הגדרות.</div>
@@ -490,7 +490,11 @@ function shapeSvgMarkup(x, y, frameW, frameH){
   }
 }
 
-function renderStickerContent(ctx, boxX, boxY, boxW, boxH, scaleFactor = 1){
+// showOutline שולט רק בקו האדום עצמו — לא ב-state.printOutline ישירות, כי
+// הפונקציה הזו משרתת גם את העריכה החיה (drawSingle) וגם את תצוגת הגיליון
+// (buildTile), ששתיהן חייבות להראות תמיד את קו החיתוך על המסך. רק ייצוא
+// ה-PDF מעביר את state.printOutline בפועל, כדי לדלג עליו בקובץ המודפס.
+function renderStickerContent(ctx, boxX, boxY, boxW, boxH, scaleFactor = 1, showOutline = true){
   ctx.save();
   ctx.strokeStyle='#ff0000';
   ctx.lineWidth = 1.2 * scaleFactor;
@@ -500,7 +504,7 @@ function renderStickerContent(ctx, boxX, boxY, boxW, boxH, scaleFactor = 1){
   ctx.fillStyle='#fff'; ctx.fill();
   // הדילוג הוא על קו החיתוך האדום בלבד — ה-fill הלבן וה-clip נשארים תמיד,
   // אחרת המדבקה מאבדת רקע והשכבות גולשות החוצה.
-  if(state.printOutline) ctx.stroke();
+  if(showOutline) ctx.stroke();
   ctx.clip();
 
   const sorted = [...layers].sort((a,b)=>a.z-b.z);
@@ -612,13 +616,13 @@ let tileCache = null;
 function invalidateTile(){ tileCache = null; }
 const TILE_PAD = 0.2; // 20% מרווח לצורות שגולשות מהמסגרת בכוונה (heart/wave/cloud) ולעובי קו החיתוך
 
-function buildTile(scale){
+function buildTile(scale, showOutline = true){
   const {w:natW, h:natH} = natDims();
   const padX = natW*TILE_PAD*scale, padY = natH*TILE_PAD*scale;
   const c = document.createElement('canvas');
   c.width = Math.max(1, Math.round(natW*scale + padX*2));
   c.height = Math.max(1, Math.round(natH*scale + padY*2));
-  renderStickerContent(c.getContext('2d'), padX, padY, natW*scale, natH*scale, 0.8);
+  renderStickerContent(c.getContext('2d'), padX, padY, natW*scale, natH*scale, 0.8, showOutline);
   return c;
 }
 
@@ -633,6 +637,7 @@ function drawRegMarks(ctx, scale, W, H){
 
   ctx.save();
   ctx.fillStyle='#000'; ctx.strokeStyle='#000'; ctx.lineWidth=thickPx;
+  ctx.lineCap = 'square'; // בלי זה נשאר חסר בפינה החיצונית של כל L, ברוחב thickness/2
   ctx.fillRect(insetPx, insetPx, sqPx, sqPx);
   ctx.beginPath(); ctx.moveTo(W-insetPx, insetPx); ctx.lineTo(W-insetPx-lLenPx, insetPx); ctx.moveTo(W-insetPx, insetPx); ctx.lineTo(W-insetPx, insetPx+lLenPx); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(insetPx, H-insetPx); ctx.lineTo(insetPx+lLenPx, H-insetPx); ctx.moveTo(insetPx, H-insetPx); ctx.lineTo(insetPx, H-insetPx-lLenPx); ctx.stroke();
@@ -644,8 +649,9 @@ function drawRegMarks(ctx, scale, W, H){
 
 // ציור טהור — בלי שום גישה ל-a4Canvas ובלי עדכוני DOM. ctx/scale/W/H
 // מגיעים מבחוץ כדי שאותה לוגיקה תשרת גם את התצוגה המקדימה וגם את קובץ
-// ההדפסה ב-300 DPI (קנבס אחר לגמרי).
-function drawSheetTo(ctx, scale, W, H){
+// ההדפסה ב-300 DPI (קנבס אחר לגמרי). showOutline ברירת מחדל true — התצוגה
+// על המסך תמיד מראה את קו החיתוך; רק ייצוא ה-PDF מעביר את state.printOutline.
+function drawSheetTo(ctx, scale, W, H, showOutline = true){
   ctx.clearRect(0,0,W,H);
   ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H);
 
@@ -658,7 +664,7 @@ function drawSheetTo(ctx, scale, W, H){
   const leftPx = L.left * scale, topPx = L.top * scale;
   const frameWPx = L.w * scale, frameHPx = L.h * scale;
 
-  if(!tileCache) tileCache = buildTile(scale);
+  if(!tileCache) tileCache = buildTile(scale, showOutline);
   const tile = tileCache;
 
   let renderedCount = 0;
@@ -1036,8 +1042,8 @@ document.getElementById('export-print-pdf').addEventListener('click', async ()=>
     const ctx = cv.getContext('2d');
     ctx.fillStyle = '#fff'; ctx.fillRect(0,0,cv.width,cv.height);
     invalidateTile();                                // האריח במטמון הוא ברזולוציית התצוגה
-    drawSheetTo(ctx, cv.width/210, cv.width, cv.height);
-    invalidateTile();                                // ולהחזיר לרזולוציית התצוגה
+    drawSheetTo(ctx, cv.width/210, cv.width, cv.height, state.printOutline);
+    invalidateTile();                                // ולהחזיר לרזולוציית התצוגה, בלי לזהם אותה במצב showOutline של הקובץ
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({unit:'mm', format:'a4', orientation:'portrait'});
     pdf.addImage(cv.toDataURL('image/png'), 'PNG', 0, 0, 210, 297);
@@ -1089,10 +1095,10 @@ document.getElementById('export-calibration-pdf').addEventListener('click', ()=>
   }
 });
 
+// לא משפיע על שום דבר על המסך (העריכה והגיליון תמיד מראים את קו החיתוך) —
+// רק נקרא בפועל בייצוא ה-PDF, אז אין צורך לצייר מחדש כאן.
 document.getElementById('print-outline').addEventListener('change', e=>{
   state.printOutline = e.target.checked;
-  drawSingle();
-  schedSheet();
 });
 
 document.getElementById('reg-inset').addEventListener('input', e=>{
