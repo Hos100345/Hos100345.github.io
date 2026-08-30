@@ -25,7 +25,8 @@
   input[type="text"]:focus,select:focus{outline:none;border-color:#0f172a}
   .row{display:flex;gap:8px} .row>*{flex:1}
   #single-canvas{width:100%;height:220px;border:2px solid #0f172a;border-radius:12px;background:#fff;touch-action:none;cursor:crosshair;display:block;box-shadow:inset 0 2px 4px rgba(0,0,0,0.03)}
-  #a4-canvas{width:100%;max-width:800px;height:auto;background:#fff;box-shadow:0 4px 20px rgba(0,0,0,0.1);display:block;margin:0 auto;border-radius:4px}
+  #a4-canvas{width:100%;max-width:800px;height:auto;background:#fff;box-shadow:0 4px 20px rgba(0,0,0,0.1);display:block;margin:0 auto;border-radius:4px;transition:opacity .15s}
+  #a4-canvas.pending{opacity:.6}
   .preview-wrap{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:12px;overflow:auto}
   .count-box{background:#0f172a;color:#fff;border-radius:10px;padding:12px;text-align:center;font-weight:800;font-size:15px}
   .hint{font-size:11px;color:#64748b;background:#f8fafc;padding:6px 8px;border-radius:6px;line-height:1.4;border:1px dashed #cbd5e1}
@@ -134,7 +135,7 @@
       </div>
     </div>
 
-    <!-- פאנל גודל פיזי וחישוב הגיליון (הסליידרים והכפתור המרכזי ממוקמים פה) -->
+    <!-- פאנל גודל פיזי וחישוב הגיליון — הגיליון מתעדכן אוטומטית, בלי כפתור -->
     <div class="panel">
       <h2>2️⃣ גודל פיזי סופי וחישוב דף</h2>
       <div class="slider-box">
@@ -148,16 +149,17 @@
         <button class="btn btn-primary" id="fit-70" style="font-size:12px;background:#059669;border-color:#059669">🎯 גובה מהיר 12 מ"מ</button>
       </div>
 
-      <!-- כפתור טעינת תצוגה סופית למניעת תקיעות -->
-      <button class="btn btn-primary" id="load-sheet-btn" style="background-color: #0f172a; margin-top: 8px; width: 100%; padding: 12px; font-size: 15px;">⚡ טען תצוגה סופית ועדכן גיליון</button>
-
-      <!-- הסליידר הסופי ממוקם הכי למטה בפאנל -->
-      <div class="slider-box" style="margin-top: 8px; background: #fffdf0; border-color: #eab308;">
-        <label><span>מרווח בטחון / צפיפות בגיליון</span><span id="gap-val">0.6 מ"מ</span></label>
-        <input type="range" id="sheet-gap" min="0.2" max="2.0" value="0.6" step="0.1">
+      <div style="margin-top:6px">
+        <label style="font-size:12px;font-weight:700;display:block;margin-bottom:4px">כיוון הפריסה בדף:</label>
+        <select id="orient-select">
+          <option value="auto">אוטומטי (מומלץ)</option>
+          <option value="along">לאורך</option>
+          <option value="across">לרוחב</option>
+        </select>
+        <div class="hint" id="orient-info" style="margin-top:4px"></div>
       </div>
 
-      <div class="count-box" id="count-box" style="margin-top:6px">לחץ על כפתור הטעינה לחישוב הגיליון</div>
+      <div class="count-box" id="count-box" style="margin-top:6px"></div>
     </div>
 
   </div>
@@ -200,7 +202,13 @@ let layers = [
   {id:'text1', type:'text', text:'הושעיה וולמן', x:0.58, y:0.5, scale:0.75, rot:0, z:1, font:'Heebo', color:'#0f172a', stroke:'white'}
 ];
 let selectedId = 'text1';
-let state = { radius:3, stickerH:12, ratio:2.8, inset:8, shape:'banner', gap:0.6 };
+let state = { radius:3, stickerH:12, ratio:2.8, inset:8, shape:'banner', orient:'auto' };
+
+// מרווח בטחון קבוע — סטיית החיתוך של הפלוטר היא ±0.5 מ"מ, אז 1 מ"מ הוא המינימום הבטוח
+// שמונע מהסכין לנגוס במדבקה השכנה. לא ניתן לשינוי מהממשק.
+const GAP_MM = 1;
+// שוליים לפי אזור הסימנים של Silhouette — לא אחידים (הראש/צדדים צרים מהתחתית).
+const MARGIN = { top:19, right:19, bottom:25, left:19 };
 
 const singleCanvas = document.getElementById('single-canvas');
 const singleCtx = singleCanvas.getContext('2d');
@@ -214,19 +222,37 @@ function getStickerWidth(){
   return state.stickerH * state.ratio;
 }
 
+// מחשבת כמה מדבקות נכנסות בכיוון נתון. rot=false: המדבקה בכיוון הטבעי שלה
+// (לאורך). rot=true: מסובבת 90° (לרוחב) — לכן w/h מתחלפים.
+function packing(rot){
+  const sw = getStickerWidth(), sh = state.stickerH;
+  const w = rot ? sh : sw, h = rot ? sw : sh;
+  const uW = 210 - MARGIN.left - MARGIN.right;
+  const uH = 297 - MARGIN.top - MARGIN.bottom;
+  const cols = Math.max(0, Math.floor((uW + GAP_MM) / (w + GAP_MM)));
+  const rows = Math.max(0, Math.floor((uH + GAP_MM) / (h + GAP_MM)));
+  return {rot, w, h, cols, rows, total: cols*rows};
+}
+
 // מקור אמת יחיד לפריסת הגיליון — הכול במ"מ אמיתיים, ללא שום פיקסלים.
 // גם drawSheet (תצוגה מקדימה) וגם export-svg (קובץ החיתוך) קוראים לפונקציה
 // הזו ולא מחשבים cols/rows בעצמם — כדי שמה שרואים בתצוגה יהיה תמיד בדיוק
-// מה שנחתך בפועל.
+// מה שנחתך בפועל. במצב 'auto' בוחרת בין שני הכיוונים לפי מי שמכניס יותר —
+// אין כלל קבוע "מסובב תמיד עדיף", המנצח מתהפך לפי הפרופורציה של המדבקה.
 function layout(){
-  const w = getStickerWidth(), h = state.stickerH, g = state.gap;
-  const margin = state.inset + 12 + 5; // inset + אורך זרוע הסימון (12) + מרווח בטחון (5), אחיד בכל הצדדים
-  const left = margin, top = margin;
-  const usableW = 210 - left*2;
-  const usableH = 297 - top*2;
-  const cols = Math.max(1, Math.floor((usableW + g) / (w + g)));
-  const rows = Math.max(1, Math.floor((usableH + g) / (h + g)));
-  return {left, top, w, h, g, cols, rows, total: cols*rows};
+  const opts = (state.orient === 'auto')
+    ? [packing(false), packing(true)]
+    : [packing(state.orient === 'across')];
+  const best = opts.reduce((a,b) => b.total > a.total ? b : a);
+
+  // מרכוז הרשת בשטח השמיש — שאריות מתחלקות שווה בשוליים.
+  const gridW = best.cols*best.w + Math.max(0, best.cols-1)*GAP_MM;
+  const gridH = best.rows*best.h + Math.max(0, best.rows-1)*GAP_MM;
+  return {
+    ...best, g: GAP_MM,
+    left: MARGIN.left + (210 - MARGIN.left - MARGIN.right - gridW)/2,
+    top:  MARGIN.top  + (297 - MARGIN.top  - MARGIN.bottom - gridH)/2
+  };
 }
 
 function getLayer(id){ return layers.find(l=>l.id===id); }
@@ -339,6 +365,53 @@ function traceStickerPath(ctx, x, y, w, h){
   }
 }
 
+// אותה צורה בדיוק כמו traceStickerPath, אבל כמחרוזת SVG במקום ציור על קנבס.
+// מקבלת x,y,frameW,frameH מקומיים (0,0..w,h) — הקריאה עוטפת ב-<g transform>
+// כדי למקם ולסובב, כך שהצורה עצמה אף פעם לא צריכה לדעת איפה היא על הדף.
+function shapeSvgMarkup(x, y, frameW, frameH){
+  if(state.shape === 'banner'){
+    const ind = Math.min(frameW * 0.08, 3);
+    return `<path d="M${x+ind},${y} h${frameW-ind*2} l${ind},${frameH/2} l-${ind},${frameH/2} h-${frameW-ind*2} l-${ind},-${frameH/2} l${ind},-${frameH/2} z"/>`;
+  } else if(state.shape === 'circle'){
+    const cx = x + frameW/2, cy = y + frameH/2, rVal = frameW/2;
+    return `<circle cx="${cx}" cy="${cy}" r="${rVal}"/>`;
+  } else if(state.shape === 'oval'){
+    const cx = x + frameW/2, cy = y + frameH/2;
+    return `<ellipse cx="${cx}" cy="${cy}" rx="${frameW/2}" ry="${frameH/2}"/>`;
+  } else if(state.shape === 'rectangle'){
+    return `<rect x="${x}" y="${y}" width="${frameW}" height="${frameH}"/>`;
+  } else if(state.shape === 'wave'){
+    return `<path d="M${x+2},${y} Q${x+frameW/4},${y-frameH*0.15} ${x+frameW/2},${y} Q${x+3*frameW/4},${y+frameH*0.15} ${x+frameW-2},${y} Q${x+frameW},${y} ${x+frameW},${y+2} V${y+frameH-2} Q${x+frameW},${y+frameH} ${x+frameW-2},${y+frameH} Q${x+3*frameW/4},${y+frameH+frameH*0.15} ${x+frameW/2},${y+frameH} Q${x+frameW/4},${y+frameH-frameH*0.15} ${x+2},${y+frameH} Q${x},${y+frameH} ${x},${y+frameH-2} V${y+2} Q${x},${y} ${x+2},${y} z"/>`;
+  } else if(state.shape === 'heart'){
+    const cx = x + frameW/2, topY = y + frameH*0.28;
+    return `<path d="M${cx},${y+frameH} C${x-frameW*0.1},${y+frameH*0.55} ${x+frameW*0.1},${y-frameH*0.05} ${cx},${topY} C${x+frameW*0.9},${y-frameH*0.05} ${x+frameW*1.1},${y+frameH*0.55} ${cx},${y+frameH} z"/>`;
+  } else if(state.shape === 'star'){
+    const cx = x + frameW/2, cy = y + frameH/2;
+    const outerRx = frameW/2, outerRy = frameH/2, innerRatio = 0.45;
+    let d = '';
+    for(let i=0;i<10;i++){
+      const ang = (Math.PI/5)*i - Math.PI/2;
+      const rx = (i%2===0) ? outerRx : outerRx*innerRatio;
+      const ry = (i%2===0) ? outerRy : outerRy*innerRatio;
+      const px = cx + Math.cos(ang)*rx, py = cy + Math.sin(ang)*ry;
+      d += (i===0 ? `M${px},${py} ` : `L${px},${py} `);
+    }
+    return `<path d="${d}z"/>`;
+  } else if(state.shape === 'hexTag'){
+    const notch = Math.min(frameW*0.18, frameH*0.5);
+    return `<path d="M${x+notch},${y} L${x+frameW},${y} L${x+frameW},${y+frameH} L${x+notch},${y+frameH} L${x},${y+frameH/2} z"/>`;
+  } else if(state.shape === 'cloud'){
+    const rad = Math.min(frameW,frameH)*0.12;
+    const yb = y + frameH*0.38;
+    const a0=x, a1=x+frameW/3, a2=x+2*frameW/3, a3=x+frameW;
+    const m1=(a0+a1)/2, m2=(a1+a2)/2, m3=(a2+a3)/2;
+    return `<path d="M${a0},${yb} Q${m1},${y} ${a1},${yb} Q${m2},${y} ${a2},${yb} Q${m3},${y} ${a3},${yb} L${a3},${y+frameH-rad} Q${a3},${y+frameH} ${a3-rad},${y+frameH} L${a0+rad},${y+frameH} Q${a0},${y+frameH} ${a0},${y+frameH-rad} z"/>`;
+  } else {
+    const rad = Math.min(state.radius, Math.min(frameW,frameH)/2);
+    return `<path d="M${x+rad},${y} h${frameW-rad*2} a${rad},${rad} 0 0 1 ${rad},${rad} v${frameH-rad*2} a${rad},${rad} 0 0 1 -${rad},${rad} h-${frameW-rad*2} a${rad},${rad} 0 0 1 -${rad},-${rad} v-${frameH-rad*2} a${rad},${rad} 0 0 1 ${rad},-${rad} z"/>`;
+  }
+}
+
 function renderStickerContent(ctx, boxX, boxY, boxW, boxH, scaleFactor = 1){
   ctx.save();
   ctx.strokeStyle='#ff0000';
@@ -385,6 +458,7 @@ function renderStickerContent(ctx, boxX, boxY, boxW, boxH, scaleFactor = 1){
 }
 
 function drawSingle(){
+  invalidateTile(); // כל שינוי שגורם לצייר מחדש את התצוגה הבודדת פוסל גם את אריח הגיליון
   const W = singleCanvas.width, H = singleCanvas.height;
   singleCtx.clearRect(0,0,W,H);
   singleCtx.fillStyle='#fff'; singleCtx.fillRect(0,0,W,H);
@@ -440,6 +514,20 @@ function drawSingle(){
   }
 }
 
+// אריח במטמון — צילום של מדבקה אחת בכיוון הטבעי שלה (לא מסובב). נבנה פעם
+// אחת ומוטבע ב-drawImage בכל תא, במקום לצייר את כל השכבות מחדש בכל תא —
+// זה מה שמאפשר לקרוא ל-drawSheet בכל שינוי בלי להקפיא את הדפדפן.
+let tileCache = null;
+function invalidateTile(){ tileCache = null; }
+function buildTile(scale){
+  const natW = getStickerWidth(), natH = state.stickerH;
+  const c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(natW*scale));
+  c.height = Math.max(1, Math.round(natH*scale));
+  renderStickerContent(c.getContext('2d'), 0, 0, c.width, c.height, 0.8);
+  return c;
+}
+
 function drawSheet(){
   const W = a4Canvas.width, H = a4Canvas.height;
   a4Ctx.clearRect(0,0,W,H);
@@ -447,6 +535,7 @@ function drawSheet(){
 
   const scale = pxPerMm(a4Canvas); // px/מ"מ האמיתי של הקנבס הזה, לא קבוע גלובלי
   const L = layout(); // מ"מ בלבד — אותו מקור אמת שמשמש גם את export-svg
+  const natW = getStickerWidth(), natH = state.stickerH;
 
   const insetPx = state.inset * scale;
   const lLenPx = 12 * scale;
@@ -463,20 +552,44 @@ function drawSheet(){
   a4Ctx.beginPath(); a4Ctx.moveTo(insetPx, H-insetPx); a4Ctx.lineTo(insetPx+lLenPx, H-insetPx); a4Ctx.moveTo(insetPx, H-insetPx); a4Ctx.lineTo(insetPx, H-insetPx-lLenPx); a4Ctx.stroke();
   a4Ctx.restore();
 
-  document.getElementById('calc-w-val').textContent = L.w.toFixed(1) + ' מ"מ';
+  document.getElementById('calc-w-val').textContent = natW.toFixed(1) + ' מ"מ';
+  const orientLabel = L.rot ? 'לרוחב' : 'לאורך';
+  const orientPrefix = state.orient === 'auto' ? `אוטומטי בחר: ${orientLabel}` : `${orientLabel} (נבחר ידנית)`;
+  document.getElementById('orient-info').textContent = `${orientPrefix} · ${L.total} מדבקות`;
   document.getElementById('count-box').textContent = `${L.cols} עמודות × ${L.rows} שורות = ${L.total} מדבקות בדף!`;
-  document.getElementById('stats').textContent = `גודל פיזי סופי: ${L.w.toFixed(1)}×${L.h} מ"מ | ${L.cols}×${L.rows} מדבקות בגיליון A4`;
+  document.getElementById('stats').textContent = `גודל פיזי סופי: ${natW.toFixed(1)}×${natH} מ"מ | ${L.cols}×${L.rows} מדבקות בגיליון A4`;
+
+  if(!tileCache) tileCache = buildTile(scale);
+  const tile = tileCache;
 
   let renderedCount = 0;
   for(let r=0; r<L.rows; r++){
     for(let c=0; c<L.cols; c++){
-      const x = leftPx + c*(frameWPx + gapPx);
-      const y = topPx + r*(frameHPx + gapPx);
-      renderStickerContent(a4Ctx, x, y, frameWPx, frameHPx, 0.8);
+      const cx = leftPx + c*(frameWPx + gapPx) + frameWPx/2;
+      const cy = topPx + r*(frameHPx + gapPx) + frameHPx/2;
+      a4Ctx.save();
+      a4Ctx.translate(cx, cy);
+      if(L.rot) a4Ctx.rotate(Math.PI/2);
+      a4Ctx.drawImage(tile, -tile.width/2, -tile.height/2);
+      a4Ctx.restore();
       renderedCount++;
     }
   }
   console.assert(L.total === renderedCount, 'layout() total אינו תואם למספר המדבקות שצוירו בפועל', L.total, renderedCount);
+  a4Canvas.classList.remove('pending');
+}
+
+// רענון מדוד של הגיליון: מחכה 300ms אחרי השינוי האחרון, ונדחה שוב אם המשתמש
+// עדיין באמצע גרירה — כך שהגיליון (95+ מדבקות) לעולם לא מצטייר מחדש בזמן אמת
+// תוך כדי גרירה, אבל תמיד מתעדכן לבד בלי שום כפתור.
+let sheetTimer = 0;
+function schedSheet(){
+  a4Canvas.classList.add('pending');
+  clearTimeout(sheetTimer);
+  sheetTimer = setTimeout(() => {
+    if (interactionMode) return schedSheet();
+    drawSheet();
+  }, 300);
 }
 
 // אינטראקציה בקנבס יחיד
@@ -514,6 +627,7 @@ singleCanvas.addEventListener('pointerdown', e=>{
       selectedId = layers[0]?.id || null;
       updateSelectedControls();
       drawSingle();
+      schedSheet();
       return;
     }
 
@@ -594,38 +708,43 @@ singleCanvas.addEventListener('pointermove', e=>{
   }
 
   drawSingle();
+  schedSheet();
 });
 
-singleCanvas.addEventListener('pointerup', ()=>{ interactionMode = null; });
+singleCanvas.addEventListener('pointerup', ()=>{ interactionMode = null; schedSheet(); });
 
 // האזנות פקדים
 document.getElementById('sticker-shape').addEventListener('change', e=>{
   state.shape = e.target.value;
   document.getElementById('radius-box').style.display = (state.shape === 'rounded') ? 'block' : 'none';
   drawSingle();
+  schedSheet();
 });
 
 document.getElementById('radius').addEventListener('input', e=>{
   state.radius = parseFloat(e.target.value);
   document.getElementById('radius-val').textContent = state.radius + ' מ"מ';
   drawSingle();
+  schedSheet();
 });
 
 document.getElementById('sticker-ratio').addEventListener('input', e=>{
   state.ratio = parseFloat(e.target.value);
   document.getElementById('ratio-val').textContent = state.ratio.toFixed(1) + 'x';
   drawSingle();
+  schedSheet();
 });
 
 document.getElementById('sticker-h').addEventListener('input', e=>{
   state.stickerH = parseInt(e.target.value);
   document.getElementById('h-val').textContent = e.target.value + ' מ"מ';
   drawSingle();
+  schedSheet();
 });
 
-document.getElementById('sheet-gap').addEventListener('input', e=>{
-  state.gap = parseFloat(e.target.value);
-  document.getElementById('gap-val').textContent = state.gap + ' מ"מ';
+document.getElementById('orient-select').addEventListener('change', e=>{
+  state.orient = e.target.value;
+  schedSheet();
 });
 
 document.getElementById('fit-50').addEventListener('click', ()=>{
@@ -633,6 +752,7 @@ document.getElementById('fit-50').addEventListener('click', ()=>{
   document.getElementById('sticker-h').value = state.stickerH;
   document.getElementById('h-val').textContent = state.stickerH + ' מ"מ';
   drawSingle();
+  schedSheet();
 });
 
 document.getElementById('fit-70').addEventListener('click', ()=>{
@@ -640,31 +760,27 @@ document.getElementById('fit-70').addEventListener('click', ()=>{
   document.getElementById('sticker-h').value = state.stickerH;
   document.getElementById('h-val').textContent = state.stickerH + ' מ"מ';
   drawSingle();
+  schedSheet();
 });
 
-// לחיצה על כפתור טעינת התצוגה הסופית והגיליון (מונע תקיעות בזמן תזוזת סליידרים)
-document.getElementById('load-sheet-btn').addEventListener('click', ()=>{
-  drawSheet();
-});
-
-document.getElementById('sel-text-input').addEventListener('input', e=>{ const l=getLayer(selectedId); if(l && l.type==='text'){ l.text=e.target.value; drawSingle(); } });
-document.getElementById('sel-font').addEventListener('change', e=>{ const l=getLayer(selectedId); if(l && l.type==='text'){ l.font=e.target.value; drawSingle(); } });
-document.getElementById('sel-stroke').addEventListener('change', e=>{ const l=getLayer(selectedId); if(l && l.type==='text'){ l.stroke=e.target.value; drawSingle(); } });
+document.getElementById('sel-text-input').addEventListener('input', e=>{ const l=getLayer(selectedId); if(l && l.type==='text'){ l.text=e.target.value; drawSingle(); schedSheet(); } });
+document.getElementById('sel-font').addEventListener('change', e=>{ const l=getLayer(selectedId); if(l && l.type==='text'){ l.font=e.target.value; drawSingle(); schedSheet(); } });
+document.getElementById('sel-stroke').addEventListener('change', e=>{ const l=getLayer(selectedId); if(l && l.type==='text'){ l.stroke=e.target.value; drawSingle(); schedSheet(); } });
 
 document.getElementById('sel-dup').addEventListener('click', ()=>{
   const l=getLayer(selectedId); if(!l) return;
   const nl = {...l, id:'l'+Date.now(), z:maxZ()+1, x:Math.min(0.8, l.x+0.05), y:Math.min(0.8, l.y+0.05)};
-  layers.push(nl); selectedId=nl.id; updateSelectedControls(); drawSingle();
+  layers.push(nl); selectedId=nl.id; updateSelectedControls(); drawSingle(); schedSheet();
 });
 document.getElementById('sel-del').addEventListener('click', ()=>{
   layers = layers.filter(x=>x.id!==selectedId);
   selectedId = layers[0]?.id||null;
-  updateSelectedControls(); drawSingle();
+  updateSelectedControls(); drawSingle(); schedSheet();
 });
 
 document.getElementById('add-text-btn').addEventListener('click', ()=>{
   const nl = {id:'l'+Date.now(), type:'text', text:'טקסט חדש', x:0.5, y:0.5, scale:0.75, rot:0, z:maxZ()+1, color:'#0f172a', font:'Heebo', stroke:'white'};
-  layers.push(nl); selectedId=nl.id; updateSelectedControls(); drawSingle();
+  layers.push(nl); selectedId=nl.id; updateSelectedControls(); drawSingle(); schedSheet();
 });
 
 // בחירת אימוג'י
@@ -674,7 +790,7 @@ emojis.forEach(em=>{
   const b=document.createElement('button'); b.className='emoji-btn'; b.textContent=em;
   b.addEventListener('click', ()=>{
     const nl={id:'l'+Date.now(), type:'icon', emoji:em, x:0.2, y:0.5, scale:0.5, rot:0, z:maxZ()+1, image:null};
-    layers.push(nl); selectedId=nl.id; updateSelectedControls(); drawSingle();
+    layers.push(nl); selectedId=nl.id; updateSelectedControls(); drawSingle(); schedSheet();
     document.getElementById('emoji-modal').style.display='none';
   });
   emojiGrid.appendChild(b);
@@ -693,7 +809,7 @@ fileInput.addEventListener('change', e=>{
     const img = new Image();
     img.onload = ()=>{
       const nl = {id:'l'+Date.now(), type:'icon', emoji:null, x:0.2, y:0.5, scale:0.6, rot:0, z:maxZ()+1, image:img};
-      layers.push(nl); selectedId=nl.id; updateSelectedControls(); drawSingle();
+      layers.push(nl); selectedId=nl.id; updateSelectedControls(); drawSingle(); schedSheet();
     };
     img.src = ev.target.result;
   };
@@ -710,6 +826,10 @@ document.getElementById('export-svg').addEventListener('click', ()=>{
   const frameH = L.h, frameW = L.w, safeGap = L.g;
   const printableLeft = L.left, printableTop = L.top;
   const cols = L.cols, rows = L.rows;
+  // המידות הטבעיות (לא מוחלפות) של המדבקה — הצורה תמיד מצוירת בכיוון הזה,
+  // ואז מסובבת כיחידה שלמה ב-<g transform> אם L.rot דורש זאת.
+  const natW = getStickerWidth(), natH = state.stickerH;
+  const rotDeg = L.rot ? 90 : 0;
 
   let svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${Wmm}mm" height="${Hmm}mm" viewBox="0 0 ${Wmm} ${Hmm}">\n`;
   svg+=`  <g fill="black" stroke="black" stroke-width="0.8">\n`;
@@ -721,52 +841,9 @@ document.getElementById('export-svg').addEventListener('click', ()=>{
 
   for(let r=0; r<rows; r++){
     for(let c=0; c<cols; c++){
-      const x = printableLeft + c*(frameW+safeGap);
-      const y = printableTop + r*(frameH+safeGap);
-
-      if(state.shape === 'banner'){
-        const ind = Math.min(frameW * 0.08, 3);
-        svg+=`    <path d="M${x+ind},${y} h${frameW-ind*2} l${ind},${frameH/2} l-${ind},${frameH/2} h-${frameW-ind*2} l-${ind},-${frameH/2} l${ind},-${frameH/2} z"/>\n`;
-      } else if(state.shape === 'circle'){
-        const cx = x + frameW/2;
-        const cy = y + frameH/2;
-        const rVal = frameW/2;
-        svg+=`    <circle cx="${cx}" cy="${cy}" r="${rVal}"/>\n`;
-      } else if(state.shape === 'oval'){
-        const cx = x + frameW/2, cy = y + frameH/2;
-        svg+=`    <ellipse cx="${cx}" cy="${cy}" rx="${frameW/2}" ry="${frameH/2}"/>\n`;
-      } else if(state.shape === 'rectangle'){
-        svg+=`    <rect x="${x}" y="${y}" width="${frameW}" height="${frameH}"/>\n`;
-      } else if(state.shape === 'wave'){
-        svg+=`    <path d="M${x+2},${y} Q${x+frameW/4},${y-frameH*0.15} ${x+frameW/2},${y} Q${x+3*frameW/4},${y+frameH*0.15} ${x+frameW-2},${y} Q${x+frameW},${y} ${x+frameW},${y+2} V${y+frameH-2} Q${x+frameW},${y+frameH} ${x+frameW-2},${y+frameH} Q${x+3*frameW/4},${y+frameH+frameH*0.15} ${x+frameW/2},${y+frameH} Q${x+frameW/4},${y+frameH-frameH*0.15} ${x+2},${y+frameH} Q${x},${y+frameH} ${x},${y+frameH-2} V${y+2} Q${x},${y} ${x+2},${y} z"/>\n`;
-      } else if(state.shape === 'heart'){
-        const cx = x + frameW/2, topY = y + frameH*0.28;
-        svg+=`    <path d="M${cx},${y+frameH} C${x-frameW*0.1},${y+frameH*0.55} ${x+frameW*0.1},${y-frameH*0.05} ${cx},${topY} C${x+frameW*0.9},${y-frameH*0.05} ${x+frameW*1.1},${y+frameH*0.55} ${cx},${y+frameH} z"/>\n`;
-      } else if(state.shape === 'star'){
-        const cx = x + frameW/2, cy = y + frameH/2;
-        const outerRx = frameW/2, outerRy = frameH/2, innerRatio = 0.45;
-        let d = '';
-        for(let i=0;i<10;i++){
-          const ang = (Math.PI/5)*i - Math.PI/2;
-          const rx = (i%2===0) ? outerRx : outerRx*innerRatio;
-          const ry = (i%2===0) ? outerRy : outerRy*innerRatio;
-          const px = cx + Math.cos(ang)*rx, py = cy + Math.sin(ang)*ry;
-          d += (i===0 ? `M${px},${py} ` : `L${px},${py} `);
-        }
-        svg+=`    <path d="${d}z"/>\n`;
-      } else if(state.shape === 'hexTag'){
-        const notch = Math.min(frameW*0.18, frameH*0.5);
-        svg+=`    <path d="M${x+notch},${y} L${x+frameW},${y} L${x+frameW},${y+frameH} L${x+notch},${y+frameH} L${x},${y+frameH/2} z"/>\n`;
-      } else if(state.shape === 'cloud'){
-        const rad = Math.min(frameW,frameH)*0.12;
-        const yb = y + frameH*0.38;
-        const a0=x, a1=x+frameW/3, a2=x+2*frameW/3, a3=x+frameW;
-        const m1=(a0+a1)/2, m2=(a1+a2)/2, m3=(a2+a3)/2;
-        svg+=`    <path d="M${a0},${yb} Q${m1},${y} ${a1},${yb} Q${m2},${y} ${a2},${yb} Q${m3},${y} ${a3},${yb} L${a3},${y+frameH-rad} Q${a3},${y+frameH} ${a3-rad},${y+frameH} L${a0+rad},${y+frameH} Q${a0},${y+frameH} ${a0},${y+frameH-rad} z"/>\n`;
-      } else {
-        const rad = Math.min(state.radius, Math.min(frameW,frameH)/2);
-        svg+=`    <path d="M${x+rad},${y} h${frameW-rad*2} a${rad},${rad} 0 0 1 ${rad},${rad} v${frameH-rad*2} a${rad},${rad} 0 0 1 -${rad},${rad} h-${frameW-rad*2} a${rad},${rad} 0 0 1 -${rad},-${rad} v-${frameH-rad*2} a${rad},${rad} 0 0 1 ${rad},-${rad} z"/>\n`;
-      }
+      const cx = printableLeft + c*(frameW+safeGap) + frameW/2;
+      const cy = printableTop + r*(frameH+safeGap) + frameH/2;
+      svg+=`    <g transform="translate(${cx},${cy}) rotate(${rotDeg}) translate(${-natW/2},${-natH/2})">${shapeSvgMarkup(0,0,natW,natH)}</g>\n`;
     }
   }
   svg+=`  </g>\n</svg>`;
