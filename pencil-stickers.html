@@ -134,28 +134,26 @@
       </div>
     </div>
 
-    <!-- פאנל גודל פיזי וחישוב הגיליון (הסליידרים והכפתור המרכזי ממוקמים פה) -->
+    <!-- פאנל גודל פיזי וחישוב הגיליון (הסליידר וכפתור הטעינה ממוקמים הכי למטה בפאנל) -->
     <div class="panel">
       <h2>2️⃣ גודל פיזי סופי וחישוב דף</h2>
-      <div class="slider-box">
+
+      <div class="row">
+        <button class="btn btn-primary" id="fit-50" style="font-size:12px;background:#4f46e5;border-color:#4f46e5">🎯 גובה מהיר 10 מ"מ</button>
+        <button class="btn btn-primary" id="fit-70" style="font-size:12px;background:#059669;border-color:#059669">🎯 גובה מהיר 12 מ"מ</button>
+      </div>
+
+      <div class="hint">מרווח בטחון קבוע של 1 ס"מ בין מדבקה למדבקה בגיליון — כדי שקווי החיתוך לא ייגעו זה בזה ושמכונת החיתוך תזהה כל מדבקה בנפרד. הדף עצמו ממלא כמה שיותר מדבקות סביב סימוני הרישום, בלי לבזבז שוליים מיותרים.</div>
+
+      <!-- הסליידר של גודל המדבקה ממוקם הכי למטה בפאנל -->
+      <div class="slider-box" style="margin-top: 4px">
         <label><span>גובה פיזי סופי למדבקה</span><span id="h-val">12 מ"מ</span></label>
         <input type="range" id="sticker-h" min="6" max="35" value="12" step="1">
         <div style="font-size:11px; color:#64748b; margin-top:4px">הרוחב יחושב אוטומטית באופן פרופורציונלי למבנה שהגדרת למעלה (<span id="calc-w-val">34 מ"מ</span>).</div>
       </div>
 
-      <div class="row" style="margin-top:6px">
-        <button class="btn btn-primary" id="fit-50" style="font-size:12px;background:#4f46e5;border-color:#4f46e5">🎯 גובה מהיר 10 מ"מ</button>
-        <button class="btn btn-primary" id="fit-70" style="font-size:12px;background:#059669;border-color:#059669">🎯 גובה מהיר 12 מ"מ</button>
-      </div>
-
-      <!-- כפתור טעינת תצוגה סופית למניעת תקיעות -->
-      <button class="btn btn-primary" id="load-sheet-btn" style="background-color: #0f172a; margin-top: 8px; width: 100%; padding: 12px; font-size: 15px;">⚡ טען תצוגה סופית ועדכן גיליון</button>
-
-      <!-- הסליידר הסופי ממוקם הכי למטה בפאנל -->
-      <div class="slider-box" style="margin-top: 8px; background: #fffdf0; border-color: #eab308;">
-        <label><span>מרווח בטחון / צפיפות בגיליון</span><span id="gap-val">0.6 מ"מ</span></label>
-        <input type="range" id="sheet-gap" min="0.2" max="2.0" value="0.6" step="0.1">
-      </div>
+      <!-- כפתור טעינת תצוגה סופית — הכי למטה בפאנל, אחרי סליידר הגודל -->
+      <button class="btn btn-primary" id="load-sheet-btn" style="background-color: #0f172a; margin-top: 4px; width: 100%; padding: 12px; font-size: 15px;">⚡ טען תצוגה סופית ועדכן גיליון</button>
 
       <div class="count-box" id="count-box" style="margin-top:6px">לחץ על כפתור הטעינה לחישוב הגיליון</div>
     </div>
@@ -197,7 +195,8 @@ let layers = [
   {id:'text1', type:'text', text:'הושעיה וולמן', x:0.58, y:0.5, scale:0.75, rot:0, z:1, font:'Heebo', color:'#0f172a', stroke:'white'}
 ];
 let selectedId = 'text1';
-let state = { radius:3, stickerH:12, ratio:2.8, inset:8, shape:'banner', gap:0.6 };
+const STICKER_GAP_MM = 10; // מרווח בטחון קבוע של 1 ס"מ בין מדבקה למדבקה — לא ניתן לשינוי מהממשק
+let state = { radius:3, stickerH:12, ratio:2.8, inset:8, shape:'banner', gap:STICKER_GAP_MM };
 
 const singleCanvas = document.getElementById('single-canvas');
 const singleCtx = singleCanvas.getContext('2d');
@@ -433,10 +432,13 @@ function drawSheet(){
   const sqPx = mmToPx(5*2);
   const safeGap = mmToPx(state.gap*2);
 
+  // מרווח בטחון אחיד של 5 מ"מ סביב סימוני הרישום בכל הצדדים — לא רק סביב שלושת
+  // הפינות שבהן קיים סימון בפועל (למעלה-שמאל, למעלה-ימין, למטה-שמאל). למטה-ימין
+  // אין סימון כלל, אז אין סיבה לבזבז שם שוליים גדולים יותר — זה מה שהצר את הדף בעבר.
   const printableLeft = insetPx + lLenPx + 5;
   const printableTop = insetPx + lLenPx + 5;
   const printableRight = W - (insetPx + lLenPx + 5);
-  const printableBottom = H - (insetPx + lLenPx + 25);
+  const printableBottom = H - (insetPx + lLenPx + 5);
   const printableW = printableRight - printableLeft;
   const printableH = printableBottom - printableTop;
 
@@ -614,11 +616,6 @@ document.getElementById('sticker-h').addEventListener('input', e=>{
   drawSingle();
 });
 
-document.getElementById('sheet-gap').addEventListener('input', e=>{
-  state.gap = parseFloat(e.target.value);
-  document.getElementById('gap-val').textContent = state.gap + ' מ"מ';
-});
-
 document.getElementById('fit-50').addEventListener('click', ()=>{
   state.stickerH = 10;
   document.getElementById('sticker-h').value = state.stickerH;
@@ -702,7 +699,7 @@ document.getElementById('export-svg').addEventListener('click', ()=>{
   const printableLeft = inset + lLen + 5;
   const printableTop = inset + lLen + 5;
   const printableW = Wmm - printableLeft*2;
-  const printableH = Hmm - printableTop*2 - 25;
+  const printableH = Hmm - printableTop*2;
   const cols = Math.floor((printableW+safeGap)/(frameW+safeGap));
   const rows = Math.floor((printableH+safeGap)/(frameH+safeGap));
 
