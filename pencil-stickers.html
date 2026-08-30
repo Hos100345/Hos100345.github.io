@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Silhouette - מעצב מדבקות חכם לעפרונות</title>
+<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700;800&family=Heebo:wght@400;700;900&family=Rubik:wght@400;700&family=Varela+Round&family=Amatic+SC:wght@700&family=Fredoka:wght@400;700&family=Secular+One&family=Alef:wght@400;700&family=Playpen+Sans+Hebrew:wght@400;700&family=Suez+One&family=Karantina:wght@400;700&family=Miriam+Libre:wght@400;700&family=Rubik+Doodle+Shadow&family=Rubik+Wet+Paint&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box} body{margin:0;font-family:Heebo,system-ui;background:#f8fafc;color:#1e293b}
+  header{padding:12px 16px;background:#fff;border-bottom:2px solid #e2e8f0;position:sticky;top:0;z-index:30;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+  .btn{padding:8px 14px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;cursor:pointer;font-size:13px;font-weight:700;transition:all 0.2s}
+  .btn:hover{background:#f1f5f9;border-color:#94a3b8}
+  .btn-primary{background:#0f172a;color:#fff;border-color:#0f172a}
+  .btn-primary:hover{background:#1e293b}
+  .btn-danger{background:#fee2e2;color:#dc2626;border-color:#fca5a5}
+  .wrap{max-width:1600px;margin:0 auto;padding:12px;display:flex;flex-direction:column;gap:12px}
+  @media(min-width:1100px){ .wrap{flex-direction:row} .left{width:380px} .center{flex:1} }
+  .panel{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:0 1px 3px rgba(0,0,0,0.02)}
+  .panel.highlight{border:2px solid #0f172a;background:#fffdf0}
+  h2{margin:0;font-size:12px;color:#64748b;font-weight:800;letter-spacing:0.5px;text-transform:uppercase}
+  .slider-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px}
+  .slider-box label{display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:6px}
+  input[type="range"]{width:100%;height:24px;accent-color:#0f172a}
+  input[type="text"],select{width:100%;padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;font-family:inherit;background:#fff}
+  input[type="text"]:focus,select:focus{outline:none;border-color:#0f172a}
+  .row{display:flex;gap:8px} .row>*{flex:1}
+  #single-canvas{width:100%;height:220px;border:2px solid #0f172a;border-radius:12px;background:#fff;touch-action:none;cursor:crosshair;display:block;box-shadow:inset 0 2px 4px rgba(0,0,0,0.03)}
+  #a4-canvas{width:100%;max-width:800px;height:auto;background:#fff;box-shadow:0 4px 20px rgba(0,0,0,0.1);display:block;margin:0 auto;border-radius:4px}
+  .preview-wrap{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:12px;overflow:auto}
+  .count-box{background:#0f172a;color:#fff;border-radius:10px;padding:12px;text-align:center;font-weight:800;font-size:15px}
+  .hint{font-size:11px;color:#64748b;background:#f8fafc;padding:6px 8px;border-radius:6px;line-height:1.4;border:1px dashed #cbd5e1}
+
+  .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;justify-content:center;align-items:center;z-index:100}
+  .modal{background:#fff;width:90%;max-width:450px;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:0 10px 25px rgba(0,0,0,0.2)}
+  .emoji-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;max-height:260px;overflow:auto;padding:4px}
+  .emoji-btn{font-size:24px;padding:8px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;cursor:pointer;transition:transform 0.1s}
+  .emoji-btn:hover{background:#f1f5f9;transform:scale(1.1)}
+</style>
+</head>
+<body>
+
+<header>
+  <div style="font-weight:900;font-size:16px;">✏️ Silhouette - מעצב מדבקות לעפרונות</div>
+  <div class="row" style="width:auto">
+    <button class="btn btn-primary" id="export-svg">📥 הורד קובץ חיתוך (SVG)</button>
+    <button class="btn" id="export-png">🖼️ תמונה (PNG)</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- פנל שמאלי -->
+  <div class="left" style="display:flex;flex-direction:column;gap:12px">
+
+    <div class="panel highlight">
+      <h2>1️⃣ עיצוב מבנה ופרופורציה (תצוגה מקדימה)</h2>
+
+      <div style="margin-bottom:6px">
+        <label style="font-size:12px;font-weight:700;display:block;margin-bottom:4px">🎨 צורת חיתוך מעניינת:</label>
+        <select id="sticker-shape">
+          <option value="banner">🎗️ סרט / באנר מעוצב (מושלם לעיפרון)</option>
+          <option value="circle">⚪ עיגול מושלם</option>
+          <option value="oval">🥚 אליפסה</option>
+          <option value="rectangle">🔲 מלבן / מרובע קלאסי</option>
+          <option value="rounded">🔲 מלבן מעוגל</option>
+          <option value="wave">🌊 מסגרת גלית מיוחדת</option>
+          <option value="heart">❤️ לב</option>
+          <option value="star">⭐ כוכב</option>
+          <option value="hexTag">🏷️ תווית משושה</option>
+          <option value="cloud">☁️ ענן</option>
+        </select>
+      </div>
+
+      <div class="slider-box" id="radius-box">
+        <label><span>עיגול פינות</span><span id="radius-val">3 מ"מ</span></label>
+        <input type="range" id="radius" min="0" max="10" value="3" step="0.5">
+      </div>
+
+      <div class="slider-box">
+        <label><span>יחס אורך ביחס לגובה (פרופורציה)</span><span id="ratio-val">2.8x</span></label>
+        <input type="range" id="sticker-ratio" min="1.0" max="4.5" value="2.8" step="0.1">
+      </div>
+
+      <div class="row">
+        <button class="btn btn-primary" id="add-text-btn">+ הוסף טקסט</button>
+        <button class="btn" id="open-emoji-modal">⭐ הוסף אייקון</button>
+      </div>
+      <button class="btn" id="add-image-btn" style="width:100%">📁 העלה תמונה</button>
+      <input type="file" id="file-input" accept="image/*" style="display:none">
+      <div class="hint" style="margin-top:4px">💡 גרור טקסט/אימוג'י בתוך המדבקה. השתמש בידית העליונה לסיבוב, בפינה הימנית לשינוי גודל, ובידית ה-X האדומה למחיקה!</div>
+    </div>
+
+    <div class="panel" id="selected-controls" style="display:none; border:2px solid #4f46e5;">
+      <h2>עריכת טקסט נבחר</h2>
+      <div id="text-edit-box">
+        <label>טקסט:</label>
+        <input type="text" id="sel-text-input">
+        <div class="row" style="margin-top:6px">
+          <div>
+            <label style="font-size:11px">פונט:</label>
+            <select id="sel-font">
+              <optgroup label="ידידותי ועגול">
+                <option value="Heebo">היבו (Heebo)</option>
+                <option value="Assistant">אסיסטנט (Assistant)</option>
+                <option value="Rubik">רוביק (Rubik)</option>
+                <option value="Varela Round">וורלה (Varela Round)</option>
+                <option value="Fredoka">פרדוקה (Fredoka)</option>
+                <option value="Secular One">סקולר (Secular One)</option>
+                <option value="Alef">אלף (Alef)</option>
+                <option value="Playpen Sans Hebrew">כתב יד ילדותי (Playpen Sans Hebrew)</option>
+              </optgroup>
+              <optgroup label="כותרות ואפקטים">
+                <option value="Amatic SC">אמטיק (Amatic SC)</option>
+                <option value="Suez One">סואץ (Suez One)</option>
+                <option value="Karantina">קרנטינה (Karantina)</option>
+                <option value="Miriam Libre">מרים (Miriam Libre)</option>
+                <option value="Rubik Doodle Shadow">קשקוש עם צל (Rubik Doodle Shadow)</option>
+                <option value="Rubik Wet Paint">צבע נוזל (Rubik Wet Paint)</option>
+              </optgroup>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px">מסגרת אות:</label>
+            <select id="sel-stroke">
+              <option value="white">לבנה בולטת</option>
+              <option value="none">ללא</option>
+              <option value="black">שחורה</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn btn-small" id="sel-dup">שכפל</button>
+        <button class="btn btn-danger btn-small" id="sel-del">מחק</button>
+      </div>
+    </div>
+
+    <!-- פאנל גודל פיזי וחישוב הגיליון (הסליידרים והכפתור המרכזי ממוקמים פה) -->
+    <div class="panel">
+      <h2>2️⃣ גודל פיזי סופי וחישוב דף</h2>
+      <div class="slider-box">
+        <label><span>גובה פיזי סופי למדבקה</span><span id="h-val">12 מ"מ</span></label>
+        <input type="range" id="sticker-h" min="6" max="35" value="12" step="1">
+        <div style="font-size:11px; color:#64748b; margin-top:4px">הרוחב יחושב אוטומטית באופן פרופורציונלי למבנה שהגדרת למעלה (<span id="calc-w-val">34 מ"מ</span>).</div>
+      </div>
+
+      <div class="row" style="margin-top:6px">
+        <button class="btn btn-primary" id="fit-50" style="font-size:12px;background:#4f46e5;border-color:#4f46e5">🎯 גובה מהיר 10 מ"מ</button>
+        <button class="btn btn-primary" id="fit-70" style="font-size:12px;background:#059669;border-color:#059669">🎯 גובה מהיר 12 מ"מ</button>
+      </div>
+
+      <!-- כפתור טעינת תצוגה סופית למניעת תקיעות -->
+      <button class="btn btn-primary" id="load-sheet-btn" style="background-color: #0f172a; margin-top: 8px; width: 100%; padding: 12px; font-size: 15px;">⚡ טען תצוגה סופית ועדכן גיליון</button>
+
+      <!-- הסליידר הסופי ממוקם הכי למטה בפאנל -->
+      <div class="slider-box" style="margin-top: 8px; background: #fffdf0; border-color: #eab308;">
+        <label><span>מרווח בטחון / צפיפות בגיליון</span><span id="gap-val">0.6 מ"מ</span></label>
+        <input type="range" id="sheet-gap" min="0.2" max="2.0" value="0.6" step="0.1">
+      </div>
+
+      <div class="count-box" id="count-box" style="margin-top:6px">לחץ על כפתור הטעינה לחישוב הגיליון</div>
+    </div>
+
+  </div>
+
+  <!-- מרכז: תצוגה מקדימה -->
+  <div class="center">
+    <div class="panel">
+      <h2>תצוגת מדבקה יחידה (עיצוב ופרופורציות)</h2>
+      <canvas id="single-canvas" width="600" height="240"></canvas>
+    </div>
+    <div class="preview-wrap">
+      <h2 style="text-align:center;margin-bottom:8px">תצוגה מקדימה לגיליון A4 הסופי</h2>
+      <canvas id="a4-canvas" width="1240" height="1754"></canvas>
+      <div id="stats" style="text-align:center;font-size:12px;font-weight:700;margin-top:8px;color:#0f172a"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- חלונית בחירת אייקונים -->
+<div class="modal-overlay" id="emoji-modal">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h2 style="margin:0">בחר אייקון או אימוג'י</h2>
+      <button class="btn" id="close-modal" style="padding:2px 8px;">✕</button>
+    </div>
+    <div class="emoji-grid" id="emoji-grid"></div>
+  </div>
+</div>
+
+<script>
+const PX_PER_MM = 300/25.4;
+const mmToPx = m => { const v = parseFloat(m)*PX_PER_MM/2; return isNaN(v)?0:v; };
+
+let layers = [
+  {id:'icon1', type:'icon', emoji:'⭐', x:0.15, y:0.5, scale:0.55, rot:0, z:0, image:null},
+  {id:'text1', type:'text', text:'הושעיה וולמן', x:0.58, y:0.5, scale:0.75, rot:0, z:1, font:'Heebo', color:'#0f172a', stroke:'white'}
+];
+let selectedId = 'text1';
+let state = { radius:3, stickerH:12, ratio:2.8, inset:8, shape:'banner', gap:0.6 };
+
+const singleCanvas = document.getElementById('single-canvas');
+const singleCtx = singleCanvas.getContext('2d');
+const a4Canvas = document.getElementById('a4-canvas');
+const a4Ctx = a4Canvas.getContext('2d');
+
+function getStickerWidth(){
+  if(state.shape === 'circle'){
+    return state.stickerH; // עיגול מושלם רוחב שווה לגובה
+  }
+  return state.stickerH * state.ratio;
+}
+
+function getLayer(id){ return layers.find(l=>l.id===id); }
+function maxZ(){ return Math.max(0,...layers.map(l=>l.z)); }
+
+function updateSelectedControls(){
+  const l = getLayer(selectedId);
+  const panel = document.getElementById('selected-controls');
+  const textEditBox = document.getElementById('text-edit-box');
+  if(!l){ panel.style.display='none'; return; }
+  panel.style.display='flex';
+
+  if(l.type==='text'){
+    textEditBox.style.display='block';
+    document.getElementById('sel-text-input').value = l.text||'';
+    document.getElementById('sel-font').value = l.font||'Heebo';
+    document.getElementById('sel-stroke').value = l.stroke||'white';
+  } else {
+    textEditBox.style.display='none';
+  }
+}
+
+function traceStickerPath(ctx, x, y, w, h){
+  ctx.beginPath();
+  const shape = state.shape;
+
+  if(shape === 'banner'){
+    const indent = Math.min(w * 0.08, 12);
+    ctx.moveTo(x + indent, y);
+    ctx.lineTo(x + w - indent, y);
+    ctx.lineTo(x + w, y + h/2);
+    ctx.lineTo(x + w - indent, y + h);
+    ctx.lineTo(x + indent, y + h);
+    ctx.lineTo(x, y + h/2);
+    ctx.closePath();
+  } else if(shape === 'circle'){
+    const cx = x + w/2;
+    const cy = y + h/2;
+    const r = Math.min(w, h)/2;
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.closePath();
+  } else if(shape === 'oval'){
+    const cx = x + w/2, cy = y + h/2;
+    ctx.ellipse(cx, cy, w/2, h/2, 0, 0, Math.PI*2);
+    ctx.closePath();
+  } else if(shape === 'rectangle'){
+    ctx.rect(x, y, w, h);
+  } else if(shape === 'wave'){
+    const r = Math.min(state.radius, h/2);
+    ctx.moveTo(x + r, y);
+    ctx.quadraticCurveTo(x + w/4, y - h*0.2, x + w/2, y);
+    ctx.quadraticCurveTo(x + 3*w/4, y + h*0.2, x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.quadraticCurveTo(x + 3*w/4, y + h + h*0.2, x + w/2, y + h);
+    ctx.quadraticCurveTo(x + w/4, y + h - h*0.2, x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  } else if(shape === 'heart'){
+    const cx = x + w/2, topY = y + h*0.28;
+    ctx.moveTo(cx, y + h);
+    ctx.bezierCurveTo(x - w*0.1, y + h*0.55, x + w*0.1, y - h*0.05, cx, topY);
+    ctx.bezierCurveTo(x + w*0.9, y - h*0.05, x + w*1.1, y + h*0.55, cx, y + h);
+    ctx.closePath();
+  } else if(shape === 'star'){
+    const cx = x + w/2, cy = y + h/2;
+    const outerRx = w/2, outerRy = h/2;
+    const innerRatio = 0.45;
+    for(let i=0;i<10;i++){
+      const ang = (Math.PI/5)*i - Math.PI/2;
+      const rx = (i%2===0) ? outerRx : outerRx*innerRatio;
+      const ry = (i%2===0) ? outerRy : outerRy*innerRatio;
+      const px = cx + Math.cos(ang)*rx, py = cy + Math.sin(ang)*ry;
+      if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+    }
+    ctx.closePath();
+  } else if(shape === 'hexTag'){
+    const notch = Math.min(w*0.18, h*0.5);
+    ctx.moveTo(x+notch, y);
+    ctx.lineTo(x+w, y);
+    ctx.lineTo(x+w, y+h);
+    ctx.lineTo(x+notch, y+h);
+    ctx.lineTo(x, y+h/2);
+    ctx.closePath();
+  } else if(shape === 'cloud'){
+    const rad = Math.min(w,h)*0.12;
+    const yb = y + h*0.38;
+    const a0=x, a1=x+w/3, a2=x+2*w/3, a3=x+w;
+    const m1=(a0+a1)/2, m2=(a1+a2)/2, m3=(a2+a3)/2;
+    ctx.moveTo(a0, yb);
+    ctx.quadraticCurveTo(m1, y, a1, yb);
+    ctx.quadraticCurveTo(m2, y, a2, yb);
+    ctx.quadraticCurveTo(m3, y, a3, yb);
+    ctx.lineTo(a3, y+h-rad);
+    ctx.quadraticCurveTo(a3, y+h, a3-rad, y+h);
+    ctx.lineTo(a0+rad, y+h);
+    ctx.quadraticCurveTo(a0, y+h, a0, y+h-rad);
+    ctx.lineTo(a0, yb);
+    ctx.closePath();
+  } else {
+    let rad = Math.min(state.radius, Math.min(w,h)/2);
+    if(rad <= 0){ ctx.rect(x,y,w,h); return; }
+    ctx.moveTo(x+rad,y); ctx.lineTo(x+w-rad,y); ctx.quadraticCurveTo(x+w,y,x+w,y+rad);
+    ctx.lineTo(x+w,y+h-rad); ctx.quadraticCurveTo(x+w,y+h,x+w-rad,y+h);
+    ctx.lineTo(x+rad,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-rad);
+    ctx.lineTo(x,y+rad); ctx.quadraticCurveTo(x,y,x+rad,y); ctx.closePath();
+  }
+}
+
+function renderStickerContent(ctx, boxX, boxY, boxW, boxH, scaleFactor = 1){
+  ctx.save();
+  ctx.strokeStyle='#ff0000';
+  ctx.lineWidth = 1.2 * scaleFactor;
+  ctx.setLineDash([]);
+
+  traceStickerPath(ctx, boxX, boxY, boxW, boxH);
+  ctx.fillStyle='#fff'; ctx.fill(); ctx.stroke();
+  ctx.clip();
+
+  const sorted = [...layers].sort((a,b)=>a.z-b.z);
+  sorted.forEach(l=>{
+    const px = boxX + l.x*boxW;
+    const py = boxY + l.y*boxH;
+    ctx.save();
+    ctx.translate(px,py);
+    ctx.rotate((l.rot||0)*Math.PI/180);
+
+    if(l.type==='icon'){
+      if(l.image && l.image.complete){
+        const s = boxH * l.scale * 0.85;
+        ctx.drawImage(l.image, -s/2, -s/2, s, s);
+      }else{
+        const s = boxH * l.scale * 0.75;
+        ctx.font = `${s}px sans-serif`;
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(l.emoji||'⭐',0,0);
+      }
+    }else{
+      const fSize = boxH * 0.45 * l.scale * scaleFactor;
+      ctx.font = `700 ${Math.max(8, fSize)}px '${l.font||'Heebo'}', sans-serif`;
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      if(l.stroke==='white' || l.stroke==='black'){
+        ctx.strokeStyle = l.stroke==='white' ? '#fff' : '#000';
+        ctx.lineWidth = fSize * 0.18; ctx.lineJoin='round';
+        ctx.strokeText(l.text||'',0,0);
+      }
+      ctx.fillStyle = l.color||'#0f172a';
+      ctx.fillText(l.text||'',0,0);
+    }
+    ctx.restore();
+  });
+  ctx.restore();
+}
+
+function drawSingle(){
+  const W = singleCanvas.width, H = singleCanvas.height;
+  singleCtx.clearRect(0,0,W,H);
+  singleCtx.fillStyle='#fff'; singleCtx.fillRect(0,0,W,H);
+
+  singleCtx.fillStyle='#f1f5f9';
+  for(let i=0;i<W;i+=20) singleCtx.fillRect(i,0,1,H);
+  for(let i=0;i<H;i+=20) singleCtx.fillRect(0,i,W,1);
+
+  const stickerWVal = getStickerWidth();
+  const currentRatio = stickerWVal / state.stickerH;
+  const aspect = 1 / currentRatio;
+
+  let boxW = W * 0.75, boxH = boxW * aspect;
+  if(boxH > H * 0.7){ boxH = H * 0.7; boxW = boxH / aspect; }
+  const boxX = (W - boxW)/2, boxY = (H - boxH)/2;
+
+  renderStickerContent(singleCtx, boxX, boxY, boxW, boxH, 1.2);
+
+  const activeLayer = getLayer(selectedId);
+  if(activeLayer){
+    const px = boxX + activeLayer.x*boxW;
+    const py = boxY + activeLayer.y*boxH;
+    const rad = (activeLayer.rot||0)*Math.PI/180;
+
+    const halfW = 30 * activeLayer.scale;
+    const halfH = 15 * activeLayer.scale;
+
+    singleCtx.save();
+    singleCtx.translate(px, py);
+    singleCtx.rotate(rad);
+
+    singleCtx.strokeStyle='#4f46e5'; singleCtx.lineWidth=2; singleCtx.setLineDash([4,3]);
+    singleCtx.strokeRect(-halfW, -halfH, halfW*2, halfH*2);
+    singleCtx.setLineDash([]);
+
+    // ידית סיבוב
+    singleCtx.fillStyle='#4f46e5';
+    singleCtx.beginPath(); singleCtx.arc(0, -halfH - 18, 6, 0, Math.PI*2); singleCtx.fill();
+    singleCtx.strokeStyle='#fff'; singleCtx.lineWidth=2; singleCtx.stroke();
+    singleCtx.beginPath(); singleCtx.moveTo(0, -halfH); singleCtx.lineTo(0, -halfH - 18); singleCtx.stroke();
+
+    // ידית מחיקה
+    singleCtx.fillStyle='#dc2626';
+    singleCtx.beginPath(); singleCtx.arc(-halfW, -halfH, 8, 0, Math.PI*2); singleCtx.fill(); singleCtx.stroke();
+    singleCtx.fillStyle='#fff'; singleCtx.font='bold 10px sans-serif'; singleCtx.textAlign='center'; singleCtx.textBaseline='middle';
+    singleCtx.fillText('✕', -halfW, -halfH);
+
+    // ידית גודל
+    singleCtx.fillStyle='#4f46e5';
+    singleCtx.beginPath(); singleCtx.arc(halfW, halfH, 6, 0, Math.PI*2); singleCtx.fill(); singleCtx.stroke();
+
+    singleCtx.restore();
+  }
+}
+
+function drawSheet(){
+  const W = a4Canvas.width, H = a4Canvas.height;
+  a4Ctx.clearRect(0,0,W,H);
+  a4Ctx.fillStyle='#fff'; a4Ctx.fillRect(0,0,W,H);
+
+  const insetPx = mmToPx(state.inset*2);
+  const lLenPx = mmToPx(12*2);
+  const thickPx = mmToPx(0.8*2);
+  const sqPx = mmToPx(5*2);
+  const safeGap = mmToPx(state.gap*2);
+
+  const printableLeft = insetPx + lLenPx + 5;
+  const printableTop = insetPx + lLenPx + 5;
+  const printableRight = W - (insetPx + lLenPx + 5);
+  const printableBottom = H - (insetPx + lLenPx + 25);
+  const printableW = printableRight - printableLeft;
+  const printableH = printableBottom - printableTop;
+
+  a4Ctx.save();
+  a4Ctx.fillStyle='#000'; a4Ctx.strokeStyle='#000'; a4Ctx.lineWidth=thickPx;
+  a4Ctx.fillRect(insetPx, insetPx, sqPx, sqPx);
+  a4Ctx.beginPath(); a4Ctx.moveTo(W-insetPx, insetPx); a4Ctx.lineTo(W-insetPx-lLenPx, insetPx); a4Ctx.moveTo(W-insetPx, insetPx); a4Ctx.lineTo(W-insetPx, insetPx+lLenPx); a4Ctx.stroke();
+  a4Ctx.beginPath(); a4Ctx.moveTo(insetPx, H-insetPx); a4Ctx.lineTo(insetPx+lLenPx, H-insetPx); a4Ctx.moveTo(insetPx, H-insetPx); a4Ctx.lineTo(insetPx, H-insetPx-lLenPx); a4Ctx.stroke();
+  a4Ctx.restore();
+
+  const stickerWVal = getStickerWidth();
+  const frameWPx = mmToPx(stickerWVal * 2);
+  const frameHPx = mmToPx(state.stickerH * 2);
+
+  document.getElementById('calc-w-val').textContent = stickerWVal.toFixed(1) + ' מ"מ';
+
+  const cols = Math.max(1, Math.floor((printableW + safeGap) / (frameWPx + safeGap)));
+  const rows = Math.max(1, Math.floor((printableH + safeGap) / (frameHPx + safeGap)));
+  const total = cols * rows;
+
+  document.getElementById('count-box').textContent = `${cols} עמודות × ${rows} שורות = ${total} מדבקות בדף!`;
+  document.getElementById('stats').textContent = `גודל פיזי סופי: ${stickerWVal.toFixed(1)}×${state.stickerH} מ"מ | ${cols}×${rows} מדבקות בגיליון A4`;
+
+  for(let r=0; r<rows; r++){
+    for(let c=0; c<cols; c++){
+      const x = printableLeft + c*(frameWPx + safeGap);
+      const y = printableTop + r*(frameHPx + safeGap);
+      if(y + frameHPx > printableBottom + 10) continue;
+      renderStickerContent(a4Ctx, x, y, frameWPx, frameHPx, 0.8);
+    }
+  }
+}
+
+// אינטראקציה בקנבס יחיד
+let interactionMode = null;
+let dragStart = {x:0, y:0};
+let initialLayerState = null;
+
+singleCanvas.addEventListener('pointerdown', e=>{
+  const rect = singleCanvas.getBoundingClientRect();
+  const W = singleCanvas.width, H = singleCanvas.height;
+  const stickerWVal = getStickerWidth();
+  const currentRatio = stickerWVal / state.stickerH;
+  const aspect = 1 / currentRatio;
+
+  let boxW = W * 0.75, boxH = boxW * aspect;
+  if(boxH > H * 0.7){ boxH = H * 0.7; boxW = boxH / aspect; }
+  const boxX = (W - boxW)/2, boxY = (H - boxH)/2;
+
+  const x = (e.clientX-rect.left)/rect.width * W;
+  const y = (e.clientY-rect.top)/rect.height * H;
+
+  const activeLayer = getLayer(selectedId);
+  if(activeLayer){
+    const px = boxX + activeLayer.x*boxW;
+    const py = boxY + activeLayer.y*boxH;
+    const rad = (activeLayer.rot||0)*Math.PI/180;
+
+    const halfW = 30 * activeLayer.scale;
+    const halfH = 15 * activeLayer.scale;
+
+    const deleteHandleX = px + ((-halfW) * Math.cos(rad) - (-halfH) * Math.sin(rad));
+    const deleteHandleY = py + ((-halfW) * Math.sin(rad) + (-halfH) * Math.cos(rad));
+    if(Math.hypot(x - deleteHandleX, y - deleteHandleY) < 14){
+      layers = layers.filter(l => l.id !== selectedId);
+      selectedId = layers[0]?.id || null;
+      updateSelectedControls();
+      drawSingle();
+      return;
+    }
+
+    const rotHandleX = px + (0 * Math.cos(rad) - (-halfH - 18) * Math.sin(rad));
+    const rotHandleY = py + (0 * Math.sin(rad) + (-halfH - 18) * Math.cos(rad));
+    if(Math.hypot(x - rotHandleX, y - rotHandleY) < 14){
+      interactionMode = 'rotate';
+      initDrag(e, activeLayer, x, y);
+      return;
+    }
+
+    const scaleHandleX = px + (halfW * Math.cos(rad) - halfH * Math.sin(rad));
+    const scaleHandleY = py + (halfW * Math.sin(rad) + halfH * Math.cos(rad));
+    if(Math.hypot(x - scaleHandleX, y - scaleHandleY) < 14){
+      interactionMode = 'scale';
+      initDrag(e, activeLayer, x, y);
+      return;
+    }
+  }
+
+  const sorted = [...layers].sort((a,b)=>b.z-a.z);
+  for(const l of sorted){
+    const px = boxX + l.x*boxW;
+    const py = boxY + l.y*boxH;
+    if(Math.abs(x-px)<40 && Math.abs(y-py)<20){
+      selectedId = l.id; updateSelectedControls();
+      interactionMode = 'move';
+      initDrag(e, l, x, y);
+      drawSingle();
+      return;
+    }
+  }
+
+  selectedId = null;
+  updateSelectedControls();
+  drawSingle();
+});
+
+function initDrag(e, layer, x, y){
+  singleCanvas.setPointerCapture(e.pointerId);
+  dragStart = {x, y};
+  initialLayerState = {x: layer.x, y: layer.y, scale: layer.scale, rot: layer.rot || 0};
+}
+
+singleCanvas.addEventListener('pointermove', e=>{
+  if(!interactionMode) return;
+  const l = getLayer(selectedId); if(!l) return;
+  const W = singleCanvas.width, H = singleCanvas.height;
+  const stickerWVal = getStickerWidth();
+  const currentRatio = stickerWVal / state.stickerH;
+  const aspect = 1 / currentRatio;
+
+  let boxW = W * 0.75, boxH = boxW * aspect;
+  if(boxH > H * 0.7){ boxH = H * 0.7; boxW = boxH / aspect; }
+  const boxX = (W - boxW)/2, boxY = (H - boxH)/2;
+
+  const rect = singleCanvas.getBoundingClientRect();
+  const x = (e.clientX-rect.left)/rect.width * W;
+  const y = (e.clientY-rect.top)/rect.height * H;
+
+  if(interactionMode === 'move'){
+    const dx = x - dragStart.x;
+    const dy = y - dragStart.y;
+    l.x = Math.max(0.05, Math.min(0.95, initialLayerState.x + (dx / boxW)));
+    l.y = Math.max(0.1, Math.min(0.9, initialLayerState.y + (dy / boxH)));
+  } else if(interactionMode === 'rotate'){
+    const px = boxX + initialLayerState.x*boxW;
+    const py = boxY + initialLayerState.y*boxH;
+    const angleRad = Math.atan2(y - py, x - px) - Math.atan2(dragStart.y - py, dragStart.x - px);
+    l.rot = Math.round(initialLayerState.rot + (angleRad * 180 / Math.PI));
+  } else if(interactionMode === 'scale'){
+    const px = boxX + initialLayerState.x*boxW;
+    const py = boxY + initialLayerState.y*boxH;
+    const initialDist = Math.hypot(dragStart.x - px, dragStart.y - py);
+    const currentDist = Math.hypot(x - px, y - py);
+    const ratio = currentDist / Math.max(10, initialDist);
+    l.scale = Math.max(0.2, Math.min(2.5, initialLayerState.scale * ratio));
+  }
+
+  drawSingle();
+});
+
+singleCanvas.addEventListener('pointerup', ()=>{ interactionMode = null; });
+
+// האזנות פקדים
+document.getElementById('sticker-shape').addEventListener('change', e=>{
+  state.shape = e.target.value;
+  document.getElementById('radius-box').style.display = (state.shape === 'rounded') ? 'block' : 'none';
+  drawSingle();
+});
+
+document.getElementById('radius').addEventListener('input', e=>{
+  state.radius = parseFloat(e.target.value);
+  document.getElementById('radius-val').textContent = state.radius + ' מ"מ';
+  drawSingle();
+});
+
+document.getElementById('sticker-ratio').addEventListener('input', e=>{
+  state.ratio = parseFloat(e.target.value);
+  document.getElementById('ratio-val').textContent = state.ratio.toFixed(1) + 'x';
+  drawSingle();
+});
+
+document.getElementById('sticker-h').addEventListener('input', e=>{
+  state.stickerH = parseInt(e.target.value);
+  document.getElementById('h-val').textContent = e.target.value + ' מ"מ';
+  drawSingle();
+});
+
+document.getElementById('sheet-gap').addEventListener('input', e=>{
+  state.gap = parseFloat(e.target.value);
+  document.getElementById('gap-val').textContent = state.gap + ' מ"מ';
+});
+
+document.getElementById('fit-50').addEventListener('click', ()=>{
+  state.stickerH = 10;
+  document.getElementById('sticker-h').value = state.stickerH;
+  document.getElementById('h-val').textContent = state.stickerH + ' מ"מ';
+  drawSingle();
+});
+
+document.getElementById('fit-70').addEventListener('click', ()=>{
+  state.stickerH = 12;
+  document.getElementById('sticker-h').value = state.stickerH;
+  document.getElementById('h-val').textContent = state.stickerH + ' מ"מ';
+  drawSingle();
+});
+
+// לחיצה על כפתור טעינת התצוגה הסופית והגיליון (מונע תקיעות בזמן תזוזת סליידרים)
+document.getElementById('load-sheet-btn').addEventListener('click', ()=>{
+  drawSheet();
+});
+
+document.getElementById('sel-text-input').addEventListener('input', e=>{ const l=getLayer(selectedId); if(l && l.type==='text'){ l.text=e.target.value; drawSingle(); } });
+document.getElementById('sel-font').addEventListener('change', e=>{ const l=getLayer(selectedId); if(l && l.type==='text'){ l.font=e.target.value; drawSingle(); } });
+document.getElementById('sel-stroke').addEventListener('change', e=>{ const l=getLayer(selectedId); if(l && l.type==='text'){ l.stroke=e.target.value; drawSingle(); } });
+
+document.getElementById('sel-dup').addEventListener('click', ()=>{
+  const l=getLayer(selectedId); if(!l) return;
+  const nl = {...l, id:'l'+Date.now(), z:maxZ()+1, x:Math.min(0.8, l.x+0.05), y:Math.min(0.8, l.y+0.05)};
+  layers.push(nl); selectedId=nl.id; updateSelectedControls(); drawSingle();
+});
+document.getElementById('sel-del').addEventListener('click', ()=>{
+  layers = layers.filter(x=>x.id!==selectedId);
+  selectedId = layers[0]?.id||null;
+  updateSelectedControls(); drawSingle();
+});
+
+document.getElementById('add-text-btn').addEventListener('click', ()=>{
+  const nl = {id:'l'+Date.now(), type:'text', text:'טקסט חדש', x:0.5, y:0.5, scale:0.75, rot:0, z:maxZ()+1, color:'#0f172a', font:'Heebo', stroke:'white'};
+  layers.push(nl); selectedId=nl.id; updateSelectedControls(); drawSingle();
+});
+
+// בחירת אימוג'י
+const emojis = ['⭐','❤️','🧸','🎀','🦄','🌈','🍓','🎈','✨','🌸','🚀','⚽','👑','💖','🐱','🐶','🦋','🍩','🌙','🌻','🍉','🎂','🎁','🔥','💎','🎯','🎮','📚','✏️','🌼','🍒','🥰','😊','🤩','🥳','💜','💙','💚','💛','🔥','⚡','🍕','🍦','🍭','🍀','🏆','💡','🎵'];
+const emojiGrid = document.getElementById('emoji-grid');
+emojis.forEach(em=>{
+  const b=document.createElement('button'); b.className='emoji-btn'; b.textContent=em;
+  b.addEventListener('click', ()=>{
+    const nl={id:'l'+Date.now(), type:'icon', emoji:em, x:0.2, y:0.5, scale:0.5, rot:0, z:maxZ()+1, image:null};
+    layers.push(nl); selectedId=nl.id; updateSelectedControls(); drawSingle();
+    document.getElementById('emoji-modal').style.display='none';
+  });
+  emojiGrid.appendChild(b);
+});
+document.getElementById('open-emoji-modal').addEventListener('click', ()=> document.getElementById('emoji-modal').style.display='flex');
+document.getElementById('close-modal').addEventListener('click', ()=> document.getElementById('emoji-modal').style.display='none');
+
+// העלאת תמונה
+const fileInput = document.getElementById('file-input');
+document.getElementById('add-image-btn').addEventListener('click', ()=> fileInput.click());
+fileInput.addEventListener('change', e=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const nl = {id:'l'+Date.now(), type:'icon', emoji:null, x:0.2, y:0.5, scale:0.6, rot:0, z:maxZ()+1, image:img};
+      layers.push(nl); selectedId=nl.id; updateSelectedControls(); drawSingle();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  fileInput.value='';
+});
+
+// יצוא SVG מדויק
+document.getElementById('export-svg').addEventListener('click', ()=>{
+  const Wmm=210, Hmm=297;
+  const frameH = state.stickerH;
+  const frameW = getStickerWidth();
+  const safeGap = state.gap;
+  const inset=state.inset, lLen=12;
+  const printableLeft = inset + lLen + 5;
+  const printableTop = inset + lLen + 5;
+  const printableW = Wmm - printableLeft*2;
+  const printableH = Hmm - printableTop*2 - 25;
+  const cols = Math.floor((printableW+safeGap)/(frameW+safeGap));
+  const rows = Math.floor((printableH+safeGap)/(frameH+safeGap));
+
+  let svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${Wmm}mm" height="${Hmm}mm" viewBox="0 0 ${Wmm} ${Hmm}">\n`;
+  svg+=`  <g fill="black" stroke="black" stroke-width="0.8">\n`;
+  svg+=`    <rect x="${inset}" y="${inset}" width="5" height="5"/>\n`;
+  svg+=`    <path d="M${Wmm-inset},${inset} h-12 M${Wmm-inset},${inset} v12" fill="none"/>\n`;
+  svg+=`    <path d="M${inset},${Hmm-inset} h12 M${inset},${Hmm-inset} v-12" fill="none"/>\n`;
+  svg+=`  </g>\n`;
+  svg+=`  <g stroke="#ff0000" stroke-width="0.1" fill="none">\n`;
+
+  for(let r=0; r<rows; r++){
+    for(let c=0; c<cols; c++){
+      const x = printableLeft + c*(frameW+safeGap);
+      const y = printableTop + r*(frameH+safeGap);
+
+      if(state.shape === 'banner'){
+        const ind = Math.min(frameW * 0.08, 3);
+        svg+=`    <path d="M${x+ind},${y} h${frameW-ind*2} l${ind},${frameH/2} l-${ind},${frameH/2} h-${frameW-ind*2} l-${ind},-${frameH/2} l${ind},-${frameH/2} z"/>\n`;
+      } else if(state.shape === 'circle'){
+        const cx = x + frameW/2;
+        const cy = y + frameH/2;
+        const rVal = frameW/2;
+        svg+=`    <circle cx="${cx}" cy="${cy}" r="${rVal}"/>\n`;
+      } else if(state.shape === 'oval'){
+        const cx = x + frameW/2, cy = y + frameH/2;
+        svg+=`    <ellipse cx="${cx}" cy="${cy}" rx="${frameW/2}" ry="${frameH/2}"/>\n`;
+      } else if(state.shape === 'rectangle'){
+        svg+=`    <rect x="${x}" y="${y}" width="${frameW}" height="${frameH}"/>\n`;
+      } else if(state.shape === 'wave'){
+        svg+=`    <path d="M${x+2},${y} Q${x+frameW/4},${y-frameH*0.15} ${x+frameW/2},${y} Q${x+3*frameW/4},${y+frameH*0.15} ${x+frameW-2},${y} Q${x+frameW},${y} ${x+frameW},${y+2} V${y+frameH-2} Q${x+frameW},${y+frameH} ${x+frameW-2},${y+frameH} Q${x+3*frameW/4},${y+frameH+frameH*0.15} ${x+frameW/2},${y+frameH} Q${x+frameW/4},${y+frameH-frameH*0.15} ${x+2},${y+frameH} Q${x},${y+frameH} ${x},${y+frameH-2} V${y+2} Q${x},${y} ${x+2},${y} z"/>\n`;
+      } else if(state.shape === 'heart'){
+        const cx = x + frameW/2, topY = y + frameH*0.28;
+        svg+=`    <path d="M${cx},${y+frameH} C${x-frameW*0.1},${y+frameH*0.55} ${x+frameW*0.1},${y-frameH*0.05} ${cx},${topY} C${x+frameW*0.9},${y-frameH*0.05} ${x+frameW*1.1},${y+frameH*0.55} ${cx},${y+frameH} z"/>\n`;
+      } else if(state.shape === 'star'){
+        const cx = x + frameW/2, cy = y + frameH/2;
+        const outerRx = frameW/2, outerRy = frameH/2, innerRatio = 0.45;
+        let d = '';
+        for(let i=0;i<10;i++){
+          const ang = (Math.PI/5)*i - Math.PI/2;
+          const rx = (i%2===0) ? outerRx : outerRx*innerRatio;
+          const ry = (i%2===0) ? outerRy : outerRy*innerRatio;
+          const px = cx + Math.cos(ang)*rx, py = cy + Math.sin(ang)*ry;
+          d += (i===0 ? `M${px},${py} ` : `L${px},${py} `);
+        }
+        svg+=`    <path d="${d}z"/>\n`;
+      } else if(state.shape === 'hexTag'){
+        const notch = Math.min(frameW*0.18, frameH*0.5);
+        svg+=`    <path d="M${x+notch},${y} L${x+frameW},${y} L${x+frameW},${y+frameH} L${x+notch},${y+frameH} L${x},${y+frameH/2} z"/>\n`;
+      } else if(state.shape === 'cloud'){
+        const rad = Math.min(frameW,frameH)*0.12;
+        const yb = y + frameH*0.38;
+        const a0=x, a1=x+frameW/3, a2=x+2*frameW/3, a3=x+frameW;
+        const m1=(a0+a1)/2, m2=(a1+a2)/2, m3=(a2+a3)/2;
+        svg+=`    <path d="M${a0},${yb} Q${m1},${y} ${a1},${yb} Q${m2},${y} ${a2},${yb} Q${m3},${y} ${a3},${yb} L${a3},${y+frameH-rad} Q${a3},${y+frameH} ${a3-rad},${y+frameH} L${a0+rad},${y+frameH} Q${a0},${y+frameH} ${a0},${y+frameH-rad} z"/>\n`;
+      } else {
+        const rad = Math.min(state.radius, Math.min(frameW,frameH)/2);
+        svg+=`    <path d="M${x+rad},${y} h${frameW-rad*2} a${rad},${rad} 0 0 1 ${rad},${rad} v${frameH-rad*2} a${rad},${rad} 0 0 1 -${rad},${rad} h-${frameW-rad*2} a${rad},${rad} 0 0 1 -${rad},-${rad} v-${frameH-rad*2} a${rad},${rad} 0 0 1 ${rad},-${rad} z"/>\n`;
+      }
+    }
+  }
+  svg+=`  </g>\n</svg>`;
+
+  const blob=new Blob([svg],{type:'image/svg+xml'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`pencil-stickers-${cols}x${rows}.svg`; a.click();
+});
+
+document.getElementById('export-png').addEventListener('click', ()=>{
+  const a=document.createElement('a'); a.href=a4Canvas.toDataURL('image/png'); a.download='pencil-stickers-preview.png'; a.click();
+});
+
+// התחלה ראשונית
+document.getElementById('radius-box').style.display = 'none';
+updateSelectedControls();
+drawSingle();
+drawSheet();
+</script>
+</body>
+</html>
