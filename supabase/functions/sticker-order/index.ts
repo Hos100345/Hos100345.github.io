@@ -19,10 +19,9 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const BUCKET = 'sticker-orders';
 const PRICE_ILS_PER_SHEET = 10;
-const RATE_LIMIT_MAX = 5;
-const RATE_LIMIT_WINDOW_MS = 24 * 60 * 60 * 1000;
 const MAX_SVG_BYTES = 500 * 1024;
 const MAX_PREVIEW_BYTES = 2 * 1024 * 1024;
+const MAX_DESIGN_BYTES = 256 * 1024;
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -47,11 +46,15 @@ function base64ToBytes(b64: string): Uint8Array {
 
 // ── ולידציה — הפונקציה ציבורית, אף אחד מהשדות האלה לא נבדק קודם בדפדפן ──
 
+// מנרמלת כל פורמט סביר לצורה אחידה 05XXXXXXXX (10 ספרות) — לא רק ולידציה.
+// morning-webhook (PR 4) יתאים תשלום לפי 9 הספרות האחרונות; פורמטים מעורבים
+// בטבלה (972 בינלאומי מול 05 מקומי, עם/בלי ה-0 המוביל) ישברו את ההתאמה.
 function validatePhone(raw: unknown): string | null {
-  const digits = String(raw ?? '').replace(/\D/g, '');
-  // 05XXXXXXXX (10 ספרות) או 5XXXXXXXX (9 ספרות, בלי ה-0 המוביל)
-  if (!/^(05\d{8}|5\d{8})$/.test(digits)) return null;
-  return digits;
+  let d = String(raw ?? '').replace(/\D/g, '');
+  if (d.startsWith('972')) d = '0' + d.slice(3);        // +972-50-1234567 → 0501234567
+  if (d.length === 9 && d.startsWith('5')) d = '0' + d; // 501234567 → 0501234567
+  if (!/^05\d{8}$/.test(d)) return null;
+  return d;
 }
 
 function validateSheets(raw: unknown): number | null {
@@ -112,6 +115,11 @@ Deno.serve(async (req) => {
 
     const design = validateDesign((body as Record<string, unknown>).design);
     if (!design) return fail('invalid_design', 400);
+    // תמונות שהלקוח מעלה לא נוסעות כאן (ראה הערה ב-מרשם.md לקראת PR 2) — כל
+    // עוד זה נכון, 256KB מספיקים בשפע לטקסט/אייקונים/הגדרות בלבד.
+    if (new TextEncoder().encode(JSON.stringify(design)).length >= MAX_DESIGN_BYTES) {
+      return fail('design_too_large', 400);
+    }
 
     const svg = validateSvg((body as Record<string, unknown>).svg);
     if (!svg) return fail('invalid_svg', 400);
@@ -132,19 +140,9 @@ Deno.serve(async (req) => {
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
 
-    // ── הגבלת קצב — לפני כל כתיבה, כדי שלא לבזבז אחסון על ניסיון חסום ──
-    const since = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString();
-    const { count, error: cntErr } = await admin.from('sticker_orders')
-      .select('id', { count: 'exact', head: true })
-      .eq('customer_phone', phone)
-      .gte('created_at', since);
-    if (cntErr) {
-      console.error('RATE_LIMIT_QUERY_ERROR', JSON.stringify(cntErr));
-      return fail('server_error', 500);
-    }
-    if ((count ?? 0) >= RATE_LIMIT_MAX) return fail('rate_limited', 429);
-
-    // ── קבצים לפני שורה — הנתיב לפי uuid, לא לפי code (code עדיין לא קיים) ──
+    // ── קבצים לפני שורה — הנתיב לפי uuid, לא לפי code (code עדיין לא קיים).
+    // ההגבלת-קצב זזה לאחרי ההעלאה (לתוך ה-RPC האטומי למטה) — לכן כל כשל
+    // מכאן והלאה, כולל rate_limited, חייב לנקות את מה שכבר הועלה.
     const uuid = crypto.randomUUID();
     const svgPath = `${uuid}/cut.svg`;
     const previewPath = `${uuid}/preview.jpg`;
@@ -167,30 +165,36 @@ Deno.serve(async (req) => {
     }
     uploaded.push(previewPath);
 
-    // ── שורה — code/created_at/status/paid הם ברירת המחדל של ה-DB, לא נשלחים כאן ──
-    const { data: row, error: insErr } = await admin.from('sticker_orders').insert({
-      customer_name: name,
-      customer_phone: phone,
-      customer_note: note,
-      sheets,
-      price_ils: sheets * PRICE_ILS_PER_SHEET,
-      design,
-      size_len_mm: lenMm,
-      size_wid_mm: widMm,
-      per_sheet: perSheet,
-      svg_path: svgPath,
-      preview_path: previewPath,
-    }).select('code').single();
+    // ── ספירת הקצב + insert בטרנזקציה אחת עם נעילה, בתוך create_sticker_order
+    // (SQL, מנוהל ב-MCP) — לא שתי פעולות נפרדות. זה מה שהופך את ההגבלה
+    // לאטומית מול בקשות מקבילות מאותו טלפון. code/created_at/status/paid
+    // הם תמיד ברירת המחדל של ה-DB, לא נשלחים כאן.
+    const { data: code, error: rpcErr } = await admin.rpc('create_sticker_order', {
+      p: {
+        customer_name: name,
+        customer_phone: phone,
+        customer_note: note,
+        sheets,
+        price_ils: sheets * PRICE_ILS_PER_SHEET,
+        design,
+        size_len_mm: lenMm,
+        size_wid_mm: widMm,
+        per_sheet: perSheet,
+        svg_path: svgPath,
+        preview_path: previewPath,
+      },
+    });
 
-    if (insErr || !row) {
-      console.error('INSERT_ERROR', JSON.stringify(insErr));
-      // הזמנה בלי קבצים גרועה מהזמנה שנכשלה בגלוי — אם השורה לא נוצרה, לא משאירים קבצים יתומים.
+    if (rpcErr || !code) {
+      // כל ניסיון חסום (קצב או כישלון אחר) לא ישאיר קבצים יתומים ב-Storage.
       await admin.storage.from(BUCKET).remove(uploaded);
+      if (String(rpcErr?.message || '').includes('rate_limited')) return fail('rate_limited', 429);
+      console.error('RPC_ERROR', JSON.stringify(rpcErr));
       return fail('server_error', 500);
     }
 
-    console.log('STICKER_ORDER_CREATED', row.code, 'phone=', phone, 'sheets=', sheets);
-    return json({ ok: true, code: row.code });
+    console.log('STICKER_ORDER_CREATED', code, 'phone=', phone, 'sheets=', sheets);
+    return json({ ok: true, code });
   } catch (e) {
     console.error('STICKER_ORDER_THROW', String((e as Error)?.message || e));
     return fail('server_error', 500);
