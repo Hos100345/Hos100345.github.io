@@ -602,7 +602,7 @@ function shapeSvgMarkup(x, y, frameW, frameH){
   }
 }
 
-function renderStickerContent(ctx, boxX, boxY, boxW, boxH, scaleFactor = 1, showOutline = state.printOutline){
+function renderStickerContent(ctx, boxX, boxY, boxW, boxH, scaleFactor = 1, showOutline = true){
   ctx.save();
   ctx.strokeStyle='#ff0000';
   ctx.lineWidth = 1.2 * scaleFactor;
@@ -728,7 +728,7 @@ let tileCache = null;
 function invalidateTile(){ tileCache = null; }
 const TILE_PAD = 0.2; // 20% מרווח לצורות שגולשות מהמסגרת בכוונה (heart/wave/cloud) ולעובי קו החיתוך
 
-function buildTile(scale, showOutline = state.printOutline){
+function buildTile(scale, showOutline = true){
   const {w:natW, h:natH} = natDims();
   const padX = natW*TILE_PAD*scale, padY = natH*TILE_PAD*scale;
   const c = document.createElement('canvas');
@@ -761,7 +761,7 @@ function drawRegMarks(ctx, scale, W, H){
 // ציור טהור — בלי שום גישה ל-a4Canvas ובלי עדכוני DOM. ctx/scale/W/H
 // מגיעים מבחוץ כדי שאותה לוגיקה תשרת גם את התצוגה המקדימה וגם את קובץ
 // ההדפסה ב-300 DPI (קנבס אחר לגמרי).
-function drawSheetTo(ctx, scale, W, H, showOutline = state.printOutline){
+function drawSheetTo(ctx, scale, W, H, showOutline = true){
   ctx.clearRect(0,0,W,H);
   ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H);
 
@@ -1338,7 +1338,9 @@ document.getElementById('export-print-pdf').addEventListener('click', async ()=>
     const ctx = cv.getContext('2d');
     ctx.fillStyle = '#fff'; ctx.fillRect(0,0,cv.width,cv.height);
     invalidateTile();                                // האריח במטמון הוא ברזולוציית התצוגה
-    drawSheetTo(ctx, cv.width/210, cv.width, cv.height);
+    // חייב להעביר במפורש — מאז שברירת המחדל של showOutline חזרה ל-true
+    // (התאמה למסך), הצ'קבוקס הזה הוא הדרך היחידה של המנהל לדלג על הקו כאן.
+    drawSheetTo(ctx, cv.width/210, cv.width, cv.height, state.printOutline);
     invalidateTile();                                // ולהחזיר לרזולוציית התצוגה
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({unit:'mm', format:'a4', orientation:'portrait'});
