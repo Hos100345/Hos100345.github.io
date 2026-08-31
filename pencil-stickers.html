@@ -45,7 +45,7 @@
 
 <header>
   <div style="font-weight:900;font-size:16px;">✏️ Silhouette - מעצב מדבקות לעפרונות</div>
-  <div class="row" style="width:auto">
+  <div class="row admin-only" style="width:auto">
     <button class="btn btn-primary" id="export-svg">📥 הורד קובץ חיתוך (SVG)</button>
     <button class="btn btn-primary" id="export-print-pdf" style="background:#7c3aed;border-color:#7c3aed">🖨️ קובץ הדפסה (PDF)</button>
     <button class="btn" id="export-png">🖼️ תמונה (PNG)</button>
@@ -167,8 +167,8 @@
       <div class="count-box" id="count-box" style="margin-top:6px"></div>
     </div>
 
-    <!-- פאנל הדפסה וחיתוך -->
-    <div class="panel">
+    <!-- פאנל הדפסה וחיתוך — כלי מנהל בלבד, ראה isAdminView() -->
+    <div class="panel admin-only" id="panel-print-cut">
       <h2>3️⃣ הדפסה וחיתוך</h2>
 
       <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;cursor:pointer">
@@ -228,6 +228,48 @@
       <canvas id="a4-canvas" width="1240" height="1754"></canvas>
       <div id="stats" style="text-align:center;font-size:12px;font-weight:700;margin-top:8px;color:#0f172a"></div>
     </div>
+
+    <!-- הזמנה — מוצג לכולם, לא רק ב-?admin=1 -->
+    <div class="panel" id="order-panel">
+      <div style="font-weight:900;font-size:16px;text-align:center">🎉 המדבקות מוכנות!</div>
+      <div id="order-summary" style="text-align:center;font-size:13px;font-weight:700;color:#475569"></div>
+
+      <div id="order-form" style="display:flex;flex-direction:column;gap:8px;margin-top:6px">
+        <div>
+          <label style="font-size:11px">שם</label>
+          <input type="text" id="order-name" placeholder="שם מלא">
+        </div>
+        <div>
+          <label style="font-size:11px">טלפון *</label>
+          <input type="text" id="order-phone" placeholder="050-1234567" inputmode="tel">
+        </div>
+        <div>
+          <label style="font-size:11px">הערה</label>
+          <input type="text" id="order-note" placeholder="הערה (לא חובה)">
+        </div>
+        <div class="row" style="align-items:center;margin-top:4px">
+          <div style="display:flex;align-items:center;justify-content:center;gap:10px">
+            <button class="btn" id="sheets-minus" type="button" style="padding:6px 12px;font-size:16px">−</button>
+            <span id="sheets-count" style="font-weight:900;font-size:16px;min-width:22px;text-align:center">1</span>
+            <button class="btn" id="sheets-plus" type="button" style="padding:6px 12px;font-size:16px">+</button>
+          </div>
+          <div id="order-total" style="font-weight:900;text-align:center;align-self:center">סה"כ: 10 ₪</div>
+        </div>
+        <div id="order-error" class="hint" style="display:none;color:#dc2626;border-color:#fca5a5;background:#fef2f2"></div>
+        <button class="btn btn-primary" id="submit-order-btn" style="width:100%;margin-top:6px">שלח הזמנה</button>
+      </div>
+
+      <div id="order-success" style="display:none;flex-direction:column;gap:10px;text-align:center;margin-top:6px">
+        <div style="font-weight:900;font-size:16px">✅ ההזמנה נשלחה!</div>
+        <div>מספר הזמנה: <span id="order-code" style="font-weight:900"></span></div>
+        <div class="row">
+          <a class="btn btn-primary" id="pay-btn" target="_blank" rel="noopener" style="text-decoration:none;text-align:center">💳 שלם <span id="pay-amount"></span> ₪</a>
+          <a class="btn" id="wa-btn" target="_blank" rel="noopener" style="text-decoration:none;text-align:center">📤 עדכן בוואטסאפ</a>
+        </div>
+        <div class="hint" id="pay-instruction"></div>
+        <button class="btn" id="new-order-btn" type="button">➕ הזמנה נוספת</button>
+      </div>
+    </div>
   </div>
 
 </div>
@@ -249,6 +291,19 @@
 // אתר קריאה, בעוד קנבס הגיליון בפועל הוא ברזולוציה אחרת — ומכאן שהתצוגה
 // המקדימה ציירה כל מדבקה פי 2 גדולה מהמידה שהוזנה.
 const pxPerMm = cv => cv.width / 210;
+
+// כלי מנהל (הורדות, סימני רישום, עמוד כיול) מוצגים רק ב-?admin=1 — הסתרת
+// ממשק בלבד, לא הרשאה. שום דבר כאן לא נגזר לגישה לנתונים.
+const isAdminView = () => new URLSearchParams(location.search).get('admin') === '1';
+
+// קבועי מערכת ההזמנות — הדפדפן של הלקוח שולח ישירות ל-Edge Function, בלי
+// SDK ובלי מפתח (כמו morning-webhook).
+const ORDER_FN  = 'https://sccivxenkyzxolpraexf.supabase.co/functions/v1/sticker-order';
+const PAY_URL   = 'https://mrng.to/eXRvaLJVy7';
+const ORDER_WA  = '972505918734';
+const PRICE_ILS = 10;
+const MAX_IMAGES = 3;
+const MAX_PRINT_FILE_BYTES = 6 * 1024 * 1024;
 
 let layers = [
   {id:'icon1', type:'icon', emoji:'⭐', x:0.15, y:0.5, scale:0.55, rot:0, z:0, image:null},
@@ -490,7 +545,7 @@ function shapeSvgMarkup(x, y, frameW, frameH){
   }
 }
 
-function renderStickerContent(ctx, boxX, boxY, boxW, boxH, scaleFactor = 1){
+function renderStickerContent(ctx, boxX, boxY, boxW, boxH, scaleFactor = 1, showOutline = state.printOutline){
   ctx.save();
   ctx.strokeStyle='#ff0000';
   ctx.lineWidth = 1.2 * scaleFactor;
@@ -499,8 +554,10 @@ function renderStickerContent(ctx, boxX, boxY, boxW, boxH, scaleFactor = 1){
   traceStickerPath(ctx, boxX, boxY, boxW, boxH);
   ctx.fillStyle='#fff'; ctx.fill();
   // הדילוג הוא על קו החיתוך האדום בלבד — ה-fill הלבן וה-clip נשארים תמיד,
-  // אחרת המדבקה מאבדת רקע והשכבות גולשות החוצה.
-  if(state.printOutline) ctx.stroke();
+  // אחרת המדבקה מאבדת רקע והשכבות גולשות החוצה. showOutline מאפשר לקובץ
+  // ההדפסה של הלקוח (buildPrintFile) לכפות "בלי קו" בלי תלות בצ'קבוקס
+  // המנהל — הלקוח לא רואה את הצ'קבוקס בכלל.
+  if(showOutline) ctx.stroke();
   ctx.clip();
 
   const sorted = [...layers].sort((a,b)=>a.z-b.z);
@@ -612,13 +669,13 @@ let tileCache = null;
 function invalidateTile(){ tileCache = null; }
 const TILE_PAD = 0.2; // 20% מרווח לצורות שגולשות מהמסגרת בכוונה (heart/wave/cloud) ולעובי קו החיתוך
 
-function buildTile(scale){
+function buildTile(scale, showOutline = state.printOutline){
   const {w:natW, h:natH} = natDims();
   const padX = natW*TILE_PAD*scale, padY = natH*TILE_PAD*scale;
   const c = document.createElement('canvas');
   c.width = Math.max(1, Math.round(natW*scale + padX*2));
   c.height = Math.max(1, Math.round(natH*scale + padY*2));
-  renderStickerContent(c.getContext('2d'), padX, padY, natW*scale, natH*scale, 0.8);
+  renderStickerContent(c.getContext('2d'), padX, padY, natW*scale, natH*scale, 0.8, showOutline);
   return c;
 }
 
@@ -645,7 +702,7 @@ function drawRegMarks(ctx, scale, W, H){
 // ציור טהור — בלי שום גישה ל-a4Canvas ובלי עדכוני DOM. ctx/scale/W/H
 // מגיעים מבחוץ כדי שאותה לוגיקה תשרת גם את התצוגה המקדימה וגם את קובץ
 // ההדפסה ב-300 DPI (קנבס אחר לגמרי).
-function drawSheetTo(ctx, scale, W, H){
+function drawSheetTo(ctx, scale, W, H, showOutline = state.printOutline){
   ctx.clearRect(0,0,W,H);
   ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H);
 
@@ -658,7 +715,7 @@ function drawSheetTo(ctx, scale, W, H){
   const leftPx = L.left * scale, topPx = L.top * scale;
   const frameWPx = L.w * scale, frameHPx = L.h * scale;
 
-  if(!tileCache) tileCache = buildTile(scale);
+  if(!tileCache) tileCache = buildTile(scale, showOutline);
   const tile = tileCache;
 
   let renderedCount = 0;
@@ -698,6 +755,7 @@ function drawSheet(){
     document.getElementById('count-box').textContent = `${L.cols} עמודות × ${L.rows} שורות = ${L.total} מדבקות בדף!`;
   }
   a4Canvas.classList.remove('pending');
+  updateOrderPanel();
 }
 
 // רענון מדוד של הגיליון: מחכה 300ms אחרי השינוי האחרון, ונדחה שוב אם המשתמש
@@ -961,30 +1019,129 @@ emojis.forEach(em=>{
 document.getElementById('open-emoji-modal').addEventListener('click', ()=> document.getElementById('emoji-modal').style.display='flex');
 document.getElementById('close-modal').addEventListener('click', ()=> document.getElementById('emoji-modal').style.display='none');
 
-// העלאת תמונה
+// ── העלאת תמונה — imageStore נפרד מ-layers ──
+// שכבת תמונה מחזיקה imageId; ה-dataURL (מוקטן) חי ב-imageStore[imageId], לא
+// בתוך השכבה עצמה. זה מה שמאפשר לשלוח את design ל-Edge Function בלי
+// dataURL מוטבע (שהיה מפיל את זה מיד על תקרת 256KB) — התמונות נוסעות
+// כמערך נפרד, ראה buildImagesPayload().
+const imageStore = {};
+let imgSeq = 0;
+
+function withTimeout(promise, ms, msg){
+  return Promise.race([
+    promise,
+    new Promise((_, rej) => setTimeout(() => rej(new Error(msg || 'תם הזמן הקצוב')), ms)),
+  ]);
+}
+
+function isHeicFile(f){
+  return /\.(heic|heif)$/i.test(f.name) || f.type === 'image/heic' || f.type === 'image/heif';
+}
+
+// טוען heic2any פעם אחת — קודם מ-vendor/ (באתר עצמו) ורק אם חסר שם מ-CDN.
+// אותו סדר וטעם כמו ב-dobble.html: HEIC הוא הפורמט של כל תמונה מאייפון,
+// ותלות בלעדית ב-CDN חיצוני הופכת כל תקלת רשת לחסימה מוחלטת של לקוחות אייפון.
+let _heicLoad = null;
+function ensureHeic2Any(){
+  if(typeof heic2any !== 'undefined') return Promise.resolve(true);
+  if(_heicLoad) return _heicLoad;
+  const urls = ['vendor/heic2any.min.js',
+    'https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js',
+    'https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js'];
+  _heicLoad = (async () => {
+    for(const src of urls){
+      try{
+        await withTimeout(new Promise((res, rej) => {
+          const s = document.createElement('script'); s.src = src;
+          s.onload = res; s.onerror = () => rej(new Error('load error'));
+          document.head.appendChild(s);
+        }), 15000, 'טעינת ממיר HEIC נתקעה');
+        if(typeof heic2any !== 'undefined') return true;
+      }catch(e){ console.warn('heic2any load failed:', src, e?.message || e); }
+    }
+    _heicLoad = null; // מאפשר ניסיון חוזר אחרי שהרשת חוזרת
+    return false;
+  })();
+  return _heicLoad;
+}
+
+function blobToDataURL(blob){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('read-failed'));
+    reader.readAsDataURL(blob);
+  });
+}
+
+// img.onload/onerror לא נורים לעולם על HEIC ב-<img> רגיל — בלי הטיימר הזה
+// קובץ מאייפון פשוט "נעלם" בשקט והלקוח חושב שהאתר תקוע.
+function loadImageFromDataUrl(dataUrl){
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const timer = setTimeout(() => { img.onload = img.onerror = null; reject(new Error('timeout')); }, 5000);
+    img.onload = () => { clearTimeout(timer); resolve(img); };
+    img.onerror = () => { clearTimeout(timer); reject(new Error('decode-failed')); };
+    img.src = dataUrl;
+  });
+}
+
+async function loadImageFileForLayer(file){
+  let dataUrl;
+  if(isHeicFile(file)){
+    const ok = await ensureHeic2Any();
+    if(!ok) throw new Error('heic-lib-failed');
+    const result = await withTimeout(heic2any({blob:file, toType:'image/jpeg', quality:0.92}), 20000, 'המרת HEIC נתקעה');
+    const blob = Array.isArray(result) ? result[0] : result;
+    dataUrl = await blobToDataURL(blob);
+  } else {
+    dataUrl = await blobToDataURL(file);
+  }
+  return await loadImageFromDataUrl(dataUrl);
+}
+
+// צילום מטלפון הוא 4–8MB; 1200px על מדבקה של ~34 מ"מ כבר מעל 800 DPI — יותר
+// מזה בזבוז נטו וגם מסכן חריגה מהתקרה של 2MB לתמונה בצד השרת.
+async function downscale(img, maxSide = 1200){
+  const s = Math.min(1, maxSide / Math.max(img.width, img.height));
+  if(s === 1) return img.src;
+  const c = document.createElement('canvas');
+  c.width = Math.round(img.width*s); c.height = Math.round(img.height*s);
+  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+  return c.toDataURL('image/png'); // PNG — שקיפות של לוגו חייבת להישמר
+}
+
 const fileInput = document.getElementById('file-input');
 document.getElementById('add-image-btn').addEventListener('click', ()=> fileInput.click());
-fileInput.addEventListener('change', e=>{
+fileInput.addEventListener('change', async e=>{
   const file = e.target.files[0];
+  fileInput.value = '';
   if(!file) return;
-  const reader = new FileReader();
-  reader.onload = ev=>{
-    const img = new Image();
-    img.onload = ()=>{
-      const nl = {id:'l'+Date.now(), type:'icon', emoji:null, x:0.2, y:0.5, scale:0.6, rot:0, z:maxZ()+1, image:img};
-      layers.push(nl); selectedId=nl.id; updateSelectedControls(); drawSingle(); schedSheet();
-    };
-    img.src = ev.target.result;
-  };
-  reader.readAsDataURL(file);
-  fileInput.value='';
+  if(Object.keys(imageStore).length >= MAX_IMAGES){
+    alert(`ניתן להעלות עד ${MAX_IMAGES} תמונות למדבקה אחת.`);
+    return;
+  }
+  try{
+    const img = await loadImageFileForLayer(file);
+    const dataUrl = await downscale(img);
+    const id = 'img' + (++imgSeq);
+    imageStore[id] = dataUrl;
+    const nl = {id:'l'+Date.now(), type:'icon', emoji:null, imageId:id, image:img, x:0.2, y:0.5, scale:0.6, rot:0, z:maxZ()+1};
+    layers.push(nl); selectedId=nl.id; updateSelectedControls(); drawSingle(); schedSheet();
+  }catch(err){
+    console.warn('image load failed:', err);
+    alert('סוג הקובץ אינו נתמך, נסה JPG או PNG');
+  }
 });
 
-// יצוא SVG מדויק — משתמש באותה layout() בדיוק כמו התצוגה המקדימה,
-// כדי שמספר הצורות בקובץ יהיה זהה תמיד למה שמוצג ב-count-box.
-document.getElementById('export-svg').addEventListener('click', ()=>{
+// בונה את קובץ החיתוך כמחרוזת SVG — משתמש באותה layout() בדיוק כמו התצוגה
+// המקדימה, כדי שמספר הצורות בקובץ יהיה זהה תמיד למה שמוצג ב-count-box.
+// מקום יחיד: גם כפתור ההורדה של המנהל וגם submitOrder() קוראים לפונקציה
+// הזו ולא בונים SVG בעצמם — זה בדיוק המקום שבו קובץ החיתוך והתצוגה
+// מתחילים לסטות אם הלוגיקה משוכפלת.
+function buildCutSvg(){
   const L = layout();
-  if(L.total === 0){ alert('המדבקה גדולה מדי לדף — אין מה לייצא.'); return; }
+  if(L.total === 0) return null;
   const Wmm=210, Hmm=297;
   const frameH = L.h, frameW = L.w, safeGap = L.g;
   const printableLeft = L.left, printableTop = L.top;
@@ -1009,9 +1166,15 @@ document.getElementById('export-svg').addEventListener('click', ()=>{
     }
   }
   svg+=`  </g>\n</svg>`;
+  return svg;
+}
 
+document.getElementById('export-svg').addEventListener('click', ()=>{
+  const svg = buildCutSvg();
+  if(!svg){ alert('המדבקה גדולה מדי לדף — אין מה לייצא.'); return; }
+  const L = layout();
   const blob=new Blob([svg],{type:'image/svg+xml'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`pencil-stickers-${cols}x${rows}.svg`; a.click();
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`pencil-stickers-${L.cols}x${L.rows}.svg`; a.click();
 });
 
 document.getElementById('export-png').addEventListener('click', ()=>{
@@ -1023,6 +1186,77 @@ document.getElementById('export-png').addEventListener('click', ()=>{
 async function ensureFonts(){
   const fams = [...new Set(layers.filter(l=>l.type==='text').map(l=>l.font||'Heebo'))];
   await Promise.all(fams.map(f=>document.fonts.load(`700 40px "${f}"`, 'אבגד').catch(()=>{})));
+}
+
+// קובץ ההדפסה נבנה בדפדפן של הלקוח, באותו רגע שבו הוא רואה את התצוגה —
+// לא משוחזר אחר-כך במכשיר אחר (אימוג'י/פונטים נשענים על גופן מערכת ההפעלה
+// ורשת, ולקוח שעיצב באנדרואיד יראה אימוג'י שונה ממה שמכונה אחרת תפיק).
+// מה שנשלח הוא בדיוק מה שהלקוח ראה. ניסיון מדורג 300→200 DPI: בטלפונים
+// ישנים canvas.toDataURL על 2480×3508 (כ-35MB בזיכרון) מחזיר מחרוזת ריקה
+// בלי לזרוק שגיאה — לכן הבדיקה היא על אורך התוצאה, לא רק על העדר חריגה.
+async function buildPrintFile(){
+  for(const dpi of [300, 200]){
+    try{
+      const px = Math.round(210 / 25.4 * dpi);
+      const cv = document.createElement('canvas');
+      cv.width = px; cv.height = Math.round(297 / 25.4 * dpi);
+      const ctx = cv.getContext('2d');
+      ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height);
+
+      invalidateTile();
+      drawSheetTo(ctx, cv.width / 210, cv.width, cv.height, false); // בלי קו חיתוך אדום
+      invalidateTile();
+
+      let url = cv.toDataURL('image/jpeg', 0.92);
+      if(!url || url.length < 5000) throw new Error('empty');
+      if(url.length * 3/4 >= MAX_PRINT_FILE_BYTES){
+        url = cv.toDataURL('image/jpeg', 0.85);
+        if(url.length * 3/4 >= MAX_PRINT_FILE_BYTES) throw new Error('too-large');
+      }
+      return { printBase64: url, printDpi: dpi };
+    }catch(e){
+      console.warn('print file failed at', dpi, e);
+    }
+  }
+  return { printBase64: null, printDpi: null };
+}
+
+// design הוא metadata בלבד — בלי dataURL. שכבת תמונה מייצאת imageId; קובץ
+// התמונה עצמו נוסע בנפרד דרך buildImagesPayload().
+function serializeLayers(){
+  return layers.map(l => {
+    if(l.type === 'text'){
+      return {id:l.id, type:'text', text:l.text, x:l.x, y:l.y, scale:l.scale, rot:l.rot||0, z:l.z, font:l.font, color:l.color, stroke:l.stroke};
+    }
+    return {id:l.id, type:'icon', emoji:l.imageId ? null : (l.emoji||null), imageId:l.imageId||null, x:l.x, y:l.y, scale:l.scale, rot:l.rot||0, z:l.z};
+  });
+}
+
+// printOutline לא נכנס בכוונה — כלי מנהל, לא חלק מהעיצוב.
+function buildDesign(){
+  return {
+    layers: serializeLayers(),
+    shape: state.shape,
+    radius: state.radius,
+    lenMm: state.lenMm,
+    widMm: state.widMm,
+    orient: state.orient, // בלי זה 'auto' על מדבקה כמו 33.6×12 משחזר כיוון אחר מזה שהלקוח בחר בפועל
+    reg: {...REG},
+  };
+}
+
+// רק תמונות שעדיין מוזכרות משכבה קיימת — שכבה שנמחקה לא גוררת את
+// imageStore[imageId] שלה איתה, אז הסינון כאן במקום ניקוי בזמן מחיקה.
+function buildImagesPayload(){
+  const usedIds = new Set(layers.filter(l => l.imageId).map(l => l.imageId));
+  return Object.keys(imageStore).filter(id => usedIds.has(id)).map(id => ({id, dataUrl: imageStore[id]}));
+}
+
+function buildPreviewImage(){
+  const c = document.createElement('canvas');
+  c.width = 1000; c.height = Math.round(1000 * 297/210);
+  c.getContext('2d').drawImage(a4Canvas, 0, 0, c.width, c.height);
+  return c.toDataURL('image/jpeg', 0.8);
 }
 
 // קובץ הדפסה — A4 מלא ב-300 DPI, כולל סימני רישום (בניגוד ל-SVG לחיתוך).
@@ -1127,8 +1361,152 @@ function applyRegChange(){
   schedSheet();
 }
 
+// ── אזור ההזמנה ──
+
+let orderSheets = 1;
+let orderValid = false;
+let sending = false;
+
+function updateOrderTotal(){
+  document.getElementById('sheets-count').textContent = orderSheets;
+  document.getElementById('order-total').textContent = `סה"כ: ${orderSheets * PRICE_ILS} ₪`;
+}
+
+// נקראת מ-drawSheet() בכל רענון גיליון — משקפת את מה שהלקוח רואה ממש עכשיו,
+// כולל נעילת כפתור השליחה כשאין מה להזמין (עדיין לא הגיע ל-drawSheet
+// הראשון בזמן טעינת הדף, updateOrderTotal נקראת בנפרד בהתחלה הראשונית).
+function updateOrderPanel(){
+  const L = layout();
+  const {w:natW, h:natH} = natDims();
+  const summary = document.getElementById('order-summary');
+  if(layers.length === 0){
+    summary.textContent = 'הוסף טקסט או אייקון למדבקה כדי להזמין';
+    orderValid = false;
+  } else if(L.total === 0){
+    summary.textContent = 'המדבקה גדולה מדי לדף';
+    orderValid = false;
+  } else {
+    summary.textContent = `${L.total} מדבקות בגיליון · ${natW.toFixed(1)} × ${natH} מ״מ`;
+    orderValid = true;
+  }
+  document.getElementById('submit-order-btn').disabled = sending || !orderValid;
+}
+
+document.getElementById('sheets-minus').addEventListener('click', ()=>{
+  orderSheets = clamp(orderSheets - 1, 1, 20);
+  updateOrderTotal();
+});
+document.getElementById('sheets-plus').addEventListener('click', ()=>{
+  orderSheets = clamp(orderSheets + 1, 1, 20);
+  updateOrderTotal();
+});
+
+function showOrderError(msg){
+  const el = document.getElementById('order-error');
+  el.textContent = msg; el.style.display = 'block';
+}
+function hideOrderError(){
+  document.getElementById('order-error').style.display = 'none';
+}
+
+// אף פעם לא מציגים ללקוח את קוד השגיאה האנגלי מהשרת.
+function mapOrderError(code){
+  const map = {
+    invalid_phone: 'מספר הטלפון אינו תקין',
+    rate_limited: 'שלחת כמה הזמנות היום. פנה אלינו בוואטסאפ',
+    design_too_large: 'העיצוב כבד מדי — נסה עם פחות תמונות',
+    invalid_images: 'העיצוב כבד מדי — נסה עם פחות תמונות',
+    invalid_preview: 'העיצוב כבד מדי — נסה עם פחות תמונות',
+  };
+  return map[code] || 'השליחה נכשלה, נסה שוב בעוד רגע';
+}
+
+function showOrderSuccess(code){
+  document.getElementById('order-form').style.display = 'none';
+  const successBox = document.getElementById('order-success');
+  successBox.style.display = 'flex';
+  document.getElementById('order-code').textContent = code;
+  document.getElementById('pay-amount').textContent = orderSheets * PRICE_ILS;
+  document.getElementById('pay-btn').href = PAY_URL;
+  const waText = `שלום, שלחתי הזמנת מדבקות לעפרונות. מספר הזמנה: ${code}. ${orderSheets} גיליונות.`;
+  document.getElementById('wa-btn').href = `https://wa.me/${ORDER_WA}?text=${encodeURIComponent(waText)}`;
+  // חובה: בעמוד התשלום של Morning הלקוח בוחר כמות בעצמו — בלי ההוראה הזו
+  // הוא ישלם על 3 גיליונות בברירת המחדל של הקישור, לא על מה שהזמין בפועל.
+  document.getElementById('pay-instruction').textContent = `בעמוד התשלום בחר כמות: ${orderSheets}`;
+}
+
+// לקוח שרוצה עוד גיליון (או גודל אחר מאותו עיצוב) לא צריך לרענן את הדף
+// ולאבד את מה שעיצב — רק ההערה מתאפסת, שם/טלפון/העיצוב עצמו נשארים.
+function resetOrderForm(){
+  document.getElementById('order-success').style.display = 'none';
+  document.getElementById('order-form').style.display = 'flex';
+  document.getElementById('order-note').value = '';
+  hideOrderError();
+  updateOrderPanel();
+}
+document.getElementById('new-order-btn').addEventListener('click', resetOrderForm);
+
+async function submitOrder(){
+  if(sending || !orderValid) return;
+  const phone = document.getElementById('order-phone').value.trim();
+  const digits = phone.replace(/\D/g, '');
+  if(digits.length < 9){ showOrderError('הזן מספר טלפון תקין'); return; }
+
+  hideOrderError();
+  sending = true;
+  const btn = document.getElementById('submit-order-btn');
+  btn.disabled = true; btn.textContent = 'שולח…';
+  try{
+    await ensureFonts(); // בלי זה קובץ ההדפסה נשמר בגופן ברירת מחדל, לא זה שהלקוח ראה
+    invalidateTile(); drawSheet(); // ודא שהגיליון מעודכן ולא ממתין ל-debounce של schedSheet
+
+    btn.textContent = 'מכין את קובץ ההדפסה…';
+    const { printBase64, printDpi } = await buildPrintFile();
+
+    const svg = buildCutSvg();
+    const previewBase64 = buildPreviewImage();
+    const design = buildDesign();
+    const images = buildImagesPayload();
+    const {w:natW, h:natH} = natDims();
+    const L = layout();
+
+    btn.textContent = 'שולח…';
+    const res = await fetch(ORDER_FN, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        name: document.getElementById('order-name').value.trim(),
+        phone,
+        note: document.getElementById('order-note').value.trim(),
+        sheets: orderSheets,
+        design,
+        sizes: {lenMm: natW, widMm: natH, perSheet: L.total},
+        images, svg, previewBase64, printBase64, printDpi,
+      }),
+    });
+    const j = await res.json().catch(()=>null);
+    if(!j || !j.ok){ showOrderError(mapOrderError(j && j.error)); return; }
+    showOrderSuccess(j.code);
+  }catch(e){
+    console.error('submitOrder failed:', e);
+    showOrderError(mapOrderError('network'));
+  }finally{
+    sending = false;
+    btn.textContent = 'שלח הזמנה';
+    updateOrderPanel();
+  }
+}
+document.getElementById('submit-order-btn').addEventListener('click', submitOrder);
+
+function applyAdminVisibility(){
+  const show = isAdminView();
+  document.querySelectorAll('.admin-only').forEach(el => { el.style.display = show ? '' : 'none'; });
+}
+
 // התחלה ראשונית
 document.getElementById('radius-box').style.display = 'none';
+applyAdminVisibility();
+updateOrderTotal();
 syncSizeInputs();
 updateSelectedControls();
 drawSingle();

@@ -22,6 +22,9 @@ const PRICE_ILS_PER_SHEET = 10;
 const MAX_SVG_BYTES = 500 * 1024;
 const MAX_PREVIEW_BYTES = 2 * 1024 * 1024;
 const MAX_DESIGN_BYTES = 256 * 1024;
+const MAX_PRINT_BYTES = 6 * 1024 * 1024;
+const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
+const MAX_IMAGES = 3;
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -99,6 +102,54 @@ function truncate(raw: unknown, max: number): string | null {
   return s.slice(0, max);
 }
 
+// ── PR 2: קובץ הדפסה (אופציונלי, לעולם לא מפיל הזמנה) ותמונות לקוח ──
+
+const PRINT_PREFIX = 'data:image/jpeg;base64,';
+function validatePrintImage(raw: unknown): Uint8Array | null {
+  if (typeof raw !== 'string' || !raw.startsWith(PRINT_PREFIX)) return null;
+  const b64 = raw.slice(PRINT_PREFIX.length);
+  if (Math.floor(b64.length * 3 / 4) >= MAX_PRINT_BYTES) return null;
+  try {
+    const bytes = base64ToBytes(b64);
+    if (bytes.length >= MAX_PRINT_BYTES) return null;
+    return bytes;
+  } catch {
+    return null;
+  }
+}
+
+function validatePrintDpi(raw: unknown): number | null {
+  const n = Number(raw);
+  return (n === 300 || n === 200) ? n : null;
+}
+
+const IMAGE_PREFIX = 'data:image/png;base64,';
+const IMAGE_ID_RE = /^[a-zA-Z0-9_-]{1,40}$/;
+// תמונות שהלקוח מעלה (לוגו/צילום) — לא נוסעות בתוך design (זה מה ששומר אותו
+// מתחת ל-256KB), אלא כמערך נפרד. כל אחת מאומתת בנפרד ומועלית לנתיב משלה.
+function validateImages(raw: unknown): { id: string; bytes: Uint8Array }[] | null {
+  if (raw === undefined || raw === null) return [];
+  if (!Array.isArray(raw) || raw.length > MAX_IMAGES) return null;
+  const out: { id: string; bytes: Uint8Array }[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== 'object') return null;
+    const id = (item as Record<string, unknown>).id;
+    const dataUrl = (item as Record<string, unknown>).dataUrl;
+    if (typeof id !== 'string' || !IMAGE_ID_RE.test(id)) return null;
+    if (typeof dataUrl !== 'string' || !dataUrl.startsWith(IMAGE_PREFIX)) return null;
+    const b64 = dataUrl.slice(IMAGE_PREFIX.length);
+    if (Math.floor(b64.length * 3 / 4) >= MAX_IMAGE_BYTES) return null;
+    try {
+      const bytes = base64ToBytes(b64);
+      if (bytes.length >= MAX_IMAGE_BYTES) return null;
+      out.push({ id, bytes });
+    } catch {
+      return null;
+    }
+  }
+  return out;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
   if (req.method !== 'POST') return fail('method_not_allowed', 405);
@@ -136,6 +187,16 @@ Deno.serve(async (req) => {
     const widMm = Number.isFinite(Number(sizes.widMm)) ? Number(sizes.widMm) : null;
     const perSheet = Number.isInteger(Number(sizes.perSheet)) ? Number(sizes.perSheet) : null;
 
+    // תמונות לקוח — חלק מהעיצוב (מוזכרות מ-design.layers[].imageId), אז כשל
+    // ולידציה כאן כן פוסל את ההזמנה, בניגוד לקובץ ההדפסה למטה.
+    const images = validateImages((body as Record<string, unknown>).images);
+    if (!images) return fail('invalid_images', 400);
+
+    // קובץ ההדפסה אופציונלי לגמרי — נחמד שיהיה, לא תנאי. printDpi פסול/חסר
+    // פשוט הופך לתיעוד null, לא לשגיאה.
+    const printBytes = validatePrintImage((body as Record<string, unknown>).printBase64);
+    const printDpi = printBytes ? validatePrintDpi((body as Record<string, unknown>).printDpi) : null;
+
     const url = Deno.env.get('SUPABASE_URL')!;
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
@@ -165,6 +226,35 @@ Deno.serve(async (req) => {
     }
     uploaded.push(previewPath);
 
+    // תמונות הלקוח — חלק מהעיצוב, אז כשל העלאה כאן כן מפיל את ההזמנה (בדיוק
+    // כמו svg/preview למעלה), בניגוד לקובץ ההדפסה האופציונלי שמגיע אחריהן.
+    for (const img of images) {
+      const imgPath = `${uuid}/img-${img.id}.png`;
+      const { error: imgErr } = await admin.storage.from(BUCKET)
+        .upload(imgPath, img.bytes, { contentType: 'image/png', upsert: false });
+      if (imgErr) {
+        console.error('IMAGE_UPLOAD_ERROR', img.id, JSON.stringify(imgErr));
+        await admin.storage.from(BUCKET).remove(uploaded);
+        return fail('server_error', 500);
+      }
+      uploaded.push(imgPath);
+    }
+
+    // קובץ ההדפסה — אופציונלי לגמרי. כישלון בהעלאה שלו בלבד לא מפיל את ההזמנה,
+    // רק מדלג עליו (print_path/print_dpi נשארים null ברשומה שנוצרת).
+    let printPath: string | null = null;
+    if (printBytes) {
+      const candidatePath = `${uuid}/print.jpg`;
+      const { error: printErr } = await admin.storage.from(BUCKET)
+        .upload(candidatePath, printBytes, { contentType: 'image/jpeg', upsert: false });
+      if (printErr) {
+        console.warn('PRINT_UPLOAD_SKIPPED', JSON.stringify(printErr));
+      } else {
+        printPath = candidatePath;
+        uploaded.push(candidatePath);
+      }
+    }
+
     // ── ספירת הקצב + insert בטרנזקציה אחת עם נעילה, בתוך create_sticker_order
     // (SQL, מנוהל ב-MCP) — לא שתי פעולות נפרדות. זה מה שהופך את ההגבלה
     // לאטומית מול בקשות מקבילות מאותו טלפון. code/created_at/status/paid
@@ -182,6 +272,8 @@ Deno.serve(async (req) => {
         per_sheet: perSheet,
         svg_path: svgPath,
         preview_path: previewPath,
+        print_path: printPath,
+        print_dpi: printPath ? printDpi : null,
       },
     });
 
