@@ -267,6 +267,7 @@
           <a class="btn" id="wa-btn" target="_blank" rel="noopener" style="text-decoration:none;text-align:center">📤 עדכן בוואטסאפ</a>
         </div>
         <div class="hint" id="pay-instruction"></div>
+        <button class="btn" id="new-order-btn" type="button">➕ הזמנה נוספת</button>
       </div>
     </div>
   </div>
@@ -1231,11 +1232,15 @@ function serializeLayers(){
   });
 }
 
+// printOutline לא נכנס בכוונה — כלי מנהל, לא חלק מהעיצוב.
 function buildDesign(){
   return {
     layers: serializeLayers(),
     shape: state.shape,
     radius: state.radius,
+    lenMm: state.lenMm,
+    widMm: state.widMm,
+    orient: state.orient, // בלי זה 'auto' על מדבקה כמו 33.6×12 משחזר כיוון אחר מזה שהלקוח בחר בפועל
     reg: {...REG},
   };
 }
@@ -1429,6 +1434,17 @@ function showOrderSuccess(code){
   // הוא ישלם על 3 גיליונות בברירת המחדל של הקישור, לא על מה שהזמין בפועל.
   document.getElementById('pay-instruction').textContent = `בעמוד התשלום בחר כמות: ${orderSheets}`;
 }
+
+// לקוח שרוצה עוד גיליון (או גודל אחר מאותו עיצוב) לא צריך לרענן את הדף
+// ולאבד את מה שעיצב — רק ההערה מתאפסת, שם/טלפון/העיצוב עצמו נשארים.
+function resetOrderForm(){
+  document.getElementById('order-success').style.display = 'none';
+  document.getElementById('order-form').style.display = 'flex';
+  document.getElementById('order-note').value = '';
+  hideOrderError();
+  updateOrderPanel();
+}
+document.getElementById('new-order-btn').addEventListener('click', resetOrderForm);
 
 async function submitOrder(){
   if(sending || !orderValid) return;
