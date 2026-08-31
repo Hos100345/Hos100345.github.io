@@ -278,6 +278,7 @@
           <a class="btn btn-primary" id="pay-btn" target="_blank" rel="noopener" style="text-decoration:none;text-align:center">💳 שלם <span id="pay-amount"></span> ₪</a>
           <a class="btn" id="wa-btn" target="_blank" rel="noopener" style="text-decoration:none;text-align:center">📤 עדכן בוואטסאפ</a>
         </div>
+        <button class="btn" id="paybox-btn" type="button" style="width:100%">💰 או שלם ב-PayBox</button>
         <div class="hint" id="pay-instruction"></div>
         <button class="btn" id="new-order-btn" type="button">➕ הזמנה נוספת</button>
       </div>
@@ -297,6 +298,21 @@
   </div>
 </div>
 
+<!-- חלונית PayBox — אופציה נוספת לצד "💳 שלם", לא תחליף. אין webhook ל-PayBox;
+     תשלום דרכו מסומן ידנית ב-stickers-admin.html כמו כל תשלום שלא הגיע דרך Morning. -->
+<div class="modal-overlay" id="paybox-modal">
+  <div class="modal" style="text-align:center;gap:16px">
+    <div style="display:flex;justify-content:flex-end">
+      <button class="btn" id="paybox-modal-close" style="padding:2px 8px">✕</button>
+    </div>
+    <div style="font-size:28px">💰</div>
+    <div style="font-weight:900;font-size:17px">השימוש ב-PayBox חינם!</div>
+    <div style="color:#475569">מחכים לך בקבוצת <strong>"מדבקות"</strong></div>
+    <a class="btn btn-primary" id="paybox-join-link" target="_blank" rel="noopener"
+       style="text-decoration:none;font-size:15px;padding:12px">הצטרפות לקבוצה ←</a>
+  </div>
+</div>
+
 <script>
 // px למ"מ נגזר מהקנבס עצמו (A4 = 210 מ"מ רוחב) — לא מקבוע מרחף.
 // זה מה שהיה חסר: PX_PER_MM הישן היה קבוע יחיד (300dpi) שהוכפל שוב ב-*2 בכל
@@ -312,6 +328,10 @@ const isAdminView = () => new URLSearchParams(location.search).get('admin') === 
 // SDK ובלי מפתח (כמו morning-webhook).
 const ORDER_FN  = 'https://sccivxenkyzxolpraexf.supabase.co/functions/v1/sticker-order';
 const PAY_URL   = 'https://mrng.to/eXRvaLJVy7';
+// זרימה שונה מ-Morning — הלקוח מצטרף לקבוצה ומשלם בתוכה, לא סכום ספציפי
+// בלחיצה. אופציה נוספת ליד "💳 שלם", לא תחליף. אין webhook ל-PayBox —
+// תשלום דרכו מסומן ידנית ב-stickers-admin.html.
+const PAYBOX_GROUP_URL = 'https://links.payboxapp.com/OHhTyQHV35b';
 const ORDER_WA  = '972505918734';
 const PRICE_ILS = 10;
 const MAX_IMAGES = 3;
@@ -652,6 +672,37 @@ function renderStickerContent(ctx, boxX, boxY, boxW, boxH, scaleFactor = 1, show
   ctx.restore();
 }
 
+// גודל-חצי אמיתי של שכבה, נגזר ממה שבאמת מצויר — ולא מקופסה קבועה. boxH
+// דרוש כי כל הגדלים (גופן/אייקון) נגזרים ממנה, בדיוק כמו ב-renderStickerContent.
+// ⚠️ scaleFactor חייב לחזור על מה ש-drawSingle() בפועל מעביר ל-renderStickerContent
+// (renderStickerContent(singleCtx,...,1.2) — ראה למטה) ולא רק על boxH*0.45*l.scale:
+// שכבת טקסט מצוירת ב-1.2× מהגודל ה"בסיסי", ובלי הכפלה כאן הקופסה הנמדדת קטנה
+// ב-17% מהתוכן שבאמת על המסך — אותה מחלקת באג בדיוק, בעוצמה נמוכה יותר.
+// layerHalfSize/pointInLayer משמשות רק הקנבס הבודד (singleCanvas), ששם
+// scaleFactor הוא תמיד 1.2 — לכן זו ברירת המחדל, לא ארגומנט שנגרר מבחוץ.
+function layerHalfSize(l, ctx, boxH, scaleFactor = 1.2){
+  if(l.type === 'text'){
+    const fSize = boxH * 0.45 * l.scale * scaleFactor;
+    ctx.font = `700 ${Math.max(8, fSize)}px '${l.font||'Heebo'}', sans-serif`;
+    const w = ctx.measureText(l.text || ' ').width;
+    return { halfW: Math.max(40, w/2 + 14), halfH: Math.max(24, fSize/2 + 10) };
+  }
+  const s = l.image ? boxH * l.scale * 0.85 : boxH * l.scale * 0.75;
+  return { halfW: Math.max(30, s/2 + 10), halfH: Math.max(30, s/2 + 10) };
+}
+
+// נקודה בתוך שכבה — במרחב המקומי שלה, כך שגם שכבות מסובבות נתפסות נכון
+// לפי הטביעה האמיתית שלהן ולא לפי קופסה ישרה שמתעלמת מהסיבוב.
+function pointInLayer(l, x, y, boxX, boxY, boxW, boxH, ctx){
+  const px = boxX + l.x*boxW, py = boxY + l.y*boxH;
+  const rad = (l.rot||0) * Math.PI/180;
+  const dx = x - px, dy = y - py;
+  const lx =  dx*Math.cos(-rad) - dy*Math.sin(-rad);
+  const ly =  dx*Math.sin(-rad) + dy*Math.cos(-rad);
+  const { halfW, halfH } = layerHalfSize(l, ctx, boxH);
+  return Math.abs(lx) < halfW && Math.abs(ly) < halfH;
+}
+
 function drawSingle(){
   invalidateTile(); // כל שינוי שגורם לצייר מחדש את התצוגה הבודדת פוסל גם את אריח הגיליון
   const W = singleCanvas.width, H = singleCanvas.height;
@@ -688,8 +739,7 @@ function drawSingle(){
     const py = boxY + activeLayer.y*boxH;
     const rad = (activeLayer.rot||0)*Math.PI/180;
 
-    const halfW = 30 * activeLayer.scale;
-    const halfH = 15 * activeLayer.scale;
+    const { halfW, halfH } = layerHalfSize(activeLayer, singleCtx, boxH);
 
     singleCtx.save();
     singleCtx.translate(px, py);
@@ -865,8 +915,7 @@ singleCanvas.addEventListener('pointerdown', e=>{
     const py = boxY + activeLayer.y*boxH;
     const rad = (activeLayer.rot||0)*Math.PI/180;
 
-    const halfW = 30 * activeLayer.scale;
-    const halfH = 15 * activeLayer.scale;
+    const { halfW, halfH } = layerHalfSize(activeLayer, singleCtx, boxH);
 
     const deleteHandleX = px + ((-halfW) * Math.cos(rad) - (-halfH) * Math.sin(rad));
     const deleteHandleY = py + ((-halfW) * Math.sin(rad) + (-halfH) * Math.cos(rad));
@@ -898,9 +947,7 @@ singleCanvas.addEventListener('pointerdown', e=>{
 
   const sorted = [...layers].sort((a,b)=>b.z-a.z);
   for(const l of sorted){
-    const px = boxX + l.x*boxW;
-    const py = boxY + l.y*boxH;
-    if(Math.abs(x-px)<40 && Math.abs(y-py)<20){
+    if(pointInLayer(l, x, y, boxX, boxY, boxW, boxH, singleCtx)){
       selectedId = l.id; updateSelectedControls();
       interactionMode = 'move';
       initDrag(e, l, x, y);
@@ -1086,6 +1133,14 @@ emojis.forEach(em=>{
 });
 document.getElementById('open-emoji-modal').addEventListener('click', ()=> document.getElementById('emoji-modal').style.display='flex');
 document.getElementById('close-modal').addEventListener('click', ()=> document.getElementById('emoji-modal').style.display='none');
+
+// חלונית PayBox — אותה תבנית modal-overlay/modal, אותו דפוס סגירה (✕ + לחיצה על הרקע)
+document.getElementById('paybox-join-link').href = PAYBOX_GROUP_URL;
+document.getElementById('paybox-btn').addEventListener('click', ()=> document.getElementById('paybox-modal').style.display='flex');
+document.getElementById('paybox-modal-close').addEventListener('click', ()=> document.getElementById('paybox-modal').style.display='none');
+document.getElementById('paybox-modal').addEventListener('click', e=>{
+  if(e.target.id === 'paybox-modal') e.currentTarget.style.display='none';
+});
 
 // ── העלאת תמונה — imageStore נפרד מ-layers ──
 // שכבת תמונה מחזיקה imageId; ה-dataURL (מוקטן) חי ב-imageStore[imageId], לא
