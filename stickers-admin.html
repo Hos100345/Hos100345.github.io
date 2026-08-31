@@ -118,6 +118,7 @@ function showOrdersScreen(){
 }
 
 document.getElementById('login-send').addEventListener('click', async ()=>{
+  requestNotifyPermission(); // בתוך handler של לחיצה — דפדפנים חוסמים בקשת הרשאה שלא נובעת מאינטראקציה
   const email = document.getElementById('login-email').value.trim();
   const msg = document.getElementById('login-msg');
   const btn = document.getElementById('login-send');
@@ -125,11 +126,17 @@ document.getElementById('login-send').addEventListener('click', async ()=>{
   btn.disabled = true;
   msg.style.color = '#64748b'; msg.textContent = 'שולח…';
   try{
-    const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.href } });
+    // כלי למשתמש יחיד — אין סיבה שיאפשר הרשמה. shouldCreateUser:false מונע
+    // יצירת חשבון אוטומטית למי שאינו hoshaya@gmail.com.
+    const { error } = await sb.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: location.href, shouldCreateUser: false }
+    });
     if(error) throw error;
     msg.style.color = '#0f7b3f'; msg.textContent = '📩 נשלח קישור למייל — פתח אותו מהמכשיר הזה';
   }catch(e){
-    msg.style.color = '#b91c1c'; msg.textContent = 'שגיאה בשליחה: ' + (e.message || e);
+    console.warn('signInWithOtp failed:', e);
+    msg.style.color = '#b91c1c'; msg.textContent = 'אין הרשאה למייל הזה';
   }
   btn.disabled = false;
 });
@@ -141,6 +148,7 @@ document.getElementById('login-send').addEventListener('click', async ()=>{
 let orders = [];
 let ordersById = {};
 let previewObserver = null;
+let seenIds = new Set(); // ימולא כאן לפני המנוי ל-Realtime, כדי שהזמנות קיימות לא יצרו התראה כפולה
 
 async function loadOrders(){
   const list = document.getElementById('orders-list');
@@ -155,7 +163,9 @@ async function loadOrders(){
   }
   orders = data || [];
   ordersById = Object.fromEntries(orders.map(o => [o.id, o]));
+  seenIds = new Set(orders.map(o => o.id));
   renderOrders();
+  subscribeToNewOrders(); // אחרי שseenIds מלא — מוגן פנימית מפני מנוי כפול בכל רענון
 }
 
 function currentFilter(){ return document.getElementById('status-filter').value; }
@@ -227,6 +237,66 @@ function renderOrders(){
   if(previewObserver) previewObserver.disconnect();
   previewObserver = new IntersectionObserver(onPreviewIntersect, { rootMargin: '200px' });
   list.querySelectorAll('.order-card').forEach(card => previewObserver.observe(card));
+}
+
+// ── התראה על הזמנה חדשה ──
+// Realtime על sticker_orders כבר מופעל בצד DB (alter publication); ה-RLS
+// הקיים חל עליו בדיוק כמו על שאילתות רגילות — רק hoshaya@gmail.com מקבל
+// אירועים. זו התראה בזמן שהטאב פתוח (גם ברקע) — לא עובדת אם הדפדפן סגור
+// לגמרי, זה ידרוש Service Worker + שרת Push בנפרד.
+let realtimeSubscribed = false;
+function subscribeToNewOrders(){
+  if(realtimeSubscribed) return; // loadOrders() נקראת גם מכפתור הרענון — לא ליצור מנוי כפול
+  realtimeSubscribed = true;
+  sb.channel('sticker-orders-admin')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'sticker_orders' },
+      payload => handleNewOrder(payload.new))
+    .subscribe();
+}
+
+function handleNewOrder(order){
+  if(seenIds.has(order.id)) return; // הגנה מפני אירוע כפול מרענון חיבור
+  seenIds.add(order.id);
+  ordersById[order.id] = order;
+  orders.unshift(order);
+  renderOrders();
+  bumpTabTitle();
+  playChime();
+  if(document.hidden) showBrowserNotification(order);
+}
+
+let unseenCount = 0;
+const baseTitle = document.title;
+function bumpTabTitle(){
+  unseenCount++;
+  document.title = `(${unseenCount}) ${baseTitle}`;
+}
+document.addEventListener('visibilitychange', () => {
+  if(!document.hidden){ unseenCount = 0; document.title = baseTitle; }
+});
+
+function playChime(){
+  try{
+    const a = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoAAACAgICAgICA');
+    a.play().catch(()=>{}); // אינטראקציה קודמת (הכניסה) בדרך כלל מספיקה בדפדפן
+  }catch(e){}
+}
+
+// קריאה רק מתוך handler של לחיצת משתמש (login-send) — לא אוטומטית בטעינה,
+// דפדפנים חוסמים בקשת הרשאה שלא נובעת מאינטראקציה. ההרשאה נשארת בין
+// ביקורים (per-origin), אז מספיק שזה יקרה בכניסה הראשונה אי-פעם.
+function requestNotifyPermission(){
+  if('Notification' in window && Notification.permission === 'default'){
+    Notification.requestPermission();
+  }
+}
+
+function showBrowserNotification(order){
+  if(!('Notification' in window) || Notification.permission !== 'granted') return;
+  const n = new Notification('הזמנת מדבקות חדשה', {
+    body: `${order.code} · ${order.customer_name || order.customer_phone} · ${order.sheets} גיליונות`,
+  });
+  n.onclick = () => { window.focus(); n.close(); };
 }
 
 async function setStatus(order, newStatus){
