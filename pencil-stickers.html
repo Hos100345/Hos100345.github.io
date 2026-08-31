@@ -33,6 +33,13 @@
   .preview-wrap{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:12px;overflow:auto}
   .count-box{background:#0f172a;color:#fff;border-radius:10px;padding:12px;text-align:center;font-weight:800;font-size:15px}
   .hint{font-size:11px;color:#64748b;background:#f8fafc;padding:6px 8px;border-radius:6px;line-height:1.4;border:1px dashed #cbd5e1}
+  .layers-list{display:flex;flex-direction:column;gap:6px;max-height:180px;overflow:auto}
+  .layer-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 10px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;cursor:pointer;font-size:13px}
+  .layer-row:hover{background:#f1f5f9}
+  .layer-row.selected{border-color:#4f46e5;background:#eef2ff}
+  .layer-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .layer-del{border:none;background:transparent;cursor:pointer;font-size:14px;padding:2px 6px;border-radius:6px;flex-shrink:0}
+  .layer-del:hover{background:#fee2e2}
 
   .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;justify-content:center;align-items:center;z-index:100}
   .modal{background:#fff;width:90%;max-width:450px;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:0 10px 25px rgba(0,0,0,0.2)}
@@ -223,6 +230,10 @@
       <h2>תצוגת מדבקה יחידה (עיצוב ופרופורציות)</h2>
       <canvas id="single-canvas" width="600" height="240"></canvas>
     </div>
+    <div class="panel">
+      <h2>שכבות</h2>
+      <div id="layers-list" class="layers-list"></div>
+    </div>
     <div class="preview-wrap">
       <h2 style="text-align:center;margin-bottom:8px">תצוגה מקדימה לגיליון A4 הסופי</h2>
       <canvas id="a4-canvas" width="1240" height="1754"></canvas>
@@ -255,6 +266,7 @@
           </div>
           <div id="order-total" style="font-weight:900;text-align:center;align-self:center">סה"כ: 10 ₪</div>
         </div>
+        <div id="overlap-warning" class="hint" style="display:none;color:#b45309;border-color:#fbbf24;background:#fffbeb">⚠️ יש שתי שכבות טקסט אחת על השנייה. בדוק את התצוגה המקדימה לפני השליחה.</div>
         <div id="order-error" class="hint" style="display:none;color:#dc2626;border-color:#fca5a5;background:#fef2f2"></div>
         <button class="btn btn-primary" id="submit-order-btn" style="width:100%;margin-top:6px">שלח הזמנה</button>
       </div>
@@ -305,9 +317,15 @@ const PRICE_ILS = 10;
 const MAX_IMAGES = 3;
 const MAX_PRINT_FILE_BYTES = 6 * 1024 * 1024;
 
+// שם אמיתי בברירת המחדל גרם ללקוח לחשוב שזו דוגמה קבועה ולא שדה לעריכה —
+// הוא הוסיף טקסט חדש במקום לערוך את זה, וקיבל שתי שכבות חופפות ב-y=0.5
+// כשהאחת (שם של אדם אחר) מוסתרת מתחת לשנייה. PLACEHOLDER_TEXT + isPlaceholder
+// הם התיקון: ברירת מחדל ניטרלית, ודגל שמתאפס בעריכה/הזזה/שינוי-גודל אמיתיים
+// (לא בבחירה גרידא) כדי ש"+ הוסף טקסט/אייקון" ידעו להחליף שכבה שלא נגעו בה.
+const PLACEHOLDER_TEXT = 'השם שלך';
 let layers = [
-  {id:'icon1', type:'icon', emoji:'⭐', x:0.15, y:0.5, scale:0.55, rot:0, z:0, image:null},
-  {id:'text1', type:'text', text:'הושעיה וולמן', x:0.58, y:0.5, scale:0.75, rot:0, z:1, font:'Heebo', color:'#0f172a', stroke:'white'}
+  {id:'icon1', type:'icon', emoji:'⭐', x:0.15, y:0.5, scale:0.55, rot:0, z:0, image:null, isPlaceholder:true},
+  {id:'text1', type:'text', text:PLACEHOLDER_TEXT, x:0.58, y:0.5, scale:0.75, rot:0, z:1, font:'Heebo', color:'#0f172a', stroke:'white', isPlaceholder:true}
 ];
 let selectedId = 'text1';
 // lenMm/widMm במ"מ ישירים — במקום גובה+יחס. יחס לא מסוגל לבטא "מקסימום מדבקה
@@ -407,6 +425,45 @@ function updateSelectedControls(){
     textEditBox.style.display='none';
   }
 }
+
+function escapeHtml(s){
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function layerLabel(l){
+  if(l.type === 'text') return `✏️ "${escapeHtml((l.text||'').slice(0,20))}"`;
+  if(l.imageId) return '🖼️ תמונה';
+  return `${escapeHtml(l.emoji||'⭐')} אייקון`;
+}
+
+// שורש הבאג: שכבה מוסתרת מתחת לאחרת קיימת רק ברשימה — הלקוח לא יכול לנהל
+// מה שהוא לא רואה. נקראת מ-drawSingle() כך שכל מוטציה בשכבות (הוספה/מחיקה/
+// עריכה/גרירה/בחירה) משקפת את עצמה כאן, בלי צריך לזכור לקרוא לה בכל אתר קריאה.
+function renderLayersList(){
+  const box = document.getElementById('layers-list');
+  const sorted = [...layers].sort((a,b)=>a.z-b.z);
+  box.innerHTML = sorted.map(l => `
+    <div class="layer-row${l.id===selectedId?' selected':''}" data-id="${l.id}">
+      <span class="layer-label">${layerLabel(l)}</span>
+      <button class="layer-del" type="button" data-id="${l.id}" title="מחק">🗑</button>
+    </div>`).join('');
+}
+
+document.getElementById('layers-list').addEventListener('click', e=>{
+  const delBtn = e.target.closest('.layer-del');
+  if(delBtn){
+    const id = delBtn.dataset.id;
+    layers = layers.filter(x=>x.id!==id);
+    if(selectedId===id) selectedId = layers[0]?.id||null;
+    updateSelectedControls(); drawSingle(); schedSheet();
+    return;
+  }
+  const row = e.target.closest('.layer-row');
+  if(row){
+    selectedId = row.dataset.id;
+    updateSelectedControls(); drawSingle();
+  }
+});
 
 function traceStickerPath(ctx, x, y, w, h){
   ctx.beginPath();
@@ -660,6 +717,8 @@ function drawSingle(){
 
     singleCtx.restore();
   }
+
+  renderLayersList();
 }
 
 // אריח במטמון — צילום של מדבקה אחת בכיוון הטבעי שלה (לא מסובב). נבנה פעם
@@ -886,6 +945,7 @@ singleCanvas.addEventListener('pointermove', e=>{
   }
 
   const l = getLayer(selectedId); if(!l) return;
+  l.isPlaceholder = false; // גרירה/סיבוב/שינוי-גודל אמיתיים — לא רק בחירה — מבטלים placeholder
   const {w:natW, h:natH} = natDims();
   const aspect = natH / natW;
 
@@ -984,13 +1044,13 @@ document.getElementById('fit-70').addEventListener('click', ()=>{
   schedSheet();
 });
 
-document.getElementById('sel-text-input').addEventListener('input', e=>{ const l=getLayer(selectedId); if(l && l.type==='text'){ l.text=e.target.value; drawSingle(); schedSheet(); } });
+document.getElementById('sel-text-input').addEventListener('input', e=>{ const l=getLayer(selectedId); if(l && l.type==='text'){ l.text=e.target.value; l.isPlaceholder=false; drawSingle(); schedSheet(); } });
 document.getElementById('sel-font').addEventListener('change', e=>{ const l=getLayer(selectedId); if(l && l.type==='text'){ l.font=e.target.value; drawSingle(); schedSheet(); } });
 document.getElementById('sel-stroke').addEventListener('change', e=>{ const l=getLayer(selectedId); if(l && l.type==='text'){ l.stroke=e.target.value; drawSingle(); schedSheet(); } });
 
 document.getElementById('sel-dup').addEventListener('click', ()=>{
   const l=getLayer(selectedId); if(!l) return;
-  const nl = {...l, id:'l'+Date.now(), z:maxZ()+1, x:Math.min(0.8, l.x+0.05), y:Math.min(0.8, l.y+0.05)};
+  const nl = {...l, id:'l'+Date.now(), z:maxZ()+1, x:Math.min(0.8, l.x+0.05), y:Math.min(0.8, l.y+0.05), isPlaceholder:false};
   layers.push(nl); selectedId=nl.id; updateSelectedControls(); drawSingle(); schedSheet();
 });
 document.getElementById('sel-del').addEventListener('click', ()=>{
@@ -999,7 +1059,13 @@ document.getElementById('sel-del').addEventListener('click', ()=>{
   updateSelectedControls(); drawSingle(); schedSheet();
 });
 
+// לקוח שלוחץ "+ הוסף טקסט/אייקון" בלי לגעת בברירת המחדל מתכוון להוסיף, לא
+// לשכפל — אחרת הוא נשאר עם שאריות placeholder חופפות שהוא לא רואה (ראה
+// PLACEHOLDER_TEXT למעלה). רק שכבה שלא נגעו בה נמחקת: אם הלקוח כבר ערך/הזיז
+// אותה, isPlaceholder כבר false ו-find לא מוצא כלום.
 document.getElementById('add-text-btn').addEventListener('click', ()=>{
+  const stale = layers.find(l => l.type==='text' && l.isPlaceholder);
+  if(stale) layers = layers.filter(l => l !== stale);
   const nl = {id:'l'+Date.now(), type:'text', text:'טקסט חדש', x:0.5, y:0.5, scale:0.75, rot:0, z:maxZ()+1, color:'#0f172a', font:'Heebo', stroke:'white'};
   layers.push(nl); selectedId=nl.id; updateSelectedControls(); drawSingle(); schedSheet();
 });
@@ -1010,6 +1076,8 @@ const emojiGrid = document.getElementById('emoji-grid');
 emojis.forEach(em=>{
   const b=document.createElement('button'); b.className='emoji-btn'; b.textContent=em;
   b.addEventListener('click', ()=>{
+    const stale = layers.find(l => l.type==='icon' && l.isPlaceholder);
+    if(stale) layers = layers.filter(l => l !== stale);
     const nl={id:'l'+Date.now(), type:'icon', emoji:em, x:0.2, y:0.5, scale:0.5, rot:0, z:maxZ()+1, image:null};
     layers.push(nl); selectedId=nl.id; updateSelectedControls(); drawSingle(); schedSheet();
     document.getElementById('emoji-modal').style.display='none';
@@ -1375,6 +1443,17 @@ function updateOrderTotal(){
 // נקראת מ-drawSheet() בכל רענון גיליון — משקפת את מה שהלקוח רואה ממש עכשיו,
 // כולל נעילת כפתור השליחה כשאין מה להזמין (עדיין לא הגיע ל-drawSheet
 // הראשון בזמן טעינת הדף, updateOrderTotal נקראת בנפרד בהתחלה הראשונית).
+// אזהרה בלבד — לא חוסמת שליחה. ייתכן שחפיפה מכוונת (טקסט עם צל).
+function hasOverlappingTextLayers(){
+  const texts = layers.filter(l => l.type === 'text');
+  for(let i=0;i<texts.length;i++){
+    for(let j=i+1;j<texts.length;j++){
+      if(Math.abs(texts[i].x - texts[j].x) < 0.15 && Math.abs(texts[i].y - texts[j].y) < 0.15) return true;
+    }
+  }
+  return false;
+}
+
 function updateOrderPanel(){
   const L = layout();
   const {w:natW, h:natH} = natDims();
@@ -1389,6 +1468,7 @@ function updateOrderPanel(){
     summary.textContent = `${L.total} מדבקות בגיליון · ${natW.toFixed(1)} × ${natH} מ״מ`;
     orderValid = true;
   }
+  document.getElementById('overlap-warning').style.display = hasOverlappingTextLayers() ? 'block' : 'none';
   document.getElementById('submit-order-btn').disabled = sending || !orderValid;
 }
 
