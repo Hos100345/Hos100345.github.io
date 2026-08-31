@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>הזמנות מדבקות — ניהול</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js?v=1"></script>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Heebo,system-ui;background:#f6f7f9;color:#1e293b}
+  header{padding:14px 16px;background:#fff;border-bottom:1px solid #e3e6ea;position:sticky;top:0;z-index:10;
+    display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+  header h1{font-size:16px;margin:0;font-weight:800}
+  .header-actions{display:flex;gap:8px;align-items:center}
+  select, input[type="email"]{font-family:inherit;font-size:13px;padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;background:#fff}
+  button{font-family:inherit;cursor:pointer}
+  .btn-icon{padding:8px 12px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;font-size:14px}
+  .btn-icon:hover{background:#f1f5f9}
+
+  .login-screen{display:flex;justify-content:center;align-items:center;min-height:70vh;padding:16px}
+  .login-card{background:#fff;border:1px solid #e3e6ea;border-radius:12px;padding:24px;width:100%;max-width:340px;display:flex;flex-direction:column;gap:10px}
+  .login-card h2{margin:0 0 4px;font-size:16px}
+  .login-card button{padding:10px;border-radius:8px;border:1px solid #1f6feb;background:#1f6feb;color:#fff;font-weight:700;font-size:14px}
+  .login-card button:disabled{opacity:.6;cursor:default}
+  .login-msg{font-size:12px;min-height:16px}
+
+  .orders-screen{padding:14px;max-width:640px;margin:0 auto}
+  .orders-empty, .orders-loading, .orders-error{text-align:center;color:#64748b;padding:30px 10px;font-size:14px}
+  .orders-error{color:#b91c1c}
+
+  .order-card{background:#fff;border:1px solid #e3e6ea;border-radius:12px;padding:14px;margin-bottom:12px;display:flex;flex-direction:column;gap:8px}
+  .order-top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+  .order-code{font-weight:800;font-size:14px}
+  .order-status{font-weight:700;font-size:13px}
+  .order-time{font-size:11px;color:#94a3b8;margin-inline-start:auto}
+  .order-customer{font-size:13px;color:#475569;font-weight:700}
+  .order-preview{background:#f8fafc;border:1px dashed #e3e6ea;border-radius:8px;min-height:90px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .order-preview img{width:100%;height:auto;display:block}
+  .order-size, .order-sheets{font-size:12px;color:#475569}
+  .order-sheets .warn{color:#b45309;font-weight:700}
+  .order-note{font-size:12px;color:#334155;background:#f8fafc;border-radius:6px;padding:6px 8px;font-style:italic}
+  .order-actions, .order-status-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .order-actions button, .order-status-actions button{flex:1;min-width:100px;padding:8px 6px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;font-size:12px;font-weight:700}
+  .order-actions button:disabled{opacity:.45;cursor:default}
+  .order-status-actions button:hover, .order-actions button:not(:disabled):hover{background:#f1f5f9}
+  .btn-wa{display:block;text-align:center;padding:8px;border-radius:8px;background:#0f7b3f;color:#fff;text-decoration:none;font-weight:700;font-size:12px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>הזמנות מדבקות</h1>
+  <div class="header-actions" id="header-actions" style="display:none">
+    <select id="status-filter">
+      <option value="all">הכול</option>
+      <option value="new">חדש</option>
+      <option value="paid">שולם</option>
+      <option value="printed">הודפס</option>
+      <option value="done">בוצע</option>
+    </select>
+    <button class="btn-icon" id="refresh-btn" title="רענון">🔄</button>
+  </div>
+</header>
+
+<div class="login-screen" id="login-screen">
+  <div class="login-card">
+    <h2>כניסת מנהל</h2>
+    <input type="email" id="login-email" placeholder="כתובת מייל" autocomplete="email">
+    <button id="login-send">שלח קישור כניסה</button>
+    <div class="login-msg" id="login-msg"></div>
+  </div>
+</div>
+
+<div class="orders-screen" id="orders-screen" style="display:none">
+  <div id="orders-list"></div>
+  <div class="orders-empty" id="orders-empty" style="display:none">אין הזמנות</div>
+</div>
+
+<script>
+const BUCKET = 'sticker-orders';
+const sb = supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
+
+function escapeHtml(s){
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function timeAgo(iso){
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const min = Math.floor(diffMs / 60000);
+  if(min < 1) return 'עכשיו';
+  if(min < 60) return `לפני ${min} דקות`;
+  const hr = Math.floor(min / 60);
+  if(hr < 24) return `לפני ${hr} שעות`;
+  const days = Math.floor(hr / 24);
+  return `לפני ${days} ימים`;
+}
+
+const STATUS_META = {
+  new:     {label:'חדש',   color:'#b45309'},
+  paid:    {label:'שולם',  color:'#0f7b3f'},
+  printed: {label:'הודפס', color:'#4f46e5'},
+  done:    {label:'בוצע',  color:'#6b7280'},
+};
+
+// ── מסך כניסה / הזמנות — הסתרה דרך style.display, לא CSS class עם display,
+// כדי לא ליפול במלכודת [hidden] שכבר תועדה בפרויקט (.btn[hidden] ב-dobble.html).
+function showLoginScreen(){
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('orders-screen').style.display = 'none';
+  document.getElementById('header-actions').style.display = 'none';
+}
+function showOrdersScreen(){
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('orders-screen').style.display = 'block';
+  document.getElementById('header-actions').style.display = 'flex';
+}
+
+document.getElementById('login-send').addEventListener('click', async ()=>{
+  const email = document.getElementById('login-email').value.trim();
+  const msg = document.getElementById('login-msg');
+  const btn = document.getElementById('login-send');
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ msg.style.color = '#b91c1c'; msg.textContent = 'נא להזין כתובת מייל תקינה'; return; }
+  btn.disabled = true;
+  msg.style.color = '#64748b'; msg.textContent = 'שולח…';
+  try{
+    const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.href } });
+    if(error) throw error;
+    msg.style.color = '#0f7b3f'; msg.textContent = '📩 נשלח קישור למייל — פתח אותו מהמכשיר הזה';
+  }catch(e){
+    msg.style.color = '#b91c1c'; msg.textContent = 'שגיאה בשליחה: ' + (e.message || e);
+  }
+  btn.disabled = false;
+});
+
+// ── טעינת הזמנות ──
+// ה-RLS עושה את כל עבודת האבטחה: מי שאינו hoshaya@gmail.com מקבל רשימה
+// ריקה, לא שגיאה. אין כאן שום בדיקת הרשאה בצד לקוח — היא לא הייתה מוסיפה
+// אבטחה, רק מסך ריק אחר.
+let orders = [];
+let ordersById = {};
+let previewObserver = null;
+
+async function loadOrders(){
+  const list = document.getElementById('orders-list');
+  document.getElementById('orders-empty').style.display = 'none';
+  list.innerHTML = '<div class="orders-loading">טוען…</div>';
+  const { data, error } = await sb.from('sticker_orders')
+    .select('id, code, created_at, customer_name, customer_phone, customer_note, sheets, price_ils, status, paid, size_len_mm, size_wid_mm, per_sheet, print_dpi, svg_path, preview_path, print_path')
+    .order('created_at', { ascending: false });
+  if(error){
+    list.innerHTML = `<div class="orders-error">שגיאה בטעינת ההזמנות: ${escapeHtml(error.message)}</div>`;
+    return;
+  }
+  orders = data || [];
+  ordersById = Object.fromEntries(orders.map(o => [o.id, o]));
+  renderOrders();
+}
+
+function currentFilter(){ return document.getElementById('status-filter').value; }
+
+function orderCardHtml(o){
+  const meta = STATUS_META[o.status] || STATUS_META.new;
+  const digits = String(o.customer_phone || '').replace(/\D/g, '');
+  const phoneFormatted = digits.length === 10 ? `${digits.slice(0,3)}-${digits.slice(3,6)}-${digits.slice(6)}` : digits;
+  const waHref = digits.length === 10
+    ? `https://wa.me/972${digits.slice(1)}?text=${encodeURIComponent(`שלום, לגבי הזמנה ${o.code} של מדבקות לעפרונות`)}`
+    : '';
+  const hasPrint = !!o.print_path;
+  const sheetsLabel = o.sheets === 1 ? 'גיליון' : 'גיליונות';
+  const printLabel = o.print_dpi
+    ? `הדפסה ${o.print_dpi} DPI`
+    : `<span class="warn">⚠️ אין קובץ הדפסה</span>`;
+  return `
+  <div class="order-card" data-id="${o.id}" data-preview-path="${escapeHtml(o.preview_path || '')}">
+    <div class="order-top">
+      <span class="order-code">${escapeHtml(o.code)}</span>
+      <span class="order-status" style="color:${meta.color}">● ${meta.label}</span>
+      <span class="order-time">${timeAgo(o.created_at)}</span>
+    </div>
+    <div class="order-customer">${escapeHtml(o.customer_name || 'ללא שם')} · ${escapeHtml(phoneFormatted)}</div>
+    <div class="order-preview"><img class="preview-img" alt="תצוגה מקדימה"></div>
+    <div class="order-size">${o.size_len_mm ?? '?'} × ${o.size_wid_mm ?? '?'} מ״מ · ${o.per_sheet ?? '?'} בגיליון</div>
+    <div class="order-sheets">${o.sheets} ${sheetsLabel} · ${o.price_ils} ₪ · ${printLabel}</div>
+    ${o.customer_note ? `<div class="order-note">"${escapeHtml(o.customer_note)}"</div>` : ''}
+    <div class="order-actions">
+      <button data-action="print" ${hasPrint ? '' : 'disabled'}>📄 קובץ הדפסה</button>
+      <button data-action="cut">✂️ קובץ חיתוך</button>
+    </div>
+    <div class="order-status-actions">
+      <button data-status="paid">✓ שולם</button>
+      <button data-status="printed">🖨️ הודפס</button>
+      <button data-status="done">✔️ בוצע</button>
+    </div>
+    ${waHref ? `<a class="btn-wa" href="${waHref}" target="_blank" rel="noopener">📞 וואטסאפ ללקוח</a>` : ''}
+  </div>`;
+}
+
+function onPreviewIntersect(entries){
+  entries.forEach(async entry => {
+    if(!entry.isIntersecting) return;
+    previewObserver.unobserve(entry.target);
+    const path = entry.target.dataset.previewPath;
+    const img = entry.target.querySelector('.preview-img');
+    if(!path || !img) return;
+    try{
+      const { data, error } = await sb.storage.from(BUCKET).createSignedUrl(path, 3600);
+      if(error || !data) throw error || new Error('no data');
+      img.src = data.signedUrl;
+    }catch(e){
+      console.warn('preview signed url failed:', e);
+      img.alt = 'תצוגה לא זמינה';
+    }
+  });
+}
+
+// רק ההזמנות הנוכחיות במסך — 50 הזמנות = 50 בקשות מיותרות לתצוגה מקדימה
+// אם זה לא היה עצל. נבנה מחדש בכל רענון/סינון/עדכון סטטוס.
+function renderOrders(){
+  const filter = currentFilter();
+  const filtered = filter === 'all' ? orders : orders.filter(o => o.status === filter);
+  const list = document.getElementById('orders-list');
+  document.getElementById('orders-empty').style.display = filtered.length ? 'none' : 'block';
+  list.innerHTML = filtered.map(orderCardHtml).join('');
+
+  if(previewObserver) previewObserver.disconnect();
+  previewObserver = new IntersectionObserver(onPreviewIntersect, { rootMargin: '200px' });
+  list.querySelectorAll('.order-card').forEach(card => previewObserver.observe(card));
+}
+
+async function setStatus(order, newStatus){
+  const prevStatus = order.status, prevPaid = order.paid;
+  order.status = newStatus;
+  if(newStatus === 'paid') order.paid = true;
+  renderOrders();
+  const patch = newStatus === 'paid' ? { status: 'paid', paid: true } : { status: newStatus };
+  const { error } = await sb.from('sticker_orders').update(patch).eq('id', order.id);
+  if(error){
+    console.error('setStatus failed:', error);
+    order.status = prevStatus; order.paid = prevPaid;
+    renderOrders();
+    alert('העדכון נכשל, נסה שוב');
+  }
+}
+
+document.getElementById('orders-list').addEventListener('click', async e => {
+  const fileBtn = e.target.closest('[data-action]');
+  if(fileBtn){
+    const card = fileBtn.closest('.order-card');
+    const order = ordersById[card.dataset.id];
+    if(!order) return;
+    const path = fileBtn.dataset.action === 'print' ? order.print_path : order.svg_path;
+    if(!path) return;
+    fileBtn.disabled = true;
+    try{
+      const { data, error } = await sb.storage.from(BUCKET).createSignedUrl(path, 3600);
+      if(error || !data) throw error || new Error('no data');
+      window.open(data.signedUrl, '_blank');
+    }catch(err){
+      console.error('file signed url failed:', err);
+      alert('שגיאה בפתיחת הקובץ');
+    }finally{
+      fileBtn.disabled = fileBtn.dataset.action === 'print' ? !order.print_path : false;
+    }
+    return;
+  }
+  const statusBtn = e.target.closest('[data-status]');
+  if(statusBtn){
+    const card = statusBtn.closest('.order-card');
+    const order = ordersById[card.dataset.id];
+    if(order) setStatus(order, statusBtn.dataset.status);
+  }
+});
+
+document.getElementById('status-filter').addEventListener('change', renderOrders);
+document.getElementById('refresh-btn').addEventListener('click', loadOrders);
+
+// ── אימות ──
+// signInWithOtp בלבד (Magic Link) — אותו דפוס מ-dobble.html. SIGNED_IN נורה
+// שוב ושוב (רענון טוקן, פוקוס על טאב, סנכרון בין טאבים) — handleSignedIn
+// מדדף לפי uid כדי שלא ייטען מחדש בלולאה. בניגוד ל-dobble.html, כאן כן
+// רוצים שחזור אוטומטי מסשן שמור (זה כלי מנהל פנימי, לא כניסת לקוח).
+let _authHandledUid = null;
+function handleSignedIn(session){
+  if(!session || !session.user) return;
+  const uid = session.user.id;
+  if(uid === _authHandledUid) return;
+  _authHandledUid = uid;
+  showOrdersScreen();
+  loadOrders();
+}
+
+sb.auth.getSession().then(({ data }) => {
+  if(data.session) handleSignedIn(data.session);
+  else showLoginScreen();
+});
+
+sb.auth.onAuthStateChange((event, session) => {
+  if(event === 'SIGNED_OUT'){ _authHandledUid = null; showLoginScreen(); return; }
+  if(event === 'SIGNED_IN') handleSignedIn(session);
+});
+</script>
+</body>
+</html>
