@@ -455,6 +455,27 @@ function layout(){
 function getLayer(id){ return layers.find(l=>l.id===id); }
 function maxZ(){ return Math.max(0,...layers.map(l=>l.z)); }
 
+const SPAWN_CANDIDATES = [
+  {x:0.5, y:0.5}, {x:0.2, y:0.5}, {x:0.8, y:0.5},
+  {x:0.5, y:0.25}, {x:0.5, y:0.75},
+  {x:0.25, y:0.25}, {x:0.75, y:0.25}, {x:0.25, y:0.75}, {x:0.75, y:0.75},
+];
+
+// מוצא נקודת הופעה שלא מתנגשת עם שכבה קיימת. היוריסטיקה פשוטה בכוונה —
+// לא מדויקת לכל שילוב גודל/סוג, אבל מספיקה כדי שאלמנט חדש לא ינחת בדיוק
+// על קיים. המשתמש תמיד יכול לגרור אחר כך, כמו היום. קוראים לה **אחרי**
+// ניקוי placeholder ישן (ראה add-text-btn/emoji-btn) — היא בודקת מול מה
+// שבאמת יישאר על המדבקה, לא מול placeholder שעומד להימחק ממילא.
+function findFreeSpot(){
+  for(const c of SPAWN_CANDIDATES){
+    const clash = layers.some(l => Math.hypot(l.x-c.x, l.y-c.y) < 0.16);
+    if(!clash) return c;
+  }
+  // כל המועמדים תפוסים (הרבה אלמנטים) — לפחות לא בדיוק על משהו קיים
+  const last = SPAWN_CANDIDATES[SPAWN_CANDIDATES.length-1];
+  return { x: Math.min(0.85, last.x + 0.05*layers.length), y: last.y };
+}
+
 function updateSelectedControls(){
   const l = getLayer(selectedId);
   const panel = document.getElementById('selected-controls');
@@ -1303,7 +1324,8 @@ document.getElementById('sel-del').addEventListener('click', ()=>{
 document.getElementById('add-text-btn').addEventListener('click', ()=>{
   const stale = layers.find(l => l.type==='text' && l.isPlaceholder);
   if(stale) layers = layers.filter(l => l !== stale);
-  const nl = {id:'l'+Date.now(), type:'text', text:'טקסט חדש', x:0.5, y:0.5, scale:0.75, rot:0, z:maxZ()+1, color:'#0f172a', font:'Heebo', stroke:'white'};
+  const spot = findFreeSpot();
+  const nl = {id:'l'+Date.now(), type:'text', text:'טקסט חדש', x:spot.x, y:spot.y, scale:0.75, rot:0, z:maxZ()+1, color:'#0f172a', font:'Heebo', stroke:'white'};
   layers.push(nl); selectedId=nl.id; updateSelectedControls(); drawSingle(); schedSheet();
 });
 
@@ -1315,7 +1337,8 @@ emojis.forEach(em=>{
   b.addEventListener('click', ()=>{
     const stale = layers.find(l => l.type==='icon' && l.isPlaceholder);
     if(stale) layers = layers.filter(l => l !== stale);
-    const nl={id:'l'+Date.now(), type:'icon', emoji:em, x:0.2, y:0.5, scale:0.5, rot:0, z:maxZ()+1, image:null};
+    const spot = findFreeSpot();
+    const nl={id:'l'+Date.now(), type:'icon', emoji:em, x:spot.x, y:spot.y, scale:0.5, rot:0, z:maxZ()+1, image:null};
     layers.push(nl); selectedId=nl.id; updateSelectedControls(); drawSingle(); schedSheet();
     document.getElementById('emoji-modal').style.display='none';
   });
@@ -1439,7 +1462,8 @@ fileInput.addEventListener('change', async e=>{
     const dataUrl = await downscale(img);
     const id = 'img' + (++imgSeq);
     imageStore[id] = dataUrl;
-    const nl = {id:'l'+Date.now(), type:'icon', emoji:null, imageId:id, image:img, x:0.2, y:0.5, scale:0.6, rot:0, z:maxZ()+1};
+    const spot = findFreeSpot(); // אותה תקלה בדיוק כמו טקסט/אימוג'י — לא הוזכר במפרט, אבל x:0.2,y:0.5 קשיח כאן זהה לבאג המדווח
+    const nl = {id:'l'+Date.now(), type:'icon', emoji:null, imageId:id, image:img, x:spot.x, y:spot.y, scale:0.6, rot:0, z:maxZ()+1};
     layers.push(nl); selectedId=nl.id; updateSelectedControls(); drawSingle(); schedSheet();
   }catch(err){
     console.warn('image load failed:', err);
