@@ -50,10 +50,8 @@
   .emoji-btn{font-size:24px;padding:8px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;cursor:pointer;transition:transform 0.1s}
   .emoji-btn:hover{background:#f1f5f9;transform:scale(1.1)}
 
-  .font-picker-box{display:flex;flex-direction:column;align-items:center;border:1px solid #cbd5e1;border-radius:8px;background:#fff;overflow:hidden}
-  .font-arrow-btn{width:100%;min-height:44px;border:none;background:transparent;cursor:pointer;font-size:14px;color:#64748b;line-height:1;touch-action:manipulation}
-  .font-arrow-btn:hover{color:#0f172a;background:#f1f5f9}
-  .font-display{text-align:center;padding:4px 6px;width:100%;min-width:0}
+  .font-display{text-align:center;padding:4px 6px;width:100%;min-width:0;border:1px solid #cbd5e1;border-radius:8px;background:#fff}
+  .font-display:hover{background:#f1f5f9}
   .font-name-display{font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .15s}
   .font-meta-display{font-size:10px;color:#94a3b8;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .font-all-list{max-height:400px;overflow:auto;display:flex;flex-direction:column;gap:12px;padding:4px}
@@ -120,15 +118,10 @@
         <div class="row" style="margin-top:6px">
           <div>
             <label style="font-size:11px">פונט:</label>
-            <div class="font-picker-box">
-              <button type="button" id="font-prev" class="font-arrow-btn" aria-label="פונט קודם">▲</button>
-              <div class="font-display">
-                <div id="font-name-display" class="font-name-display">היבו</div>
-                <div id="font-meta-display" class="font-meta-display">1 / 35 · רגיל</div>
-              </div>
-              <button type="button" id="font-next" class="font-arrow-btn" aria-label="פונט הבא">▼</button>
+            <div class="font-display" id="font-display-btn" role="button" tabindex="0" style="cursor:pointer">
+              <div id="font-name-display" class="font-name-display">היבו</div>
+              <div id="font-meta-display" class="font-meta-display">לחץ לבחירת פונט</div>
             </div>
-            <button type="button" id="font-all-btn" class="btn" style="width:100%;margin-top:4px;font-size:11px;padding:6px">כל הפונטים</button>
           </div>
           <div>
             <label style="font-size:11px">מסגרת אות:</label>
@@ -1215,7 +1208,7 @@ document.getElementById('fit-average').addEventListener('click',  () => { curren
 document.getElementById('fit-notebook').addEventListener('click', () => { currentRatio = ASPECT_RATIO; applyHeight(30); });
 
 document.getElementById('sel-text-input').addEventListener('input', e=>{ const l=getLayer(selectedId); if(l && l.type==='text'){ l.text=e.target.value; l.isPlaceholder=false; drawSingle(); schedSheet(); } });
-// ── בורר פונטים: חצים + תצוגה חיה, דרך מאגר הפונטים המשותף (js/hebrew-fonts.js) ──
+// ── בורר פונטים: התצוגה עצמה לחיצה, פותחת את פאנל "כל הפונטים" — דרך מאגר הפונטים המשותף (js/hebrew-fonts.js) ──
 let fontIndex = 0;
 
 // תצוגה בלבד — לא נוגעת בשכבה ולא טוענת שום דבר. loaded=false מציג את השם
@@ -1229,8 +1222,12 @@ function renderFontPreview(family, loaded){
   nameEl.textContent = rec.he;
   nameEl.style.fontFamily = `"${family}", sans-serif`;
   nameEl.style.opacity = loaded ? '1' : '.45';
-  const idx = HebrewFonts.FONTS.indexOf(rec);
-  metaEl.textContent = `${idx+1} / ${HebrewFonts.FONTS.length} · ${HebrewFonts.CATS[rec.c]||''}`;
+  // חריגה קטנה מהמפרט: metaEl הציג פעם מונה "X/35 · קטגוריה", והמפרט קבע
+  // שה-HTML הראשוני יציג "לחץ לבחירת פונט" במקום — אבל renderFontPreview
+  // רץ כבר בטעינה הראשונה (syncFontPicker מ-updateSelectedControls) והיה
+  // דורס את הטקסט הזה מיד בחזרה למונה הישן. בלי אינדקס לניווט חצים, המונה
+  // חסר משמעות ממילא, אז metaEl תמיד מציג את אותו רמז קבוע.
+  metaEl.textContent = 'לחץ לבחירת פונט';
 }
 
 // נקראת מ-updateSelectedControls בכל מעבר שכבה — מסנכרנת את האינדקס לפונט
@@ -1282,42 +1279,6 @@ function skipToNext(brokenFamily, attempt){
   setFont(nextFamily, attempt);
 }
 
-// לחיצה בודדת/ממושכת על חץ: התצוגה מתעדכנת מיד בכל צעד, אבל setFont
-// (שמפעילה טעינת רשת) נקראת רק 250ms אחרי הצעד האחרון — אחרת מעבר מהיר
-// על הרשימה פותח עשרות בקשות רשת במקביל.
-let pendingFontFamily = null;
-let fontCommitTimer = null;
-function scheduleFontCommit(family){
-  pendingFontFamily = family;
-  renderFontPreview(family, false);
-  clearTimeout(fontCommitTimer);
-  fontCommitTimer = setTimeout(() => {
-    if(pendingFontFamily === family) setFont(family);
-  }, 250);
-}
-
-function stepFont(dir){
-  fontIndex = (fontIndex + dir + HebrewFonts.FONTS.length) % HebrewFonts.FONTS.length;
-  scheduleFontCommit(HebrewFonts.FONTS[fontIndex].f);
-}
-
-// המתנה 400ms לפני שהלחיצה הופכת ל"ממושכת", ואז צעד כל 180ms. עצירה
-// (pointerup/leave/cancel) מפסיקה הן את ההמתנה והן את החזרה.
-function wireFontArrow(btn, dir){
-  let repeatTimer = null, startTimeout = null;
-  function start(){
-    stepFont(dir);
-    startTimeout = setTimeout(() => { repeatTimer = setInterval(() => stepFont(dir), 180); }, 400);
-  }
-  function stop(){ clearTimeout(startTimeout); clearInterval(repeatTimer); }
-  btn.addEventListener('pointerdown', e => { e.preventDefault(); start(); });
-  btn.addEventListener('pointerup', stop);
-  btn.addEventListener('pointerleave', stop);
-  btn.addEventListener('pointercancel', stop);
-}
-wireFontArrow(document.getElementById('font-prev'), -1);
-wireFontArrow(document.getElementById('font-next'), 1);
-
 // "כל הפונטים" — מקובץ לפי HebrewFonts.CATS, כל אריח בגופן שלו עצמו,
 // טעינה עצלה דרך IntersectionObserver. נבנה מחדש בכל פתיחה כדי שהתצוגה
 // המקדימה תשקף את הטקסט הנוכחי של השכבה הנבחרת, לא טקסט ישן מפתיחה קודמת.
@@ -1358,9 +1319,12 @@ function buildFontAllList(){
     });
   });
 }
-document.getElementById('font-all-btn').addEventListener('click', () => {
+document.getElementById('font-display-btn').addEventListener('click', () => {
   buildFontAllList();
   document.getElementById('font-all-modal').style.display = 'flex';
+});
+document.getElementById('font-display-btn').addEventListener('keydown', e => {
+  if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); document.getElementById('font-display-btn').click(); } // preventDefault על רווח — אחרת div עם role=button מגלגל את הדף כברירת מחדל
 });
 document.getElementById('font-all-close').addEventListener('click', () => document.getElementById('font-all-modal').style.display = 'none');
 document.getElementById('font-all-modal').addEventListener('click', e => {
