@@ -151,10 +151,14 @@
         </div>
         <div>
           <label style="font-size:11px" id="wid-mm-label">גובה (מ"מ)</label>
-          <input type="number" id="wid-mm" min="10" step="0.5" value="15">
+          <div style="display:flex;align-items:center;gap:4px">
+            <button class="btn" id="wid-down" type="button" style="padding:6px 12px;font-size:16px" aria-label="הקטן גובה">−</button>
+            <input type="number" id="wid-mm" min="10" step="0.5" value="15" style="text-align:center">
+            <button class="btn" id="wid-up" type="button" style="padding:6px 12px;font-size:16px" aria-label="הגדל גובה">+</button>
+          </div>
         </div>
       </div>
-      <div class="hint">גרור את הידית הכהה בתחתית התצוגה לשינוי הגובה, או הזן מספר. האורך נגזר אוטומטית ביחס קבוע. מינימום 10 מ"מ, מקסימום מדבקה אחת שלמה בדף.</div>
+      <div class="hint">לחצו על −/+ לשינוי הגובה, גררו את הידית הכהה בתחתית התצוגה, או הזינו מספר. האורך נגזר אוטומטית ביחס קבוע. מינימום 10 מ"מ, מקסימום מדבקה אחת שלמה בדף.</div>
 
       <div class="row" style="margin-top:6px">
         <button class="btn btn-primary" id="fit-pencil"   style="font-size:12px;background:#4f46e5;border-color:#4f46e5">✏️ עפרונות</button>
@@ -1073,6 +1077,29 @@ document.getElementById('radius').addEventListener('input', e=>{
 document.getElementById('wid-mm').addEventListener('input', e=>{
   applyHeight(parseFloat(e.target.value) || SIZE.min);
 });
+
+// חצי שינוי גובה — תוספת לצד השדה והידית, לא תחליף. קוראים ל-applyHeight()
+// הקיימת בלבד: שום לוגיקת קלאמפ חדשה, אותה ערבות שכבר הוכחה (כולל האילוץ
+// הכפול רוחב/אורך-נגזר) חלה גם כאן בלי שינוי. הדפוס (חזרה אחרי 400ms,
+// כל 120ms) זהה לבורר הפונטים.
+const HEIGHT_STEP = 1; // מ"מ לכל לחיצה
+function stepHeight(dir){
+  applyHeight(state.widMm + dir * HEIGHT_STEP);
+}
+function holdRepeat(btn, dir){
+  let timer = null, interval = null;
+  function start(){
+    stepHeight(dir);
+    timer = setTimeout(() => { interval = setInterval(() => stepHeight(dir), 120); }, 400);
+  }
+  function stop(){ clearTimeout(timer); clearInterval(interval); timer = interval = null; }
+  btn.addEventListener('pointerdown', start);
+  btn.addEventListener('pointerup', stop);
+  btn.addEventListener('pointerleave', stop); // אצבע שגולשת מחוץ לכפתור באמצע לחיצה ממושכת חייבת לעצור, לא רק pointerup
+  btn.addEventListener('pointercancel', stop);
+}
+holdRepeat(document.getElementById('wid-down'), -1);
+holdRepeat(document.getElementById('wid-up'), 1);
 
 document.getElementById('orient-select').addEventListener('change', e=>{
   state.orient = e.target.value;
