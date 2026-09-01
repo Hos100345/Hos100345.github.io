@@ -4,7 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Silhouette - מעצב מדבקות חכם לעפרונות</title>
-<link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;700;800&family=Heebo:wght@400;700;900&family=Rubik:wght@400;700&family=Varela+Round&family=Amatic+SC:wght@700&family=Fredoka:wght@400;700&family=Secular+One&family=Alef:wght@400;700&family=Playpen+Sans+Hebrew:wght@400;700&family=Suez+One&family=Karantina:wght@400;700&family=Miriam+Libre:wght@400;700&family=Rubik+Doodle+Shadow&family=Rubik+Wet+Paint&display=swap" rel="stylesheet">
+<!-- אין <link> קבוע לפונטים כאן בכוונה — הוא סתר טעינה עצלה. js/hebrew-fonts.js
+     טוען כל משפחה רק כשהיא נבחרת בפועל (HebrewFonts.load), ומטמון ה-Map הפנימי
+     שלו מונע טעינה כפולה של אותה משפחה. -->
+<script src="js/hebrew-fonts.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   *{box-sizing:border-box} body{margin:0;font-family:Heebo,system-ui;background:#f8fafc;color:#1e293b}
@@ -46,6 +49,19 @@
   .emoji-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;max-height:260px;overflow:auto;padding:4px}
   .emoji-btn{font-size:24px;padding:8px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;cursor:pointer;transition:transform 0.1s}
   .emoji-btn:hover{background:#f1f5f9;transform:scale(1.1)}
+
+  .font-picker-box{display:flex;flex-direction:column;align-items:center;border:1px solid #cbd5e1;border-radius:8px;background:#fff;overflow:hidden}
+  .font-arrow-btn{width:100%;min-height:44px;border:none;background:transparent;cursor:pointer;font-size:14px;color:#64748b;line-height:1;touch-action:manipulation}
+  .font-arrow-btn:hover{color:#0f172a;background:#f1f5f9}
+  .font-display{text-align:center;padding:4px 6px;width:100%;min-width:0}
+  .font-name-display{font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .15s}
+  .font-meta-display{font-size:10px;color:#94a3b8;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .font-all-list{max-height:400px;overflow:auto;display:flex;flex-direction:column;gap:12px;padding:4px}
+  .font-cat-heading{font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+  .font-tile-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .font-tile{border:1px solid #e2e8f0;border-radius:8px;padding:10px 6px;cursor:pointer;text-align:center;background:#f8fafc;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:opacity .15s,background .1s}
+  .font-tile:hover{background:#f1f5f9;border-color:#94a3b8}
+  .font-tile.selected{border-color:#4f46e5;background:#eef2ff}
 </style>
 </head>
 <body>
@@ -104,26 +120,15 @@
         <div class="row" style="margin-top:6px">
           <div>
             <label style="font-size:11px">פונט:</label>
-            <select id="sel-font">
-              <optgroup label="ידידותי ועגול">
-                <option value="Heebo">היבו (Heebo)</option>
-                <option value="Assistant">אסיסטנט (Assistant)</option>
-                <option value="Rubik">רוביק (Rubik)</option>
-                <option value="Varela Round">וורלה (Varela Round)</option>
-                <option value="Fredoka">פרדוקה (Fredoka)</option>
-                <option value="Secular One">סקולר (Secular One)</option>
-                <option value="Alef">אלף (Alef)</option>
-                <option value="Playpen Sans Hebrew">כתב יד ילדותי (Playpen Sans Hebrew)</option>
-              </optgroup>
-              <optgroup label="כותרות ואפקטים">
-                <option value="Amatic SC">אמטיק (Amatic SC)</option>
-                <option value="Suez One">סואץ (Suez One)</option>
-                <option value="Karantina">קרנטינה (Karantina)</option>
-                <option value="Miriam Libre">מרים (Miriam Libre)</option>
-                <option value="Rubik Doodle Shadow">קשקוש עם צל (Rubik Doodle Shadow)</option>
-                <option value="Rubik Wet Paint">צבע נוזל (Rubik Wet Paint)</option>
-              </optgroup>
-            </select>
+            <div class="font-picker-box">
+              <button type="button" id="font-prev" class="font-arrow-btn" aria-label="פונט קודם">▲</button>
+              <div class="font-display">
+                <div id="font-name-display" class="font-name-display">היבו</div>
+                <div id="font-meta-display" class="font-meta-display">1 / 35 · רגיל</div>
+              </div>
+              <button type="button" id="font-next" class="font-arrow-btn" aria-label="פונט הבא">▼</button>
+            </div>
+            <button type="button" id="font-all-btn" class="btn" style="width:100%;margin-top:4px;font-size:11px;padding:6px">כל הפונטים</button>
           </div>
           <div>
             <label style="font-size:11px">מסגרת אות:</label>
@@ -318,6 +323,17 @@
   </div>
 </div>
 
+<!-- חלונית "כל הפונטים" — אותה תבנית modal-overlay/modal, אותו דפוס סגירה -->
+<div class="modal-overlay" id="font-all-modal">
+  <div class="modal" style="max-width:480px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h2 style="margin:0">כל הפונטים</h2>
+      <button class="btn" id="font-all-close" style="padding:2px 8px">✕</button>
+    </div>
+    <div id="font-all-list" class="font-all-list"></div>
+  </div>
+</div>
+
 <script>
 // px למ"מ נגזר מהקנבס עצמו (A4 = 210 מ"מ רוחב) — לא מקבוע מרחף.
 // זה מה שהיה חסר: PX_PER_MM הישן היה קבוע יחיד (300dpi) שהוכפל שוב ב-*2 בכל
@@ -449,7 +465,7 @@ function updateSelectedControls(){
   if(l.type==='text'){
     textEditBox.style.display='block';
     document.getElementById('sel-text-input').value = l.text||'';
-    document.getElementById('sel-font').value = l.font||'Heebo';
+    syncFontPicker(l.font||'Heebo');
     document.getElementById('sel-stroke').value = l.stroke||'white';
   } else {
     textEditBox.style.display='none';
@@ -667,7 +683,11 @@ function renderStickerContent(ctx, boxX, boxY, boxW, boxH, scaleFactor = 1, show
       }
     }else{
       const fSize = boxH * 0.45 * l.scale * scaleFactor;
-      ctx.font = `700 ${Math.max(8, fSize)}px '${l.font||'Heebo'}', sans-serif`;
+      // פונטים חד-משקליים (Suez One, Secular One, כל fx) מקבלים bold מלאכותי
+      // מכוער אם תמיד כופים 700. חייב לכבד hasBold() באותה נוסחה בדיוק כמו
+      // layerHalfSize למטה — אחרת המדידה שם לא תואמת את מה שמצויר כאן.
+      const wt = window.HebrewFonts && HebrewFonts.hasBold(l.font||'Heebo') ? 700 : 400;
+      ctx.font = `${wt} ${Math.max(8, fSize)}px '${l.font||'Heebo'}', sans-serif`;
       ctx.textAlign='center'; ctx.textBaseline='middle';
       if(l.stroke==='white' || l.stroke==='black'){
         ctx.strokeStyle = l.stroke==='white' ? '#fff' : '#000';
@@ -693,7 +713,8 @@ function renderStickerContent(ctx, boxX, boxY, boxW, boxH, scaleFactor = 1, show
 function layerHalfSize(l, ctx, boxH, scaleFactor = 1.2){
   if(l.type === 'text'){
     const fSize = boxH * 0.45 * l.scale * scaleFactor;
-    ctx.font = `700 ${Math.max(8, fSize)}px '${l.font||'Heebo'}', sans-serif`;
+    const wt = window.HebrewFonts && HebrewFonts.hasBold(l.font||'Heebo') ? 700 : 400;
+    ctx.font = `${wt} ${Math.max(8, fSize)}px '${l.font||'Heebo'}', sans-serif`;
     const w = ctx.measureText(l.text || ' ').width;
     return { halfW: Math.max(40, w/2 + 14), halfH: Math.max(24, fSize/2 + 10) };
   }
@@ -1111,7 +1132,157 @@ document.getElementById('fit-average').addEventListener('click',  () => applyHei
 document.getElementById('fit-notebook').addEventListener('click', () => applyHeight(30));
 
 document.getElementById('sel-text-input').addEventListener('input', e=>{ const l=getLayer(selectedId); if(l && l.type==='text'){ l.text=e.target.value; l.isPlaceholder=false; drawSingle(); schedSheet(); } });
-document.getElementById('sel-font').addEventListener('change', e=>{ const l=getLayer(selectedId); if(l && l.type==='text'){ l.font=e.target.value; drawSingle(); schedSheet(); } });
+// ── בורר פונטים: חצים + תצוגה חיה, דרך מאגר הפונטים המשותף (js/hebrew-fonts.js) ──
+let fontIndex = 0;
+
+// תצוגה בלבד — לא נוגעת בשכבה ולא טוענת שום דבר. loaded=false מציג את השם
+// בדהייה (.45) עד שהפונט באמת נטען, כדי שהמשתמש יידע שמה שהוא רואה עוד
+// לא בטוח נכון.
+function renderFontPreview(family, loaded){
+  const rec = HebrewFonts.FONTS.find(r => r.f === family);
+  if(!rec) return;
+  const nameEl = document.getElementById('font-name-display');
+  const metaEl = document.getElementById('font-meta-display');
+  nameEl.textContent = rec.he;
+  nameEl.style.fontFamily = `"${family}", sans-serif`;
+  nameEl.style.opacity = loaded ? '1' : '.45';
+  const idx = HebrewFonts.FONTS.indexOf(rec);
+  metaEl.textContent = `${idx+1} / ${HebrewFonts.FONTS.length} · ${HebrewFonts.CATS[rec.c]||''}`;
+}
+
+// נקראת מ-updateSelectedControls בכל מעבר שכבה — מסנכרנת את האינדקס לפונט
+// של השכבה שנבחרה. loaded=true אופטימי: אם השכבה כבר נושאת את הפונט הזה,
+// הוא כבר עבר setFont בעבר (או שזה Heebo, שנטען מפורשות באתחול למטה).
+function syncFontPicker(family){
+  const idx = HebrewFonts.FONTS.findIndex(r => r.f === family);
+  fontIndex = idx >= 0 ? idx : 0;
+  renderFontPreview(HebrewFonts.FONTS[fontIndex].f, true);
+}
+
+// נקודת הכניסה היחידה שבאמת מחילה פונט על שכבה: קובעת אותו מיד (אופטימי,
+// בדהייה), ורק אחרי טעינה מאומתת (עם timeout — פונט הוא קריאת רשת, ולפי
+// כלל הפרויקט כל קריאת רשת חייבת timeout כדי שניתוק לא ישאיר את המשתמש
+// תקוע) מציירת בפועל. attempt סופר דילוגים על פונט שבור כדי שניתוק
+// אינטרנט לא יפתח לולאת ניסיונות אינסופית על 35 המשפחות.
+async function setFont(family, attempt){
+  const l = getLayer(selectedId);
+  if(!l || l.type !== 'text') return;
+  l.font = family;
+  l.isPlaceholder = false;
+  renderFontPreview(family, false);
+
+  try{
+    await withTimeout(HebrewFonts.load(family), 10000, 'טעינת הפונט נתקעה');
+  }catch(e){
+    console.warn('font load failed:', family, e);
+    skipToNext(family, attempt);
+    return;
+  }
+
+  if(l.font !== family) return; // המשתמש כבר עבר הלאה בלחיצה ממושכת מאז
+  renderFontPreview(family, true);
+  invalidateTile();
+  drawSingle();
+  schedSheet();
+}
+
+// דילוג שקט לפונט הבא — בלי הודעת שגיאה ללקוח. עוצר אחרי סבב מלא על כל
+// המשפחות כדי לא ללולאת-נסיונות בלי סוף במצב לא-מקוון (בדיקה 11).
+function skipToNext(brokenFamily, attempt){
+  attempt = (attempt || 0) + 1;
+  if(attempt >= HebrewFonts.FONTS.length){
+    console.warn('כל הפונטים נכשלו בטעינה — נשאר בגופן מערכת');
+    return;
+  }
+  const idx = HebrewFonts.FONTS.findIndex(r => r.f === brokenFamily);
+  const nextFamily = HebrewFonts.FONTS[(idx + 1) % HebrewFonts.FONTS.length].f;
+  setFont(nextFamily, attempt);
+}
+
+// לחיצה בודדת/ממושכת על חץ: התצוגה מתעדכנת מיד בכל צעד, אבל setFont
+// (שמפעילה טעינת רשת) נקראת רק 250ms אחרי הצעד האחרון — אחרת מעבר מהיר
+// על הרשימה פותח עשרות בקשות רשת במקביל.
+let pendingFontFamily = null;
+let fontCommitTimer = null;
+function scheduleFontCommit(family){
+  pendingFontFamily = family;
+  renderFontPreview(family, false);
+  clearTimeout(fontCommitTimer);
+  fontCommitTimer = setTimeout(() => {
+    if(pendingFontFamily === family) setFont(family);
+  }, 250);
+}
+
+function stepFont(dir){
+  fontIndex = (fontIndex + dir + HebrewFonts.FONTS.length) % HebrewFonts.FONTS.length;
+  scheduleFontCommit(HebrewFonts.FONTS[fontIndex].f);
+}
+
+// המתנה 400ms לפני שהלחיצה הופכת ל"ממושכת", ואז צעד כל 180ms. עצירה
+// (pointerup/leave/cancel) מפסיקה הן את ההמתנה והן את החזרה.
+function wireFontArrow(btn, dir){
+  let repeatTimer = null, startTimeout = null;
+  function start(){
+    stepFont(dir);
+    startTimeout = setTimeout(() => { repeatTimer = setInterval(() => stepFont(dir), 180); }, 400);
+  }
+  function stop(){ clearTimeout(startTimeout); clearInterval(repeatTimer); }
+  btn.addEventListener('pointerdown', e => { e.preventDefault(); start(); });
+  btn.addEventListener('pointerup', stop);
+  btn.addEventListener('pointerleave', stop);
+  btn.addEventListener('pointercancel', stop);
+}
+wireFontArrow(document.getElementById('font-prev'), -1);
+wireFontArrow(document.getElementById('font-next'), 1);
+
+// "כל הפונטים" — מקובץ לפי HebrewFonts.CATS, כל אריח בגופן שלו עצמו,
+// טעינה עצלה דרך IntersectionObserver. נבנה מחדש בכל פתיחה כדי שהתצוגה
+// המקדימה תשקף את הטקסט הנוכחי של השכבה הנבחרת, לא טקסט ישן מפתיחה קודמת.
+function buildFontAllList(){
+  const box = document.getElementById('font-all-list');
+  const l = getLayer(selectedId);
+  const previewText = (l && l.type === 'text' && l.text) ? l.text : 'אבגד';
+  const currentFamily = HebrewFonts.FONTS[fontIndex]?.f;
+  const order = ['daily', 'friendly', 'display', 'serif', 'hand', 'fx'];
+
+  box.innerHTML = order.map(cat => {
+    const tiles = HebrewFonts.list(cat).map(rec => `
+      <div class="font-tile${rec.f===currentFamily?' selected':''}" data-font="${escapeHtml(rec.f)}" style="opacity:.45">${escapeHtml(previewText)}</div>
+    `).join('');
+    return `<div><div class="font-cat-heading">${escapeHtml(HebrewFonts.CATS[cat])}</div><div class="font-tile-grid">${tiles}</div></div>`;
+  }).join('');
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(async entry => {
+      if(!entry.isIntersecting) return;
+      observer.unobserve(entry.target);
+      const family = entry.target.dataset.font;
+      try{
+        await withTimeout(HebrewFonts.load(family), 10000, 'טעינת הפונט נתקעה');
+        entry.target.style.fontFamily = `"${family}", sans-serif`;
+        entry.target.style.opacity = '1';
+      }catch(e){ /* נשאר בפונט גיבוי בשקט, בלי הודעת שגיאה */ }
+    });
+  }, { rootMargin: '150px' });
+  box.querySelectorAll('.font-tile').forEach(tile => observer.observe(tile));
+
+  box.querySelectorAll('.font-tile').forEach(tile => {
+    tile.addEventListener('click', () => {
+      const family = tile.dataset.font;
+      fontIndex = HebrewFonts.FONTS.findIndex(r => r.f === family);
+      setFont(family); // בחירה מפורשת מהרשימה — קומיט מיידי, בלי דיליי של 250ms
+      document.getElementById('font-all-modal').style.display = 'none';
+    });
+  });
+}
+document.getElementById('font-all-btn').addEventListener('click', () => {
+  buildFontAllList();
+  document.getElementById('font-all-modal').style.display = 'flex';
+});
+document.getElementById('font-all-close').addEventListener('click', () => document.getElementById('font-all-modal').style.display = 'none');
+document.getElementById('font-all-modal').addEventListener('click', e => {
+  if(e.target.id === 'font-all-modal') e.currentTarget.style.display = 'none';
+});
 document.getElementById('sel-stroke').addEventListener('change', e=>{ const l=getLayer(selectedId); if(l && l.type==='text'){ l.stroke=e.target.value; drawSingle(); schedSheet(); } });
 
 document.getElementById('sel-dup').addEventListener('click', ()=>{
@@ -1327,7 +1498,7 @@ document.getElementById('export-png').addEventListener('click', ()=>{
 // "חיממה" את הפונט) יוצא בברירת המחדל בשקט, בלי שום שגיאה.
 async function ensureFonts(){
   const fams = [...new Set(layers.filter(l=>l.type==='text').map(l=>l.font||'Heebo'))];
-  await Promise.all(fams.map(f=>document.fonts.load(`700 40px "${f}"`, 'אבגד').catch(()=>{})));
+  await Promise.all(fams.map(f => HebrewFonts.load(f).catch(()=>{})));
 }
 
 // קובץ ההדפסה נבנה בדפדפן של הלקוח, באותו רגע שבו הוא רואה את התצוגה —
@@ -1663,6 +1834,13 @@ syncSizeInputs();
 updateSelectedControls();
 drawSingle();
 drawSheet();
+
+// מבטיח שהפונט של השכבה הראשונית (Heebo) בתהליך טעינה בפועל, ורק אז
+// מחכה שכל טעינות הפונטים הפעילות יסתיימו לפני הציור הסופי — בלי הקריאה
+// המפורשת ל-load כאן, document.fonts.ready לא היה מחכה לכלום ומסתיים
+// כמעט מיד, והתצוגה הראשונה הייתה נופלת בשקט לפונט גיבוי.
+if(window.HebrewFonts) HebrewFonts.load(getLayer(selectedId)?.font || 'Heebo').catch(()=>{});
+document.fonts.ready.then(() => { invalidateTile(); drawSingle(); drawSheet(); });
 </script>
 </body>
 </html>
