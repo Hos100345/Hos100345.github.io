@@ -146,19 +146,20 @@
       <h2>2️⃣ גודל פיזי סופי וחישוב דף</h2>
       <div class="row">
         <div id="len-field">
-          <label style="font-size:11px">אורך (מ"מ)</label>
-          <input type="number" id="len-mm" min="10" step="0.5" value="33.6">
+          <label style="font-size:11px">אורך (נגזר אוטומטית)</label>
+          <input type="number" id="len-mm" value="42.0" disabled style="opacity:.65">
         </div>
         <div>
-          <label style="font-size:11px" id="wid-mm-label">רוחב (מ"מ)</label>
-          <input type="number" id="wid-mm" min="10" step="0.5" value="12">
+          <label style="font-size:11px" id="wid-mm-label">גובה (מ"מ)</label>
+          <input type="number" id="wid-mm" min="10" step="0.5" value="15">
         </div>
       </div>
-      <div class="hint">גרור את הידית הכהה בפינת התצוגה המקדימה לשינוי חופשי, או הזן מספרים כאן. מינימום 10 מ"מ לכל צלע, מקסימום מדבקה אחת שלמה בדף.</div>
+      <div class="hint">גרור את הידית הכהה בתחתית התצוגה לשינוי הגובה, או הזן מספר. האורך נגזר אוטומטית ביחס קבוע. מינימום 10 מ"מ, מקסימום מדבקה אחת שלמה בדף.</div>
 
       <div class="row" style="margin-top:6px">
-        <button class="btn btn-primary" id="fit-50" style="font-size:12px;background:#4f46e5;border-color:#4f46e5">🎯 מדבקה קטנה 28×10</button>
-        <button class="btn btn-primary" id="fit-70" style="font-size:12px;background:#059669;border-color:#059669">🎯 מדבקה בינונית 33.6×12</button>
+        <button class="btn btn-primary" id="fit-pencil"   style="font-size:12px;background:#4f46e5;border-color:#4f46e5">✏️ עפרונות</button>
+        <button class="btn btn-primary" id="fit-average"  style="font-size:12px;background:#059669;border-color:#059669">📐 ממוצע</button>
+        <button class="btn btn-primary" id="fit-notebook" style="font-size:12px;background:#b45309;border-color:#b45309">📓 מחברות</button>
       </div>
 
       <div style="margin-top:6px">
@@ -348,11 +349,16 @@ let layers = [
   {id:'text1', type:'text', text:PLACEHOLDER_TEXT, x:0.58, y:0.5, scale:0.75, rot:0, z:1, font:'Heebo', color:'#0f172a', stroke:'white', isPlaceholder:true}
 ];
 let selectedId = 'text1';
-// lenMm/widMm במ"מ ישירים — במקום גובה+יחס. יחס לא מסוגל לבטא "מקסימום מדבקה
-// אחת בדף" או "מינימום 10 מ"מ" בלי חישוב הפוך בכל מקום.
+// שליטה יחידה: widMm ("גובה", הציר הקצר) — הלקוח קובע אותו, ותו לא.
+// lenMm ("אורך") נגזר תמיד מ-widMm×ASPECT_RATIO דרך applyHeight(), ולעולם
+// לא נקבע ישירות (מלבד ברירת המחדל כאן, שכבר עקבית עם היחס). בעיגול
+// lenMm==widMm ממילא, היחס לא חל.
+// ASPECT_RATIO=2.8 הוא בדיוק היחס של ברירת המחדל הקודמת (33.6/12) — לא
+// יחס חדש שהומצא.
 // printOutline: האם קו החיתוך האדום מודפס בפועל (כבוי כברירת מחדל — מסלול
 // ה-SVG לא צריך אותו; מסלול Trace ב-Studio כן).
-let state = { radius:3, lenMm:33.6, widMm:12, shape:'banner', orient:'auto', printOutline:false };
+const ASPECT_RATIO = 2.8;
+let state = { radius:3, lenMm:42, widMm:15, shape:'banner', orient:'auto', printOutline:false };
 
 // מרווח בטחון קבוע — סטיית החיתוך של הפלוטר היא ±0.5 מ"מ, אז 1 מ"מ הוא המינימום הבטוח
 // שמונע מהסכין לנגוס במדבקה השכנה. לא ניתן לשינוי מהממשק.
@@ -724,10 +730,10 @@ function drawSingle(){
 
   // ידית שינוי מידה של המדבקה עצמה (לא של שכבה) — פינה ימנית-תחתונה של הקופסה.
   // כתומה כשמגיעים לגבול המינימום/מקסימום, כדי שהמשתמש יבין שהיא "נדבקה" בכוונה.
-  const atLimit = state.widMm<=SIZE.min+0.001 || (state.shape!=='circle' && state.lenMm<=SIZE.min+0.001)
-    || natW>=SIZE.usableH-0.001 || natH>=SIZE.usableW-0.001;
+  const widMax = state.shape === 'circle' ? SIZE.usableW : Math.min(SIZE.usableW, SIZE.usableH / ASPECT_RATIO);
+  const atLimit = state.widMm <= SIZE.min+0.001 || state.widMm >= widMax-0.001;
   singleCtx.fillStyle = atLimit ? '#ea580c' : '#0f172a';
-  singleCtx.beginPath(); singleCtx.arc(boxX+boxW, boxY+boxH, 8, 0, Math.PI*2); singleCtx.fill();
+  singleCtx.beginPath(); singleCtx.arc(boxX+boxW/2, boxY+boxH, 8, 0, Math.PI*2); singleCtx.fill(); // תחתית-מרכז — ציר אנכי בלבד
   singleCtx.strokeStyle='#fff'; singleCtx.lineWidth=2; singleCtx.stroke();
   singleCtx.strokeStyle = atLimit ? '#ea580c' : '#0f172a'; singleCtx.lineWidth=1.5; singleCtx.setLineDash([3,2]);
   singleCtx.strokeRect(boxX, boxY, boxW, boxH);
@@ -899,13 +905,14 @@ singleCanvas.addEventListener('pointerdown', e=>{
   const x = (e.clientX-rect.left)/rect.width * W;
   const y = (e.clientY-rect.top)/rect.height * H;
 
-  // ידית שינוי מידה של המדבקה — פינה ימנית-תחתונה של הקופסה, קודמת לכל
-  // ידית שכבה כי היא שולטת בגבול הפיזי של כל הקופסה.
-  if(Math.hypot(x - (boxX+boxW), y - (boxY+boxH)) < 14){
+  // ידית שינוי מידה של המדבקה — תחתית-מרכז הקופסה, קודמת לכל ידית שכבה כי
+  // היא שולטת בגבול הפיזי של כל הקופסה. ציר אנכי בלבד — הגובה הוא השליטה
+  // היחידה, האורך נגזר ממנו דרך applyHeight().
+  if(Math.hypot(x - (boxX+boxW/2), y - (boxY+boxH)) < 14){
     interactionMode = 'resizeSticker';
     singleCanvas.setPointerCapture(e.pointerId);
     dragStart = {x, y};
-    resizeStart = { scale: boxW/natW, lenMm: state.lenMm, widMm: state.widMm };
+    resizeStart = { scale: boxH/natH, widMm: state.widMm }; // scale לפי boxH/natH — לא boxW/natW
     return;
   }
 
@@ -975,19 +982,9 @@ singleCanvas.addEventListener('pointermove', e=>{
   const y = (e.clientY-rect.top)/rect.height * H;
 
   if(interactionMode === 'resizeSticker'){
-    // scale (px/מ"מ) נקבע פעם אחת בתחילת הגרירה — אין צורך לחשב boxW/boxH מחדש בכל תזוזה
-    const scale = resizeStart.scale;
-    const dLen = (x - dragStart.x) / scale;
-    const dWid = (y - dragStart.y) / scale;
-    if(state.shape === 'circle'){
-      state.widMm = clamp(resizeStart.widMm + dLen, SIZE.min, SIZE.usableW);
-    } else {
-      state.lenMm = clamp(resizeStart.lenMm + dLen, SIZE.min, SIZE.usableH);
-      state.widMm = clamp(resizeStart.widMm + dWid, SIZE.min, SIZE.usableW);
-    }
-    syncSizeInputs();
-    drawSingle();
-    schedSheet();
+    // ציר אנכי בלבד — הגובה הוא השליטה היחידה, applyHeight() גוזרת את האורך
+    const dWid = (y - dragStart.y) / resizeStart.scale;
+    applyHeight(resizeStart.widMm + dWid);
     return;
   }
 
@@ -1025,6 +1022,22 @@ singleCanvas.addEventListener('pointermove', e=>{
 
 singleCanvas.addEventListener('pointerup', ()=>{ interactionMode = null; schedSheet(); });
 
+// widMm ("גובה") הוא לתקרה כפולה שצריך למזג: התקרה שלו עצמו (SIZE.usableW)
+// וגם התקרה הנגזרת מכך ש-lenMm=widMm×ASPECT_RATIO לא יכול לחרוג מ-
+// SIZE.usableH. עם usableH≈253 ו-ASPECT_RATIO=2.8, usableH/2.8≈90.4 — קטן
+// מ-SIZE.usableW≈172, כלומר לגדלים גדולים אילוץ האורך הוא הקובע, לא הרוחב.
+// זו נקודת הכניסה היחידה שמשנה גובה/אורך — כל מקום אחר קורא לה.
+function applyHeight(newWidMm){
+  const widMax = state.shape === 'circle'
+    ? SIZE.usableW
+    : Math.min(SIZE.usableW, SIZE.usableH / ASPECT_RATIO);
+  state.widMm = clamp(newWidMm, SIZE.min, widMax);
+  state.lenMm = (state.shape === 'circle') ? state.widMm : state.widMm * ASPECT_RATIO;
+  syncSizeInputs();
+  drawSingle();
+  schedSheet();
+}
+
 // האזנות פקדים
 // מציגה את lenMm/widMm הנוכחיים בשדות, מסתירה את שדה האורך לעיגול (קוטר יחיד),
 // ומסמנת בכתום שדה שנמצא בדיוק על גבול המינימום/מקסימום שלו.
@@ -1034,19 +1047,19 @@ function syncSizeInputs(){
   lenInput.value = state.lenMm.toFixed(1);
   widInput.value = state.widMm.toFixed(1);
   document.getElementById('len-field').style.display = isCircle ? 'none' : '';
-  document.getElementById('wid-mm-label').textContent = isCircle ? 'קוטר (מ"מ)' : 'רוחב (מ"מ)';
-  const lenAtLimit = !isCircle && (state.lenMm <= SIZE.min+0.001 || state.lenMm >= SIZE.usableH-0.001);
-  const widAtLimit = state.widMm <= SIZE.min+0.001 || state.widMm >= SIZE.usableW-0.001;
-  lenInput.classList.toggle('at-limit', lenAtLimit);
+  document.getElementById('wid-mm-label').textContent = isCircle ? 'קוטר (מ"מ)' : 'גובה (מ"מ)';
+
+  const widMax = isCircle ? SIZE.usableW : Math.min(SIZE.usableW, SIZE.usableH / ASPECT_RATIO);
+  const widAtLimit = state.widMm <= SIZE.min+0.001 || state.widMm >= widMax-0.001;
   widInput.classList.toggle('at-limit', widAtLimit);
+  // lenInput כבר לא בר-עריכה — אין לו מצב at-limit עצמאי, הוא תמיד תוצאה של widMm
+  lenInput.classList.remove('at-limit');
 }
 
 document.getElementById('sticker-shape').addEventListener('change', e=>{
   state.shape = e.target.value;
   document.getElementById('radius-box').style.display = (state.shape === 'rounded') ? 'block' : 'none';
-  syncSizeInputs();
-  drawSingle();
-  schedSheet();
+  applyHeight(state.widMm); // גם הקלאמפ וגם lenMm תלויים בצורה — נגזרים מחדש דרך applyHeight
 });
 
 document.getElementById('radius').addEventListener('input', e=>{
@@ -1056,18 +1069,9 @@ document.getElementById('radius').addEventListener('input', e=>{
   schedSheet();
 });
 
-document.getElementById('len-mm').addEventListener('input', e=>{
-  state.lenMm = clamp(parseFloat(e.target.value) || SIZE.min, SIZE.min, SIZE.usableH);
-  syncSizeInputs();
-  drawSingle();
-  schedSheet();
-});
-
+// אין מאזין ל-len-mm — השדה disabled, הוא תמיד תוצאה נגזרת של applyHeight().
 document.getElementById('wid-mm').addEventListener('input', e=>{
-  state.widMm = clamp(parseFloat(e.target.value) || SIZE.min, SIZE.min, SIZE.usableW);
-  syncSizeInputs();
-  drawSingle();
-  schedSheet();
+  applyHeight(parseFloat(e.target.value) || SIZE.min);
 });
 
 document.getElementById('orient-select').addEventListener('change', e=>{
@@ -1075,21 +1079,9 @@ document.getElementById('orient-select').addEventListener('change', e=>{
   schedSheet();
 });
 
-document.getElementById('fit-50').addEventListener('click', ()=>{
-  state.lenMm = clamp(28, SIZE.min, SIZE.usableH);
-  state.widMm = clamp(10, SIZE.min, SIZE.usableW);
-  syncSizeInputs();
-  drawSingle();
-  schedSheet();
-});
-
-document.getElementById('fit-70').addEventListener('click', ()=>{
-  state.lenMm = clamp(33.6, SIZE.min, SIZE.usableH);
-  state.widMm = clamp(12, SIZE.min, SIZE.usableW);
-  syncSizeInputs();
-  drawSingle();
-  schedSheet();
-});
+document.getElementById('fit-pencil').addEventListener('click',   () => applyHeight(15));
+document.getElementById('fit-average').addEventListener('click',  () => applyHeight(20)); // הצעה שלי — הושעיה אישר את שלוש הקטגוריות, לא מספר מדויק לאמצעית
+document.getElementById('fit-notebook').addEventListener('click', () => applyHeight(30));
 
 document.getElementById('sel-text-input').addEventListener('input', e=>{ const l=getLayer(selectedId); if(l && l.type==='text'){ l.text=e.target.value; l.isPlaceholder=false; drawSingle(); schedSheet(); } });
 document.getElementById('sel-font').addEventListener('change', e=>{ const l=getLayer(selectedId); if(l && l.type==='text'){ l.font=e.target.value; drawSingle(); schedSheet(); } });
@@ -1479,11 +1471,7 @@ document.getElementById('reg-count').addEventListener('change', e=>{
 // מחדש, ולוודא שהמידה הנוכחית עדיין בגבולות (הם עלולים להצטמצם או לגדול).
 function applyRegChange(){
   recomputeMargins();
-  state.lenMm = clamp(state.lenMm, SIZE.min, SIZE.usableH);
-  state.widMm = clamp(state.widMm, SIZE.min, SIZE.usableW);
-  syncSizeInputs();
-  drawSingle();
-  schedSheet();
+  applyHeight(state.widMm); // SIZE השתנה — גם ה-clamp וגם lenMm הנגזר צריכים חישוב מחדש
 }
 
 // ── אזור ההזמנה ──
