@@ -66,10 +66,20 @@
 
 <header>
   <div style="font-weight:900;font-size:16px;">✏️ Silhouette - מעצב מדבקות לעפרונות</div>
-  <div class="row admin-only" style="width:auto">
+  <!-- זרימת המדבקה הרגילה — כלי מנהל בלבד, מוסתר גם במצב עריכה חופשית (free-mode-hide) -->
+  <div class="row admin-only free-mode-hide" style="width:auto">
+    <a class="btn" id="free-mode-link" href="?admin=1&mode=free" style="text-decoration:none">🖼️ עריכה חופשית להדפסה</a>
     <button class="btn btn-primary" id="export-svg">📥 הורד קובץ חיתוך (SVG)</button>
     <button class="btn btn-primary" id="export-print-pdf" style="background:#7c3aed;border-color:#7c3aed">🖨️ קובץ הדפסה (PDF)</button>
     <button class="btn" id="export-png">🖼️ תמונה (PNG)</button>
+  </div>
+  <!-- עריכה חופשית להדפסה — כלי מנהל נוסף, לא זרימת לקוח. ראה isFreeMode(). -->
+  <div class="row free-mode-only" style="width:auto">
+    <a class="btn" href="?admin=1" style="text-decoration:none">↩️ חזרה לעורך המדבקות</a>
+    <button class="btn btn-primary" id="free-export-pdf">⬇️ הורד PDF</button>
+    <div id="free-export-svg-row" style="display:none">
+      <button class="btn btn-primary" id="free-export-svg">📥 הורד קובץ חיתוך (SVG)</button>
+    </div>
   </div>
 </header>
 
@@ -78,27 +88,29 @@
   <div class="left" style="display:flex;flex-direction:column;gap:12px">
 
     <div class="panel highlight">
-      <h2>1️⃣ עיצוב מבנה ופרופורציה (תצוגה מקדימה)</h2>
+      <h2 id="shape-panel-title">1️⃣ עיצוב מבנה ופרופורציה (תצוגה מקדימה)</h2>
 
-      <div style="margin-bottom:6px">
-        <label style="font-size:12px;font-weight:700;display:block;margin-bottom:4px">🎨 צורת חיתוך מעניינת:</label>
-        <select id="sticker-shape">
-          <option value="banner">🎗️ סרט / באנר מעוצב (מושלם לעיפרון)</option>
-          <option value="circle">⚪ עיגול מושלם</option>
-          <option value="oval">🥚 אליפסה</option>
-          <option value="rectangle">🔲 מלבן / מרובע קלאסי</option>
-          <option value="rounded">🔲 מלבן מעוגל</option>
-          <option value="wave">🌊 מסגרת גלית מיוחדת</option>
-          <option value="heart">❤️ לב</option>
-          <option value="star">⭐ כוכב</option>
-          <option value="hexTag">🏷️ תווית משושה</option>
-          <option value="cloud">☁️ ענן</option>
-        </select>
-      </div>
+      <div class="free-mode-hide">
+        <div style="margin-bottom:6px">
+          <label style="font-size:12px;font-weight:700;display:block;margin-bottom:4px">🎨 צורת חיתוך מעניינת:</label>
+          <select id="sticker-shape">
+            <option value="banner">🎗️ סרט / באנר מעוצב (מושלם לעיפרון)</option>
+            <option value="circle">⚪ עיגול מושלם</option>
+            <option value="oval">🥚 אליפסה</option>
+            <option value="rectangle">🔲 מלבן / מרובע קלאסי</option>
+            <option value="rounded">🔲 מלבן מעוגל</option>
+            <option value="wave">🌊 מסגרת גלית מיוחדת</option>
+            <option value="heart">❤️ לב</option>
+            <option value="star">⭐ כוכב</option>
+            <option value="hexTag">🏷️ תווית משושה</option>
+            <option value="cloud">☁️ ענן</option>
+          </select>
+        </div>
 
-      <div class="slider-box" id="radius-box">
-        <label><span>עיגול פינות</span><span id="radius-val">3 מ"מ</span></label>
-        <input type="range" id="radius" min="0" max="10" value="3" step="0.5">
+        <div class="slider-box" id="radius-box">
+          <label><span>עיגול פינות</span><span id="radius-val">3 מ"מ</span></label>
+          <input type="range" id="radius" min="0" max="10" value="3" step="0.5">
+        </div>
       </div>
 
       <div class="row">
@@ -107,7 +119,25 @@
       </div>
       <button class="btn" id="add-image-btn" style="width:100%">📁 העלה תמונה</button>
       <input type="file" id="file-input" accept="image/*" style="display:none">
-      <div class="hint" style="margin-top:4px">💡 גרור טקסט/אימוג'י בתוך המדבקה. השתמש בידית העליונה לסיבוב, בפינה הימנית לשינוי גודל, ובידית ה-X האדומה למחיקה!</div>
+      <div class="hint free-mode-hide" style="margin-top:4px">💡 גרור טקסט/אימוג'י בתוך המדבקה. השתמש בידית העליונה לסיבוב, בפינה הימנית לשינוי גודל, ובידית ה-X האדומה למחיקה!</div>
+      <div class="hint free-mode-only" style="margin-top:4px">💡 גרור תמונה/טקסט על הדף. השתמש בידית העליונה לסיבוב, בפינה הימנית לשינוי גודל, ובידית ה-X האדומה למחיקה!</div>
+    </div>
+
+    <!-- מצב חיתוך של עריכה חופשית — כלי מנהל בלבד, מוצג רק כש-isFreeMode() -->
+    <div class="panel free-mode-only" id="free-cut-panel">
+      <h2>מצב חיתוך</h2>
+      <div>
+        <label style="font-size:11px">מצב חיתוך</label>
+        <select id="free-cut-mode">
+          <option value="none">ללא (Trace בסילואט)</option>
+          <option value="margin">מלבן עם מרווח</option>
+        </select>
+        <div id="free-margin-row" style="display:none;margin-top:4px">
+          <label style="font-size:11px">מרווח (מ"מ)</label>
+          <input type="number" id="free-margin-mm" min="2" max="30" step="1" value="10">
+        </div>
+      </div>
+      <div class="hint">"חיתוך אות אות" (צמוד לצורה) לא דורש בורר — הורד PDF במצב "ללא" והשתמש ב-Trace המובנה של Silhouette Studio, בדיוק כמו בדאבל. "מלבן עם מרווח" מוסיף מלבן חיתוך קבוע סביב כל תמונה/טקסט, כולל סימני רישום להתאמה בסטודיו.</div>
     </div>
 
     <div class="panel" id="selected-controls" style="display:none; border:2px solid #4f46e5;">
@@ -140,7 +170,7 @@
     </div>
 
     <!-- פאנל גודל פיזי וחישוב הגיליון — הגיליון מתעדכן אוטומטית, בלי כפתור -->
-    <div class="panel">
+    <div class="panel free-mode-hide">
       <h2>2️⃣ גודל פיזי סופי וחישוב דף</h2>
       <div class="row">
         <div id="len-field">
@@ -178,7 +208,7 @@
     </div>
 
     <!-- פאנל הדפסה וחיתוך — כלי מנהל בלבד, ראה isAdminView() -->
-    <div class="panel admin-only" id="panel-print-cut">
+    <div class="panel admin-only free-mode-hide" id="panel-print-cut">
       <h2>3️⃣ הדפסה וחיתוך</h2>
 
       <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;cursor:pointer">
@@ -230,21 +260,21 @@
   <!-- מרכז: תצוגה מקדימה -->
   <div class="center">
     <div class="panel">
-      <h2>תצוגת מדבקה יחידה (עיצוב ופרופורציות)</h2>
+      <h2 id="single-canvas-title">תצוגת מדבקה יחידה (עיצוב ופרופורציות)</h2>
       <canvas id="single-canvas" width="600" height="240"></canvas>
     </div>
     <div class="panel">
       <h2>שכבות</h2>
       <div id="layers-list" class="layers-list"></div>
     </div>
-    <div class="preview-wrap">
+    <div class="preview-wrap free-mode-hide">
       <h2 style="text-align:center;margin-bottom:8px">תצוגה מקדימה לגיליון A4 הסופי</h2>
       <canvas id="a4-canvas" width="1240" height="1754"></canvas>
       <div id="stats" style="text-align:center;font-size:12px;font-weight:700;margin-top:8px;color:#0f172a"></div>
     </div>
 
-    <!-- הזמנה — מוצג לכולם, לא רק ב-?admin=1 -->
-    <div class="panel" id="order-panel">
+    <!-- הזמנה — מוצג לכולם, לא רק ב-?admin=1. מוסתר במצב עריכה חופשית -->
+    <div class="panel free-mode-hide" id="order-panel">
       <div style="font-weight:900;font-size:16px;text-align:center">🎉 המדבקות מוכנות!</div>
       <div id="order-summary" style="text-align:center;font-size:13px;font-weight:700;color:#475569"></div>
 
@@ -338,6 +368,12 @@ const pxPerMm = cv => cv.width / 210;
 // ממשק בלבד, לא הרשאה. שום דבר כאן לא נגזר לגישה לנתונים.
 const isAdminView = () => new URLSearchParams(location.search).get('admin') === '1';
 
+// עריכה חופשית להדפסה — כלי מנהל נוסף, לא זרימת לקוח. שני התנאים ביחד:
+// גם ?admin=1 וגם ?mode=free, לא מספיק אחד. שום דבר בזרימת הלקוח הרגילה
+// (טופס הזמנה, קובץ החיתוך, סימני הרישום, ה-Edge Function) לא בודק את זה
+// ולא מושפע ממנו.
+const isFreeMode = () => isAdminView() && new URLSearchParams(location.search).get('mode') === 'free';
+
 // קבועי מערכת ההזמנות — הדפדפן של הלקוח שולח ישירות ל-Edge Function, בלי
 // SDK ובלי מפתח (כמו morning-webhook).
 const ORDER_FN  = 'https://sccivxenkyzxolpraexf.supabase.co/functions/v1/sticker-order';
@@ -413,6 +449,37 @@ function natDims(){
     return { w: state.widMm, h: state.widMm };
   }
   return { w: state.lenMm, h: state.widMm };
+}
+
+// "הקופסה" של singleCanvas במצב מדבקה רגיל — נקודת כניסה אחת, ששלושת
+// אתרי הקריאה (drawSingle/pointerdown/pointermove/dblclick) ישתמשו בה
+// במקום לשכפל את חמש השורות האלה בכל אחד מהם.
+function computeStickerBox(){
+  const W = singleCanvas.width, H = singleCanvas.height;
+  const {w:natW, h:natH} = natDims();
+  const aspect = natH / natW;
+  let boxW = W * 0.75, boxH = boxW * aspect;
+  if(boxH > H * 0.7){ boxH = H * 0.7; boxW = boxH / aspect; }
+  return { boxX: (W-boxW)/2, boxY: (H-boxH)/2, boxW, boxH };
+}
+
+// "הקופסה" במצב עריכה חופשית — כל דף ה-A4 (210×297), לא מסגרת מדבקה.
+// התובנה שהופכת את כל המשימה הזו לקלה: מנגנון האובייקטים הקיים (שכבות,
+// pointInLayer, layerHalfSize, גרירה/סיבוב/שינוי-גודל) כבר עובד במרחב
+// שברי (0–1) ביחס ל"קופסה" בלי שום ידיעה שהיא מדבקה — מצביעים אותו על
+// משטח אחר וזהו.
+function freeLayoutBox(){
+  const W = singleCanvas.width, H = singleCanvas.height;
+  const aspect = 297/210;
+  let boxW = W * 0.92, boxH = boxW * aspect;
+  if(boxH > H * 0.92){ boxH = H * 0.92; boxW = boxH / aspect; }
+  return { boxX: (W-boxW)/2, boxY: (H-boxH)/2, boxW, boxH };
+}
+
+// נקודת כניסה יחידה שכל אתרי הקריאה ל-singleCanvas משתמשים בה — כך ששני
+// המצבים (מדבקה/חופשי) לא מתפצלים לשני נתיבי קוד נפרדים בכל מקום.
+function currentEditorBox(){
+  return isFreeMode() ? freeLayoutBox() : computeStickerBox();
 }
 
 // מחשבת כמה מדבקות נכנסות בכיוון נתון. rot=false: המדבקה בכיוון הטבעי שלה
@@ -710,21 +777,11 @@ function layoutText(ctx, l, boxH, boxW, scaleFactor){
   return lastResult;
 }
 
-function renderStickerContent(ctx, boxX, boxY, boxW, boxH, scaleFactor = 1, showOutline = true){
-  ctx.save();
-  ctx.strokeStyle='#ff0000';
-  ctx.lineWidth = 1.2 * scaleFactor;
-  ctx.setLineDash([]);
-
-  traceStickerPath(ctx, boxX, boxY, boxW, boxH);
-  ctx.fillStyle='#fff'; ctx.fill();
-  // הדילוג הוא על קו החיתוך האדום בלבד — ה-fill הלבן וה-clip נשארים תמיד,
-  // אחרת המדבקה מאבדת רקע והשכבות גולשות החוצה. showOutline מאפשר לקובץ
-  // ההדפסה של הלקוח (buildPrintFile) לכפות "בלי קו" בלי תלות בצ'קבוקס
-  // המנהל — הלקוח לא רואה את הצ'קבוקס בכלל.
-  if(showOutline) ctx.stroke();
-  ctx.clip();
-
+// מציירת רק את השכבות עצמן — בלי מסגרת מדבקה, בלי חיתוך, בלי clip.
+// renderStickerContent (מדבקה, עם clip למסגרת) וגם מצב עריכה חופשית
+// (בלי clip, כל שכבה חופשית על פני כל הדף) קוראות לאותה פונקציה בדיוק,
+// כדי שהציור לא ישוכפל לשני מימושים שיסטו זה מזה.
+function drawLayers(ctx, boxX, boxY, boxW, boxH, scaleFactor = 1){
   const sorted = [...layers].sort((a,b)=>a.z-b.z);
   sorted.forEach(l=>{
     const px = boxX + l.x*boxW;
@@ -764,6 +821,24 @@ function renderStickerContent(ctx, boxX, boxY, boxW, boxH, scaleFactor = 1, show
     }
     ctx.restore();
   });
+}
+
+function renderStickerContent(ctx, boxX, boxY, boxW, boxH, scaleFactor = 1, showOutline = true){
+  ctx.save();
+  ctx.strokeStyle='#ff0000';
+  ctx.lineWidth = 1.2 * scaleFactor;
+  ctx.setLineDash([]);
+
+  traceStickerPath(ctx, boxX, boxY, boxW, boxH);
+  ctx.fillStyle='#fff'; ctx.fill();
+  // הדילוג הוא על קו החיתוך האדום בלבד — ה-fill הלבן וה-clip נשארים תמיד,
+  // אחרת המדבקה מאבדת רקע והשכבות גולשות החוצה. showOutline מאפשר לקובץ
+  // ההדפסה של הלקוח (buildPrintFile) לכפות "בלי קו" בלי תלות בצ'קבוקס
+  // המנהל — הלקוח לא רואה את הצ'קבוקס בכלל.
+  if(showOutline) ctx.stroke();
+  ctx.clip();
+
+  drawLayers(ctx, boxX, boxY, boxW, boxH, scaleFactor);
   ctx.restore();
 }
 
@@ -809,37 +884,52 @@ function drawSingle(){
   for(let i=0;i<W;i+=20) singleCtx.fillRect(i,0,1,H);
   for(let i=0;i<H;i+=20) singleCtx.fillRect(0,i,W,1);
 
-  const {w:natW, h:natH} = natDims();
-  const aspect = natH / natW;
+  const { boxX, boxY, boxW, boxH } = currentEditorBox();
 
-  let boxW = W * 0.75, boxH = boxW * aspect;
-  if(boxH > H * 0.7){ boxH = H * 0.7; boxW = boxH / aspect; }
-  const boxX = (W - boxW)/2, boxY = (H - boxH)/2;
+  if(isFreeMode()){
+    // דף A4 חופשי — בלי מסגרת מדבקה, בלי חיתוך, בלי סימני רישום, אלא אם
+    // מצב חיתוך "מלבן עם מרווח" פעיל. "עמוד" לבן ברור מהרקע המנוקד, בדיוק
+    // כמו שהמדבקה עצמה לבנה על הרקע המנוקד במצב הרגיל.
+    singleCtx.fillStyle='#fff'; singleCtx.fillRect(boxX, boxY, boxW, boxH);
+    singleCtx.strokeStyle='#cbd5e1'; singleCtx.lineWidth=1; singleCtx.strokeRect(boxX, boxY, boxW, boxH);
+    drawLayers(singleCtx, boxX, boxY, boxW, boxH, 1.2);
+    if(freeCutMode() === 'margin'){
+      // אותו יחס פיקסל-למ"מ שמשמש את exportFreeLayoutPDF/buildFreeCutSvg —
+      // boxW מייצג תמיד 210מ"מ×0.92 (ראה freeLayoutBox), לא את כל 210מ"מ.
+      const scale = boxW / (210*0.92);
+      const marginPx = freeMarginMm() * scale;
+      layers.forEach(l => drawMarginRect(singleCtx, l, boxX, boxY, boxW, boxH, marginPx));
+      drawRegMarks(singleCtx, scale, W, H);
+    }
+    // אין ידיות מסגרת-מדבקה (גובה/אורך) במצב חופשי — אין "גודל מדבקה" כאן.
+    // ממשיכים לבלוק activeLayer המשותף למטה: הזזה/סיבוב/שינוי-גודל/רוחב-
+    // תיבה של שכבה נבחרת עובדים בדיוק אותו דבר בשני המצבים.
+  } else {
+    renderStickerContent(singleCtx, boxX, boxY, boxW, boxH, 1.2);
 
-  renderStickerContent(singleCtx, boxX, boxY, boxW, boxH, 1.2);
+    // ידית שינוי מידה של המדבקה עצמה (לא של שכבה) — פינה ימנית-תחתונה של הקופסה.
+    // כתומה כשמגיעים לגבול המינימום/מקסימום, כדי שהמשתמש יבין שהיא "נדבקה" בכוונה.
+    const widMax = state.shape === 'circle' ? SIZE.usableW : Math.min(SIZE.usableW, SIZE.usableH / currentRatio);
+    const atLimit = state.widMm <= SIZE.min+0.001 || state.widMm >= widMax-0.001;
+    singleCtx.fillStyle = atLimit ? '#ea580c' : '#0f172a';
+    singleCtx.beginPath(); singleCtx.arc(boxX+boxW/2, boxY+boxH, 8, 0, Math.PI*2); singleCtx.fill(); // תחתית-מרכז — ציר אנכי בלבד
+    singleCtx.strokeStyle='#fff'; singleCtx.lineWidth=2; singleCtx.stroke();
+    singleCtx.strokeStyle = atLimit ? '#ea580c' : '#0f172a'; singleCtx.lineWidth=1.5; singleCtx.setLineDash([3,2]);
+    singleCtx.strokeRect(boxX, boxY, boxW, boxH);
+    singleCtx.setLineDash([]);
 
-  // ידית שינוי מידה של המדבקה עצמה (לא של שכבה) — פינה ימנית-תחתונה של הקופסה.
-  // כתומה כשמגיעים לגבול המינימום/מקסימום, כדי שהמשתמש יבין שהיא "נדבקה" בכוונה.
-  const widMax = state.shape === 'circle' ? SIZE.usableW : Math.min(SIZE.usableW, SIZE.usableH / currentRatio);
-  const atLimit = state.widMm <= SIZE.min+0.001 || state.widMm >= widMax-0.001;
-  singleCtx.fillStyle = atLimit ? '#ea580c' : '#0f172a';
-  singleCtx.beginPath(); singleCtx.arc(boxX+boxW/2, boxY+boxH, 8, 0, Math.PI*2); singleCtx.fill(); // תחתית-מרכז — ציר אנכי בלבד
-  singleCtx.strokeStyle='#fff'; singleCtx.lineWidth=2; singleCtx.stroke();
-  singleCtx.strokeStyle = atLimit ? '#ea580c' : '#0f172a'; singleCtx.lineWidth=1.5; singleCtx.setLineDash([3,2]);
-  singleCtx.strokeRect(boxX, boxY, boxW, boxH);
-  singleCtx.setLineDash([]);
-
-  // ידיות שינוי אורך חופשיות — ליד ידיות הקבע (החצים/הגובה), לא מחליפות
-  // אותן. ציר אופקי בלבד, ללא תלות ביחס: lenMm נבדק מול התקרה הפיזית שלו
-  // בלבד (SIZE.usableH), לא מול widMm × currentRatio.
-  if(state.shape !== 'circle'){
-    const lenMax = SIZE.usableH; // אין תלות ביחס — האורך נבדק מול התקרה שלו עצמו בלבד
-    const lenAtLimit = state.lenMm <= SIZE.min+0.001 || state.lenMm >= lenMax-0.001;
-    singleCtx.fillStyle = lenAtLimit ? '#ea580c' : '#0f172a';
-    [boxX, boxX+boxW].forEach(hx => {
-      singleCtx.beginPath(); singleCtx.arc(hx, boxY+boxH/2, 8, 0, Math.PI*2); singleCtx.fill();
-      singleCtx.strokeStyle='#fff'; singleCtx.lineWidth=2; singleCtx.stroke();
-    });
+    // ידיות שינוי אורך חופשיות — ליד ידיות הקבע (החצים/הגובה), לא מחליפות
+    // אותן. ציר אופקי בלבד, ללא תלות ביחס: lenMm נבדק מול התקרה הפיזית שלו
+    // בלבד (SIZE.usableH), לא מול widMm × currentRatio.
+    if(state.shape !== 'circle'){
+      const lenMax = SIZE.usableH; // אין תלות ביחס — האורך נבדק מול התקרה שלו עצמו בלבד
+      const lenAtLimit = state.lenMm <= SIZE.min+0.001 || state.lenMm >= lenMax-0.001;
+      singleCtx.fillStyle = lenAtLimit ? '#ea580c' : '#0f172a';
+      [boxX, boxX+boxW].forEach(hx => {
+        singleCtx.beginPath(); singleCtx.arc(hx, boxY+boxH/2, 8, 0, Math.PI*2); singleCtx.fill();
+        singleCtx.strokeStyle='#fff'; singleCtx.lineWidth=2; singleCtx.stroke();
+      });
+    }
   }
 
   const activeLayer = getLayer(selectedId);
@@ -932,6 +1022,32 @@ function drawRegMarks(ctx, scale, W, H){
   ctx.restore();
 }
 
+// מצב חיתוך של עריכה חופשית: 'none' (Trace בסילואט — אין מה לצייר כאן) או
+// 'margin' (מלבן עם מרווח סביב כל שכבה). קריאים רק כש-isFreeMode().
+function freeCutMode(){ return document.getElementById('free-cut-mode')?.value || 'none'; }
+function freeMarginMm(){ return parseFloat(document.getElementById('free-margin-mm')?.value) || 10; }
+
+// מלבן החיתוך של שכבה = המדידה האמיתית שלה (layerHalfSize, שכבר כוללת
+// טקסט עטוף/תמונות) בתוספת מרווח קבוע. זו הסיבה שכל העבודה הקודמת
+// (PR #98, #105) משתלמת כאן — אין מדידה חדשה, רק מרווח על גבי מדידה נכונה.
+function marginRectFor(l, ctx, boxH, boxW, marginPx){
+  const { halfW, halfH } = layerHalfSize(l, ctx, boxH, boxW);
+  return { halfW: halfW + marginPx, halfH: halfH + marginPx };
+}
+
+// מצייר מלבן חיתוך יחיד סביב שכבה, מסובב יחד איתה — בדיוק כמו שהידיות
+// (מסגרת החיתוך, רוחב-תיבה) כבר מסתובבות יחד עם השכבה שלהן.
+function drawMarginRect(ctx, l, boxX, boxY, boxW, boxH, marginPx){
+  const px = boxX + l.x*boxW, py = boxY + l.y*boxH;
+  const rad = (l.rot||0) * Math.PI/180;
+  const { halfW, halfH } = marginRectFor(l, ctx, boxH, boxW, marginPx);
+  ctx.save();
+  ctx.translate(px, py); ctx.rotate(rad);
+  ctx.strokeStyle = '#ff0000'; ctx.lineWidth = 1;
+  ctx.strokeRect(-halfW, -halfH, halfW*2, halfH*2);
+  ctx.restore();
+}
+
 // ציור טהור — בלי שום גישה ל-a4Canvas ובלי עדכוני DOM. ctx/scale/W/H
 // מגיעים מבחוץ כדי שאותה לוגיקה תשרת גם את התצוגה המקדימה וגם את קובץ
 // ההדפסה ב-300 DPI (קנבס אחר לגמרי).
@@ -1012,45 +1128,45 @@ let resizeStart = null; // מצב התחלתי של גרירת ידית שינו
 
 singleCanvas.addEventListener('pointerdown', e=>{
   const rect = singleCanvas.getBoundingClientRect();
-  const W = singleCanvas.width, H = singleCanvas.height;
-  const {w:natW, h:natH} = natDims();
-  const aspect = natH / natW;
+  const { boxX, boxY, boxW, boxH } = currentEditorBox();
 
-  let boxW = W * 0.75, boxH = boxW * aspect;
-  if(boxH > H * 0.7){ boxH = H * 0.7; boxW = boxH / aspect; }
-  const boxX = (W - boxW)/2, boxY = (H - boxH)/2;
+  const x = (e.clientX-rect.left)/rect.width * singleCanvas.width;
+  const y = (e.clientY-rect.top)/rect.height * singleCanvas.height;
 
-  const x = (e.clientX-rect.left)/rect.width * W;
-  const y = (e.clientY-rect.top)/rect.height * H;
+  // ידיות מסגרת-מדבקה (גובה/אורך) — לא קיימות במצב חופשי, אין שם "גודל
+  // מדבקה" בכלל. isFreeMode() בודקת פעם אחת, לא בכל hit-test בנפרד.
+  if(!isFreeMode()){
+    const {w:natW, h:natH} = natDims();
 
-  // ידית שינוי מידה של המדבקה — תחתית-מרכז הקופסה, קודמת לכל ידית שכבה כי
-  // היא שולטת בגבול הפיזי של כל הקופסה. ציר אנכי בלבד — הגובה הוא השליטה
-  // היחידה, האורך נגזר ממנו דרך applyHeight().
-  if(Math.hypot(x - (boxX+boxW/2), y - (boxY+boxH)) < 14){
-    interactionMode = 'resizeSticker';
-    singleCanvas.setPointerCapture(e.pointerId);
-    dragStart = {x, y};
-    resizeStart = { scale: boxH/natH, widMm: state.widMm }; // scale לפי boxH/natH — לא boxW/natW
-    return;
-  }
-
-  // ידיות אורך חופשיות — אותה עדיפות כמו ידית הגובה, לפני בדיקת שכבות.
-  // גרירה אופקית בלבד, משנה lenMm ישירות (לא דרך applyHeight()) — זו הפעולה
-  // ש"משחררת" את היחס מ-ASPECT_RATIO הקבוע ליחס חופשי, עד לחיצה על פריסט.
-  if(state.shape !== 'circle'){
-    if(Math.hypot(x - boxX, y - (boxY+boxH/2)) < 14){
-      interactionMode = 'resizeLen';
+    // ידית שינוי מידה של המדבקה — תחתית-מרכז הקופסה, קודמת לכל ידית שכבה כי
+    // היא שולטת בגבול הפיזי של כל הקופסה. ציר אנכי בלבד — הגובה הוא השליטה
+    // היחידה, האורך נגזר ממנו דרך applyHeight().
+    if(Math.hypot(x - (boxX+boxW/2), y - (boxY+boxH)) < 14){
+      interactionMode = 'resizeSticker';
       singleCanvas.setPointerCapture(e.pointerId);
       dragStart = {x, y};
-      resizeStart = { scale: boxW/natW, lenMm: state.lenMm, side: 'left' };
+      resizeStart = { scale: boxH/natH, widMm: state.widMm }; // scale לפי boxH/natH — לא boxW/natW
       return;
     }
-    if(Math.hypot(x - (boxX+boxW), y - (boxY+boxH/2)) < 14){
-      interactionMode = 'resizeLen';
-      singleCanvas.setPointerCapture(e.pointerId);
-      dragStart = {x, y};
-      resizeStart = { scale: boxW/natW, lenMm: state.lenMm, side: 'right' };
-      return;
+
+    // ידיות אורך חופשיות — אותה עדיפות כמו ידית הגובה, לפני בדיקת שכבות.
+    // גרירה אופקית בלבד, משנה lenMm ישירות (לא דרך applyHeight()) — זו הפעולה
+    // ש"משחררת" את היחס מ-ASPECT_RATIO הקבוע ליחס חופשי, עד לחיצה על פריסט.
+    if(state.shape !== 'circle'){
+      if(Math.hypot(x - boxX, y - (boxY+boxH/2)) < 14){
+        interactionMode = 'resizeLen';
+        singleCanvas.setPointerCapture(e.pointerId);
+        dragStart = {x, y};
+        resizeStart = { scale: boxW/natW, lenMm: state.lenMm, side: 'left' };
+        return;
+      }
+      if(Math.hypot(x - (boxX+boxW), y - (boxY+boxH/2)) < 14){
+        interactionMode = 'resizeLen';
+        singleCanvas.setPointerCapture(e.pointerId);
+        dragStart = {x, y};
+        resizeStart = { scale: boxW/natW, lenMm: state.lenMm, side: 'right' };
+        return;
+      }
     }
   }
 
@@ -1163,12 +1279,7 @@ singleCanvas.addEventListener('pointermove', e=>{
 
   const l = getLayer(selectedId); if(!l) return;
   l.isPlaceholder = false; // גרירה/סיבוב/שינוי-גודל אמיתיים — לא רק בחירה — מבטלים placeholder
-  const {w:natW, h:natH} = natDims();
-  const aspect = natH / natW;
-
-  let boxW = W * 0.75, boxH = boxW * aspect;
-  if(boxH > H * 0.7){ boxH = H * 0.7; boxW = boxH / aspect; }
-  const boxX = (W - boxW)/2, boxY = (H - boxH)/2;
+  const { boxX, boxY, boxW, boxH } = currentEditorBox();
 
   if(interactionMode === 'move'){
     const dx = x - dragStart.x;
@@ -1207,16 +1318,11 @@ singleCanvas.addEventListener('pointerup', ()=>{ interactionMode = null; schedSh
 // הקנבס עצמו (יקר לבנות, #sel-text-input כבר עובד). boxX/boxY/boxW/boxH
 // לא זמינים בהיקף הזה כמו בpointerdown — מחושבים כאן מחדש, אותה נוסחה.
 singleCanvas.addEventListener('dblclick', e => {
-  const W = singleCanvas.width, H = singleCanvas.height;
   const rect = singleCanvas.getBoundingClientRect();
-  const {w:natW, h:natH} = natDims();
-  const aspect = natH / natW;
-  let boxW = W * 0.75, boxH = boxW * aspect;
-  if(boxH > H * 0.7){ boxH = H * 0.7; boxW = boxH / aspect; }
-  const boxX = (W - boxW)/2, boxY = (H - boxH)/2;
+  const { boxX, boxY, boxW, boxH } = currentEditorBox();
 
-  const x = (e.clientX-rect.left)/rect.width * W;
-  const y = (e.clientY-rect.top)/rect.height * H;
+  const x = (e.clientX-rect.left)/rect.width * singleCanvas.width;
+  const y = (e.clientY-rect.top)/rect.height * singleCanvas.height;
   const sorted = [...layers].sort((a,b)=>b.z-a.z);
   for(const l of sorted){
     if(l.type === 'text' && pointInLayer(l, x, y, boxX, boxY, boxW, boxH, singleCtx)){
@@ -1663,6 +1769,80 @@ document.getElementById('export-png').addEventListener('click', ()=>{
   const a=document.createElement('a'); a.href=a4Canvas.toDataURL('image/png'); a.download='pencil-stickers-preview.png'; a.click();
 });
 
+// ייצוא PDF במצב עריכה חופשית — דף בודד, בלי אריח ובלי חזרה (בניגוד ל-
+// buildPrintFile של זרימת הלקוח, שמרכיבה גיליון של עשרות מדבקות חוזרות).
+// אם מצב החיתוך הוא "מלבן עם מרווח" — מציירת גם את המלבנים (אדום) וגם
+// סימני רישום, אותו drawRegMarks/REG בדיוק כמו זרימת המדבקות/הדאבל.
+async function exportFreeLayoutPDF(){
+  await ensureFonts();
+  const cv = document.createElement('canvas');
+  cv.width = 2480; cv.height = 3508; // A4 ב-300 DPI, אותו קבוע כמו שאר הקוד
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#fff'; ctx.fillRect(0,0,cv.width,cv.height);
+
+  const boxW = cv.width * 0.92, boxH = boxW * (297/210);
+  const boxX = (cv.width-boxW)/2, boxY = (cv.height-boxH)/2;
+
+  drawLayers(ctx, boxX, boxY, boxW, boxH, 1.2); // אין clip — כל שכבה חופשית על כל הדף
+
+  if(freeCutMode() === 'margin'){
+    const scale = cv.width / 210; // px-per-מ"מ אמיתי, ביחס לכל הדף (לא ל-92%-box)
+    const marginPx = freeMarginMm() * scale;
+    layers.forEach(l => drawMarginRect(ctx, l, boxX, boxY, boxW, boxH, marginPx));
+    drawRegMarks(ctx, scale, cv.width, cv.height);
+  }
+
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({unit:'mm', format:'a4', orientation:'portrait'});
+  pdf.addImage(cv.toDataURL('image/png'), 'PNG', 0, 0, 210, 297);
+  pdf.save('free-layout.pdf');
+}
+
+// קובץ חיתוך SVG למצב עריכה חופשית ("מלבן עם מרווח") — אותו דפוס בדיוק
+// כמו buildCutSvg (viewBox במ"מ ישירות, <g transform> למיקום+סיבוב), בלי
+// להמציא נוסחת המרה חדשה — רק מותאם למלבנים במקום לצורת המדבקה. בלי קו
+// חיתוך אדום מודגם, כמו ב-buildCutSvg: הקובץ מכיל רק את קווי החיתוך עצמם.
+function buildFreeCutSvg(){
+  const Wmm = 210, Hmm = 297;
+  const boxWmm = Wmm * 0.92, boxHmm = boxWmm * (297/210);
+  const boxXmm = (Wmm - boxWmm)/2, boxYmm = (Hmm - boxHmm)/2;
+
+  // מדידת טקסט (layerHalfSize) חייבת לקרות בפיקסלים — canvas font API לא
+  // מבין מ"מ. נמדד מול הקנבס הבודד הקיים (freeLayoutBox, אותו יחס בדיוק
+  // כמו הפריסה החזותית), ואז מומר למ"מ ביחס mm-per-px אחיד.
+  const { boxW: boxWpx, boxH: boxHpx } = freeLayoutBox();
+  const mmPerPx = boxWmm / boxWpx;
+  const marginPx = freeMarginMm() / mmPerPx;
+
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${Wmm}mm" height="${Hmm}mm" viewBox="0 0 ${Wmm} ${Hmm}">\n`;
+  svg += `  <g stroke="#ff0000" stroke-width="0.1" fill="none">\n`;
+
+  const sorted = [...layers].sort((a,b)=>a.z-b.z);
+  sorted.forEach(l => {
+    const { halfW, halfH } = marginRectFor(l, singleCtx, boxHpx, boxWpx, marginPx);
+    const halfWmm = halfW * mmPerPx, halfHmm = halfH * mmPerPx;
+    const cxMm = boxXmm + l.x*boxWmm, cyMm = boxYmm + l.y*boxHmm;
+    svg += `    <g transform="translate(${cxMm},${cyMm}) rotate(${l.rot||0})"><rect x="${-halfWmm}" y="${-halfHmm}" width="${halfWmm*2}" height="${halfHmm*2}"/></g>\n`;
+  });
+
+  svg += `  </g>\n</svg>`;
+  return svg;
+}
+
+document.getElementById('free-export-pdf').addEventListener('click', () => exportFreeLayoutPDF());
+document.getElementById('free-export-svg').addEventListener('click', () => {
+  const svg = buildFreeCutSvg();
+  const blob = new Blob([svg], {type:'image/svg+xml'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'free-layout-cut.svg'; a.click();
+});
+document.getElementById('free-cut-mode').addEventListener('change', e=>{
+  const isMargin = e.target.value === 'margin';
+  document.getElementById('free-margin-row').style.display = isMargin ? '' : 'none';
+  document.getElementById('free-export-svg-row').style.display = isMargin ? '' : 'none';
+  drawSingle();
+});
+document.getElementById('free-margin-mm').addEventListener('input', () => drawSingle());
+
 // קנבס לא טוען פונטים מעצמו — בלי זה, ציור 300 DPI ראשון (לפני שהתצוגה כבר
 // "חיממה" את הפונט) יוצא בברירת המחדל בשקט, בלי שום שגיאה.
 async function ensureFonts(){
@@ -1993,6 +2173,20 @@ document.getElementById('submit-order-btn').addEventListener('click', submitOrde
 function applyAdminVisibility(){
   const show = isAdminView();
   document.querySelectorAll('.admin-only').forEach(el => { el.style.display = show ? '' : 'none'; });
+  // עריכה חופשית — אחרי admin-only בכוונה, כדי לדרוס אותו: אלמנט שהוא גם
+  // admin-only וגם free-mode-hide (למשל שורת ההורדות של זרימת המדבקה) צריך
+  // להישאר מוסתר גם כש-admin-only עצמו היה מציג אותו. ⚠️ באג אמיתי שנתפס
+  // ב-Playwright: free-mode-hide לא יכול לכתוב '' (גלוי) כשלא במצב חופשי —
+  // זה דורס בחזרה את ההסתרה שה-admin-only למעלה כבר קבע, וחושף בטעות את
+  // כלי הניהול לכל אורח (isAdminView()===false). free-mode-hide רק מוסיף
+  // הסתרה, לעולם לא מבטל אחת שכבר קיימת.
+  const free = isFreeMode();
+  document.querySelectorAll('.free-mode-only').forEach(el => { el.style.display = free ? '' : 'none'; });
+  if(free) document.querySelectorAll('.free-mode-hide').forEach(el => { el.style.display = 'none'; });
+  if(free){
+    document.getElementById('shape-panel-title').textContent = 'הוספת תוכן';
+    document.getElementById('single-canvas-title').textContent = 'עריכה חופשית לדף A4';
+  }
 }
 
 // התחלה ראשונית
