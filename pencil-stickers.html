@@ -60,6 +60,7 @@
   .font-tile{border:1px solid #e2e8f0;border-radius:8px;padding:10px 6px;cursor:pointer;text-align:center;background:#f8fafc;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:opacity .15s,background .1s}
   .font-tile:hover{background:#f1f5f9;border-color:#94a3b8}
   .font-tile.selected{border-color:#4f46e5;background:#eef2ff}
+  .design-tab.active{background:#4f46e5;color:#fff;border-color:#4f46e5}
 </style>
 </head>
 <body>
@@ -260,8 +261,16 @@
   <!-- מרכז: תצוגה מקדימה -->
   <div class="center">
     <div class="panel">
+      <div class="row" id="design-tabs-row" style="display:none">
+        <button class="btn design-tab" id="tab-design-1" data-slot="1">מדבקה 1</button>
+        <button class="btn design-tab" id="tab-design-2" data-slot="2">מדבקה 2</button>
+      </div>
       <h2 id="single-canvas-title">תצוגת מדבקה יחידה (עיצוב ופרופורציות)</h2>
       <canvas id="single-canvas" width="600" height="240"></canvas>
+    </div>
+    <div class="panel free-mode-hide" id="dual-design-panel">
+      <button class="btn" id="add-second-design-btn" style="width:100%">➕ הוסף סוג/גודל שני</button>
+      <div class="hint">לקוח שמזמין שני גדלים/צורות שונים על אותו דף — למשל מדבקה גדולה לתיק ומדבקה קטנה לקלמר. גוררים את קו ההפרדה בתצוגת הגיליון למטה כדי לקבוע כמה מהדף כל סוג מקבל.</div>
     </div>
     <div class="panel">
       <h2>שכבות</h2>
@@ -269,7 +278,8 @@
     </div>
     <div class="preview-wrap free-mode-hide">
       <h2 style="text-align:center;margin-bottom:8px">תצוגה מקדימה לגיליון A4 הסופי</h2>
-      <canvas id="a4-canvas" width="1240" height="1754"></canvas>
+      <canvas id="a4-canvas" width="1240" height="1754" style="touch-action:none"></canvas>
+      <div id="split-divider-label" style="display:none;text-align:center;font-size:12px;font-weight:700;margin-top:6px;color:#4f46e5"></div>
       <div id="stats" style="text-align:center;font-size:12px;font-weight:700;margin-top:8px;color:#0f172a"></div>
     </div>
 
@@ -443,12 +453,13 @@ const a4Canvas = document.getElementById('a4-canvas');
 const a4Ctx = a4Canvas.getContext('2d');
 
 // המידות הטבעיות (לא מסובבות) של המדבקה. עיגול: קוטר יחיד (widMm), אחרת
-// lenMm/widMm ישירות.
-function natDims(){
-  if(state.shape === 'circle'){
-    return { w: state.widMm, h: state.widMm };
+// lenMm/widMm ישירות. d=state כברירת מחדל — כל אתר קריאה קיים שלא מעביר
+// ארגומנט ממשיך לעבוד זהה לחלוטין (תמיכה בשני סוגי מדבקה על דף אחד).
+function natDims(d = state){
+  if(d.shape === 'circle'){
+    return { w: d.widMm, h: d.widMm };
   }
-  return { w: state.lenMm, h: state.widMm };
+  return { w: d.lenMm, h: d.widMm };
 }
 
 // "הקופסה" של singleCanvas במצב מדבקה רגיל — נקודת כניסה אחת, ששלושת
@@ -513,6 +524,110 @@ function layout(){
     left: MARGIN.left + (210 - MARGIN.left - MARGIN.right - gridW)/2,
     top:  MARGIN.top  + (297 - MARGIN.top  - MARGIN.bottom - gridH)/2
   };
+}
+
+// ⛔ עקרון המפתח של שני סוגי מדבקה על דף אחד: layers/state תמיד מייצגים
+// את הסוג שנערך כרגע — לא הופכים אותם למערך של עיצובים בכל מקום (סיכון
+// עצום לשבור גרירה/סיבוב/שינוי-גודל/פאנל שכבות/בורר פונטים קיימים).
+// מעבר בין סוגים הוא שמירה+טעינה, לא ארכיטקטורה חדשה. secondDesign===null
+// = מצב רגיל, סוג אחד — התנהגות זהה לחלוטין להיום.
+let secondDesign = null;   // snapshot של סוג 2, כש-activeSlot===1
+let design1Backup = null;  // snapshot של סוג 1, כש-activeSlot===2
+let activeSlot = 1;        // 1 או 2 — מה layers/state מייצגים כרגע
+let splitFraction = 0.5;   // 0.1–0.9, נשלט ע"י קו ההפרדה הגרור בתצוגת הגיליון
+
+// חריגה מהמפרט, מדווחת בכוונה: JSON.parse(JSON.stringify(layers)) לבד
+// מאבד שכבת תמונה מועלית — l.image הוא אלמנט Image (DOM), ו-JSON.stringify
+// הופך אותו ל-{} בשקט (לא זורק שגיאה). התוצאה: מעבר לטאב "מדבקה 2" ובחזרה
+// היה מציג תמונה שהועלתה כריקה/⭐ נופל, כי image.complete על {} הוא
+// undefined. l.image אף פעם לא משתנה במקום אחרי היצירה (רק נקרא: .complete,
+// drawImage) — אז זה בטוח לגמרי לשמור את הרפרנס המקורי בלי לשכפל אותו.
+function cloneLayersPreservingImages(src){
+  return src.map(l => {
+    const clone = JSON.parse(JSON.stringify(l));
+    if(l.image) clone.image = l.image;
+    return clone;
+  });
+}
+function snapshotActiveDesign(){
+  return {
+    layers: cloneLayersPreservingImages(layers),
+    shape: state.shape, radius: state.radius,
+    lenMm: state.lenMm, widMm: state.widMm,
+    orient: state.orient, printOutline: state.printOutline,
+  };
+}
+function loadDesignIntoActive(d){
+  layers = cloneLayersPreservingImages(d.layers);
+  state.shape=d.shape; state.radius=d.radius; state.lenMm=d.lenMm; state.widMm=d.widMm;
+  state.orient=d.orient; state.printOutline=d.printOutline;
+  selectedId = layers[0]?.id || null;
+}
+
+// גרירה/סיבוב/שינוי-גודל, פאנל השכבות, בורר הפונטים, ידיות רוחב-תיבה —
+// אף אחד מהם לא צריך לדעת ששני עיצובים קיימים בכלל. הם ממשיכים לעבוד על
+// layers/state בדיוק כמו היום; רק שינוי הטאב עצמו קורא לפונקציה הזו.
+function switchToSlot(n){
+  if(n === activeSlot) return;
+  const snap = snapshotActiveDesign();
+  if(activeSlot === 1) design1Backup = snap; else secondDesign = snap;
+  loadDesignIntoActive(n === 1 ? design1Backup : secondDesign);
+  activeSlot = n;
+  updateSelectedControls(); invalidateTile(); drawSingle(); schedSheet();
+}
+
+// כמו packing/layout, אבל לתת-אזור נתון (uW×uH, מוזז מ-left/top) ולעיצוב
+// מפורש d — לא בהכרח state הגלובלי. layout()/packing() נשארות ללא שינוי,
+// עדיין נכונות 100% למצב סוג-יחיד; אלה תוספת, לא תחליף.
+function packingIn(d, rot, uW, uH){
+  const {w:sw, h:sh} = natDims(d);
+  const w = rot ? sh : sw, h = rot ? sw : sh;
+  const cols = Math.max(0, Math.floor((uW + GAP_MM) / (w + GAP_MM)));
+  const rows = Math.max(0, Math.floor((uH + GAP_MM) / (h + GAP_MM)));
+  return { rot, w, h, cols, rows, total: cols*rows };
+}
+
+function layoutIn(d, uW, uH, top, left){
+  const opts = (d.orient === 'auto')
+    ? [packingIn(d,false,uW,uH), packingIn(d,true,uW,uH)]
+    : [packingIn(d, d.orient==='across', uW, uH)];
+  const best = opts.reduce((a,b) => b.total > a.total ? b : a);
+  const gridW = best.cols*best.w + Math.max(0,best.cols-1)*GAP_MM;
+  const gridH = best.rows*best.h + Math.max(0,best.rows-1)*GAP_MM;
+  return { ...best, g:GAP_MM,
+    left: left + (uW-gridW)/2,
+    top:  top  + (uH-gridH)/2 };
+}
+
+// מחשבת את שני האזורים (מעל/מתחת לקו ההפרדה) לפי splitFraction הנוכחי.
+// d1/d2 הם ה-snapshot של כל סוג — activeSlot קובע איזה מגיע מ-state/layers
+// החיים כרגע ואיזה מה-backup השמור.
+function dualLayout(){
+  const uW = 210 - MARGIN.left - MARGIN.right;
+  const uH = 297 - MARGIN.top - MARGIN.bottom;
+  const gapBetween = GAP_MM * 2; // מרווח קצת גדול יותר בין שני הסוגים, כדי שקווי החיתוך לא יתבלבלו
+  const h1 = Math.max(0, (uH - gapBetween) * splitFraction);
+  const h2 = Math.max(0, (uH - gapBetween) - h1);
+
+  const d1 = activeSlot===1 ? snapshotActiveDesign() : design1Backup;
+  const d2 = activeSlot===2 ? snapshotActiveDesign() : secondDesign;
+
+  return {
+    L1: layoutIn(d1, uW, h1, MARGIN.top, MARGIN.left),
+    L2: layoutIn(d2, uW, h2, MARGIN.top + h1 + gapBetween, MARGIN.left),
+    d1, d2,
+  };
+}
+
+// בודקת אם splitFraction נתון משאיר לפחות שורה אחת לכל סוג — נקראת מגרירת
+// קו ההפרדה לפני שמקבלים ערך חדש, בדיוק כמו שאר הקלאמפים בפרויקט הזה
+// (הידית "נדבקת" בגבול, לא נעלמת).
+function splitFractionValid(frac){
+  const saved = splitFraction;
+  splitFraction = frac;
+  const { L1, L2 } = dualLayout();
+  splitFraction = saved;
+  return L1.total >= 1 && L2.total >= 1;
 }
 
 function getLayer(id){ return layers.find(l=>l.id===id); }
@@ -595,9 +710,9 @@ document.getElementById('layers-list').addEventListener('click', e=>{
   }
 });
 
-function traceStickerPath(ctx, x, y, w, h){
+function traceStickerPath(ctx, x, y, w, h, design = state){
   ctx.beginPath();
-  const shape = state.shape;
+  const shape = design.shape;
 
   if(shape === 'banner'){
     const indent = Math.min(w * 0.08, 12);
@@ -621,7 +736,7 @@ function traceStickerPath(ctx, x, y, w, h){
   } else if(shape === 'rectangle'){
     ctx.rect(x, y, w, h);
   } else if(shape === 'wave'){
-    const r = Math.min(state.radius, h/2);
+    const r = Math.min(design.radius, h/2);
     ctx.moveTo(x + r, y);
     ctx.quadraticCurveTo(x + w/4, y - h*0.2, x + w/2, y);
     ctx.quadraticCurveTo(x + 3*w/4, y + h*0.2, x + w - r, y);
@@ -676,7 +791,7 @@ function traceStickerPath(ctx, x, y, w, h){
     ctx.lineTo(a0, yb);
     ctx.closePath();
   } else {
-    let rad = Math.min(state.radius, Math.min(w,h)/2);
+    let rad = Math.min(design.radius, Math.min(w,h)/2);
     if(rad <= 0){ ctx.rect(x,y,w,h); return; }
     ctx.moveTo(x+rad,y); ctx.lineTo(x+w-rad,y); ctx.quadraticCurveTo(x+w,y,x+w,y+rad);
     ctx.lineTo(x+w,y+h-rad); ctx.quadraticCurveTo(x+w,y+h,x+w-rad,y+h);
@@ -688,24 +803,24 @@ function traceStickerPath(ctx, x, y, w, h){
 // אותה צורה בדיוק כמו traceStickerPath, אבל כמחרוזת SVG במקום ציור על קנבס.
 // מקבלת x,y,frameW,frameH מקומיים (0,0..w,h) — הקריאה עוטפת ב-<g transform>
 // כדי למקם ולסובב, כך שהצורה עצמה אף פעם לא צריכה לדעת איפה היא על הדף.
-function shapeSvgMarkup(x, y, frameW, frameH){
-  if(state.shape === 'banner'){
+function shapeSvgMarkup(x, y, frameW, frameH, design = state){
+  if(design.shape === 'banner'){
     const ind = Math.min(frameW * 0.08, 3);
     return `<path d="M${x+ind},${y} h${frameW-ind*2} l${ind},${frameH/2} l-${ind},${frameH/2} h-${frameW-ind*2} l-${ind},-${frameH/2} l${ind},-${frameH/2} z"/>`;
-  } else if(state.shape === 'circle'){
+  } else if(design.shape === 'circle'){
     const cx = x + frameW/2, cy = y + frameH/2, rVal = frameW/2;
     return `<circle cx="${cx}" cy="${cy}" r="${rVal}"/>`;
-  } else if(state.shape === 'oval'){
+  } else if(design.shape === 'oval'){
     const cx = x + frameW/2, cy = y + frameH/2;
     return `<ellipse cx="${cx}" cy="${cy}" rx="${frameW/2}" ry="${frameH/2}"/>`;
-  } else if(state.shape === 'rectangle'){
+  } else if(design.shape === 'rectangle'){
     return `<rect x="${x}" y="${y}" width="${frameW}" height="${frameH}"/>`;
-  } else if(state.shape === 'wave'){
+  } else if(design.shape === 'wave'){
     return `<path d="M${x+2},${y} Q${x+frameW/4},${y-frameH*0.15} ${x+frameW/2},${y} Q${x+3*frameW/4},${y+frameH*0.15} ${x+frameW-2},${y} Q${x+frameW},${y} ${x+frameW},${y+2} V${y+frameH-2} Q${x+frameW},${y+frameH} ${x+frameW-2},${y+frameH} Q${x+3*frameW/4},${y+frameH+frameH*0.15} ${x+frameW/2},${y+frameH} Q${x+frameW/4},${y+frameH-frameH*0.15} ${x+2},${y+frameH} Q${x},${y+frameH} ${x},${y+frameH-2} V${y+2} Q${x},${y} ${x+2},${y} z"/>`;
-  } else if(state.shape === 'heart'){
+  } else if(design.shape === 'heart'){
     const cx = x + frameW/2, topY = y + frameH*0.28;
     return `<path d="M${cx},${y+frameH} C${x-frameW*0.1},${y+frameH*0.55} ${x+frameW*0.1},${y-frameH*0.05} ${cx},${topY} C${x+frameW*0.9},${y-frameH*0.05} ${x+frameW*1.1},${y+frameH*0.55} ${cx},${y+frameH} z"/>`;
-  } else if(state.shape === 'star'){
+  } else if(design.shape === 'star'){
     const cx = x + frameW/2, cy = y + frameH/2;
     const outerRx = frameW/2, outerRy = frameH/2, innerRatio = 0.45;
     let d = '';
@@ -717,17 +832,17 @@ function shapeSvgMarkup(x, y, frameW, frameH){
       d += (i===0 ? `M${px},${py} ` : `L${px},${py} `);
     }
     return `<path d="${d}z"/>`;
-  } else if(state.shape === 'hexTag'){
+  } else if(design.shape === 'hexTag'){
     const notch = Math.min(frameW*0.18, frameH*0.5);
     return `<path d="M${x+notch},${y} L${x+frameW},${y} L${x+frameW},${y+frameH} L${x+notch},${y+frameH} L${x},${y+frameH/2} z"/>`;
-  } else if(state.shape === 'cloud'){
+  } else if(design.shape === 'cloud'){
     const rad = Math.min(frameW,frameH)*0.12;
     const yb = y + frameH*0.38;
     const a0=x, a1=x+frameW/3, a2=x+2*frameW/3, a3=x+frameW;
     const m1=(a0+a1)/2, m2=(a1+a2)/2, m3=(a2+a3)/2;
     return `<path d="M${a0},${yb} Q${m1},${y} ${a1},${yb} Q${m2},${y} ${a2},${yb} Q${m3},${y} ${a3},${yb} L${a3},${y+frameH-rad} Q${a3},${y+frameH} ${a3-rad},${y+frameH} L${a0+rad},${y+frameH} Q${a0},${y+frameH} ${a0},${y+frameH-rad} z"/>`;
   } else {
-    const rad = Math.min(state.radius, Math.min(frameW,frameH)/2);
+    const rad = Math.min(design.radius, Math.min(frameW,frameH)/2);
     return `<path d="M${x+rad},${y} h${frameW-rad*2} a${rad},${rad} 0 0 1 ${rad},${rad} v${frameH-rad*2} a${rad},${rad} 0 0 1 -${rad},${rad} h-${frameW-rad*2} a${rad},${rad} 0 0 1 -${rad},-${rad} v-${frameH-rad*2} a${rad},${rad} 0 0 1 ${rad},-${rad} z"/>`;
   }
 }
@@ -781,8 +896,8 @@ function layoutText(ctx, l, boxH, boxW, scaleFactor){
 // renderStickerContent (מדבקה, עם clip למסגרת) וגם מצב עריכה חופשית
 // (בלי clip, כל שכבה חופשית על פני כל הדף) קוראות לאותה פונקציה בדיוק,
 // כדי שהציור לא ישוכפל לשני מימושים שיסטו זה מזה.
-function drawLayers(ctx, boxX, boxY, boxW, boxH, scaleFactor = 1){
-  const sorted = [...layers].sort((a,b)=>a.z-b.z);
+function drawLayers(ctx, boxX, boxY, boxW, boxH, scaleFactor = 1, layersArr = layers){
+  const sorted = [...layersArr].sort((a,b)=>a.z-b.z);
   sorted.forEach(l=>{
     const px = boxX + l.x*boxW;
     const py = boxY + l.y*boxH;
@@ -823,13 +938,16 @@ function drawLayers(ctx, boxX, boxY, boxW, boxH, scaleFactor = 1){
   });
 }
 
-function renderStickerContent(ctx, boxX, boxY, boxW, boxH, scaleFactor = 1, showOutline = true){
+// design/designLayers אופציונליים, ברירת מחדל = הגלובלי state/layers — כדי
+// שמצב סוג-יחיד יישאר זהה ביט-לביט. משמש גם עיצוב סוג 2 (PR שני סוגי
+// מדבקה) שמעביר snapshot נפרד במקום ה-state הפעיל כרגע.
+function renderStickerContent(ctx, boxX, boxY, boxW, boxH, scaleFactor = 1, showOutline = true, design = state, designLayers = layers){
   ctx.save();
   ctx.strokeStyle='#ff0000';
   ctx.lineWidth = 1.2 * scaleFactor;
   ctx.setLineDash([]);
 
-  traceStickerPath(ctx, boxX, boxY, boxW, boxH);
+  traceStickerPath(ctx, boxX, boxY, boxW, boxH, design);
   ctx.fillStyle='#fff'; ctx.fill();
   // הדילוג הוא על קו החיתוך האדום בלבד — ה-fill הלבן וה-clip נשארים תמיד,
   // אחרת המדבקה מאבדת רקע והשכבות גולשות החוצה. showOutline מאפשר לקובץ
@@ -838,7 +956,7 @@ function renderStickerContent(ctx, boxX, boxY, boxW, boxH, scaleFactor = 1, show
   if(showOutline) ctx.stroke();
   ctx.clip();
 
-  drawLayers(ctx, boxX, boxY, boxW, boxH, scaleFactor);
+  drawLayers(ctx, boxX, boxY, boxW, boxH, scaleFactor, designLayers);
   ctx.restore();
 }
 
@@ -988,17 +1106,24 @@ function drawSingle(){
 // אריח במטמון — צילום של מדבקה אחת בכיוון הטבעי שלה (לא מסובב). נבנה פעם
 // אחת ומוטבע ב-drawImage בכל תא, במקום לצייר את כל השכבות מחדש בכל תא —
 // זה מה שמאפשר לקרוא ל-drawSheet בכל שינוי בלי להקפיא את הדפדפן.
-let tileCache = null;
-function invalidateTile(){ tileCache = null; }
+// שני מפתחות (סוג 1/סוג 2), לא ערך יחיד — כדי ששני סוגי מדבקה על דף אחד
+// (ראה dualLayout למטה) יחזיקו כל אחד אריח מטמון נפרד. כל קריאה קיימת
+// ל-invalidateTile() בלי ארגומנט ממשיכה לנקות את שניהם — תואם לאחור.
+let tileCache = { 1: null, 2: null };
+function invalidateTile(slot){
+  if(slot === undefined){ tileCache[1] = null; tileCache[2] = null; }
+  else tileCache[slot] = null;
+}
 const TILE_PAD = 0.2; // 20% מרווח לצורות שגולשות מהמסגרת בכוונה (heart/wave/cloud) ולעובי קו החיתוך
 
-function buildTile(scale, showOutline = true){
-  const {w:natW, h:natH} = natDims();
+// design/designLayers אופציונליים, ברירת מחדל = הגלובלי — ראה renderStickerContent.
+function buildTile(scale, showOutline = true, design = state, designLayers = layers){
+  const {w:natW, h:natH} = natDims(design);
   const padX = natW*TILE_PAD*scale, padY = natH*TILE_PAD*scale;
   const c = document.createElement('canvas');
   c.width = Math.max(1, Math.round(natW*scale + padX*2));
   c.height = Math.max(1, Math.round(natH*scale + padY*2));
-  renderStickerContent(c.getContext('2d'), padX, padY, natW*scale, natH*scale, 0.8, showOutline);
+  renderStickerContent(c.getContext('2d'), padX, padY, natW*scale, natH*scale, 0.8, showOutline, design, designLayers);
   return c;
 }
 
@@ -1048,24 +1173,18 @@ function drawMarginRect(ctx, l, boxX, boxY, boxW, boxH, marginPx){
   ctx.restore();
 }
 
-// ציור טהור — בלי שום גישה ל-a4Canvas ובלי עדכוני DOM. ctx/scale/W/H
-// מגיעים מבחוץ כדי שאותה לוגיקה תשרת גם את התצוגה המקדימה וגם את קובץ
-// ההדפסה ב-300 DPI (קנבס אחר לגמרי).
-function drawSheetTo(ctx, scale, W, H, showOutline = true){
-  ctx.clearRect(0,0,W,H);
-  ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H);
-
-  drawRegMarks(ctx, scale, W, H);
-
-  const L = layout(); // מ"מ בלבד — אותו מקור אמת שמשמש גם את export-svg
+// גוף הלולאה שהיה בעבר מוטבע ישירות בתוך drawSheetTo — חולץ לכאן כדי
+// שגם מצב סוג-יחיד וגם שני האזורים של מצב דו-סוגי יקראו לאותה לוגיקת
+// מיקום/סיבוב/drawImage, בלי לשכפל אותה. slot בוחר את מפתח tileCache
+// (1 תמיד במצב סוג-יחיד).
+function drawRegionTiles(ctx, scale, L, design, designLayers, showOutline, slot){
   if(L.total === 0) return;
+  if(!tileCache[slot]) tileCache[slot] = buildTile(scale, showOutline, design, designLayers);
+  const tile = tileCache[slot];
 
   const gapPx = L.g * scale;
   const leftPx = L.left * scale, topPx = L.top * scale;
   const frameWPx = L.w * scale, frameHPx = L.h * scale;
-
-  if(!tileCache) tileCache = buildTile(scale, showOutline);
-  const tile = tileCache;
 
   let renderedCount = 0;
   for(let r=0; r<L.rows; r++){
@@ -1080,7 +1199,42 @@ function drawSheetTo(ctx, scale, W, H, showOutline = true){
       renderedCount++;
     }
   }
-  console.assert(L.total === renderedCount, 'layout() total אינו תואם למספר המדבקות שצוירו בפועל', L.total, renderedCount);
+  console.assert(L.total === renderedCount, 'layout total אינו תואם למספר המדבקות שצוירו בפועל', L.total, renderedCount);
+}
+
+// ציור טהור — בלי שום גישה ל-a4Canvas ובלי עדכוני DOM. ctx/scale/W/H
+// מגיעים מבחוץ כדי שאותה לוגיקה תשרת גם את התצוגה המקדימה וגם את קובץ
+// ההדפסה ב-300 DPI (קנבס אחר לגמרי). secondDesign===null → בדיוק כמו
+// היום, אפס שינוי. אחרת — שני אזורים, כל אחד בעיצוב/פונט/צורה שלו.
+function drawSheetTo(ctx, scale, W, H, showOutline = true){
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,W,H);
+
+  drawRegMarks(ctx, scale, W, H);
+
+  if(!secondDesign){
+    drawRegionTiles(ctx, scale, layout(), state, layers, showOutline, 1);
+    return;
+  }
+
+  const { L1, L2, d1, d2 } = dualLayout();
+  drawRegionTiles(ctx, scale, L1, d1, d1.layers, showOutline, 1);
+  drawRegionTiles(ctx, scale, L2, d2, d2.layers, showOutline, 2);
+
+  // קו הפרדה — כלי עריכה בלבד, מצויר רק על תצוגת הגיליון החיה (a4Ctx),
+  // לעולם לא בקובץ פלט אמיתי (PDF להדפסה/כיול, buildPrintFile של הלקוח) —
+  // כל אלה קוראים ל-drawSheetTo על קנבס offscreen משלהם, לא a4Ctx.
+  if(ctx === a4Ctx){
+    const uH = 297 - MARGIN.top - MARGIN.bottom;
+    const gapBetween = GAP_MM * 2;
+    const h1 = Math.max(0, (uH - gapBetween) * splitFraction);
+    const dividerY = (MARGIN.top + h1 + gapBetween/2) * scale;
+    ctx.save();
+    ctx.strokeStyle = splitAtLimit ? '#ea580c' : '#4f46e5'; ctx.lineWidth = Math.max(1, 1.5*scale);
+    ctx.setLineDash([6*scale, 4*scale]);
+    ctx.beginPath(); ctx.moveTo(0, dividerY); ctx.lineTo(W, dividerY); ctx.stroke();
+    ctx.restore();
+  }
 }
 
 // עוטפת: מציירת לתצוגה המקדימה הגלובלית ומעדכנת את ה-DOM. drawSheetTo
@@ -1378,6 +1532,91 @@ function syncSizeInputs(){
     lenInput.classList.remove('at-limit');
   }
 }
+
+// שני סוגי מדבקה על דף אחד — טאבים + כפתור הוספה/הסרה. זה ה-UI היחיד
+// שיודע ששני עיצובים קיימים; switchToSlot()/loadDesignIntoActive() בלבד
+// נוגעות ב-layers/state הגלובליים, אז שאר העורך (גרירה/סיבוב/פונטים/
+// פאנל שכבות) ממשיך לעבוד בלי לדעת על זה בכלל.
+function updateDesignTabsUI(){
+  const has2 = !!secondDesign;
+  document.getElementById('design-tabs-row').style.display = has2 ? 'flex' : 'none';
+  document.getElementById('tab-design-1').classList.toggle('active', activeSlot === 1);
+  document.getElementById('tab-design-2').classList.toggle('active', activeSlot === 2);
+  document.getElementById('add-second-design-btn').textContent = has2 ? '✕ הסר סוג שני' : '➕ הוסף סוג/גודל שני';
+  document.getElementById('split-divider-label').style.display = has2 ? '' : 'none';
+  if(has2) updateSplitLabel();
+}
+
+document.getElementById('add-second-design-btn').addEventListener('click', () => {
+  if(secondDesign){
+    if(!confirm('להסיר את סוג המדבקה השני? העיצוב שלו יימחק.')) return;
+    if(activeSlot === 2) switchToSlot(1);
+    secondDesign = null; design1Backup = null; splitFraction = 0.5;
+    updateDesignTabsUI(); invalidateTile(); drawSingle(); schedSheet();
+    return;
+  }
+  design1Backup = snapshotActiveDesign(); // שמור את מה שיש עכשיו
+  secondDesign = {
+    layers: [ // אותן שכבות ברירת מחדל כמו state הראשוני: כוכב + placeholder שם
+      {id:'icon1', type:'icon', emoji:'⭐', x:0.15, y:0.5, scale:0.55, rot:0, z:0, image:null, isPlaceholder:true},
+      {id:'text1', type:'text', text:PLACEHOLDER_TEXT, x:0.58, y:0.5, scale:0.75, rot:0, z:1, font:'Heebo', color:'#0f172a', stroke:'white', isPlaceholder:true},
+    ],
+    shape:'banner', radius:3, lenMm:42, widMm:15, orient:'auto', printOutline:false,
+  };
+  activeSlot = 2;
+  loadDesignIntoActive(secondDesign);
+  updateDesignTabsUI();
+  updateSelectedControls(); invalidateTile(); drawSingle(); schedSheet();
+});
+
+document.getElementById('tab-design-1').addEventListener('click', () => { switchToSlot(1); updateDesignTabsUI(); });
+document.getElementById('tab-design-2').addEventListener('click', () => { switchToSlot(2); updateDesignTabsUI(); });
+
+function updateSplitLabel(){
+  const p1 = Math.round(splitFraction*100), p2 = 100-p1;
+  document.getElementById('split-divider-label').textContent = `מדבקה 1: ${p1}%  ·  מדבקה 2: ${p2}%`;
+}
+
+// קו ההפרדה על תצוגת הגיליון (a4Canvas, לא single-canvas) — גרירה אנכית
+// בטווח קטן סביב הקו. splitFractionValid() עוצרת בגבול שמבטיח לפחות שורה
+// אחת לכל סוג, בדיוק כמו כל שאר הקלאמפים בקובץ הזה (הידית "נדבקת" בכתום).
+let draggingDivider = false, splitAtLimit = false;
+function a4EventY(e){
+  const rect = a4Canvas.getBoundingClientRect();
+  return (e.clientY - rect.top) / rect.height * a4Canvas.height;
+}
+function currentDividerYPx(){
+  const scale = pxPerMm(a4Canvas);
+  const uH = 297 - MARGIN.top - MARGIN.bottom;
+  const gapBetween = GAP_MM * 2;
+  const h1 = Math.max(0, (uH - gapBetween) * splitFraction);
+  return (MARGIN.top + h1 + gapBetween/2) * scale;
+}
+a4Canvas.addEventListener('pointerdown', e => {
+  if(!secondDesign) return;
+  if(Math.abs(a4EventY(e) - currentDividerYPx()) < 20){
+    draggingDivider = true;
+    a4Canvas.setPointerCapture(e.pointerId);
+  }
+});
+a4Canvas.addEventListener('pointermove', e => {
+  if(!draggingDivider) return;
+  const scale = pxPerMm(a4Canvas);
+  const uH = 297 - MARGIN.top - MARGIN.bottom;
+  const gapBetween = GAP_MM * 2;
+  const mm = a4EventY(e)/scale - MARGIN.top - gapBetween/2;
+  const candidate = clamp(mm / (uH - gapBetween), 0.1, 0.9);
+  if(splitFractionValid(candidate)){
+    splitFraction = candidate;
+    splitAtLimit = false;
+  } else {
+    splitAtLimit = true; // נשאר בערך הקודם התקף — רק מסמן חזותית שנתקענו
+  }
+  updateSplitLabel();
+  schedSheet();
+});
+a4Canvas.addEventListener('pointerup', () => { draggingDivider = false; splitAtLimit = false; schedSheet(); });
+a4Canvas.addEventListener('pointercancel', () => { draggingDivider = false; splitAtLimit = false; });
 
 document.getElementById('sticker-shape').addEventListener('change', e=>{
   state.shape = e.target.value;
@@ -1722,37 +1961,51 @@ fileInput.addEventListener('change', async e=>{
   }
 });
 
-// בונה את קובץ החיתוך כמחרוזת SVG — משתמש באותה layout() בדיוק כמו התצוגה
-// המקדימה, כדי שמספר הצורות בקובץ יהיה זהה תמיד למה שמוצג ב-count-box.
-// מקום יחיד: גם כפתור ההורדה של המנהל וגם submitOrder() קוראים לפונקציה
-// הזו ולא בונים SVG בעצמם — זה בדיוק המקום שבו קובץ החיתוך והתצוגה
-// מתחילים לסטות אם הלוגיקה משוכפלת.
-function buildCutSvg(){
-  const L = layout();
-  if(L.total === 0) return null;
-  const Wmm=210, Hmm=297;
-  const frameH = L.h, frameW = L.w, safeGap = L.g;
-  const printableLeft = L.left, printableTop = L.top;
-  const cols = L.cols, rows = L.rows;
-  // המידות הטבעיות (לא מוחלפות) של המדבקה — הצורה תמיד מצוירת בכיוון הזה,
-  // ואז מסובבת כיחידה שלמה ב-<g transform> אם L.rot דורש זאת.
-  const {w:natW, h:natH} = natDims();
+// אריחי SVG של אזור אחד — חולץ מ-buildCutSvg כדי ששני האזורים של מצב
+// דו-סוגי יקראו לאותה לוגיקה, ולא ישוכפלו. design קובע צורה/רדיוס/מידות
+// (natDims(design)) — לכל אזור הצורה והגודל של העיצוב שלו בלבד.
+function svgTilesFor(L, design){
+  if(L.total === 0) return '';
+  const {w:natW, h:natH} = natDims(design);
   const rotDeg = L.rot ? 90 : 0;
-
-  // בלי סימני רישום כאן בכוונה: ב-Silhouette Studio כל קו ב-SVG מיובא הופך
-  // לקו חיתוך, בלי קשר לצבע — סימנים בקובץ הזה ייחתכו מהדף ויהרסו את
-  // ההתאמה. הסימנים שייכים אך ורק לקובץ ההדפסה (PDF); Studio מייצר משלו,
-  // והם מתלכדים כי שני הצדדים משתמשים באותם ערכי REG.
-  let svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${Wmm}mm" height="${Hmm}mm" viewBox="0 0 ${Wmm} ${Hmm}">\n`;
-  svg+=`  <g stroke="#ff0000" stroke-width="0.1" fill="none">\n`;
-
-  for(let r=0; r<rows; r++){
-    for(let c=0; c<cols; c++){
-      const cx = printableLeft + c*(frameW+safeGap) + frameW/2;
-      const cy = printableTop + r*(frameH+safeGap) + frameH/2;
-      svg+=`    <g transform="translate(${cx},${cy}) rotate(${rotDeg}) translate(${-natW/2},${-natH/2})">${shapeSvgMarkup(0,0,natW,natH)}</g>\n`;
+  let out = '';
+  for(let r=0; r<L.rows; r++){
+    for(let c=0; c<L.cols; c++){
+      const cx = L.left + c*(L.w+L.g) + L.w/2;
+      const cy = L.top + r*(L.h+L.g) + L.h/2;
+      out += `    <g transform="translate(${cx},${cy}) rotate(${rotDeg}) translate(${-natW/2},${-natH/2})">${shapeSvgMarkup(0,0,natW,natH,design)}</g>\n`;
     }
   }
+  return out;
+}
+
+// בונה את קובץ החיתוך כמחרוזת SVG — משתמש באותה layout()/layoutIn בדיוק
+// כמו התצוגה המקדימה, כדי שמספר הצורות בקובץ יהיה זהה תמיד למה שמוצג
+// ב-count-box. מקום יחיד: גם כפתור ההורדה של המנהל וגם submitOrder()
+// קוראים לפונקציה הזו ולא בונים SVG בעצמם — זה בדיוק המקום שבו קובץ
+// החיתוך והתצוגה מתחילים לסטות אם הלוגיקה משוכפלת.
+// secondDesign===null → בדיוק כמו היום, אפס שינוי.
+//
+// בלי סימני רישום כאן בכוונה: ב-Silhouette Studio כל קו ב-SVG מיובא הופך
+// לקו חיתוך, בלי קשר לצבע — סימנים בקובץ הזה ייחתכו מהדף ויהרסו את
+// ההתאמה. הסימנים שייכים אך ורק לקובץ ההדפסה (PDF); Studio מייצר משלו,
+// והם מתלכדים כי שני הצדדים משתמשים באותם ערכי REG.
+function buildCutSvg(){
+  const Wmm=210, Hmm=297;
+  let tiles;
+  if(!secondDesign){
+    const L = layout();
+    if(L.total === 0) return null;
+    tiles = svgTilesFor(L, state);
+  } else {
+    const { L1, L2, d1, d2 } = dualLayout();
+    if(L1.total === 0 && L2.total === 0) return null;
+    tiles = svgTilesFor(L1, d1) + svgTilesFor(L2, d2);
+  }
+
+  let svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${Wmm}mm" height="${Hmm}mm" viewBox="0 0 ${Wmm} ${Hmm}">\n`;
+  svg+=`  <g stroke="#ff0000" stroke-width="0.1" fill="none">\n`;
+  svg+=tiles;
   svg+=`  </g>\n</svg>`;
   return svg;
 }
@@ -1760,9 +2013,11 @@ function buildCutSvg(){
 document.getElementById('export-svg').addEventListener('click', ()=>{
   const svg = buildCutSvg();
   if(!svg){ alert('המדבקה גדולה מדי לדף — אין מה לייצא.'); return; }
-  const L = layout();
+  const name = secondDesign
+    ? (() => { const { L1, L2 } = dualLayout(); return `pencil-stickers-dual-${L1.total}+${L2.total}`; })()
+    : (() => { const L = layout(); return `pencil-stickers-${L.cols}x${L.rows}`; })();
   const blob=new Blob([svg],{type:'image/svg+xml'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`pencil-stickers-${L.cols}x${L.rows}.svg`; a.click();
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${name}.svg`; a.click();
 });
 
 document.getElementById('export-png').addEventListener('click', ()=>{
