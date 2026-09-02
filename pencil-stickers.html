@@ -665,6 +665,51 @@ function shapeSvgMarkup(x, y, frameW, frameH){
   }
 }
 
+// פונקציית פריסה משותפת אחת — ציור (renderStickerContent) ומדידה
+// (layerHalfSize) חייבים לקרוא לה ולקבל בדיוק אותה תוצאה, כולל הכיווץ
+// האוטומטי. שני מימושים נפרדים = תפיסת השכבה תסטה ממה שבאמת מצויר (זו
+// בדיוק מחלקת הבאג שכבר נתפסה ב-PR #98/#100). maxWidthPx=null (boxWidth
+// לא מוגדר) = מצב legacy: שורה אחת ברוחב טבעי, זהה בדיוק להתנהגות שהייתה
+// לפני ה-PR הזה — קריטי לתאימות אחורה להזמנות אמיתיות שכבר ב-DB.
+function layoutText(ctx, l, boxH, boxW, scaleFactor){
+  const wt = window.HebrewFonts && HebrewFonts.hasBold(l.font||'Heebo') ? 700 : 400;
+  const text = l.text || '';
+  const maxWidthPx = l.boxWidth ? l.boxWidth * boxW : null;
+  const maxHeightPx = boxH * 0.85;
+  let fSize = boxH * 0.45 * l.scale * scaleFactor;
+  let lastResult = null;
+
+  for(let attempt=0; attempt<8; attempt++){
+    ctx.font = `${wt} ${Math.max(8,fSize)}px '${l.font||'Heebo'}', sans-serif`;
+    let lines;
+    if(maxWidthPx){
+      const words = text.split(/\s+/).filter(Boolean);
+      lines = []; let cur = '';
+      for(const w of words){
+        const trial = cur ? cur+' '+w : w;
+        if(ctx.measureText(trial).width > maxWidthPx && cur){ lines.push(cur); cur = w; }
+        else cur = trial;
+      }
+      if(cur) lines.push(cur);
+      if(!lines.length) lines = [''];
+    } else {
+      lines = [text];
+    }
+    const lineHeight = fSize * 1.15;
+    const blockH = lines.length * lineHeight;
+    const width = maxWidthPx ? maxWidthPx : Math.max(ctx.measureText(lines[0]).width, 1);
+    lastResult = { lines, fSize, lineHeight, width, wt };
+    if(blockH <= maxHeightPx || fSize <= 8) return lastResult;
+    fSize *= 0.92; // לא נכנס בגובה — מכווץ ומנסה שוב
+  }
+  // חריגה מהמפרט: הגרסה המקורית חזרה כאן ל-{lines:[text],...} — מוחקת את
+  // כל העטיפה שהחישוב מעל כבר ביצע ומחזירה שורה אחת לא-עטופה בגופן זעיר.
+  // אומת בפועל (Playwright): טקסט ארוך בתיבה צרה נשאר שורה אחת ענקית-מכווצת
+  // במקום להיעטף — בדיוק המקרה שהתכונה נועדה לפתור. lastResult (הניסיון
+  // האחרון, המכווץ ביותר, כן עטוף) הוא ה"מיטב המאמץ" הנכון להחזיר.
+  return lastResult;
+}
+
 function renderStickerContent(ctx, boxX, boxY, boxW, boxH, scaleFactor = 1, showOutline = true){
   ctx.save();
   ctx.strokeStyle='#ff0000';
@@ -699,20 +744,23 @@ function renderStickerContent(ctx, boxX, boxY, boxW, boxH, scaleFactor = 1, show
         ctx.fillText(l.emoji||'⭐',0,0);
       }
     }else{
-      const fSize = boxH * 0.45 * l.scale * scaleFactor;
       // פונטים חד-משקליים (Suez One, Secular One, כל fx) מקבלים bold מלאכותי
       // מכוער אם תמיד כופים 700. חייב לכבד hasBold() באותה נוסחה בדיוק כמו
       // layerHalfSize למטה — אחרת המדידה שם לא תואמת את מה שמצויר כאן.
-      const wt = window.HebrewFonts && HebrewFonts.hasBold(l.font||'Heebo') ? 700 : 400;
-      ctx.font = `${wt} ${Math.max(8, fSize)}px '${l.font||'Heebo'}', sans-serif`;
+      // layoutText היא מקור האמת היחיד לגודל גופן/שורות — גם כאן וגם במדידה.
+      const layout = layoutText(ctx, l, boxH, boxW, scaleFactor);
+      ctx.font = `${layout.wt} ${Math.max(8, layout.fSize)}px '${l.font||'Heebo'}', sans-serif`;
       ctx.textAlign='center'; ctx.textBaseline='middle';
-      if(l.stroke==='white' || l.stroke==='black'){
-        ctx.strokeStyle = l.stroke==='white' ? '#fff' : '#000';
-        ctx.lineWidth = fSize * 0.18; ctx.lineJoin='round';
-        ctx.strokeText(l.text||'',0,0);
-      }
-      ctx.fillStyle = l.color||'#0f172a';
-      ctx.fillText(l.text||'',0,0);
+      layout.lines.forEach((line, i) => {
+        const dy = (i - (layout.lines.length-1)/2) * layout.lineHeight;
+        if(l.stroke==='white' || l.stroke==='black'){
+          ctx.strokeStyle = l.stroke==='white' ? '#fff' : '#000';
+          ctx.lineWidth = layout.fSize * 0.18; ctx.lineJoin='round';
+          ctx.strokeText(line, 0, dy);
+        }
+        ctx.fillStyle = l.color||'#0f172a';
+        ctx.fillText(line, 0, dy);
+      });
     }
     ctx.restore();
   });
@@ -721,19 +769,19 @@ function renderStickerContent(ctx, boxX, boxY, boxW, boxH, scaleFactor = 1, show
 
 // גודל-חצי אמיתי של שכבה, נגזר ממה שבאמת מצויר — ולא מקופסה קבועה. boxH
 // דרוש כי כל הגדלים (גופן/אייקון) נגזרים ממנה, בדיוק כמו ב-renderStickerContent.
+// boxW דרוש רק לשכבות טקסט (layoutText: boxWidth הוא שבר מ-boxW).
 // ⚠️ scaleFactor חייב לחזור על מה ש-drawSingle() בפועל מעביר ל-renderStickerContent
 // (renderStickerContent(singleCtx,...,1.2) — ראה למטה) ולא רק על boxH*0.45*l.scale:
 // שכבת טקסט מצוירת ב-1.2× מהגודל ה"בסיסי", ובלי הכפלה כאן הקופסה הנמדדת קטנה
 // ב-17% מהתוכן שבאמת על המסך — אותה מחלקת באג בדיוק, בעוצמה נמוכה יותר.
 // layerHalfSize/pointInLayer משמשות רק הקנבס הבודד (singleCanvas), ששם
 // scaleFactor הוא תמיד 1.2 — לכן זו ברירת המחדל, לא ארגומנט שנגרר מבחוץ.
-function layerHalfSize(l, ctx, boxH, scaleFactor = 1.2){
+function layerHalfSize(l, ctx, boxH, boxW, scaleFactor = 1.2){
   if(l.type === 'text'){
-    const fSize = boxH * 0.45 * l.scale * scaleFactor;
-    const wt = window.HebrewFonts && HebrewFonts.hasBold(l.font||'Heebo') ? 700 : 400;
-    ctx.font = `${wt} ${Math.max(8, fSize)}px '${l.font||'Heebo'}', sans-serif`;
-    const w = ctx.measureText(l.text || ' ').width;
-    return { halfW: Math.max(40, w/2 + 14), halfH: Math.max(24, fSize/2 + 10) };
+    const layout = layoutText(ctx, l, boxH, boxW, scaleFactor);
+    const halfW = Math.max(40, layout.width/2 + 14);
+    const halfH = Math.max(24, (layout.lines.length*layout.lineHeight)/2 + 10);
+    return { halfW, halfH };
   }
   const s = l.image ? boxH * l.scale * 0.85 : boxH * l.scale * 0.75;
   return { halfW: Math.max(30, s/2 + 10), halfH: Math.max(30, s/2 + 10) };
@@ -747,7 +795,7 @@ function pointInLayer(l, x, y, boxX, boxY, boxW, boxH, ctx){
   const dx = x - px, dy = y - py;
   const lx =  dx*Math.cos(-rad) - dy*Math.sin(-rad);
   const ly =  dx*Math.sin(-rad) + dy*Math.cos(-rad);
-  const { halfW, halfH } = layerHalfSize(l, ctx, boxH);
+  const { halfW, halfH } = layerHalfSize(l, ctx, boxH, boxW);
   return Math.abs(lx) < halfW && Math.abs(ly) < halfH;
 }
 
@@ -800,7 +848,7 @@ function drawSingle(){
     const py = boxY + activeLayer.y*boxH;
     const rad = (activeLayer.rot||0)*Math.PI/180;
 
-    const { halfW, halfH } = layerHalfSize(activeLayer, singleCtx, boxH);
+    const { halfW, halfH } = layerHalfSize(activeLayer, singleCtx, boxH, boxW);
 
     singleCtx.save();
     singleCtx.translate(px, py);
@@ -827,6 +875,21 @@ function drawSingle(){
     singleCtx.beginPath(); singleCtx.arc(halfW, halfH, 6, 0, Math.PI*2); singleCtx.fill(); singleCtx.stroke();
 
     singleCtx.restore();
+  }
+
+  // ידיות רוחב-תיבה — רק על שכבת טקסט נבחרת. מרובעות בכוונה, להבדיל
+  // מהעגולות של מסגרת החיתוך (ידיות הגובה/אורך למעלה) — סימן ויזואלי
+  // שאלה שכבה, לא מסגרת.
+  if(activeLayer && activeLayer.type === 'text'){
+    const { halfW } = layerHalfSize(activeLayer, singleCtx, boxH, boxW);
+    const rad = (activeLayer.rot||0) * Math.PI/180;
+    const px = boxX + activeLayer.x*boxW, py = boxY + activeLayer.y*boxH;
+    [-halfW, halfW].forEach(hx => {
+      const hpx = px + hx*Math.cos(rad), hpy = py + hx*Math.sin(rad);
+      singleCtx.fillStyle = '#4f46e5';
+      singleCtx.fillRect(hpx-6, hpy-6, 12, 12);
+      singleCtx.strokeStyle = '#fff'; singleCtx.lineWidth = 2; singleCtx.strokeRect(hpx-6, hpy-6, 12, 12);
+    });
   }
 
   renderLayersList();
@@ -997,7 +1060,7 @@ singleCanvas.addEventListener('pointerdown', e=>{
     const py = boxY + activeLayer.y*boxH;
     const rad = (activeLayer.rot||0)*Math.PI/180;
 
-    const { halfW, halfH } = layerHalfSize(activeLayer, singleCtx, boxH);
+    const { halfW, halfH } = layerHalfSize(activeLayer, singleCtx, boxH, boxW);
 
     const deleteHandleX = px + ((-halfW) * Math.cos(rad) - (-halfH) * Math.sin(rad));
     const deleteHandleY = py + ((-halfW) * Math.sin(rad) + (-halfH) * Math.cos(rad));
@@ -1024,6 +1087,27 @@ singleCanvas.addEventListener('pointerdown', e=>{
       interactionMode = 'scale';
       initDrag(e, activeLayer, x, y);
       return;
+    }
+  }
+
+  // ידיות רוחב-תיבה — רק על שכבת טקסט נבחרת, אחרי ידיות מחיקה/סיבוב/גודל
+  // הקיימות (אותה עדיפות), לפני גרירת גוף השכבה.
+  if(activeLayer && activeLayer.type === 'text'){
+    const { halfW } = layerHalfSize(activeLayer, singleCtx, boxH, boxW);
+    const rad = (activeLayer.rot||0) * Math.PI/180;
+    const px = boxX + activeLayer.x*boxW, py = boxY + activeLayer.y*boxH;
+    for(const side of [-1, 1]){
+      const hpx = px + side*halfW*Math.cos(rad), hpy = py + side*halfW*Math.sin(rad);
+      if(Math.hypot(x-hpx, y-hpy) < 14){
+        interactionMode = 'resizeTextBox';
+        singleCanvas.setPointerCapture(e.pointerId);
+        dragStart = {x, y};
+        // המרה מרוחב-פיקסלים לרוחב-שבר בגרירה הראשונה: אם boxWidth עדיין
+        // לא מוגדר (מצב legacy), מחשבים אותו מהרוחב הטבעי הנוכחי — כדי
+        // שהגרירה הראשונה תתחיל מאיפה שהטקסט כבר נראה, לא תקפוץ פתאום.
+        resizeStart = { boxWidth: activeLayer.boxWidth || (halfW*2/boxW), side };
+        return;
+      }
     }
   }
 
@@ -1103,6 +1187,14 @@ singleCanvas.addEventListener('pointermove', e=>{
     const currentDist = Math.hypot(x - px, y - py);
     const ratio = currentDist / Math.max(10, initialDist);
     l.scale = Math.max(0.2, Math.min(2.5, initialLayerState.scale * ratio));
+  } else if(interactionMode === 'resizeTextBox'){
+    // ציר אופקי בלבד — ממפה פיקסל-גרירה אחד ישירות לשינוי ב-boxWidth (שבר
+    // מ-boxW, לא מ"מ פיזי!), באותה מוסכמה בדיוק כמו resizeLen: בלי הכפלה,
+    // למרות שהידיות יושבות בהיסט חצי-רוחב מהמרכז — עקביות תחושתית עם ידיות
+    // האורך שכבר קיימות ונבדקות.
+    const raw = (x - dragStart.x) / boxW;
+    const dFrac = resizeStart.side < 0 ? -raw : raw;
+    l.boxWidth = clamp(resizeStart.boxWidth + dFrac, 0.15, 0.95);
   }
 
   drawSingle();
@@ -1110,6 +1202,33 @@ singleCanvas.addEventListener('pointermove', e=>{
 });
 
 singleCanvas.addEventListener('pointerup', ()=>{ interactionMode = null; schedSheet(); });
+
+// לחיצה כפולה על שכבת טקסט → מיקוד שדה העריכה הקיים, בלי עריכה בתוך
+// הקנבס עצמו (יקר לבנות, #sel-text-input כבר עובד). boxX/boxY/boxW/boxH
+// לא זמינים בהיקף הזה כמו בpointerdown — מחושבים כאן מחדש, אותה נוסחה.
+singleCanvas.addEventListener('dblclick', e => {
+  const W = singleCanvas.width, H = singleCanvas.height;
+  const rect = singleCanvas.getBoundingClientRect();
+  const {w:natW, h:natH} = natDims();
+  const aspect = natH / natW;
+  let boxW = W * 0.75, boxH = boxW * aspect;
+  if(boxH > H * 0.7){ boxH = H * 0.7; boxW = boxH / aspect; }
+  const boxX = (W - boxW)/2, boxY = (H - boxH)/2;
+
+  const x = (e.clientX-rect.left)/rect.width * W;
+  const y = (e.clientY-rect.top)/rect.height * H;
+  const sorted = [...layers].sort((a,b)=>b.z-a.z);
+  for(const l of sorted){
+    if(l.type === 'text' && pointInLayer(l, x, y, boxX, boxY, boxW, boxH, singleCtx)){
+      selectedId = l.id;
+      updateSelectedControls();
+      drawSingle();
+      document.getElementById('sel-text-input').focus();
+      document.getElementById('sel-text-input').select();
+      return;
+    }
+  }
+});
 
 // widMm ("גובה") הוא לתקרה כפולה שצריך למזג: התקרה שלו עצמו (SIZE.usableW)
 // וגם התקרה הנגזרת מכך ש-lenMm=widMm×currentRatio לא יכול לחרוג מ-
