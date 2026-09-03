@@ -426,6 +426,11 @@ let state = { radius:3, lenMm:42, widMm:15, shape:'banner', orient:'auto', print
 // שמונע מהסכין לנגוס במדבקה השכנה. לא ניתן לשינוי מהממשק.
 const GAP_MM = 1;
 
+// ידית הסיבוב הישנה הייתה עיגול ברדיוס 6px, 18px מעל השכבה, רדיוס תפיסה
+// 14px — נקודה זעירה מול אזור נגיעה מומלץ של ~44×44px. קבוע יחיד, לא
+// מספר קסם כפול בציור ובתפיסה בנפרד — ראה drawSingle ו-pointerdown.
+const ROT_OFFSET = 30, ROT_R = 11;
+
 // סימני הרישום של Silhouette. ברירות המחדל הן של Studio עצמו (0.625"/0.787"),
 // אבל משתנות בין דגם מכונה וגרסת Studio — לכן ניתנות לעריכה בפאנל "מתקדם".
 let REG = { inset:15.9, length:20, thickness:1.3, square:5, count:3 };
@@ -1066,11 +1071,25 @@ function drawSingle(){
     singleCtx.strokeRect(-halfW, -halfH, halfW*2, halfH*2);
     singleCtx.setLineDash([]);
 
-    // ידית סיבוב
+    // ידית סיבוב — עיגול גדול (ROT_R) במרחק ROT_OFFSET, עם איקון קשת+חץ
+    // מזוהה כדי שיהיה ברור שזו ידית סיבוב ולא סתם נקודה. נגישות מגע: ראה
+    // גם pinchRotate למטה (סיבוב בשתי אצבעות) — שתי הדרכים פעילות במקביל.
+    singleCtx.strokeStyle='#4f46e5'; singleCtx.lineWidth=1.5;
+    singleCtx.beginPath(); singleCtx.moveTo(0, -halfH); singleCtx.lineTo(0, -halfH - ROT_OFFSET); singleCtx.stroke();
+
     singleCtx.fillStyle='#4f46e5';
-    singleCtx.beginPath(); singleCtx.arc(0, -halfH - 18, 6, 0, Math.PI*2); singleCtx.fill();
+    singleCtx.beginPath(); singleCtx.arc(0, -halfH - ROT_OFFSET, ROT_R, 0, Math.PI*2); singleCtx.fill();
     singleCtx.strokeStyle='#fff'; singleCtx.lineWidth=2; singleCtx.stroke();
-    singleCtx.beginPath(); singleCtx.moveTo(0, -halfH); singleCtx.lineTo(0, -halfH - 18); singleCtx.stroke();
+
+    // איקון סיבוב מזוהה — קשת עם ראש חץ, לא עיגול סתמי
+    singleCtx.strokeStyle='#fff'; singleCtx.lineWidth=1.8;
+    singleCtx.beginPath();
+    singleCtx.arc(0, -halfH - ROT_OFFSET, ROT_R*0.5, -Math.PI*0.15, Math.PI*1.3);
+    singleCtx.stroke();
+    const rotAh = { x: (ROT_R*0.5)*Math.cos(Math.PI*1.3), y: -halfH-ROT_OFFSET + (ROT_R*0.5)*Math.sin(Math.PI*1.3) };
+    singleCtx.beginPath();
+    singleCtx.moveTo(rotAh.x-4, rotAh.y-2); singleCtx.lineTo(rotAh.x, rotAh.y); singleCtx.lineTo(rotAh.x-2, rotAh.y-5);
+    singleCtx.stroke();
 
     // ידית מחיקה
     singleCtx.fillStyle='#dc2626';
@@ -1279,8 +1298,94 @@ let interactionMode = null;
 let dragStart = {x:0, y:0};
 let initialLayerState = null;
 let resizeStart = null; // מצב התחלתי של גרירת ידית שינוי מידה (interactionMode==='resizeSticker'|'resizeLen')
+// ⚠️ באג אמיתי שנתפס לפני בדיקה: pointermove/pointerup הקיימים למטה מעולם
+// לא סיננו לפי e.pointerId — כל מגע שמזיז/משחרר, לא רק זה שהתחיל את
+// האינטראקציה, השפיע עליה. זה היה סמוי כל עוד היה מגע יחיד תמיד, אבל
+// pinchRotate למטה מציג במפורש מגע שני תוך כדי גרירה — בלי הסינון הזה,
+// הזזת האצבע השנייה (זו שלא נכנסה ל-pinch כי interactionMode כבר תפוס)
+// הייתה "מזנבת" את הגרירה הרגילה של האצבע הראשונה, ושחרור שלה לבד היה
+// מפסיק אותה בטעות. activeDragPointerId הוא ה-pointerId היחיד שמורשה
+// להזיז/לשחרר את האינטראקציה הפעילה כרגע.
+let activeDragPointerId = null;
+
+// סיבוב בשתי אצבעות (pinch-rotate) — התנועה הטבעית שכל מי שהשתמש
+// באפליקציית גלריה כבר מכיר, לצד ידית הסיבוב הגדולה למעלה. שתי הדרכים
+// פעילות במקביל, לא מחליפות זו את זו.
+// {capture:true} על שלושת המאזינים האלה מריץ אותם *לפני* מאזיני
+// ה-pointerdown/pointermove הרגילים למטה, גם כששניהם רשומים על אותו
+// singleCanvas עצמו (אומת בפועל: capture גובר על סדר-הרשמה גם כש-target
+// הוא האלמנט שעליו המאזין רשום, לא רק כשיש שרשרת הורה-צאצא).
+const activePointers = new Map(); // pointerId -> {x,y}
+let pinchStartAngle = 0, pinchStartRot = 0;
+// ⚠️ תיקון לבאג אמיתי שנתפס ב-Playwright (CDP touch אמיתי, לא dispatchEvent
+// מדומה), לא במפרט: כששתי אצבעות נוגעות "בו-זמנית", הדפדפן עדיין שולח שני
+// pointerdown נפרדים ברצף — pointer events הם תמיד לכל מגע בנפרד. אם האצבע
+// הראשונה נוחתת בדיוק על השכבה עצמה — התנהגות טבעית וצפויה כשמנסים לסובב
+// משהו! — ה-pointerdown שלה לבד כבר קובע interactionMode='move' *לפני*
+// שה-pointerdown של האצבע השנייה בכלל מגיע, ובדיקת interactionMode===null
+// הבלעדית של המפרט אף פעם לא הייתה נכנסת ל-pinch. אומת: pinch על שכבה
+// נבחרת פשוט לא הופעל אף פעם.
+// הפתרון: לא תזמון (שביר — כמה מ"ש נחשב "מהר מדי"?) אלא האם השכבה
+// *בפועל* כבר זזה מאז שה-'move' התחיל. אם לא — זו עדיין אותה נגיעה
+// ראשונית שממתינה לשנייה, בטוח לשדרג ל-pinch. אם כן — זו גרירה שכבר
+// בעיצומה (בדיוק תרחיש בדיקת הקבלה #4: "גרירה... ואז נגיעה שנייה תוך
+// כדי"), ואסור לחטוף אותה ל-pinch.
+singleCanvas.addEventListener('pointerdown', e => {
+  activePointers.set(e.pointerId, {x: e.clientX, y: e.clientY});
+  const l = selectedId && getLayer(selectedId);
+  const freshMove = interactionMode === 'move' && l && initialLayerState
+    && l.x === initialLayerState.x && l.y === initialLayerState.y;
+  if(activePointers.size === 2 && (interactionMode === null || freshMove) && selectedId){
+    const pts = [...activePointers.values()];
+    pinchStartAngle = Math.atan2(pts[1].y-pts[0].y, pts[1].x-pts[0].x);
+    pinchStartRot = (getLayer(selectedId)?.rot) || 0;
+    interactionMode = 'pinchRotate';
+    activeDragPointerId = null; // pinch לא שייך לפוינטר בודד אחד, כמו כל שאר האינטראקציות
+    // ⚠️ עוד באג אמיתי שנתפס באותה בדיקה: capture:true רק קובע סדר-הרצה —
+    // המאזין הרגיל (הישן, למטה) עדיין רץ *גם הוא* על אותו pointerdown של
+    // האצבע השנייה, ומריץ מחדש hit-testing מלא על המיקום שלה. אם היא נחתה
+    // על השכבה (סביר — זו בדיוק המחווה) הוא היה "תופס" אותה כגרירת move
+    // חדשה ודורס בחזרה את pinchRotate שרק הוגדר. חייבים לעצור את האירוע
+    // כאן במפורש, לא לסמוך על capture לבד.
+    e.stopImmediatePropagation();
+  }
+}, {capture:true});
+
+singleCanvas.addEventListener('pointermove', e => {
+  if(!activePointers.has(e.pointerId)) return;
+  activePointers.set(e.pointerId, {x: e.clientX, y: e.clientY});
+  if(interactionMode === 'pinchRotate' && activePointers.size === 2){
+    const pts = [...activePointers.values()];
+    const angle = Math.atan2(pts[1].y-pts[0].y, pts[1].x-pts[0].x);
+    const l = getLayer(selectedId);
+    if(l){
+      l.rot = Math.round(pinchStartRot + (angle-pinchStartAngle)*180/Math.PI);
+      drawSingle(); schedSheet();
+    }
+  }
+}, {capture:true});
+
+['pointerup','pointercancel'].forEach(ev => singleCanvas.addEventListener(ev, e => {
+  activePointers.delete(e.pointerId);
+  if(interactionMode === 'pinchRotate' && activePointers.size < 2){
+    interactionMode = null;
+    invalidateTile();
+    schedSheet();
+  }
+}, {capture:true}));
 
 singleCanvas.addEventListener('pointerdown', e=>{
+  // ⚠️ באג אמיתי שנתפס ב-Playwright (CDP touch אמיתי): אצבע נוספת שנוגעת
+  // תוך כדי אינטראקציה שכבר בעיצומה, ולא נכנסה ל-pinch (למשל כי השכבה כבר
+  // זזה — ראה freshMove למעלה), עדיין הייתה מגיעה לכאן ומריצה hit-testing
+  // מלא על המיקום שלה כאילו זו התחלת אינטראקציה חדשה. אם היא נוחתת באזור
+  // ריק — מבטלת את הבחירה (selectedId=null) באמצע הגרירה של האצבע
+  // הראשונה, והורגת אותה (pointermove הבא לא מוצא שכבה נבחרת). אצבע
+  // שאינה זו שמניעה את האינטראקציה הפעילה כרגע לא אמורה לגעת בכלום.
+  if(interactionMode !== null && interactionMode !== 'pinchRotate' && e.pointerId !== activeDragPointerId){
+    return;
+  }
+
   const rect = singleCanvas.getBoundingClientRect();
   const { boxX, boxY, boxW, boxH } = currentEditorBox();
 
@@ -1298,6 +1403,7 @@ singleCanvas.addEventListener('pointerdown', e=>{
     if(Math.hypot(x - (boxX+boxW/2), y - (boxY+boxH)) < 14){
       interactionMode = 'resizeSticker';
       singleCanvas.setPointerCapture(e.pointerId);
+      activeDragPointerId = e.pointerId;
       dragStart = {x, y};
       resizeStart = { scale: boxH/natH, widMm: state.widMm }; // scale לפי boxH/natH — לא boxW/natW
       return;
@@ -1310,6 +1416,7 @@ singleCanvas.addEventListener('pointerdown', e=>{
       if(Math.hypot(x - boxX, y - (boxY+boxH/2)) < 14){
         interactionMode = 'resizeLen';
         singleCanvas.setPointerCapture(e.pointerId);
+        activeDragPointerId = e.pointerId;
         dragStart = {x, y};
         resizeStart = { scale: boxW/natW, lenMm: state.lenMm, side: 'left' };
         return;
@@ -1317,6 +1424,7 @@ singleCanvas.addEventListener('pointerdown', e=>{
       if(Math.hypot(x - (boxX+boxW), y - (boxY+boxH/2)) < 14){
         interactionMode = 'resizeLen';
         singleCanvas.setPointerCapture(e.pointerId);
+        activeDragPointerId = e.pointerId;
         dragStart = {x, y};
         resizeStart = { scale: boxW/natW, lenMm: state.lenMm, side: 'right' };
         return;
@@ -1343,9 +1451,9 @@ singleCanvas.addEventListener('pointerdown', e=>{
       return;
     }
 
-    const rotHandleX = px + (0 * Math.cos(rad) - (-halfH - 18) * Math.sin(rad));
-    const rotHandleY = py + (0 * Math.sin(rad) + (-halfH - 18) * Math.cos(rad));
-    if(Math.hypot(x - rotHandleX, y - rotHandleY) < 14){
+    const rotHandleX = px + (0 * Math.cos(rad) - (-halfH - ROT_OFFSET) * Math.sin(rad));
+    const rotHandleY = py + (0 * Math.sin(rad) + (-halfH - ROT_OFFSET) * Math.cos(rad));
+    if(Math.hypot(x - rotHandleX, y - rotHandleY) < 22){   // רדיוס תפיסה גדול משמעותית
       interactionMode = 'rotate';
       initDrag(e, activeLayer, x, y);
       return;
@@ -1371,6 +1479,7 @@ singleCanvas.addEventListener('pointerdown', e=>{
       if(Math.hypot(x-hpx, y-hpy) < 14){
         interactionMode = 'resizeTextBox';
         singleCanvas.setPointerCapture(e.pointerId);
+        activeDragPointerId = e.pointerId;
         dragStart = {x, y};
         // המרה מרוחב-פיקסלים לרוחב-שבר בגרירה הראשונה: אם boxWidth עדיין
         // לא מוגדר (מצב legacy), מחשבים אותו מהרוחב הטבעי הנוכחי — כדי
@@ -1386,7 +1495,7 @@ singleCanvas.addEventListener('pointerdown', e=>{
     if(pointInLayer(l, x, y, boxX, boxY, boxW, boxH, singleCtx)){
       selectedId = l.id; updateSelectedControls();
       interactionMode = 'move';
-      initDrag(e, l, x, y);
+      initDrag(e, l, x, y); // initialLayerState כאן הוא העוגן ש-pinchRotate בודקת מולו (ראה למעלה)
       drawSingle();
       return;
     }
@@ -1399,12 +1508,14 @@ singleCanvas.addEventListener('pointerdown', e=>{
 
 function initDrag(e, layer, x, y){
   singleCanvas.setPointerCapture(e.pointerId);
+  activeDragPointerId = e.pointerId;
   dragStart = {x, y};
   initialLayerState = {x: layer.x, y: layer.y, scale: layer.scale, rot: layer.rot || 0};
 }
 
 singleCanvas.addEventListener('pointermove', e=>{
   if(!interactionMode) return;
+  if(e.pointerId !== activeDragPointerId) return; // מגע אחר (למשל אצבע שנייה ל-pinch) לא נוגע באינטראקציה הפעילה
   const W = singleCanvas.width, H = singleCanvas.height;
   const rect = singleCanvas.getBoundingClientRect();
   const x = (e.clientX-rect.left)/rect.width * W;
@@ -1466,7 +1577,13 @@ singleCanvas.addEventListener('pointermove', e=>{
   schedSheet();
 });
 
-singleCanvas.addEventListener('pointerup', ()=>{ interactionMode = null; schedSheet(); });
+singleCanvas.addEventListener('pointerup', e=>{
+  if(interactionMode === 'pinchRotate') return; // מטופל ע"י מאזין ה-pinch הייעודי למטה
+  if(e.pointerId !== activeDragPointerId) return; // שחרור אצבע אחרת לא מפסיק את הגרירה הפעילה
+  interactionMode = null;
+  activeDragPointerId = null;
+  schedSheet();
+});
 
 // לחיצה כפולה על שכבת טקסט → מיקוד שדה העריכה הקיים, בלי עריכה בתוך
 // הקנבס עצמו (יקר לבנות, #sel-text-input כבר עובד). boxX/boxY/boxW/boxH
