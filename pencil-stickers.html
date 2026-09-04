@@ -91,7 +91,7 @@
     <div class="panel highlight">
       <h2 id="shape-panel-title">1️⃣ עיצוב מבנה ופרופורציה (תצוגה מקדימה)</h2>
 
-      <div class="free-mode-hide">
+      <div class="free-mode-hide" id="shape-select-block">
         <div style="margin-bottom:6px">
           <label style="font-size:12px;font-weight:700;display:block;margin-bottom:4px">🎨 צורת חיתוך מעניינת:</label>
           <select id="sticker-shape">
@@ -171,7 +171,7 @@
     </div>
 
     <!-- פאנל גודל פיזי וחישוב הגיליון — הגיליון מתעדכן אוטומטית, בלי כפתור -->
-    <div class="panel free-mode-hide">
+    <div class="panel free-mode-hide" id="size-panel">
       <h2>2️⃣ גודל פיזי סופי וחישוב דף</h2>
       <div class="row">
         <div id="len-field">
@@ -195,7 +195,10 @@
         <button class="btn btn-primary" id="fit-notebook" style="font-size:12px;background:#b45309;border-color:#b45309">📓 מחברות</button>
       </div>
 
-      <div style="margin-top:6px">
+      <!-- "כמה מדבקות מהעיצוב הזה נכנסות בכל הדף" — לא רלוונטי בעריכת יחידת
+           קבוצה חוזרת (שם הכמות קבועה משדה "כמות" והשטח נגזר ממנה, לא להפך;
+           הדף גם משותף עם קבוצות אחרות). מוסתר דינמית ב-updateGroupEditVisibility. -->
+      <div id="page-fill-info-block" style="margin-top:6px">
         <label style="font-size:12px;font-weight:700;display:block;margin-bottom:4px">כיוון הפריסה בדף:</label>
         <select id="orient-select">
           <option value="auto">אוטומטי (מומלץ)</option>
@@ -203,9 +206,8 @@
           <option value="across">לרוחב</option>
         </select>
         <div class="hint" id="orient-info" style="margin-top:4px"></div>
+        <div class="count-box" id="count-box" style="margin-top:6px"></div>
       </div>
-
-      <div class="count-box" id="count-box" style="margin-top:6px"></div>
     </div>
 
     <!-- פאנל הדפסה וחיתוך — כלי מנהל בלבד, ראה isAdminView() -->
@@ -271,6 +273,17 @@
     <div class="panel free-mode-hide" id="dual-design-panel">
       <button class="btn" id="add-second-design-btn" style="width:100%">➕ הוסף סוג/גודל שני</button>
       <div class="hint">לקוח שמזמין שני גדלים/צורות שונים על אותו דף — למשל מדבקה גדולה לתיק ומדבקה קטנה לקלמר. גוררים את קו ההפרדה בתצוגת הגיליון למטה כדי לקבוע כמה מהדף כל סוג מקבל.</div>
+    </div>
+    <!-- קבוצות חוזרות — כלי מנהל, רק בעריכה חופשית. כל קבוצה היא בדיוק "מדבקה"
+         (צורה+גודל+שכבות, אותו state/layers/currentRatio ששאר הכלי כבר משתמש
+         בהם — ראה switchGroupEditTarget) עם כמות יעד; השטח שהיא תופסת בדף
+         נגזר מהכמות, לא להפך. -->
+    <div class="panel free-mode-only" id="repeat-groups-panel">
+      <h2>🔁 קבוצות על הדף</h2>
+      <div id="repeat-groups-list" style="display:flex;flex-direction:column;gap:8px"></div>
+      <button class="btn btn-primary" id="add-repeat-group-btn" style="width:100%">➕ הוסף קבוצה חדשה</button>
+      <button class="btn" id="exit-group-edit-btn" style="width:100%;display:none">↩️ חזרה לתצוגה הכללית</button>
+      <div class="hint">מעצבים יחידה אחת (טקסט/אייקון/תמונה — צורה וגודל, בדיוק כמו מדבקה רגילה), קובעים כמות, והמערכת פורסת אוטומטית עותקים כדי להגיע לכמות. כמה קבוצות זו לצד/מתחת לזו.</div>
     </div>
     <div class="panel">
       <h2>שכבות</h2>
@@ -494,7 +507,12 @@ function freeLayoutBox(){
 
 // נקודת כניסה יחידה שכל אתרי הקריאה ל-singleCanvas משתמשים בה — כך ששני
 // המצבים (מדבקה/חופשי) לא מתפצלים לשני נתיבי קוד נפרדים בכל מקום.
+// כש-activeGroupId!==null אנחנו עורכים יחידת-קבוצה בודדת (מדבקה רגילה,
+// לכל דבר) גם אם ה-URL הוא מצב חופשי — הקופסה חייבת להיות computeStickerBox
+// (ממוסגרת, ביחס לצורה), לא freeLayoutBox (כל הדף). נבדק ראשון, לפני
+// isFreeMode(), כי הוא גובר עליו.
 function currentEditorBox(){
+  if(activeGroupId !== null) return computeStickerBox();
   return isFreeMode() ? freeLayoutBox() : computeStickerBox();
 }
 
@@ -541,6 +559,20 @@ let design1Backup = null;  // snapshot של סוג 1, כש-activeSlot===2
 let activeSlot = 1;        // 1 או 2 — מה layers/state מייצגים כרגע
 let splitFraction = 0.5;   // 0.1–0.9, נשלט ע"י קו ההפרדה הגרור בתצוגת הגיליון
 
+// קבוצות חוזרות (עריכה חופשית בלבד) — כל קבוצה היא בדיוק "מדבקה" (shape/
+// radius/lenMm/widMm/layers, עם ratio משלה) פלוס qty. אותו עיקרון בדיוק כמו
+// activeSlot/secondDesign למעלה, רק כללי-יותר (N קבוצות, לא 2 סלוטים קבועים):
+// כש-activeGroupId!==null, state/layers/currentRatio "שאולים" ע"י יחידת
+// התוכן של הקבוצה הנוכחית — בדיוק כמו ששני סלוטי המדבקה כבר חולקים אותם
+// משתנים. שני ההקשרים (מדבקה רגילה מול יחידת קבוצה) אף פעם לא פעילים
+// בו-זמנית (הראשון רק כש-!isFreeMode(), השני רק כש-isFreeMode()) — שיתוף
+// המשתנים הגלובליים בטוח, ומאפשר לקבוצה להשתמש בכל מנגנון העריכה הקיים
+// (בורר צורה, שדות גודל, פריסטים, ידיות שינוי-מידה, גרירה/סיבוב/שינוי-גודל
+// של שכבות) בלי לשכפל אף אחד מהם.
+let repeatGroups = [];      // [{ id, shape, radius, lenMm, widMm, ratio, qty, layers }]
+let activeGroupId = null;   // null = עורכים את התוכן החופשי הבסיסי (כמו היום); אחרת מזהה הקבוצה שבעריכה
+let baseFreeLayers = null;  // גיבוי layers של התוכן החופשי הבסיסי, כש-activeGroupId!==null
+
 // חריגה מהמפרט, מדווחת בכוונה: JSON.parse(JSON.stringify(layers)) לבד
 // מאבד שכבת תמונה מועלית — l.image הוא אלמנט Image (DOM), ו-JSON.stringify
 // הופך אותו ל-{} בשקט (לא זורק שגיאה). התוצאה: מעבר לטאב "מדבקה 2" ובחזרה
@@ -579,6 +611,59 @@ function switchToSlot(n){
   loadDesignIntoActive(n === 1 ? design1Backup : secondDesign);
   activeSlot = n;
   updateSelectedControls(); invalidateTile(); drawSingle(); schedSheet();
+}
+
+// מעבר בין עריכת התוכן החופשי הבסיסי (groupId===null) לעריכת יחידת קבוצה
+// ספציפית — אותו דפוס בדיוק כמו switchToSlot: שומרת את מה שהיה פעיל
+// בחזרה לבעלים שלו (repeatGroups[..] או baseFreeLayers), וטוענת את היעד
+// החדש לתוך state/layers/currentRatio החיים.
+function switchGroupEditTarget(groupId){
+  if(groupId === activeGroupId) return;
+  if(activeGroupId !== null){
+    const g = repeatGroups.find(x=>x.id===activeGroupId);
+    if(g){
+      g.shape = state.shape; g.radius = state.radius; g.lenMm = state.lenMm; g.widMm = state.widMm;
+      g.ratio = currentRatio;
+      g.layers = cloneLayersPreservingImages(layers);
+    }
+  } else {
+    baseFreeLayers = cloneLayersPreservingImages(layers);
+  }
+
+  if(groupId === null){
+    layers = cloneLayersPreservingImages(baseFreeLayers || []);
+  } else {
+    const g = repeatGroups.find(x=>x.id===groupId);
+    state.shape = g.shape; state.radius = g.radius; state.lenMm = g.lenMm; state.widMm = g.widMm;
+    currentRatio = g.ratio;
+    layers = cloneLayersPreservingImages(g.layers);
+  }
+  selectedId = layers[0]?.id || null;
+  activeGroupId = groupId;
+
+  document.getElementById('radius-box').style.display = (activeGroupId !== null && state.shape === 'rounded') ? 'block' : 'none';
+  updateGroupEditVisibility();
+  renderRepeatGroupsList();
+  updateSelectedControls();
+  drawSingle();
+  schedSheet();
+}
+
+// shape-select-block/size-panel מוסתרים תמידית (free-mode-hide, נקבע פעם
+// אחת ב-applyAdminVisibility) — כשעורכים יחידת קבוצה צריך לחשוף אותם באופן
+// זמני ודינמי, לכן toggle ישיר ולא הסתמכות על ה-sweep החד-פעמי. שומרת מוגן
+// ב-isFreeMode() כדי שלעולם לא תיגע בתצוגה של הזרימה הרגילה.
+function updateGroupEditVisibility(){
+  if(!isFreeMode()) return;
+  const editing = activeGroupId !== null;
+  document.getElementById('shape-select-block').style.display = editing ? '' : 'none';
+  document.getElementById('size-panel').style.display = editing ? '' : 'none';
+  // "כמה מדבקות מהעיצוב הזה נכנסות בכל הדף" שייך רק לזרימת מדבקה-יחידה
+  // רגילה — בעריכת קבוצה הכמות קבועה משדה "כמות" (בפאנל הקבוצות), לא נגזרת
+  // ממילוי הדף, אז מציג את זה כאן רק מטעה.
+  document.getElementById('page-fill-info-block').style.display = editing ? 'none' : '';
+  document.getElementById('single-canvas-title').textContent = editing ? 'עיצוב יחידת הקבוצה' : 'עריכה חופשית לדף A4';
+  document.getElementById('exit-group-edit-btn').style.display = editing ? '' : 'none';
 }
 
 // כמו packing/layout, אבל לתת-אזור נתון (uW×uH, מוזז מ-left/top) ולעיצוב
@@ -633,6 +718,63 @@ function splitFractionValid(frac){
   const { L1, L2 } = dualLayout();
   splitFraction = saved;
   return L1.total >= 1 && L2.total >= 1;
+}
+
+// "מדף" (shelf) אופקי פשוט לקבוצה חוזרת אחת — לא Bin Packing מורכב. ההפוך
+// המדויק מ-packingIn/layoutIn: שם שטח קבוע → כמות נגזרת, כאן qty (הקלט
+// הקבוע) → heightNeeded (הנגזר).
+function shelfFor(w, h, uW, targetQty){
+  const perRow = Math.max(1, Math.floor((uW + GAP_MM) / (w + GAP_MM)));
+  const rows = Math.ceil(targetQty / perRow);
+  const heightNeeded = rows*h + Math.max(0, rows-1)*GAP_MM;
+  return { perRow, rows, heightNeeded };
+}
+
+// design/layers של קבוצה — לקבוצה שבעריכה כרגע (activeGroupId) קוראים ישירות
+// מ-state/layers החיים, לא מה-snapshot המיושן שעדיין שמור ב-repeatGroups
+// (הוא מתעדכן רק ב-switchGroupEditTarget, ביציאה מעריכה). אותו עיקרון בדיוק
+// כמו d1/d2 ב-dualLayout() לסלוט הפעיל.
+function groupDesign(g){
+  return g.id === activeGroupId
+    ? { shape: state.shape, radius: state.radius, lenMm: state.lenMm, widMm: state.widMm }
+    : g;
+}
+function groupLayers(g){
+  return g.id === activeGroupId ? layers : g.layers;
+}
+
+// פורסת את כל repeatGroups אנכית, קבוצה מתחת לקבוצה, לפי סדר ההוספה, בתוך
+// אותו שטח שמיש (MARGIN/SIZE) שהזרימה הרגילה כבר משתמשת בו. כל קבוצה
+// מקבלת L בפורמט זהה למה ש-layoutIn מחזירה — כך ש-drawRegionTiles/
+// svgTilesFor הקיימות (בלי שום שינוי!) מסוגלות לצייר אותה ישירות.
+function layoutAllGroups(){
+  const uW = SIZE.usableW, uH = SIZE.usableH;
+  let top = MARGIN.top, remaining = uH;
+  const placed = [];
+  for(const g of repeatGroups){
+    const design = groupDesign(g), designLayers = groupLayers(g);
+    const {w, h} = natDims(design);
+    const wanted = shelfFor(w, h, uW, g.qty);
+    const fits = wanted.heightNeeded <= remaining;
+    // ⚠️ חריגה מהמפרט, נדרשת לתיקון באג אמיתי בנוסחת shelfFor שניתנה: מכיוון
+    // ש-rows=ceil(qty/perRow) מבטיח תמיד perRow*rows≥qty, actualQty=min(qty,
+    // perRow*rows) היה שווה ל-qty *תמיד* — "⚠️ נכנסים רק X מתוך Y" מהמוקאפ
+    // (סעיף 4) לא היה יכול להיות נכון אף פעם, גם כש-fits===false. כשלא נכנס
+    // הכול, סופרים כמה שורות *שלמות* באמת נכנסות בשטח שנותר (remaining), ומזה
+    // גוזרים actualQty אמיתי — ומקדמים top/remaining לפי הגובה שבאמת נוצל,
+    // לא לפי מה שהתבקש (כדי שקבוצה הבאה עדיין תוכל להשתמש בשארית).
+    const rows = fits ? wanted.rows : Math.max(0, Math.floor((remaining + GAP_MM) / (h + GAP_MM)));
+    const actualQty = Math.min(g.qty, wanted.perRow * rows);
+    const heightUsed = rows*h + Math.max(0, rows-1)*GAP_MM;
+    const gridW = wanted.perRow*w + Math.max(0, wanted.perRow-1)*GAP_MM;
+    const L = {
+      rot:false, w, h, cols:wanted.perRow, rows, total:actualQty, g:GAP_MM,
+      left: MARGIN.left + (uW-gridW)/2, top,
+    };
+    placed.push({ group:g, design, designLayers, shelf:{...wanted, actualQty}, fits, L });
+    if(rows > 0){ top += heightUsed + GAP_MM*2; remaining -= heightUsed + GAP_MM*2; }
+  }
+  return placed;
 }
 
 function getLayer(id){ return layers.find(l=>l.id===id); }
@@ -999,6 +1141,7 @@ function pointInLayer(l, x, y, boxX, boxY, boxW, boxH, ctx){
 
 function drawSingle(){
   invalidateTile(); // כל שינוי שגורם לצייר מחדש את התצוגה הבודדת פוסל גם את אריח הגיליון
+  if(activeGroupId !== null) invalidateTile(activeGroupId); // האריח של הקבוצה הנערכת כרגע (מפתח מחרוזת, לא מתנגש עם 1/2)
   const W = singleCanvas.width, H = singleCanvas.height;
   singleCtx.clearRect(0,0,W,H);
   singleCtx.fillStyle='#fff'; singleCtx.fillRect(0,0,W,H);
@@ -1009,12 +1152,28 @@ function drawSingle(){
 
   const { boxX, boxY, boxW, boxH } = currentEditorBox();
 
-  if(isFreeMode()){
+  // activeGroupId!==null: עורכים יחידת-קבוצה בודדת — זו בדיוק מדבקה רגילה
+  // (renderStickerContent + ידיות שינוי-מידה), גם אם isFreeMode()===true.
+  // לכן הענף החופשי (כל הדף, בלי מסגרת) רץ רק כש-activeGroupId===null.
+  if(isFreeMode() && activeGroupId === null){
     // דף A4 חופשי — בלי מסגרת מדבקה, בלי חיתוך, בלי סימני רישום, אלא אם
     // מצב חיתוך "מלבן עם מרווח" פעיל. "עמוד" לבן ברור מהרקע המנוקד, בדיוק
     // כמו שהמדבקה עצמה לבנה על הרקע המנוקד במצב הרגיל.
     singleCtx.fillStyle='#fff'; singleCtx.fillRect(boxX, boxY, boxW, boxH);
     singleCtx.strokeStyle='#cbd5e1'; singleCtx.lineWidth=1; singleCtx.strokeRect(boxX, boxY, boxW, boxH);
+
+    // קבוצות חוזרות — מצוירות ביחס לכל הקנבס (scale=W/210), לא ל-boxW/boxH
+    // (92%-box): אותה מוסכמה בדיוק כמו סימני הרישום/marginPx למטה — מ"מ
+    // פיזיים נמדדים תמיד ביחס לדף המלא, לא לאזור-הבטיחות הפנימי. drawRegionTiles
+    // הקיימת (משני-סוגי-מדבקה) משמשת בלי שום שינוי — רק אובייקט L תואם.
+    if(repeatGroups.length){
+      const scale = W / 210;
+      layoutAllGroups().forEach(p => {
+        if(!p.fits) return;
+        drawRegionTiles(singleCtx, scale, p.L, p.design, p.designLayers, true, p.group.id);
+      });
+    }
+
     drawLayers(singleCtx, boxX, boxY, boxW, boxH, 1.2);
     if(freeCutMode() === 'margin'){
       // אותו יחס פיקסל-למ"מ שמשמש את exportFreeLayoutPDF/buildFreeCutSvg —
@@ -1024,10 +1183,14 @@ function drawSingle(){
       layers.forEach(l => drawMarginRect(singleCtx, l, boxX, boxY, boxW, boxH, marginPx));
       drawRegMarks(singleCtx, scale, W, H);
     }
-    // אין ידיות מסגרת-מדבקה (גובה/אורך) במצב חופשי — אין "גודל מדבקה" כאן.
-    // ממשיכים לבלוק activeLayer המשותף למטה: הזזה/סיבוב/שינוי-גודל/רוחב-
-    // תיבה של שכבה נבחרת עובדים בדיוק אותו דבר בשני המצבים.
+    // אין ידיות מסגרת-מדבקה (גובה/אורך) בתצוגת התוכן החופשי הבסיסי — אין
+    // "גודל מדבקה" כאן. ממשיכים לבלוק activeLayer המשותף למטה: הזזה/סיבוב/
+    // שינוי-גודל/רוחב-תיבה של שכבה נבחרת עובדים בדיוק אותו דבר בכל המצבים.
   } else {
+    // !isFreeMode() (מדבקה/סוג-שני רגילים) *או* עריכת יחידת-קבוצה
+    // (isFreeMode() && activeGroupId!==null) — שני ההקשרים משתמשים באותו
+    // state/layers, אז אותו קוד בדיוק (renderStickerContent + ידיות שינוי-
+    // מידה) משרת את שניהם בלי שום ענף נפרד.
     renderStickerContent(singleCtx, boxX, boxY, boxW, boxH, 1.2);
 
     // ידית שינוי מידה של המדבקה עצמה (לא של שכבה) — פינה ימנית-תחתונה של הקופסה.
@@ -1120,6 +1283,7 @@ function drawSingle(){
   }
 
   renderLayersList();
+  if(isFreeMode()) renderRepeatGroupsList();
 }
 
 // אריח במטמון — צילום של מדבקה אחת בכיוון הטבעי שלה (לא מסובב). נבנה פעם
@@ -1170,6 +1334,55 @@ function drawRegMarks(ctx, scale, W, H){
 // 'margin' (מלבן עם מרווח סביב כל שכבה). קריאים רק כש-isFreeMode().
 function freeCutMode(){ return document.getElementById('free-cut-mode')?.value || 'none'; }
 function freeMarginMm(){ return parseFloat(document.getElementById('free-margin-mm')?.value) || 10; }
+
+// רשימת קבוצות חוזרות — תצוגה מקדימה קטנה (buildTile טרי, לא מ-tileCache
+// המשותף: קבוצות אחרות לא באמצע עריכה, אבל בניית תמונה זולה מספיק שלא
+// שווה לסבך עם מטמון נפרד לתצוגה של 44x44) + שדה כמות + עריכה/מחיקה.
+// נקראת מ-drawSingle() (isFreeMode) בכל רינדור, בדיוק כמו renderLayersList
+// שכבר עושה את זה לרשימת השכבות.
+function renderRepeatGroupsList(){
+  const box = document.getElementById('repeat-groups-list');
+  if(!box) return;
+  // ⚠️ באג אמיתי שנתפס בבדיקה, לא במפרט: drawSingle() קורא לפונקציה הזו
+  // בכל רינדור (בדיוק כמו renderLayersList) — כולל בכל pointermove/input
+  // אירוע. שדה הכמות (.group-qty-input) יושב בתוך ה-innerHTML הזה, אז
+  // רינדור-מחדש תוך כדי הקלדה היה הורס את ה-<input> הממוקד ומאבד פוקוס
+  // וסמן אחרי כל תו. פשוט מדלגים על הבנייה מחדש כל עוד שדה כמות ממוקד —
+  // תצוגת הסטטוס תתעדכן ברגע שהפוקוס עוזב (ראה מאזין ה-blur למטה) או בכל
+  // פעולה אחרת. הקנבס (התצוגה המקדימה) עצמו ממשיך להתעדכן חי בכל הקלדה —
+  // רק רשימת ה-DOM הזו מוגנת.
+  if(document.activeElement && document.activeElement.classList.contains('group-qty-input')) return;
+  const placed = layoutAllGroups();
+  box.innerHTML = placed.map(p => {
+    const g = p.group;
+    const statusHtml = p.fits
+      ? `<span style="color:#059669">✅ ${p.shelf.actualQty} עותקים נכנסים</span>`
+      : `<span style="color:#b45309">⚠️ נכנסים רק ${p.shelf.actualQty} מתוך ${g.qty}</span>`;
+    return `
+      <div class="layer-row${g.id===activeGroupId?' selected':''}" style="align-items:flex-start;flex-direction:column;gap:6px;cursor:default">
+        <div style="display:flex;width:100%;align-items:center;gap:8px">
+          <canvas class="group-thumb" width="44" height="44" data-gid="${escapeHtml(g.id)}" style="border:1px solid #e2e8f0;border-radius:6px;background:#fff;flex-shrink:0"></canvas>
+          <div style="flex:1">
+            <label style="font-size:11px">כמות</label>
+            <input type="number" class="group-qty-input" data-gid="${escapeHtml(g.id)}" min="1" max="500" value="${g.qty}" style="width:100%">
+          </div>
+          <button class="btn" type="button" data-edit-gid="${escapeHtml(g.id)}" title="ערוך" style="padding:6px 10px">✏️</button>
+          <button class="btn btn-danger" type="button" data-del-gid="${escapeHtml(g.id)}" title="מחק" style="padding:6px 10px">✕</button>
+        </div>
+        <div style="font-size:11px;font-weight:700">${statusHtml}</div>
+      </div>`;
+  }).join('');
+
+  placed.forEach(p => {
+    const cv = box.querySelector(`canvas[data-gid="${CSS.escape(p.group.id)}"]`);
+    if(!cv) return;
+    const tile = buildTile(0.6, false, p.design, p.designLayers);
+    const tctx = cv.getContext('2d');
+    tctx.clearRect(0,0,44,44);
+    const s = Math.min(44/tile.width, 44/tile.height);
+    tctx.drawImage(tile, (44-tile.width*s)/2, (44-tile.height*s)/2, tile.width*s, tile.height*s);
+  });
+}
 
 // מלבן החיתוך של שכבה = המדידה האמיתית שלה (layerHalfSize, שכבר כוללת
 // טקסט עטוף/תמונות) בתוספת מרווח קבוע. זו הסיבה שכל העבודה הקודמת
@@ -1392,9 +1605,10 @@ singleCanvas.addEventListener('pointerdown', e=>{
   const x = (e.clientX-rect.left)/rect.width * singleCanvas.width;
   const y = (e.clientY-rect.top)/rect.height * singleCanvas.height;
 
-  // ידיות מסגרת-מדבקה (גובה/אורך) — לא קיימות במצב חופשי, אין שם "גודל
-  // מדבקה" בכלל. isFreeMode() בודקת פעם אחת, לא בכל hit-test בנפרד.
-  if(!isFreeMode()){
+  // ידיות מסגרת-מדבקה (גובה/אורך) — לא קיימות בתוכן החופשי הבסיסי, אין שם
+  // "גודל מדבקה" בכלל. אבל כן קיימות בעריכת יחידת-קבוצה (activeGroupId!==null)
+  // — זו בדיוק מדבקה רגילה, ראה drawSingle(). אותו תנאי בדיוק כמו שם.
+  if(!isFreeMode() || activeGroupId !== null){
     const {w:natW, h:natH} = natDims();
 
     // ידית שינוי מידה של המדבקה — תחתית-מרכז הקופסה, קודמת לכל ידית שכבה כי
@@ -2152,16 +2366,34 @@ async function exportFreeLayoutPDF(){
   const ctx = cv.getContext('2d');
   ctx.fillStyle = '#fff'; ctx.fillRect(0,0,cv.width,cv.height);
 
+  const scale = cv.width / 210; // px-per-מ"מ אמיתי, ביחס לכל הדף (לא ל-92%-box)
+
+  // קבוצות חוזרות — אריחי המדפסת (300 DPI) שונים מאריחי התצוגה (רזולוציית
+  // המסך): מטמון tileCache[groupId] חייב להיפסל לפני ואחרי, בדיוק כמו
+  // buildPrintFile/export-print-pdf כבר עושים לסלוטים 1/2 של המדבקה הרגילה.
+  if(repeatGroups.length){
+    repeatGroups.forEach(g => invalidateTile(g.id));
+    layoutAllGroups().forEach(p => {
+      if(!p.fits) return;
+      drawRegionTiles(ctx, scale, p.L, p.design, p.designLayers, false, p.group.id);
+    });
+    repeatGroups.forEach(g => invalidateTile(g.id)); // חזרה לרזולוציית התצוגה
+  }
+
   const boxW = cv.width * 0.92, boxH = boxW * (297/210);
   const boxX = (cv.width-boxW)/2, boxY = (cv.height-boxH)/2;
 
   drawLayers(ctx, boxX, boxY, boxW, boxH, 1.2); // אין clip — כל שכבה חופשית על כל הדף
 
+  // סימני רישום: גם במצב "מלבן עם מרווח" (כמו היום) וגם כשיש קבוצה חוזרת
+  // אחת לפחות — לקבוצות יש קווי חיתוך אמיתיים (הצורה שלהן עצמה) שדורשים
+  // התאמה ב-Studio בדיוק כמו הזרימה הרגילה.
+  if(freeCutMode() === 'margin' || repeatGroups.length){
+    drawRegMarks(ctx, scale, cv.width, cv.height);
+  }
   if(freeCutMode() === 'margin'){
-    const scale = cv.width / 210; // px-per-מ"מ אמיתי, ביחס לכל הדף (לא ל-92%-box)
     const marginPx = freeMarginMm() * scale;
     layers.forEach(l => drawMarginRect(ctx, l, boxX, boxY, boxW, boxH, marginPx));
-    drawRegMarks(ctx, scale, cv.width, cv.height);
   }
 
   const { jsPDF } = window.jspdf;
@@ -2189,13 +2421,26 @@ function buildFreeCutSvg(){
   let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${Wmm}mm" height="${Hmm}mm" viewBox="0 0 ${Wmm} ${Hmm}">\n`;
   svg += `  <g stroke="#ff0000" stroke-width="0.1" fill="none">\n`;
 
-  const sorted = [...layers].sort((a,b)=>a.z-b.z);
-  sorted.forEach(l => {
-    const { halfW, halfH } = marginRectFor(l, singleCtx, boxHpx, boxWpx, marginPx);
-    const halfWmm = halfW * mmPerPx, halfHmm = halfH * mmPerPx;
-    const cxMm = boxXmm + l.x*boxWmm, cyMm = boxYmm + l.y*boxHmm;
-    svg += `    <g transform="translate(${cxMm},${cyMm}) rotate(${l.rot||0})"><rect x="${-halfWmm}" y="${-halfHmm}" width="${halfWmm*2}" height="${halfHmm*2}"/></g>\n`;
+  // קבוצות חוזרות — אותה צורה וקטורית בדיוק כמו buildCutSvg הרגיל
+  // (svgTilesFor, בלי שום שינוי), רק ללולאה על repeatGroups. תמיד — בלי
+  // תלות בבורר מצב-החיתוך, שקובע רק את התוכן החופשי הבסיסי (למטה).
+  layoutAllGroups().forEach(p => {
+    if(!p.fits) return;
+    svg += svgTilesFor(p.L, p.design);
   });
+
+  // מלבן-חיתוך לכל שכבה בתוכן החופשי הבסיסי — רק במצב "מלבן עם מרווח".
+  // כשקוראים לפונקציה הזו רק בגלל קבוצות (cutMode==='none'), התוכן החופשי
+  // הבסיסי ממשיך להסתמך על Trace ב-Studio, כמו תמיד — לא מוסיפים לו כאן כלום.
+  if(freeCutMode() === 'margin'){
+    const sorted = [...layers].sort((a,b)=>a.z-b.z);
+    sorted.forEach(l => {
+      const { halfW, halfH } = marginRectFor(l, singleCtx, boxHpx, boxWpx, marginPx);
+      const halfWmm = halfW * mmPerPx, halfHmm = halfH * mmPerPx;
+      const cxMm = boxXmm + l.x*boxWmm, cyMm = boxYmm + l.y*boxHmm;
+      svg += `    <g transform="translate(${cxMm},${cyMm}) rotate(${l.rot||0})"><rect x="${-halfWmm}" y="${-halfHmm}" width="${halfWmm*2}" height="${halfHmm*2}"/></g>\n`;
+    });
+  }
 
   svg += `  </g>\n</svg>`;
   return svg;
@@ -2207,13 +2452,65 @@ document.getElementById('free-export-svg').addEventListener('click', () => {
   const blob = new Blob([svg], {type:'image/svg+xml'});
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'free-layout-cut.svg'; a.click();
 });
+// שורת ה-SVG מוצגת גם במצב "מלבן עם מרווח" (כמו היום) וגם כשיש קבוצה חוזרת
+// אחת לפחות — לקבוצות יש תמיד צורה וקטורית משלהן (svgTilesFor, בדיוק כמו
+// מדבקה רגילה), בלי תלות בבורר מצב-החיתוך של התוכן החופשי הבסיסי.
+function updateFreeExportSvgVisibility(){
+  const show = freeCutMode() === 'margin' || repeatGroups.length > 0;
+  document.getElementById('free-export-svg-row').style.display = show ? '' : 'none';
+}
 document.getElementById('free-cut-mode').addEventListener('change', e=>{
   const isMargin = e.target.value === 'margin';
   document.getElementById('free-margin-row').style.display = isMargin ? '' : 'none';
-  document.getElementById('free-export-svg-row').style.display = isMargin ? '' : 'none';
+  updateFreeExportSvgVisibility();
   drawSingle();
 });
 document.getElementById('free-margin-mm').addEventListener('input', () => drawSingle());
+
+// ── קבוצות חוזרות: UI ──
+document.getElementById('add-repeat-group-btn').addEventListener('click', () => {
+  const id = 'g' + Date.now();
+  repeatGroups.push({
+    id, qty: 10, shape:'banner', radius:3, lenMm:42, widMm:15, ratio: ASPECT_RATIO,
+    layers: [ // אותה ברירת מחדל בדיוק כמו סוג מדבקה חדש (secondDesign) — כוכב+placeholder שם
+      {id:'icon1', type:'icon', emoji:'⭐', x:0.15, y:0.5, scale:0.55, rot:0, z:0, image:null, isPlaceholder:true},
+      {id:'text1', type:'text', text:PLACEHOLDER_TEXT, x:0.58, y:0.5, scale:0.75, rot:0, z:1, font:'Heebo', color:'#0f172a', stroke:'white', isPlaceholder:true},
+    ],
+  });
+  updateFreeExportSvgVisibility();
+  switchGroupEditTarget(id);
+});
+document.getElementById('exit-group-edit-btn').addEventListener('click', () => switchGroupEditTarget(null));
+document.getElementById('repeat-groups-list').addEventListener('input', e => {
+  const inp = e.target.closest('.group-qty-input');
+  if(!inp) return;
+  const g = repeatGroups.find(x => x.id === inp.dataset.gid);
+  if(!g) return;
+  g.qty = Math.max(1, parseInt(inp.value) || 1);
+  drawSingle();
+  schedSheet();
+});
+// blur לא עולה (bubbles) — capture:true הכרחי לתפוס אותו בהאצלה על ההורה.
+// מכריח רענון מלא של הרשימה ברגע שהפוקוס עוזב את שדה הכמות, כדי שהסטטוס
+// (✅/⚠️) והתצוגה המקדימה יתעדכנו בלי לחכות לפעולה נוספת כלשהי.
+document.getElementById('repeat-groups-list').addEventListener('blur', e => {
+  if(e.target.classList && e.target.classList.contains('group-qty-input')) renderRepeatGroupsList();
+}, true);
+document.getElementById('repeat-groups-list').addEventListener('click', e => {
+  const editBtn = e.target.closest('[data-edit-gid]');
+  if(editBtn){ switchGroupEditTarget(editBtn.dataset.editGid); return; }
+  const delBtn = e.target.closest('[data-del-gid]');
+  if(delBtn){
+    if(!confirm('למחוק את הקבוצה? העיצוב שלה יימחק.')) return;
+    const gid = delBtn.dataset.delGid;
+    if(activeGroupId === gid) switchGroupEditTarget(null);
+    repeatGroups = repeatGroups.filter(x => x.id !== gid);
+    invalidateTile(gid);
+    updateFreeExportSvgVisibility();
+    drawSingle();
+    schedSheet();
+  }
+});
 
 // קנבס לא טוען פונטים מעצמו — בלי זה, ציור 300 DPI ראשון (לפני שהתצוגה כבר
 // "חיממה" את הפונט) יוצא בברירת המחדל בשקט, בלי שום שגיאה.
