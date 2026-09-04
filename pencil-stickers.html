@@ -191,6 +191,15 @@
       </div>
       <div class="hint" style="font-size:11px">האורך נקבע אוטומטית ביחס לגובה.</div>
 
+      <!-- שלושת הפריסטים גלויים לכולם — לקוח וגם מנהל. יצאו מתוך
+           size-panel-advanced (admin-only) בכוונה: הם דרך מהירה וברורה
+           לקבוע גובה, לא כלי ניהול. הלוגיקה (applyHeight) לא השתנתה בכלל. -->
+      <div class="row" style="margin-top:6px">
+        <button class="btn btn-primary" id="fit-pencil"   style="font-size:12px;background:#4f46e5;border-color:#4f46e5">✏️ עפרונות</button>
+        <button class="btn btn-primary" id="fit-average"  style="font-size:12px;background:#059669;border-color:#059669">📐 ממוצע</button>
+        <button class="btn btn-primary" id="fit-notebook" style="font-size:12px;background:#b45309;border-color:#b45309">📓 מחברות</button>
+      </div>
+
       <div class="admin-only" id="size-panel-advanced">
         <div class="row" style="margin-top:6px">
           <div id="len-field">
@@ -198,13 +207,7 @@
             <input type="number" id="len-mm" value="42.0" disabled style="opacity:.65">
           </div>
         </div>
-        <div class="hint" style="margin-top:6px">לחצו על −/+ או גררו את הידית הכהה בתחתית לשינוי הגובה — האורך נגזר אוטומטית ביחס קבוע. גררו את שתי הידיות בצדדים לשינוי אורך חופשי, בלי קשר ליחס. כפתורי הגודל המהיר למטה מאפסים את היחס בחזרה לקבוע. מינימום 10 מ"מ, מקסימום מדבקה אחת שלמה בדף.</div>
-
-        <div class="row" style="margin-top:6px">
-          <button class="btn btn-primary" id="fit-pencil"   style="font-size:12px;background:#4f46e5;border-color:#4f46e5">✏️ עפרונות</button>
-          <button class="btn btn-primary" id="fit-average"  style="font-size:12px;background:#059669;border-color:#059669">📐 ממוצע</button>
-          <button class="btn btn-primary" id="fit-notebook" style="font-size:12px;background:#b45309;border-color:#b45309">📓 מחברות</button>
-        </div>
+        <div class="hint" style="margin-top:6px">לחצו על −/+ או גררו את הידית הכהה בתחתית לשינוי הגובה — האורך נגזר אוטומטית ביחס קבוע. גררו את שתי הידיות בצדדים לשינוי אורך חופשי, בלי קשר ליחס. כפתורי הגודל המהיר מאפסים את היחס בחזרה לקבוע. מינימום 10 מ"מ, מקסימום מדבקה אחת שלמה בדף.</div>
 
         <!-- "כמה מדבקות מהעיצוב הזה נכנסות בכל הדף" — לא רלוונטי בעריכת יחידת
              קבוצה חוזרת (שם הכמות קבועה משדה "כמות" והשטח נגזר ממנה, לא להפך;
