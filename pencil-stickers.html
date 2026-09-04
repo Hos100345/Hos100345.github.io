@@ -1057,8 +1057,19 @@ function layoutText(ctx, l, boxH, boxW, scaleFactor){
     const blockH = lines.length * lineHeight;
     const width = maxWidthPx ? maxWidthPx : Math.max(ctx.measureText(lines[0]).width, 1);
     lastResult = { lines, fSize, lineHeight, width, wt };
-    if(blockH <= maxHeightPx || fSize <= 8) return lastResult;
-    fSize *= 0.92; // לא נכנס בגובה — מכווץ ומנסה שוב
+    // ⚠️ באג אמיתי (דיווח הושעיה, צילום מסך): כש-boxWidth לא מוגדר (legacy,
+    // שורה יחידה בלי עטיפה) הלולאה בדקה רק גובה — טקסט שרחב מ-boxW *עצמו*
+    // (המדבקה כולה, לא רק תיבת-רוחב מפורשת) נשאר בגודלו המקורי ונחתך ע"י
+    // ctx.clip() של traceStickerPath. מאומת: shape='circle' עם הפלייסהולדר
+    // "השם שלך" חורג פי 1.19 מ-boxW ב**כל** גודל פיזי (היחס קבוע — לא תלוי
+    // גודל, רק בולט יותר במדבקה קטנה כי אז אין הרבה טקסט "רזרבה" לאבד).
+    // חריגה מהמפרט (המפרט לא נתן קוד לבאג 2, רק שתי היפותזות לבדוק) —
+    // משפיע גם על זרימת הלקוח הרגילה, כי layoutText משותפת; זו לא בעיה
+    // ספציפית לקבוצות, רק שם היא נבדקה. מוסיפים בדיקת רוחב מול boxW עצמו
+    // כתנאי עצירה נוסף כשאין boxWidth מפורש.
+    const widthOk = maxWidthPx ? true : width <= boxW;
+    if((blockH <= maxHeightPx && widthOk) || fSize <= 8) return lastResult;
+    fSize *= 0.92; // לא נכנס בגובה/רוחב — מכווץ ומנסה שוב
   }
   // חריגה מהמפרט: הגרסה המקורית חזרה כאן ל-{lines:[text],...} — מוחקת את
   // כל העטיפה שהחישוב מעל כבר ביצע ומחזירה שורה אחת לא-עטופה בגופן זעיר.
@@ -1318,6 +1329,15 @@ function invalidateTile(slot){
   if(slot === undefined){ tileCache[1] = null; tileCache[2] = null; }
   else tileCache[slot] = null;
 }
+// המידות הפיזיות (מ"מ) שבהן כל אריח נבנה בפועל — לא רק "האם קיים מטמון".
+// ראה drawRegionTiles: זו רשת ביטחון מבנית, לצד (לא במקום) הפסילה הידנית
+// הקיימת ב-drawSingle. באג אמיתי שנמצא (דיווח הושעיה): קבוצה שגובהה שונה
+// בלי ש-drawSingle() רץ בזמן שהיא הקבוצה הפעילה (activeGroupId) לא הייתה
+// פוסלת את tileCache[groupId] שלה — drawRegionTiles ממשיכה לצייר את
+// הביטמאפ הישנה (drawImage בגודל הפיקסלים המקורי שלה) בתוך רשת שכבר
+// מחושבת (leftPx/topPx/gapPx) לפי המידה הפיזית *החדשה* — האריח הישן-גדול
+// בורח מהתא שתוכנן לגודל החדש-קטן, בדיוק כמו בצילום.
+let tileSizeAtBuild = {};
 const TILE_PAD = 0.2; // 20% מרווח לצורות שגולשות מהמסגרת בכוונה (heart/wave/cloud) ולעובי קו החיתוך
 
 // design/designLayers אופציונליים, ברירת מחדל = הגלובלי — ראה renderStickerContent.
@@ -1456,7 +1476,14 @@ function drawMarginRect(ctx, l, boxX, boxY, boxW, boxH, marginPx){
 // (1 תמיד במצב סוג-יחיד).
 function drawRegionTiles(ctx, scale, L, design, designLayers, showOutline, slot){
   if(L.total === 0) return;
-  if(!tileCache[slot]) tileCache[slot] = buildTile(scale, showOutline, design, designLayers);
+  // בטלות ברירת מחדל, לא רשימת חריגים: משווים את המידה הפיזית (w/h, מ"מ)
+  // שבה האריח הנוכחי נבנה מול מה ש-L דורש עכשיו, בלי קשר לאיזה נתיב שינה
+  // אותה. נכון לכל slot (גם 1/2 של שני-סוגי-מדבקה, גם קבוצות חוזרות).
+  const prevSize = tileSizeAtBuild[slot];
+  if(!tileCache[slot] || !prevSize || prevSize.w !== L.w || prevSize.h !== L.h){
+    tileCache[slot] = buildTile(scale, showOutline, design, designLayers);
+    tileSizeAtBuild[slot] = { w: L.w, h: L.h };
+  }
   const tile = tileCache[slot];
 
   const gapPx = L.g * scale;
