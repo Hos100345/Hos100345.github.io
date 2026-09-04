@@ -1343,7 +1343,15 @@ function freeMarginMm(){ return parseFloat(document.getElementById('free-margin-
 // שווה לסבך עם מטמון נפרד לתצוגה של 44x44) + שדה כמות + עריכה/מחיקה.
 // נקראת מ-drawSingle() (isFreeMode) בכל רינדור, בדיוק כמו renderLayersList
 // שכבר עושה את זה לרשימת השכבות.
-function renderRepeatGroupsList(){
+// מונה-דור: renderRepeatGroupsList הפכה ל-async (ראה למטה) כדי לחכות
+// לטעינת פונטים לפני בניית התמונות הממוזערות — אבל drawSingle()/switchGroupEditTarget/
+// מאזין ה-blur כולם קוראים לה בלי await (fire-and-forget, לגיטימי לפונקציה
+// שמחזירה Promise). בלי המונה הזה, קריאה מהירה שנייה (למשל pointermove
+// תוך כדי גרירה) שמסתיימת *לפני* הראשונה (כי הפונטים שלה כבר במטמון) הייתה
+// עלולה להיכתב ל-DOM ואז נדרסת בחזרה ע"י התוצאה המיושנת של הקריאה
+// הראשונה, האיטית, שמגיעה אחריה.
+let _repeatGroupsRenderGen = 0;
+async function renderRepeatGroupsList(){
   const box = document.getElementById('repeat-groups-list');
   if(!box) return;
   // ⚠️ באג אמיתי שנתפס בבדיקה, לא במפרט: drawSingle() קורא לפונקציה הזו
@@ -1355,7 +1363,23 @@ function renderRepeatGroupsList(){
   // פעולה אחרת. הקנבס (התצוגה המקדימה) עצמו ממשיך להתעדכן חי בכל הקלדה —
   // רק רשימת ה-DOM הזו מוגנת.
   if(document.activeElement && document.activeElement.classList.contains('group-qty-input')) return;
+
+  const gen = ++_repeatGroupsRenderGen;
   const placed = layoutAllGroups();
+
+  // ⚠️ באג אמיתי שנתפס ע"י הושעיה (צילום מסך): buildTile נקראה סינכרונית
+  // בלי לחכות לפונט הנכון — כל תמונה ממוזערת נתפסת ברגע אחר של טעינת
+  // הפונט, ומקבלת מדידת טקסט שגויה (layoutText תלויה ב-ctx.measureText,
+  // שמניח את הפונט שכבר הוחל בפועל על ה-context). חריגה קטנה מהמפרט: לא
+  // רק הפונט של שכבת הטקסט *הראשונה* בכל קבוצה (find) — קבוצה עם כמה
+  // שכבות טקסט בפונטים שונים תישאר עם אותו באג לשאר השכבות שלה. אוספים
+  // את כל הפונטים מכל שכבות הטקסט בכל הקבוצות (filter+map, לא find).
+  const fonts = [...new Set(
+    placed.flatMap(p => p.designLayers.filter(l => l.type === 'text').map(l => l.font || 'Heebo'))
+  )];
+  if(fonts.length) await Promise.all(fonts.map(f => HebrewFonts.load(f).catch(()=>{})));
+  if(gen !== _repeatGroupsRenderGen) return; // רינדור מאוחר יותר כבר רץ — לא דורסים אותו בתוצאה מיושנת
+
   box.innerHTML = placed.map(p => {
     const g = p.group;
     const statusHtml = p.fits
