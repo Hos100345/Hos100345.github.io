@@ -7,6 +7,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase-config.js?v=1"></script>
+<!-- אותה גרסה בשימוש בכל הפרויקט (pencil-stickers.html/dobble.html) — עקביות -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   *{box-sizing:border-box}
   body{margin:0;font-family:Heebo,system-ui;background:#f6f7f9;color:#1e293b}
@@ -46,6 +48,17 @@
   .order-actions button:disabled{opacity:.45;cursor:default}
   .order-status-actions button:hover, .order-actions button:not(:disabled):hover{background:#f1f5f9}
   .btn-wa{display:block;text-align:center;padding:8px;border-radius:8px;background:#0f7b3f;color:#fff;text-decoration:none;font-weight:700;font-size:12px}
+  /* מחיקה/PDF — שורה נפרדת מ-order-actions/order-status-actions הקיימים,
+     בצבע שמייחד אותם (סכנה/ייצוא) מכפתורי הקבצים והסטטוס הרגילים. הקובץ
+     הזה לא מגדיר .btn/.btn-danger/.btn-primary (אלה קיימות בקבצים אחרים
+     בפרויקט) — סגנון מותאם לשפה החזותית הקיימת כאן במקום ייבוא שם מחלקה זר. */
+  .order-danger-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:2px}
+  .order-danger-actions button{flex:1;min-width:100px;padding:8px 6px;border-radius:8px;border:1px solid transparent;font-size:12px;font-weight:700}
+  .order-danger-actions button:disabled{opacity:.45;cursor:default}
+  .btn-delete{background:#fee2e2;color:#b91c1c;border-color:#fca5a5}
+  .btn-delete:not(:disabled):hover{background:#fecaca}
+  .btn-pdf{background:#eef2ff;color:#4338ca;border-color:#c7d2fe}
+  .btn-pdf:not(:disabled):hover{background:#e0e7ff}
 </style>
 </head>
 <body>
@@ -204,6 +217,10 @@ function orderCardHtml(o){
       <button data-status="done">✔️ בוצע</button>
     </div>
     ${waHref ? `<a class="btn-wa" href="${waHref}" target="_blank" rel="noopener">📞 וואטסאפ ללקוח</a>` : ''}
+    <div class="order-danger-actions">
+      <button class="btn-pdf" data-action="pdf" ${hasPrint ? '' : 'disabled'}>📄 הורד PDF</button>
+      <button class="btn-delete" data-action="delete">🗑️ מחק הזמנה</button>
+    </div>
   </div>`;
 }
 
@@ -314,13 +331,62 @@ async function setStatus(order, newStatus){
   }
 }
 
+// מחיקת הזמנה — קבצים לפני שורה, לא להפך: מחיקת שורה ב-SQL בלבד הייתה
+// משאירה אובייקטים תלויים ב-Storage. אם מחיקת הקבצים נכשלת חלקית — לא
+// עוצרים, ממשיכים למחיקת השורה בכל מקרה; רק שגיאה במחיקת השורה עצמה עוצרת
+// ומציגה הודעה. ה-policy ל-DELETE (sticker_orders + storage.objects, מוגבלת
+// ל-hoshaya@gmail.com) כבר קיימת ב-Supabase.
+async function deleteOrder(order){
+  if(!confirm(`למחוק לצמיתות את הזמנה ${order.code}? לא ניתן לבטל.`)) return;
+
+  const paths = [order.svg_path, order.preview_path, order.print_path].filter(Boolean);
+  if(paths.length){
+    const { error: storageErr } = await sb.storage.from(BUCKET).remove(paths);
+    if(storageErr) console.warn('מחיקת קבצים נכשלה חלקית', storageErr);
+  }
+
+  const { error } = await sb.from('sticker_orders').delete().eq('id', order.id);
+  if(error){ alert('מחיקת ההזמנה נכשלה: ' + error.message); return; }
+
+  orders = orders.filter(o => o.id !== order.id);
+  delete ordersById[order.id];
+  renderOrders();
+}
+
+// אין PDF אמיתי שמור — print_path הוא JPEG (buildPrintFile בלקוח). עוטפים
+// אותו ב-PDF כאן בצד המנהל, בלי לגעת בקובץ המאוחסן. הקנבס שמייצר את ה-JPEG
+// הוא בדיוק 210×297 מ״מ (ראה buildPrintFile ב-pencil-stickers.html) — היחס
+// תואם בדיוק ל-A4, אין עיוות.
+async function downloadOrderPDF(order){
+  if(!order.print_path){ alert('אין קובץ הדפסה להזמנה הזו'); return; }
+  const { data, error } = await sb.storage.from(BUCKET).createSignedUrl(order.print_path, 3600);
+  if(error || !data){ alert('לא ניתן לטעון את קובץ ההדפסה'); return; }
+
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  try{
+    await new Promise((ok, fail) => { img.onload = ok; img.onerror = fail; img.src = data.signedUrl; });
+  }catch(e){
+    alert('טעינת קובץ ההדפסה נכשלה');
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+  pdf.addImage(img, 'JPEG', 0, 0, 210, 297);
+  pdf.save(`${order.code}.pdf`);
+}
+
 document.getElementById('orders-list').addEventListener('click', async e => {
   const fileBtn = e.target.closest('[data-action]');
   if(fileBtn){
     const card = fileBtn.closest('.order-card');
     const order = ordersById[card.dataset.id];
     if(!order) return;
-    const path = fileBtn.dataset.action === 'print' ? order.print_path : order.svg_path;
+    const action = fileBtn.dataset.action;
+    if(action === 'delete'){ deleteOrder(order); return; }
+    if(action === 'pdf'){ downloadOrderPDF(order); return; }
+    const path = action === 'print' ? order.print_path : order.svg_path;
     if(!path) return;
     fileBtn.disabled = true;
     try{
