@@ -170,43 +170,51 @@
       </div>
     </div>
 
-    <!-- פאנל גודל פיזי וחישוב הגיליון — הגיליון מתעדכן אוטומטית, בלי כפתור -->
+    <!-- פאנל גודל פיזי וחישוב הגיליון — הגיליון מתעדכן אוטומטית, בלי כפתור.
+         ⚠️ ללקוח רגיל נשאר רק שדה הגובה (בס"מ) — כל השאר (אורך נגזר, הסבר
+         מלא, פריסטים, כיוון פריסה) הוצא ל-admin-only. המודל הפנימי (state.
+         widMm וכו') נשאר במ"מ ללא שינוי — זה שינוי תצוגה בלבד, ראה
+         syncSizeInputs/wid-mm listener. -->
     <div class="panel free-mode-hide" id="size-panel">
       <h2>2️⃣ גודל פיזי סופי וחישוב דף</h2>
-      <div class="row">
-        <div id="len-field">
-          <label style="font-size:11px">אורך (נגזר אוטומטית)</label>
-          <input type="number" id="len-mm" value="42.0" disabled style="opacity:.65">
+      <div>
+        <label style="font-size:11px" id="wid-mm-label">גובה (ס"מ)</label>
+        <div style="display:flex;align-items:center;gap:4px">
+          <button class="btn" id="wid-down" type="button" style="padding:6px 12px;font-size:16px" aria-label="הקטן גובה">−</button>
+          <input type="number" id="wid-mm" min="1" step="0.1" value="1.5" style="text-align:center">
+          <button class="btn" id="wid-up" type="button" style="padding:6px 12px;font-size:16px" aria-label="הגדל גובה">+</button>
         </div>
-        <div>
-          <label style="font-size:11px" id="wid-mm-label">גובה (מ"מ)</label>
-          <div style="display:flex;align-items:center;gap:4px">
-            <button class="btn" id="wid-down" type="button" style="padding:6px 12px;font-size:16px" aria-label="הקטן גובה">−</button>
-            <input type="number" id="wid-mm" min="10" step="0.5" value="15" style="text-align:center">
-            <button class="btn" id="wid-up" type="button" style="padding:6px 12px;font-size:16px" aria-label="הגדל גובה">+</button>
+      </div>
+      <div class="hint" style="font-size:11px">האורך נקבע אוטומטית ביחס לגובה.</div>
+
+      <div class="admin-only" id="size-panel-advanced">
+        <div class="row" style="margin-top:6px">
+          <div id="len-field">
+            <label style="font-size:11px">אורך (נגזר אוטומטית)</label>
+            <input type="number" id="len-mm" value="42.0" disabled style="opacity:.65">
           </div>
         </div>
-      </div>
-      <div class="hint">לחצו על −/+ או גררו את הידית הכהה בתחתית לשינוי הגובה — האורך נגזר אוטומטית ביחס קבוע. גררו את שתי הידיות בצדדים לשינוי אורך חופשי, בלי קשר ליחס. כפתורי הגודל המהיר למטה מאפסים את היחס בחזרה לקבוע. מינימום 10 מ"מ, מקסימום מדבקה אחת שלמה בדף.</div>
+        <div class="hint" style="margin-top:6px">לחצו על −/+ או גררו את הידית הכהה בתחתית לשינוי הגובה — האורך נגזר אוטומטית ביחס קבוע. גררו את שתי הידיות בצדדים לשינוי אורך חופשי, בלי קשר ליחס. כפתורי הגודל המהיר למטה מאפסים את היחס בחזרה לקבוע. מינימום 10 מ"מ, מקסימום מדבקה אחת שלמה בדף.</div>
 
-      <div class="row" style="margin-top:6px">
-        <button class="btn btn-primary" id="fit-pencil"   style="font-size:12px;background:#4f46e5;border-color:#4f46e5">✏️ עפרונות</button>
-        <button class="btn btn-primary" id="fit-average"  style="font-size:12px;background:#059669;border-color:#059669">📐 ממוצע</button>
-        <button class="btn btn-primary" id="fit-notebook" style="font-size:12px;background:#b45309;border-color:#b45309">📓 מחברות</button>
-      </div>
+        <div class="row" style="margin-top:6px">
+          <button class="btn btn-primary" id="fit-pencil"   style="font-size:12px;background:#4f46e5;border-color:#4f46e5">✏️ עפרונות</button>
+          <button class="btn btn-primary" id="fit-average"  style="font-size:12px;background:#059669;border-color:#059669">📐 ממוצע</button>
+          <button class="btn btn-primary" id="fit-notebook" style="font-size:12px;background:#b45309;border-color:#b45309">📓 מחברות</button>
+        </div>
 
-      <!-- "כמה מדבקות מהעיצוב הזה נכנסות בכל הדף" — לא רלוונטי בעריכת יחידת
-           קבוצה חוזרת (שם הכמות קבועה משדה "כמות" והשטח נגזר ממנה, לא להפך;
-           הדף גם משותף עם קבוצות אחרות). מוסתר דינמית ב-updateGroupEditVisibility. -->
-      <div id="page-fill-info-block" style="margin-top:6px">
-        <label style="font-size:12px;font-weight:700;display:block;margin-bottom:4px">כיוון הפריסה בדף:</label>
-        <select id="orient-select">
-          <option value="auto">אוטומטי (מומלץ)</option>
-          <option value="along">לאורך</option>
-          <option value="across">לרוחב</option>
-        </select>
-        <div class="hint" id="orient-info" style="margin-top:4px"></div>
-        <div class="count-box" id="count-box" style="margin-top:6px"></div>
+        <!-- "כמה מדבקות מהעיצוב הזה נכנסות בכל הדף" — לא רלוונטי בעריכת יחידת
+             קבוצה חוזרת (שם הכמות קבועה משדה "כמות" והשטח נגזר ממנה, לא להפך;
+             הדף גם משותף עם קבוצות אחרות). מוסתר דינמית ב-updateGroupEditVisibility. -->
+        <div id="page-fill-info-block" style="margin-top:6px">
+          <label style="font-size:12px;font-weight:700;display:block;margin-bottom:4px">כיוון הפריסה בדף:</label>
+          <select id="orient-select">
+            <option value="auto">אוטומטי (מומלץ)</option>
+            <option value="along">לאורך</option>
+            <option value="across">לרוחב</option>
+          </select>
+          <div class="hint" id="orient-info" style="margin-top:4px"></div>
+          <div class="count-box" id="count-box" style="margin-top:6px"></div>
+        </div>
       </div>
     </div>
 
@@ -1846,9 +1854,11 @@ function syncSizeInputs(){
   const isCircle = state.shape === 'circle';
   const lenInput = document.getElementById('len-mm'), widInput = document.getElementById('wid-mm');
   lenInput.value = state.lenMm.toFixed(1);
-  widInput.value = state.widMm.toFixed(1);
+  // תצוגה בלבד: השדה עצמו (state.widMm) נשאר מ"מ תמיד — הצגה ללקוח בס"מ
+  // (חלקי 10), בדיוק כמו שהמרת ה-input חוזרת ל-מ"מ (ראה מאזין wid-mm למטה).
+  widInput.value = (state.widMm / 10).toFixed(1);
   document.getElementById('len-field').style.display = isCircle ? 'none' : '';
-  document.getElementById('wid-mm-label').textContent = isCircle ? 'קוטר (מ"מ)' : 'גובה (מ"מ)';
+  document.getElementById('wid-mm-label').textContent = isCircle ? 'קוטר (ס"מ)' : 'גובה (ס"מ)';
 
   const widMax = isCircle ? SIZE.usableW : Math.min(SIZE.usableW, SIZE.usableH / currentRatio);
   const widAtLimit = state.widMm <= SIZE.min+0.001 || state.widMm >= widMax-0.001;
@@ -1964,7 +1974,9 @@ document.getElementById('radius').addEventListener('input', e=>{
 
 // אין מאזין ל-len-mm — השדה disabled, הוא תמיד תוצאה נגזרת של applyHeight().
 document.getElementById('wid-mm').addEventListener('input', e=>{
-  applyHeight(parseFloat(e.target.value) || SIZE.min);
+  // השדה מוצג ומוזן בס"מ; applyHeight() ממשיכה לקבל מ"מ, ללא שינוי במודל הפנימי.
+  const cm = parseFloat(e.target.value) || SIZE.min / 10;
+  applyHeight(cm * 10);
 });
 
 // חצי שינוי גובה — תוספת לצד השדה והידית, לא תחליף. קוראים ל-applyHeight()
