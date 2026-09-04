@@ -16,7 +16,7 @@
     display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
   header h1{font-size:16px;margin:0;font-weight:800}
   .header-actions{display:flex;gap:8px;align-items:center}
-  select, input[type="email"]{font-family:inherit;font-size:13px;padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;background:#fff}
+  select, input[type="email"], input[type="text"]{font-family:inherit;font-size:13px;padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;background:#fff}
   button{font-family:inherit;cursor:pointer}
   .btn-icon{padding:8px 12px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;font-size:14px}
   .btn-icon:hover{background:#f1f5f9}
@@ -59,6 +59,12 @@
   .btn-delete:not(:disabled):hover{background:#fecaca}
   .btn-pdf{background:#eef2ff;color:#4338ca;border-color:#c7d2fe}
   .btn-pdf:not(:disabled):hover{background:#e0e7ff}
+  /* שולם/הודפס — שני checkbox בלתי-תלויים, מקור האמת החזותי היחיד למצבים
+     האלה (ראה togglePaid/togglePrinted). status עצמו נשאר בשימוש רק
+     ל-"בוצע"/סינון היסטורי, ה-badge למעלה לא נוגע יותר בשולם/הודפס. */
+  .order-toggles{display:flex;gap:16px;font-size:13px;font-weight:700}
+  .order-toggles label{display:flex;align-items:center;gap:6px;cursor:pointer}
+  .order-toggles input[type="checkbox"]{width:16px;height:16px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -87,6 +93,7 @@
 </div>
 
 <div class="orders-screen" id="orders-screen" style="display:none">
+  <input type="text" id="phone-search" placeholder="🔍 חיפוש לפי טלפון" style="width:100%;margin-bottom:8px">
   <div id="orders-list"></div>
   <div class="orders-empty" id="orders-empty" style="display:none">אין הזמנות</div>
 </div>
@@ -168,7 +175,7 @@ async function loadOrders(){
   document.getElementById('orders-empty').style.display = 'none';
   list.innerHTML = '<div class="orders-loading">טוען…</div>';
   const { data, error } = await sb.from('sticker_orders')
-    .select('id, code, created_at, customer_name, customer_phone, customer_note, sheets, price_ils, status, paid, size_len_mm, size_wid_mm, per_sheet, print_dpi, svg_path, preview_path, print_path')
+    .select('id, code, created_at, customer_name, customer_phone, customer_note, sheets, price_ils, status, paid, printed, size_len_mm, size_wid_mm, per_sheet, print_dpi, svg_path, preview_path, print_path')
     .order('created_at', { ascending: false });
   if(error){
     list.innerHTML = `<div class="orders-error">שגיאה בטעינת ההזמנות: ${escapeHtml(error.message)}</div>`;
@@ -211,9 +218,11 @@ function orderCardHtml(o){
       <button data-action="print" ${hasPrint ? '' : 'disabled'}>📄 קובץ הדפסה</button>
       <button data-action="cut">✂️ קובץ חיתוך</button>
     </div>
+    <div class="order-toggles">
+      <label><input type="checkbox" class="paid-toggle" ${o.paid ? 'checked' : ''}> 💰 שולם</label>
+      <label><input type="checkbox" class="printed-toggle" ${o.printed ? 'checked' : ''}> 🖨️ הודפס</label>
+    </div>
     <div class="order-status-actions">
-      <button data-status="paid">✓ שולם</button>
-      <button data-status="printed">🖨️ הודפס</button>
       <button data-status="done">✔️ בוצע</button>
     </div>
     ${waHref ? `<a class="btn-wa" href="${waHref}" target="_blank" rel="noopener">📞 וואטסאפ ללקוח</a>` : ''}
@@ -246,7 +255,13 @@ function onPreviewIntersect(entries){
 // אם זה לא היה עצל. נבנה מחדש בכל רענון/סינון/עדכון סטטוס.
 function renderOrders(){
   const filter = currentFilter();
-  const filtered = filter === 'all' ? orders : orders.filter(o => o.status === filter);
+  // customer_phone מנורמל כאן לספרות בלבד באותו אופן שכבר נעשה ב-orderCardHtml
+  // לתצוגה — לא מניחים שהוא כבר שמור נקי ב-DB, כדי שחיפוש חלקי לא יפספס
+  // מספר ששמור עם מקפים/רווחים.
+  const filtered = orders.filter(o =>
+    (filter === 'all' || o.status === filter) &&
+    (!phoneFilter || String(o.customer_phone || '').replace(/\D/g, '').includes(phoneFilter))
+  );
   const list = document.getElementById('orders-list');
   document.getElementById('orders-empty').style.display = filtered.length ? 'none' : 'block';
   list.innerHTML = filtered.map(orderCardHtml).join('');
@@ -316,16 +331,17 @@ function showBrowserNotification(order){
   n.onclick = () => { window.focus(); n.close(); };
 }
 
+// paid/printed הם שני checkbox עצמאיים משלהם עכשיו (togglePaid/togglePrinted
+// למטה) — הכפתור היחיד שנשאר כאן ('done') כבר לא מקושר אליהם, אז הסניף
+// המיוחד ל-newStatus==='paid' שהיה כאן הוצא (קוד מת: שום דבר לא קורא לזה יותר).
 async function setStatus(order, newStatus){
-  const prevStatus = order.status, prevPaid = order.paid;
+  const prevStatus = order.status;
   order.status = newStatus;
-  if(newStatus === 'paid') order.paid = true;
   renderOrders();
-  const patch = newStatus === 'paid' ? { status: 'paid', paid: true } : { status: newStatus };
-  const { error } = await sb.from('sticker_orders').update(patch).eq('id', order.id);
+  const { error } = await sb.from('sticker_orders').update({ status: newStatus }).eq('id', order.id);
   if(error){
     console.error('setStatus failed:', error);
-    order.status = prevStatus; order.paid = prevPaid;
+    order.status = prevStatus;
     renderOrders();
     alert('העדכון נכשל, נסה שוב');
   }
@@ -377,6 +393,21 @@ async function downloadOrderPDF(order){
   pdf.save(`${order.code}.pdf`);
 }
 
+// שולם/הודפס — שני מצבים בלתי-תלויים (הזמנה יכולה להיות משולמת ולא מודפסת,
+// או להפך), לא רצף status אחד. checkboxEl מועבר כדי לשחזר את הסימון אם
+// העדכון נכשל בשרת — בלי זה ה-checkbox היה נשאר מסומן ויזואלית (הדפדפן כבר
+// שינה אותו) בלי שהערך בפועל השתנה ב-DB, עד לרינדור הבא.
+async function togglePaid(order, val, checkboxEl){
+  const { error } = await sb.from('sticker_orders').update({ paid: val }).eq('id', order.id);
+  if(error){ alert('העדכון נכשל: ' + error.message); checkboxEl.checked = !val; return; }
+  order.paid = val;
+}
+async function togglePrinted(order, val, checkboxEl){
+  const { error } = await sb.from('sticker_orders').update({ printed: val }).eq('id', order.id);
+  if(error){ alert('העדכון נכשל: ' + error.message); checkboxEl.checked = !val; return; }
+  order.printed = val;
+}
+
 document.getElementById('orders-list').addEventListener('click', async e => {
   const fileBtn = e.target.closest('[data-action]');
   if(fileBtn){
@@ -409,8 +440,29 @@ document.getElementById('orders-list').addEventListener('click', async e => {
   }
 });
 
+// checkbox עצמאי — 'change', לא 'click' (המנגנון למעלה): אותו דפוס האצלה
+// (מאזין אחד על ההורה + closest('.order-card') לאיתור ה-order), רק אירוע
+// שונה כי זה checkbox ולא כפתור.
+document.getElementById('orders-list').addEventListener('change', e => {
+  const card = e.target.closest('.order-card');
+  if(!card) return;
+  const order = ordersById[card.dataset.id];
+  if(!order) return;
+  if(e.target.classList.contains('paid-toggle')) togglePaid(order, e.target.checked, e.target);
+  else if(e.target.classList.contains('printed-toggle')) togglePrinted(order, e.target.checked, e.target);
+});
+
 document.getElementById('status-filter').addEventListener('change', renderOrders);
 document.getElementById('refresh-btn').addEventListener('click', loadOrders);
+
+// חיפוש טלפון — סינון בצד הלקוח על ההזמנות שכבר נטענו, אין צורך בשאילתה
+// חדשה. השוואה כ-substring על ספרות בלבד (לא equality), כדי שחיפוש חלקי
+// ("0505") ימצא גם מספרים מלאים בלי להקליד את כל 10 הספרות.
+let phoneFilter = '';
+document.getElementById('phone-search').addEventListener('input', e => {
+  phoneFilter = e.target.value.replace(/\D/g, '');
+  renderOrders();
+});
 
 // ── אימות ──
 // signInWithOtp בלבד (Magic Link) — אותו דפוס מ-dobble.html. SIGNED_IN נורה
