@@ -289,7 +289,11 @@
       <h2>שכבות</h2>
       <div id="layers-list" class="layers-list"></div>
     </div>
-    <div class="preview-wrap free-mode-hide">
+    <!-- לא free-mode-hide בכוונה: בעריכה חופשית זו בדיוק אותה חלוקה כמו
+         אצל הלקוח — singleCanvas לעריכה (יחידה קטנה/תוכן חופשי), a4Canvas
+         כאן לתצוגה מקדימה של הדף המורכב (קבוצות+תוכן חופשי), שני קנבסים
+         נפרדים, לא אותו אחד לשני התפקידים. ראה drawSheetTo (ענף isFreeMode). -->
+    <div class="preview-wrap">
       <h2 style="text-align:center;margin-bottom:8px">תצוגה מקדימה לגיליון A4 הסופי</h2>
       <canvas id="a4-canvas" width="1240" height="1754" style="touch-action:none"></canvas>
       <div id="split-divider-label" style="display:none;text-align:center;font-size:12px;font-weight:700;margin-top:6px;color:#4f46e5"></div>
@@ -497,12 +501,19 @@ function computeStickerBox(){
 // pointInLayer, layerHalfSize, גרירה/סיבוב/שינוי-גודל) כבר עובד במרחב
 // שברי (0–1) ביחס ל"קופסה" בלי שום ידיעה שהיא מדבקה — מצביעים אותו על
 // משטח אחר וזהו.
-function freeLayoutBox(){
-  const W = singleCanvas.width, H = singleCanvas.height;
+// מפוענת גם על-ידי freeLayoutBox (למסך העריכה, יחסית ל-singleCanvas) וגם
+// על-ידי drawSheetTo/exportFreeLayoutPDF (לתצוגה המקדימה ולקובץ ההדפסה,
+// יחסית ל-a4Canvas/קנבס-הדפסה) — כדי ששבר x/y של שכבה חופשית ימופה לאותו
+// מקום יחסי בכל שלושת המקומות. ה-92% הוא שוליים בטיחות קבועים (לא ניתן
+// לשינוי כרגע) — קיים עוד מ-PR #106, לפני קבוצות חוזרות.
+function freeContentBoxFor(W, H){
   const aspect = 297/210;
   let boxW = W * 0.92, boxH = boxW * aspect;
   if(boxH > H * 0.92){ boxH = H * 0.92; boxW = boxH / aspect; }
   return { boxX: (W-boxW)/2, boxY: (H-boxH)/2, boxW, boxH };
+}
+function freeLayoutBox(){
+  return freeContentBoxFor(singleCanvas.width, singleCanvas.height);
 }
 
 // נקודת כניסה יחידה שכל אתרי הקריאה ל-singleCanvas משתמשים בה — כך ששני
@@ -1162,18 +1173,10 @@ function drawSingle(){
     singleCtx.fillStyle='#fff'; singleCtx.fillRect(boxX, boxY, boxW, boxH);
     singleCtx.strokeStyle='#cbd5e1'; singleCtx.lineWidth=1; singleCtx.strokeRect(boxX, boxY, boxW, boxH);
 
-    // קבוצות חוזרות — מצוירות ביחס לכל הקנבס (scale=W/210), לא ל-boxW/boxH
-    // (92%-box): אותה מוסכמה בדיוק כמו סימני הרישום/marginPx למטה — מ"מ
-    // פיזיים נמדדים תמיד ביחס לדף המלא, לא לאזור-הבטיחות הפנימי. drawRegionTiles
-    // הקיימת (משני-סוגי-מדבקה) משמשת בלי שום שינוי — רק אובייקט L תואם.
-    if(repeatGroups.length){
-      const scale = W / 210;
-      layoutAllGroups().forEach(p => {
-        if(!p.fits) return;
-        drawRegionTiles(singleCtx, scale, p.L, p.design, p.designLayers, true, p.group.id);
-      });
-    }
-
+    // ⚠️ קבוצות חוזרות *לא* מצוירות כאן — singleCanvas הוא משטח העריכה
+    // (בדיוק כמו אצל הלקוח: תצוגת "מדבקה יחידה" נפרדת מתצוגת הגיליון).
+    // הרכבת כל הקבוצות + התוכן החופשי לדף אחד היא תפקיד a4Canvas (drawSheetTo,
+    // ענף isFreeMode) — עריכה ותצוגה-מקדימה הם שני קנבסים נפרדים, לא אותו אחד.
     drawLayers(singleCtx, boxX, boxY, boxW, boxH, 1.2);
     if(freeCutMode() === 'margin'){
       // אותו יחס פיקסל-למ"מ שמשמש את exportFreeLayoutPDF/buildFreeCutSvg —
@@ -1340,7 +1343,15 @@ function freeMarginMm(){ return parseFloat(document.getElementById('free-margin-
 // שווה לסבך עם מטמון נפרד לתצוגה של 44x44) + שדה כמות + עריכה/מחיקה.
 // נקראת מ-drawSingle() (isFreeMode) בכל רינדור, בדיוק כמו renderLayersList
 // שכבר עושה את זה לרשימת השכבות.
-function renderRepeatGroupsList(){
+// מונה-דור: renderRepeatGroupsList הפכה ל-async (ראה למטה) כדי לחכות
+// לטעינת פונטים לפני בניית התמונות הממוזערות — אבל drawSingle()/switchGroupEditTarget/
+// מאזין ה-blur כולם קוראים לה בלי await (fire-and-forget, לגיטימי לפונקציה
+// שמחזירה Promise). בלי המונה הזה, קריאה מהירה שנייה (למשל pointermove
+// תוך כדי גרירה) שמסתיימת *לפני* הראשונה (כי הפונטים שלה כבר במטמון) הייתה
+// עלולה להיכתב ל-DOM ואז נדרסת בחזרה ע"י התוצאה המיושנת של הקריאה
+// הראשונה, האיטית, שמגיעה אחריה.
+let _repeatGroupsRenderGen = 0;
+async function renderRepeatGroupsList(){
   const box = document.getElementById('repeat-groups-list');
   if(!box) return;
   // ⚠️ באג אמיתי שנתפס בבדיקה, לא במפרט: drawSingle() קורא לפונקציה הזו
@@ -1352,7 +1363,23 @@ function renderRepeatGroupsList(){
   // פעולה אחרת. הקנבס (התצוגה המקדימה) עצמו ממשיך להתעדכן חי בכל הקלדה —
   // רק רשימת ה-DOM הזו מוגנת.
   if(document.activeElement && document.activeElement.classList.contains('group-qty-input')) return;
+
+  const gen = ++_repeatGroupsRenderGen;
   const placed = layoutAllGroups();
+
+  // ⚠️ באג אמיתי שנתפס ע"י הושעיה (צילום מסך): buildTile נקראה סינכרונית
+  // בלי לחכות לפונט הנכון — כל תמונה ממוזערת נתפסת ברגע אחר של טעינת
+  // הפונט, ומקבלת מדידת טקסט שגויה (layoutText תלויה ב-ctx.measureText,
+  // שמניח את הפונט שכבר הוחל בפועל על ה-context). חריגה קטנה מהמפרט: לא
+  // רק הפונט של שכבת הטקסט *הראשונה* בכל קבוצה (find) — קבוצה עם כמה
+  // שכבות טקסט בפונטים שונים תישאר עם אותו באג לשאר השכבות שלה. אוספים
+  // את כל הפונטים מכל שכבות הטקסט בכל הקבוצות (filter+map, לא find).
+  const fonts = [...new Set(
+    placed.flatMap(p => p.designLayers.filter(l => l.type === 'text').map(l => l.font || 'Heebo'))
+  )];
+  if(fonts.length) await Promise.all(fonts.map(f => HebrewFonts.load(f).catch(()=>{})));
+  if(gen !== _repeatGroupsRenderGen) return; // רינדור מאוחר יותר כבר רץ — לא דורסים אותו בתוצאה מיושנת
+
   box.innerHTML = placed.map(p => {
     const g = p.group;
     const statusHtml = p.fits
@@ -1444,6 +1471,32 @@ function drawSheetTo(ctx, scale, W, H, showOutline = true){
 
   drawRegMarks(ctx, scale, W, H);
 
+  // עריכה חופשית — תצוגת הגיליון (a4Ctx, וגם קובץ ההדפסה שלה, ראה
+  // exportFreeLayoutPDF) היא ה"הרכבה" של כל הקבוצות החוזרות + התוכן החופשי
+  // הבסיסי, ממופים ישירות ל-W,H (הקנבס כולו = הדף, בלי inset-box של 92%
+  // שקיים רק ב-singleCanvas לנוחות עריכה חזותית). singleCanvas לא מצייר את
+  // זה בכלל — הוא משטח העריכה בלבד (יחידת קבוצה, או התוכן החופשי הבסיסי).
+  if(isFreeMode()){
+    layoutAllGroups().forEach(p => {
+      if(!p.fits) return;
+      drawRegionTiles(ctx, scale, p.L, p.design, p.designLayers, false, p.group.id);
+    });
+    // התוכן החופשי הבסיסי: אם עורכים קבוצה כרגע, layers מייצג אותה, לא
+    // אותו — משתמשים ב-baseFreeLayers השמור, בדיוק כמו d1/d2 ב-dualLayout
+    // לסלוט שאינו פעיל. ⚠️ ממופה דרך freeContentBoxFor (92%-inset), לא ל-
+    // W,H המלאים — בדיוק כמו freeLayoutBox() שמשמשת את מסך העריכה, אחרת
+    // שבר x/y של שכבה נופל למקום אחר בתצוגה המקדימה/בהדפסה מאשר במסך
+    // העריכה שהמשתמש ראה.
+    const { boxX, boxY, boxW, boxH } = freeContentBoxFor(W, H);
+    const baseLayers = activeGroupId === null ? layers : (baseFreeLayers || []);
+    drawLayers(ctx, boxX, boxY, boxW, boxH, 1.2, baseLayers);
+    if(freeCutMode() === 'margin'){
+      const marginPx = freeMarginMm() * scale;
+      baseLayers.forEach(l => drawMarginRect(ctx, l, boxX, boxY, boxW, boxH, marginPx));
+    }
+    return;
+  }
+
   if(!secondDesign){
     drawRegionTiles(ctx, scale, layout(), state, layers, showOutline, 1);
     return;
@@ -1473,6 +1526,19 @@ function drawSheetTo(ctx, scale, W, H, showOutline = true){
 // עצמה לא נוגעת ב-DOM בכלל.
 function drawSheet(){
   drawSheetTo(a4Ctx, pxPerMm(a4Canvas), a4Canvas.width, a4Canvas.height);
+
+  // עריכה חופשית: אין "מדבקה יחידה שממלאת דף" (layout()/natDims של state
+  // הגלובלי לא אומרים כאן כלום משמעותי — הם שייכים רק לקבוצה שנערכת כרגע,
+  // אם יש כזו) — סטטוס פשוט: סה"כ עותקים מכל הקבוצות, מ-layoutAllGroups
+  // עצמה (אותו חישוב בדיוק שכבר מצייר את הגיליון למעלה).
+  if(isFreeMode()){
+    const totalCopies = layoutAllGroups().reduce((s,p) => s + p.L.total, 0);
+    document.getElementById('stats').textContent = totalCopies
+      ? `סה"כ ${totalCopies} עותקים מכל הקבוצות בדף`
+      : '';
+    a4Canvas.classList.remove('pending');
+    return;
+  }
 
   const L = layout();
   const {w:natW, h:natH} = natDims();
@@ -2359,42 +2425,25 @@ document.getElementById('export-png').addEventListener('click', ()=>{
 // buildPrintFile של זרימת הלקוח, שמרכיבה גיליון של עשרות מדבקות חוזרות).
 // אם מצב החיתוך הוא "מלבן עם מרווח" — מציירת גם את המלבנים (אדום) וגם
 // סימני רישום, אותו drawRegMarks/REG בדיוק כמו זרימת המדבקות/הדאבל.
+// מקור אמת יחיד: מאציל ל-drawSheetTo (אותה פונקציה שמציירת גם את התצוגה
+// המקדימה החיה ב-a4Canvas) במקום לשכפל את לוגיקת הקבוצות/התוכן-החופשי/
+// המלבנים בשנית — בדיוק העיקרון שכבר נשמר עבור export-print-pdf/
+// buildPrintFile מול drawSheet הרגילה. ⚠️ שינוי קטן ומכוון לעומת הגרסה
+// הקודמת: סימני הרישום מוצגים תמיד עכשיו (כמו בכל שאר צינורות הפלט
+// בקובץ, שאף אחד מהם לא מדלג עליהם על תנאי) — לא רק כש-freeCutMode
+// ==='margin' או שיש קבוצה. תמיד לצייר סימנים בקובץ הדפסה הוא זול ובטוח
+// יותר מלוודא שכל צינור פלט עתידי זוכר לחזור על אותו תנאי.
 async function exportFreeLayoutPDF(){
   await ensureFonts();
   const cv = document.createElement('canvas');
   cv.width = 2480; cv.height = 3508; // A4 ב-300 DPI, אותו קבוע כמו שאר הקוד
-  const ctx = cv.getContext('2d');
-  ctx.fillStyle = '#fff'; ctx.fillRect(0,0,cv.width,cv.height);
 
-  const scale = cv.width / 210; // px-per-מ"מ אמיתי, ביחס לכל הדף (לא ל-92%-box)
-
-  // קבוצות חוזרות — אריחי המדפסת (300 DPI) שונים מאריחי התצוגה (רזולוציית
-  // המסך): מטמון tileCache[groupId] חייב להיפסל לפני ואחרי, בדיוק כמו
-  // buildPrintFile/export-print-pdf כבר עושים לסלוטים 1/2 של המדבקה הרגילה.
-  if(repeatGroups.length){
-    repeatGroups.forEach(g => invalidateTile(g.id));
-    layoutAllGroups().forEach(p => {
-      if(!p.fits) return;
-      drawRegionTiles(ctx, scale, p.L, p.design, p.designLayers, false, p.group.id);
-    });
-    repeatGroups.forEach(g => invalidateTile(g.id)); // חזרה לרזולוציית התצוגה
-  }
-
-  const boxW = cv.width * 0.92, boxH = boxW * (297/210);
-  const boxX = (cv.width-boxW)/2, boxY = (cv.height-boxH)/2;
-
-  drawLayers(ctx, boxX, boxY, boxW, boxH, 1.2); // אין clip — כל שכבה חופשית על כל הדף
-
-  // סימני רישום: גם במצב "מלבן עם מרווח" (כמו היום) וגם כשיש קבוצה חוזרת
-  // אחת לפחות — לקבוצות יש קווי חיתוך אמיתיים (הצורה שלהן עצמה) שדורשים
-  // התאמה ב-Studio בדיוק כמו הזרימה הרגילה.
-  if(freeCutMode() === 'margin' || repeatGroups.length){
-    drawRegMarks(ctx, scale, cv.width, cv.height);
-  }
-  if(freeCutMode() === 'margin'){
-    const marginPx = freeMarginMm() * scale;
-    layers.forEach(l => drawMarginRect(ctx, l, boxX, boxY, boxW, boxH, marginPx));
-  }
+  // אריחי המדפסת (300 DPI) שונים מאריחי התצוגה (רזולוציית המסך): מטמון
+  // tileCache[groupId] חייב להיפסל לפני ואחרי, בדיוק כמו buildPrintFile/
+  // export-print-pdf כבר עושים לסלוטים 1/2 של המדבקה הרגילה.
+  repeatGroups.forEach(g => invalidateTile(g.id));
+  drawSheetTo(cv.getContext('2d'), cv.width / 210, cv.width, cv.height, false);
+  repeatGroups.forEach(g => invalidateTile(g.id)); // חזרה לרזולוציית התצוגה
 
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF({unit:'mm', format:'a4', orientation:'portrait'});
