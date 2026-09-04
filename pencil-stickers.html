@@ -21,6 +21,9 @@
   @media(min-width:1100px){ .wrap{flex-direction:row} .left{width:380px} .center{flex:1} }
   .panel{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:0 1px 3px rgba(0,0,0,0.02)}
   .panel.highlight{border:2px solid #0f172a;background:#fffdf0}
+  /* רמז חזותי נוסף (לצד פס היעד למעלה) שלא תלוי רק בקריאת טקסט — תוכן שמתווסף
+     עכשיו הולך לתוך קבוצה חוזרת, לא לדף החופשי הבסיסי. ראה updateEditTargetIndicator. */
+  #add-content-panel.editing-group{border:2px solid #4f46e5;background:#eef2ff}
   h2{margin:0;font-size:12px;color:#64748b;font-weight:800;letter-spacing:0.5px;text-transform:uppercase}
   .slider-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px}
   .slider-box label{display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:6px}
@@ -92,7 +95,17 @@
   <!-- פנל שמאלי -->
   <div class="left" style="display:flex;flex-direction:column;gap:12px">
 
-    <div class="panel highlight">
+    <!-- פס יעד עריכה — קבוע וגלוי תמיד בראש האזור, מעל פאנל ההוספה. תיקון
+         ארכיטקטוני: פאנל ההוספה (טקסט/אייקון/תמונה) זהה חזותית בין הוספה
+         לתוכן החופשי הבסיסי (activeGroupId===null) לבין הוספה לתוך יחידת-
+         קבוצה שנערכת כרגע — בלי הפס הזה אין שום דרך לדעת לאן התוכן החדש הולך.
+         ראה updateEditTargetIndicator. -->
+    <div class="panel free-mode-only" id="edit-target-indicator" style="padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px">
+      <span id="edit-target-label" style="font-weight:800;font-size:13px">🖼️ עורך: תוכן חופשי על הדף</span>
+      <button class="btn" id="edit-target-exit-btn" style="display:none;padding:4px 10px;font-size:12px">✕ סיים עריכת קבוצה</button>
+    </div>
+
+    <div class="panel highlight" id="add-content-panel">
       <h2 id="shape-panel-title">1️⃣ עיצוב מבנה ופרופורציה (תצוגה מקדימה)</h2>
 
       <div class="free-mode-hide" id="shape-select-block">
@@ -693,6 +706,28 @@ function updateGroupEditVisibility(){
   document.getElementById('page-fill-info-block').style.display = editing ? 'none' : '';
   document.getElementById('single-canvas-title').textContent = editing ? 'עיצוב יחידת הקבוצה' : 'עריכה חופשית לדף A4';
   document.getElementById('exit-group-edit-btn').style.display = editing ? '' : 'none';
+  updateEditTargetIndicator();
+}
+
+// פס היעד למעלה + צביעת #add-content-panel — הופכים את activeGroupId (שכבר
+// קיים בקוד) לגלוי למשתמש, לא רק למצב פנימי. נקראת מ-updateGroupEditVisibility
+// בכוונה ולא מכל קריאה ל-updateSelectedControls: activeGroupId משתנה אך ורק
+// בתוך switchGroupEditTarget, וזו הפונקציה היחידה שכבר רצה בכל מעבר כזה (וגם
+// רק בה, guard-ed ב-isFreeMode()) — קריאה משם מדויקת ולא כרוכה בעשרות קריאות
+// מיותרות מכל בחירת שכבה. עדכון חי בזמן עריכת כמות מגיע מ-listener נפרד.
+function updateEditTargetIndicator(){
+  if(!isFreeMode()) return;
+  const label = document.getElementById('edit-target-label');
+  const exitBtn = document.getElementById('edit-target-exit-btn');
+  if(activeGroupId === null){
+    label.textContent = '🖼️ עורך: תוכן חופשי על הדף';
+    exitBtn.style.display = 'none';
+  } else {
+    const g = repeatGroups.find(x => x.id === activeGroupId);
+    label.textContent = `🔁 עורך: תוך קבוצה (כמות ${g ? g.qty : '?'})`;
+    exitBtn.style.display = 'inline-block';
+  }
+  document.getElementById('add-content-panel').classList.toggle('editing-group', activeGroupId !== null);
 }
 
 // כמו packing/layout, אבל לתת-אזור נתון (uW×uH, מוזז מ-left/top) ולעיצוב
@@ -2690,12 +2725,18 @@ document.getElementById('add-repeat-group-btn').addEventListener('click', () => 
   switchGroupEditTarget(id);
 });
 document.getElementById('exit-group-edit-btn').addEventListener('click', () => switchGroupEditTarget(null));
+// כפתור יציאה נוסף בפס-היעד למעלה — id נפרד (edit-target-exit-btn) בכוונה,
+// לא exit-group-edit-btn: שני כפתורים עם אותו id הם באג DOM אמיתי
+// (getElementById מחזיר רק את הראשון), אז זה id ייעודי לכפתור השני, אותה פעולה בדיוק.
+document.getElementById('edit-target-exit-btn').addEventListener('click', () => switchGroupEditTarget(null));
 document.getElementById('repeat-groups-list').addEventListener('input', e => {
   const inp = e.target.closest('.group-qty-input');
   if(!inp) return;
   const g = repeatGroups.find(x => x.id === inp.dataset.gid);
   if(!g) return;
   g.qty = Math.max(1, parseInt(inp.value) || 1);
+  // עדכון חי של פס-היעד אם עורכים כרגע בדיוק את הקבוצה הזו — הכמות המוצגת שם לא תיתקע ישנה
+  if(g.id === activeGroupId) updateEditTargetIndicator();
   drawSingle();
   schedSheet();
 });
@@ -3073,6 +3114,7 @@ applyAdminVisibility();
 updateOrderTotal();
 syncSizeInputs();
 updateSelectedControls();
+updateEditTargetIndicator();
 drawSingle();
 drawSheet();
 
