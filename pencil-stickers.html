@@ -25,8 +25,8 @@
   .slider-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px}
   .slider-box label{display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:6px}
   input[type="range"]{width:100%;height:24px;accent-color:#0f172a}
-  input[type="text"],select{width:100%;padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;font-family:inherit;background:#fff}
-  input[type="text"]:focus,select:focus{outline:none;border-color:#0f172a}
+  input[type="text"],select,textarea{width:100%;padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;font-family:inherit;background:#fff}
+  input[type="text"]:focus,select:focus,textarea:focus{outline:none;border-color:#0f172a}
   input[type="number"]{width:100%;padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;font-family:inherit;background:#fff}
   input[type="number"].at-limit{border-color:#ea580c;color:#ea580c}
   .row{display:flex;gap:8px} .row>*{flex:1}
@@ -131,7 +131,10 @@
       <h2>עריכת טקסט נבחר</h2>
       <div id="text-edit-box">
         <label>טקסט:</label>
-        <input type="text" id="sel-text-input">
+        <!-- textarea, לא input — מאפשר Enter לשבירת שורה מפורשת (מכתב:
+             ברכה/גוף/חתימה). .value/.focus()/.select() זהים ל-input, אין
+             <form> שיגרום ל-submit בטעות. ראה wrapTextLines ב-layoutText. -->
+        <textarea id="sel-text-input" rows="3" style="resize:vertical;font-family:inherit"></textarea>
         <div class="row" style="margin-top:6px">
           <div>
             <label style="font-size:11px">פונט:</label>
@@ -1036,12 +1039,36 @@ function shapeSvgMarkup(x, y, frameW, frameH, design = state){
   }
 }
 
+// שוברת טקסט לשורות — פסקאות (\n מפורש, מ-textarea) קודם, ואז עטיפה
+// אוטומטית לפי רוחב בתוך כל פסקה בנפרד (אם יש boxWidth). בלי boxWidth, כל
+// \n הוא בדיוק שורה אחת, בלי עטיפה בתוכה — זה מה שמאפשר ללקוחה לקבוע בעצמה
+// איפה שוברים (ברכה/גוף/חתימה בסגנון מכתב), לא רק עטיפה אוטומטית. פסקה
+// ריקה (Enter כפול) → שורה ריקה, לא נבלעת — רווח מכוון בין פסקאות.
+function wrapTextLines(ctx, text, maxWidthPx){
+  const paragraphs = text.split('\n');
+  const out = [];
+  for(const para of paragraphs){
+    if(!maxWidthPx){ out.push(para); continue; }
+    const words = para.split(/\s+/).filter(Boolean);
+    let cur = '';
+    for(const w of words){
+      const trial = cur ? cur+' '+w : w;
+      if(ctx.measureText(trial).width > maxWidthPx && cur){ out.push(cur); cur = w; }
+      else cur = trial;
+    }
+    out.push(cur);
+  }
+  return out.length ? out : [''];
+}
+
 // פונקציית פריסה משותפת אחת — ציור (renderStickerContent) ומדידה
 // (layerHalfSize) חייבים לקרוא לה ולקבל בדיוק אותה תוצאה, כולל הכיווץ
 // האוטומטי. שני מימושים נפרדים = תפיסת השכבה תסטה ממה שבאמת מצויר (זו
 // בדיוק מחלקת הבאג שכבר נתפסה ב-PR #98/#100). maxWidthPx=null (boxWidth
 // לא מוגדר) = מצב legacy: שורה אחת ברוחב טבעי, זהה בדיוק להתנהגות שהייתה
-// לפני ה-PR הזה — קריטי לתאימות אחורה להזמנות אמיתיות שכבר ב-DB.
+// לפני ה-PR הזה — קריטי לתאימות אחורה להזמנות אמיתיות שכבר ב-DB. (טקסט
+// חד-שורתי ללא \n ממשיך להתנהג זהה גם עכשיו — wrapTextLines עם פסקה יחידה
+// מחזירה בדיוק את אותה תוצאה כמו הקוד הישן.)
 function layoutText(ctx, l, boxH, boxW, scaleFactor){
   const wt = window.HebrewFonts && HebrewFonts.hasBold(l.font||'Heebo') ? 700 : 400;
   const text = l.text || '';
@@ -1050,25 +1077,23 @@ function layoutText(ctx, l, boxH, boxW, scaleFactor){
   let fSize = boxH * 0.45 * l.scale * scaleFactor;
   let lastResult = null;
 
-  for(let attempt=0; attempt<8; attempt++){
+  // ⚠️ חריגה מהמפרט (המפרט ביקש שהלולאה תישאר בדיוק כמו שהיא): 8 ניסיונות
+  // ב-0.92 לכל שלב הספיקו כשהמצב הנפוץ ביותר היה שורה אחת (או כמה שורות
+  // מעטיפה אוטומטית) — אבל עם \n מפורש, "מכתב" ריאליסטי בסגנון ברכה+שני
+  // משפטי גוף+חתימה הוא כבר 4 שורות, ונתפס בפועל (Playwright): 3 שורות
+  // בקושי נכנסות בניסיון האחרון (השמיני), 4+ שורות "נתקעות" בגודל לא-מתאים
+  // כי הלולאה נגמרת לפני שהגיעה ל-fSize<=8 או לגודל שבאמת נכנס — התנאי
+  // עצמו (blockH מחושב מ-lines.length) תקין, רק שאין מספיק ניסיונות לממש
+  // אותו על תוכן ארוך יותר אנכית. 40 ניסיונות מכסים בנוחות גם 8+ שורות
+  // (נבדק) ולא משנים שום מקרה שכבר נכנס לפני כן — הלולאה עדיין יוצאת
+  // באותו fSize מדויק ברגע שהתנאי הראשון מתקיים, רק לא נעצרת מוקדם מדי
+  // כשהוא עוד לא התקיים.
+  for(let attempt=0; attempt<40; attempt++){
     ctx.font = `${wt} ${Math.max(8,fSize)}px '${l.font||'Heebo'}', sans-serif`;
-    let lines;
-    if(maxWidthPx){
-      const words = text.split(/\s+/).filter(Boolean);
-      lines = []; let cur = '';
-      for(const w of words){
-        const trial = cur ? cur+' '+w : w;
-        if(ctx.measureText(trial).width > maxWidthPx && cur){ lines.push(cur); cur = w; }
-        else cur = trial;
-      }
-      if(cur) lines.push(cur);
-      if(!lines.length) lines = [''];
-    } else {
-      lines = [text];
-    }
+    const lines = wrapTextLines(ctx, text, maxWidthPx);
     const lineHeight = fSize * 1.15;
     const blockH = lines.length * lineHeight;
-    const width = maxWidthPx ? maxWidthPx : Math.max(ctx.measureText(lines[0]).width, 1);
+    const width = maxWidthPx ? maxWidthPx : Math.max(...lines.map(ln => ctx.measureText(ln).width), 1);
     lastResult = { lines, fSize, lineHeight, width, wt };
     // ⚠️ באג אמיתי (דיווח הושעיה, צילום מסך): כש-boxWidth לא מוגדר (legacy,
     // שורה יחידה בלי עטיפה) הלולאה בדקה רק גובה — טקסט שרחב מ-boxW *עצמו*
