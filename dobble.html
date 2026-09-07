@@ -7725,6 +7725,38 @@ async function applySessionTier(session){
   }catch(e){console.warn('applySessionTier:',e);}
 }
 
+// רענון מסלול למי שנכנס בקוד גישה. applySessionTier מכסה רק חשבונות Auth,
+// ולכן רוב הלקוחות — אלה שנכנסים בקוד — לא ראו לעולם שדרוג שקרה בשרת אחרי
+// שהלשונית שלהם כבר נפתחה. morning-webhook משדרג את הקוד תוך עשירית שנייה
+// מרגע התשלום; בלי הרענון הזה הלקוחה ממשיכה לראות את המסלול הישן (קרה 06/09).
+// ⛔ מעלה בלבד. תקלת רשת לא תוריד מסלול ולא תנעל לקוחה משלמת.
+async function refreshCodeTier(){
+  const now=Date.now();
+  if(refreshCodeTier._last&&now-refreshCodeTier._last<20000)return;
+  refreshCodeTier._last=now;
+  try{
+    if(sessionStorage.getItem('dobble_unlocked')!=='1')return;
+    let sub=null;
+    try{sub=JSON.parse(sessionStorage.getItem('dobble_sub')||'null');}catch(e){}
+    const code=sub&&sub.code;
+    if(!code)return;                       // מנהל או מסלול ישן בלי קוד — לא נוגעים
+    const info=await window.tryAccessCode(code);
+    // validate-code מחזיר {valid,max_order,...} — לא {ok,...}. ראו submitCode
+    // (שורה ~688) שכבר קורא ל-res.valid, לא ל-res.ok.
+    if(!info||!info.valid)return;          // כשל רשת/קוד לא מוכר — fail-open
+    const t=parseInt(info.max_order,10);
+    if(isNaN(t))return;
+    const cur=parseInt(sessionStorage.getItem('dobble_max_order')||'0',10)||0;
+    if(t<=cur)return;                      // אין שינוי, או ניסיון הורדה — מתעלמים
+    sessionStorage.setItem('dobble_max_order',String(t));
+    toast(`המסלול שלכם עודכן — עד ${t} קלפים זמינים עכשיו 🎉`,'ok');
+  }catch(e){console.warn('refreshCodeTier:',e);}
+}
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible')refreshCodeTier();
+});
+window.addEventListener('focus',()=>{refreshCodeTier();});
+
 // המסלול שהחשבון מקנה. מרכז במקום אחד את מה שהיה מפוזר כברירות מחדל בתוך
 // unlockFromSession:
 //   · חשבון מנהל                       → 57
@@ -7975,7 +8007,8 @@ window._afterUnlock=()=>{idbLoad();};
 window._initAdminPanel=()=>{_admAuthed=true;openAdminPanel();};
 
 // אם כבר פתוח מהסשן — שחזור המאגר מיד
-if(sessionStorage.getItem('dobble_unlocked')==='1'){idbLoad();}
+// טעינת דף: הלקוחה חזרה לאתר אחרי ששילמה בלשונית אחרת.
+if(sessionStorage.getItem('dobble_unlocked')==='1'){idbLoad();refreshCodeTier();}
 
 // ══ UTILS ══
 function loadImg(url,maxSide){
