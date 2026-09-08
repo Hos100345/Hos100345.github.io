@@ -186,7 +186,11 @@
 ### ניקוי ברנצ'ים
 - ברנץ' שה-PR שלו מוזג — למחוק מיד אחרי המיזוג. היסטוריית ה-PR נשמרת ב-GitHub בלי קשר.
 - **מגבלת סביבה מרוחקת: אי אפשר למחוק ברנצ'ים מכאן.** `git push origin --delete` מחזיר 403 מה-proxy, וכלי ה-MCP של GitHub לא כוללים מחיקת ref (`create_branch` קיים, אין `delete_branch`). מחיקה = ידנית ב-GitHub (Settings→Branches או ברשימת ה-branches), או דרך `gh`/git ממכונה עם הרשאות כתיבה אמיתיות.
-- אומתו 56 ברנצ'ים בטוחים למחיקה (47 מוזגים במלואם + 5 שתוכנם כבר ב-main בדרך אחרת + 4 ישנים של אתר הבלונים שאושרו). המחיקה עצמה לא בוצעה — מגבלת הסביבה למעלה.
+- **סטטוס נכון ל-2026-09-08** (אומת ב-`git merge-base --is-ancestor` על קלון מלא, לא shallow, מול `origin/main`): מתוך 121 הברנצ'ים המרוחקים, **106 כבר מוזגים ל-main** — בטוחים למחיקה כשתהיה גישת כתיבה אמיתית. **15 לא מוזגים**, מתוכם:
+  - `claude/ai-gateway-multi-provider-gp1y3g` — **פעיל**, PR #56 פתוח (draft), בעבודה שוטפת. לא לגעת.
+  - `claude/dobble-access-code-validation-djmci9` — **לא למחוק** (הוראה מפורשת קודמת, לא קשור למיזוג).
+  - `claude/buy-access-morning-payment` — PR #16, זוהה כמיושן (מוחלף ע"י מסלול הרכישה המדורג בפרונט) אך טרם נסגר — ממתין להחלטת הושעיה.
+  - 12 השאר (`add-claude-md`, `ai-autofill-gemini-version-4kv0e`, `dobble-distortion-selection-xstpvn`, `dobble-xiaomi-multi-upload-krm39q`, `file-details-description-jH4vR`, `hebrew-fonts-emoji-dobble-ikvgav`, `homepage-portfolio-signup-cbcJW`, `move-sympad-slider-to-edit-panel`, `pencil-stickers-font-picker`, `pencil-stickers-print-file`, `session-organization-YbOFE`, `stickers-free-repeat-groups`) — עבודה ישנה/ננטשת ללא PR פתוח וללא סשן חי מאחוריהן (אומת מול `list_sessions`); חלקן הוחלפו בפועל ע"י עבודה מאוחרת יותר שכן מוזגה (למשל `stickers-free-repeat-groups` מוחלף לגמרי ע"י PR #119 שהסיר את מצב העריכה החופשית). מועמדות למחיקה יחד עם ה-106, בכפוף לאותה מגבלת סביבה.
 
 ## Supabase (MCP)
 - העדף `execute_sql` לכל DDL / שינויי schema / אימות מצב (אמין יותר בנייד מ-`apply_migration`).
