@@ -753,14 +753,22 @@ function dcfgSave(patch){
 <!-- ══ תשלום מדורג: בחירת רמה + רכישה + בחירת קוד אישי אחרי תשלום ══ -->
 <script>
 (function(){
-  // מדרגות המחיר — תואם לטבלה ב-morning-webhook (allowlist לפי productId)
-  window.TIER_PRICES={13:5,21:10,31:12,57:15};
-  // לינקי תשלום קבועים ב-Morning לכל מדרגה — ה-webhook מזהה תשלום לפי productId+amount ומעניק גישה
+  // מדרגות המחיר — חייב להישאר תואם ל-allowlist ב-morning-webhook (productId+amount).
+  // עודכן 08/09/2026: מדרגת 5 ₪ בוטלה (נטו 3.50 ₪ בלבד אחרי עמלות).
+  // כל מדרגה כוללת גם את כל החפיסות הקטנות ממנה — 10 ₪ פותח 13 וגם 21.
+  window.TIER_PRICES={21:10,31:15,57:25};
+  // מפת תצוגה בלבד — אילו חפיסות כלולות בכל מדרגה. מתוחזקת יחד עם
+  // TIER_PRICES שכבר מקודד את אותם מספרים, ולכן אין כאן מקור אמת חדש.
+  // ⛔ לא נגזר מ-ORDERS: הוא מוגדר בבלוק סקריפט 4 (שורה ~1949) בעוד
+  // renderTierPicker נקראת כבר בשורה 809 (טעינת הדף) — ORDERS ב-TDZ שם.
+  // גם window.ORDERS לא פותר, כי גם ההשמה אליו הייתה קורית רק בשורה 1949.
+  window.TIER_INCLUDES={21:'13 · 21',31:'13 · 21 · 31',57:'13 · 21 · 31 · 57'};
+  // ⛔ לינקים חדשים. לינק ישן עם מחיר חדש = ה-webhook דוחה את התשלום
+  // (הוא מוודא התאמה מדויקת בין productId לסכום) והלקוחה משלמת בלי לקבל גישה.
   window.PAYMENT_LINKS={
-    13:'https://mrng.to/IC0mmKwgzj',
-    21:'https://mrng.to/feHfaA6vLA',
-    31:'https://mrng.to/4LjUZBvnND',
-    57:'https://mrng.to/9F19TfbGTa'
+    21:'https://mrng.to/TZVJeGREXO',
+    31:'https://mrng.to/AF9SBK5Kva',
+    57:'https://mrng.to/xcFX1lMfwQ'
   };
 
   // בונה שורות בחירת רמה בתוך container; onPick(tier) נקרא כשנבחרת רמה
@@ -771,9 +779,13 @@ function dcfgSave(patch){
       const tier=Number(tierStr);
       const b=document.createElement('button');
       b.type='button';
+      // כל מדרגה כוללת את כל החפיסות הקטנות ממנה. בלי לומר זאת במפורש, לקוחה
+      // שרצתה 13 קלפים תחשוב שהמחיר עלה מ-5 ל-10 ₪ במקום להבין שהיא מקבלת יותר.
+      const included=window.TIER_INCLUDES[tier]||'';
       // "לחודש" נקרא כמו מנוי מתחדש, ואין כזה — התשלום חד-פעמי והגישה פגה מעצמה.
       b.innerHTML=`<div>עד ${tier} קלפים · ${price} ₪</div>`+
-                  `<div style="font-size:.75rem;font-weight:500;opacity:.75;margin-top:.15rem">תשלום חד-פעמי · חודש גישה</div>`;
+                  (included?`<div style="font-size:.75rem;font-weight:500;opacity:.75;margin-top:.15rem">כולל חפיסות של ${included} קלפים</div>`:'')+
+                  `<div style="font-size:.72rem;font-weight:500;opacity:.65;margin-top:.1rem">תשלום חד-פעמי · חודש גישה</div>`;
       b.style.cssText=dark
         ? 'width:100%;padding:.6rem .8rem;border-radius:14px;border:2px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff;font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;transition:all .15s'
         : 'width:100%;padding:.6rem .8rem;border-radius:14px;border:2px solid var(--border);background:transparent;color:var(--text);font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;transition:all .15s';
