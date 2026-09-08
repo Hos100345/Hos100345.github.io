@@ -1896,10 +1896,13 @@ function dcfgSave(patch){
       <div id="adm-cust-need-login" class="adm-hint2">התחבר/י כמנהל (במקטע "מנויים" למעלה) כדי לחפש לקוחות.</div>
       <div id="adm-cust-panel" hidden>
         <div style="display:flex;gap:.5rem;margin-bottom:.5rem;flex-wrap:wrap">
-          <input class="adm-inp" id="adm-cust-q" placeholder="מייל / טלפון / שם / קוד" style="flex:1;min-width:170px">
+          <input class="adm-inp" id="adm-cust-q" placeholder="מייל / שם / קוד / טלפון" style="flex:1;min-width:170px">
           <button class="btn btn-pri" id="adm-cust-search" style="font-size:.82rem">🔍 חפש</button>
         </div>
-        <div class="adm-hint2">חיפוש ריק = כל התשלומים ששולמו וטרם נוצלו.</div>
+        <div class="adm-hint2">
+          חיפוש ריק = הלקוחות האחרונים + תשלומים שטרם נוצלו.<br>
+          💡 לקוח שנרשם בחינם — <b>אין לו טלפון במערכת</b>. חפשו לפי מייל, שם או קוד.
+        </div>
         <div id="adm-cust-msg" class="adm-hint2" style="min-height:1.2em"></div>
         <div id="adm-cust-res" style="margin-top:.8rem"></div>
       </div>
@@ -7309,7 +7312,8 @@ async function renderCustomers(q){
         </div>`:''}
       </div>`;
     }).join('');
-    const codeHtml=(codes||[]).map(c=>{
+    // כרטיס קוד בודד — משותף לתצוגה שטוחה (חיפוש) ולקיבוץ (מסך ריק), כדי שלא לשכפל את התבנית.
+    const codeCard=(c)=>{
       const expired=c.expires_at&&String(c.expires_at).slice(0,10)<new Date().toISOString().slice(0,10);
       const expTag=!c.is_active?'<span class="adm-tag exp">מושבת</span>'
         :c.expires_at?`<span class="adm-tag ${expired?'exp':'ok'}">${expired?'פג ⛔ ':''}${d(c.expires_at)}</span>`
@@ -7330,7 +7334,22 @@ async function renderCustomers(q){
           <button class="cust-act" data-action="code-toggle" style="background:none;border:1px solid #334155;color:${c.is_active?'#fca5a5':'#6ee7b7'};border-radius:8px;cursor:pointer;font-size:.74rem;padding:.28rem .6rem">${c.is_active?'🔒 השבת':'🔓 הפעל'}</button>
         </div>
       </div>`;
-    }).join('');
+    };
+    // קיבוץ לפי תאריך רק כשהחיפוש ריק — מי שהקליד טקסט רוצה תוצאות, לא תיקיות.
+    let codeHtml;
+    if(!q&&(codes||[]).length){
+      const now=Date.now(),day=86400000;
+      const recent=[],week=[],older=[];
+      (codes||[]).forEach(c=>{
+        const age=c.created_at?now-new Date(c.created_at).getTime():Infinity;
+        if(age<2*day)recent.push(c);else if(age<7*day)week.push(c);else older.push(c);
+      });
+      const section=(label,list)=>list.length?`<div style="color:#64748b;font-size:.75rem;margin:.6rem 0 .4rem">${label}</div>`+list.map(codeCard).join(''):'';
+      codeHtml=section('🆕 היום ואתמול',recent)+section('📅 השבוע האחרון',week)+
+        (older.length?`<details style="margin-top:.6rem"><summary style="color:#94a3b8;font-size:.8rem;cursor:pointer;padding:.3rem 0">🗂️ ישן יותר (${older.length})</summary><div style="margin-top:.5rem">${older.map(codeCard).join('')}</div></details>`:'');
+    }else{
+      codeHtml=(codes||[]).map(codeCard).join('');
+    }
     const parts=[];
     if(txHtml)parts.push('<div style="color:#64748b;font-size:.75rem;margin-bottom:.4rem">תשלומים</div>'+txHtml);
     if(codeHtml)parts.push('<div style="color:#64748b;font-size:.75rem;margin:.6rem 0 .4rem">קודים</div>'+codeHtml);
@@ -7498,6 +7517,9 @@ document.getElementById('dl-share').addEventListener('click',async()=>{
 });
 
 // ══ הזמנת הדפסה ומשלוח עד הבית ══
+// מוסתר 08/09/2026 עד שיימצא בית דפוס. הקוד נשאר שלם — כולל איסוף המפרט
+// (קוטר, צורה, מספר קלפים) שנבנה ועובד. להחזרה: PRINT_ORDER_ENABLED=true.
+const PRINT_ORDER_ENABLED=false;
 function orderPrint(){
   const waNum=localStorage.getItem('dobble_wa')||DCFG.whatsapp;
   const shape=S.shape==='circle'?'עגול':'מרובע';
@@ -7512,6 +7534,11 @@ function orderPrint(){
 }
 document.getElementById('btn-print-order').addEventListener('click',orderPrint);
 document.getElementById('btn-print-order-2').addEventListener('click',orderPrint);
+if(!PRINT_ORDER_ENABLED){
+  // התיבה במסך הייצוא והכפתור המשני שליד כפתור ההורדה.
+  const po=document.getElementById('print-order');if(po)po.hidden=true;
+  const b2=document.getElementById('btn-print-order-2');if(b2)b2.hidden=true;
+}
 
 // ══ SUPABASE — חשבון וסנכרון (Magic Link) ══
 (function initSupabase(){
