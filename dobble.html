@@ -447,6 +447,10 @@ function dcfgSave(patch){
       <button id="lock-go" type="button"
         style="background:#6366f1;color:#fff;font-weight:800;font-size:1.05rem;padding:.7rem 2.4rem;border:none;border-radius:100px;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(99,102,241,.5)">כניסה ✓</button>
       <div id="lock-err" style="color:#fca5a5;font-size:.88rem;min-height:1.2em"></div>
+      <button type="button" id="forgot-code-link"
+        style="background:none;border:none;color:rgba(255,255,255,.55);font-size:.8rem;text-decoration:underline;cursor:pointer;font-family:inherit;padding:.4rem;margin-top:.3rem">
+        שכחתי את הקוד שלי
+      </button>
     </div>
 
     <!-- טאב: הרשמה חינם -->
@@ -7722,6 +7726,51 @@ function unlockFromSession(session,maxOrder){
   if(window._afterUnlock)window._afterUnlock();
 }
 
+// ── שחזור קוד ────────────────────────────────────────────────────────────
+// הקוד לעולם אינו נשלח למייל שהוקלד: זה היה מאפשר לשלוף קודים של אחרים
+// בניחוש כתובות. במקום זה הלקוחה מתחברת דרך קישור הכניסה הרגיל, והקוד
+// מוצג רק אחרי שהבעלות על המייל אומתה. my_access_codes שולפת את המייל
+// מ-auth.jwt() ולא מקלט — הפרונט לא יכול לבקש קוד של מישהו אחר.
+async function startCodeRecovery(){
+  const email=(prompt('הזינו את המייל שאיתו נרשמתם — נשלח אליו קישור כניסה:')||'').trim();
+  if(!email)return;
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){toast('כתובת מייל לא תקינה','err');return;}
+  if(!SB){toast('השירות אינו זמין כרגע — נסו שוב בעוד רגע','err');return;}
+  try{
+    const {error}=await SB.auth.signInWithOtp({email,options:{emailRedirectTo:location.href}});
+    if(error)throw error;
+    toast('נשלח אליכם קישור כניסה. פתחו אותו מהמייל, והקוד שלכם יוצג כאן.','ok');
+  }catch(e){
+    console.warn('startCodeRecovery:',e);
+    toast('שליחת הקישור נכשלה: '+(e.message||e),'err');
+  }
+}
+
+// מוצג אחרי כניסה מוצלחת דרך המייל (מסלול שחזור, או חיבור חשבון רגיל).
+async function showMyCodes(){
+  if(!SB||!isSignedIn())return;
+  try{
+    const {data,error}=await SB.rpc('my_access_codes');
+    if(error)throw error;
+    const rows=Array.isArray(data)?data:[];
+    if(!rows.length){
+      toast('לא נמצאו קודים המשויכים למייל הזה. אם שילמתם במייל אחר — נסו איתו.','err');
+      return;
+    }
+    const list=rows.map(r=>{
+      const exp=r.expires_at?new Date(r.expires_at).toLocaleDateString('he-IL'):'ללא הגבלה';
+      return `${r.code} · עד ${r.max_order} קלפים · בתוקף עד ${exp}`;
+    }).join('\n');
+    alert('הקוד שלכם:\n\n'+list+'\n\nשמרו אותו — זה מפתח הכניסה שלכם.');
+  }catch(e){
+    console.warn('showMyCodes:',e);
+    toast('שליפת הקוד נכשלה: '+(e.message||e),'err');
+  }
+}
+
+document.getElementById('forgot-code-link')
+  .addEventListener('click',startCodeRecovery);
+
 // מיישר את המסלול בסשן לפי המנוי שבחשבון — בלי לגעת במסך, בנעילה או ב-goScr.
 // משמש כשהמשתמש כבר בתוך האפליקציה (נכנס בקוד) ורק מתחבר לחשבון לגיבוי/סנכרון.
 // ⛔ רק מעלה מסלול, לעולם לא מוריד — כדי שהתחברות לחשבון לא תוריד בטעות
@@ -7992,6 +8041,10 @@ if(SB){
   // שמסתיים ב-goScr(1) — וזרק את המשתמש ממסך הייצוא בחזרה למסך 1 באמצע העבודה,
   // וגם רשם אירוע unlock כפול בכל פעם.
   let _authHandledUid=null;
+  // דדופליקציה נפרדת מ-_authHandledUid: זו מונעת קריאה חוזרת ל-unlockFromSession/
+  // applySessionTier לאותו uid, אבל showMyCodes צריכה לרוץ פעם אחת בלבד לכל טעינת-דף
+  // בלי קשר לכך — ⛔ אין לאחד את שני הדגלים.
+  let _codesShown=false;
   SB.auth.onAuthStateChange((event,session)=>{
     updateAuthUI(session);
     if(event==='SIGNED_OUT'){_authHandledUid=null;return;}
@@ -8005,11 +8058,19 @@ if(SB){
         toast('התחברת — מסנכרן את העיצובים שלך ☁️','ok');
         syncDesigns(session);
         maybeAutoSaveAfterCloudConnect();
+        if(!_codesShown){_codesShown=true;showMyCodes();}
       });
       return;
     }
+    // ⚠️ חריגה מהעוגן המקורי במפרט (שהצביע על ה-then של applySessionTier למעלה):
+    // לקוחה ששכחה קוד ולוחצת על קישור הכניסה **אינה** כבר בתוך האפליקציה
+    // (dobble_unlocked!=='1'), ולכן זורמת לכאן — ל-guardedUnlock, לא ל-applySessionTier.
+    // showMyCodes חייבת לרוץ גם כאן, אחרת התכונה לא עובדת כלל למקרה השימוש שלשמו נבנתה.
     guardedUnlock(session).then(ok=>{   // בודק תוקף מנוי; אם תקין — פותח את האפליקציה
-      if(ok){ toast('התחברת — טוען את העיצובים שלך ☁️','ok'); syncDesigns(session); maybeAutoSaveAfterCloudConnect(); }
+      if(ok){
+        toast('התחברת — טוען את העיצובים שלך ☁️','ok'); syncDesigns(session); maybeAutoSaveAfterCloudConnect();
+        if(!_codesShown){_codesShown=true;showMyCodes();}
+      }
     });
   });
 }
