@@ -4862,8 +4862,11 @@ async function expPDF(setp){
   S._lastSize=blob.size;
   // הייצוא לא נמדד בשרת עד היום — logGame כותב ל-localStorage בלבד. בלי
   // המדידה הזו אין מכנה ל-share-ok ואי אפשר לדעת אם התיקון לאייפון עבד.
+  // מספר התמונות במאגר נרשם כדי שאפשר יהיה בעתיד להבחין בין לקוחה שמכינה
+  // כמה משחקים שונים לבין לקוחה שמדייקת משחק אחד ומייצאת שוב ושוב.
+  // cards הוא גודל החפיסה ולא מספר התמונות — שני נתונים שונים.
   window.track&&window.track('export',{cards:S.deck.length,symbols:S.order?S.order.spc:'',
-    detail:`pdf · ${S.exportQuality} · ${fmtSize(blob.size)}`});
+    detail:`pdf · ${S.exportQuality} · ${fmtSize(blob.size)} · ${S.assets.length} תמונות`});
   refreshShareBtn();
   setp(100,'✅ מוכן!');
 }
@@ -4938,7 +4941,7 @@ async function expPrintPDF(setp){
   S._lastBlob=blob;
   refreshShareBtn();
   window.track&&window.track('export',{cards:S.deck.length,symbols:S.order?S.order.spc:'',
-    detail:`print-pdf · ${dpi}dpi · ${fmtSize(blob.size)}`});
+    detail:`print-pdf · ${dpi}dpi · ${fmtSize(blob.size)} · ${S.assets.length} תמונות`});
   setp(100,'✅ מוכן!');
 }
 
@@ -4978,7 +4981,7 @@ async function expZIP(setp){
   S._lastFile=fnz;
   S._lastSize=blob.size;
   window.track&&window.track('export',{cards:S.deck.length,symbols:S.order?S.order.spc:'',
-    detail:`zip · ${S.exportQuality} · ${fmtSize(blob.size)}`});
+    detail:`zip · ${S.exportQuality} · ${fmtSize(blob.size)} · ${S.assets.length} תמונות`});
   refreshShareBtn();
   setp(100,'✅ מוכן!');
 }
@@ -5080,7 +5083,7 @@ async function expDXF(setp){
   S._lastFile=fnd;
   S._lastSize=blob.size;
   window.track&&window.track('export',{cards:S.deck.length,symbols:S.order?S.order.spc:'',
-    detail:`dxf · ${fmtSize(blob.size)}`});
+    detail:`dxf · ${fmtSize(blob.size)} · ${S.assets.length} תמונות`});
   refreshShareBtn();
   setp(100,'✅ מוכן!');
 }
@@ -6246,7 +6249,7 @@ async function exportDesignFile(){
     S._lastBlob=blob;
     refreshShareDesignBtn();
     window.track&&window.track('export',{cards:S.assets.length,symbols:'',
-      detail:`designfile · ${fmtSize(blob.size)}`});
+      detail:`designfile · ${fmtSize(blob.size)} · ${S.assets.length} תמונות`});
     // showDownloadDone() מוסיף אל תוך #exp-prog (מסך 3, הייצוא) — כפתורי הגיבוי
     // יושבים במסך 1 (העלאה), אז שם הפאנל ייכנס לחלק מוסתר של הדף ולא יראה אותו
     // אף אחד. toast עם המשקל בפועל נראה תמיד, בלי קשר למסך הנוכחי.
@@ -7278,6 +7281,30 @@ async function renderCustomers(q){
   if(msg)msg.textContent='';
   try{
     const{transactions,codes}=await callManageCustomers({action:'customer-lookup',q:q||''});
+    // סטטיסטיקת שימוש לכל קוד. נשלף בקריאה אחת ולא לכל כרטיס בנפרד.
+    // events פתוחה ל-SELECT למנהל בלבד (RLS), ולכן אין כאן חשיפת מידע.
+    const usage={};
+    try{
+      const wanted=(codes||[]).map(c=>c.code).filter(Boolean);
+      if(wanted.length&&SB){
+        const {data:ev}=await SB.from('events')
+          .select('code,event,detail,created_at')
+          .in('code',wanted)
+          .in('event',['export','game','unlock'])
+          .order('created_at',{ascending:false})
+          .limit(2000);
+        (ev||[]).forEach(r=>{
+          const u=usage[r.code]||(usage[r.code]={pdf:0,backup:0,games:0,imgs:0,last:null});
+          if(r.event==='export'){
+            const d=String(r.detail||'');
+            if(d.startsWith('designfile'))u.backup++;else u.pdf++;
+            const m=d.match(/(\d+)\s*תמונות/);
+            if(m)u.imgs=Math.max(u.imgs,parseInt(m[1],10)||0);
+          }else if(r.event==='game')u.games++;
+          if(!u.last||r.created_at>u.last)u.last=r.created_at;
+        });
+      }
+    }catch(e){console.warn('usage stats:',e);}
     const d=v=>v?new Date(v).toLocaleDateString('he-IL'):'—';
     const txHtml=(transactions||[]).map(t=>{
       const unclaimed=!t.claimed_at;
@@ -7323,6 +7350,12 @@ async function renderCustomers(q){
           <div>
             <div style="font-family:monospace;color:#e2e8f0;font-weight:700;letter-spacing:.03em">${admEsc(c.code)}</div>
             ${c.created_for?`<div style="color:#64748b;font-size:.75rem">${admEsc(c.created_for)}</div>`:''}
+            ${(()=>{
+              const u=usage[c.code];
+              if(!u||(!u.pdf&&!u.games))return '<div style="color:#475569;font-size:.72rem;margin-top:.15rem">לא השתמש עדיין</div>';
+              const alert=u.pdf>=10?' <span style="color:#fbbf24" title="שימוש חריג — שווה בדיקה">⚠️</span>':'';
+              return `<div style="color:#64748b;font-size:.72rem;margin-top:.15rem">🖨️ ${u.pdf} ייצואים · 🎯 ${u.games} משחקים${u.imgs?` · 🖼️ ${u.imgs} תמונות`:''}${u.backup?` · 💾 ${u.backup}`:''}${alert}</div>`;
+            })()}
           </div>
           <div style="display:flex;gap:.35rem;flex-wrap:wrap">${expTag}<span class="adm-tag" style="background:#1e293b;color:#93c5fd">${ADM_TIER_LABELS[c.max_order]||c.max_order}</span></div>
         </div>
