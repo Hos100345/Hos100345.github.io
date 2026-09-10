@@ -1316,22 +1316,40 @@ function dcfgSave(patch){
       <button class="btn btn-sec" id="btn-prevprint">👁 תצוגה מקדימה</button>
       <button class="btn btn-pri" id="btn-doexp">⚙️ צור PDF</button>
       <button class="btn btn-out" id="btn-dozip">🗜️ צור ZIP (PNG)</button>
-      <button class="btn btn-out" id="btn-doprint">📦 PDF לבית דפוס</button>
-      <button class="btn btn-out" id="btn-dosheet">🗞️ גיליון 33×48.8</button>
       <button class="btn btn-ok" id="btn-dodxf" style="display:none">✂️ ייצא DXF לחיתוך</button>
       <button class="btn btn-ghost" id="btn-b2">← חזרה לעריכה</button>
     </div>
-    <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem;line-height:1.5">
-      📦 לבית דפוס: עמוד לכל קלף · בליד 4 מ"מ · 300 DPI · העמוד האחרון הוא הגב.
-    </div>
-    <div id="sheet-diam-row" style="margin-top:.5rem" hidden>
-      <div class="og-t">קוטר הקלף בגיליון</div>
-      <div class="shape-grp" id="sheet-diam" style="width:100%">
-        <button type="button" class="sbt on" data-d="71">רגיל · 71 מ"מ</button>
-        <button type="button" class="sbt" data-d="85">גדול · 85 מ"מ</button>
+
+    <!-- ── לבית דפוס — מקופל, רלוונטי למיעוט מהלקוחות ── -->
+    <details id="printshop-fold" style="margin-top:.6rem">
+      <summary style="cursor:pointer;font-size:.86rem;color:var(--muted);padding:.35rem 0">🖨️ לבית דפוס</summary>
+      <div style="margin-top:.5rem">
+        <div class="brow">
+          <button class="btn btn-out" id="btn-doprint">📦 PDF — עמוד לכל קלף</button>
+          <button class="btn btn-out" id="btn-dosheet">🗞️ גיליון 33×48.8</button>
+        </div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem;line-height:1.5">
+          📦 עמוד לכל קלף · בליד 4 מ"מ · 300 DPI · העמוד האחרון הוא הגב.<br>
+          🗞️ גיליון גדול לבית דפוס — דורש חיתוך עצמי.
+        </div>
+        <div id="sheet-diam-row" style="margin-top:.5rem" hidden>
+          <div class="og-t">קוטר הקלף בגיליון</div>
+          <div class="shape-grp" id="sheet-diam" style="width:100%">
+            <button type="button" class="sbt on" data-d="71">רגיל · 71 מ"מ</button>
+            <button type="button" class="sbt" data-d="85">גדול · 85 מ"מ</button>
+          </div>
+          <div id="sheet-diam-note" style="font-size:.72rem;color:var(--muted);margin-top:.3rem;line-height:1.5"></div>
+        </div>
+        <div id="sheet-tray-row" style="margin-top:.6rem" hidden>
+          <div class="og-t">מגש גיליון (מנהל)</div>
+          <div class="brow" style="gap:.4rem">
+            <button type="button" class="btn btn-sec" id="btn-tray-add">➕ הוסף משחק לגיליון</button>
+            <button type="button" class="btn btn-ghost" id="btn-tray-clear">🗑️ נקה מגש</button>
+          </div>
+          <div id="sheet-tray-list" style="font-size:.75rem;color:var(--muted);margin-top:.35rem;line-height:1.6"></div>
+        </div>
       </div>
-      <div id="sheet-diam-note" style="font-size:.72rem;color:var(--muted);margin-top:.3rem;line-height:1.5"></div>
-    </div>
+    </details>
 
     <div class="exp-prog" id="exp-prog">
       <div class="prog-lbl" id="exp-lbl">מייצר…</div>
@@ -3882,6 +3900,24 @@ document.getElementById('btn-goexp').addEventListener('click',()=>{
   const row=document.getElementById('sheet-diam-row');
   if(row)row.hidden=!(S.deck&&S.deck.length);
   refreshSheetNote();
+  refreshTrayUI();
+});
+document.getElementById('btn-tray-add').addEventListener('click',()=>{
+  if(!S.deck?.length){toast('אין משחק להוסיף — לחצו "ייצר משחק" קודם','err');return;}
+  if(!S.back.enabled){toast('למשחק הזה אין עיצוב גב. בגיליון דו-צדדי כל משחק חייב גב משלו — הוא גם מה שמבדיל בין המשחקים אחרי החיתוך.','err');return;}
+  if(sheetTray.length>=SHEET_TRAY_MAX){toast(`המגש מלא (עד ${SHEET_TRAY_MAX} משחקים) — נקו אותו לפני הוספה נוספת`,'err');return;}
+  const name=(prompt('שם למשחק (לזיהוי במגש):','משחק '+(sheetTray.length+1))||'').trim();
+  if(!name)return;
+  sheetTray.push({name,cards:S.deck.length,state:snapshotState()});
+  refreshTrayUI();
+  toast(`"${name}" נוסף למגש ✓`,'ok');
+});
+document.getElementById('btn-tray-clear').addEventListener('click',async()=>{
+  if(!sheetTray.length)return;
+  const ok=await confirmDialog({icon:'🗑️',title:'ניקוי מגש',body:`להסיר את כל ${sheetTray.length} המשחקים מהמגש?`,okText:'נקה'});
+  if(!ok)return;
+  sheetTray.length=0;
+  refreshTrayUI();
 });
 
 function resetGenerated(){
@@ -4926,6 +4962,59 @@ const SHEET_DIAMS=[
   {mm:85,label:'גדול · 85 מ"מ'}
 ];
 
+// ── מגש גיליון: כמה משחקים על גיליון הדפסה אחד, למנהל בלבד ──
+// מגש הגיליון. שומר תמונת-מצב חיה של S ולא קלפים מצוירים או קנבסים —
+// הרינדור קורה רק בזמן הייצוא. imgEls הן רק הפניות לתמונות שכבר טעונות
+// (לא עותקים), layouts הן מטא-דאטה קלה — מגש עם כמה משחקים לא כופל
+// תמונות בזיכרון, רק שומר הפניות אליהן.
+const sheetTray=[];   // [{name, cards, state}]
+const SHEET_TRAY_MAX=4;   // כל רשומה מחזיקה imgEls חיים בזיכרון (לא משוחררים) — תקרה מכוונת
+
+// ⛔ הרשימה הזו חייבת לכסות כל שדה שדרוש לרינדור קלף מלא (drawCard/drawCardBack
+// דרך cardGeom): assets/imgEls/layouts/deck/order + כל מה שמשפיע על הציור עצמו.
+// שדה חסר = הלקוחה/המנהל נשארים עם חלק מהעיצוב של משחק אחר.
+const SHEET_STATE_KEYS=['assets','imgEls','layouts','deck','order','shape',
+  'frame','back','cardEdits','symPad','cardSizeMm','idSeq','sel'];
+
+function snapshotState(){
+  const o={};
+  SHEET_STATE_KEYS.forEach(k=>{
+    const v=S[k];
+    if(k==='imgEls'||k==='assets'){
+      // ⛔ הפניות בלבד — אלה אובייקטי Image/asset עם imgEl בפנים. JSON.stringify
+      // עליהם הורס אותם; slice מנתק את המערך בלי לשכפל את התמונות עצמן.
+      o[k]=Array.isArray(v)?v.slice():v;
+    }else if(v&&typeof v==='object'){
+      // deck/layouts/order/frame/back/cardEdits — כולם דאטה פשוטה (מספרים/מחרוזות/
+      // מערכים/אובייקטים שטוחים, אומת ישירות מול genDeck/buildLayouts — בלי הפניות
+      // ל-DOM או לפונקציות), ולכן העתקה עמוקה בטוחה. חובה כאן ולא slice(): frame/
+      // back/cardEdits מקבלים מוטציה במקום מהעורכים, ובלי העתקה עמוקה רשומה
+      // שכבר במגש הייתה משתנה בשקט כשעורכים משחק אחר.
+      o[k]=JSON.parse(JSON.stringify(v));
+    }else o[k]=v;
+  });
+  return o;
+}
+function restoreState(o){
+  SHEET_STATE_KEYS.forEach(k=>{S[k]=o[k];});
+}
+
+// מכסה את שני מסלולי הכניסה של הושעיה — חשבון Auth וגם מצב תמיכה — כי
+// הוא נכנס לפעמים בקוד ולא במייל.
+function isOperator(){
+  return (typeof isAdminUser==='function'&&isAdminUser())||!!window.__supportMode;
+}
+function refreshTrayUI(){
+  const row=document.getElementById('sheet-tray-row');
+  if(row)row.hidden=!isOperator();
+  const el=document.getElementById('sheet-tray-list');
+  if(!el)return;
+  if(!sheetTray.length){el.textContent='המגש ריק — הייצוא יכלול את המשחק הנוכחי בלבד.';return;}
+  const total=sheetTray.reduce((s,t)=>s+t.cards,0);
+  el.innerHTML=sheetTray.map((t,i)=>`${i+1}. ${admEsc(t.name)} — ${t.cards} קלפים`).join('<br>')+
+    `<br><b>סה"כ ${total} קלפים</b>`;
+}
+
 function renderBleedPair(drawFn,pxTrim,pxPage,jpg){
   const big=document.createElement('canvas');big.width=big.height=pxPage;
   const trim=document.createElement('canvas');trim.width=trim.height=pxTrim;
@@ -5011,12 +5100,17 @@ function sheetLayout(d){
 
 async function expSheetPDF(setp){
   if(!window.jspdf?.jsPDF)throw new Error('ספריית jsPDF לא נטענה — נדרש חיבור לאינטרנט');
-  if(!S.deck?.length)throw new Error('אין משחק לייצוא — לחצו "ייצר משחק" קודם');
-  if(S.isSilhouette)throw new Error('מצב Silhouette לא מיועד לבית דפוס — כבו אותו ונסו שוב');
-  if(!S.back.enabled)throw new Error('הדפסה דו-צדדית דורשת עיצוב גב. הפעילו את עורך הגב ונסו שוב');
+  // מגש לא ריק = מתעלמים מהמצב הנוכחי על המסך לגמרי ומייצאים רק את מה שבמגש.
+  // מגש ריק = תואם ל-100% להתנהגות הקודמת (job יחיד "נוכחי").
+  const jobs=sheetTray.length?sheetTray.slice():[{current:true}];
+  if(jobs.length===1&&jobs[0].current){
+    if(!S.deck?.length)throw new Error('אין משחק לייצוא — לחצו "ייצר משחק" קודם');
+    if(S.isSilhouette)throw new Error('מצב Silhouette לא מיועד לבית דפוס — כבו אותו ונסו שוב');
+  }
   const{jsPDF}=window.jspdf;
   // הקוטר נלקח מ-S.sheetDiam בלבד, לא מ-S.cardSizeMm — הסליידר משרת הדפסה
-  // ביתית על A4 ואינו רלוונטי כאן.
+  // ביתית על A4 ואינו רלוונטי כאן. משותף לכל המשימות — אי-אפשר לערבב קטרים
+  // על אותו גיליון פיזי.
   const trimMm=S.sheetDiam, bleedMm=PRINT_SHEET.bleedMm;
   const L=sheetLayout(trimMm);
   if(L.perSheet<1)throw new Error('הקלף גדול מדי לגיליון');
@@ -5026,63 +5120,82 @@ async function expSheetPDF(setp){
   const pxPage=Math.round(pxTrim*pageMm/trimMm);
   const dpi=Math.round(pxTrim/trimMm*25.4);
   const jpg=true;
-  // drawCard/drawCardBack גוזרים גאומטריה מ-S.cardSizeMm בלבד (דרך cardGeom) —
-  // מחליפים אותו זמנית לקוטר הגיליון, ומחזירים ב-finally אפילו אם הייצוא נכשל
-  // באמצע, אחרת הסליידר של הלקוחה במסך העריכה נשאר עם ערך שהיא לא בחרה.
-  const savedSize=S.cardSizeMm;
-  S.cardSizeMm=trimMm;
+  // מגבה את המצב החי לפני שהלולאה מחליפה אותו בין משחקים, ומחזירה אותו תמיד
+  // ב-finally — גם אם הייצוא נכשל באמצע. ⛔ שדה חסר כאן = הלקוחה/המנהל
+  // נשארים עם חלק מהעיצוב של משחק אחר (ראו מרשם.md, PR #75).
+  const snap=snapshotState();
   try{
+    const totalCards=jobs.reduce((s,job)=>s+(job.current?(S.deck?.length||0):job.state.deck.length),0);
     const pdf=new jsPDF({orientation:'portrait',unit:'mm',
                          format:[PRINT_SHEET.wMm,PRINT_SHEET.hMm],compress:true});
-    const sheets=Math.ceil(S.deck.length/L.perSheet);
-    const totalUnits=S.deck.length+1;
-    for(let s=0;s<sheets;s++){
-      if(s>0)pdf.addPage([PRINT_SHEET.wMm,PRINT_SHEET.hMm]);
-      for(let i=0;i<L.perSheet;i++){
-        const idx=s*L.perSheet+i;
-        if(idx>=S.deck.length)break;
-        const{big,trim}=renderBleedPair(cv=>drawCard(cv,S.layouts[idx],S.imgEls,S.shape),pxTrim,pxPage,jpg);
-        const p=L.pts[i];
+
+    // ── חזית: globalIdx רץ ברצף על פני כל המשימות — משחק א' תופס 1..cardsA,
+    // משחק ב' ממשיך מ-cardsA+1 בלי לאפס. זה מה ששומר על סדר החיתוך. ──
+    let globalIdx=0;
+    const backJobs=[];   // {url,count} — פעם אחת לכל job, בסדר הופעתו
+    for(const job of jobs){
+      if(!job.current)restoreState(job.state);
+      S.cardSizeMm=trimMm;   // גאומטריית הרינדור היא תמיד קוטר הגיליון, לא קוטר ההדפסה הביתית שנשמר לכל job
+      // חייב לחול על כל משחק במגש, לא רק על הנוכחי — משחק בלי גב = מקומות
+      // ריקים בגיליון הגב בלי שאף אחד יידע עד שהגיליון יחזור מההדפסה.
+      if(!S.back.enabled)throw new Error(`למשחק "${job.name||'הנוכחי'}" אין עיצוב גב — לא ניתן לכלול אותו בייצוא דו-צדדי`);
+      const deckLen=S.deck.length;
+      for(let i=0;i<deckLen;i++){
+        if(globalIdx>0&&globalIdx%L.perSheet===0)pdf.addPage([PRINT_SHEET.wMm,PRINT_SHEET.hMm]);
+        const posIdx=globalIdx%L.perSheet;
+        const{big,trim}=renderBleedPair(cv=>drawCard(cv,S.layouts[i],S.imgEls,S.shape),pxTrim,pxPage,jpg);
+        const p=L.pts[posIdx];
         // הבליד חורג מהשוליים בכוונה — אין להצמיד ל-marginMm, זה יעוות את הקלף.
         pdf.addImage(big.toDataURL('image/jpeg',PRINT_SHOP.jpegQuality),'JPEG',
                      p.x-bleedMm,p.y-bleedMm,pageMm,pageMm);
         big.width=big.height=trim.width=trim.height=0;   // ⛔ שחרור זיכרון
-        setp(3+Math.round(85*(idx+1)/totalUnits),`קלף ${idx+1}/${S.deck.length}…`);
-        if(i%3===2)await tick();
+        globalIdx++;
+        setp(3+Math.round(70*globalIdx/totalCards),`קלף ${globalIdx}/${totalCards}…`);
+        if(globalIdx%3===0)await tick();
       }
+      // הגב מרונדר פעם אחת לכל משחק, לא לכל מקום — במגש מלא זה 4 רינדורים, לא 24.
+      const{big:bBig,trim:bTrim}=renderBleedPair(cv=>drawCardBack(cv),pxTrim,pxPage,jpg);
+      backJobs.push({url:bBig.toDataURL('image/jpeg',PRINT_SHOP.jpegQuality),count:deckLen});
+      bBig.width=bBig.height=bTrim.width=bTrim.height=0;
     }
-    // הגב מרונדר פעם אחת ומשמש בכל המיקומים — הוא זהה לכל הקלפים.
-    const{big:bBig,trim:bTrim}=renderBleedPair(cv=>drawCardBack(cv),pxTrim,pxPage,jpg);
-    const backURL=bBig.toDataURL('image/jpeg',PRINT_SHOP.jpegQuality);
-    bBig.width=bBig.height=bTrim.width=bTrim.height=0;
+
+    // ── גב: אותו רצף מיקומים בדיוק כמו החזית, כדי שגיליון הגב יתיישר על
+    // גיליון החזית התואם בהיפוך — כל טווח מיקומים מקבל את הגב של ה-job
+    // שממנו הגיע הקלף באותו מקום. גיליון הגב האחרון נחתך בדיוק כמו החזית
+    // כי הלולאה עוצרת באותו globalIdx, לא ב-L.perSheet מלא. ──
     setp(92,'גיליונות הגב…');
-    for(let s=0;s<sheets;s++){
-      pdf.addPage([PRINT_SHEET.wMm,PRINT_SHEET.hMm]);
-      // גיליון הגב האחרון חייב להיחתך כמו החזית — לא כל L.perSheet, רק מה שבאמת נשאר.
-      const n=Math.min(L.perSheet,S.deck.length-s*L.perSheet);
-      for(let i=0;i<n;i++){
-        const p=L.pts[i];
-        pdf.addImage(backURL,'JPEG',p.x-bleedMm,p.y-bleedMm,pageMm,pageMm);
-      }
+    let bi=0,bRemain=backJobs[0]?backJobs[0].count:0;
+    for(let i=0;i<globalIdx;i++){
+      // ⛔ בניגוד לחזית, כל גיליון גב — כולל הראשון — צריך addPage משלו: בחזית
+      // עמוד 1 כבר ניתן חינם ע"י הקונסטרוקטור של jsPDF, אבל אחרי לולאת החזית
+      // העמוד הפתוח הוא עמוד החזית האחרון. בלי זה גיליון הגב הראשון היה מצטייר
+      // מעל קלפי החזית האחרונים במקום על עמוד משלו.
+      if(i%L.perSheet===0)pdf.addPage([PRINT_SHEET.wMm,PRINT_SHEET.hMm]);
+      while(bRemain===0&&bi<backJobs.length-1){bi++;bRemain=backJobs[bi].count;}
+      const p=L.pts[i%L.perSheet];
+      pdf.addImage(backJobs[bi].url,'JPEG',p.x-bleedMm,p.y-bleedMm,pageMm,pageMm);
+      bRemain--;
     }
+
     setp(98,'שומר…');
-    const fn=`dobble-sheet-${S.deck.length}cards-${trimMm}mm-${sheets}x2.pdf`;
+    const totalSheets=Math.ceil(globalIdx/L.perSheet);
+    const fn=`dobble-sheet-${globalIdx}cards-${trimMm}mm-${totalSheets}x2.pdf`;
     const blob=pdf.output('blob');
     if(_exportUrl)URL.revokeObjectURL(_exportUrl);
     _exportUrl=URL.createObjectURL(blob);
     const lnk=document.getElementById('dl-link');
     lnk.href=_exportUrl;lnk.download=fn;
     document.getElementById('dl-area').classList.add('on');
-    logGame({total:S.order.total,cards:S.deck.length,sizeMm:trimMm,filename:fn,type:'sheet-pdf'});
+    logGame({total:globalIdx,cards:globalIdx,sizeMm:trimMm,filename:fn,type:'sheet-pdf'});
     S._lastFile=fn;
     S._lastSize=blob.size;
     S._lastBlob=blob;
     refreshShareBtn();
-    window.track&&window.track('export',{cards:S.deck.length,symbols:S.order?S.order.spc:'',
+    window.track&&window.track('export',{cards:globalIdx,symbols:jobs.length>1?'multi':(S.order?S.order.spc:''),
       detail:`sheet-pdf · ${trimMm}mm · ${dpi}dpi · ${fmtSize(blob.size)} · ${S.assets.length} תמונות`});
     setp(100,'✅ מוכן!');
   }finally{
-    S.cardSizeMm=savedSize;   // ⛔ חובה. בלי זה הסליידר של הלקוחה נהרס
+    restoreState(snap);   // ⛔ חובה. שדה חסר = הלקוחה/המנהל נשארים עם חלק מעיצוב של משחק אחר
   }
 }
 
