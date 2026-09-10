@@ -1317,11 +1317,20 @@ function dcfgSave(patch){
       <button class="btn btn-pri" id="btn-doexp">⚙️ צור PDF</button>
       <button class="btn btn-out" id="btn-dozip">🗜️ צור ZIP (PNG)</button>
       <button class="btn btn-out" id="btn-doprint">📦 PDF לבית דפוס</button>
+      <button class="btn btn-out" id="btn-dosheet">🗞️ גיליון 33×48.8</button>
       <button class="btn btn-ok" id="btn-dodxf" style="display:none">✂️ ייצא DXF לחיתוך</button>
       <button class="btn btn-ghost" id="btn-b2">← חזרה לעריכה</button>
     </div>
     <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem;line-height:1.5">
       📦 לבית דפוס: עמוד לכל קלף · בליד 4 מ"מ · 300 DPI · העמוד האחרון הוא הגב.
+    </div>
+    <div id="sheet-diam-row" style="margin-top:.5rem" hidden>
+      <div class="og-t">קוטר הקלף בגיליון</div>
+      <div class="shape-grp" id="sheet-diam" style="width:100%">
+        <button type="button" class="sbt on" data-d="71">רגיל · 71 מ"מ</button>
+        <button type="button" class="sbt" data-d="85">גדול · 85 מ"מ</button>
+      </div>
+      <div id="sheet-diam-note" style="font-size:.72rem;color:var(--muted);margin-top:.3rem;line-height:1.5"></div>
     </div>
 
     <div class="exp-prog" id="exp-prog">
@@ -2831,7 +2840,7 @@ const S={
   sel:[],
   cardEdits:{},   // { [cardIdx]: { [slot]: {s,dx,dy} } } — התאמות ידניות לקלף בודד. dx/dy ביחידות rSym.
   metaVer:0,
-  cardSizeMm:85,spacingMm:5,startPos:'center',exportQuality:'fast',
+  cardSizeMm:85,spacingMm:5,startPos:'center',exportQuality:'fast',sheetDiam:71,
   crop:true,isSilhouette:false,
   frame:{w:3,color:'#4338CA',op:100},
   symPad:2,
@@ -3868,7 +3877,12 @@ function ceCommit(){
 // ══ BACK / NAV ══
 document.getElementById('btn-b1').addEventListener('click',()=>{goScr(1);resetGenerated();});
 document.getElementById('btn-b2').addEventListener('click',()=>{goScr(2);resetExport();});
-document.getElementById('btn-goexp').addEventListener('click',()=>{updatePaperPrev();goScr(3);refreshQualityNote();});
+document.getElementById('btn-goexp').addEventListener('click',()=>{
+  updatePaperPrev();goScr(3);refreshQualityNote();
+  const row=document.getElementById('sheet-diam-row');
+  if(row)row.hidden=!(S.deck&&S.deck.length);
+  refreshSheetNote();
+});
 
 function resetGenerated(){
   Object.assign(S,{order:null,deck:[],layouts:[],imgEls:[],canvases:[],sel:[],cardEdits:{}});
@@ -4137,6 +4151,23 @@ document.getElementById('exp-quality').addEventListener('click',e=>{
   S.exportQuality=b.dataset.q;
   resetExport();
   refreshQualityNote();
+});
+
+// חישוב חי — הושעיה רואה מיד כמה גיליונות זה יעלה לו לפני שהוא מייצא.
+function refreshSheetNote(){
+  const el=document.getElementById('sheet-diam-note');if(!el)return;
+  const L=sheetLayout(S.sheetDiam);
+  const n=S.deck&&S.deck.length?S.deck.length:0;
+  const sheets=L.perSheet&&n?Math.ceil(n/L.perSheet):0;
+  el.textContent=`${L.cols}×${L.rows} = ${L.perSheet} קלפים בגיליון`+
+    (sheets?` · ${n} קלפים = ${sheets} גיליונות חזית + ${sheets} גב`:'');
+}
+document.getElementById('sheet-diam').addEventListener('click',e=>{
+  const b=e.target.closest('.sbt');if(!b)return;
+  document.querySelectorAll('#sheet-diam .sbt').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  S.sheetDiam=Number(b.dataset.d);
+  refreshSheetNote();
 });
 
 // ══ EXPORT OPTIONS (V5 Parametric) ══
@@ -4686,6 +4717,7 @@ document.getElementById('btn-doexp').addEventListener('click',()=>doExport('pdf'
 document.getElementById('btn-dozip').addEventListener('click',()=>doExport('zip'));
 document.getElementById('btn-dodxf').addEventListener('click',()=>doExport('dxf'));
 document.getElementById('btn-doprint').addEventListener('click',()=>doExport('print'));
+document.getElementById('btn-dosheet').addEventListener('click',()=>doExport('sheet'));
 
 async function doExport(type){
   if(!isWithinTier(S.order)){
@@ -4712,6 +4744,7 @@ async function doExport(type){
     if(type==='pdf')await expPDF(setp);
     else if(type==='zip')await expZIP(setp);
     else if(type==='print')await expPrintPDF(setp);
+    else if(type==='sheet')await expSheetPDF(setp);
     else await expDXF(setp);
     showDownloadDone(S._lastFile||'');
   }catch(err){
@@ -4879,6 +4912,20 @@ const PRINT_SHOP={
   maxPx:3000          // תקרת זיכרון. שני קנבסים פתוחים בו-זמנית
 };
 
+// גיליון בית הדפוס. סוכם מול הספק — לא לשנות בלי אישור הושעיה.
+// הרווח 6 מ"מ אינו לחיתוך (דייקת דיסקיות מדויקת) אלא לסטיית הדפסה ±1 מ"מ
+// ולטבעת הבליד, כדי שטבעות של קלפים שכנים לא יחפפו.
+const PRINT_SHEET={wMm:330,hMm:488,marginMm:12,gapMm:6,bleedMm:3};
+
+// הקטרים היחידים שיש להושעיה טבעת דייקה עבורם.
+// ⛔ אין להוסיף 78 מ"מ: הוא נותן 15 בגיליון בדיוק כמו 85 מ"מ, אבל בקלף
+// קטן יותר ועם 60×50 מ"מ גיליון מבוזבז. אין לו שום יתרון.
+// התקרה היא 72.0 מ"מ — מעליה התפוקה צונחת מ-24 ל-15.
+const SHEET_DIAMS=[
+  {mm:71,label:'רגיל · 71 מ"מ'},
+  {mm:85,label:'גדול · 85 מ"מ'}
+];
+
 function renderBleedPair(drawFn,pxTrim,pxPage,jpg){
   const big=document.createElement('canvas');big.width=big.height=pxPage;
   const trim=document.createElement('canvas');trim.width=trim.height=pxTrim;
@@ -4943,6 +4990,100 @@ async function expPrintPDF(setp){
   window.track&&window.track('export',{cards:S.deck.length,symbols:S.order?S.order.spc:'',
     detail:`print-pdf · ${dpi}dpi · ${fmtSize(blob.size)} · ${S.assets.length} תמונות`});
   setp(100,'✅ מוכן!');
+}
+
+// פריסה ממורכזת. המרכוז אינו אסתטי — הוא מה שהופך את הפריסה לסימטרית
+// סביב הציר האנכי, וכך גיליון הגב מתיישר על החזית בהיפוך בלי שיקוף.
+function sheetLayout(d){
+  const g=PRINT_SHEET.gapMm,M=PRINT_SHEET.marginMm;
+  const uw=PRINT_SHEET.wMm-2*M, uh=PRINT_SHEET.hMm-2*M;
+  const cols=Math.max(0,Math.floor((uw+g)/(d+g)));
+  const rows=Math.max(0,Math.floor((uh+g)/(d+g)));
+  if(!cols||!rows)return{cols:0,rows:0,perSheet:0,pts:[]};
+  const totalW=cols*d+(cols-1)*g, totalH=rows*d+(rows-1)*g;
+  const ox=(PRINT_SHEET.wMm-totalW)/2, oy=(PRINT_SHEET.hMm-totalH)/2;
+  const pts=[];
+  for(let r=0;r<rows;r++)
+    for(let c=0;c<cols;c++)
+      pts.push({x:ox+c*(d+g),y:oy+r*(d+g)});   // פינה שמאלית-עליונה
+  return{cols,rows,perSheet:cols*rows,pts};
+}
+
+async function expSheetPDF(setp){
+  if(!window.jspdf?.jsPDF)throw new Error('ספריית jsPDF לא נטענה — נדרש חיבור לאינטרנט');
+  if(!S.deck?.length)throw new Error('אין משחק לייצוא — לחצו "ייצר משחק" קודם');
+  if(S.isSilhouette)throw new Error('מצב Silhouette לא מיועד לבית דפוס — כבו אותו ונסו שוב');
+  if(!S.back.enabled)throw new Error('הדפסה דו-צדדית דורשת עיצוב גב. הפעילו את עורך הגב ונסו שוב');
+  const{jsPDF}=window.jspdf;
+  // הקוטר נלקח מ-S.sheetDiam בלבד, לא מ-S.cardSizeMm — הסליידר משרת הדפסה
+  // ביתית על A4 ואינו רלוונטי כאן.
+  const trimMm=S.sheetDiam, bleedMm=PRINT_SHEET.bleedMm;
+  const L=sheetLayout(trimMm);
+  if(L.perSheet<1)throw new Error('הקלף גדול מדי לגיליון');
+  const pageMm=trimMm+2*bleedMm;
+  const pxTrimIdeal=Math.ceil(trimMm/25.4*PRINT_SHOP.minDpi);
+  const pxTrim=Math.min(PRINT_SHOP.maxPx,Math.max(EXPORT_PX.print,pxTrimIdeal));
+  const pxPage=Math.round(pxTrim*pageMm/trimMm);
+  const dpi=Math.round(pxTrim/trimMm*25.4);
+  const jpg=true;
+  // drawCard/drawCardBack גוזרים גאומטריה מ-S.cardSizeMm בלבד (דרך cardGeom) —
+  // מחליפים אותו זמנית לקוטר הגיליון, ומחזירים ב-finally אפילו אם הייצוא נכשל
+  // באמצע, אחרת הסליידר של הלקוחה במסך העריכה נשאר עם ערך שהיא לא בחרה.
+  const savedSize=S.cardSizeMm;
+  S.cardSizeMm=trimMm;
+  try{
+    const pdf=new jsPDF({orientation:'portrait',unit:'mm',
+                         format:[PRINT_SHEET.wMm,PRINT_SHEET.hMm],compress:true});
+    const sheets=Math.ceil(S.deck.length/L.perSheet);
+    const totalUnits=S.deck.length+1;
+    for(let s=0;s<sheets;s++){
+      if(s>0)pdf.addPage([PRINT_SHEET.wMm,PRINT_SHEET.hMm]);
+      for(let i=0;i<L.perSheet;i++){
+        const idx=s*L.perSheet+i;
+        if(idx>=S.deck.length)break;
+        const{big,trim}=renderBleedPair(cv=>drawCard(cv,S.layouts[idx],S.imgEls,S.shape),pxTrim,pxPage,jpg);
+        const p=L.pts[i];
+        // הבליד חורג מהשוליים בכוונה — אין להצמיד ל-marginMm, זה יעוות את הקלף.
+        pdf.addImage(big.toDataURL('image/jpeg',PRINT_SHOP.jpegQuality),'JPEG',
+                     p.x-bleedMm,p.y-bleedMm,pageMm,pageMm);
+        big.width=big.height=trim.width=trim.height=0;   // ⛔ שחרור זיכרון
+        setp(3+Math.round(85*(idx+1)/totalUnits),`קלף ${idx+1}/${S.deck.length}…`);
+        if(i%3===2)await tick();
+      }
+    }
+    // הגב מרונדר פעם אחת ומשמש בכל המיקומים — הוא זהה לכל הקלפים.
+    const{big:bBig,trim:bTrim}=renderBleedPair(cv=>drawCardBack(cv),pxTrim,pxPage,jpg);
+    const backURL=bBig.toDataURL('image/jpeg',PRINT_SHOP.jpegQuality);
+    bBig.width=bBig.height=bTrim.width=bTrim.height=0;
+    setp(92,'גיליונות הגב…');
+    for(let s=0;s<sheets;s++){
+      pdf.addPage([PRINT_SHEET.wMm,PRINT_SHEET.hMm]);
+      // גיליון הגב האחרון חייב להיחתך כמו החזית — לא כל L.perSheet, רק מה שבאמת נשאר.
+      const n=Math.min(L.perSheet,S.deck.length-s*L.perSheet);
+      for(let i=0;i<n;i++){
+        const p=L.pts[i];
+        pdf.addImage(backURL,'JPEG',p.x-bleedMm,p.y-bleedMm,pageMm,pageMm);
+      }
+    }
+    setp(98,'שומר…');
+    const fn=`dobble-sheet-${S.deck.length}cards-${trimMm}mm-${sheets}x2.pdf`;
+    const blob=pdf.output('blob');
+    if(_exportUrl)URL.revokeObjectURL(_exportUrl);
+    _exportUrl=URL.createObjectURL(blob);
+    const lnk=document.getElementById('dl-link');
+    lnk.href=_exportUrl;lnk.download=fn;
+    document.getElementById('dl-area').classList.add('on');
+    logGame({total:S.order.total,cards:S.deck.length,sizeMm:trimMm,filename:fn,type:'sheet-pdf'});
+    S._lastFile=fn;
+    S._lastSize=blob.size;
+    S._lastBlob=blob;
+    refreshShareBtn();
+    window.track&&window.track('export',{cards:S.deck.length,symbols:S.order?S.order.spc:'',
+      detail:`sheet-pdf · ${trimMm}mm · ${dpi}dpi · ${fmtSize(blob.size)} · ${S.assets.length} תמונות`});
+    setp(100,'✅ מוכן!');
+  }finally{
+    S.cardSizeMm=savedSize;   // ⛔ חובה. בלי זה הסליידר של הלקוחה נהרס
+  }
 }
 
 async function expZIP(setp){
