@@ -1316,22 +1316,32 @@ function dcfgSave(patch){
       <button class="btn btn-sec" id="btn-prevprint">👁 תצוגה מקדימה</button>
       <button class="btn btn-pri" id="btn-doexp">⚙️ צור PDF</button>
       <button class="btn btn-out" id="btn-dozip">🗜️ צור ZIP (PNG)</button>
-      <button class="btn btn-out" id="btn-doprint">📦 PDF לבית דפוס</button>
-      <button class="btn btn-out" id="btn-dosheet">🗞️ גיליון 33×48.8</button>
       <button class="btn btn-ok" id="btn-dodxf" style="display:none">✂️ ייצא DXF לחיתוך</button>
       <button class="btn btn-ghost" id="btn-b2">← חזרה לעריכה</button>
     </div>
-    <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem;line-height:1.5">
-      📦 לבית דפוס: עמוד לכל קלף · בליד 4 מ"מ · 300 DPI · העמוד האחרון הוא הגב.
-    </div>
-    <div id="sheet-diam-row" style="margin-top:.5rem" hidden>
-      <div class="og-t">קוטר הקלף בגיליון</div>
-      <div class="shape-grp" id="sheet-diam" style="width:100%">
-        <button type="button" class="sbt on" data-d="71">רגיל · 71 מ"מ</button>
-        <button type="button" class="sbt" data-d="85">גדול · 85 מ"מ</button>
+
+    <!-- ── לבית דפוס — מקופל, רלוונטי למיעוט מהלקוחות ── -->
+    <details id="printshop-fold" style="margin-top:.6rem">
+      <summary style="cursor:pointer;font-size:.86rem;color:var(--muted);padding:.35rem 0">🖨️ לבית דפוס</summary>
+      <div style="margin-top:.5rem">
+        <div class="brow">
+          <button class="btn btn-out" id="btn-doprint">📦 PDF — עמוד לכל קלף</button>
+          <button class="btn btn-out" id="btn-dosheet">🗞️ גיליון 33×48.8</button>
+        </div>
+        <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem;line-height:1.5">
+          📦 עמוד לכל קלף · בליד 4 מ"מ · 300 DPI · העמוד האחרון הוא הגב.<br>
+          🗞️ גיליון גדול לבית דפוס — דורש חיתוך עצמי.
+        </div>
+        <div id="sheet-diam-row" style="margin-top:.5rem" hidden>
+          <div class="og-t">קוטר הקלף בגיליון</div>
+          <div class="shape-grp" id="sheet-diam" style="width:100%">
+            <button type="button" class="sbt on" data-d="71">רגיל · 71 מ"מ</button>
+            <button type="button" class="sbt" data-d="85">גדול · 85 מ"מ</button>
+          </div>
+          <div id="sheet-diam-note" style="font-size:.72rem;color:var(--muted);margin-top:.3rem;line-height:1.5"></div>
+        </div>
       </div>
-      <div id="sheet-diam-note" style="font-size:.72rem;color:var(--muted);margin-top:.3rem;line-height:1.5"></div>
-    </div>
+    </details>
 
     <div class="exp-prog" id="exp-prog">
       <div class="prog-lbl" id="exp-lbl">מייצר…</div>
