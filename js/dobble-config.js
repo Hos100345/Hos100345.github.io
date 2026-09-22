@@ -16,7 +16,7 @@ window.DOBBLE_CONFIG = {
   // יצירת קשר לקביעת מנוי
   whatsapp: "972505918734",
   phoneDisplay: "050-591-8734",
-  contactMessage: "שלום הושעיה, אשמח לקבל קוד גישה למחולל הדאבל 🎯",
+  contactMessage: "שלום הושעיה, אני במחולל הדאבל ויש לי שאלה 🎯",
 
   // מעקב פעילות: כתובת ה-Web App של Google Apps Script שאוסף אירועים לגיליון.
   // ריק = מעקב כבוי. ראו analytics-endpoint.gs להוראות הפעלה.

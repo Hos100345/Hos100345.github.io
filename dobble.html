@@ -409,13 +409,15 @@
 
 <!-- CONFIG (קודים, וואטסאפ, חבילות) -->
 <!-- ?v=N — מעלים את המספר בכל שינוי בקובץ, אחרת הדפדפן יגיש גרסה ישנה מהמטמון -->
-<script src="js/dobble-config.js?v=1"></script>
+<script src="js/dobble-config.js?v=2"></script>
 <script src="js/supabase-config.js?v=1"></script>
 <script>
 // קונפיג בזמן ריצה: ברירות מחדל ← קובץ הקונפיג ← עריכות מקומיות מפאנל הניהול
 window.DCFG=(function(){
   const def={accessCodes:[],adminCode:'8734',whatsapp:'972505918734',phoneDisplay:'050-591-8734',
-             contactMessage:'שלום הושעיה, אשמח לקבל קוד גישה למחולל הדאבל 🎯',analyticsUrl:'',packs:[]};
+             // הנוסח הקודם ביקש קוד גישה, והזמין בדיוק את הפנייה שהמחולל
+             // נועד לחסוך: הלקוח יכול לרכוש או לשחזר קוד לבד בשתי לחיצות.
+             contactMessage:'שלום הושעיה, אני במחולל הדאבל ויש לי שאלה 🎯',analyticsUrl:'',packs:[]};
   let ov={};try{ov=JSON.parse(localStorage.getItem('dobble_config_override')||'{}')}catch(e){}
   return Object.assign({},def,window.DOBBLE_CONFIG||{},ov);
 })();
@@ -492,8 +494,8 @@ function dcfgSave(patch){
     <div style="font-size:2.6rem;margin-bottom:.3rem">⚠️</div>
     <div id="renew-title" style="font-size:1.3rem;font-weight:800;margin-bottom:.5rem">הקוד לא התקבל</div>
     <div id="renew-msg" style="color:var(--muted);font-size:.96rem;line-height:1.6;margin-bottom:1.2rem">ייתכן שהקוד שגוי או שפג תוקף המנוי.</div>
-    <a id="renew-wa" href="#" target="_blank" rel="noopener noreferrer"
-       style="display:inline-flex;align-items:center;justify-content:center;gap:.5rem;background:#25D366;color:#fff;font-weight:700;font-size:1rem;padding:.72rem 1.5rem;border-radius:100px;text-decoration:none;margin-bottom:.85rem">💬 חידוש מנוי בוואטסאפ</a>
+    <!-- הוסר 10/09/2026: החידוש נעשה בלחיצה על מדרגת מחיר, והשרת מאריך
+         אוטומטית. הכפתור ייצר פניות אישיות על פעולה שהלקוח עושה לבד. -->
     <div><button id="renew-close" type="button" style="background:none;border:none;color:var(--muted);cursor:pointer;font-family:inherit;font-size:.9rem;text-decoration:underline">סגירה</button></div>
   </div>
 </div>
@@ -6605,7 +6607,8 @@ async function sendStuckToAdmin(){
     if(typeof renderDesigns==='function')renderDesigns();
     const sub=currentSub();
     const wa=String(localStorage.getItem('dobble_wa')||DCFG.whatsapp||'').replace(/\D/g,'');
-    const msg=`שלום הושעיה, נתקעתי בעריכת המשחק ושמרתי לך את העבודה שלי 🆘\nקוד מנוי: ${sub.code||''}\nשם העיצוב: ${name}\nאשמח שתסיים לי 🙏`;
+    // "קוד מנוי" גרם ללקוח חינם לחשוב שהקוד שלו אינו תקין.
+    const msg=`שלום הושעיה, נתקעתי בעריכת המשחק ושמרתי לך את העבודה שלי 🆘\nקוד הגישה שלי: ${sub.code||''}\nשם העיצוב: ${name}\nאשמח שתסיים לי 🙏`;
     window.open('https://wa.me/'+wa+'?text='+encodeURIComponent(msg),'_blank','noopener');
     toast('נשמר ונשלח להושעיה ✓','ok');
     window.track&&window.track('stuck-help',{detail:name});
@@ -7761,9 +7764,9 @@ document.getElementById('dl-share').addEventListener('click',async()=>{
 });
 
 // ══ הזמנת הדפסה ומשלוח עד הבית ══
-// מוסתר 08/09/2026 עד שיימצא בית דפוס. הקוד נשאר שלם — כולל איסוף המפרט
-// (קוטר, צורה, מספר קלפים) שנבנה ועובד. להחזרה: PRINT_ORDER_ENABLED=true.
-const PRINT_ORDER_ENABLED=false;
+// הוחזר 10/09/2026: נמצא בית דפוס, וייצוא הגיליון 330×488 מוכן.
+// 13 לקוחות ביקשו הדפסה (26 בקשות) בזמן שהכפתור היה מוסתר.
+const PRINT_ORDER_ENABLED=true;
 function orderPrint(){
   const waNum=localStorage.getItem('dobble_wa')||DCFG.whatsapp;
   const shape=S.shape==='circle'?'עגול':'מרובע';
@@ -7939,12 +7942,9 @@ async function subscriptionGate(session){
 // חלון קופץ: קוד שגוי / פג תוקף — חידוש מנוי בוואטסאפ
 window.showRenewPopup=function(mode){
   const m=document.getElementById('renew-modal');if(!m)return;
-  const wa=String(localStorage.getItem('dobble_wa')||DCFG.whatsapp||'').replace(/\D/g,'');
-  const waMsg=encodeURIComponent('שלום הושעיה, אשמח לחדש את מנוי מחולל הדאבל שלי 🎯');
-  const waEl=document.getElementById('renew-wa');if(waEl)waEl.href='https://wa.me/'+wa+'?text='+waMsg;
   const t=document.getElementById('renew-title'),g=document.getElementById('renew-msg');
-  if(mode==='expired'){ if(t)t.textContent='תוקף המנוי פג'; if(g)g.textContent='המנוי שלך אינו פעיל יותר. לחידוש:'; }
-  else{ if(t)t.textContent='הקוד לא התקבל'; if(g)g.textContent='ייתכן שהקוד שגוי או שפג תוקף המנוי. לחידוש:'; }
+  if(mode==='expired'){ if(t)t.textContent='תוקף המנוי פג'; if(g)g.textContent='המנוי שלך אינו פעיל יותר. לחידוש, בחרו מסלול במסך הנעילה — הקוד הקיים שלכם יתעדכן אוטומטית.'; }
+  else{ if(t)t.textContent='הקוד לא התקבל'; if(g)g.textContent='ייתכן שהקוד שגוי או שפג תוקף המנוי.'; }
   m.hidden=false;
 };
 (function(){
