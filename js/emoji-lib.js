@@ -17,9 +17,6 @@
 
   const CDN='https://cdn.jsdelivr.net/gh/';
 
-  // רצף קודפוינטים בפורמט של Noto: אותיות קטנות, קו תחתון כמפריד.
-  const notoHex=(hex)=>String(hex).toLowerCase().replace(/-/g,'_');
-
   const STYLES={
     twemoji:{
       label:'מעוגל וצבעוני',
@@ -34,14 +31,13 @@
       url:(hex)=>`${CDN}hfg-gmuend/openmoji@master/color/618x618/${hex.toUpperCase()}.png`,
       thumb:(hex)=>`${CDN}hfg-gmuend/openmoji@master/color/72x72/${hex.toUpperCase()}.png`,
     },
-    noto:{
-      label:'נקי ומודרני',
-      credit:'Noto Emoji — Apache 2.0',
-      // ⛔ Noto מפריד קודפוינטים בקו תחתון, בעוד Twemoji ו-OpenMoji מפרידים במקף.
-      // בלי ההמרה הזו 184 מתוך 1,536 הסמלים (רצפי ZWJ — משפחות, מקצועות, דגלים)
-      // מחזירים 404 בסגנון הזה בלבד. אומת מול השרת, לא הנחה.
-      url:(hex)=>`${CDN}googlefonts/noto-emoji@main/svg/emoji_u${notoHex(hex)}.svg`,
-      thumb:(hex)=>`${CDN}googlefonts/noto-emoji@main/png/72/emoji_u${notoHex(hex)}.png`,
+    line:{
+      label:'קווי ושחור-לבן',
+      credit:'OpenMoji — CC BY-SA 4.0',
+      // מחליף את noto, שתיקיית ה-svg שלו נעלמה מהריפו (60/60 כשלו 14/09/2026).
+      // אותו ריפו כמו הסגנון הצבעוני ואותה מוסכמת שמות — אפס תלות חדשה.
+      url:(hex)=>`${CDN}hfg-gmuend/openmoji@master/black/618x618/${hex.toUpperCase()}.png`,
+      thumb:(hex)=>`${CDN}hfg-gmuend/openmoji@master/black/72x72/${hex.toUpperCase()}.png`,
     },
   };
   const DEFAULT_STYLE='twemoji';
@@ -51,7 +47,10 @@
   function loadIndex(){
     if(INDEX)return Promise.resolve(INDEX);
     if(!INDEX_PROMISE){
-      INDEX_PROMISE=fetch('js/emoji-he.json').then(r=>{
+      // ?v= ידני: dobble.html מגרסן רק את התג של emoji-lib.js עצמו, לא את ה-fetch
+      // הזה — בלי מספר גרסה כאן, ניקוי האינדקס (124 רשומות מתות, 24/09/2026)
+      // לא היה מגיע ללקוח קיים עד שהמטמון של הדפדפן פג מעצמו.
+      INDEX_PROMISE=fetch('js/emoji-he.json?v=2').then(r=>{
         if(!r.ok)throw new Error('טעינת אינדקס הסמלים נכשלה ('+r.status+')');
         return r.json();
       }).then(data=>{INDEX=data;return INDEX;});
@@ -92,7 +91,7 @@
     let resp;
     try{resp=await fetch(url);}
     catch(e){throw new Error('הורדת הסמל נכשלה — בדקו חיבור לאינטרנט');}
-    if(!resp.ok)throw new Error('הסמל לא נמצא ('+resp.status+')');
+    if(!resp.ok)throw new Error('הסמל הזה אינו זמין בסגנון שנבחר. נסו סגנון אחר או סמל דומה.');
     const blob=await resp.blob();
     const bmp=await decode(blob);
 
