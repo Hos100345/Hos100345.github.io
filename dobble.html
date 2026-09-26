@@ -2094,7 +2094,9 @@ const I18N={
     'edit.paddingResetBtn':'↺ ברירת מחדל',
     'edit.actionsTitle':'פעולות',
     'edit.reshuffleBtn':'🔀 ערבב מחדש',
+    'edit.reshufflingLabel':'מערבב…',
     'edit.saveDesignBtn':'💾 שמור עיצוב',
+    'edit.saveDesignNamePrompt':'שם לעיצוב:',
     'edit.editBackBtn':'🎴 עצב את גב הקלף',
     'edit.stuckBtn':'🆘 תקוע/ה? שלח את העבודה להושעיה',
     'edit.backToUploadBtn':'← חזרה להעלאה',
@@ -2218,6 +2220,42 @@ const I18N={
     'back.calibNote':'הדפיסו את דף הכיול, הפכו אותו, ומדדו את הסטייה בין הסרגלים — הזינו אותה כאן בכוונון העדין.',
     'back.cancelBtn':'ביטול',
     'back.saveBtn':'✅ שמור',
+    'back.noneLabel':'ללא',
+    'back.symbolNameSparkle':'ניצוץ',
+    'back.symbolNameStar':'כוכב',
+    'back.symbolNameHeart':'לב',
+    'back.symbolNameFlower':'פרח',
+    'back.symbolNameSun':'שמש',
+    'back.symbolNameMoon':'ירח',
+    'back.symbolNameClover':'תלתן',
+    'back.symbolNameDiamond':'יהלום',
+    'back.symbolNameBalloon':'בלון',
+    'back.symbolNameGift':'מתנה',
+    'back.symbolNameCrown':'כתר',
+    'back.symbolNameNote':'תו',
+    'back.symbolNameSnow':'פתית',
+    'back.symbolNameSmile':'חיוך',
+    'back.symbolNameSpiral':'ספירלה',
+    'back.frameNameSingle':'קו יחיד',
+    'back.frameNameDouble':'קו כפול',
+    'back.frameNameDashed':'מקווקו',
+    'back.frameNameBeads':'חרוזים',
+    'back.frameNameScallop':'גלי',
+    'back.frameNameZigzag':'זיגזג',
+    'back.frameNameCorners':'פינות',
+    'back.patternNameDots':'נקודות',
+    'back.patternNameStripes':'פסים',
+    'back.patternNameChecker':'משבצות',
+    'back.patternNameConfetti':'קונפטי',
+    'back.patternNameStars':'כוכבונים',
+    'back.patternNameGrid':'רשת',
+    'back.patternNameWaves':'גלים',
+    'back.presetNameClassic':'קלאסי',
+    'back.presetNameParty':'מסיבה',
+    'back.presetNameBirthday':'יום הולדת',
+    'back.presetNameKids':'ילדים',
+    'back.presetNameElegant':'אלגנטי',
+    'back.presetNameNature':'טבע',
     'edit.verifyTitle':'🔍 בדיקת זוג קלפים',
     'edit.verifyCardALabel':'קלף א',
     'edit.verifyCardBLabel':'קלף ב',
@@ -2225,6 +2263,7 @@ const I18N={
     'edit.cardEditSizeLabel':'גודל הסמל שנבחר',
     'edit.cardEditResetOneBtn':'↩️ אפס סמל',
     'edit.cardEditResetAllBtn':'🧹 אפס קלף',
+    'edit.cardEditButtonTitle':'ערוך קלף',
     'msg.confirmCancel':'ביטול',
     'emoji.modalTitle':'🔎 ספריית סמלים',
     'emoji.noResults':'לא נמצא סמל מתאים',
@@ -2240,6 +2279,7 @@ const I18N={
     'edit.cropDragHint':'לחץ/י וגרור/י על התמונה לבחירת סמלים',
     'edit.cropCancelBtn':'ביטול',
     'edit.cropAddBtn':'✅ הוסף למאגר',
+    'edit.cutoutButtonTitle':'חיתוך חכם',
     'edit.cutoutTitle':'🪄 הסרת רקע חכמה',
     'edit.cutoutKeepLabel':'לשמור',
     'edit.cutoutRemoveLabel':'רקע',
@@ -2826,13 +2866,13 @@ function heartPath(ctx,s){
   ctx.closePath();
 }
 const BACK_SYMBOLS=[
-  {id:'sparkle',name:'ניצוץ',draw(ctx){
+  {id:'sparkle',name:t('back.symbolNameSparkle'),draw(ctx){
     starPath(ctx,4,0.95,0.16);ctx.fill();
     ctx.save();ctx.rotate(Math.PI/4);starPath(ctx,4,0.42,0.09);ctx.fill();ctx.restore();
   }},
-  {id:'star5',name:'כוכב',draw(ctx){starPath(ctx,5,0.95,0.38);ctx.fill();}},
-  {id:'heart',name:'לב',draw(ctx){heartPath(ctx,0.85);ctx.fill();}},
-  {id:'flower8',name:'פרח',draw(ctx){
+  {id:'star5',name:t('back.symbolNameStar'),draw(ctx){starPath(ctx,5,0.95,0.38);ctx.fill();}},
+  {id:'heart',name:t('back.symbolNameHeart'),draw(ctx){heartPath(ctx,0.85);ctx.fill();}},
+  {id:'flower8',name:t('back.symbolNameFlower'),draw(ctx){
     for(let i=0;i<8;i++){
       ctx.save();ctx.rotate(i*Math.PI/4);
       ctx.beginPath();ctx.ellipse(0,-0.5,0.26,0.5,0,0,Math.PI*2);ctx.fill();
@@ -2840,7 +2880,7 @@ const BACK_SYMBOLS=[
     }
     ctx.beginPath();ctx.arc(0,0,0.24,0,Math.PI*2);ctx.fill();
   }},
-  {id:'sun',name:'שמש',draw(ctx){
+  {id:'sun',name:t('back.symbolNameSun'),draw(ctx){
     for(let i=0;i<8;i++){
       ctx.save();ctx.rotate(i*Math.PI/4);
       ctx.beginPath();ctx.moveTo(-0.1,-0.55);ctx.lineTo(0.1,-0.55);ctx.lineTo(0,-0.98);ctx.closePath();ctx.fill();
@@ -2848,38 +2888,38 @@ const BACK_SYMBOLS=[
     }
     ctx.beginPath();ctx.arc(0,0,0.55,0,Math.PI*2);ctx.fill();
   }},
-  {id:'moon',name:'ירח',draw(ctx){
+  {id:'moon',name:t('back.symbolNameMoon'),draw(ctx){
     ctx.save();
     ctx.beginPath();ctx.arc(0,0,0.9,0,Math.PI*2);
     ctx.arc(0.38,-0.12,0.78,0,Math.PI*2,true);
     ctx.fill('evenodd');
     ctx.restore();
   }},
-  {id:'clover',name:'תלתן',draw(ctx){
+  {id:'clover',name:t('back.symbolNameClover'),draw(ctx){
     const d=0.46;
     [[0,-d],[d,0],[0,d],[-d,0]].forEach(([ox,oy])=>{
       ctx.beginPath();ctx.arc(ox,oy,0.5,0,Math.PI*2);ctx.fill();
     });
     ctx.save();ctx.rotate(Math.PI/4);ctx.fillRect(-0.09,0,0.18,0.62);ctx.restore();
   }},
-  {id:'diamond',name:'יהלום',draw(ctx){
+  {id:'diamond',name:t('back.symbolNameDiamond'),draw(ctx){
     ctx.beginPath();ctx.moveTo(0,-0.95);ctx.lineTo(0.68,0);ctx.lineTo(0,0.95);ctx.lineTo(-0.68,0);ctx.closePath();ctx.fill();
   }},
-  {id:'balloon',name:'בלון',draw(ctx){
+  {id:'balloon',name:t('back.symbolNameBalloon'),draw(ctx){
     ctx.beginPath();ctx.ellipse(0,-0.18,0.62,0.72,0,0,Math.PI*2);ctx.fill();
     ctx.beginPath();ctx.moveTo(-0.13,0.5);ctx.lineTo(0.13,0.5);ctx.lineTo(0,0.68);ctx.closePath();ctx.fill();
     ctx.save();ctx.lineWidth=0.045;ctx.strokeStyle=ctx.fillStyle;ctx.lineCap='round';
     ctx.beginPath();ctx.moveTo(0,0.68);ctx.bezierCurveTo(0.14,0.8,-0.1,0.9,0,1.0);ctx.stroke();
     ctx.restore();
   }},
-  {id:'gift',name:'מתנה',draw(ctx){
+  {id:'gift',name:t('back.symbolNameGift'),draw(ctx){
     ctx.fillRect(-0.68,-0.12,1.36,0.95);
     ctx.fillRect(-0.68,-0.32,1.36,0.2);
     ctx.fillRect(-0.11,-0.32,0.22,1.27);
     ctx.beginPath();ctx.arc(-0.28,-0.42,0.24,0,Math.PI*2);ctx.fill();
     ctx.beginPath();ctx.arc(0.28,-0.42,0.24,0,Math.PI*2);ctx.fill();
   }},
-  {id:'crown',name:'כתר',draw(ctx){
+  {id:'crown',name:t('back.symbolNameCrown'),draw(ctx){
     ctx.beginPath();
     ctx.moveTo(-0.8,0.55);ctx.lineTo(0.8,0.55);ctx.lineTo(0.8,-0.05);
     ctx.lineTo(0.4,0.2);ctx.lineTo(0.22,-0.5);
@@ -2891,14 +2931,14 @@ const BACK_SYMBOLS=[
     ctx.beginPath();ctx.arc(-0.8,-0.08,0.1,0,Math.PI*2);ctx.fill();
     ctx.beginPath();ctx.arc(0.8,-0.08,0.1,0,Math.PI*2);ctx.fill();
   }},
-  {id:'note',name:'תו',draw(ctx){
+  {id:'note',name:t('back.symbolNameNote'),draw(ctx){
     ctx.save();ctx.translate(-0.15,0.5);ctx.rotate(-0.15);
     ctx.beginPath();ctx.ellipse(0,0,0.32,0.24,0,0,Math.PI*2);ctx.fill();
     ctx.restore();
     ctx.fillRect(0.12,-0.85,0.11,1.25);
     ctx.beginPath();ctx.moveTo(0.23,-0.85);ctx.bezierCurveTo(0.75,-0.65,0.7,-0.15,0.23,-0.25);ctx.closePath();ctx.fill();
   }},
-  {id:'snow',name:'פתית',draw(ctx){
+  {id:'snow',name:t('back.symbolNameSnow'),draw(ctx){
     ctx.save();ctx.lineWidth=0.09;ctx.strokeStyle=ctx.fillStyle;ctx.lineCap='round';
     for(let i=0;i<6;i++){
       ctx.save();ctx.rotate(i*Math.PI/3);
@@ -2910,7 +2950,7 @@ const BACK_SYMBOLS=[
     }
     ctx.restore();
   }},
-  {id:'smile',name:'חיוך',draw(ctx){
+  {id:'smile',name:t('back.symbolNameSmile'),draw(ctx){
     ctx.save();ctx.lineWidth=0.1;ctx.strokeStyle=ctx.fillStyle;ctx.lineCap='round';
     ctx.beginPath();ctx.arc(0,0,0.92,0,Math.PI*2);ctx.stroke();
     ctx.beginPath();ctx.arc(-0.32,-0.18,0.1,0,Math.PI*2);ctx.fill();
@@ -2918,7 +2958,7 @@ const BACK_SYMBOLS=[
     ctx.beginPath();ctx.arc(0,0.05,0.5,0.15*Math.PI,0.85*Math.PI);ctx.stroke();
     ctx.restore();
   }},
-  {id:'spiral',name:'ספירלה',draw(ctx){
+  {id:'spiral',name:t('back.symbolNameSpiral'),draw(ctx){
     ctx.save();ctx.lineWidth=0.11;ctx.strokeStyle=ctx.fillStyle;ctx.lineCap='round';
     ctx.beginPath();
     const turns=2.4,steps=90;
@@ -2930,28 +2970,28 @@ const BACK_SYMBOLS=[
     ctx.stroke();
     ctx.restore();
   }},
-  {id:'none',name:'ללא',draw(){}}
+  {id:'none',name:t('back.noneLabel'),draw(){}}
 ];
 
 const BACK_FRAMES=[
-  {id:'none',name:'ללא'},{id:'single',name:'קו יחיד'},{id:'double',name:'קו כפול'},
-  {id:'dashed',name:'מקווקו'},{id:'beads',name:'חרוזים'},{id:'scallop',name:'גלי'},
-  {id:'zigzag',name:'זיגזג'},{id:'corners',name:'פינות'}
+  {id:'none',name:t('back.noneLabel')},{id:'single',name:t('back.frameNameSingle')},{id:'double',name:t('back.frameNameDouble')},
+  {id:'dashed',name:t('back.frameNameDashed')},{id:'beads',name:t('back.frameNameBeads')},{id:'scallop',name:t('back.frameNameScallop')},
+  {id:'zigzag',name:t('back.frameNameZigzag')},{id:'corners',name:t('back.frameNameCorners')}
 ];
 
 const BACK_PATTERNS=[
-  {id:'none',name:'ללא'},{id:'dots',name:'נקודות'},{id:'stripes',name:'פסים'},
-  {id:'checker',name:'משבצות'},{id:'confetti',name:'קונפטי'},
-  {id:'stars',name:'כוכבונים'},{id:'grid',name:'רשת'},{id:'waves',name:'גלים'}
+  {id:'none',name:t('back.noneLabel')},{id:'dots',name:t('back.patternNameDots')},{id:'stripes',name:t('back.patternNameStripes')},
+  {id:'checker',name:t('back.patternNameChecker')},{id:'confetti',name:t('back.patternNameConfetti')},
+  {id:'stars',name:t('back.patternNameStars')},{id:'grid',name:t('back.patternNameGrid')},{id:'waves',name:t('back.patternNameWaves')}
 ];
 
 const BACK_PRESETS=[
-  {id:'classic',name:'קלאסי',apply(){return{bg:{mode:'radial',c1:'#4338CA',c2:'#1E1B4B'},pattern:{id:'none',color:'#FFFFFF',op:14,scale:100},frame:{id:'double',color:'#FFFFFF',w:3,op:100},symbol:{id:'sparkle',color:'#FFFFFF',size:46,op:100,dy:0}};}},
-  {id:'party',name:'מסיבה',apply(){return{bg:{mode:'diag',c1:'#DB2777',c2:'#7C3AED'},pattern:{id:'confetti',color:'#FFFFFF',op:55,scale:110},frame:{id:'dashed',color:'#FFFFFF',w:2.5,op:100},symbol:{id:'balloon',color:'#FDE047',size:50,op:100,dy:0}};}},
-  {id:'birthday',name:'יום הולדת',apply(){return{bg:{mode:'radial',c1:'#EC4899',c2:'#A855F7'},pattern:{id:'stars',color:'#FFFFFF',op:20,scale:90},frame:{id:'beads',color:'#FDE047',w:3,op:100},symbol:{id:'crown',color:'#FDE047',size:44,op:100,dy:-4},text:{main:'מזל טוב',sub:'',font:'round',color:'#FFFFFF',size:11,dy:36}};}},
-  {id:'kids',name:'ילדים',apply(){return{bg:{mode:'solid',c1:'#FDE68A',c2:'#93C5FD'},pattern:{id:'dots',color:'#FFFFFF',op:35,scale:80},frame:{id:'scallop',color:'#38BDF8',w:3,op:100},symbol:{id:'smile',color:'#0369A1',size:48,op:100,dy:0}};}},
-  {id:'elegant',name:'אלגנטי',apply(){return{bg:{mode:'solid',c1:'#0F172A',c2:'#0F172A'},pattern:{id:'none',color:'#D4AF37',op:10,scale:100},frame:{id:'corners',color:'#D4AF37',w:2.5,op:100},symbol:{id:'diamond',color:'#D4AF37',size:40,op:100,dy:0}};}},
-  {id:'nature',name:'טבע',apply(){return{bg:{mode:'diag',c1:'#15803D',c2:'#84CC16'},pattern:{id:'waves',color:'#FFFFFF',op:16,scale:120},frame:{id:'single',color:'#FFFFFF',w:2.5,op:100},symbol:{id:'clover',color:'#FFFFFF',size:42,op:100,dy:0}};}}
+  {id:'classic',name:t('back.presetNameClassic'),apply(){return{bg:{mode:'radial',c1:'#4338CA',c2:'#1E1B4B'},pattern:{id:'none',color:'#FFFFFF',op:14,scale:100},frame:{id:'double',color:'#FFFFFF',w:3,op:100},symbol:{id:'sparkle',color:'#FFFFFF',size:46,op:100,dy:0}};}},
+  {id:'party',name:t('back.presetNameParty'),apply(){return{bg:{mode:'diag',c1:'#DB2777',c2:'#7C3AED'},pattern:{id:'confetti',color:'#FFFFFF',op:55,scale:110},frame:{id:'dashed',color:'#FFFFFF',w:2.5,op:100},symbol:{id:'balloon',color:'#FDE047',size:50,op:100,dy:0}};}},
+  {id:'birthday',name:t('back.presetNameBirthday'),apply(){return{bg:{mode:'radial',c1:'#EC4899',c2:'#A855F7'},pattern:{id:'stars',color:'#FFFFFF',op:20,scale:90},frame:{id:'beads',color:'#FDE047',w:3,op:100},symbol:{id:'crown',color:'#FDE047',size:44,op:100,dy:-4},text:{main:'מזל טוב',sub:'',font:'round',color:'#FFFFFF',size:11,dy:36}};}},
+  {id:'kids',name:t('back.presetNameKids'),apply(){return{bg:{mode:'solid',c1:'#FDE68A',c2:'#93C5FD'},pattern:{id:'dots',color:'#FFFFFF',op:35,scale:80},frame:{id:'scallop',color:'#38BDF8',w:3,op:100},symbol:{id:'smile',color:'#0369A1',size:48,op:100,dy:0}};}},
+  {id:'elegant',name:t('back.presetNameElegant'),apply(){return{bg:{mode:'solid',c1:'#0F172A',c2:'#0F172A'},pattern:{id:'none',color:'#D4AF37',op:10,scale:100},frame:{id:'corners',color:'#D4AF37',w:2.5,op:100},symbol:{id:'diamond',color:'#D4AF37',size:40,op:100,dy:0}};}},
+  {id:'nature',name:t('back.presetNameNature'),apply(){return{bg:{mode:'diag',c1:'#15803D',c2:'#84CC16'},pattern:{id:'waves',color:'#FFFFFF',op:16,scale:120},frame:{id:'single',color:'#FFFFFF',w:2.5,op:100},symbol:{id:'clover',color:'#FFFFFF',size:42,op:100,dy:0}};}}
 ];
 
 function backDefaults(){
@@ -4059,7 +4099,7 @@ async function generate(){
     // ושלא יימחק ע"י איפוסי className='cw' בזרימת בחירת הזוגות (onCardClick/closeModal).
     const slot=document.createElement('div');slot.className='cslot';slot.appendChild(w);
     const eb=document.createElement('button');
-    eb.type='button';eb.className='card-edit-btn';eb.title='ערוך קלף';eb.textContent='✏️';
+    eb.type='button';eb.className='card-edit-btn';eb.title=t('edit.cardEditButtonTitle');eb.textContent='✏️';
     eb.addEventListener('click',ev=>{ev.stopPropagation();openCardEditor(i);});
     slot.appendChild(eb);
     grid.appendChild(slot);
@@ -4090,11 +4130,11 @@ async function renderAll(){
 // ══ RESHUFFLE ══
 document.getElementById('btn-reshuffle').addEventListener('click',async()=>{
   const btn=document.getElementById('btn-reshuffle');
-  btn.disabled=true;btn.innerHTML='<span class="spin"></span> מערבב…';
+  btn.disabled=true;btn.innerHTML=`<span class="spin"></span> ${t('edit.reshufflingLabel')}`;
   S.seed=Math.floor(Math.random()*90000)+10000;
   S.cardEdits={};
   await renderAll();
-  btn.disabled=false;btn.innerHTML='🔀 ערבב מחדש';
+  btn.disabled=false;btn.innerHTML=t('edit.reshuffleBtn');
   toast(t('msg.cardsReshuffled'),'ok');
 });
 
@@ -4814,7 +4854,7 @@ function patternPreview(cv,p){
     ctx.fillStyle=ctx.createPattern(getPatternTile({id:p.id,color:'#4338CA',scale:100}),'repeat');
     ctx.fillRect(0,0,48,48);
   }else{
-    ctx.fillStyle='#9ca3af';ctx.font='10px sans-serif';ctx.textAlign='center';ctx.fillText('ללא',24,27);
+    ctx.fillStyle='#9ca3af';ctx.font='10px sans-serif';ctx.textAlign='center';ctx.fillText(t('back.noneLabel'),24,27);
   }
 }
 buildIconGrid(document.getElementById('back-sym-grid'),BACK_SYMBOLS,
@@ -6108,7 +6148,7 @@ function renderModalCrops(){
   const countEl=document.getElementById('modal-crop-count');
   strip.innerHTML='';
   if(!CM.crops.length){
-    strip.innerHTML='<span class="ext-empty">לחץ/י וגרור/י על התמונה לבחירת סמלים</span>';
+    strip.innerHTML=`<span class="ext-empty">${t('edit.cropDragHint')}</span>`;
     countEl.textContent='0 סמלים נבחרו';return;
   }
   CM.crops.forEach(c=>{
@@ -6122,7 +6162,7 @@ function renderModalCrops(){
     wrap.appendChild(del);
     const cut=document.createElement('button');
     cut.className='crop-del';cut.textContent='✂︎';
-    cut.title='חיתוך חכם';
+    cut.title=t('edit.cutoutButtonTitle');
     cut.style.cssText='top:auto;bottom:-5px;inset-inline-start:auto;inset-inline-end:-5px;background:'+(c.useMask?'#16a34a':'#4338CA');
     cut.addEventListener('click',e=>{e.stopPropagation();openCutoutModal(c.id);});
     wrap.appendChild(cut);
@@ -6826,7 +6866,7 @@ async function idbClear(){
 async function saveDesign(){
   if(!S.assets.length){toast(t('msg.noImagesInPoolUpload'),'err');return;}
   const defName='העיצוב שלי '+new Date().toLocaleDateString('he-IL');
-  const name=(prompt('שם לעיצוב:',defName)||'').trim();
+  const name=(prompt(t('edit.saveDesignNamePrompt'),defName)||'').trim();
   if(!name)return;
   try{
     const settings={shape:S.shape,symShape:S.symShape,sMin:S.sMin,sMax:S.sMax,seed:S.seed,layoutMode:S.layoutMode,
@@ -8576,6 +8616,8 @@ async function cloudSaveDesign(design){
 }
 
 // ── גיבוי אוטומטי לענן: סלוט יחיד לכל מנוי, נדרס בכל שמירה ──
+// מוחרג בכוונה מ-i18n: זה מפתח נתונים (שם שורה ב-designs, בשימוש להתאמת upsert), לא טקסט ממשק —
+// תרגום שלו ישבור את ההתאמה לשורות קיימות ויצור טיוטה כפולה לכל לקוח שכבר שמר אחת.
 const AUTOSAVE_NAME='⏳ טיוטה אוטומטית';
 let _cloudAutoTimer=0,_cloudAutoBusy=false,_cloudAutoDirty=false;
 
