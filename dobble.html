@@ -710,20 +710,20 @@ function dcfgSave(patch){
     const email=(document.getElementById('free-email').value||'').trim();
     const code=(document.getElementById('free-code').value||'').trim();
     const msg=document.getElementById('free-msg');
-    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){msg.textContent='נא להזין כתובת מייל תקינה';return;}
-    if(code.length<4||code.length>20||/\s/.test(code)){msg.textContent='הקוד חייב להכיל 4–20 תווים, בלי רווחים';return;}
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){msg.textContent=t('msg.invalidEmail');return;}
+    if(code.length<4||code.length>20||/\s/.test(code)){msg.textContent=t('msg.codeMustBe4to20');return;}
     const cfg=window.SUPABASE_CONFIG||{};
     const base=cfg.url||'',key=cfg.anonKey||'';
-    if(!base||!key){msg.textContent='השירות אינו זמין כרגע';return;}
+    if(!base||!key){msg.textContent=t('msg.serviceUnavailable');return;}
     const btn=document.getElementById('free-go');btn.disabled=true;
-    msg.style.color='#a5b4fc';msg.textContent='נרשם/ת…';
+    msg.style.color='#a5b4fc';msg.textContent=t('msg.registering');
     // בדיקת התנגשות עם חשבון מנוי ישן ({code}@sub.hoshaya.co.il) — קוד כזה מכניס
     // את הלקוח לחשבון של מישהו אחר. תקלת רשת בבדיקה עצמה = fail-open, לא חוסמים הרשמה.
     try{
       if(SB){
         const{data:collides}=await SB.rpc('code_collides_with_subscriber',{p_code:code});
         if(collides){
-          msg.style.color='#fca5a5';msg.textContent='הקוד הזה כבר תפוס. בחרו קוד אחר — עדיף לא מספר טלפון.';
+          msg.style.color='#fca5a5';msg.textContent=t('msg.codeTakenChooseAnother');
           btn.disabled=false;return;
         }
       }
@@ -736,7 +736,7 @@ function dcfgSave(patch){
       });
       const data=await res.json().catch(()=>({}));
       if(data&&data.ok){
-        msg.style.color='#86efac';msg.textContent='נרשמת בהצלחה! נכנסים…';
+        msg.style.color='#86efac';msg.textContent=t('msg.registeredSuccessEntering');
         setTimeout(()=>{doUserUnlock(data.code||code,'הרשמה חינם',data.max_order!=null?data.max_order:7);},500);
         return;
       }
@@ -747,9 +747,9 @@ function dcfgSave(patch){
         already_registered:'כבר יש לך קוד חינמי רשום עם האימייל הזה. השתמשו בטאב "יש לי קוד".'
       };
       msg.style.color='#fca5a5';
-      msg.textContent=REASONS_FREE[(data&&data.reason)||'']||'לא הצלחנו להשלים את ההרשמה. נסו שוב.';
+      msg.textContent=REASONS_FREE[(data&&data.reason)||'']||t('msg.registrationFailedGeneric');
     }catch(e){
-      msg.style.color='#fca5a5';msg.textContent='שגיאת תקשורת — נסו שוב.';
+      msg.style.color='#fca5a5';msg.textContent=t('msg.communicationError');
     }
     btn.disabled=false;
   });
@@ -812,9 +812,9 @@ function dcfgSave(patch){
   // פותח את לינק התשלום הקבוע של המדרגה בכרטיסייה חדשה (Morning אינו מפנה חזרה אוטומטית —
   // ה-webhook מזהה את התשלום לפי productId+amount, וה"שילמתי" למטה פותח את מסך בחירת הקוד)
   window.payForTier=function(tier,email,msgEl,btnEl,errColor){
-    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){msgEl.style.color=errColor;msgEl.textContent='נא להזין כתובת מייל תקינה';return false;}
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){msgEl.style.color=errColor;msgEl.textContent=t('msg.invalidEmail');return false;}
     const link=window.PAYMENT_LINKS[tier];
-    if(!link){msgEl.style.color=errColor;msgEl.textContent='שירות התשלום אינו זמין כרגע';return false;}
+    if(!link){msgEl.style.color=errColor;msgEl.textContent=t('msg.paymentServiceUnavailable');return false;}
     try{localStorage.setItem('dobble_pay_email',email);}catch(e){}
     window.open(link,'_blank','noopener');
     msgEl.style.color='';
@@ -898,20 +898,20 @@ function dcfgSave(patch){
     const email=(document.getElementById('claim-email').value||'').trim();
     const code=(document.getElementById('claim-code').value||'').trim();
     const msg=document.getElementById('claim-msg');
-    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){msg.style.color='#b91c1c';msg.textContent='נא להזין כתובת מייל תקינה';return;}
-    if(code.length<4||code.length>20||/\s/.test(code)){msg.style.color='#b91c1c';msg.textContent='הקוד חייב להכיל 4–20 תווים, בלי רווחים';return;}
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){msg.style.color='#b91c1c';msg.textContent=t('msg.invalidEmail');return;}
+    if(code.length<4||code.length>20||/\s/.test(code)){msg.style.color='#b91c1c';msg.textContent=t('msg.codeMustBe4to20');return;}
     const cfg=window.SUPABASE_CONFIG||{};
     const base=cfg.url||'',key=cfg.anonKey||'';
-    if(!base||!key){msg.style.color='#b91c1c';msg.textContent='השירות אינו זמין כרגע';return;}
+    if(!base||!key){msg.style.color='#b91c1c';msg.textContent=t('msg.serviceUnavailable');return;}
     const btn=document.getElementById('claim-go');btn.disabled=true;
-    msg.style.color='var(--muted)';msg.textContent='בודק…';
+    msg.style.color='var(--muted)';msg.textContent=t('msg.checkingCode');
     // בדיקת התנגשות עם חשבון מנוי ישן ({code}@sub.hoshaya.co.il) — קוד כזה מכניס
     // את הלקוח לחשבון של מישהו אחר. תקלת רשת בבדיקה עצמה = fail-open, לא חוסמים.
     try{
       if(SB){
         const{data:collides}=await SB.rpc('code_collides_with_subscriber',{p_code:code});
         if(collides){
-          msg.style.color='#b91c1c';msg.textContent='הקוד הזה כבר תפוס. בחרו קוד אחר — עדיף לא מספר טלפון.';
+          msg.style.color='#b91c1c';msg.textContent=t('msg.codeTakenChooseAnother');
           btn.disabled=false;return;
         }
       }
@@ -931,7 +931,7 @@ function dcfgSave(patch){
         msg.style.color='#166534';
         msg.textContent = finalCode!==code
           ? 'הקוד הקיים שלך "'+finalCode+'" שודרג! נכנסים…'
-          : 'הקוד נשמר! נכנסים…';
+          : t('msg.codeSavedEntering');
         try{localStorage.removeItem('dobble_pay_email');}catch(e){}
         setTimeout(()=>{
           m.hidden=true;
@@ -945,9 +945,9 @@ function dcfgSave(patch){
         return;
       }
       msg.style.color='#b91c1c';
-      msg.textContent=REASONS[(data&&data.reason)||'']||'לא הצלחנו לשמור את הקוד. נסו שוב.';
+      msg.textContent=REASONS[(data&&data.reason)||'']||t('msg.codeSaveFailedGeneric');
     }catch(e){
-      msg.style.color='#b91c1c';msg.textContent='שגיאת תקשורת — נסו שוב.';
+      msg.style.color='#b91c1c';msg.textContent=t('msg.communicationError');
     }
     btn.disabled=false;
   });
@@ -2270,6 +2270,73 @@ const I18N={
     'back.mainTextPh':'למשל: מזל טוב',
     'back.subTextPh':'למשל: שם הילד/ה',
     'emoji.searchPh':'חפשו סמל בעברית… למשל: חנוכיה, אריה, כבאית',
+    'msg.backDesignSaved':'עיצוב הגב נשמר ✓',
+    'msg.backLogoMissingFromBackup':'לוגו הגב לא נמצא בגיבוי — יש להעלות אותו מחדש בעורך הגב',
+    'msg.backedUpToAccount':'גובה לחשבון ☁️',
+    'msg.calibrationPageReady':'דף הכיול הופק — הדפיסו, הפכו לפי כיוון ההפיכה שבחרתם ומדדו את הסטייה',
+    'msg.cantReachCountWithSpacing':'לא ניתן להגיע למספר הזה עם המרווח הנוכחי — הקטן/י את המרווח',
+    'msg.cardTooLargeForA4':'גודל הקלף גדול מדי לדף A4 — אין מקום אף לקלף אחד.\nהקטן את גודל הקלף ונסה שוב.',
+    'msg.cardsReshuffled':'הקלפים עורבבו מחדש ✓',
+    'msg.checkingCode':'בודק…',
+    'msg.cloudSaveFailed':'השמירה בענן נכשלה',
+    'msg.codeMustBe4to20':'הקוד חייב להכיל 4–20 תווים, בלי רווחים',
+    'msg.codeSaveFailedGeneric':'לא הצלחנו לשמור את הקוד. נסו שוב.',
+    'msg.codeSavedEntering':'הקוד נשמר! נכנסים…',
+    'msg.codeTakenChooseAnother':'הקוד הזה כבר תפוס. בחרו קוד אחר — עדיף לא מספר טלפון.',
+    'msg.communicationError':'שגיאת תקשורת — נסו שוב.',
+    'msg.createCardsFirst':'יש ליצור קלפים תחילה (לחץ/י על כפתור \'צור משחק\')',
+    'msg.deletedFromAccount':'נמחק מהחשבון',
+    'msg.designDeleted':'העיצוב נמחק',
+    'msg.designImagesNotOnDevice':'לא נמצאו התמונות של העיצוב הזה במכשיר. הן נשמרות בחשבון בלבד — התחברו במייל כדי לשחזר, או העלו את התמונות מחדש. העבודה הנוכחית שלכם נשמרה ולא נמחקה.',
+    'msg.designNotFound':'העיצוב לא נמצא',
+    'msg.designSaveFailed':'שמירת העיצוב נכשלה',
+    'msg.downloadingDesignFromAccount':'מוריד עיצוב מהחשבון…',
+    'msg.fileDownloadedFallback':'הקובץ ירד למכשיר ✅',
+    'msg.gameNeedsBackForSheet':'למשחק הזה אין עיצוב גב. בגיליון דו-צדדי כל משחק חייב גב משלו — הוא גם מה שמבדיל בין המשחקים אחרי החיתוך.',
+    'msg.invalidEmail':'נא להזין כתובת מייל תקינה',
+    'msg.invalidEmailAddress':'כתובת מייל לא תקינה',
+    'msg.jspdfNotLoaded':'ספריית jsPDF לא נטענה — נדרש חיבור לאינטרנט',
+    'msg.jszipNotLoaded':'ספריית JSZip לא נטענה — נדרש חיבור לאינטרנט',
+    'msg.loadDesignFromAccountFailed':'טעינת העיצוב מהחשבון נכשלה',
+    'msg.loginLinkSentShowCode':'נשלח אליכם קישור כניסה. פתחו אותו מהמייל, והקוד שלכם יוצג כאן.',
+    'msg.logoUploadFailed':'העלאת הלוגו נכשלה — נסו קובץ אחר',
+    'msg.magicLinkSent':'📩 שלחנו קישור כניסה למייל — פִּתחו אותו מהמכשיר הזה',
+    'msg.magicLinkSentCloudsave':'📩 שלחנו קישור כניסה למייל — פִּתחו אותו מהמכשיר הזה. העיצוב יישמר אוטומטית ברגע שתתחברו.',
+    'msg.needCodeToSendStuck':'כדי לשלוח להושעיה צריך להיכנס עם קוד מנוי',
+    'msg.noCodesForThisEmail':'לא נמצאו קודים המשויכים למייל הזה. אם שילמתם במייל אחר — נסו איתו.',
+    'msg.noGameToAddToSheet':'אין משחק להוסיף — לחצו "ייצר משחק" קודם',
+    'msg.noImageFilesInSelection':'לא נמצאו קבצי תמונה בבחירה.\n\nנתמכים: JPG, PNG, HEIC/HEIF (אייפון), WebP, AVIF, GIF, BMP, TIFF, SVG.',
+    'msg.noImagesForThisDesign':'לא נמצאו תמונות לעיצוב הזה',
+    'msg.noImagesInPoolUpload':'אין תמונות במאגר — העלו תמונות קודם',
+    'msg.noImagesSelected':'לא נבחרו תמונות',
+    'msg.noImagesToSave':'לא נמצאו תמונות לשמירה',
+    'msg.noImagesToSend':'אין תמונות לשלוח — העלו תמונות קודם',
+    'msg.noSymbolsSelectedForDelete':'לא סומנו סמלים למחיקה',
+    'msg.nothingToRestore':'אין מה להחזיר',
+    'msg.paymentServiceUnavailable':'שירות התשלום אינו זמין כרגע',
+    'msg.preparingFile':'מכין את הקובץ…',
+    'msg.readingFile':'קורא את הקובץ…',
+    'msg.registeredSuccessEntering':'נרשמת בהצלחה! נכנסים…',
+    'msg.registering':'נרשם/ת…',
+    'msg.registrationFailedGeneric':'לא הצלחנו להשלים את ההרשמה. נסו שוב.',
+    'msg.resetToDefault':'אופס לברירת המחדל ↺',
+    'msg.saveFailedRetry':'השמירה נכשלה — נסו שוב',
+    'msg.savedAndSentToHoshaya':'נשמר ונשלח להושעיה ✓',
+    'msg.savingAndSendingToHoshaya':'שומר ושולח להושעיה…',
+    'msg.sendingLink':'שולח…',
+    'msg.serviceUnavailable':'השירות אינו זמין כרגע',
+    'msg.serviceUnavailableRetrySoon':'השירות אינו זמין כרגע — נסו שוב בעוד רגע',
+    'msg.shareUnavailableUseDownload':'השיתוף לא זמין כרגע — נסו את כפתור ההורדה',
+    'msg.shareUnavailableUseSave':'השיתוף לא זמין כרגע — נסו את כפתור השמירה',
+    'msg.signedInLoadingDesigns':'התחברת — טוען את העיצובים שלך ☁️',
+    'msg.signedInSyncingDesigns':'התחברת — מסנכרן את העיצובים שלך ☁️',
+    'msg.signedOut':'התנתקת',
+    'msg.silhouetteBackUnsupported':'⚠️ שילוב Silhouette + גב מעוצב לא נתמך — הייצוא ייחסם',
+    'msg.silhouetteBackUnsupportedAlert':'שילוב "מצב Silhouette + גב מעוצב" לא נתמך — כבו את אחד מהם ונסו שוב.',
+    'msg.subscriptionExpiredBody':'המנוי שלך אינו פעיל יותר. לחידוש, בחרו מסלול במסך הנעילה — הקוד הקיים שלכם יתעדכן אוטומטית.',
+    'msg.subscriptionExpiredTitle':'תוקף המנוי פג',
+    'msg.syncUnavailable':'הסנכרון אינו זמין כרגע — נסו שוב מאוחר יותר',
+    'msg.whatsappMessageOpened':'נפתחה הודעת וואטסאפ עם פרטי המשחק 💬',
   }
 };
 let LANG='he';
@@ -3324,7 +3391,7 @@ async function addFiles(files){
   const all=Array.from(files);
   const picked=all.filter(looksLikeImage);
   if(!picked.length){
-    alert('לא נמצאו קבצי תמונה בבחירה.\n\nנתמכים: JPG, PNG, HEIC/HEIF (אייפון), WebP, AVIF, GIF, BMP, TIFF, SVG.');
+    alert(t('msg.noImageFilesInSelection'));
     return;
   }
   const rejected=all.length-picked.length;
@@ -3340,7 +3407,7 @@ async function addFiles(files){
     imgs.push(f);
   }
   if(!imgs.length){
-    toast(skippedDup?`כל ${skippedDup} התמונות כבר קיימות במאגר — לא נוסף כלום`:'לא נבחרו תמונות','err');
+    toast(skippedDup?`כל ${skippedDup} התמונות כבר קיימות במאגר — לא נוסף כלום`:t('msg.noImagesSelected'),'err');
     return;
   }
 
@@ -3582,7 +3649,7 @@ async function setBackLogoFromFile(f){
   }catch(e){
     URL.revokeObjectURL(url);
     console.warn('logo upload failed:',e?.message||e);
-    toast('העלאת הלוגו נכשלה — נסו קובץ אחר','err');
+    toast(t('msg.logoUploadFailed'),'err');
     return null;
   }
 }
@@ -3766,7 +3833,7 @@ function stashDeleted(assets){
 function undoDelete(){
   const back=(_undoBuf||[]).filter(a=>!S.assets.some(x=>x.id===a.id));
   _undoBuf=null;
-  if(!back.length){toast('אין מה להחזיר','err');return;}
+  if(!back.length){toast(t('msg.nothingToRestore'),'err');return;}
   S.assets=S.assets.concat(back);
   back.forEach(a=>{if(a.id>=S.idSeq)S.idSeq=a.id;});
   renderGallery();updateCounter();schedIdbSave();
@@ -3805,7 +3872,7 @@ function flushCloudAfterDelete(){
 // מוחק את כל הנכסים שמסומנים (אותו סימון שקובע "כלול במשחק")
 async function deleteSelected(){
   const sel=S.assets.filter(a=>isSymbolAsset(a)&&a.selected!==false);
-  if(!sel.length){toast('לא סומנו סמלים למחיקה','err');return;}
+  if(!sel.length){toast(t('msg.noSymbolsSelectedForDelete'),'err');return;}
   const ok=await confirmDialog({
     title:'מחיקת סמלים מסומנים',
     body:`${sel.length} סמלים מסומנים יימחקו מהמאגר.`,
@@ -4027,7 +4094,7 @@ document.getElementById('btn-reshuffle').addEventListener('click',async()=>{
   S.cardEdits={};
   await renderAll();
   btn.disabled=false;btn.innerHTML='🔀 ערבב מחדש';
-  toast('הקלפים עורבבו מחדש ✓','ok');
+  toast(t('msg.cardsReshuffled'),'ok');
 });
 
 // ══ CARD CLICK / VERIFY ══
@@ -4212,8 +4279,8 @@ document.getElementById('btn-goexp').addEventListener('click',()=>{
   refreshTrayUI();
 });
 document.getElementById('btn-tray-add').addEventListener('click',()=>{
-  if(!S.deck?.length){toast('אין משחק להוסיף — לחצו "ייצר משחק" קודם','err');return;}
-  if(!S.back.enabled){toast('למשחק הזה אין עיצוב גב. בגיליון דו-צדדי כל משחק חייב גב משלו — הוא גם מה שמבדיל בין המשחקים אחרי החיתוך.','err');return;}
+  if(!S.deck?.length){toast(t('msg.noGameToAddToSheet'),'err');return;}
+  if(!S.back.enabled){toast(t('msg.gameNeedsBackForSheet'),'err');return;}
   if(sheetTray.length>=SHEET_TRAY_MAX){toast(`המגש מלא (עד ${SHEET_TRAY_MAX} משחקים) — נקו אותו לפני הוספה נוספת`,'err');return;}
   const name=(prompt('שם למשחק (לזיהוי במגש):','משחק '+(sheetTray.length+1))||'').trim();
   if(!name)return;
@@ -4274,7 +4341,7 @@ function resetExport(){
 // אנדרואיד/iOS מורידים בשקט; טוסט חולף לא מספיק כדי שהמשתמש ידע שהקובץ אצלו.
 function showDownloadDone(name){
   const host=document.getElementById('exp-prog');
-  if(!host){toast('הקובץ ירד למכשיר ✅','ok');return;}
+  if(!host){toast(t('msg.fileDownloadedFallback'),'ok');return;}
   const box=document.createElement('div');
   box.id='dl-done';
   box.style.cssText='margin-top:.6rem;padding:.7rem .8rem;border-radius:.6rem;background:#ecfdf5;border:1px solid #6ee7b7;font-size:.85rem;line-height:1.6';
@@ -4570,7 +4637,7 @@ function markPerPageActive(){
 document.getElementById('perpage-grp').addEventListener('click',e=>{
   const b=e.target.closest('.sbt');if(!b)return;
   const d=cardSizeForPerPage(+b.dataset.pp);
-  if(d==null){toast('לא ניתן להגיע למספר הזה עם המרווח הנוכחי — הקטן/י את המרווח','err');return;}
+  if(d==null){toast(t('msg.cantReachCountWithSpacing'),'err');return;}
   S.cardSizeMm=d;
   slCardSize.value=String(d);
   lblCardSize.textContent=d+' מ"מ';
@@ -4594,7 +4661,7 @@ document.getElementById('chk-crop').addEventListener('change',e=>{S.crop=e.targe
 document.getElementById('chk-sil').addEventListener('change',e=>{
   S.isSilhouette=e.target.checked;
   document.getElementById('btn-dodxf').style.display=S.isSilhouette?'':'none';
-  if(S.isSilhouette&&S.back.enabled)toast('⚠️ שילוב Silhouette + גב מעוצב לא נתמך — הייצוא ייחסם','err');
+  if(S.isSilhouette&&S.back.enabled)toast(t('msg.silhouetteBackUnsupported'),'err');
   resetExport();
   updatePaperPrev();
 });
@@ -4697,7 +4764,7 @@ document.addEventListener('click',e=>{
   const b=e.target.closest('[data-reset]');
   if(!b)return;
   resetSliders(b.dataset.reset.split(',').map(s=>s.trim()));
-  toast('אופס לברירת המחדל ↺','ok');
+  toast(t('msg.resetToDefault'),'ok');
 });
 
 function buildSwatchesGeneric(containerId,colors,pickerId,onPick){
@@ -4957,7 +5024,7 @@ function closeBackModal(save){
   document.getElementById('back-modal').hidden=true;
   document.getElementById('chk-back-enabled').checked=!!S.back.enabled;
   markBackDirty();
-  if(save){schedIdbSave();toast('עיצוב הגב נשמר ✓','ok');}
+  if(save){schedIdbSave();toast(t('msg.backDesignSaved'),'ok');}
 }
 document.getElementById('btn-back-design').addEventListener('click',openBackModal);
 document.getElementById('btn-back-design-2').addEventListener('click',openBackModal);
@@ -4968,14 +5035,14 @@ document.getElementById('back-modal').addEventListener('click',e=>{if(e.target==
 
 document.getElementById('chk-back-enabled').addEventListener('change',e=>{
   S.back.enabled=e.target.checked;
-  if(S.back.enabled&&S.isSilhouette)toast('⚠️ שילוב Silhouette + גב מעוצב לא נתמך — הייצוא ייחסם','err');
+  if(S.back.enabled&&S.isSilhouette)toast(t('msg.silhouetteBackUnsupported'),'err');
   markBackDirty();resetExport();
 });
 
 // ══ PRINT PREVIEW ══
 let _ppPage=0;
 document.getElementById('btn-prevprint').addEventListener('click',()=>{
-  if(!S.canvases.length){alert('יש ליצור קלפים תחילה (לחץ/י על כפתור \'צור משחק\')');return;}
+  if(!S.canvases.length){alert(t('msg.createCardsFirst'));return;}
   _ppPage=0;
   document.getElementById('ppmodal').hidden=false;
   renderPP(_ppPage);
@@ -5149,10 +5216,10 @@ async function expPDF(setp){
   const{jsPDF}=window.jspdf;
   const{positions,cardMm}=layoutEngine();
   const perPage=positions.length;
-  if(!perPage){alert('גודל הקלף גדול מדי לדף A4 — אין מקום אף לקלף אחד.\nהקטן את גודל הקלף ונסה שוב.');return;}
+  if(!perPage){alert(t('msg.cardTooLargeForA4'));return;}
   const backOn=S.back.enabled;
   if(backOn&&S.isSilhouette){
-    alert('שילוב "מצב Silhouette + גב מעוצב" לא נתמך — כבו את אחד מהם ונסו שוב.');
+    alert(t('msg.silhouetteBackUnsupportedAlert'));
     return;
   }
   // compress:true — בלעדיו jsPDF מטמיע את ה-image streams בלי דחיסה כלל, ומשקל
@@ -5599,7 +5666,7 @@ function drawCalibRuler(pdf){
 // PDF של 2 עמודים בלבד (קדמי + גב, באותה נקודה מדויקת דרך backPos) עם סרגל ממוספר —
 // הלקוח מדפיס, הופך, ומודד את הסטייה בין הסרגלים כדי לכייל dx/dy בטאב "הדפסה".
 function generateCalibrationPDF(){
-  if(!window.jspdf?.jsPDF){toast('ספריית jsPDF לא נטענה — נדרש חיבור לאינטרנט','err');return;}
+  if(!window.jspdf?.jsPDF){toast(t('msg.jspdfNotLoaded'),'err');return;}
   const{jsPDF}=window.jspdf;
   const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
   const cardMm=S.cardSizeMm,cx=A4_W/2,cy=A4_H/2;
@@ -5622,7 +5689,7 @@ function generateCalibrationPDF(){
   const a=document.createElement('a');a.href=url;a.download='dobble-calibration.pdf';
   document.body.appendChild(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),4000);
-  toast('דף הכיול הופק — הדפיסו, הפכו לפי כיוון ההפיכה שבחרתם ומדדו את הסטייה','ok');
+  toast(t('msg.calibrationPageReady'),'ok');
 }
 
 function generateDXF(){
@@ -6756,7 +6823,7 @@ async function idbClear(){
 
 // ══ עיצובים שמורים ("העיצובים שלי") ══
 async function saveDesign(){
-  if(!S.assets.length){toast('אין תמונות במאגר — העלו תמונות קודם','err');return;}
+  if(!S.assets.length){toast(t('msg.noImagesInPoolUpload'),'err');return;}
   const defName='העיצוב שלי '+new Date().toLocaleDateString('he-IL');
   const name=(prompt('שם לעיצוב:',defName)||'').trim();
   if(!name)return;
@@ -6783,11 +6850,11 @@ async function saveDesign(){
         const cloud=await cloudListDesigns();
         if(!cloud.some(c=>c.name===name)){
           const cloudDesign={name,date,rows:assetsToRowsWithImages(),settings};
-          await cloudSaveDesign(cloudDesign);toast('גובה לחשבון ☁️','ok');renderDesigns();
+          await cloudSaveDesign(cloudDesign);toast(t('msg.backedUpToAccount'),'ok');renderDesigns();
         }
       }catch(e){console.warn('cloud backup on save:',e);}
     }
-  }catch(e){console.warn('saveDesign:',e);toast('שמירת העיצוב נכשלה','err');}
+  }catch(e){console.warn('saveDesign:',e);toast(t('msg.designSaveFailed'),'err');}
 }
 
 // בונה אובייקט עיצוב מהמצב הנוכחי (שם + תמונות + הגדרות) — כולל dataURL מלא, לשימוש
@@ -6810,13 +6877,13 @@ function buildDesignObject(name){
 const DESIGN_FILE_V=1;
 
 async function exportDesignFile(){
-  if(!S.assets.length){toast('אין תמונות במאגר — העלו תמונות קודם','err');return;}
-  if(typeof JSZip==='undefined'){toast('ספריית JSZip לא נטענה — נדרש חיבור לאינטרנט','err');return;}
+  if(!S.assets.length){toast(t('msg.noImagesInPoolUpload'),'err');return;}
+  if(typeof JSZip==='undefined'){toast(t('msg.jszipNotLoaded'),'err');return;}
   const defName='העיצוב שלי '+new Date().toLocaleDateString('he-IL');
   const name=(prompt('שם לקובץ העיצוב:',defName)||'').trim();
   if(!name)return;
   try{
-    toast('מכין את הקובץ…','ok');
+    toast(t('msg.preparingFile'),'ok');
     const base=buildDesignObject(name);      // rows כולל dataURL
     const zip=new JSZip(),imgs=zip.folder('images');
     const rows=[];
@@ -6830,7 +6897,7 @@ async function exportDesignFile(){
       rows.push(Object.assign(meta,{file:path}));
       await tick();
     }
-    if(!rows.length){toast('לא נמצאו תמונות לשמירה','err');return;}
+    if(!rows.length){toast(t('msg.noImagesToSave'),'err');return;}
     zip.file('design.json',JSON.stringify(
       {app:'dobble',v:DESIGN_FILE_V,name,date:base.date,settings:base.settings,rows},null,1));
     const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE'});
@@ -6857,9 +6924,9 @@ async function exportDesignFile(){
 // ב-PR #75 (applyDesignToState מאפס את המאגר בשורה השנייה). ייבוא של קובץ פגום
 // או חלקי חייב להיכשל מבלי שהמאגר הקיים ייגע.
 async function importDesignFile(file){
-  if(typeof JSZip==='undefined'){toast('ספריית JSZip לא נטענה — נדרש חיבור לאינטרנט','err');return;}
+  if(typeof JSZip==='undefined'){toast(t('msg.jszipNotLoaded'),'err');return;}
   try{
-    toast('קורא את הקובץ…','ok');
+    toast(t('msg.readingFile'),'ok');
     const zip=await JSZip.loadAsync(file);
     const jf=zip.file('design.json');
     if(!jf)throw new Error('זה לא קובץ עיצוב של המחולל');
@@ -6922,16 +6989,16 @@ document.getElementById('btn-share-design').addEventListener('click',async()=>{
     if(e&&e.name==='AbortError')return;
     console.warn('share design failed:',e);
     window.track&&window.track('share-fail',{detail:((e&&e.name)||'error')+' · '+(S._lastFile||'')});
-    toast('השיתוף לא זמין כרגע — נסו את כפתור השמירה','err');
+    toast(t('msg.shareUnavailableUseSave'),'err');
   }
 });
 
 // "תקוע/ה? שלח להושעיה" — שומר את העבודה לענן ופותח וואטסאפ עם הקוד ושם העיצוב
 async function sendStuckToAdmin(){
-  if(!isSignedIn()){toast('כדי לשלוח להושעיה צריך להיכנס עם קוד מנוי','err');return;}
-  if(!S.assets.length){toast('אין תמונות לשלוח — העלו תמונות קודם','err');return;}
+  if(!isSignedIn()){toast(t('msg.needCodeToSendStuck'),'err');return;}
+  if(!S.assets.length){toast(t('msg.noImagesToSend'),'err');return;}
   const name='עזרה '+new Date().toLocaleString('he-IL');
-  toast('שומר ושולח להושעיה…','ok');
+  toast(t('msg.savingAndSendingToHoshaya'),'ok');
   try{
     const design=buildDesignObject(name);
     await cloudSaveDesign(design);                 // מעלה תמונות + הגדרות לחשבון המנוי
@@ -6945,9 +7012,9 @@ async function sendStuckToAdmin(){
     // "קוד מנוי" גרם ללקוח חינם לחשוב שהקוד שלו אינו תקין.
     const msg=`שלום הושעיה, נתקעתי בעריכת המשחק ושמרתי לך את העבודה שלי 🆘\nקוד הגישה שלי: ${sub.code||''}\nשם העיצוב: ${name}\nאשמח שתסיים לי 🙏`;
     window.open('https://wa.me/'+wa+'?text='+encodeURIComponent(msg),'_blank','noopener');
-    toast('נשמר ונשלח להושעיה ✓','ok');
+    toast(t('msg.savedAndSentToHoshaya'),'ok');
     window.track&&window.track('stuck-help',{detail:name});
-  }catch(e){console.warn('sendStuck:',e);toast('השמירה נכשלה — נסו שוב','err');}
+  }catch(e){console.warn('sendStuck:',e);toast(t('msg.saveFailedRetry'),'err');}
 }
 
 async function getDesigns(){
@@ -6974,7 +7041,7 @@ async function deleteDesign(name){
       }catch(e){console.warn('cloud delete:',e);}
     }
     renderDesigns();
-    toast('העיצוב נמחק','ok');
+    toast(t('msg.designDeleted'),'ok');
   }catch(e){console.warn('deleteDesign:',e);}
 }
 
@@ -7040,7 +7107,7 @@ async function applyDesignToState(d){
   // אם ה-asset של הלוגו לא שרד (למשל עיצוב ישן/גיבוי חלקי) — מנתקים את ההפניה בלי לשבור את הטעינה
   if(S.back.logoAssetId&&!S.assets.some(a=>a.id===S.back.logoAssetId&&a.type==='backlogo')){
     S.back.logoAssetId=null;
-    toast('לוגו הגב לא נמצא בגיבוי — יש להעלות אותו מחדש בעורך הגב','err');
+    toast(t('msg.backLogoMissingFromBackup'),'err');
   }
   document.getElementById('chk-back-enabled').checked=!!S.back.enabled;
   markBackDirty();
@@ -7055,7 +7122,7 @@ async function applyDesignToState(d){
 async function loadDesign(name){
   const designs=await getDesigns();
   const d=designs.find(x=>x.name===name);
-  if(!d){toast('העיצוב לא נמצא','err');return;}
+  if(!d){toast(t('msg.designNotFound'),'err');return;}
   const hasImages=(d.rows||[]).some(r=>r.dataURL);
   if(!hasImages&&isSignedIn()){
     try{
@@ -7068,7 +7135,7 @@ async function loadDesign(name){
   // שדורס את IDB_STORE — הגיבוי היחיד ששורד רענון דף ללקוח בלי חשבון. בעיצוב רזה
   // שאין לו מקור תמונות, הטעינה הייתה מוחקת את עבודת הלקוח ולא טוענת כלום במקומה.
   if(!hasImages){
-    toast('לא נמצאו התמונות של העיצוב הזה במכשיר. הן נשמרות בחשבון בלבד — התחברו במייל כדי לשחזר, או העלו את התמונות מחדש. העבודה הנוכחית שלכם נשמרה ולא נמחקה.','err');
+    toast(t('msg.designImagesNotOnDevice'),'err');
     return;
   }
   await applyDesignToState(d);
@@ -7077,10 +7144,10 @@ async function loadDesign(name){
 
 // טעינת עיצוב שקיים רק בענן: מוריד את התמונות, טוען, ושומר מקומית לפעם הבאה
 async function loadCloudDesign(row){
-  toast('מוריד עיצוב מהחשבון…','ok');
+  toast(t('msg.downloadingDesignFromAccount'),'ok');
   try{
     const d=await cloudFetchDesign(row);
-    if(!d.rows.length){toast('לא נמצאו תמונות לעיצוב הזה','err');return;}
+    if(!d.rows.length){toast(t('msg.noImagesForThisDesign'),'err');return;}
     await applyDesignToState(d);
     // שמירה מקומית כדי שיהיה זמין מיד ובלי אינטרנט
     const db=await idbOpen();
@@ -7089,7 +7156,7 @@ async function loadCloudDesign(row){
     await new Promise(r=>{tx.oncomplete=r;tx.onerror=()=>r();});
     renderDesigns();
     toast(`העיצוב "${row.name}" נטען מהחשבון 🎨`,'ok');
-  }catch(e){console.warn('loadCloudDesign:',e);toast('טעינת העיצוב מהחשבון נכשלה','err');}
+  }catch(e){console.warn('loadCloudDesign:',e);toast(t('msg.loadDesignFromAccountFailed'),'err');}
 }
 
 async function renderDesigns(){
@@ -7129,7 +7196,7 @@ async function renderDesigns(){
     const n=(c.game_data&&c.game_data.symbolCount)||'?';
     chip('☁️',c.name,`${n} תמונות · בחשבון`,
       ()=>loadCloudDesign(c),
-      ()=>{ if(confirm(`למחוק את "${c.name}" מהחשבון?`)){cloudDeleteDesign(c).then(()=>{renderDesigns();toast('נמחק מהחשבון','ok');});} });
+      ()=>{ if(confirm(`למחוק את "${c.name}" מהחשבון?`)){cloudDeleteDesign(c).then(()=>{renderDesigns();toast(t('msg.deletedFromAccount'),'ok');});} });
   });
 }
 document.getElementById('btn-save-design').addEventListener('click',saveDesign);
@@ -8094,7 +8161,7 @@ document.getElementById('dl-share').addEventListener('click',async()=>{
     if(e&&e.name==='AbortError')return;      // הלקוח סגר את הגיליון — לא שגיאה
     console.warn('share failed:',e);
     window.track&&window.track('share-fail',{detail:((e&&e.name)||'error')+' · '+(S._lastFile||'')});
-    toast('השיתוף לא זמין כרגע — נסו את כפתור ההורדה','err');
+    toast(t('msg.shareUnavailableUseDownload'),'err');
   }
 });
 
@@ -8112,7 +8179,7 @@ function orderPrint(){
   logGame({total:S.order?S.order.total:'',cards:S.deck.length||'',sizeMm:S.cardSizeMm,filename:'🚚 בקשת הדפסה ומשלוח',type:'print-order'});
   window.track&&window.track('print-order',{cards:S.deck.length||'',symbols:S.order?S.order.spc:'',detail:`קוטר ${S.cardSizeMm}מ"מ · ${shape}`});
   window.open('https://wa.me/'+waNum+'?text='+encodeURIComponent(msg),'_blank','noopener');
-  toast('נפתחה הודעת וואטסאפ עם פרטי המשחק 💬','ok');
+  toast(t('msg.whatsappMessageOpened'),'ok');
 }
 document.getElementById('btn-print-order').addEventListener('click',orderPrint);
 document.getElementById('btn-print-order-2').addEventListener('click',orderPrint);
@@ -8156,14 +8223,14 @@ function updateAuthUI(session){
 document.getElementById('auth-send').addEventListener('click',async()=>{
   const msg=document.getElementById('auth-msg');
   const email=document.getElementById('auth-email').value.trim();
-  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){msg.style.color='#b91c1c';msg.textContent='נא להזין כתובת מייל תקינה';return;}
-  if(!SB){msg.style.color='#b91c1c';msg.textContent='הסנכרון אינו זמין כרגע — נסו שוב מאוחר יותר';return;}
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){msg.style.color='#b91c1c';msg.textContent=t('msg.invalidEmail');return;}
+  if(!SB){msg.style.color='#b91c1c';msg.textContent=t('msg.syncUnavailable');return;}
   const btn=document.getElementById('auth-send');btn.disabled=true;
-  msg.style.color='var(--muted)';msg.textContent='שולח…';
+  msg.style.color='var(--muted)';msg.textContent=t('msg.sendingLink');
   try{
     const{error}=await SB.auth.signInWithOtp({email,options:{emailRedirectTo:location.href}});
     if(error)throw error;
-    msg.style.color='#166534';msg.textContent='📩 שלחנו קישור כניסה למייל — פִּתחו אותו מהמכשיר הזה';
+    msg.style.color='#166534';msg.textContent=t('msg.magicLinkSent');
   }catch(e){msg.style.color='#b91c1c';msg.textContent='שגיאה בשליחה: '+(e.message||e);}
   btn.disabled=false;
 });
@@ -8180,7 +8247,7 @@ function updateCloudSaveBtn(){
 }
 
 document.getElementById('btn-cloud-save').addEventListener('click',async()=>{
-  if(!S.assets.length){toast('אין תמונות במאגר — העלו תמונות קודם','err');return;}
+  if(!S.assets.length){toast(t('msg.noImagesInPoolUpload'),'err');return;}
   if(isSignedIn()){
     const defName='העיצוב שלי '+new Date().toLocaleDateString('he-IL');
     const name=(prompt('שם לעיצוב:',defName)||'').trim();
@@ -8189,7 +8256,7 @@ document.getElementById('btn-cloud-save').addEventListener('click',async()=>{
       await cloudSaveDesign(buildDesignObject(name));
       toast(`העיצוב "${name}" נשמר בענן ☁️`,'ok');
       renderDesigns();
-    }catch(e){console.warn('cloud save:',e);toast('השמירה בענן נכשלה','err');}
+    }catch(e){console.warn('cloud save:',e);toast(t('msg.cloudSaveFailed'),'err');}
     return;
   }
   document.getElementById('cloudsave-modal').hidden=false;
@@ -8201,15 +8268,15 @@ cloudsaveModal.addEventListener('click',e=>{if(e.target===e.currentTarget)clouds
 document.getElementById('cloudsave-send').addEventListener('click',async()=>{
   const msg=document.getElementById('cloudsave-msg');
   const email=document.getElementById('cloudsave-email').value.trim();
-  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){msg.style.color='#b91c1c';msg.textContent='נא להזין כתובת מייל תקינה';return;}
-  if(!SB){msg.style.color='#b91c1c';msg.textContent='הסנכרון אינו זמין כרגע — נסו שוב מאוחר יותר';return;}
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){msg.style.color='#b91c1c';msg.textContent=t('msg.invalidEmail');return;}
+  if(!SB){msg.style.color='#b91c1c';msg.textContent=t('msg.syncUnavailable');return;}
   const btn=document.getElementById('cloudsave-send');btn.disabled=true;
-  msg.style.color='var(--muted)';msg.textContent='שולח…';
+  msg.style.color='var(--muted)';msg.textContent=t('msg.sendingLink');
   try{
     localStorage.setItem('dobble_pending_cloud_save','1');
     const{error}=await SB.auth.signInWithOtp({email,options:{emailRedirectTo:location.href}});
     if(error)throw error;
-    msg.style.color='#166534';msg.textContent='📩 שלחנו קישור כניסה למייל — פִּתחו אותו מהמכשיר הזה. העיצוב יישמר אוטומטית ברגע שתתחברו.';
+    msg.style.color='#166534';msg.textContent=t('msg.magicLinkSentCloudsave');
   }catch(e){
     localStorage.removeItem('dobble_pending_cloud_save');
     msg.style.color='#b91c1c';msg.textContent='שגיאה בשליחה: '+(e.message||e);
@@ -8235,7 +8302,7 @@ async function maybeAutoSaveAfterCloudConnect(){
 
 document.getElementById('auth-signout').addEventListener('click',async()=>{
   if(SB)await SB.auth.signOut();
-  toast('התנתקת','ok');
+  toast(t('msg.signedOut'),'ok');
 });
 
 // כניסת מנוי בקוד: הקוד = סיסמה לחשבון "{code}@{subEmailDomain}" (בלי אימות מייל)
@@ -8278,8 +8345,8 @@ async function subscriptionGate(session){
 window.showRenewPopup=function(mode){
   const m=document.getElementById('renew-modal');if(!m)return;
   const t=document.getElementById('renew-title'),g=document.getElementById('renew-msg');
-  if(mode==='expired'){ if(t)t.textContent='תוקף המנוי פג'; if(g)g.textContent='המנוי שלך אינו פעיל יותר. לחידוש, בחרו מסלול במסך הנעילה — הקוד הקיים שלכם יתעדכן אוטומטית.'; }
-  else{ if(t)t.textContent='הקוד לא התקבל'; if(g)g.textContent='ייתכן שהקוד שגוי או שפג תוקף המנוי.'; }
+  if(mode==='expired'){ if(t)t.textContent=window.t('msg.subscriptionExpiredTitle'); if(g)g.textContent=window.t('msg.subscriptionExpiredBody'); }
+  else{ if(t)t.textContent=window.t('lock.wrongCodeTitle'); if(g)g.textContent=window.t('lock.wrongCodeMsg'); }
   m.hidden=false;
 };
 (function(){
@@ -8340,12 +8407,12 @@ function unlockFromSession(session,maxOrder){
 async function startCodeRecovery(){
   const email=(prompt('הזינו את המייל שאיתו נרשמתם — נשלח אליו קישור כניסה:')||'').trim();
   if(!email)return;
-  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){toast('כתובת מייל לא תקינה','err');return;}
-  if(!SB){toast('השירות אינו זמין כרגע — נסו שוב בעוד רגע','err');return;}
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){toast(t('msg.invalidEmailAddress'),'err');return;}
+  if(!SB){toast(t('msg.serviceUnavailableRetrySoon'),'err');return;}
   try{
     const {error}=await SB.auth.signInWithOtp({email,options:{emailRedirectTo:location.href}});
     if(error)throw error;
-    toast('נשלח אליכם קישור כניסה. פתחו אותו מהמייל, והקוד שלכם יוצג כאן.','ok');
+    toast(t('msg.loginLinkSentShowCode'),'ok');
   }catch(e){
     console.warn('startCodeRecovery:',e);
     toast('שליחת הקישור נכשלה: '+(e.message||e),'err');
@@ -8360,7 +8427,7 @@ async function showMyCodes(){
     if(error)throw error;
     const rows=Array.isArray(data)?data:[];
     if(!rows.length){
-      toast('לא נמצאו קודים המשויכים למייל הזה. אם שילמתם במייל אחר — נסו איתו.','err');
+      toast(t('msg.noCodesForThisEmail'),'err');
       return;
     }
     const list=rows.map(r=>{
@@ -8661,7 +8728,7 @@ if(SB){
     if(sessionStorage.getItem('dobble_unlocked')==='1'){
       // כבר בתוך האפליקציה — מחברים לחשבון בלי לאפס מסך ובלי לגעת בנעילה
       applySessionTier(session).then(()=>{
-        toast('התחברת — מסנכרן את העיצובים שלך ☁️','ok');
+        toast(t('msg.signedInSyncingDesigns'),'ok');
         syncDesigns(session);
         maybeAutoSaveAfterCloudConnect();
         if(!_codesShown){_codesShown=true;showMyCodes();}
@@ -8674,7 +8741,7 @@ if(SB){
     // showMyCodes חייבת לרוץ גם כאן, אחרת התכונה לא עובדת כלל למקרה השימוש שלשמו נבנתה.
     guardedUnlock(session).then(ok=>{   // בודק תוקף מנוי; אם תקין — פותח את האפליקציה
       if(ok){
-        toast('התחברת — טוען את העיצובים שלך ☁️','ok'); syncDesigns(session); maybeAutoSaveAfterCloudConnect();
+        toast(t('msg.signedInLoadingDesigns'),'ok'); syncDesigns(session); maybeAutoSaveAfterCloudConnect();
         if(!_codesShown){_codesShown=true;showMyCodes();}
       }
     });
