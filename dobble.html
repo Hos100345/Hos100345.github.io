@@ -3963,6 +3963,11 @@ function resetExport(){
   document.getElementById('exp-prog').classList.remove('on');
   document.getElementById('dl-area').classList.remove('on');
   const dl=document.getElementById('dl-done');if(dl)dl.remove();
+  // btn-ok לא מוסרת: היא קיימת סטטית ב-HTML של #dl-link (הכפתור הירוק
+  // הרגיל, לא סימן "כבר ירד") — הסרתה הייתה משאירה את הכפתור בלי הצבע
+  // הירוק גם בייצוא הראשון, שבו resetExport רצה עוד לפני שנוצר קובץ.
+  const lnk=document.getElementById('dl-link');
+  if(lnk)lnk.textContent='📥 הורד קובץ';
 }
 // אנדרואיד/iOS מורידים בשקט; טוסט חולף לא מספיק כדי שהמשתמש ידע שהקובץ אצלו.
 function showDownloadDone(name){
@@ -3978,6 +3983,21 @@ function showDownloadDone(name){
     '<span style="color:#065f46">חפש/י אותו בתיקיית ההורדות (Downloads) או בהתראות של הדפדפן.</span>'+
     '<br><button type="button" class="btn btn-ghost" style="margin-top:.5rem;font-size:.78rem" onclick="this.closest(\'#dl-done\').remove()">סגור</button>';
   const old=document.getElementById('dl-done');if(old)old.remove();
+  host.insertAdjacentElement('afterend',box);
+}
+
+// מוצגת בסיום הייצוא — הקובץ מוכן אך טרם ירד.
+function showExportReady(name){
+  const host=document.getElementById('exp-prog');
+  if(!host)return;
+  const old=document.getElementById('dl-done');if(old)old.remove();
+  const box=document.createElement('div');
+  box.id='dl-done';
+  box.style.cssText='margin-top:.6rem;padding:.7rem .8rem;border-radius:.6rem;background:#eef2ff;border:1px solid #a5b4fc;font-size:.85rem;line-height:1.6';
+  box.innerHTML='<strong>✅ הקובץ מוכן</strong><br>'+
+    (name?'<span style="direction:ltr;display:inline-block;font-weight:700">'+name.replace(/[<>&]/g,'')+'</span><br>':'')+
+    (S._lastSize?'<span style="font-weight:700">'+fmtSize(S._lastSize)+'</span><br>':'')+
+    '<span style="color:#3730a3">לחצו על <strong>📥 הורד קובץ</strong> כדי לשמור אותו.</span>';
   host.insertAdjacentElement('afterend',box);
 }
 
@@ -4762,6 +4782,17 @@ document.getElementById('btn-dodxf').addEventListener('click',()=>doExport('dxf'
 document.getElementById('btn-doprint').addEventListener('click',()=>doExport('print'));
 document.getElementById('btn-dosheet').addEventListener('click',()=>doExport('sheet'));
 
+// ההודעה הירוקה מופיעה רק אחרי לחיצה אמיתית על ההורדה, ולא בסיום הייצוא.
+// כאן גם נרשם לראשונה אירוע download — עד היום נמדדו ייצואים בלבד, ולכן
+// לא הייתה שום דרך לדעת כמה מהם באמת הפכו לקובץ אצל הלקוחה.
+document.getElementById('dl-link').addEventListener('click',()=>{
+  showDownloadDone(S._lastFile||'');
+  const b=document.getElementById('dl-link');
+  if(b){b.textContent='✅ הורד — לחצו שוב להורדה נוספת';b.classList.add('btn-ok');}
+  window.track&&window.track('download',{cards:S.deck?S.deck.length:'',symbols:'',
+    detail:`${S._lastFile||''} · ${fmtSize(S._lastSize||0)}`});
+});
+
 async function doExport(type){
   if(!isWithinTier(S.order)){
     window.showUpgradeModal&&window.showUpgradeModal();
@@ -4789,7 +4820,9 @@ async function doExport(type){
     else if(type==='print')await expPrintPDF(setp);
     else if(type==='sheet')await expSheetPDF(setp);
     else await expDXF(setp);
-    showDownloadDone(S._lastFile||'');
+    // ⛔ לא להכריז "ירד" כאן — הקובץ יורד רק בלחיצה על #dl-link.
+    // ההודעה המוקדמת גרמה ללקוחות לייצא שוב ושוב (4 ייצואים ב-15 שניות, 02/09).
+    showExportReady(S._lastFile||'');
   }catch(err){
     document.getElementById('exp-prog').classList.remove('on');
     alert(`שגיאה בייצוא:\n${err.message||err}\n\nודא שהדף נטען עם חיבור לאינטרנט (נדרש jsPDF / JSZip).`);
@@ -7764,9 +7797,9 @@ document.getElementById('dl-share').addEventListener('click',async()=>{
 });
 
 // ══ הזמנת הדפסה ומשלוח עד הבית ══
-// הוחזר 10/09/2026: נמצא בית דפוס, וייצוא הגיליון 330×488 מוכן.
-// 13 לקוחות ביקשו הדפסה (26 בקשות) בזמן שהכפתור היה מוסתר.
-const PRINT_ORDER_ENABLED=true;
+// מוסתר שוב 25/09/2026: הושעיה טרם ביצע הדפסה ראשונה בבית הדפוס.
+// להחזיר ל-true רק אחרי שגיליון נבדק בפועל — הדפסה, חיתוך ובדיקת יישור דו-צדדי.
+const PRINT_ORDER_ENABLED=false;
 function orderPrint(){
   const waNum=localStorage.getItem('dobble_wa')||DCFG.whatsapp;
   const shape=S.shape==='circle'?'עגול':'מרובע';
