@@ -472,7 +472,7 @@ function dcfgSave(patch){
       <div id="lock-tiers" style="display:flex;flex-direction:column;gap:.45rem;width:100%"></div>
       <input id="buy-email" type="email" inputmode="email" placeholder="name@example.com" hidden
         style="width:100%;box-sizing:border-box;padding:.65rem .8rem;border-radius:14px;border:2px solid rgba(255,255,255,.35);outline:none;background:rgba(255,255,255,.94);font-family:inherit;font-size:1rem;direction:ltr;text-align:left">
-      <button id="buy-go" type="button" hidden style="width:100%;background:#6366f1;color:#fff;font-weight:800;font-size:1.02rem;padding:.7rem 2rem;border:none;border-radius:100px;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(99,102,241,.5)">מעבר לתשלום</button>
+      <button data-i18n="lock.goToPaymentBtn" id="buy-go" type="button" hidden style="width:100%;background:#6366f1;color:#fff;font-weight:800;font-size:1.02rem;padding:.7rem 2rem;border:none;border-radius:100px;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(99,102,241,.5)">מעבר לתשלום</button>
       <div id="buy-msg" style="color:#fca5a5;font-size:.85rem;min-height:1.2em"></div>
     </div>
 
@@ -518,7 +518,7 @@ function dcfgSave(patch){
         <input id="upg-email" type="email" inputmode="email" placeholder="name@example.com"
           style="width:100%;box-sizing:border-box;padding:.6rem .8rem;border-radius:var(--rs);border:1.5px solid var(--border);font-family:inherit;font-size:1rem;direction:ltr;text-align:left;background:rgba(255,255,255,.85);outline:none">
       </div>
-      <button class="btn btn-ok" id="upg-pay" style="width:100%;justify-content:center">מעבר לתשלום</button>
+      <button data-i18n="lock.goToPaymentBtn" class="btn btn-ok" id="upg-pay" style="width:100%;justify-content:center">מעבר לתשלום</button>
       <div id="upg-msg" style="font-size:.85rem;min-height:1.3em;margin-top:.5rem"></div>
     </div>
     <div style="margin-top:.6rem"><button data-i18n="lock.upgradeHaveCodeBtn" id="upg-havecode" type="button" style="background:none;border:none;color:var(--indigo);cursor:pointer;font-family:inherit;font-size:.9rem;text-decoration:underline">יש לי כבר קוד אחר</button></div>
@@ -678,7 +678,7 @@ function dcfgSave(patch){
     if(window._tryCode(v))return;                 // קוד מקומי / מנהל — פותח מיד (גישה מלאה)
     if(window.SB&&v.length>=3){
       submitting=true;
-      err.style.color='#a5b4fc';err.textContent='בודק…';
+      err.style.color='#a5b4fc';err.textContent=t('msg.checkingCode');
       let ok=false;
       try{ok=await window.subscriberLogin(v);}catch(e){ok=false;}   // הצלחה → SIGNED_IN פותח (ואם פג תוקף — פופאפ)
       submitting=false;err.textContent='';
@@ -687,7 +687,7 @@ function dcfgSave(patch){
     // קוד גישה חדש (כרטיס/שותף/מנוי) — אימות מול validate-code, כולל max_order
     if(window.SB&&v.length>=3){
       submitting=true;
-      err.style.color='#a5b4fc';err.textContent='בודק…';
+      err.style.color='#a5b4fc';err.textContent=t('msg.checkingCode');
       let res=null;
       try{res=await window.tryAccessCode(v);}catch(e){res=null;}
       submitting=false;err.textContent='';
@@ -826,7 +826,7 @@ function dcfgSave(patch){
   let lockTier=null,lockPaid=false;
   window.renderTierPicker(document.getElementById('lock-tiers'),true,(tier)=>{
     lockTier=tier;lockPaid=false;
-    document.getElementById('buy-go').textContent='מעבר לתשלום';
+    document.getElementById('buy-go').textContent=t('lock.goToPaymentBtn');
     document.getElementById('buy-email').hidden=false;
     document.getElementById('buy-go').hidden=false;
     document.getElementById('buy-email').focus();
@@ -837,7 +837,7 @@ function dcfgSave(patch){
     if(!lockTier)return;
     if(window.payForTier(lockTier,email,document.getElementById('buy-msg'),document.getElementById('buy-go'),'#fca5a5')){
       lockPaid=true;
-      document.getElementById('buy-go').textContent='שילמתי — בחר קוד ✓';
+      document.getElementById('buy-go').textContent=t('lock.paidChooseCodeBtn');
     }
   });
 
@@ -848,10 +848,10 @@ function dcfgSave(patch){
     document.getElementById('upg-current').textContent=String(window.currentMaxOrder?window.currentMaxOrder():7);
     document.getElementById('upg-email-wrap').hidden=true;
     upgTier=null;upgPaid=false;
-    document.getElementById('upg-pay').textContent='מעבר לתשלום';
+    document.getElementById('upg-pay').textContent=t('lock.goToPaymentBtn');
     window.renderTierPicker(document.getElementById('upg-tiers'),false,(tier)=>{
       upgTier=tier;upgPaid=false;
-      document.getElementById('upg-pay').textContent='מעבר לתשלום';
+      document.getElementById('upg-pay').textContent=t('lock.goToPaymentBtn');
       document.getElementById('upg-email-wrap').hidden=false;
       const em=document.getElementById('upg-email');
       try{const saved=localStorage.getItem('dobble_pay_email');if(saved)em.value=saved;}catch(e){}
@@ -871,7 +871,7 @@ function dcfgSave(patch){
     if(!upgTier)return;
     if(window.payForTier(upgTier,email,document.getElementById('upg-msg'),document.getElementById('upg-pay'),'#b91c1c')){
       upgPaid=true;
-      document.getElementById('upg-pay').textContent='שילמתי — בחר קוד ✓';
+      document.getElementById('upg-pay').textContent=t('lock.paidChooseCodeBtn');
     }
   });
 })();
@@ -1017,8 +1017,8 @@ function dcfgSave(patch){
   <!-- מצב תמיכה: מנהל צופה בעיצוב לקוח (בזיכרון, לא נשמר) — כפתור קומפקטי בתוך ה-header עצמו,
        לא סרגל צף נפרד, כדי שלא יכסה/יחסום שום דבר. -->
   <button id="support-mini-exit" type="button" hidden title="לחץ ליציאה ממצב תמיכה" style="background:#b45309;color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:100px;padding:.3rem .7rem;cursor:pointer;font-family:inherit;font-size:.74rem;font-weight:700;display:flex;align-items:center;gap:.35rem;white-space:nowrap">🛟 <span id="support-mini-label" style="max-width:9em;overflow:hidden;text-overflow:ellipsis"></span> ✕</button>
-  <button class="hdr-gear" id="btn-account" title="חשבון וסנכרון" aria-label="חשבון וסנכרון" style="position:relative">👤<span id="acct-dot" class="acct-dot" hidden></span></button>
-  <button class="hdr-gear" id="btn-admin" title="פאנל ניהול" aria-label="פאנל ניהול">⚙️</button>
+  <button class="hdr-gear" id="btn-account" data-i18n-title="header.accountBtnTitle" title="חשבון וסנכרון" aria-label="חשבון וסנכרון" style="position:relative">👤<span id="acct-dot" class="acct-dot" hidden></span></button>
+  <button class="hdr-gear" id="btn-admin" data-i18n-title="header.adminBtnTitle" title="פאנל ניהול" aria-label="פאנל ניהול">⚙️</button>
 </header>
 
 <div id="wrap">
@@ -1082,7 +1082,7 @@ function dcfgSave(patch){
       </div>
       <div id="crop-hint" class="crop-hint" style="display:none">
         <span>💡 יש לך תמונות שאינן מרובעות — לחצו על <strong>✂</strong> ליד תמונה כדי לחתוך ולמקד את הסמל.</span>
-        <button type="button" id="crop-hint-x" title="סגור">✕</button>
+        <button type="button" id="crop-hint-x" data-i18n-title="upload.cropHintCloseBtnTitle" title="סגור">✕</button>
       </div>
       <div class="gallery-bulk" id="gallery-bulk">
         <button data-i18n="upload.selectAllBtn" type="button" class="g-bulk-btn" id="btn-select-all">☑️ סמן הכל</button>
@@ -2010,6 +2010,8 @@ const I18N={
     'lock.freeDesc':'משחק 7 תמונות — חינם לגמרי. הרשמה עם אימייל ובחירת קוד אישי:',
     'lock.freeSignupBtn':'הרשמה וכניסה ✓',
     'lock.chooseTierLabel':'בחר/י רמת מנוי:',
+    'lock.goToPaymentBtn':'מעבר לתשלום',
+    'lock.paidChooseCodeBtn':'שילמתי — בחר קוד ✓',
     'lock.cancelBtn':'ביטול',
     'lock.wrongCodeTitle':'הקוד לא התקבל',
     'lock.wrongCodeMsg':'ייתכן שהקוד שגוי או שפג תוקף המנוי.',
@@ -2040,6 +2042,10 @@ const I18N={
     'onboard.startBtn':'🚀 בואו נתחיל!',
     'header.homeLink':'→ האתר',
     'header.title':'🎯 מחולל משחק דאבל',
+    'header.accountBtnTitle':'חשבון וסנכרון',
+    'header.adminBtnTitle':'פאנל ניהול',
+    'confirm.defaultTitle':'אישור מחיקה',
+    'confirm.defaultOkBtn':'מחק',
     'upload.title':'העלאת סמלים',
     'upload.desc':'גרור/י תמונות לכאן — כל העלאה נוספת מצטברת למאגר. לחץ/י ✂ על תמונה כדי להפיק ממנה סמלים נוספים.',
     'upload.dropText':'גרור/י תמונות לכאן',
@@ -2050,6 +2056,20 @@ const I18N={
     'upload.packsTitle':'🧰 או התחילו מחבילה מוכנה',
     'upload.savedDesignsTitle':'🗂️ העיצובים השמורים שלי',
     'upload.designFileTitle':'📦 גיבוי לקובץ',
+    'upload.cropHintCloseBtnTitle':'סגור',
+    'upload.galleryIncludeCheckboxTitle':'כלול במשחק',
+    'upload.galleryRemoveBtnTitle':'הסר',
+    'upload.galleryCropBtnTitle':'חיתוך ומיקוד תמונה',
+    'upload.gallerySourceLabel':'מקור',
+    'upload.savedDesignDeleteBtnTitle':'מחק עיצוב',
+    'upload.undoDeleteLabel':'בטל ↩',
+    'upload.deleteSymbolTitle':'מחיקת סמל',
+    'upload.deleteSelectedSymbolsTitle':'מחיקת סמלים מסומנים',
+    'upload.deleteFolderTitle':'מחיקת תיקייה',
+    'upload.deleteFolderOkBtn':'מחק תיקייה',
+    'upload.tooManyImagesTitle':'יותר תמונות ממה שהמשחק משתמש',
+    'upload.tooManyImagesOkBtn':'המשך בכל זאת',
+    'upload.cloudDeleteWarn':'☁️ הפריטים יימחקו גם מהענן ולא ניתן יהיה לשחזר אותם.',
     'upload.designFileSaveBtn':'⬇️ שמור לקובץ',
     'upload.designFileLoadBtn':'⬆️ טען מקובץ',
     'upload.designFileShareBtn':'📤 שמירה לקבצים / שיתוף',
@@ -2399,6 +2419,11 @@ function applyI18n(root){
   (root||document).querySelectorAll('[data-i18n-ph]').forEach(el=>{
     const k=el.getAttribute('data-i18n-ph');const v=t(k);
     if(v!==k)el.placeholder=v;
+  });
+  // title+aria-label תמיד זהים בקוד הזה — מפתח אחד ממלא את שניהם.
+  (root||document).querySelectorAll('[data-i18n-title]').forEach(el=>{
+    const k=el.getAttribute('data-i18n-title');const v=t(k);
+    if(v!==k){el.title=v;if(el.hasAttribute('aria-label'))el.setAttribute('aria-label',v);}
   });
 }
 window.applyI18n=applyI18n;
@@ -3351,11 +3376,11 @@ let _cfmResolve=null;
 function confirmDialog(opt){
   const o=opt||{};
   document.getElementById('cfm-ico').textContent=o.icon||'🗑';
-  document.getElementById('cfm-title').textContent=o.title||'אישור מחיקה';
+  document.getElementById('cfm-title').textContent=o.title||t('confirm.defaultTitle');
   document.getElementById('cfm-body').textContent=o.body||'';
   const w=document.getElementById('cfm-warn');
   if(o.warn){w.textContent=o.warn;w.style.display='';}else{w.style.display='none';}
-  document.getElementById('cfm-yes').textContent=o.okText||'מחק';
+  document.getElementById('cfm-yes').textContent=o.okText||t('confirm.defaultOkBtn');
   document.getElementById('confirm-modal').hidden=false;
   return new Promise(res=>{_cfmResolve=res;});
 }
@@ -3371,7 +3396,7 @@ document.addEventListener('keydown',e=>{
 });
 
 function cloudDeleteWarn(){
-  return isSignedIn()?'☁️ הפריטים יימחקו גם מהענן ולא ניתן יהיה לשחזר אותם.':'';
+  return isSignedIn()?t('upload.cloudDeleteWarn'):'';
 }
 
 // ── תיקיות: כל אצווה של העלאה מקבלת תיקייה משלה ──
@@ -3458,12 +3483,12 @@ async function addFiles(files){
   if(totalAfter>MAX_USABLE_SYMBOLS){
     const ok=await confirmDialog({
       icon:'⚠️',
-      title:'יותר תמונות ממה שהמשחק משתמש',
+      title:t('upload.tooManyImagesTitle'),
       body:`אחרי ההעלאה יהיו במאגר ${totalAfter} סמלים, אבל משחק דאבל משתמש לכל היותר ב-${MAX_USABLE_SYMBOLS}. `
           +`התמונות שמעבר לכך לא יופיעו באף משחק — הן רק יאטו את השמירה ואת הגלריה.\n\n`
           +`אפשר להמשיך ולבחור אחר כך אילו סמלים ייכנסו, או לבטל ולהעלות פחות תמונות.`,
       warn:imgs.length>200?`שים לב: ${imgs.length} תמונות בהעלאה אחת — זה עלול לקחת זמן רב מאוד.`:'',
-      okText:'המשך בכל זאת'
+      okText:t('upload.tooManyImagesOkBtn')
     });
     if(!ok)return;
   }
@@ -3718,7 +3743,7 @@ function buildGalleryItem(a){
   item.appendChild(thumbCv);
   if(!a.isCropSource){
     const chk=document.createElement('input');chk.type='checkbox';chk.className='g-check';
-    chk.title='כלול במשחק';chk.checked=isOn;
+    chk.title=t('upload.galleryIncludeCheckboxTitle');chk.checked=isOn;
     chk.addEventListener('change',()=>{
       a.selected=chk.checked;
       item.classList.toggle('off',!chk.checked);
@@ -3726,18 +3751,18 @@ function buildGalleryItem(a){
     });
     item.appendChild(chk);
   }
-  const del=document.createElement('button');del.className='g-del';del.textContent='×';del.title='הסר';
+  const del=document.createElement('button');del.className='g-del';del.textContent='×';del.title=t('upload.galleryRemoveBtnTitle');
   del.addEventListener('click',()=>removeAsset(a.id));
   item.appendChild(del);
   if(a.type==='image'){
-    const edit=document.createElement('button');edit.className='g-edit';edit.textContent='✂';edit.title='חיתוך ומיקוד תמונה';
+    const edit=document.createElement('button');edit.className='g-edit';edit.textContent='✂';edit.title=t('upload.galleryCropBtnTitle');
     edit.addEventListener('click',()=>openCropModal(a.id));
     item.appendChild(edit);
   }
   const nm=document.createElement('div');nm.className='g-name';nm.textContent=a.name;
   item.appendChild(nm);
   if(a.isCropSource){
-    const lbl=document.createElement('div');lbl.className='g-source-lbl';lbl.textContent='מקור';
+    const lbl=document.createElement('div');lbl.className='g-source-lbl';lbl.textContent=t('upload.gallerySourceLabel');
     item.appendChild(lbl);
   }
   return item;
@@ -3887,7 +3912,7 @@ async function removeAsset(id){
   if(!a)return;
   const nCrops=a.type==='image'?S.assets.filter(x=>x.type==='crop'&&x.srcAssetId===id).length:0;
   const ok=await confirmDialog({
-    title:'מחיקת סמל',
+    title:t('upload.deleteSymbolTitle'),
     body:`למחוק את "${a.name}"?`+(nCrops?`\nיימחקו גם ${nCrops} חיתוכים שנגזרו ממנו.`:''),
     warn:cloudDeleteWarn()
   });
@@ -3899,7 +3924,7 @@ async function removeAsset(id){
   stashDeleted(gone);
   renderGallery();updateCounter();schedIdbSave();
   flushCloudAfterDelete();
-  toast(`"${a.name}" נמחק`,'ok',{label:'בטל ↩',fn:undoDelete});
+  toast(`"${a.name}" נמחק`,'ok',{label:t('upload.undoDeleteLabel'),fn:undoDelete});
 }
 
 // מחיקה מקומית גוררת ניקוי מקביל בענן (cloudAutosave מסיר קבצים שאין להם asset מקומי).
@@ -3915,7 +3940,7 @@ async function deleteSelected(){
   const sel=S.assets.filter(a=>isSymbolAsset(a)&&a.selected!==false);
   if(!sel.length){toast(t('msg.noSymbolsSelectedForDelete'),'err');return;}
   const ok=await confirmDialog({
-    title:'מחיקת סמלים מסומנים',
+    title:t('upload.deleteSelectedSymbolsTitle'),
     body:`${sel.length} סמלים מסומנים יימחקו מהמאגר.`,
     warn:cloudDeleteWarn(),
     okText:`מחק ${sel.length}`
@@ -3928,7 +3953,7 @@ async function deleteSelected(){
   stashDeleted(gone);
   renderGallery();updateCounter();schedIdbSave();
   flushCloudAfterDelete();
-  toast(`${gone.length} סמלים נמחקו`,'ok',{label:'בטל ↩',fn:undoDelete});
+  toast(`${gone.length} סמלים נמחקו`,'ok',{label:t('upload.undoDeleteLabel'),fn:undoDelete});
 }
 
 // מוחק תיקיית העלאה שלמה — כולל תמונות המקור והחיתוכים שנגזרו מהן
@@ -3938,10 +3963,10 @@ async function deleteFolder(fid,fname){
   const nUse=items.filter(isSymbolAsset).length;
   const ok=await confirmDialog({
     icon:'📁',
-    title:'מחיקת תיקייה',
+    title:t('upload.deleteFolderTitle'),
     body:`התיקייה "${fname}" ו-${nUse} הסמלים שבתוכה יימחקו.`,
     warn:cloudDeleteWarn(),
-    okText:'מחק תיקייה'
+    okText:t('upload.deleteFolderOkBtn')
   });
   if(!ok)return;
   const ids=new Set(items.map(a=>a.id));
@@ -3952,7 +3977,7 @@ async function deleteFolder(fid,fname){
   stashDeleted(gone);
   renderGallery();updateCounter();schedIdbSave();
   flushCloudAfterDelete();
-  toast(`התיקייה "${fname}" נמחקה (${gone.length} סמלים)`,'ok',{label:'בטל ↩',fn:undoDelete});
+  toast(`התיקייה "${fname}" נמחקה (${gone.length} סמלים)`,'ok',{label:t('upload.undoDeleteLabel'),fn:undoDelete});
 }
 document.getElementById('btn-del-selected').addEventListener('click',deleteSelected);
 
@@ -5407,6 +5432,8 @@ const PRINT_SHEET={wMm:330,hMm:488,marginMm:12,gapMm:6,bleedMm:3};
 // ⛔ אין להוסיף 78 מ"מ: הוא נותן 15 בגיליון בדיוק כמו 85 מ"מ, אבל בקלף
 // קטן יותר ועם 60×50 מ"מ גיליון מבוזבז. אין לו שום יתרון.
 // התקרה היא 72.0 מ"מ — מעליה התפוקה צונחת מ-24 ל-15.
+// ⚠️ לא בשימוש — כפתורי הקוטר הם HTML סטטי. הוספת טבעת דייקה
+// מחייבת לערוך את ה-HTML, לא רק את המערך הזה.
 const SHEET_DIAMS=[
   {mm:71,label:'רגיל · 71 מ"מ'},
   {mm:85,label:'גדול · 85 מ"מ'}
@@ -7221,7 +7248,7 @@ async function renderDesigns(){
     b.innerHTML=`<span>${icon}</span><span>${name}</span><span class="pk-count">${meta}</span>`;
     b.addEventListener('click',onClick);
     const del=document.createElement('span');
-    del.className='design-del';del.textContent='✕';del.title='מחק עיצוב';
+    del.className='design-del';del.textContent='✕';del.title=t('upload.savedDesignDeleteBtnTitle');
     del.addEventListener('click',e=>{e.stopPropagation();onDelete();});
     b.appendChild(del);grid.appendChild(b);
   };
