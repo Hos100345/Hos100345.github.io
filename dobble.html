@@ -433,23 +433,23 @@ function dcfgSave(patch){
 <div id="lock-screen" style="position:fixed;inset:0;background:linear-gradient(150deg,#1e1b4b,#312e81 55%,#4c1d95);z-index:9999;display:flex;flex-direction:column;align-items:center;overflow-y:auto;padding:2rem 1rem;text-align:center">
   <div style="max-width:400px;width:100%;margin:auto;display:flex;flex-direction:column;align-items:center;gap:.85rem">
     <div style="font-size:3rem">🎯</div>
-    <div style="font-size:1.6rem;font-weight:900;color:#fff;letter-spacing:.05em">מחולל דאבל</div>
+    <div data-i18n="lock.title" style="font-size:1.6rem;font-weight:900;color:#fff;letter-spacing:.05em">מחולל דאבל</div>
 
     <div style="display:flex;gap:.35rem;background:rgba(255,255,255,.1);border-radius:100px;padding:.3rem;width:100%">
-      <button type="button" id="lock-tab-code" style="flex:1;padding:.55rem .3rem;border:none;border-radius:100px;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer;background:#fff;color:#1e1b4b">יש לי קוד</button>
-      <button type="button" id="lock-tab-free" style="flex:1;padding:.55rem .3rem;border:none;border-radius:100px;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer;background:transparent;color:#fff">הרשמה חינם</button>
-      <button type="button" id="lock-tab-buy" style="flex:1;padding:.55rem .3rem;border:none;border-radius:100px;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer;background:transparent;color:#fff">רכישת מנוי</button>
+      <button data-i18n="lock.tabHaveCode" type="button" id="lock-tab-code" style="flex:1;padding:.55rem .3rem;border:none;border-radius:100px;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer;background:#fff;color:#1e1b4b">יש לי קוד</button>
+      <button data-i18n="lock.tabFreeSignup" type="button" id="lock-tab-free" style="flex:1;padding:.55rem .3rem;border:none;border-radius:100px;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer;background:transparent;color:#fff">הרשמה חינם</button>
+      <button data-i18n="lock.tabBuy" type="button" id="lock-tab-buy" style="flex:1;padding:.55rem .3rem;border:none;border-radius:100px;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer;background:transparent;color:#fff">רכישת מנוי</button>
     </div>
 
     <!-- טאב: יש לי קוד -->
     <div id="lock-panel-code" style="display:flex;flex-direction:column;align-items:center;gap:.9rem;width:100%">
-      <div style="color:#a5b4fc;font-size:.95rem">הזן/י קוד כניסה</div>
+      <div data-i18n="lock.enterCodeLabel" style="color:#a5b4fc;font-size:.95rem">הזן/י קוד כניסה</div>
       <input id="lock-inp" type="password" inputmode="text" maxlength="20" placeholder="• • •"
         style="text-align:center;font-size:2rem;letter-spacing:.6rem;width:180px;padding:.7rem .5rem;border-radius:16px;border:2.5px solid rgba(255,255,255,.35);outline:none;background:rgba(255,255,255,.94);font-family:inherit">
-      <button id="lock-go" type="button"
+      <button data-i18n="lock.enterBtn" id="lock-go" type="button"
         style="background:#6366f1;color:#fff;font-weight:800;font-size:1.05rem;padding:.7rem 2.4rem;border:none;border-radius:100px;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(99,102,241,.5)">כניסה ✓</button>
       <div id="lock-err" style="color:#fca5a5;font-size:.88rem;min-height:1.2em"></div>
-      <button type="button" id="forgot-code-link"
+      <button data-i18n="lock.forgotCode" type="button" id="forgot-code-link"
         style="background:none;border:none;color:rgba(255,255,255,.55);font-size:.8rem;text-decoration:underline;cursor:pointer;font-family:inherit;padding:.4rem;margin-top:.3rem">
         שכחתי את הקוד שלי
       </button>
@@ -457,18 +457,18 @@ function dcfgSave(patch){
 
     <!-- טאב: הרשמה חינם -->
     <div id="lock-panel-free" style="display:none;flex-direction:column;align-items:center;gap:.65rem;width:100%">
-      <div style="color:#a5b4fc;font-size:.88rem;line-height:1.6">משחק 7 תמונות — חינם לגמרי. הרשמה עם אימייל ובחירת קוד אישי:</div>
+      <div data-i18n="lock.freeDesc" style="color:#a5b4fc;font-size:.88rem;line-height:1.6">משחק 7 תמונות — חינם לגמרי. הרשמה עם אימייל ובחירת קוד אישי:</div>
       <input id="free-email" type="email" inputmode="email" placeholder="name@example.com"
         style="width:100%;box-sizing:border-box;padding:.65rem .8rem;border-radius:14px;border:2px solid rgba(255,255,255,.35);outline:none;background:rgba(255,255,255,.94);font-family:inherit;font-size:1rem;direction:ltr;text-align:left">
       <input id="free-code" type="text" maxlength="20" placeholder="בחר/י קוד אישי (4–20 תווים)"
-        style="width:100%;box-sizing:border-box;padding:.65rem .8rem;border-radius:14px;border:2px solid rgba(255,255,255,.35);outline:none;background:rgba(255,255,255,.94);font-family:inherit;font-size:1rem;direction:ltr;text-align:left">
-      <button id="free-go" type="button" style="width:100%;background:#6366f1;color:#fff;font-weight:800;font-size:1.02rem;padding:.7rem 2rem;border:none;border-radius:100px;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(99,102,241,.5)">הרשמה וכניסה ✓</button>
+        style="width:100%;box-sizing:border-box;padding:.65rem .8rem;border-radius:14px;border:2px solid rgba(255,255,255,.35);outline:none;background:rgba(255,255,255,.94);font-family:inherit;font-size:1rem;direction:ltr;text-align:left" data-i18n-ph="lock.freeCodePh">
+      <button data-i18n="lock.freeSignupBtn" id="free-go" type="button" style="width:100%;background:#6366f1;color:#fff;font-weight:800;font-size:1.02rem;padding:.7rem 2rem;border:none;border-radius:100px;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(99,102,241,.5)">הרשמה וכניסה ✓</button>
       <div id="free-msg" style="color:#fca5a5;font-size:.85rem;min-height:1.2em"></div>
     </div>
 
     <!-- טאב: רכישת מנוי -->
     <div id="lock-panel-buy" style="display:none;flex-direction:column;align-items:center;gap:.6rem;width:100%">
-      <div style="color:#a5b4fc;font-size:.88rem">בחר/י רמת מנוי:</div>
+      <div data-i18n="lock.chooseTierLabel" style="color:#a5b4fc;font-size:.88rem">בחר/י רמת מנוי:</div>
       <div id="lock-tiers" style="display:flex;flex-direction:column;gap:.45rem;width:100%"></div>
       <input id="buy-email" type="email" inputmode="email" placeholder="name@example.com" hidden
         style="width:100%;box-sizing:border-box;padding:.65rem .8rem;border-radius:14px;border:2px solid rgba(255,255,255,.35);outline:none;background:rgba(255,255,255,.94);font-family:inherit;font-size:1rem;direction:ltr;text-align:left">
@@ -483,7 +483,7 @@ function dcfgSave(patch){
       עזרה בוואטסאפ
     </a>
     <div id="lock-phone" style="color:rgba(255,255,255,.7);font-size:.85rem;direction:ltr"></div>
-    <button id="lock-cancel" type="button" hidden
+    <button data-i18n="lock.cancelBtn" id="lock-cancel" type="button" hidden
       style="background:none;border:none;color:rgba(255,255,255,.55);cursor:pointer;font-family:inherit;font-size:.82rem;text-decoration:underline">ביטול</button>
   </div>
 </div>
@@ -492,11 +492,11 @@ function dcfgSave(patch){
 <div class="modal-bg" id="renew-modal" hidden style="z-index:10000">
   <div class="modal-card" style="max-width:420px;width:94%;text-align:center">
     <div style="font-size:2.6rem;margin-bottom:.3rem">⚠️</div>
-    <div id="renew-title" style="font-size:1.3rem;font-weight:800;margin-bottom:.5rem">הקוד לא התקבל</div>
-    <div id="renew-msg" style="color:var(--muted);font-size:.96rem;line-height:1.6;margin-bottom:1.2rem">ייתכן שהקוד שגוי או שפג תוקף המנוי.</div>
+    <div data-i18n="lock.wrongCodeTitle" id="renew-title" style="font-size:1.3rem;font-weight:800;margin-bottom:.5rem">הקוד לא התקבל</div>
+    <div data-i18n="lock.wrongCodeMsg" id="renew-msg" style="color:var(--muted);font-size:.96rem;line-height:1.6;margin-bottom:1.2rem">ייתכן שהקוד שגוי או שפג תוקף המנוי.</div>
     <!-- הוסר 10/09/2026: החידוש נעשה בלחיצה על מדרגת מחיר, והשרת מאריך
          אוטומטית. הכפתור ייצר פניות אישיות על פעולה שהלקוח עושה לבד. -->
-    <div><button id="renew-close" type="button" style="background:none;border:none;color:var(--muted);cursor:pointer;font-family:inherit;font-size:.9rem;text-decoration:underline">סגירה</button></div>
+    <div><button data-i18n="lock.wrongCodeClose" id="renew-close" type="button" style="background:none;border:none;color:var(--muted);cursor:pointer;font-family:inherit;font-size:.9rem;text-decoration:underline">סגירה</button></div>
   </div>
 </div>
 
@@ -504,25 +504,25 @@ function dcfgSave(patch){
 <div class="modal-bg" id="upgrade-modal" hidden style="z-index:10001">
   <div class="modal-card" style="max-width:420px;width:94%;text-align:center">
     <div style="font-size:2.6rem;margin-bottom:.3rem">🔒</div>
-    <div style="font-size:1.3rem;font-weight:800;margin-bottom:.5rem">המשחק הזה דורש שדרוג</div>
+    <div data-i18n="lock.upgradeTitle" style="font-size:1.3rem;font-weight:800;margin-bottom:.5rem">המשחק הזה דורש שדרוג</div>
     <div style="color:var(--muted);font-size:.96rem;line-height:1.6;margin-bottom:.7rem">הקוד שלך פותח עד <b id="upg-current"></b> קלפים. אפשר להמשיך לצפות בתצוגה מקדימה, ולשדרג להורדה:</div>
     <div style="background:var(--purple-light);border-radius:var(--rs);padding:.7rem .85rem;margin-bottom:.9rem;font-size:.88rem;line-height:1.65;text-align:right">
-      <b>רוצים רק משחק אחד? זה בדיוק זה.</b><br>
+      <b data-i18n="lock.upgradeOneGameTitle">רוצים רק משחק אחד? זה בדיוק זה.</b><br>
       משלמים פעם אחת, ובמשך חודש יוצרים ומדפיסים כמה משחקים שרוצים.
-      <b>אין חיוב חוזר</b> — אחרי חודש פשוט נגמר, אלא אם תבחרו לחדש.
+      <b data-i18n="lock.upgradeNoRecurring">אין חיוב חוזר</b> — אחרי חודש פשוט נגמר, אלא אם תבחרו לחדש.
     </div>
     <div id="upg-tiers" style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:.8rem"></div>
     <div id="upg-email-wrap" hidden>
       <div style="text-align:right;margin-bottom:.5rem">
-        <label for="upg-email" style="display:block;font-size:.85rem;color:var(--muted);margin-bottom:.3rem">האימייל שאיתו תרצה/י לשלם</label>
+        <label data-i18n="lock.upgradeEmailLabel" for="upg-email" style="display:block;font-size:.85rem;color:var(--muted);margin-bottom:.3rem">האימייל שאיתו תרצה/י לשלם</label>
         <input id="upg-email" type="email" inputmode="email" placeholder="name@example.com"
           style="width:100%;box-sizing:border-box;padding:.6rem .8rem;border-radius:var(--rs);border:1.5px solid var(--border);font-family:inherit;font-size:1rem;direction:ltr;text-align:left;background:rgba(255,255,255,.85);outline:none">
       </div>
       <button class="btn btn-ok" id="upg-pay" style="width:100%;justify-content:center">מעבר לתשלום</button>
       <div id="upg-msg" style="font-size:.85rem;min-height:1.3em;margin-top:.5rem"></div>
     </div>
-    <div style="margin-top:.6rem"><button id="upg-havecode" type="button" style="background:none;border:none;color:var(--indigo);cursor:pointer;font-family:inherit;font-size:.9rem;text-decoration:underline">יש לי כבר קוד אחר</button></div>
-    <div style="margin-top:.5rem"><button id="upg-close" type="button" style="background:none;border:none;color:var(--muted);cursor:pointer;font-family:inherit;font-size:.9rem;text-decoration:underline">סגירה</button></div>
+    <div style="margin-top:.6rem"><button data-i18n="lock.upgradeHaveCodeBtn" id="upg-havecode" type="button" style="background:none;border:none;color:var(--indigo);cursor:pointer;font-family:inherit;font-size:.9rem;text-decoration:underline">יש לי כבר קוד אחר</button></div>
+    <div style="margin-top:.5rem"><button data-i18n="lock.upgradeClose" id="upg-close" type="button" style="background:none;border:none;color:var(--muted);cursor:pointer;font-family:inherit;font-size:.9rem;text-decoration:underline">סגירה</button></div>
   </div>
 </div>
 
@@ -530,19 +530,19 @@ function dcfgSave(patch){
 <div class="modal-bg" id="claim-modal" hidden style="z-index:10001">
   <div class="modal-card" style="max-width:420px;width:94%;text-align:center">
     <div style="font-size:2.6rem;margin-bottom:.3rem">🎉</div>
-    <div style="font-size:1.3rem;font-weight:800;margin-bottom:.5rem">התשלום התקבל — בחר/י קוד אישי</div>
-    <div style="color:var(--muted);font-size:.96rem;line-height:1.6;margin-bottom:1rem">הקוד הזה יהיה מפתח הכניסה שלך בחודש הקרוב. שמרו אותו.</div>
+    <div data-i18n="lock.claimTitle" style="font-size:1.3rem;font-weight:800;margin-bottom:.5rem">התשלום התקבל — בחר/י קוד אישי</div>
+    <div data-i18n="lock.claimDesc" style="color:var(--muted);font-size:.96rem;line-height:1.6;margin-bottom:1rem">הקוד הזה יהיה מפתח הכניסה שלך בחודש הקרוב. שמרו אותו.</div>
     <div style="text-align:right;margin-bottom:.6rem">
-      <label for="claim-email" style="display:block;font-size:.85rem;color:var(--muted);margin-bottom:.3rem">האימייל ששילמת/ה איתו</label>
+      <label data-i18n="lock.claimEmailLabel" for="claim-email" style="display:block;font-size:.85rem;color:var(--muted);margin-bottom:.3rem">האימייל ששילמת/ה איתו</label>
       <input id="claim-email" type="email" inputmode="email" placeholder="name@example.com"
         style="width:100%;box-sizing:border-box;padding:.6rem .8rem;border-radius:var(--rs);border:1.5px solid var(--border);font-family:inherit;font-size:1rem;direction:ltr;text-align:left;background:rgba(255,255,255,.85);outline:none">
     </div>
     <div style="text-align:right;margin-bottom:.6rem">
-      <label for="claim-code" style="display:block;font-size:.85rem;color:var(--muted);margin-bottom:.3rem">קוד אישי לבחירתך (4–20 תווים, בלי רווחים)</label>
+      <label data-i18n="lock.claimCodeLabel" for="claim-code" style="display:block;font-size:.85rem;color:var(--muted);margin-bottom:.3rem">קוד אישי לבחירתך (4–20 תווים, בלי רווחים)</label>
       <input id="claim-code" type="text" maxlength="20" placeholder="לדוגמה: dana2026"
-        style="width:100%;box-sizing:border-box;padding:.6rem .8rem;border-radius:var(--rs);border:1.5px solid var(--border);font-family:inherit;font-size:1rem;direction:ltr;text-align:left;background:rgba(255,255,255,.85);outline:none">
+        style="width:100%;box-sizing:border-box;padding:.6rem .8rem;border-radius:var(--rs);border:1.5px solid var(--border);font-family:inherit;font-size:1rem;direction:ltr;text-align:left;background:rgba(255,255,255,.85);outline:none" data-i18n-ph="lock.claimCodePh">
     </div>
-    <button class="btn btn-ok" id="claim-go" style="width:100%;justify-content:center">שמירת הקוד וכניסה ✓</button>
+    <button data-i18n="lock.claimSaveBtn" class="btn btn-ok" id="claim-go" style="width:100%;justify-content:center">שמירת הקוד וכניסה ✓</button>
     <div id="claim-msg" style="font-size:.85rem;min-height:1.3em;margin-top:.6rem"></div>
   </div>
 </div>
@@ -969,42 +969,42 @@ function dcfgSave(patch){
   <div class="modal-card" style="max-width:490px;width:96%">
     <div style="text-align:center;padding:.3rem 0 1rem">
       <div style="font-size:2.6rem;margin-bottom:.4rem">🎯</div>
-      <h2 style="font-size:1.2rem;font-weight:900;color:var(--indigo);margin-bottom:.25rem">ברוכים הבאים למחולל דאבל!</h2>
-      <p style="color:var(--muted);font-size:.84rem;line-height:1.55">צור/י משחק Spot-It מותאם אישית בשלושה שלבים פשוטים</p>
+      <h2 data-i18n="onboard.title" style="font-size:1.2rem;font-weight:900;color:var(--indigo);margin-bottom:.25rem">ברוכים הבאים למחולל דאבל!</h2>
+      <p data-i18n="onboard.subtitle" style="color:var(--muted);font-size:.84rem;line-height:1.55">צור/י משחק Spot-It מותאם אישית בשלושה שלבים פשוטים</p>
     </div>
     <div style="display:flex;flex-direction:column;gap:.55rem;margin-bottom:1rem">
       <div class="ob-step">
         <div class="ob-ico">🖼️</div>
-        <div><strong style="color:var(--indigo)">שלב 1 — העלאת סמלים</strong><div class="ob-s">גרור/י תמונות (PNG, JPG, SVG, HEIC) או בחרו חבילה מוכנה. ניתן לחתוך סמלים מתמונות גדולות עם כלי ✂️ וגם לבצע הסרת רקע אוטומטית</div></div>
+        <div><strong data-i18n="onboard.step1Title" style="color:var(--indigo)">שלב 1 — העלאת סמלים</strong><div data-i18n="onboard.step1Desc" class="ob-s">גרור/י תמונות (PNG, JPG, SVG, HEIC) או בחרו חבילה מוכנה. ניתן לחתוך סמלים מתמונות גדולות עם כלי ✂️ וגם לבצע הסרת רקע אוטומטית</div></div>
       </div>
       <div class="ob-step">
         <div class="ob-ico">✨</div>
-        <div><strong style="color:var(--purple)">שלב 2 — יצירה ועיצוב</strong><div class="ob-s">המערכת מחשבת קלפים אוטומטית לפי מתמטיקה מדויקת. ניתן לעצב מסגרת, רקע ופריסת סמלים</div></div>
+        <div><strong data-i18n="onboard.step2Title" style="color:var(--purple)">שלב 2 — יצירה ועיצוב</strong><div data-i18n="onboard.step2Desc" class="ob-s">המערכת מחשבת קלפים אוטומטית לפי מתמטיקה מדויקת. ניתן לעצב מסגרת, רקע ופריסת סמלים</div></div>
       </div>
       <div class="ob-step">
         <div class="ob-ico">📥</div>
-        <div><strong style="color:var(--green)">שלב 3 — ייצוא</strong><div class="ob-s">PDF מוכן להדפסה בבית או ZIP של PNG בודדים — ואפשר גם להזמין הדפסה מקצועית בבית דפוס עם משלוח עד הבית (בתוספת תשלום)</div></div>
+        <div><strong data-i18n="onboard.step3Title" style="color:var(--green)">שלב 3 — ייצוא</strong><div data-i18n="onboard.step3Desc" class="ob-s">PDF מוכן להדפסה בבית או ZIP של PNG בודדים — ואפשר גם להזמין הדפסה מקצועית בבית דפוס עם משלוח עד הבית (בתוספת תשלום)</div></div>
       </div>
     </div>
     <div style="background:rgba(238,236,251,.7);border:1.5px solid #c7d2fe;border-radius:10px;padding:.7rem 1rem;text-align:center;margin-bottom:.7rem;font-size:.78rem;color:var(--indigo);line-height:1.6">
-      🕹️ <strong>חבילה אחת = 4 משחקים שונים</strong> (דאבל קלאסי, המגדל, הבאר, השלישייה) · מתאים לימי הולדת, חתונות, בר/בת מצווה, בתי ספר, תנועות נוער ועוד —
-      <a href="dobble-info.html" target="_blank" rel="noopener noreferrer" style="color:var(--purple);font-weight:700;text-decoration:underline">לכל הרעיונות וההשראה ←</a>
+      🕹️ <strong data-i18n="onboard.packageNote">חבילה אחת = 4 משחקים שונים</strong> (דאבל קלאסי, המגדל, הבאר, השלישייה) · מתאים לימי הולדת, חתונות, בר/בת מצווה, בתי ספר, תנועות נוער ועוד —
+      <a data-i18n="onboard.infoLink" href="dobble-info.html" target="_blank" rel="noopener noreferrer" style="color:var(--purple);font-weight:700;text-decoration:underline">לכל הרעיונות וההשראה ←</a>
     </div>
     <div style="background:rgba(240,253,244,.85);border:1.5px solid #bbf7d0;border-radius:10px;padding:.75rem 1rem;text-align:center;margin-bottom:.9rem">
-      <div style="font-size:.8rem;color:#166534;font-weight:600;margin-bottom:.35rem">💬 לרכישת קוד גישה — צרו קשר</div>
-      <a id="wa-link" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-ok" style="display:inline-flex;justify-content:center;padding:.5rem 1.4rem">
+      <div data-i18n="onboard.contactLabel" style="font-size:.8rem;color:#166534;font-weight:600;margin-bottom:.35rem">💬 לרכישת קוד גישה — צרו קשר</div>
+      <a data-i18n="onboard.contactBtn" id="wa-link" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-ok" style="display:inline-flex;justify-content:center;padding:.5rem 1.4rem">
         📱 פנה/י אלינו בוואטסאפ
       </a>
     </div>
-    <button class="btn btn-cta" id="onboard-start" style="width:100%;justify-content:center">🚀 בואו נתחיל!</button>
+    <button data-i18n="onboard.startBtn" class="btn btn-cta" id="onboard-start" style="width:100%;justify-content:center">🚀 בואו נתחיל!</button>
   </div>
 </div>
 
 <!-- HEADER -->
 <header class="hdr">
-  <a href="index.html" class="hdr-back">→ האתר</a>
+  <a data-i18n="header.homeLink" href="index.html" class="hdr-back">→ האתר</a>
   <div class="hdr-title">
-    <h1>🎯 מחולל משחק דאבל</h1>
+    <h1 data-i18n="header.title">🎯 מחולל משחק דאבל</h1>
     <div class="sub">Dobble / Spot It! · Finite Projective Plane</div>
   </div>
   <nav class="step-ind">
@@ -1026,20 +1026,20 @@ function dcfgSave(patch){
 <!-- ══ SCREEN 1: UPLOAD ══ -->
 <section id="s1" class="scr on">
   <div class="box">
-    <h2 class="box-h">העלאת סמלים</h2>
-    <p class="box-s">גרור/י תמונות לכאן — כל העלאה נוספת מצטברת למאגר. לחץ/י ✂ על תמונה כדי להפיק ממנה סמלים נוספים.</p>
+    <h2 data-i18n="upload.title" class="box-h">העלאת סמלים</h2>
+    <p data-i18n="upload.desc" class="box-s">גרור/י תמונות לכאן — כל העלאה נוספת מצטברת למאגר. לחץ/י ✂ על תמונה כדי להפיק ממנה סמלים נוספים.</p>
 
     <!-- ── Single Upload Component ── -->
     <div class="uz" id="uz">
       <div class="uz-ico">🖼️</div>
-      <div class="uz-t">גרור/י תמונות לכאן</div>
-      <div class="uz-s">או לחץ/י לבחירת קבצים · כל העלאה מצטברת למאגר</div>
-      <div class="uz-hint">JPG · PNG · HEIC (אייפון) · WebP · AVIF · GIF · BMP · TIFF · SVG · ניתן לבחור מספר קבצים</div>
+      <div data-i18n="upload.dropText" class="uz-t">גרור/י תמונות לכאן</div>
+      <div data-i18n="upload.dropSubtext" class="uz-s">או לחץ/י לבחירת קבצים · כל העלאה מצטברת למאגר</div>
+      <div data-i18n="upload.formatsNote" class="uz-hint">JPG · PNG · HEIC (אייפון) · WebP · AVIF · GIF · BMP · TIFF · SVG · ניתן לבחור מספר קבצים</div>
       <!-- image/* לבדו לא מספיק: בחלק מבוררי הקבצים בנייד ובענן (Drive/OneDrive) HEIC/HEIF/AVIF
            מגיעים בלי MIME ונחסמים מהבחירה. הסיומות המפורשות פותחות אותם. -->
       <input type="file" id="fi" multiple accept="image/*,.heic,.heif,.avif,.jfif,.jpe,.bmp,.tif,.tiff,.svg,.webp,.gif,.png,.jpg,.jpeg" style="display:none">
     </div>
-    <button type="button" id="uz-files-btn" class="uz-files-btn" style="margin-top:.5rem;width:100%;padding:.55rem;border:1px dashed var(--line,#ccc);border-radius:.6rem;background:transparent;cursor:pointer;font-size:.9rem">📁 בחירת קבצים מרובים (שיאומי / אנדרואיד)</button>
+    <button data-i18n="upload.multiPickBtn" type="button" id="uz-files-btn" class="uz-files-btn" style="margin-top:.5rem;width:100%;padding:.55rem;border:1px dashed var(--line,#ccc);border-radius:.6rem;background:transparent;cursor:pointer;font-size:.9rem">📁 בחירת קבצים מרובים (שיאומי / אנדרואיד)</button>
     <input type="file" id="fiDocs" multiple style="display:none">
 
     <!-- ── יצירת סמלים ב-AI — שלב 0, מנהל בלבד. מוסתר לגמרי (לא רק מושבת) כשאין הרשאה;
@@ -1047,36 +1047,36 @@ function dcfgSave(patch){
     <button type="button" id="ai-symbols-btn" class="btn btn-sec" hidden style="width:100%;justify-content:center;margin-top:.5rem">✨ יצירת סמלים ב-AI (מנהל)</button>
 
     <!-- ── ספריית סמלים — חיפוש בעברית + בורר סגנון, זמינה לכל הלקוחות (js/emoji-lib.js) ── -->
-    <button type="button" id="emoji-lib-btn" class="btn btn-sec" style="width:100%;justify-content:center;margin-top:.5rem">🔎 ספריית סמלים</button>
+    <button data-i18n="upload.emojiLibBtn" type="button" id="emoji-lib-btn" class="btn btn-sec" style="width:100%;justify-content:center;margin-top:.5rem">🔎 ספריית סמלים</button>
 
     <!-- ── חבילות תמונות מוכנות ── -->
     <div id="packs-wrap" class="packs" style="display:none">
-      <div class="og-t" style="margin-top:.4rem">🧰 או התחילו מחבילה מוכנה</div>
+      <div data-i18n="upload.packsTitle" class="og-t" style="margin-top:.4rem">🧰 או התחילו מחבילה מוכנה</div>
       <div class="packs-grid" id="packs-grid"></div>
     </div>
 
     <!-- ── העיצובים השמורים שלי ── -->
     <div id="designs-wrap" class="packs" style="display:none">
-      <div class="og-t" style="margin-top:.4rem">🗂️ העיצובים השמורים שלי</div>
+      <div data-i18n="upload.savedDesignsTitle" class="og-t" style="margin-top:.4rem">🗂️ העיצובים השמורים שלי</div>
       <div class="packs-grid" id="designs-grid"></div>
     </div>
 
     <!-- ── קובץ עיצוב נייד — גיבוי שלא תלוי בחשבון, בדפדפן או במכשיר ── -->
-    <div class="og-t" style="margin-top:.6rem">📦 גיבוי לקובץ</div>
+    <div data-i18n="upload.designFileTitle" class="og-t" style="margin-top:.6rem">📦 גיבוי לקובץ</div>
     <div class="brow" style="gap:.4rem">
-      <button type="button" class="btn btn-sec" id="btn-export-design">⬇️ שמור לקובץ</button>
-      <button type="button" class="btn btn-sec" id="btn-import-design">⬆️ טען מקובץ</button>
-      <button type="button" class="btn btn-ok" id="btn-share-design" hidden>📤 שמירה לקבצים / שיתוף</button>
+      <button data-i18n="upload.designFileSaveBtn" type="button" class="btn btn-sec" id="btn-export-design">⬇️ שמור לקובץ</button>
+      <button data-i18n="upload.designFileLoadBtn" type="button" class="btn btn-sec" id="btn-import-design">⬆️ טען מקובץ</button>
+      <button data-i18n="upload.designFileShareBtn" type="button" class="btn btn-ok" id="btn-share-design" hidden>📤 שמירה לקבצים / שיתוף</button>
     </div>
     <input type="file" id="import-design-file" accept=".zip,application/zip" style="display:none">
-    <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem;line-height:1.5">
+    <div data-i18n="upload.designFileDesc" style="font-size:.72rem;color:var(--muted);margin-top:.3rem;line-height:1.5">
       הקובץ מכיל את התמונות וההגדרות. שמרו אותו אצלכם — אפשר לטעון אותו בכל מכשיר.
     </div>
 
     <!-- ── Inline Active Gallery ── -->
     <div id="gallery" class="gallery" style="display:none">
       <div class="gallery-hdr">
-        <div class="og-t">📦 מאגר נכסים</div>
+        <div data-i18n="upload.galleryTitle" class="og-t">📦 מאגר נכסים</div>
         <span class="gallery-count" id="gallery-count">0 נכסים</span>
         <span class="under-lim" id="under-lim" style="display:none"></span>
       </div>
@@ -1085,10 +1085,10 @@ function dcfgSave(patch){
         <button type="button" id="crop-hint-x" title="סגור">✕</button>
       </div>
       <div class="gallery-bulk" id="gallery-bulk">
-        <button type="button" class="g-bulk-btn" id="btn-select-all">☑️ סמן הכל</button>
-        <button type="button" class="g-bulk-btn" id="btn-clear-all">◻️ נקה הכל</button>
-        <button type="button" class="g-bulk-btn danger" id="btn-del-selected">🗑 מחק מסומנים</button>
-        <button type="button" class="g-bulk-btn" id="btn-cloud-save">☁️ לשמור בענן?</button>
+        <button data-i18n="upload.selectAllBtn" type="button" class="g-bulk-btn" id="btn-select-all">☑️ סמן הכל</button>
+        <button data-i18n="upload.clearSelectionBtn" type="button" class="g-bulk-btn" id="btn-clear-all">◻️ נקה הכל</button>
+        <button data-i18n="upload.deleteSelectedBtn" type="button" class="g-bulk-btn danger" id="btn-del-selected">🗑 מחק מסומנים</button>
+        <button data-i18n="upload.saveToCloudBtn" type="button" class="g-bulk-btn" id="btn-cloud-save">☁️ לשמור בענן?</button>
         <span class="g-sel-count" id="g-sel-count"></span>
       </div>
       <div class="gallery-grid" id="gallery-grid"></div>
@@ -1100,17 +1100,17 @@ function dcfgSave(patch){
     </div>
 
     <div class="shape-row">
-      <span class="shape-lbl">צורת קלף:</span>
+      <span data-i18n="upload.cardShapeLabel" class="shape-lbl">צורת קלף:</span>
       <div class="shape-grp" id="shp">
-        <button class="sbt on" data-s="circle">⭕ עגול</button>
-        <button class="sbt"    data-s="square">⬜ מרובע</button>
+        <button data-i18n="upload.cardShapeRound" class="sbt on" data-s="circle">⭕ עגול</button>
+        <button data-i18n="upload.cardShapeSquare" class="sbt"    data-s="square">⬜ מרובע</button>
       </div>
     </div>
     <div class="shape-row">
-      <span class="shape-lbl">צורת סמל:</span>
+      <span data-i18n="upload.symbolShapeLabel" class="shape-lbl">צורת סמל:</span>
       <div class="shape-grp" id="symshp">
-        <button class="sbt on" data-s="circle">⭕ עגול</button>
-        <button class="sbt"    data-s="square">⬜ מרובע</button>
+        <button data-i18n="upload.symbolShapeRound" class="sbt on" data-s="circle">⭕ עגול</button>
+        <button data-i18n="upload.symbolShapeSquare" class="sbt"    data-s="square">⬜ מרובע</button>
       </div>
     </div>
 
@@ -1120,15 +1120,15 @@ function dcfgSave(patch){
   </div>
 
   <div class="box">
-    <h2 class="box-h">גדלים אפשריים</h2>
+    <h2 data-i18n="upload.sizesTitle" class="box-h">גדלים אפשריים</h2>
     <table class="ref-table">
-      <thead><tr><th>תמונות</th><th>סמלים/קלף</th><th>קלפים</th><th>מתאים ל…</th></tr></thead>
+      <thead><tr><th data-i18n="upload.sizesColImages">תמונות</th><th data-i18n="upload.sizesColSymbolsPerCard">סמלים/קלף</th><th data-i18n="upload.sizesColCards">קלפים</th><th data-i18n="upload.sizesColSuitableFor">מתאים ל…</th></tr></thead>
       <tbody>
-        <tr><td>7</td><td>3</td><td>7</td><td>ילדים קטנים</td></tr>
-        <tr><td>13</td><td>4</td><td>13</td><td>ילדים 6+</td></tr>
-        <tr><td>21</td><td>5</td><td>21</td><td>משפחה</td></tr>
-        <tr><td>31</td><td>6</td><td>31</td><td>בינוני–קשה</td></tr>
-        <tr><td>57</td><td>8</td><td>57</td><td>⭐ דאבל סטנדרטי</td></tr>
+        <tr><td>7</td><td>3</td><td>7</td><td data-i18n="upload.suitableToddlers">ילדים קטנים</td></tr>
+        <tr><td>13</td><td>4</td><td>13</td><td data-i18n="upload.suitableKids6">ילדים 6+</td></tr>
+        <tr><td>21</td><td>5</td><td>21</td><td data-i18n="upload.suitableFamily">משפחה</td></tr>
+        <tr><td>31</td><td>6</td><td>31</td><td data-i18n="upload.suitableMediumHard">בינוני–קשה</td></tr>
+        <tr><td>57</td><td>8</td><td>57</td><td data-i18n="upload.suitableStandard">⭐ דאבל סטנדרטי</td></tr>
       </tbody>
     </table>
   </div>
@@ -1146,72 +1146,72 @@ function dcfgSave(patch){
 
       <aside class="sidebar">
         <div class="sb-sec">
-          <div class="sb-t">נתוני המשחק</div>
+          <div data-i18n="edit.gameDataTitle" class="sb-t">נתוני המשחק</div>
           <div id="sb-stats"></div>
         </div>
         <div class="sb-sec">
-          <div class="sb-t">סידור סמלים</div>
+          <div data-i18n="edit.layoutTitle" class="sb-t">סידור סמלים</div>
           <div class="shape-grp" id="layout-mode-grp" style="width:100%">
-            <button class="sbt on" data-lm="scatter" style="flex:1">🔀 מפוזר</button>
-            <button class="sbt" data-lm="peripheral" style="flex:1">⭕ היקפי</button>
+            <button data-i18n="edit.layoutScattered" class="sbt on" data-lm="scatter" style="flex:1">🔀 מפוזר</button>
+            <button data-i18n="edit.layoutPerimeter" class="sbt" data-lm="peripheral" style="flex:1">⭕ היקפי</button>
           </div>
         </div>
         <div class="sb-sec">
-          <div class="sb-t">גודל סמלים</div>
+          <div data-i18n="edit.symbolSizeTitle" class="sb-t">גודל סמלים</div>
           <div class="sl-row">
-            <div class="sl-lbl"><span>מינימום</span><strong id="lbl-mn">70%</strong></div>
+            <div class="sl-lbl"><span data-i18n="edit.symbolSizeMin">מינימום</span><strong id="lbl-mn">70%</strong></div>
             <input type="range" id="sl-mn" min="20" max="160" value="70" step="5">
           </div>
-          <div id="mn-auto-hint" style="display:none;font-size:.72rem;color:var(--indigo);font-weight:700;margin:-.45rem 0 .6rem">⚙️ הותאם אוטומטית לגודל המקסימלי</div>
+          <div data-i18n="edit.symbolSizeAutoNote" id="mn-auto-hint" style="display:none;font-size:.72rem;color:var(--indigo);font-weight:700;margin:-.45rem 0 .6rem">⚙️ הותאם אוטומטית לגודל המקסימלי</div>
           <div class="sl-row">
-            <div class="sl-lbl"><span>מקסימום</span><strong id="lbl-mx">130%</strong></div>
+            <div class="sl-lbl"><span data-i18n="edit.symbolSizeMax">מקסימום</span><strong id="lbl-mx">130%</strong></div>
             <input type="range" id="sl-mx" min="40" max="300" value="130" step="5">
           </div>
           <div class="sl-row">
-            <div class="sl-lbl"><span>חפיפה / מרווח</span><strong id="lbl-ov">צמוד</strong></div>
+            <div class="sl-lbl"><span data-i18n="edit.overlapTitle">חפיפה / מרווח</span><strong id="lbl-ov">צמוד</strong></div>
             <input type="range" id="sl-ov" min="-100" max="100" value="0" step="5">
           </div>
           <label class="tool-row" style="gap:.45rem;cursor:pointer;margin-top:.4rem">
             <input type="checkbox" id="ck-tight" checked style="width:16px;height:16px;accent-color:var(--indigo)">
-            <span style="font-size:.83rem;font-weight:700;color:var(--indigo)">🧩 חפיפה לפי צורת הסמל</span>
+            <span data-i18n="edit.overlapShapeMode" style="font-size:.83rem;font-weight:700;color:var(--indigo)">🧩 חפיפה לפי צורת הסמל</span>
           </label>
           <label class="tool-row" style="gap:.45rem;cursor:pointer;margin-top:.25rem">
             <input type="checkbox" id="ck-tightfill" style="width:16px;height:16px;accent-color:var(--indigo)">
-            <span style="font-size:.83rem;font-weight:700;color:var(--indigo)">📐 מילוי מיטבי של הקלף</span>
+            <span data-i18n="edit.overlapFillMode" style="font-size:.83rem;font-weight:700;color:var(--indigo)">📐 מילוי מיטבי של הקלף</span>
           </label>
-          <div style="font-size:.75rem;color:var(--muted);line-height:1.5;margin-top:.3rem">
+          <div data-i18n="edit.overlapNote" style="font-size:.75rem;color:var(--muted);line-height:1.5;margin-top:.3rem">
             אפס = הסמלים נוגעים בדיוק · ימינה = נכנסים זה בזה · שמאלה = מתרחקים זה מזה
           </div>
-          <button class="btn btn-ghost" type="button" data-reset="sl-mn,sl-mx,sl-ov"
+          <button data-i18n="edit.overlapResetBtn" class="btn btn-ghost" type="button" data-reset="sl-mn,sl-mx,sl-ov"
                   style="width:100%;justify-content:center;margin-top:.5rem;font-size:.8rem">↺ ברירת מחדל</button>
         </div>
         <div class="sb-sec">
-          <div class="sb-t">מרווח מהמסגרת</div>
+          <div data-i18n="edit.paddingTitle" class="sb-t">מרווח מהמסגרת</div>
           <div class="sl-row">
-            <div class="sl-lbl"><span>מרווח סמלים ← מסגרת</span><strong id="lbl-sympad">2 מ"מ</strong></div>
+            <div class="sl-lbl"><span data-i18n="edit.paddingLabel">מרווח סמלים ← מסגרת</span><strong id="lbl-sympad">2 מ"מ</strong></div>
             <input type="range" id="sl-sympad" min="0" max="30" step="0.5" value="2">
           </div>
-          <div style="font-size:.75rem;color:var(--muted);line-height:1.5;margin-top:.3rem">
+          <div data-i18n="edit.paddingNote" style="font-size:.75rem;color:var(--muted);line-height:1.5;margin-top:.3rem">
             מרחק הסמלים מהמסגרת, במ"מ אמיתיים. הטווח מותאם אוטומטית לקוטר הקלף ולרוחב המסגרת.
           </div>
-          <button class="btn btn-ghost" type="button" data-reset="sl-sympad"
+          <button data-i18n="edit.paddingResetBtn" class="btn btn-ghost" type="button" data-reset="sl-sympad"
                   style="width:100%;justify-content:center;margin-top:.5rem;font-size:.8rem">↺ ברירת מחדל</button>
         </div>
         <div class="sb-sec">
-          <div class="sb-t">פעולות</div>
-          <button class="btn btn-pur" id="btn-reshuffle" style="width:100%;justify-content:center;margin-bottom:.5rem">🔀 ערבב מחדש</button>
-          <button class="btn btn-sec" id="btn-save-design" style="width:100%;justify-content:center;margin-bottom:.5rem">💾 שמור עיצוב</button>
-          <button class="btn btn-pur" id="btn-back-design" style="width:100%;justify-content:center;margin-bottom:.5rem">🎴 עצב את גב הקלף</button>
-          <button class="btn btn-ghost" id="btn-send-stuck" style="width:100%;justify-content:center;margin-bottom:.5rem">🆘 תקוע/ה? שלח את העבודה להושעיה</button>
-          <button class="btn btn-ghost" id="btn-b1" style="width:100%;justify-content:center;font-size:.82rem">← חזרה להעלאה</button>
+          <div data-i18n="edit.actionsTitle" class="sb-t">פעולות</div>
+          <button data-i18n="edit.reshuffleBtn" class="btn btn-pur" id="btn-reshuffle" style="width:100%;justify-content:center;margin-bottom:.5rem">🔀 ערבב מחדש</button>
+          <button data-i18n="edit.saveDesignBtn" class="btn btn-sec" id="btn-save-design" style="width:100%;justify-content:center;margin-bottom:.5rem">💾 שמור עיצוב</button>
+          <button data-i18n="edit.editBackBtn" class="btn btn-pur" id="btn-back-design" style="width:100%;justify-content:center;margin-bottom:.5rem">🎴 עצב את גב הקלף</button>
+          <button data-i18n="edit.stuckBtn" class="btn btn-ghost" id="btn-send-stuck" style="width:100%;justify-content:center;margin-bottom:.5rem">🆘 תקוע/ה? שלח את העבודה להושעיה</button>
+          <button data-i18n="edit.backToUploadBtn" class="btn btn-ghost" id="btn-b1" style="width:100%;justify-content:center;font-size:.82rem">← חזרה להעלאה</button>
         </div>
         <div class="sb-sec">
-          <button class="btn btn-ok" id="btn-goexp" style="width:100%;justify-content:center">ייצא / הדפס →</button>
+          <button data-i18n="edit.goExportBtn" class="btn btn-ok" id="btn-goexp" style="width:100%;justify-content:center">ייצא / הדפס →</button>
         </div>
       </aside>
 
       <div class="cards-main">
-        <div class="vfy-banner">🔍 <strong>בדיקת אלגוריתם:</strong> לחץ/י על שני קלפים — הסמל המשותף היחיד יסומן אוטומטית</div>
+        <div class="vfy-banner">🔍 <strong data-i18n="edit.algoCheckLabel">בדיקת אלגוריתם:</strong> לחץ/י על שני קלפים — הסמל המשותף היחיד יסומן אוטומטית</div>
         <div class="cards-grid" id="cgrid"></div>
       </div>
 
@@ -1222,13 +1222,13 @@ function dcfgSave(patch){
 <!-- ══ SCREEN 3: EXPORT ══ -->
 <section id="s3" class="scr">
   <div class="box">
-    <h2 class="box-h">ייצוא והדפסה</h2>
-    <p class="box-s">בחר/י פריסה ואפשרויות הדפסה, ואז לחץ/י על הפקת הקובץ.</p>
+    <h2 data-i18n="export.title" class="box-h">ייצוא והדפסה</h2>
+    <p data-i18n="export.desc" class="box-s">בחר/י פריסה ואפשרויות הדפסה, ואז לחץ/י על הפקת הקובץ.</p>
 
     <div class="exp-grid">
       <div>
         <div class="og">
-          <div class="og-t">גודל קלף</div>
+          <div data-i18n="export.cardSizeTitle" class="og-t">גודל קלף</div>
           <div class="shape-grp" id="perpage-grp" style="width:100%;margin-bottom:.5rem">
             <button class="sbt" data-pp="1"  style="flex:1">1</button>
             <button class="sbt" data-pp="2"  style="flex:1">2</button>
@@ -1236,70 +1236,70 @@ function dcfgSave(patch){
             <button class="sbt on" data-pp="6" style="flex:1">6</button>
             <button class="sbt" data-pp="9"  style="flex:1">9</button>
           </div>
-          <div style="font-size:.75rem;color:var(--muted);margin:-.25rem 0 .5rem">קלפים בדף A4</div>
-          <div class="sl-lbl"><span>קוטר</span><strong id="lbl-card-size">85 מ"מ</strong></div>
+          <div data-i18n="export.perA4Title" style="font-size:.75rem;color:var(--muted);margin:-.25rem 0 .5rem">קלפים בדף A4</div>
+          <div class="sl-lbl"><span data-i18n="export.diameterLabel">קוטר</span><strong id="lbl-card-size">85 מ"מ</strong></div>
           <input type="range" id="sl-card-size" min="20" max="195" value="85" step="1">
-          <button class="btn btn-ghost" type="button" data-reset="sl-card-size,sl-spacing"
+          <button data-i18n="export.cardSizeResetBtn" class="btn btn-ghost" type="button" data-reset="sl-card-size,sl-spacing"
                   style="width:100%;justify-content:center;margin-top:.5rem;font-size:.8rem">↺ ברירת מחדל</button>
         </div>
         <div class="og">
-          <div class="og-t">מרווח בין קלפים</div>
-          <div class="sl-lbl"><span>0 = צפיפות מקסימלית (Hex)</span><strong id="lbl-spacing">5 מ"מ</strong></div>
+          <div data-i18n="export.gapTitle" class="og-t">מרווח בין קלפים</div>
+          <div class="sl-lbl"><span data-i18n="export.gapDensityNote">0 = צפיפות מקסימלית (Hex)</span><strong id="lbl-spacing">5 מ"מ</strong></div>
           <input type="range" id="sl-spacing" min="0" max="40" value="5" step="1">
         </div>
         <div class="og">
-          <div class="og-t">נקודת מוצא</div>
+          <div data-i18n="export.originTitle" class="og-t">נקודת מוצא</div>
           <div class="shape-grp" id="startpos-grp">
-            <button class="sbt on" data-sp="center">⊙ מרכז</button>
-            <button class="sbt" data-sp="topleft">↖ פינה עליונה</button>
+            <button data-i18n="export.originCenterBtn" class="sbt on" data-sp="center">⊙ מרכז</button>
+            <button data-i18n="export.originCornerBtn" class="sbt" data-sp="topleft">↖ פינה עליונה</button>
           </div>
         </div>
         <div class="og">
           <div class="tog-row">
             <label class="tswitch"><input type="checkbox" id="chk-crop" checked><span class="tslider"></span></label>
-            <span class="tog-lbl">סימני חיתוך (Crop Marks)</span>
+            <span data-i18n="export.cropMarksLabel" class="tog-lbl">סימני חיתוך (Crop Marks)</span>
           </div>
         </div>
         <div class="og">
           <div class="tog-row">
             <label class="tswitch"><input type="checkbox" id="chk-sil"><span class="tslider"></span></label>
-            <span class="tog-lbl">מצב Silhouette Cameo ✂️</span>
+            <span data-i18n="export.silhouetteModeLabel" class="tog-lbl">מצב Silhouette Cameo ✂️</span>
           </div>
         </div>
         <div class="og">
           <details id="dp-details" open>
-            <summary class="dp-summary">🎨 עיצוב קלף</summary>
+            <summary data-i18n="export.cardDesignSummary" class="dp-summary">🎨 עיצוב קלף</summary>
             <div class="dp-inner">
               <div class="dp-sec">
-                <div class="dp-sec-hd">מסגרת</div>
-                <div class="sl-lbl"><span>רוחב מסגרת</span><strong id="lbl-fw">3 מ"מ</strong></div>
+                <div data-i18n="export.frameTitle" class="dp-sec-hd">מסגרת</div>
+                <div class="sl-lbl"><span data-i18n="export.frameWidthLabel">רוחב מסגרת</span><strong id="lbl-fw">3 מ"מ</strong></div>
                 <input type="range" id="sl-fw" min="0" max="25" step="0.5" value="3">
-                <div class="sl-lbl"><span>עוצמת פיגמנט</span><strong id="lbl-fop">100%</strong></div>
+                <div class="sl-lbl"><span data-i18n="export.pigmentLabel">עוצמת פיגמנט</span><strong id="lbl-fop">100%</strong></div>
                 <input type="range" id="sl-fop" min="0" max="100" step="1" value="100">
                 <div class="swatch-row" id="sw-frame"></div>
-                <label class="cp-row"><span>צבע חופשי</span><input type="color" id="pick-frame" value="#4338CA"></label>
+                <label class="cp-row"><span data-i18n="export.customColorLabel">צבע חופשי</span><input type="color" id="pick-frame" value="#4338CA"></label>
               </div>
               <div class="dp-sec">
-                <div class="dp-sec-hd">רקע</div>
+                <div data-i18n="export.bgTitle" class="dp-sec-hd">רקע</div>
                 <div class="swatch-row" id="sw-bg"></div>
-                <label class="cp-row"><span>צבע חופשי</span><input type="color" id="pick-bg" value="#FFFEF5"></label>
-                <div class="sl-lbl"><span>עוצמת פיגמנט</span><strong id="lbl-bop">100%</strong></div>
+                <label class="cp-row"><span data-i18n="export.customColorLabel2">צבע חופשי</span><input type="color" id="pick-bg" value="#FFFEF5"></label>
+                <div class="sl-lbl"><span data-i18n="export.pigmentLabel2">עוצמת פיגמנט</span><strong id="lbl-bop">100%</strong></div>
                 <input type="range" id="sl-bop" min="0" max="100" step="1" value="100">
               </div>
             </div>
           </details>
         </div>
         <div class="og">
-          <div class="og-t">גב הקלף</div>
+          <div data-i18n="export.backTitle" class="og-t">גב הקלף</div>
           <div class="tog-row">
             <label class="tswitch"><input type="checkbox" id="chk-back-enabled"><span class="tslider"></span></label>
-            <span class="tog-lbl">הדפסה דו-צדדית (גב מעוצב)</span>
+            <span data-i18n="export.duplexLabel" class="tog-lbl">הדפסה דו-צדדית (גב מעוצב)</span>
           </div>
-          <button class="btn btn-sec" id="btn-back-design-2" style="width:100%;justify-content:center;margin-top:.6rem">🎴 ערוך גב</button>
+          <button data-i18n="export.editBackBtn" class="btn btn-sec" id="btn-back-design-2" style="width:100%;justify-content:center;margin-top:.6rem">🎴 ערוך גב</button>
         </div>
       </div>
       <div>
-        <div class="og-t">תצוגה מקדימה (A4)</div>
+        <div data-i18n="export.previewTitle" class="og-t">תצוגה מקדימה (A4)</div>
         <div class="paper-prev" id="pprev">
           <canvas id="prev-canvas" width="120" height="170" style="border:1.5px solid var(--border);border-radius:3px;box-shadow:var(--sh)"></canvas>
           <div class="paper-info" id="prev-info"></div>
@@ -1307,46 +1307,46 @@ function dcfgSave(patch){
       </div>
     </div>
 
-    <div class="og-t" style="margin-top:.8rem">איכות הייצוא</div>
+    <div data-i18n="export.qualityTitle" class="og-t" style="margin-top:.8rem">איכות הייצוא</div>
     <div class="shape-grp" id="exp-quality" style="width:100%">
-      <button type="button" class="sbt on" data-q="fast">רגיל</button>
-      <button type="button" class="sbt" data-q="print">איכות הדפסה</button>
+      <button data-i18n="export.qualityNormalBtn" type="button" class="sbt on" data-q="fast">רגיל</button>
+      <button data-i18n="export.qualityPrintBtn" type="button" class="sbt" data-q="print">איכות הדפסה</button>
     </div>
     <div id="exp-quality-note" style="font-size:.72rem;color:var(--muted);margin-top:.35rem;line-height:1.5"></div>
 
     <div class="brow">
-      <button class="btn btn-sec" id="btn-prevprint">👁 תצוגה מקדימה</button>
-      <button class="btn btn-pri" id="btn-doexp">⚙️ צור PDF</button>
-      <button class="btn btn-out" id="btn-dozip">🗜️ צור ZIP (PNG)</button>
-      <button class="btn btn-ok" id="btn-dodxf" style="display:none">✂️ ייצא DXF לחיתוך</button>
-      <button class="btn btn-ghost" id="btn-b2">← חזרה לעריכה</button>
+      <button data-i18n="export.previewBtn" class="btn btn-sec" id="btn-prevprint">👁 תצוגה מקדימה</button>
+      <button data-i18n="export.createPdfBtn" class="btn btn-pri" id="btn-doexp">⚙️ צור PDF</button>
+      <button data-i18n="export.createZipBtn" class="btn btn-out" id="btn-dozip">🗜️ צור ZIP (PNG)</button>
+      <button data-i18n="export.createDxfBtn" class="btn btn-ok" id="btn-dodxf" style="display:none">✂️ ייצא DXF לחיתוך</button>
+      <button data-i18n="export.backToEditBtn" class="btn btn-ghost" id="btn-b2">← חזרה לעריכה</button>
     </div>
 
     <!-- ── לבית דפוס — מקופל, רלוונטי למיעוט מהלקוחות ── -->
     <details id="printshop-fold" style="margin-top:.6rem">
-      <summary style="cursor:pointer;font-size:.86rem;color:var(--muted);padding:.35rem 0">🖨️ לבית דפוס</summary>
+      <summary data-i18n="export.printShopFold" style="cursor:pointer;font-size:.86rem;color:var(--muted);padding:.35rem 0">🖨️ לבית דפוס</summary>
       <div style="margin-top:.5rem">
         <div class="brow">
-          <button class="btn btn-out" id="btn-doprint">📦 PDF — עמוד לכל קלף</button>
-          <button class="btn btn-out" id="btn-dosheet">🗞️ גיליון 33×48.8</button>
+          <button data-i18n="export.printPageBtn" class="btn btn-out" id="btn-doprint">📦 PDF — עמוד לכל קלף</button>
+          <button data-i18n="export.sheetBtn" class="btn btn-out" id="btn-dosheet">🗞️ גיליון 33×48.8</button>
         </div>
         <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem;line-height:1.5">
           📦 עמוד לכל קלף · בליד 4 מ"מ · 300 DPI · העמוד האחרון הוא הגב.<br>
           🗞️ גיליון גדול לבית דפוס — דורש חיתוך עצמי.
         </div>
         <div id="sheet-diam-row" style="margin-top:.5rem" hidden>
-          <div class="og-t">קוטר הקלף בגיליון</div>
+          <div data-i18n="export.sheetDiameterTitle" class="og-t">קוטר הקלף בגיליון</div>
           <div class="shape-grp" id="sheet-diam" style="width:100%">
-            <button type="button" class="sbt on" data-d="71">רגיל · 71 מ"מ</button>
-            <button type="button" class="sbt" data-d="85">גדול · 85 מ"מ</button>
+            <button data-i18n="export.sheetDiameterNormalBtn" type="button" class="sbt on" data-d="71">רגיל · 71 מ"מ</button>
+            <button data-i18n="export.sheetDiameterLargeBtn" type="button" class="sbt" data-d="85">גדול · 85 מ"מ</button>
           </div>
           <div id="sheet-diam-note" style="font-size:.72rem;color:var(--muted);margin-top:.3rem;line-height:1.5"></div>
         </div>
         <div id="sheet-tray-row" style="margin-top:.6rem" hidden>
-          <div class="og-t">מגש גיליון (מנהל)</div>
+          <div data-i18n="export.trayTitle" class="og-t">מגש גיליון (מנהל)</div>
           <div class="brow" style="gap:.4rem">
-            <button type="button" class="btn btn-sec" id="btn-tray-add">➕ הוסף משחק לגיליון</button>
-            <button type="button" class="btn btn-ghost" id="btn-tray-clear">🗑️ נקה מגש</button>
+            <button data-i18n="export.trayAddBtn" type="button" class="btn btn-sec" id="btn-tray-add">➕ הוסף משחק לגיליון</button>
+            <button data-i18n="export.trayClearBtn" type="button" class="btn btn-ghost" id="btn-tray-clear">🗑️ נקה מגש</button>
           </div>
           <div id="sheet-tray-list" style="font-size:.75rem;color:var(--muted);margin-top:.35rem;line-height:1.6"></div>
         </div>
@@ -1359,30 +1359,30 @@ function dcfgSave(patch){
     </div>
 
     <div class="dl-area" id="dl-area">
-      <span style="font-size:.875rem;color:var(--green);font-weight:700">✅ הקובץ מוכן!</span>
-      <a class="btn btn-ok" id="dl-link" href="#" download>📥 הורד קובץ</a>
-      <button class="btn btn-ok" id="dl-share" type="button" hidden>📤 שמירה לקבצים / שיתוף</button>
-      <div id="dl-ios-tip" style="font-size:.75rem;color:var(--muted);line-height:1.5;margin-top:.3rem" hidden>
+      <span data-i18n="export.readyLabel" style="font-size:.875rem;color:var(--green);font-weight:700">✅ הקובץ מוכן!</span>
+      <a data-i18n="export.downloadBtn" class="btn btn-ok" id="dl-link" href="#" download>📥 הורד קובץ</a>
+      <button data-i18n="export.shareBtn" class="btn btn-ok" id="dl-share" type="button" hidden>📤 שמירה לקבצים / שיתוף</button>
+      <div data-i18n="export.iosTip" id="dl-ios-tip" style="font-size:.75rem;color:var(--muted);line-height:1.5;margin-top:.3rem" hidden>
         באייפון עדיף "שמירה לקבצים" — כך הקובץ נשמר ואפשר למצוא אותו אחר כך.
       </div>
-      <button class="btn btn-sec" id="btn-print-order-2">🚚 או: הדפסה ומשלוח עד הבית</button>
+      <button data-i18n="export.printOrderBtn2" class="btn btn-sec" id="btn-print-order-2">🚚 או: הדפסה ומשלוח עד הבית</button>
     </div>
   </div>
 
   <!-- ── הדפסה מקצועית עד הבית ── -->
   <div class="box print-order" id="print-order">
-    <span class="po-badge">🚚 בתוספת תשלום</span>
-    <h2 class="box-h">🖨️ רוצים את המשחק מודפס ומוכן?</h2>
-    <p class="box-s">לא חייבים להדפיס לבד — נדפיס את המשחק שלכם בבית דפוס איכותי, נחתוך כל קלף בצורה מדויקת ונשלח עד הבית.</p>
+    <span data-i18n="export.printOrderBadge" class="po-badge">🚚 בתוספת תשלום</span>
+    <h2 data-i18n="export.printOrderTitle" class="box-h">🖨️ רוצים את המשחק מודפס ומוכן?</h2>
+    <p data-i18n="export.printOrderDesc" class="box-s">לא חייבים להדפיס לבד — נדפיס את המשחק שלכם בבית דפוס איכותי, נחתוך כל קלף בצורה מדויקת ונשלח עד הבית.</p>
     <ul class="po-list">
-      <li>🖨️ הדפסה מקצועית על נייר קשיח</li>
-      <li>✂️ חיתוך מדויק לכל קלף</li>
-      <li>📦 אריזה ומשלוח עד הבית</li>
+      <li data-i18n="export.printOrderFeature1">🖨️ הדפסה מקצועית על נייר קשיח</li>
+      <li data-i18n="export.printOrderFeature2">✂️ חיתוך מדויק לכל קלף</li>
+      <li data-i18n="export.printOrderFeature3">📦 אריזה ומשלוח עד הבית</li>
     </ul>
     <div class="brow" style="margin-top:1rem">
-      <button class="btn btn-wa" id="btn-print-order">💬 להזמנת הדפסה ומשלוח בוואטסאפ</button>
+      <button data-i18n="export.printOrderBtn" class="btn btn-wa" id="btn-print-order">💬 להזמנת הדפסה ומשלוח בוואטסאפ</button>
     </div>
-    <p style="font-size:.78rem;color:var(--muted);margin-top:.6rem">ההודעה תישלח עם פרטי המשחק שיצרתם — נחזור אליכם עם מחיר וזמן אספקה.</p>
+    <p data-i18n="export.printOrderNote" style="font-size:.78rem;color:var(--muted);margin-top:.6rem">ההודעה תישלח עם פרטי המשחק שיצרתם — נחזור אליכם עם מחיר וזמן אספקה.</p>
   </div>
 </section>
 
@@ -1392,15 +1392,15 @@ function dcfgSave(patch){
 <div class="modal-bg" id="ppmodal" hidden>
   <div class="modal-card" style="max-width:480px;width:95vw">
     <div class="modal-hdr">
-      <div class="modal-title">👁 תצוגה מקדימה לפני הדפסה</div>
+      <div data-i18n="export.printPreviewTitle" class="modal-title">👁 תצוגה מקדימה לפני הדפסה</div>
       <button class="modal-x" id="ppmodal-x">✕</button>
     </div>
     <div style="padding:.75rem 1rem 1rem;text-align:center">
       <canvas id="pp-canvas" style="max-width:100%;border:1px solid #e5e7eb;border-radius:4px;box-shadow:0 2px 10px rgba(0,0,0,.12)"></canvas>
       <div style="display:flex;align-items:center;justify-content:center;gap:.75rem;margin-top:.75rem">
-        <button class="btn btn-ghost" id="pp-prev" style="padding:.35rem .8rem">‹ הקודם</button>
+        <button data-i18n="export.printPreviewPrevBtn" class="btn btn-ghost" id="pp-prev" style="padding:.35rem .8rem">‹ הקודם</button>
         <span id="pp-info" style="font-size:.85rem;font-weight:700;color:var(--muted);min-width:8rem;text-align:center"></span>
-        <button class="btn btn-ghost" id="pp-next" style="padding:.35rem .8rem">הבא ›</button>
+        <button data-i18n="export.printPreviewNextBtn" class="btn btn-ghost" id="pp-next" style="padding:.35rem .8rem">הבא ›</button>
       </div>
     </div>
   </div>
@@ -1410,132 +1410,132 @@ function dcfgSave(patch){
 <div class="modal-bg" id="back-modal" hidden>
   <div class="modal-card" style="max-width:520px;width:96%">
     <div class="modal-hdr">
-      <div class="modal-title">🎴 עיצוב גב הקלף</div>
+      <div data-i18n="back.title" class="modal-title">🎴 עיצוב גב הקלף</div>
       <button class="modal-x" id="back-modal-x">✕</button>
     </div>
 
     <div class="back-live"><canvas id="back-live-canvas" width="220" height="220"></canvas></div>
     <div class="back-presets-row" id="back-presets-row"></div>
     <div class="back-tabs" id="back-tabs">
-      <button class="back-tab on" data-tab="bg">רקע</button>
-      <button class="back-tab" data-tab="frame">מסגרת</button>
-      <button class="back-tab" data-tab="symbol">סמל</button>
-      <button class="back-tab" data-tab="text">כיתוב</button>
-      <button class="back-tab" data-tab="logo">לוגו</button>
-      <button class="back-tab" data-tab="print">הדפסה</button>
+      <button data-i18n="back.tabBg" class="back-tab on" data-tab="bg">רקע</button>
+      <button data-i18n="back.tabFrame" class="back-tab" data-tab="frame">מסגרת</button>
+      <button data-i18n="back.tabSymbol" class="back-tab" data-tab="symbol">סמל</button>
+      <button data-i18n="back.tabText" class="back-tab" data-tab="text">כיתוב</button>
+      <button data-i18n="back.tabLogo" class="back-tab" data-tab="logo">לוגו</button>
+      <button data-i18n="back.tabPrint" class="back-tab" data-tab="print">הדפסה</button>
     </div>
 
     <div class="back-tabpage on" id="back-tab-bg">
-      <div class="og-t">מצב רקע</div>
+      <div data-i18n="back.bgModeTitle" class="og-t">מצב רקע</div>
       <div class="shape-grp" id="back-bg-mode-grp">
-        <button class="sbt on" data-mode="solid" style="flex:1">אחיד</button>
-        <button class="sbt" data-mode="radial" style="flex:1">רדיאלי</button>
-        <button class="sbt" data-mode="diag" style="flex:1">אלכסוני</button>
+        <button data-i18n="back.bgModeSolid" class="sbt on" data-mode="solid" style="flex:1">אחיד</button>
+        <button data-i18n="back.bgModeRadial" class="sbt" data-mode="radial" style="flex:1">רדיאלי</button>
+        <button data-i18n="back.bgModeDiagonal" class="sbt" data-mode="diag" style="flex:1">אלכסוני</button>
       </div>
-      <div class="og-t" style="margin-top:.5rem">צבע ראשי</div>
+      <div data-i18n="back.mainColorTitle" class="og-t" style="margin-top:.5rem">צבע ראשי</div>
       <div class="swatch-row" id="back-bg-sw1"></div>
-      <label class="cp-row"><span>צבע חופשי</span><input type="color" id="back-bg-pick1" value="#4338CA"></label>
-      <div class="og-t" id="back-bg-c2-lbl" style="margin-top:.5rem">צבע משני (גרדיאנט)</div>
+      <label class="cp-row"><span data-i18n="back.customColorLabel">צבע חופשי</span><input type="color" id="back-bg-pick1" value="#4338CA"></label>
+      <div data-i18n="back.gradientColorTitle" class="og-t" id="back-bg-c2-lbl" style="margin-top:.5rem">צבע משני (גרדיאנט)</div>
       <div class="swatch-row" id="back-bg-sw2"></div>
-      <label class="cp-row"><span>צבע חופשי</span><input type="color" id="back-bg-pick2" value="#818CF8"></label>
-      <div class="og-t" style="margin-top:.5rem">דוגמה</div>
+      <label class="cp-row"><span data-i18n="back.customColorLabel2">צבע חופשי</span><input type="color" id="back-bg-pick2" value="#818CF8"></label>
+      <div data-i18n="back.patternTitle" class="og-t" style="margin-top:.5rem">דוגמה</div>
       <div class="back-sym-grid" id="back-pattern-grid"></div>
       <div class="swatch-row" id="back-pattern-sw"></div>
-      <label class="cp-row"><span>צבע חופשי</span><input type="color" id="back-pattern-pick" value="#FFFFFF"></label>
-      <div class="sl-lbl"><span>שקיפות דוגמה</span><strong id="lbl-back-pattern-op">14%</strong></div>
+      <label class="cp-row"><span data-i18n="back.customColorLabel3">צבע חופשי</span><input type="color" id="back-pattern-pick" value="#FFFFFF"></label>
+      <div class="sl-lbl"><span data-i18n="back.patternOpacityLabel">שקיפות דוגמה</span><strong id="lbl-back-pattern-op">14%</strong></div>
       <input type="range" id="back-pattern-op" min="0" max="100" step="1" value="14">
-      <div class="sl-lbl"><span>קנה מידה</span><strong id="lbl-back-pattern-scale">100%</strong></div>
+      <div class="sl-lbl"><span data-i18n="back.patternScaleLabel">קנה מידה</span><strong id="lbl-back-pattern-scale">100%</strong></div>
       <input type="range" id="back-pattern-scale" min="40" max="220" step="5" value="100">
     </div>
 
     <div class="back-tabpage" id="back-tab-frame">
-      <div class="og-t">סגנון מסגרת</div>
+      <div data-i18n="back.frameStyleTitle" class="og-t">סגנון מסגרת</div>
       <div class="back-frame-grid" id="back-frame-grid"></div>
-      <div class="og-t" style="margin-top:.5rem">צבע</div>
+      <div data-i18n="back.frameColorTitle" class="og-t" style="margin-top:.5rem">צבע</div>
       <div class="swatch-row" id="back-frame-sw"></div>
-      <label class="cp-row"><span>צבע חופשי</span><input type="color" id="back-frame-pick" value="#FFFFFF"></label>
-      <div class="sl-lbl"><span>רוחב</span><strong id="lbl-back-frame-w">3 מ"מ</strong></div>
+      <label class="cp-row"><span data-i18n="back.customColorLabel4">צבע חופשי</span><input type="color" id="back-frame-pick" value="#FFFFFF"></label>
+      <div class="sl-lbl"><span data-i18n="back.frameWidthLabel">רוחב</span><strong id="lbl-back-frame-w">3 מ"מ</strong></div>
       <input type="range" id="back-frame-w" min="0" max="15" step="0.5" value="3">
-      <div class="sl-lbl"><span>שקיפות</span><strong id="lbl-back-frame-op">100%</strong></div>
+      <div class="sl-lbl"><span data-i18n="back.frameOpacityLabel">שקיפות</span><strong id="lbl-back-frame-op">100%</strong></div>
       <input type="range" id="back-frame-op" min="0" max="100" step="1" value="100">
     </div>
 
     <div class="back-tabpage" id="back-tab-symbol">
-      <div class="og-t">סמל מרכזי</div>
+      <div data-i18n="back.symbolTitle" class="og-t">סמל מרכזי</div>
       <div class="back-sym-grid" id="back-sym-grid"></div>
-      <div class="og-t" style="margin-top:.5rem">צבע</div>
+      <div data-i18n="back.symbolColorTitle" class="og-t" style="margin-top:.5rem">צבע</div>
       <div class="swatch-row" id="back-sym-sw"></div>
-      <label class="cp-row"><span>צבע חופשי</span><input type="color" id="back-sym-pick" value="#FFFFFF"></label>
-      <div class="sl-lbl"><span>גודל</span><strong id="lbl-back-sym-size">46%</strong></div>
+      <label class="cp-row"><span data-i18n="back.customColorLabel5">צבע חופשי</span><input type="color" id="back-sym-pick" value="#FFFFFF"></label>
+      <div class="sl-lbl"><span data-i18n="back.symbolSizeLabel">גודל</span><strong id="lbl-back-sym-size">46%</strong></div>
       <input type="range" id="back-sym-size" min="0" max="90" step="1" value="46">
-      <div class="sl-lbl"><span>היסט אנכי</span><strong id="lbl-back-sym-dy">0%</strong></div>
+      <div class="sl-lbl"><span data-i18n="back.symbolOffsetLabel">היסט אנכי</span><strong id="lbl-back-sym-dy">0%</strong></div>
       <input type="range" id="back-sym-dy" min="-60" max="60" step="1" value="0">
     </div>
 
     <div class="back-tabpage" id="back-tab-text">
-      <div class="og-t">טקסט ראשי</div>
-      <input type="text" id="back-text-main" class="adm-inp" style="color:inherit;background:rgba(255,255,255,.6);border-color:var(--border)" placeholder="למשל: מזל טוב">
-      <div class="og-t" style="margin-top:.5rem">טקסט משני</div>
-      <input type="text" id="back-text-sub" class="adm-inp" style="color:inherit;background:rgba(255,255,255,.6);border-color:var(--border)" placeholder="למשל: שם הילד/ה">
+      <div data-i18n="back.mainTextTitle" class="og-t">טקסט ראשי</div>
+      <input type="text" id="back-text-main" class="adm-inp" style="color:inherit;background:rgba(255,255,255,.6);border-color:var(--border)" placeholder="למשל: מזל טוב" data-i18n-ph="back.mainTextPh">
+      <div data-i18n="back.subTextTitle" class="og-t" style="margin-top:.5rem">טקסט משני</div>
+      <input type="text" id="back-text-sub" class="adm-inp" style="color:inherit;background:rgba(255,255,255,.6);border-color:var(--border)" placeholder="למשל: שם הילד/ה" data-i18n-ph="back.subTextPh">
       <div class="back-quick-row" id="back-text-quick" style="margin-top:.5rem"></div>
-      <div class="og-t" style="margin-top:.5rem">גופן</div>
+      <div data-i18n="back.fontTitle" class="og-t" style="margin-top:.5rem">גופן</div>
       <div class="shape-grp" id="back-text-font-grp">
-        <button class="sbt on" data-font="sans" style="flex:1">רגיל</button>
-        <button class="sbt" data-font="serif" style="flex:1">קלאסי</button>
-        <button class="sbt" data-font="round" style="flex:1">עגול</button>
+        <button data-i18n="back.fontNormalBtn" class="sbt on" data-font="sans" style="flex:1">רגיל</button>
+        <button data-i18n="back.fontClassicBtn" class="sbt" data-font="serif" style="flex:1">קלאסי</button>
+        <button data-i18n="back.fontRoundBtn" class="sbt" data-font="round" style="flex:1">עגול</button>
       </div>
-      <div class="og-t" style="margin-top:.5rem">צבע</div>
+      <div data-i18n="back.textColorTitle" class="og-t" style="margin-top:.5rem">צבע</div>
       <div class="swatch-row" id="back-text-sw"></div>
-      <label class="cp-row"><span>צבע חופשי</span><input type="color" id="back-text-pick" value="#FFFFFF"></label>
-      <div class="sl-lbl"><span>גודל</span><strong id="lbl-back-text-size">11%</strong></div>
+      <label class="cp-row"><span data-i18n="back.customColorLabel6">צבע חופשי</span><input type="color" id="back-text-pick" value="#FFFFFF"></label>
+      <div class="sl-lbl"><span data-i18n="back.textSizeLabel">גודל</span><strong id="lbl-back-text-size">11%</strong></div>
       <input type="range" id="back-text-size" min="4" max="22" step="0.5" value="11">
-      <div class="sl-lbl"><span>היסט אנכי</span><strong id="lbl-back-text-dy">34%</strong></div>
+      <div class="sl-lbl"><span data-i18n="back.textOffsetLabel">היסט אנכי</span><strong id="lbl-back-text-dy">34%</strong></div>
       <input type="range" id="back-text-dy" min="-60" max="70" step="1" value="34">
     </div>
 
     <div class="back-tabpage" id="back-tab-logo">
-      <div class="og-t">לוגו (אופציונלי)</div>
+      <div data-i18n="back.logoTitle" class="og-t">לוגו (אופציונלי)</div>
       <div style="display:flex;align-items:center;gap:.8rem">
         <canvas class="back-logo-prev" id="back-logo-prev" width="80" height="80"></canvas>
         <div style="display:flex;flex-direction:column;gap:.4rem">
-          <button class="btn btn-sec" id="back-logo-btn" type="button">📤 העלה לוגו</button>
-          <button class="btn btn-ghost" id="back-logo-remove" type="button" style="display:none">🗑 הסר לוגו</button>
+          <button data-i18n="back.logoUploadBtn" class="btn btn-sec" id="back-logo-btn" type="button">📤 העלה לוגו</button>
+          <button data-i18n="back.logoRemoveBtn" class="btn btn-ghost" id="back-logo-remove" type="button" style="display:none">🗑 הסר לוגו</button>
         </div>
         <input type="file" id="back-logo-file" accept="image/*" hidden>
       </div>
-      <div class="sl-lbl" style="margin-top:.6rem"><span>גודל</span><strong id="lbl-back-logo-size">40%</strong></div>
+      <div class="sl-lbl" style="margin-top:.6rem"><span data-i18n="back.logoSizeLabel">גודל</span><strong id="lbl-back-logo-size">40%</strong></div>
       <input type="range" id="back-logo-size" min="0" max="90" step="1" value="40">
-      <div class="sl-lbl"><span>היסט אנכי</span><strong id="lbl-back-logo-dy">0%</strong></div>
+      <div class="sl-lbl"><span data-i18n="back.logoOffsetLabel">היסט אנכי</span><strong id="lbl-back-logo-dy">0%</strong></div>
       <input type="range" id="back-logo-dy" min="-60" max="60" step="1" value="0">
     </div>
 
     <div class="back-tabpage" id="back-tab-print">
-      <div class="og-t">כיוון הפיכת הדף</div>
+      <div data-i18n="back.flipDirectionTitle" class="og-t">כיוון הפיכת הדף</div>
       <div class="shape-grp" id="back-flip-grp">
-        <button class="sbt on" data-flip="short" style="flex:1">↕ צד קצר</button>
-        <button class="sbt" data-flip="long" style="flex:1">↔ צד ארוך</button>
+        <button data-i18n="back.flipShortEdgeBtn" class="sbt on" data-flip="short" style="flex:1">↕ צד קצר</button>
+        <button data-i18n="back.flipLongEdgeBtn" class="sbt" data-flip="long" style="flex:1">↔ צד ארוך</button>
       </div>
-      <div style="font-size:.75rem;color:var(--muted);margin:.4rem 0">אחרי שהדף יוצא מהמדפסת, הפכו אותו כמו דף במחברת (מלמעלה למטה) והחזירו אותו למגש.</div>
-      <div class="og-t" style="margin-top:.4rem">סדר עמודים בקובץ</div>
+      <div data-i18n="back.flipNote" style="font-size:.75rem;color:var(--muted);margin:.4rem 0">אחרי שהדף יוצא מהמדפסת, הפכו אותו כמו דף במחברת (מלמעלה למטה) והחזירו אותו למגש.</div>
+      <div data-i18n="back.pageOrderTitle" class="og-t" style="margin-top:.4rem">סדר עמודים בקובץ</div>
       <div class="shape-grp" id="back-order-grp">
-        <button class="sbt on" data-order="sequential" style="flex:1">קדמי ואז גב</button>
-        <button class="sbt" data-order="interleave" style="flex:1">לסירוגין</button>
+        <button data-i18n="back.pageOrderFrontBackBtn" class="sbt on" data-order="sequential" style="flex:1">קדמי ואז גב</button>
+        <button data-i18n="back.pageOrderAlternateBtn" class="sbt" data-order="interleave" style="flex:1">לסירוגין</button>
       </div>
-      <div class="og-t" style="margin-top:.5rem">כוונון עדין (מ"מ)</div>
-      <div class="sl-lbl"><span>הזזה אופקית (dx)</span><strong id="lbl-back-dx">0</strong></div>
+      <div data-i18n="back.fineTuneTitle" class="og-t" style="margin-top:.5rem">כוונון עדין (מ"מ)</div>
+      <div class="sl-lbl"><span data-i18n="back.offsetXLabel">הזזה אופקית (dx)</span><strong id="lbl-back-dx">0</strong></div>
       <input type="range" id="back-dx" min="-5" max="5" step="0.5" value="0">
-      <div class="sl-lbl"><span>הזזה אנכית (dy)</span><strong id="lbl-back-dy">0</strong></div>
+      <div class="sl-lbl"><span data-i18n="back.offsetYLabel">הזזה אנכית (dy)</span><strong id="lbl-back-dy">0</strong></div>
       <input type="range" id="back-dy" min="-5" max="5" step="0.5" value="0">
-      <button class="btn btn-ghost" id="back-duplex-reset" type="button" style="align-self:flex-start;font-size:.78rem;padding:.35rem .8rem">↺ אפס כוונון</button>
-      <div class="sl-lbl" style="margin-top:.4rem"><span>הגדלת גב (bleed)</span><strong id="lbl-back-grow">0.6 מ"מ</strong></div>
+      <button data-i18n="back.resetFineTuneBtn" class="btn btn-ghost" id="back-duplex-reset" type="button" style="align-self:flex-start;font-size:.78rem;padding:.35rem .8rem">↺ אפס כוונון</button>
+      <div class="sl-lbl" style="margin-top:.4rem"><span data-i18n="back.bleedTitle">הגדלת גב (bleed)</span><strong id="lbl-back-grow">0.6 מ"מ</strong></div>
       <input type="range" id="back-grow" min="0" max="3" step="0.1" value="0.6">
-      <button class="btn btn-sec" id="back-calib-btn" type="button" style="margin-top:.6rem">📐 הפק דף כיול (2 עמודים)</button>
-      <div style="font-size:.72rem;color:var(--muted);line-height:1.6">הדפיסו את דף הכיול, הפכו אותו, ומדדו את הסטייה בין הסרגלים — הזינו אותה כאן בכוונון העדין.</div>
+      <button data-i18n="back.calibBtn" class="btn btn-sec" id="back-calib-btn" type="button" style="margin-top:.6rem">📐 הפק דף כיול (2 עמודים)</button>
+      <div data-i18n="back.calibNote" style="font-size:.72rem;color:var(--muted);line-height:1.6">הדפיסו את דף הכיול, הפכו אותו, ומדדו את הסטייה בין הסרגלים — הזינו אותה כאן בכוונון העדין.</div>
     </div>
 
     <div class="brow" style="justify-content:flex-end;margin-top:.8rem">
-      <button class="btn btn-ghost" id="back-cancel">ביטול</button>
-      <button class="btn btn-ok" id="back-save">✅ שמור</button>
+      <button data-i18n="back.cancelBtn" class="btn btn-ghost" id="back-cancel">ביטול</button>
+      <button data-i18n="back.saveBtn" class="btn btn-ok" id="back-save">✅ שמור</button>
     </div>
   </div>
 </div>
@@ -1544,17 +1544,17 @@ function dcfgSave(patch){
 <div class="modal-bg" id="vmodal" hidden>
   <div class="modal-card">
     <div class="modal-hdr">
-      <div class="modal-title">🔍 בדיקת זוג קלפים</div>
+      <div data-i18n="edit.verifyTitle" class="modal-title">🔍 בדיקת זוג קלפים</div>
       <button class="modal-x" id="modal-x">✕</button>
     </div>
     <div class="modal-body">
-      <div class="mcw" id="mcw1"><canvas id="mc1" width="280" height="280"></canvas><div class="mc-lbl">קלף א</div></div>
+      <div class="mcw" id="mcw1"><canvas id="mc1" width="280" height="280"></canvas><div data-i18n="edit.verifyCardALabel" class="mc-lbl">קלף א</div></div>
       <div class="mc-mid">
         <div class="mc-ico">⟺</div>
         <canvas class="mc-sym-canvas" id="mc-sym" width="80" height="80"></canvas>
         <div class="mc-txt" id="mc-txt">—</div>
       </div>
-      <div class="mcw" id="mcw2"><canvas id="mc2" width="280" height="280"></canvas><div class="mc-lbl">קלף ב</div></div>
+      <div class="mcw" id="mcw2"><canvas id="mc2" width="280" height="280"></canvas><div data-i18n="edit.verifyCardBLabel" class="mc-lbl">קלף ב</div></div>
     </div>
   </div>
 </div>
@@ -1574,16 +1574,16 @@ function dcfgSave(patch){
         לחצו על סמל כדי לבחור אותו · גררו כדי להזיז · הסרגל משנה גודל<br>
         השינויים חלים על הקלף הזה בלבד
       </div>
-      <div id="ce-warn" style="display:none;font-size:.8rem;font-weight:800;color:#B91C1C;text-align:center">⚠️ יש חפיפה בין סמלים בקלף</div>
+      <div data-i18n="edit.cardEditOverlapWarning" id="ce-warn" style="display:none;font-size:.8rem;font-weight:800;color:#B91C1C;text-align:center">⚠️ יש חפיפה בין סמלים בקלף</div>
       <div id="ce-ctl" style="display:none;width:100%">
         <div class="sl-row">
-          <div class="sl-lbl"><span>גודל הסמל שנבחר</span><strong id="ce-lbl">100%</strong></div>
+          <div class="sl-lbl"><span data-i18n="edit.cardEditSizeLabel">גודל הסמל שנבחר</span><strong id="ce-lbl">100%</strong></div>
           <input type="range" id="ce-sl" min="30" max="220" step="5" value="100">
         </div>
       </div>
       <div style="display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;width:100%">
-        <button class="pack-btn" id="ce-reset-one" type="button">↩️ אפס סמל</button>
-        <button class="pack-btn" id="ce-reset-all" type="button">🧹 אפס קלף</button>
+        <button data-i18n="edit.cardEditResetOneBtn" class="pack-btn" id="ce-reset-one" type="button">↩️ אפס סמל</button>
+        <button data-i18n="edit.cardEditResetAllBtn" class="pack-btn" id="ce-reset-all" type="button">🧹 אפס קלף</button>
       </div>
     </div>
   </div>
@@ -1611,7 +1611,7 @@ function dcfgSave(patch){
     <div id="cfm-body" style="font-size:.9rem;color:var(--muted);line-height:1.7;margin:.55rem 0 .5rem;white-space:pre-line"></div>
     <div id="cfm-warn" style="display:none;font-size:.82rem;color:#b91c1c;background:#fef2f2;border:1px solid #fca5a5;border-radius:var(--rs);padding:.55rem .7rem;margin-bottom:.75rem;line-height:1.6"></div>
     <div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap">
-      <button type="button" class="btn btn-ghost" id="cfm-no">ביטול</button>
+      <button data-i18n="msg.confirmCancel" type="button" class="btn btn-ghost" id="cfm-no">ביטול</button>
       <button type="button" class="btn" id="cfm-yes" style="background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff">מחק</button>
     </div>
   </div>
@@ -1659,19 +1659,19 @@ function dcfgSave(patch){
 <div class="modal-bg" id="emoji-lib-modal" hidden style="z-index:10002">
   <div class="modal-card" style="max-width:640px">
     <div class="modal-hdr">
-      <div class="modal-title">🔎 ספריית סמלים</div>
+      <div data-i18n="emoji.modalTitle" class="modal-title">🔎 ספריית סמלים</div>
       <button type="button" class="btn btn-ghost" id="emoji-lib-x" style="padding:.35rem .8rem;min-height:auto">✕</button>
     </div>
     <input type="text" id="emoji-lib-q" placeholder="חפשו סמל בעברית… למשל: חנוכיה, אריה, כבאית"
-      style="width:100%;box-sizing:border-box;padding:.6rem .8rem;border:1px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:.95rem">
+      style="width:100%;box-sizing:border-box;padding:.6rem .8rem;border:1px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:.95rem" data-i18n-ph="emoji.searchPh">
     <div id="emoji-lib-styles" class="shape-grp" style="width:100%;margin-top:.6rem"></div>
     <div id="emoji-lib-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:.5rem;margin-top:.8rem;max-height:340px;overflow-y:auto"></div>
     <div id="emoji-lib-empty" hidden style="text-align:center;padding:1.4rem .5rem;color:var(--muted)">
-      <div style="margin-bottom:.6rem">לא נמצא סמל מתאים</div>
-      <button type="button" class="btn btn-sec" id="emoji-lib-ai-btn" style="justify-content:center">✨ צור ב-AI</button>
+      <div data-i18n="emoji.noResults" style="margin-bottom:.6rem">לא נמצא סמל מתאים</div>
+      <button data-i18n="emoji.tryAiBtn" type="button" class="btn btn-sec" id="emoji-lib-ai-btn" style="justify-content:center">✨ צור ב-AI</button>
     </div>
-    <button type="button" class="btn btn-cta" id="emoji-lib-add" style="width:100%;justify-content:center;margin-top:.8rem" disabled>הוסף נבחרים (0)</button>
-    <div style="font-size:.62rem;color:var(--muted);text-align:center;margin-top:.6rem">
+    <button data-i18n="emoji.addBtn" type="button" class="btn btn-cta" id="emoji-lib-add" style="width:100%;justify-content:center;margin-top:.8rem" disabled>הוסף נבחרים (0)</button>
+    <div data-i18n="emoji.creditsLine" style="font-size:.62rem;color:var(--muted);text-align:center;margin-top:.6rem">
       אייקונים: Twemoji (CC-BY 4.0) · OpenMoji (CC-BY-SA 4.0) · Noto Emoji (Apache 2.0)
     </div>
   </div>
@@ -1681,22 +1681,22 @@ function dcfgSave(patch){
 <div class="modal-bg" id="crop-modal" hidden>
   <div class="modal-card" style="max-width:820px;width:95%">
     <div class="modal-hdr">
-      <div class="modal-title">✂️ הפקת סמלים מתמונה</div>
+      <div data-i18n="edit.cropTitle" class="modal-title">✂️ הפקת סמלים מתמונה</div>
       <button class="modal-x" id="crop-modal-x">✕</button>
     </div>
     <div class="tool-row" style="margin-bottom:.65rem">
-      <span class="shape-lbl">כלי חיתוך:</span>
+      <span data-i18n="edit.cropToolLabel" class="shape-lbl">כלי חיתוך:</span>
       <div class="shape-grp" id="modal-tool-grp">
-        <button class="sbt on" data-tool="circle">⭕ עיגול</button>
-        <button class="sbt" data-tool="rounded_square">⬜ מרובע מעוגל</button>
+        <button data-i18n="edit.cropCircleBtn" class="sbt on" data-tool="circle">⭕ עיגול</button>
+        <button data-i18n="edit.cropRoundedSquareBtn" class="sbt" data-tool="rounded_square">⬜ מרובע מעוגל</button>
       </div>
       <div style="display:flex;flex-direction:column;gap:.3rem;flex-shrink:0">
         <label class="tool-row" style="gap:.45rem;cursor:pointer">
           <input type="checkbox" id="ck-rmbg" style="width:16px;height:16px;accent-color:var(--indigo)">
-          <span style="font-size:.85rem;font-weight:700;color:var(--indigo)">✨ הסר רקע</span>
+          <span data-i18n="edit.removeBgLabel" style="font-size:.85rem;font-weight:700;color:var(--indigo)">✨ הסר רקע</span>
         </label>
         <div id="rmbg-tol-row" hidden style="display:flex;align-items:center;gap:.4rem;padding-right:.2rem">
-          <span style="font-size:.75rem;color:#6b7280;white-space:nowrap">רגישות:</span>
+          <span data-i18n="edit.removeBgSensitivityLabel" style="font-size:.75rem;color:#6b7280;white-space:nowrap">רגישות:</span>
           <input type="range" id="rng-rmbg-tol" min="2" max="140" value="35" style="flex:1;min-width:70px;accent-color:var(--indigo)">
           <span id="rmbg-tol-val" style="font-size:.78rem;color:var(--indigo);font-weight:700;width:2em;text-align:left">35</span>
         </div>
@@ -1706,12 +1706,12 @@ function dcfgSave(patch){
       <canvas id="modal-src-canvas"></canvas>
     </div>
     <div class="crops-strip" id="modal-crops-strip">
-      <span class="ext-empty">לחץ/י וגרור/י על התמונה לבחירת סמלים</span>
+      <span data-i18n="edit.cropDragHint" class="ext-empty">לחץ/י וגרור/י על התמונה לבחירת סמלים</span>
     </div>
     <div class="ext-info" id="modal-crop-count">0 סמלים נבחרו</div>
     <div class="brow" style="justify-content:flex-end;margin-top:.65rem">
-      <button class="btn btn-ghost" id="btn-crop-cancel">ביטול</button>
-      <button class="btn btn-ok" id="btn-crop-add" disabled>✅ הוסף למאגר</button>
+      <button data-i18n="edit.cropCancelBtn" class="btn btn-ghost" id="btn-crop-cancel">ביטול</button>
+      <button data-i18n="edit.cropAddBtn" class="btn btn-ok" id="btn-crop-add" disabled>✅ הוסף למאגר</button>
     </div>
   </div>
 </div>
@@ -1720,46 +1720,46 @@ function dcfgSave(patch){
 <div class="modal-bg" id="cutout-modal" hidden style="z-index:10003">
   <div class="modal-card" style="max-width:640px;width:96%">
     <div class="modal-hdr">
-      <div class="modal-title">🪄 הסרת רקע חכמה</div>
+      <div data-i18n="edit.cutoutTitle" class="modal-title">🪄 הסרת רקע חכמה</div>
       <button class="modal-x" id="cutout-x">✕</button>
     </div>
 
     <div style="font-size:.82rem;color:var(--muted);line-height:1.6;margin-bottom:.5rem">
-      צבעו בירוק על מה שרוצים <b>לשמור</b>, ובאדום על ה<b>רקע</b>. מספיקים קווים גסים — אפשר לתקן שוב ושוב.
+      צבעו בירוק על מה שרוצים <b data-i18n="edit.cutoutKeepLabel">לשמור</b>, ובאדום על ה<b data-i18n="edit.cutoutRemoveLabel">רקע</b>. מספיקים קווים גסים — אפשר לתקן שוב ושוב.
     </div>
 
     <div class="tool-row" style="gap:.4rem;flex-wrap:wrap;margin-bottom:.5rem">
       <div class="shape-grp" id="cut-brush-grp">
-        <button class="sbt on" data-b="fg">✅ לשמור</button>
-        <button class="sbt"    data-b="bg">❌ רקע</button>
-        <button class="sbt"    data-b="er">🧽 מחק סימון</button>
+        <button data-i18n="edit.cutoutKeepBtn" class="sbt on" data-b="fg">✅ לשמור</button>
+        <button data-i18n="edit.cutoutRemoveBtn" class="sbt"    data-b="bg">❌ רקע</button>
+        <button data-i18n="edit.cutoutEraseBtn" class="sbt"    data-b="er">🧽 מחק סימון</button>
       </div>
     </div>
 
     <div class="sl-row">
-      <div class="sl-lbl"><span>גודל מברשת</span><strong id="lbl-cut-brush">28</strong></div>
+      <div class="sl-lbl"><span data-i18n="edit.cutoutBrushSizeLabel">גודל מברשת</span><strong id="lbl-cut-brush">28</strong></div>
       <input type="range" id="sl-cut-brush" min="8" max="70" step="2" value="28">
     </div>
     <div class="sl-row">
-      <div class="sl-lbl"><span>עדינות הגזירה</span><strong id="lbl-cut-fine">50</strong></div>
+      <div class="sl-lbl"><span data-i18n="edit.cutoutFeatherLabel">עדינות הגזירה</span><strong id="lbl-cut-fine">50</strong></div>
       <input type="range" id="sl-cut-fine" min="0" max="100" step="5" value="50">
     </div>
 
     <div class="canvas-wrap" id="cutout-wrap" style="position:relative;touch-action:none">
       <canvas id="cutout-canvas" style="max-width:100%;touch-action:none"></canvas>
-      <div id="cutout-busy" style="position:absolute;inset:0;display:none;align-items:center;
+      <div data-i18n="edit.cutoutComputing" id="cutout-busy" style="position:absolute;inset:0;display:none;align-items:center;
         justify-content:center;background:rgba(255,255,255,.55);font-weight:700;color:var(--indigo)">מחשב…</div>
     </div>
 
     <div class="brow" style="justify-content:space-between;margin-top:.6rem;flex-wrap:wrap;gap:.4rem">
       <div style="display:flex;gap:.4rem">
-        <button class="btn btn-ghost" id="btn-cut-undo">↩︎ בטל</button>
-        <button class="btn btn-ghost" id="btn-cut-reset">🔄 אפס</button>
-        <button class="btn btn-ghost" id="btn-cut-peek">👁 תוצאה</button>
+        <button data-i18n="edit.cutoutUndoBtn" class="btn btn-ghost" id="btn-cut-undo">↩︎ בטל</button>
+        <button data-i18n="edit.cutoutResetBtn" class="btn btn-ghost" id="btn-cut-reset">🔄 אפס</button>
+        <button data-i18n="edit.cutoutPeekBtn" class="btn btn-ghost" id="btn-cut-peek">👁 תוצאה</button>
       </div>
       <div style="display:flex;gap:.4rem">
-        <button class="btn btn-ghost" id="btn-cut-cancel">ביטול</button>
-        <button class="btn btn-ok"    id="btn-cut-ok">✅ אישור</button>
+        <button data-i18n="edit.cutoutCancelBtn" class="btn btn-ghost" id="btn-cut-cancel">ביטול</button>
+        <button data-i18n="edit.cutoutOkBtn" class="btn btn-ok"    id="btn-cut-ok">✅ אישור</button>
       </div>
     </div>
   </div>
@@ -1769,21 +1769,21 @@ function dcfgSave(patch){
 <div class="modal-bg" id="auth-modal" hidden>
   <div class="modal-card" style="max-width:420px">
     <div class="modal-hdr">
-      <div class="modal-title">☁️ חשבון וסנכרון</div>
+      <div data-i18n="account.title" class="modal-title">☁️ חשבון וסנכרון</div>
       <button class="modal-x" id="auth-x">✕</button>
     </div>
 
     <!-- מנותק -->
     <div id="auth-out">
-      <p style="font-size:.9rem;color:var(--muted);line-height:1.6;margin-bottom:1rem">
+      <p data-i18n="account.desc" style="font-size:.9rem;color:var(--muted);line-height:1.6;margin-bottom:1rem">
         התחברו כדי לגבות את העיצובים שלכם לחשבון האישי — כך הם לא ייעלמו אם תחליפו מכשיר או תנקו את הדפדפן. הכניסה במייל, בלי סיסמה.
       </p>
       <div class="adm-field">
-        <label for="auth-email">המייל שלכם</label>
+        <label data-i18n="account.emailLabel" for="auth-email">המייל שלכם</label>
         <input id="auth-email" type="email" inputmode="email" placeholder="name@example.com"
           style="width:100%;padding:.6rem .8rem;border-radius:var(--rs);border:1.5px solid var(--border);font-family:inherit;font-size:1rem;direction:ltr;text-align:left;background:rgba(255,255,255,.85);outline:none">
       </div>
-      <button class="btn btn-ok" id="auth-send" style="width:100%;justify-content:center">✉️ שלחו לי קישור כניסה</button>
+      <button data-i18n="account.sendLinkBtn" class="btn btn-ok" id="auth-send" style="width:100%;justify-content:center">✉️ שלחו לי קישור כניסה</button>
       <div id="auth-msg" style="font-size:.85rem;min-height:1.3em;margin-top:.6rem;text-align:center"></div>
     </div>
 
@@ -1791,12 +1791,12 @@ function dcfgSave(patch){
     <div id="auth-in" hidden>
       <div style="text-align:center;padding:.3rem 0 1rem">
         <div style="font-size:2.2rem">✅</div>
-        <p style="font-size:.9rem;color:var(--muted);margin-top:.3rem">מחובר/ת כ־</p>
+        <p data-i18n="account.signedInAs" style="font-size:.9rem;color:var(--muted);margin-top:.3rem">מחובר/ת כ־</p>
         <p style="font-weight:700;direction:ltr" id="auth-user"></p>
       </div>
       <div id="auth-sync" style="background:rgba(240,253,244,.85);border:1.5px solid #bbf7d0;border-radius:10px;padding:.7rem 1rem;text-align:center;font-size:.85rem;color:#166534;margin-bottom:1rem"></div>
-      <div class="adm-hint2" style="text-align:center;margin-bottom:1rem;color:var(--muted)">העיצובים והתמונות מגובים לחשבון וזמינים מכל מכשיר.</div>
-      <button class="btn btn-ghost" id="auth-signout" style="width:100%;justify-content:center">התנתקות</button>
+      <div data-i18n="account.syncedNote" class="adm-hint2" style="text-align:center;margin-bottom:1rem;color:var(--muted)">העיצובים והתמונות מגובים לחשבון וזמינים מכל מכשיר.</div>
+      <button data-i18n="account.signOutBtn" class="btn btn-ghost" id="auth-signout" style="width:100%;justify-content:center">התנתקות</button>
     </div>
   </div>
 </div>
@@ -1806,19 +1806,19 @@ function dcfgSave(patch){
 <div class="modal-bg" id="cloudsave-modal" hidden>
   <div class="modal-card" style="max-width:420px">
     <div class="modal-hdr">
-      <div class="modal-title">☁️ שמירה בענן — חינם</div>
+      <div data-i18n="account.cloudSaveTitle" class="modal-title">☁️ שמירה בענן — חינם</div>
       <button class="modal-x" id="cloudsave-x">✕</button>
     </div>
     <p style="font-size:.9rem;color:var(--muted);line-height:1.6;margin-bottom:1rem">
       חברו כתובת מייל והעיצובים שלכם יישמרו אונליין. תוכלו להמשיך מכל מכשיר, וגם אם תאבדו את הטלפון העבודה לא תלך לאיבוד.<br>
-      <strong>המסלול שלכם לא משתנה — המייל משמש לגיבוי בלבד.</strong>
+      <strong data-i18n="account.cloudSaveNote">המסלול שלכם לא משתנה — המייל משמש לגיבוי בלבד.</strong>
     </p>
     <div class="adm-field">
-      <label for="cloudsave-email">המייל שלכם</label>
+      <label data-i18n="account.cloudSaveEmailLabel" for="cloudsave-email">המייל שלכם</label>
       <input id="cloudsave-email" type="email" inputmode="email" placeholder="name@example.com"
         style="width:100%;padding:.6rem .8rem;border-radius:var(--rs);border:1.5px solid var(--border);font-family:inherit;font-size:1rem;direction:ltr;text-align:left;background:rgba(255,255,255,.85);outline:none">
     </div>
-    <button class="btn btn-ok" id="cloudsave-send" style="width:100%;justify-content:center">✉️ שלחו לי קישור כניסה</button>
+    <button data-i18n="account.cloudSaveSendBtn" class="btn btn-ok" id="cloudsave-send" style="width:100%;justify-content:center">✉️ שלחו לי קישור כניסה</button>
     <div id="cloudsave-msg" style="font-size:.85rem;min-height:1.3em;margin-top:.6rem;text-align:center"></div>
   </div>
 </div>
@@ -1993,6 +1993,308 @@ function dcfgSave(patch){
 
 <script>
 'use strict';
+
+// ── מילון מחרוזות ─────────────────────────────────────────────────────
+// שלב א׳: העברת הטקסט מהקוד למילון, בלי שינוי נראה לעין. שלב ב׳ יוסיף
+// מילון אנגלי ומתג שפה. המפתחות תיאוריים ולא מספריים, כדי שאפשר יהיה
+// למצוא אותם בקוד: screen.action, לא t17.
+const I18N={
+  he:{
+    'lock.title':'מחולל דאבל',
+    'lock.tabHaveCode':'יש לי קוד',
+    'lock.tabFreeSignup':'הרשמה חינם',
+    'lock.tabBuy':'רכישת מנוי',
+    'lock.enterCodeLabel':'הזן/י קוד כניסה',
+    'lock.enterBtn':'כניסה ✓',
+    'lock.forgotCode':'שכחתי את הקוד שלי',
+    'lock.freeDesc':'משחק 7 תמונות — חינם לגמרי. הרשמה עם אימייל ובחירת קוד אישי:',
+    'lock.freeSignupBtn':'הרשמה וכניסה ✓',
+    'lock.chooseTierLabel':'בחר/י רמת מנוי:',
+    'lock.cancelBtn':'ביטול',
+    'lock.wrongCodeTitle':'הקוד לא התקבל',
+    'lock.wrongCodeMsg':'ייתכן שהקוד שגוי או שפג תוקף המנוי.',
+    'lock.wrongCodeClose':'סגירה',
+    'lock.upgradeTitle':'המשחק הזה דורש שדרוג',
+    'lock.upgradeOneGameTitle':'רוצים רק משחק אחד? זה בדיוק זה.',
+    'lock.upgradeNoRecurring':'אין חיוב חוזר',
+    'lock.upgradeEmailLabel':'האימייל שאיתו תרצה/י לשלם',
+    'lock.upgradeHaveCodeBtn':'יש לי כבר קוד אחר',
+    'lock.upgradeClose':'סגירה',
+    'lock.claimTitle':'התשלום התקבל — בחר/י קוד אישי',
+    'lock.claimDesc':'הקוד הזה יהיה מפתח הכניסה שלך בחודש הקרוב. שמרו אותו.',
+    'lock.claimEmailLabel':'האימייל ששילמת/ה איתו',
+    'lock.claimCodeLabel':'קוד אישי לבחירתך (4–20 תווים, בלי רווחים)',
+    'lock.claimSaveBtn':'שמירת הקוד וכניסה ✓',
+    'onboard.title':'ברוכים הבאים למחולל דאבל!',
+    'onboard.subtitle':'צור/י משחק Spot-It מותאם אישית בשלושה שלבים פשוטים',
+    'onboard.step1Title':'שלב 1 — העלאת סמלים',
+    'onboard.step1Desc':'גרור/י תמונות (PNG, JPG, SVG, HEIC) או בחרו חבילה מוכנה. ניתן לחתוך סמלים מתמונות גדולות עם כלי ✂️ וגם לבצע הסרת רקע אוטומטית',
+    'onboard.step2Title':'שלב 2 — יצירה ועיצוב',
+    'onboard.step2Desc':'המערכת מחשבת קלפים אוטומטית לפי מתמטיקה מדויקת. ניתן לעצב מסגרת, רקע ופריסת סמלים',
+    'onboard.step3Title':'שלב 3 — ייצוא',
+    'onboard.step3Desc':'PDF מוכן להדפסה בבית או ZIP של PNG בודדים — ואפשר גם להזמין הדפסה מקצועית בבית דפוס עם משלוח עד הבית (בתוספת תשלום)',
+    'onboard.packageNote':'חבילה אחת = 4 משחקים שונים',
+    'onboard.infoLink':'לכל הרעיונות וההשראה ←',
+    'onboard.contactLabel':'💬 לרכישת קוד גישה — צרו קשר',
+    'onboard.contactBtn':'📱 פנה/י אלינו בוואטסאפ',
+    'onboard.startBtn':'🚀 בואו נתחיל!',
+    'header.homeLink':'→ האתר',
+    'header.title':'🎯 מחולל משחק דאבל',
+    'upload.title':'העלאת סמלים',
+    'upload.desc':'גרור/י תמונות לכאן — כל העלאה נוספת מצטברת למאגר. לחץ/י ✂ על תמונה כדי להפיק ממנה סמלים נוספים.',
+    'upload.dropText':'גרור/י תמונות לכאן',
+    'upload.dropSubtext':'או לחץ/י לבחירת קבצים · כל העלאה מצטברת למאגר',
+    'upload.formatsNote':'JPG · PNG · HEIC (אייפון) · WebP · AVIF · GIF · BMP · TIFF · SVG · ניתן לבחור מספר קבצים',
+    'upload.multiPickBtn':'📁 בחירת קבצים מרובים (שיאומי / אנדרואיד)',
+    'upload.emojiLibBtn':'🔎 ספריית סמלים',
+    'upload.packsTitle':'🧰 או התחילו מחבילה מוכנה',
+    'upload.savedDesignsTitle':'🗂️ העיצובים השמורים שלי',
+    'upload.designFileTitle':'📦 גיבוי לקובץ',
+    'upload.designFileSaveBtn':'⬇️ שמור לקובץ',
+    'upload.designFileLoadBtn':'⬆️ טען מקובץ',
+    'upload.designFileShareBtn':'📤 שמירה לקבצים / שיתוף',
+    'upload.designFileDesc':'הקובץ מכיל את התמונות וההגדרות. שמרו אותו אצלכם — אפשר לטעון אותו בכל מכשיר.',
+    'upload.galleryTitle':'📦 מאגר נכסים',
+    'upload.selectAllBtn':'☑️ סמן הכל',
+    'upload.clearSelectionBtn':'◻️ נקה הכל',
+    'upload.deleteSelectedBtn':'🗑 מחק מסומנים',
+    'upload.saveToCloudBtn':'☁️ לשמור בענן?',
+    'upload.cardShapeLabel':'צורת קלף:',
+    'upload.cardShapeRound':'⭕ עגול',
+    'upload.cardShapeSquare':'⬜ מרובע',
+    'upload.symbolShapeLabel':'צורת סמל:',
+    'upload.symbolShapeRound':'⭕ עגול',
+    'upload.symbolShapeSquare':'⬜ מרובע',
+    'upload.sizesTitle':'גדלים אפשריים',
+    'upload.sizesColImages':'תמונות',
+    'upload.sizesColSymbolsPerCard':'סמלים/קלף',
+    'upload.sizesColCards':'קלפים',
+    'upload.sizesColSuitableFor':'מתאים ל…',
+    'upload.suitableToddlers':'ילדים קטנים',
+    'upload.suitableKids6':'ילדים 6+',
+    'upload.suitableFamily':'משפחה',
+    'upload.suitableMediumHard':'בינוני–קשה',
+    'upload.suitableStandard':'⭐ דאבל סטנדרטי',
+    'edit.gameDataTitle':'נתוני המשחק',
+    'edit.layoutTitle':'סידור סמלים',
+    'edit.layoutScattered':'🔀 מפוזר',
+    'edit.layoutPerimeter':'⭕ היקפי',
+    'edit.symbolSizeTitle':'גודל סמלים',
+    'edit.symbolSizeMin':'מינימום',
+    'edit.symbolSizeAutoNote':'⚙️ הותאם אוטומטית לגודל המקסימלי',
+    'edit.symbolSizeMax':'מקסימום',
+    'edit.overlapTitle':'חפיפה / מרווח',
+    'edit.overlapShapeMode':'🧩 חפיפה לפי צורת הסמל',
+    'edit.overlapFillMode':'📐 מילוי מיטבי של הקלף',
+    'edit.overlapNote':'אפס = הסמלים נוגעים בדיוק · ימינה = נכנסים זה בזה · שמאלה = מתרחקים זה מזה',
+    'edit.overlapResetBtn':'↺ ברירת מחדל',
+    'edit.paddingTitle':'מרווח מהמסגרת',
+    'edit.paddingLabel':'מרווח סמלים ← מסגרת',
+    'edit.paddingNote':'מרחק הסמלים מהמסגרת, במ"מ אמיתיים. הטווח מותאם אוטומטית לקוטר הקלף ולרוחב המסגרת.',
+    'edit.paddingResetBtn':'↺ ברירת מחדל',
+    'edit.actionsTitle':'פעולות',
+    'edit.reshuffleBtn':'🔀 ערבב מחדש',
+    'edit.saveDesignBtn':'💾 שמור עיצוב',
+    'edit.editBackBtn':'🎴 עצב את גב הקלף',
+    'edit.stuckBtn':'🆘 תקוע/ה? שלח את העבודה להושעיה',
+    'edit.backToUploadBtn':'← חזרה להעלאה',
+    'edit.goExportBtn':'ייצא / הדפס →',
+    'edit.algoCheckLabel':'בדיקת אלגוריתם:',
+    'export.title':'ייצוא והדפסה',
+    'export.desc':'בחר/י פריסה ואפשרויות הדפסה, ואז לחץ/י על הפקת הקובץ.',
+    'export.cardSizeTitle':'גודל קלף',
+    'export.perA4Title':'קלפים בדף A4',
+    'export.diameterLabel':'קוטר',
+    'export.cardSizeResetBtn':'↺ ברירת מחדל',
+    'export.gapTitle':'מרווח בין קלפים',
+    'export.gapDensityNote':'0 = צפיפות מקסימלית (Hex)',
+    'export.originTitle':'נקודת מוצא',
+    'export.originCenterBtn':'⊙ מרכז',
+    'export.originCornerBtn':'↖ פינה עליונה',
+    'export.cropMarksLabel':'סימני חיתוך (Crop Marks)',
+    'export.silhouetteModeLabel':'מצב Silhouette Cameo ✂️',
+    'export.cardDesignSummary':'🎨 עיצוב קלף',
+    'export.frameTitle':'מסגרת',
+    'export.frameWidthLabel':'רוחב מסגרת',
+    'export.pigmentLabel':'עוצמת פיגמנט',
+    'export.customColorLabel':'צבע חופשי',
+    'export.bgTitle':'רקע',
+    'export.customColorLabel2':'צבע חופשי',
+    'export.pigmentLabel2':'עוצמת פיגמנט',
+    'export.backTitle':'גב הקלף',
+    'export.duplexLabel':'הדפסה דו-צדדית (גב מעוצב)',
+    'export.editBackBtn':'🎴 ערוך גב',
+    'export.previewTitle':'תצוגה מקדימה (A4)',
+    'export.qualityTitle':'איכות הייצוא',
+    'export.qualityNormalBtn':'רגיל',
+    'export.qualityPrintBtn':'איכות הדפסה',
+    'export.previewBtn':'👁 תצוגה מקדימה',
+    'export.createPdfBtn':'⚙️ צור PDF',
+    'export.createZipBtn':'🗜️ צור ZIP (PNG)',
+    'export.createDxfBtn':'✂️ ייצא DXF לחיתוך',
+    'export.backToEditBtn':'← חזרה לעריכה',
+    'export.printShopFold':'🖨️ לבית דפוס',
+    'export.printPageBtn':'📦 PDF — עמוד לכל קלף',
+    'export.sheetBtn':'🗞️ גיליון 33×48.8',
+    'export.sheetDiameterTitle':'קוטר הקלף בגיליון',
+    'export.sheetDiameterNormalBtn':'רגיל · 71 מ"מ',
+    'export.sheetDiameterLargeBtn':'גדול · 85 מ"מ',
+    'export.trayTitle':'מגש גיליון (מנהל)',
+    'export.trayAddBtn':'➕ הוסף משחק לגיליון',
+    'export.trayClearBtn':'🗑️ נקה מגש',
+    'export.readyLabel':'✅ הקובץ מוכן!',
+    'export.downloadBtn':'📥 הורד קובץ',
+    'export.shareBtn':'📤 שמירה לקבצים / שיתוף',
+    'export.iosTip':'באייפון עדיף "שמירה לקבצים" — כך הקובץ נשמר ואפשר למצוא אותו אחר כך.',
+    'export.printOrderBtn2':'🚚 או: הדפסה ומשלוח עד הבית',
+    'export.printOrderBadge':'🚚 בתוספת תשלום',
+    'export.printOrderTitle':'🖨️ רוצים את המשחק מודפס ומוכן?',
+    'export.printOrderDesc':'לא חייבים להדפיס לבד — נדפיס את המשחק שלכם בבית דפוס איכותי, נחתוך כל קלף בצורה מדויקת ונשלח עד הבית.',
+    'export.printOrderFeature1':'🖨️ הדפסה מקצועית על נייר קשיח',
+    'export.printOrderFeature2':'✂️ חיתוך מדויק לכל קלף',
+    'export.printOrderFeature3':'📦 אריזה ומשלוח עד הבית',
+    'export.printOrderBtn':'💬 להזמנת הדפסה ומשלוח בוואטסאפ',
+    'export.printOrderNote':'ההודעה תישלח עם פרטי המשחק שיצרתם — נחזור אליכם עם מחיר וזמן אספקה.',
+    'export.printPreviewTitle':'👁 תצוגה מקדימה לפני הדפסה',
+    'export.printPreviewPrevBtn':'‹ הקודם',
+    'export.printPreviewNextBtn':'הבא ›',
+    'back.title':'🎴 עיצוב גב הקלף',
+    'back.tabBg':'רקע',
+    'back.tabFrame':'מסגרת',
+    'back.tabSymbol':'סמל',
+    'back.tabText':'כיתוב',
+    'back.tabLogo':'לוגו',
+    'back.tabPrint':'הדפסה',
+    'back.bgModeTitle':'מצב רקע',
+    'back.bgModeSolid':'אחיד',
+    'back.bgModeRadial':'רדיאלי',
+    'back.bgModeDiagonal':'אלכסוני',
+    'back.mainColorTitle':'צבע ראשי',
+    'back.customColorLabel':'צבע חופשי',
+    'back.gradientColorTitle':'צבע משני (גרדיאנט)',
+    'back.customColorLabel2':'צבע חופשי',
+    'back.patternTitle':'דוגמה',
+    'back.customColorLabel3':'צבע חופשי',
+    'back.patternOpacityLabel':'שקיפות דוגמה',
+    'back.patternScaleLabel':'קנה מידה',
+    'back.frameStyleTitle':'סגנון מסגרת',
+    'back.frameColorTitle':'צבע',
+    'back.customColorLabel4':'צבע חופשי',
+    'back.frameWidthLabel':'רוחב',
+    'back.frameOpacityLabel':'שקיפות',
+    'back.symbolTitle':'סמל מרכזי',
+    'back.symbolColorTitle':'צבע',
+    'back.customColorLabel5':'צבע חופשי',
+    'back.symbolSizeLabel':'גודל',
+    'back.symbolOffsetLabel':'היסט אנכי',
+    'back.mainTextTitle':'טקסט ראשי',
+    'back.subTextTitle':'טקסט משני',
+    'back.fontTitle':'גופן',
+    'back.fontNormalBtn':'רגיל',
+    'back.fontClassicBtn':'קלאסי',
+    'back.fontRoundBtn':'עגול',
+    'back.textColorTitle':'צבע',
+    'back.customColorLabel6':'צבע חופשי',
+    'back.textSizeLabel':'גודל',
+    'back.textOffsetLabel':'היסט אנכי',
+    'back.logoTitle':'לוגו (אופציונלי)',
+    'back.logoUploadBtn':'📤 העלה לוגו',
+    'back.logoRemoveBtn':'🗑 הסר לוגו',
+    'back.logoSizeLabel':'גודל',
+    'back.logoOffsetLabel':'היסט אנכי',
+    'back.flipDirectionTitle':'כיוון הפיכת הדף',
+    'back.flipShortEdgeBtn':'↕ צד קצר',
+    'back.flipLongEdgeBtn':'↔ צד ארוך',
+    'back.flipNote':'אחרי שהדף יוצא מהמדפסת, הפכו אותו כמו דף במחברת (מלמעלה למטה) והחזירו אותו למגש.',
+    'back.pageOrderTitle':'סדר עמודים בקובץ',
+    'back.pageOrderFrontBackBtn':'קדמי ואז גב',
+    'back.pageOrderAlternateBtn':'לסירוגין',
+    'back.fineTuneTitle':'כוונון עדין (מ"מ)',
+    'back.offsetXLabel':'הזזה אופקית (dx)',
+    'back.offsetYLabel':'הזזה אנכית (dy)',
+    'back.resetFineTuneBtn':'↺ אפס כוונון',
+    'back.bleedTitle':'הגדלת גב (bleed)',
+    'back.calibBtn':'📐 הפק דף כיול (2 עמודים)',
+    'back.calibNote':'הדפיסו את דף הכיול, הפכו אותו, ומדדו את הסטייה בין הסרגלים — הזינו אותה כאן בכוונון העדין.',
+    'back.cancelBtn':'ביטול',
+    'back.saveBtn':'✅ שמור',
+    'edit.verifyTitle':'🔍 בדיקת זוג קלפים',
+    'edit.verifyCardALabel':'קלף א',
+    'edit.verifyCardBLabel':'קלף ב',
+    'edit.cardEditOverlapWarning':'⚠️ יש חפיפה בין סמלים בקלף',
+    'edit.cardEditSizeLabel':'גודל הסמל שנבחר',
+    'edit.cardEditResetOneBtn':'↩️ אפס סמל',
+    'edit.cardEditResetAllBtn':'🧹 אפס קלף',
+    'msg.confirmCancel':'ביטול',
+    'emoji.modalTitle':'🔎 ספריית סמלים',
+    'emoji.noResults':'לא נמצא סמל מתאים',
+    'emoji.tryAiBtn':'✨ צור ב-AI',
+    'emoji.addBtn':'הוסף נבחרים (0)',
+    'emoji.creditsLine':'אייקונים: Twemoji (CC-BY 4.0) · OpenMoji (CC-BY-SA 4.0) · Noto Emoji (Apache 2.0)',
+    'edit.cropTitle':'✂️ הפקת סמלים מתמונה',
+    'edit.cropToolLabel':'כלי חיתוך:',
+    'edit.cropCircleBtn':'⭕ עיגול',
+    'edit.cropRoundedSquareBtn':'⬜ מרובע מעוגל',
+    'edit.removeBgLabel':'✨ הסר רקע',
+    'edit.removeBgSensitivityLabel':'רגישות:',
+    'edit.cropDragHint':'לחץ/י וגרור/י על התמונה לבחירת סמלים',
+    'edit.cropCancelBtn':'ביטול',
+    'edit.cropAddBtn':'✅ הוסף למאגר',
+    'edit.cutoutTitle':'🪄 הסרת רקע חכמה',
+    'edit.cutoutKeepLabel':'לשמור',
+    'edit.cutoutRemoveLabel':'רקע',
+    'edit.cutoutKeepBtn':'✅ לשמור',
+    'edit.cutoutRemoveBtn':'❌ רקע',
+    'edit.cutoutEraseBtn':'🧽 מחק סימון',
+    'edit.cutoutBrushSizeLabel':'גודל מברשת',
+    'edit.cutoutFeatherLabel':'עדינות הגזירה',
+    'edit.cutoutComputing':'מחשב…',
+    'edit.cutoutUndoBtn':'↩︎ בטל',
+    'edit.cutoutResetBtn':'🔄 אפס',
+    'edit.cutoutPeekBtn':'👁 תוצאה',
+    'edit.cutoutCancelBtn':'ביטול',
+    'edit.cutoutOkBtn':'✅ אישור',
+    'account.title':'☁️ חשבון וסנכרון',
+    'account.desc':'התחברו כדי לגבות את העיצובים שלכם לחשבון האישי — כך הם לא ייעלמו אם תחליפו מכשיר או תנקו את הדפדפן. הכניסה במייל, בלי סיסמה.',
+    'account.emailLabel':'המייל שלכם',
+    'account.sendLinkBtn':'✉️ שלחו לי קישור כניסה',
+    'account.signedInAs':'מחובר/ת כ־',
+    'account.syncedNote':'העיצובים והתמונות מגובים לחשבון וזמינים מכל מכשיר.',
+    'account.signOutBtn':'התנתקות',
+    'account.cloudSaveTitle':'☁️ שמירה בענן — חינם',
+    'account.cloudSaveNote':'המסלול שלכם לא משתנה — המייל משמש לגיבוי בלבד.',
+    'account.cloudSaveEmailLabel':'המייל שלכם',
+    'account.cloudSaveSendBtn':'✉️ שלחו לי קישור כניסה',
+    'lock.freeCodePh':'בחר/י קוד אישי (4–20 תווים)',
+    'lock.claimCodePh':'לדוגמה: dana2026',
+    'back.mainTextPh':'למשל: מזל טוב',
+    'back.subTextPh':'למשל: שם הילד/ה',
+    'emoji.searchPh':'חפשו סמל בעברית… למשל: חנוכיה, אריה, כבאית',
+  }
+};
+let LANG='he';
+function t(key){
+  const d=I18N[LANG]||I18N.he;
+  // ⛔ מפתח חסר מחזיר את המפתח עצמו ולא מחרוזת ריקה — כך שגיאה נראית
+  // מיד על המסך במקום להיעלם בשקט.
+  return (key in d)?d[key]:(I18N.he[key]!==undefined?I18N.he[key]:key);
+}
+window.t=t;
+// הטקסט העברי נשאר ב-HTML כברירת מחדל, כדי שדף שנטען לפני שה-JS רץ
+// לא יציג מפתחות. ההחלפה קורית רק אם המפתח קיים במילון.
+function applyI18n(root){
+  (root||document).querySelectorAll('[data-i18n]').forEach(el=>{
+    const k=el.getAttribute('data-i18n');
+    const v=t(k);
+    if(v!==k)el.textContent=v;
+  });
+  (root||document).querySelectorAll('[data-i18n-ph]').forEach(el=>{
+    const k=el.getAttribute('data-i18n-ph');const v=t(k);
+    if(v!==k)el.placeholder=v;
+  });
+}
+window.applyI18n=applyI18n;
+applyI18n();
 
 // ── Supabase (מאותחל בהמשך; var כדי שיהיה נגיש גם ל-renderDesigns בטעינה) ──
 var SB=null, authSession=null;
