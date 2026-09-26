@@ -2329,6 +2329,7 @@ const I18N={
     'msg.shareUnavailableUseDownload':'השיתוף לא זמין כרגע — נסו את כפתור ההורדה',
     'msg.shareUnavailableUseSave':'השיתוף לא זמין כרגע — נסו את כפתור השמירה',
     'msg.signedInLoadingDesigns':'התחברת — טוען את העיצובים שלך ☁️',
+    'msg.syncFailedRetryNextLogin':'הסנכרון נכשל — ננסה שוב בכניסה הבאה',
     'msg.signedInSyncingDesigns':'התחברת — מסנכרן את העיצובים שלך ☁️',
     'msg.signedOut':'התנתקת',
     'msg.silhouetteBackUnsupported':'⚠️ שילוב Silhouette + גב מעוצב לא נתמך — הייצוא ייחסם',
@@ -8698,7 +8699,7 @@ async function _syncDesignsInner(session){
     renderDesigns();
   }catch(e){
     console.warn('syncDesigns:',e);
-    if(info){info.style.color='#b91c1c';info.textContent='הסנכרון נכשל — ננסה שוב בכניסה הבאה';}
+    if(info){info.style.color='#b91c1c';info.textContent=t('msg.syncFailedRetryNextLogin');}
   }
 }
 
