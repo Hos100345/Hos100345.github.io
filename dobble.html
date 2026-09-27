@@ -2406,6 +2406,8 @@ const I18N={
     'account.cloudSaveSendBtn':'✉️ שלחו לי קישור כניסה',
     'account.cloudSaveProgressTitle':'שומר בענן…',
     'account.cloudSaveProgressHint':'מעלה את התמונות לחשבון שלך — תלוי במספר התמונות ובמהירות האינטרנט',
+    'account.cloudLoadProgressTitle':'טוען מהענן…',
+    'account.cloudLoadProgressHint':'מוריד את התמונות מהחשבון שלך — תלוי במספר התמונות ובמהירות האינטרנט',
     'account.designSavedToCloud':'העיצוב "{name}" נשמר בענן ☁️',
     'account.codeInfoLine':'{code} · עד {max} קלפים · בתוקף עד {exp}',
     'account.noExpiryLabel':'ללא הגבלה',
@@ -2436,7 +2438,6 @@ const I18N={
     'msg.designImagesNotOnDevice':'לא נמצאו התמונות של העיצוב הזה במכשיר. הן נשמרות בחשבון בלבד — התחברו במייל כדי לשחזר, או העלו את התמונות מחדש. העבודה הנוכחית שלכם נשמרה ולא נמחקה.',
     'msg.designNotFound':'העיצוב לא נמצא',
     'msg.designSaveFailed':'שמירת העיצוב נכשלה',
-    'msg.downloadingDesignFromAccount':'מוריד עיצוב מהחשבון…',
     'msg.fileDownloadedFallback':'הקובץ ירד למכשיר ✅',
     'msg.gameNeedsBackForSheet':'למשחק הזה אין עיצוב גב. בגיליון דו-צדדי כל משחק חייב גב משלו — הוא גם מה שמבדיל בין המשחקים אחרי החיתוך.',
     'msg.invalidEmail':'נא להזין כתובת מייל תקינה',
@@ -2923,6 +2924,8 @@ const I18N={
     'account.cloudSaveSendBtn':'✉️ Send me a sign-in link',
     'account.cloudSaveProgressTitle':'Saving to the cloud…',
     'account.cloudSaveProgressHint':'Uploading your images to your account — how long this takes depends on the number of images and your internet speed',
+    'account.cloudLoadProgressTitle':'Loading from the cloud…',
+    'account.cloudLoadProgressHint':'Downloading your images from your account — how long this takes depends on the number of images and your internet speed',
     'account.designSavedToCloud':'Design "{name}" saved to the cloud ☁️',
     'account.codeInfoLine':'{code} · up to {max} cards · valid until {exp}',
     'account.noExpiryLabel':'No expiry',
@@ -2953,7 +2956,6 @@ const I18N={
     'msg.designImagesNotOnDevice':'This design’s images were not found on this device. They’re only saved in your account — sign in by email to restore them, or upload the images again. Your current work has been saved and was not deleted.',
     'msg.designNotFound':'Design not found',
     'msg.designSaveFailed':'Failed to save the design',
-    'msg.downloadingDesignFromAccount':'Downloading design from your account…',
     'msg.fileDownloadedFallback':'File downloaded to your device ✅',
     'msg.gameNeedsBackForSheet':'This game has no back design. On a double-sided sheet, every game needs its own back — it’s also what tells the games apart after cutting.',
     'msg.invalidEmail':'Please enter a valid email address',
@@ -7857,10 +7859,15 @@ async function loadDesign(name){
 }
 
 // טעינת עיצוב שקיים רק בענן: מוריד את התמונות, טוען, ושומר מקומית לפעם הבאה
+let _cloudLoadBusy=false;
 async function loadCloudDesign(row){
-  toast(t('msg.downloadingDesignFromAccount'),'ok');
+  if(_cloudLoadBusy)return;                        // ⛔ מונע טעינה כפולה
+  _cloudLoadBusy=true;
+  const total=((row.game_data||{}).images||[]).length;
+  uploadProgressOpen(total,{title:t('account.cloudLoadProgressTitle'),
+    hint:t('account.cloudLoadProgressHint')});
   try{
-    const d=await cloudFetchDesign(row);
+    const d=await cloudFetchDesign(row,(done,t2,nm)=>uploadProgressStep(done,t2,nm));
     if(!d.rows.length){toast(t('msg.noImagesForThisDesign'),'err');return;}
     await applyDesignToState(d);
     // שמירה מקומית כדי שיהיה זמין מיד ובלי אינטרנט
@@ -7871,6 +7878,11 @@ async function loadCloudDesign(row){
     renderDesigns();
     toast(t('upload.designLoadedFromAccount',{name:row.name}),'ok');
   }catch(e){console.warn('loadCloudDesign:',e);toast(t('msg.loadDesignFromAccountFailed'),'err');}
+  finally{
+    // ⛔ חובה ב-finally: כישלון באמצע חייב לשחרר את הנעילה ולסגור את החלונית.
+    uploadProgressClose();
+    _cloudLoadBusy=false;
+  }
 }
 
 async function renderDesigns(){
@@ -9374,18 +9386,28 @@ window.addEventListener('pagehide',()=>{
   if(_cloudAutoDirty){clearTimeout(_cloudAutoTimer);cloudAutosave();}
 });
 
-async function cloudFetchDesign(row){
+// onProgress אופציונלי: נקרא אחרי כל תמונה, גם כשהיא נכשלה, כדי שהסרגל
+// לא ייתקע על תמונה בעייתית.
+async function cloudFetchDesign(row,onProgress){
   // מוריד את התמונות מ-Storage ובונה מבנה עיצוב תואם למקומי {name,rows,settings}
   const gd=row.game_data||{};const images=gd.images||[];
   const rows=[];
+  const total=images.length;
+  let done=0;
   for(const im of images){
     try{
       // אותה בעיה כמו בהעלאה — הורדה שנתקעת בלי timeout קופאת על התמונה הזו לנצח
       const{data,error}=await withTimeout(SB.storage.from(SB_BUCKET).download(im.path),20000,'download timeout');
+      done++;
+      if(onProgress){try{onProgress(done,total,im.name||'');}catch(e){}}
       if(error||!data)continue;
       const dataURL=await blobToDataURL(data);
       rows.push({id:im.id,name:im.name,type:im.type,dataURL,srcAssetId:im.srcAssetId||undefined,isCropSource:im.isCropSource||false,selected:im.selected!==false});
-    }catch(e){console.warn('download',im.path,e);}
+    }catch(e){
+      console.warn('download',im.path,e);
+      done++;
+      if(onProgress){try{onProgress(done,total,im.name||'');}catch(e2){}}
+    }
   }
   return{name:row.name,date:row.created_at,rows,settings:gd.settings||{}};
 }
