@@ -13,12 +13,13 @@
 // דרך MCP) — הפונקציה הזו לא יוצרת ולא משנה סכימה.
 //
 // פריסה: MCP בלבד (Claude Code לא מגיע ל-*.supabase.co).
+// מחיר: 15 ₪ לדף מ-27/09/2026 (היה 10). הגרסה הפרוסה (v6) כבר עם 15.
 // ============================================================
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const BUCKET = 'sticker-orders';
-const PRICE_ILS_PER_SHEET = 10;
+const PRICE_ILS_PER_SHEET = 15;
 const MAX_SVG_BYTES = 500 * 1024;
 const MAX_PREVIEW_BYTES = 2 * 1024 * 1024;
 const MAX_DESIGN_BYTES = 256 * 1024;
