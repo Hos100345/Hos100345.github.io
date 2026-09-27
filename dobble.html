@@ -110,6 +110,16 @@
     .shape-grp{display:flex;border:2px solid var(--border);border-radius:100px;overflow:hidden}
     .sbt{padding:.4rem 1rem;font-size:.85rem;font-weight:700;font-family:inherit;background:transparent;border:none;cursor:pointer;color:var(--muted);transition:all var(--tr)}
     .sbt.on{background:var(--indigo);color:#fff}
+    .font-display{text-align:center;padding:.5rem .6rem;width:100%;min-width:0;border:2px solid var(--border);border-radius:12px;background:var(--white);cursor:pointer}
+    .font-display:hover{background:var(--bg)}
+    .font-name-display{font-size:1.05rem;font-weight:700}
+    .font-meta-display{font-size:.75rem;color:var(--muted);margin-top:2px}
+    .font-all-list{display:flex;flex-direction:column;gap:.9rem;max-height:60vh;overflow-y:auto;margin-top:.75rem}
+    .font-cat-heading{font-size:.7rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem}
+    .font-tile-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+    .font-tile{border:2px solid var(--border);border-radius:10px;padding:.6rem .4rem;cursor:pointer;text-align:center;background:var(--bg);font-size:.95rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:opacity .15s,background .1s}
+    .font-tile:hover{background:var(--blue-light)}
+    .font-tile.selected{border-color:var(--indigo);background:var(--blue-light)}
 
     /* ── BUTTONS ── */
     .btn{display:inline-flex;align-items:center;gap:.4rem;padding:.7rem 1.6rem;border-radius:100px;font-size:.9rem;font-weight:700;font-family:inherit;cursor:pointer;border:none;transition:all var(--tr);white-space:nowrap;text-decoration:none;min-height:44px}
@@ -411,6 +421,7 @@
 <!-- ?v=N — מעלים את המספר בכל שינוי בקובץ, אחרת הדפדפן יגיש גרסה ישנה מהמטמון -->
 <script src="js/dobble-config.js?v=2"></script>
 <script src="js/supabase-config.js?v=1"></script>
+<script src="js/hebrew-fonts.js?v=1"></script>
 <script>
 // קונפיג בזמן ריצה: ברירות מחדל ← קובץ הקונפיג ← עריכות מקומיות מפאנל הניהול
 window.DCFG=(function(){
@@ -1483,10 +1494,9 @@ function dcfgSave(patch){
       <input type="text" id="back-text-sub" class="adm-inp" style="color:inherit;background:rgba(255,255,255,.6);border-color:var(--border)" placeholder="למשל: שם הילד/ה" data-i18n-ph="back.subTextPh">
       <div class="back-quick-row" id="back-text-quick" style="margin-top:.5rem"></div>
       <div data-i18n="back.fontTitle" class="og-t" style="margin-top:.5rem">גופן</div>
-      <div class="shape-grp" id="back-text-font-grp">
-        <button data-i18n="back.fontNormalBtn" class="sbt on" data-font="sans" style="flex:1">רגיל</button>
-        <button data-i18n="back.fontClassicBtn" class="sbt" data-font="serif" style="flex:1">קלאסי</button>
-        <button data-i18n="back.fontRoundBtn" class="sbt" data-font="round" style="flex:1">עגול</button>
+      <div class="font-display" id="back-font-display-btn" role="button" tabindex="0">
+        <div id="back-font-name-display" class="font-name-display">רגיל</div>
+        <div id="back-font-meta-display" class="font-meta-display" data-i18n="back.fontPickHint">לחץ לבחירת פונט</div>
       </div>
       <div data-i18n="back.textColorTitle" class="og-t" style="margin-top:.5rem">צבע</div>
       <div class="swatch-row" id="back-text-sw"></div>
@@ -1541,6 +1551,17 @@ function dcfgSave(patch){
       <button data-i18n="back.cancelBtn" class="btn btn-ghost" id="back-cancel">ביטול</button>
       <button data-i18n="back.saveBtn" class="btn btn-ok" id="back-save">✅ שמור</button>
     </div>
+  </div>
+</div>
+
+<!-- BACK TEXT FONT PICKER — אותו דפוס כמו pencil-stickers.html -->
+<div class="modal-bg" id="back-font-all-modal" hidden style="z-index:10002">
+  <div class="modal-card" style="max-width:480px">
+    <div class="modal-hdr">
+      <div data-i18n="back.fontAllTitle" class="modal-title">כל הפונטים</div>
+      <button class="modal-x" id="back-font-all-close">✕</button>
+    </div>
+    <div id="back-font-all-list" class="font-all-list"></div>
   </div>
 </div>
 
@@ -2289,6 +2310,8 @@ const I18N={
     'back.fontNormalBtn':'רגיל',
     'back.fontClassicBtn':'קלאסי',
     'back.fontRoundBtn':'עגול',
+    'back.fontPickHint':'לחץ לבחירת פונט',
+    'back.fontAllTitle':'כל הפונטים',
     'back.textColorTitle':'צבע',
     'back.customColorLabel6':'צבע חופשי',
     'back.textSizeLabel':'גודל',
@@ -2807,6 +2830,8 @@ const I18N={
     'back.fontNormalBtn':'Regular',
     'back.fontClassicBtn':'Classic',
     'back.fontRoundBtn':'Round',
+    'back.fontPickHint':'Tap to choose a font',
+    'back.fontAllTitle':'All fonts',
     'back.textColorTitle':'Color',
     'back.customColorLabel6':'Custom color',
     'back.textSizeLabel':'Size',
@@ -3696,6 +3721,115 @@ function mergeBack(saved){
 
 const BACK_FONT_STACK={sans:"system-ui,'Segoe UI',Arial,sans-serif",serif:"Georgia,'Times New Roman',serif",round:"'Varela Round','Comic Sans MS',system-ui"};
 
+// תאימות אחורה: 'sans'/'serif'/'round' (עיצובים ישנים) ממשיכים לפתור בדיוק
+// כמו קודם. כל מחרוזת אחרת = שם משפחת גופן אמיתי מ-HebrewFonts (הבורר החדש),
+// עם ה-stack הרגיל כ-fallback אם הטעינה מגוגל נכשלת.
+function resolveBackFont(key){
+  return BACK_FONT_STACK[key] || `"${key}", ${BACK_FONT_STACK.sans}`;
+}
+
+// תצוגה בלבד — לא נוגעת ב-S.back. loaded=false מציג את השם בדהייה עד
+// שהפונט אומת שנטען (מראה ל-pencil-stickers.html). מפתחות legacy
+// (sans/serif/round, בלי רשומה ב-HebrewFonts.FONTS) אין מה לטעון —
+// תמיד "נטענים" (גופן מערכת מוכן תמיד).
+function renderBackFontPreview(key,loaded){
+  const nameEl=document.getElementById('back-font-name-display');
+  const metaEl=document.getElementById('back-font-meta-display');
+  if(!nameEl||!metaEl)return;
+  const rec=HebrewFonts.FONTS.find(r=>r.f===key);
+  const legacyLabels={sans:'back.fontNormalBtn',serif:'back.fontClassicBtn',round:'back.fontRoundBtn'};
+  nameEl.textContent=rec?rec.he:t(legacyLabels[key]||'back.fontNormalBtn');
+  nameEl.style.fontFamily=resolveBackFont(key);
+  nameEl.style.opacity=(loaded||!rec)?'1':'.45';
+  metaEl.textContent=t('back.fontPickHint');
+}
+
+// נקודת הכניסה היחידה שקובעת פונט לגב: אופטימי + timeout (כלל timeout —
+// זו קריאת רשת), ודילוג שקט על פונט שבור (attempt חוסם לולאה אינסופית
+// אופליין). key יכול להיות 'sans'/'serif'/'round' (legacy, בלי טעינה) או
+// שם משפחה אמיתי מ-HebrewFonts.
+async function setBackFont(key,attempt){
+  S.back.text.font=key;
+  renderBackFontPreview(key,false);
+  markBackDirty();
+  const rec=HebrewFonts.FONTS.find(r=>r.f===key);
+  if(!rec){renderBackFontPreview(key,true);return;}
+  try{
+    await withTimeout(HebrewFonts.load(key),10000,'טעינת הפונט נתקעה');
+  }catch(e){
+    console.warn('back font load failed:',key,e);
+    skipToNextBackFont(key,attempt);
+    return;
+  }
+  if(S.back.text.font!==key)return;
+  renderBackFontPreview(key,true);
+  markBackDirty();
+}
+
+function skipToNextBackFont(brokenFamily,attempt){
+  attempt=(attempt||0)+1;
+  if(attempt>=HebrewFonts.FONTS.length){
+    console.warn('כל הפונטים נכשלו בטעינה — נשאר בגופן מערכת');
+    return;
+  }
+  const idx=HebrewFonts.FONTS.findIndex(r=>r.f===brokenFamily);
+  const nextFamily=HebrewFonts.FONTS[(idx+1)%HebrewFonts.FONTS.length].f;
+  setBackFont(nextFamily,attempt);
+}
+
+// "כל הפונטים" — מקובץ לפי HebrewFonts.CATS, טעינה עצלה דרך
+// IntersectionObserver (אותו דפוס כמו pencil-stickers.html). נבנה מחדש
+// בכל פתיחה כדי שהתצוגה המקדימה תשקף את הטקסט הראשי הנוכחי. נבנה עם DOM
+// (לא innerHTML+שרשור) כי dobble.html לא כולל helper של escapeHtml.
+// במצב אנגלית (?lang=en) מוצגים רק פונטים עם latin:true.
+function buildBackFontAllList(){
+  const box=document.getElementById('back-font-all-list');
+  box.textContent='';
+  const previewText=S.back.text.main||'אבגד';
+  const order=['daily','friendly','display','serif','hand','fx'];
+  const onlyLatin=(LANG==='en');
+  const tilesToObserve=[];
+  order.forEach(cat=>{
+    let recs=HebrewFonts.list(cat);
+    if(onlyLatin)recs=recs.filter(r=>r.latin);
+    if(!recs.length)return;
+    const heading=document.createElement('div');
+    heading.className='font-cat-heading';
+    heading.textContent=HebrewFonts.CATS[cat];
+    const grid=document.createElement('div');
+    grid.className='font-tile-grid';
+    recs.forEach(rec=>{
+      const tile=document.createElement('div');
+      tile.className='font-tile'+(rec.f===S.back.text.font?' selected':'');
+      tile.dataset.font=rec.f;
+      tile.style.opacity='.45';
+      tile.textContent=previewText;
+      tile.addEventListener('click',()=>{
+        setBackFont(rec.f);
+        document.getElementById('back-font-all-modal').hidden=true;
+      });
+      grid.appendChild(tile);
+      tilesToObserve.push(tile);
+    });
+    const wrap=document.createElement('div');
+    wrap.appendChild(heading);wrap.appendChild(grid);
+    box.appendChild(wrap);
+  });
+  const observer=new IntersectionObserver(entries=>{
+    entries.forEach(async entry=>{
+      if(!entry.isIntersecting)return;
+      observer.unobserve(entry.target);
+      const family=entry.target.dataset.font;
+      try{
+        await withTimeout(HebrewFonts.load(family),10000,'טעינת הפונט נתקעה');
+        entry.target.style.fontFamily=`"${family}", sans-serif`;
+        entry.target.style.opacity='1';
+      }catch(e){/* נשאר בפונט גיבוי בשקט */}
+    });
+  },{rootMargin:'150px'});
+  tilesToObserve.forEach(tile=>observer.observe(tile));
+}
+
 // ── דוגמאות רקע: אריח נבנה פעם אחת, מוקאש לפי id+color+scale. קונפטי דטרמיניסטי (sr, seed 7777) ──
 const _patternTileCache={};
 // px = רזולוציית הקנבס שהתבנית תמולא עליו. base=60 היה מוחלט, ולכן באיכות
@@ -3851,7 +3985,7 @@ function drawBackText(ctx,cx,cy,r,text){
   if(!text.main&&!text.sub)return;
   ctx.save();
   ctx.textAlign='center';ctx.direction='rtl';
-  const sizePx=Math.max(4,r*text.size/100),font=BACK_FONT_STACK[text.font]||BACK_FONT_STACK.sans;
+  const sizePx=Math.max(4,r*text.size/100),font=resolveBackFont(text.font);
   const y0=cy+r*text.dy/100;
   const drawLine=(str,y,sizeMul)=>{
     if(!str)return;
@@ -5604,10 +5738,16 @@ document.getElementById('back-sym-dy').addEventListener('input',e=>{
 });
 document.getElementById('back-text-main').addEventListener('input',e=>{S.back.text.main=e.target.value;markBackDirty();});
 document.getElementById('back-text-sub').addEventListener('input',e=>{S.back.text.sub=e.target.value;markBackDirty();});
-document.getElementById('back-text-font-grp').addEventListener('click',e=>{
-  const b=e.target.closest('.sbt');if(!b)return;
-  document.querySelectorAll('#back-text-font-grp .sbt').forEach(x=>x.classList.remove('on'));
-  b.classList.add('on');S.back.text.font=b.dataset.font;markBackDirty();
+document.getElementById('back-font-display-btn').addEventListener('click',()=>{
+  buildBackFontAllList();
+  document.getElementById('back-font-all-modal').hidden=false;
+});
+document.getElementById('back-font-display-btn').addEventListener('keydown',e=>{
+  if(e.key==='Enter'||e.key===' '){e.preventDefault();document.getElementById('back-font-display-btn').click();}
+});
+document.getElementById('back-font-all-close').addEventListener('click',()=>{document.getElementById('back-font-all-modal').hidden=true;});
+document.getElementById('back-font-all-modal').addEventListener('click',e=>{
+  if(e.target.id==='back-font-all-modal')e.currentTarget.hidden=true;
 });
 document.getElementById('back-text-size').addEventListener('input',e=>{
   S.back.text.size=parseFloat(e.target.value);document.getElementById('lbl-back-text-size').textContent=S.back.text.size+'%';markBackDirty();
@@ -5709,7 +5849,7 @@ function syncBackUIFromState(){
   document.getElementById('back-sym-dy').value=B.symbol.dy;document.getElementById('lbl-back-sym-dy').textContent=B.symbol.dy+'%';
   document.getElementById('back-text-main').value=B.text.main;
   document.getElementById('back-text-sub').value=B.text.sub;
-  document.querySelectorAll('#back-text-font-grp .sbt').forEach(b=>b.classList.toggle('on',b.dataset.font===B.text.font));
+  renderBackFontPreview(B.text.font,true);
   document.getElementById('back-text-pick').value=B.text.color;syncSwatchRow('back-text-sw',B.text.color);
   document.getElementById('back-text-size').value=B.text.size;document.getElementById('lbl-back-text-size').textContent=B.text.size+'%';
   document.getElementById('back-text-dy').value=B.text.dy;document.getElementById('lbl-back-text-dy').textContent=B.text.dy+'%';
@@ -5892,6 +6032,17 @@ async function doExport(type){
         return;
       }
     }catch(e){console.warn('consume_print_quota:',e);}
+  }
+  // ודאות טעינה לפני ציור ל-PDF/תמונה: canvas לא ממתין לפונטים בעצמו,
+  // אז בלי זה גב עם פונט Google שעוד לא נטען היה נופל בשקט לפונט המערכת
+  // בייצוא בזמן שהתצוגה החיה כבר מציגה את הפונט הנכון. fail-open — כשל
+  // רשת לא חוסם ייצוא, הטקסט פשוט יוצא בפונט הגיבוי כמו קודם.
+  if(S.back.text.font&&(S.back.text.main||S.back.text.sub)){
+    const rec=HebrewFonts.FONTS.find(r=>r.f===S.back.text.font);
+    if(rec){
+      try{await withTimeout(HebrewFonts.load(S.back.text.font),10000,'טעינת הפונט נתקעה');}
+      catch(e){console.warn('export font load:',e);}
+    }
   }
   resetExport();
   document.getElementById('exp-prog').classList.add('on');
