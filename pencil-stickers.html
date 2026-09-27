@@ -87,7 +87,21 @@
   <div class="left" style="display:flex;flex-direction:column;gap:12px">
 
     <div class="panel highlight" id="add-content-panel">
-      <h2 id="shape-panel-title">1️⃣ עיצוב מבנה ופרופורציה (תצוגה מקדימה)</h2>
+      <h2 id="shape-panel-title">1️⃣ הוספת תוכן וצורת המדבקה</h2>
+
+      <!-- מוסתר דינמית ב-updateGroupEditVisibility כש-repeatGroupsActive וגם
+           אין קבוצה נבחרת (activeGroupId===null) — אין יותר "תוכן חופשי
+           בסיסי" להוסיף אליו במצב הזה, בניגוד לזרימה הרגילה/עריכת קבוצה
+           ספציפית ששתיהן תמיד יש להן יעד תקף. -->
+      <div id="add-content-buttons">
+        <div class="row">
+          <button class="btn btn-primary" id="add-text-btn">+ הוסף טקסט</button>
+          <button class="btn" id="open-emoji-modal">⭐ הוסף אייקון</button>
+        </div>
+        <button class="btn" id="add-image-btn" style="width:100%">📁 העלה תמונה</button>
+        <input type="file" id="file-input" accept="image/*" style="display:none">
+        <div class="hint" style="margin-top:4px">💡 גרור טקסט/אימוג'י בתוך המדבקה. השתמש בידית העליונה לסיבוב, בפינה הימנית לשינוי גודל, ובידית ה-X האדומה למחיקה!</div>
+      </div>
 
       <div class="groups-mode-hide" id="shape-select-block">
         <div style="margin-bottom:6px">
@@ -110,20 +124,6 @@
           <label><span>עיגול פינות</span><span id="radius-val">3 מ"מ</span></label>
           <input type="range" id="radius" min="0" max="10" value="3" step="0.5">
         </div>
-      </div>
-
-      <!-- מוסתר דינמית ב-updateGroupEditVisibility כש-repeatGroupsActive וגם
-           אין קבוצה נבחרת (activeGroupId===null) — אין יותר "תוכן חופשי
-           בסיסי" להוסיף אליו במצב הזה, בניגוד לזרימה הרגילה/עריכת קבוצה
-           ספציפית ששתיהן תמיד יש להן יעד תקף. -->
-      <div id="add-content-buttons">
-        <div class="row">
-          <button class="btn btn-primary" id="add-text-btn">+ הוסף טקסט</button>
-          <button class="btn" id="open-emoji-modal">⭐ הוסף אייקון</button>
-        </div>
-        <button class="btn" id="add-image-btn" style="width:100%">📁 העלה תמונה</button>
-        <input type="file" id="file-input" accept="image/*" style="display:none">
-        <div class="hint" style="margin-top:4px">💡 גרור טקסט/אימוג'י בתוך המדבקה. השתמש בידית העליונה לסיבוב, בפינה הימנית לשינוי גודל, ובידית ה-X האדומה למחיקה!</div>
       </div>
     </div>
 
@@ -696,7 +696,7 @@ function setRepeatGroupsActive(active){
     }
     loadDesignIntoActive(regularDesignBackup);
     regularDesignBackup = null;
-    document.getElementById('shape-panel-title').textContent = '1️⃣ עיצוב מבנה ופרופורציה (תצוגה מקדימה)';
+    document.getElementById('shape-panel-title').textContent = '1️⃣ הוספת תוכן וצורת המדבקה';
     document.getElementById('single-canvas-title').textContent = 'תצוגת מדבקה יחידה (עיצוב ופרופורציות)';
   }
   repeatGroupsActive = active;
