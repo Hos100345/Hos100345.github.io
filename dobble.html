@@ -789,9 +789,9 @@ function dcfgSave(patch){
       // שרצתה 13 קלפים תחשוב שהמחיר עלה מ-5 ל-10 ₪ במקום להבין שהיא מקבלת יותר.
       const included=window.TIER_INCLUDES[tier]||'';
       // "לחודש" נקרא כמו מנוי מתחדש, ואין כזה — התשלום חד-פעמי והגישה פגה מעצמה.
-      b.innerHTML=`<div>עד ${tier} קלפים · ${price} ₪</div>`+
-                  (included?`<div style="font-size:.75rem;font-weight:500;opacity:.75;margin-top:.15rem">כולל חפיסות של ${included} קלפים</div>`:'')+
-                  `<div style="font-size:.72rem;font-weight:500;opacity:.65;margin-top:.1rem">תשלום חד-פעמי · חודש גישה</div>`;
+      b.innerHTML=`<div>${window.t('lock.tierUpToCards',{tier,price})}</div>`+
+                  (included?`<div style="font-size:.75rem;font-weight:500;opacity:.75;margin-top:.15rem">${window.t('lock.tierIncludesSmaller',{included})}</div>`:'')+
+                  `<div style="font-size:.72rem;font-weight:500;opacity:.65;margin-top:.1rem">${window.t('lock.tierOneTimePayment')}</div>`;
       b.style.cssText=dark
         ? 'width:100%;padding:.6rem .8rem;border-radius:14px;border:2px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff;font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;transition:all .15s'
         : 'width:100%;padding:.6rem .8rem;border-radius:14px;border:2px solid var(--border);background:transparent;color:var(--text);font-family:inherit;font-size:.92rem;font-weight:600;cursor:pointer;transition:all .15s';
@@ -824,13 +824,17 @@ function dcfgSave(patch){
 
   // ── טאב "רכישת מנוי" במסך הנעילה ──
   let lockTier=null,lockPaid=false;
-  window.renderTierPicker(document.getElementById('lock-tiers'),true,(tier)=>{
-    lockTier=tier;lockPaid=false;
-    document.getElementById('buy-go').textContent=t('lock.goToPaymentBtn');
-    document.getElementById('buy-email').hidden=false;
-    document.getElementById('buy-go').hidden=false;
-    document.getElementById('buy-email').focus();
-  });
+  // ⚠️ נדחה ל-setTimeout: renderTierPicker משתמש ב-window.t, שמוגדר רק בבלוק סקריפט 4
+  // (הרבה אחרי הבלוק הזה). קריאה מיידית כאן הייתה נכשלת לפני שהמילון בכלל נטען.
+  setTimeout(()=>{
+    window.renderTierPicker(document.getElementById('lock-tiers'),true,(tier)=>{
+      lockTier=tier;lockPaid=false;
+      document.getElementById('buy-go').textContent=t('lock.goToPaymentBtn');
+      document.getElementById('buy-email').hidden=false;
+      document.getElementById('buy-go').hidden=false;
+      document.getElementById('buy-email').focus();
+    });
+  },0);
   document.getElementById('buy-go').addEventListener('click',()=>{
     const email=(document.getElementById('buy-email').value||'').trim();
     if(lockPaid){window.showClaimScreen&&window.showClaimScreen(email);return;}
@@ -2027,6 +2031,9 @@ const I18N={
     'lock.claimEmailLabel':'האימייל ששילמת/ה איתו',
     'lock.claimCodeLabel':'קוד אישי לבחירתך (4–20 תווים, בלי רווחים)',
     'lock.claimSaveBtn':'שמירת הקוד וכניסה ✓',
+    'lock.tierUpToCards':'עד {tier} קלפים · {price} ₪',
+    'lock.tierIncludesSmaller':'כולל חפיסות של {included} קלפים',
+    'lock.tierOneTimePayment':'תשלום חד-פעמי · חודש גישה',
     'onboard.title':'ברוכים הבאים למחולל דאבל!',
     'onboard.subtitle':'צור/י משחק Spot-It מותאם אישית בשלושה שלבים פשוטים',
     'onboard.step1Title':'שלב 1 — העלאת סמלים',
@@ -2393,6 +2400,7 @@ const I18N={
     'edit.cardsGenerated':'נוצרו {n} קלפים 🎉',
     'edit.cropSymbolsSelectedCount':'{n} סמלים נבחרו',
     'edit.symbolsAddedToPool':'{n} סמלים נוספו למאגר ✓',
+    'unit.mm':'{v} מ"מ',
     'account.title':'☁️ חשבון וסנכרון',
     'account.desc':'התחברו כדי לגבות את העיצובים שלכם לחשבון האישי — כך הם לא ייעלמו אם תחליפו מכשיר או תנקו את הדפדפן. הכניסה במייל, בלי סיסמה.',
     'account.emailLabel':'המייל שלכם',
@@ -2484,9 +2492,507 @@ const I18N={
     'msg.whatsappMessageOpened':'נפתחה הודעת וואטסאפ עם פרטי המשחק 💬',
     'msg.tierUpgraded':'המסלול שלכם עודכן — עד {n} קלפים זמינים עכשיו 🎉',
     'msg.uploadsFailed':'{n} תמונות לא עלו — נסה לשמור שוב',
+  },
+  // מילון אנגלי. ⛔ Dobble ו-Spot It הם סימני מסחר של Asmodee ואסור
+  // שיופיעו כאן. שם המוצר באנגלית: One Match.
+  en:{
+    'lock.title':'One Match Generator',
+    'lock.tabHaveCode':'I have a code',
+    'lock.tabFreeSignup':'Free signup',
+    'lock.tabBuy':'Buy a plan',
+    'lock.enterCodeLabel':'Enter your access code',
+    'lock.enterBtn':'Enter ✓',
+    'lock.forgotCode':'I forgot my code',
+    'lock.freeDesc':'A 7-image game — totally free. Sign up with your email and pick a personal code:',
+    'lock.freeSignupBtn':'Sign up and enter ✓',
+    'lock.chooseTierLabel':'Choose a plan:',
+    'lock.goToPaymentBtn':'Go to payment',
+    'lock.paidChooseCodeBtn':'I’ve paid — choose a code ✓',
+    'lock.cancelBtn':'Cancel',
+    'lock.wrongCodeTitle':'Code not accepted',
+    'lock.wrongCodeMsg':'The code may be wrong, or your plan may have expired.',
+    'lock.wrongCodeClose':'Close',
+    'lock.upgradeTitle':'This game requires an upgrade',
+    'lock.upgradeOneGameTitle':'Just want one game? This is exactly that.',
+    'lock.upgradeNoRecurring':'No recurring charges',
+    'lock.upgradeEmailLabel':'The email you’d like to pay with',
+    'lock.upgradeHaveCodeBtn':'I already have a different code',
+    'lock.upgradeClose':'Close',
+    'lock.claimTitle':'Payment received — choose a personal code',
+    'lock.claimDesc':'This code will be your key for the coming month. Save it.',
+    'lock.claimEmailLabel':'The email you paid with',
+    'lock.claimCodeLabel':'Your personal code (4–20 characters, no spaces)',
+    'lock.claimSaveBtn':'Save code and enter ✓',
+    'lock.tierUpToCards':'Up to {tier} cards · ₪{price}',
+    'lock.tierIncludesSmaller':'Includes packs of {included} cards',
+    'lock.tierOneTimePayment':'One-time payment · one month access',
+    'onboard.title':'Welcome to the One Match generator!',
+    'onboard.subtitle':'Create your own custom matching card game in three simple steps',
+    'onboard.step1Title':'Step 1 — Upload symbols',
+    'onboard.step1Desc':'Drag in images (PNG, JPG, SVG, HEIC) or pick a ready-made pack. You can crop symbols out of larger images with the ✂️ tool, and remove backgrounds automatically',
+    'onboard.step2Title':'Step 2 — Create and design',
+    'onboard.step2Desc':'The system calculates cards automatically using precise math. You can design the frame, background and symbol layout',
+    'onboard.step3Title':'Step 3 — Export',
+    'onboard.step3Desc':'A print-ready PDF at home, or a ZIP of individual PNGs — you can also order professional printing with home delivery (for an extra fee)',
+    'onboard.packageNote':'One pack = 4 different games',
+    'onboard.infoLink':'For all the ideas and inspiration ←',
+    'onboard.contactLabel':'💬 To buy an access code — get in touch',
+    'onboard.contactBtn':'📱 Message us on WhatsApp',
+    'onboard.startBtn':'🚀 Let’s get started!',
+    'header.homeLink':'→ Website',
+    'header.title':'🎯 One Match Generator',
+    'header.accountBtnTitle':'Account & sync',
+    'header.adminBtnTitle':'Admin panel',
+    'confirm.defaultTitle':'Confirm deletion',
+    'confirm.defaultOkBtn':'Delete',
+    'upload.title':'Upload symbols',
+    'upload.desc':'Drag images here — every upload adds to your library. Click ✂ on an image to crop more symbols out of it.',
+    'upload.dropText':'Drag images here',
+    'upload.dropSubtext':'or click to choose files · every upload adds to your library',
+    'upload.formatsNote':'JPG · PNG · HEIC (iPhone) · WebP · AVIF · GIF · BMP · TIFF · SVG · you can select multiple files',
+    'upload.multiPickBtn':'📁 Select multiple files (Xiaomi / Android)',
+    'upload.emojiLibBtn':'🔎 Symbol library',
+    'upload.packsTitle':'🧰 Or start from a ready-made pack',
+    'upload.savedDesignsTitle':'🗂️ My saved designs',
+    'upload.designFileTitle':'📦 Backup to file',
+    'upload.cropHintCloseBtnTitle':'Close',
+    'upload.galleryIncludeCheckboxTitle':'Include in game',
+    'upload.galleryRemoveBtnTitle':'Remove',
+    'upload.galleryCropBtnTitle':'Crop and focus image',
+    'upload.gallerySourceLabel':'Source',
+    'upload.savedDesignDeleteBtnTitle':'Delete design',
+    'upload.undoDeleteLabel':'Undo ↩',
+    'upload.deleteSymbolTitle':'Delete symbol',
+    'upload.deleteSelectedSymbolsTitle':'Delete selected symbols',
+    'upload.deleteFolderTitle':'Delete folder',
+    'upload.deleteFolderOkBtn':'Delete folder',
+    'upload.tooManyImagesTitle':'More images than the game uses',
+    'upload.tooManyImagesOkBtn':'Continue anyway',
+    'upload.cloudDeleteWarn':'☁️ These items will also be deleted from the cloud and can’t be restored.',
+    'upload.designFileSaveBtn':'⬇️ Save to file',
+    'upload.designFileLoadBtn':'⬆️ Load from file',
+    'upload.designFileShareBtn':'📤 Save to Files / Share',
+    'upload.designFileDesc':'The file contains your images and settings. Keep it safe — you can load it on any device.',
+    'upload.galleryTitle':'📦 Asset library',
+    'upload.selectAllBtn':'☑️ Select all',
+    'upload.clearSelectionBtn':'◻️ Clear all',
+    'upload.deleteSelectedBtn':'🗑 Delete selected',
+    'upload.saveToCloudBtn':'☁️ Save to the cloud?',
+    'upload.cardShapeLabel':'Card shape:',
+    'upload.cardShapeRound':'⭕ Round',
+    'upload.cardShapeSquare':'⬜ Square',
+    'upload.symbolShapeLabel':'Symbol shape:',
+    'upload.symbolShapeRound':'⭕ Round',
+    'upload.symbolShapeSquare':'⬜ Square',
+    'upload.sizesTitle':'Available sizes',
+    'upload.sizesColImages':'Images',
+    'upload.sizesColSymbolsPerCard':'Symbols/card',
+    'upload.sizesColCards':'Cards',
+    'upload.sizesColSuitableFor':'Suitable for…',
+    'upload.suitableToddlers':'Young kids',
+    'upload.suitableKids6':'Kids 6+',
+    'upload.suitableFamily':'Family',
+    'upload.suitableMediumHard':'Medium–hard',
+    'upload.suitableStandard':'⭐ Classic size',
+    'upload.allAlreadyInPool':'All {n} images are already in your library — nothing was added',
+    'upload.tooManyImagesBody':'After this upload your library will have {total} symbols, but a matching game uses at most {max}. The extra images won’t appear in any game — they’ll just slow down saving and the gallery.\n\nYou can continue and choose later which symbols to use, or cancel and upload fewer images.',
+    'upload.tooManyImagesWarn':'Note: {n} images in one upload — this could take a very long time.',
+    'upload.imagesAdded':'Added {n} images to your library ✓',
+    'upload.skippedAlreadyHadSuffix':' · skipped {n} already there',
+    'upload.skippedAlreadyInPool':'Skipped {n} images already in your library',
+    'upload.poolExceedsUsable':'Your library has {n} symbols — the game will use up to {max}. Mark which ones to use, or delete extra folders 🗂️',
+    'upload.nonImageFilesSkipped':'{n} non-image files were skipped',
+    'upload.unknownErrorReason':'Unknown error',
+    'upload.imagesFailedToLoadTitle':'{n} images failed to load',
+    'upload.uploadFailedRetryHint':'You can try again (it’s usually a brief memory overload). If it keeps happening: open the image in your photo gallery, save/export it as JPG or PNG, and upload it again. For images backed up to the cloud, make sure they’ve downloaded to your device.',
+    'upload.retryBtn':'Try again',
+    'upload.retryingLabel':'Retrying…',
+    'upload.decodeFailedReason':'Decoding failed ({mime}): {error}',
+    'upload.unrecognizedFormat':'Unrecognized type',
+    'upload.decodeErrorGeneric':'Decoding error',
+    'upload.deleteFolderBtnTitle':'Delete all {n} symbols in folder "{folder}"',
+    'upload.galleryCountWithSources':'{n} symbols · {nSrc} sources',
+    'upload.galleryCountPlain':'{n} symbols',
+    'upload.selectedCountOfTotal':'{n} of {total} selected',
+    'upload.needAtLeast7Add':'At least 7 required — add {need} more',
+    'upload.createGameFromAssets':'Create game from {n} assets ✨',
+    'upload.exactMatch':'Exact match ✓',
+    'upload.addNeeded':'Add {need} images',
+    'upload.symbolsRestored':'{n} symbols restored ↩',
+    'upload.deleteSymbolBody':'Delete "{name}"?',
+    'upload.deleteSymbolCropsSuffix':'\n{n} crops made from it will also be deleted.',
+    'upload.symbolDeleted':'"{name}" deleted',
+    'upload.deleteSelectedSymbolsBody':'{n} selected symbols will be deleted from your library.',
+    'upload.deleteSelectedSymbolsOkBtn':'Delete {n}',
+    'upload.symbolsDeleted':'{n} symbols deleted',
+    'upload.deleteFolderBody':'Folder "{folder}" and the {n} symbols in it will be deleted.',
+    'upload.folderDeleted':'Folder "{folder}" deleted ({n} symbols)',
+    'upload.noValidImagesInFile':'No valid images found in the file',
+    'upload.missingImagesNotImported':'{n} images are missing from the file and won’t be imported',
+    'upload.importWillReplaceConfirm':'Loading this file will replace the {n} images currently in your library. Continue?',
+    'upload.designLoadedFromFile':'"{name}" loaded from file — click "Create game" 🎨',
+    'upload.notADesignFile':'This is not a generator design file',
+    'upload.designFileNewerVersion':'This file was created with a newer version — refresh the page and try again',
+    'upload.designFileNoImages':'The file contains no images',
+    'upload.deleteDesignConfirm':'Delete the design "{name}"?',
+    'upload.imagesMissingFromLocalBackup':'{n} images were not found in the local backup and were not restored. Connect your email so images back up to your account, or upload them again.',
+    'upload.designLoaded':'"{name}" loaded — click "Create game" 🎨',
+    'upload.designLoadedFromAccount':'"{name}" loaded from your account 🎨',
+    'upload.designMetaCount':'{n} images · {date}',
+    'upload.designMetaCloudOnly':'{n} images · in account',
+    'upload.deleteCloudDesignConfirm':'Delete "{name}" from your account?',
+    'upload.designSavedLocally':'Design "{name}" saved 💾',
+    'upload.designFileDownloaded':'File "{name}" downloaded — {size} ✓',
+    'upload.packAddedWithCount':'Pack "{name}" added — {n} images ✓',
+    'upload.packPartialAdded':'Added {n} images, {fail} failed',
+    'upload.packLoadFailed':'Failed to load the pack — check that the images are shared publicly',
+    'upload.poolRestored':'Library restored — {n} symbols 📦',
+    'edit.gameDataTitle':'Game data',
+    'edit.layoutTitle':'Symbol layout',
+    'edit.layoutScattered':'🔀 Scattered',
+    'edit.layoutPerimeter':'⭕ Perimeter',
+    'edit.symbolSizeTitle':'Symbol size',
+    'edit.symbolSizeMin':'Minimum',
+    'edit.symbolSizeAutoNote':'⚙️ Auto-adjusted to the maximum size',
+    'edit.symbolSizeMax':'Maximum',
+    'edit.overlapTitle':'Overlap / spacing',
+    'edit.overlapShapeMode':'🧩 Overlap by symbol shape',
+    'edit.overlapFillMode':'📐 Optimal card fill',
+    'edit.overlapNote':'Zero = symbols touch exactly · right = they overlap each other · left = they move apart',
+    'edit.overlapResetBtn':'↺ Reset to default',
+    'edit.paddingTitle':'Spacing from frame',
+    'edit.paddingLabel':'Symbol ← frame spacing',
+    'edit.paddingNote':'Distance of symbols from the frame, in real mm. The range adjusts automatically to the card diameter and frame width.',
+    'edit.paddingResetBtn':'↺ Reset to default',
+    'edit.actionsTitle':'Actions',
+    'edit.reshuffleBtn':'🔀 Reshuffle',
+    'edit.reshufflingLabel':'Reshuffling…',
+    'edit.saveDesignBtn':'💾 Save design',
+    'edit.saveDesignNamePrompt':'Name for the design:',
+    'edit.editBackBtn':'🎴 Design the card back',
+    'edit.stuckBtn':'🆘 Stuck? Send your work to Hoshaya',
+    'edit.backToUploadBtn':'← Back to upload',
+    'edit.goExportBtn':'Export / Print →',
+    'edit.algoCheckLabel':'Algorithm check:',
+    'export.title':'Export & print',
+    'export.desc':'Choose a layout and print options, then click to generate the file.',
+    'export.cardSizeTitle':'Card size',
+    'export.perA4Title':'Cards per A4 sheet',
+    'export.diameterLabel':'Diameter',
+    'export.cardSizeResetBtn':'↺ Reset to default',
+    'export.gapTitle':'Spacing between cards',
+    'export.gapDensityNote':'0 = maximum density (hex)',
+    'export.originTitle':'Starting point',
+    'export.originCenterBtn':'⊙ Center',
+    'export.originCornerBtn':'↖ Top corner',
+    'export.cropMarksLabel':'Crop marks',
+    'export.silhouetteModeLabel':'Silhouette Cameo mode ✂️',
+    'export.cardDesignSummary':'🎨 Card design',
+    'export.frameTitle':'Frame',
+    'export.frameWidthLabel':'Frame width',
+    'export.pigmentLabel':'Pigment intensity',
+    'export.customColorLabel':'Custom color',
+    'export.bgTitle':'Background',
+    'export.customColorLabel2':'Custom color',
+    'export.pigmentLabel2':'Pigment intensity',
+    'export.backTitle':'Card back',
+    'export.duplexLabel':'Double-sided printing (designed back)',
+    'export.editBackBtn':'🎴 Edit back',
+    'export.previewTitle':'Preview (A4)',
+    'export.qualityTitle':'Export quality',
+    'export.qualityNormalBtn':'Normal',
+    'export.qualityPrintBtn':'Print quality',
+    'export.previewBtn':'👁 Preview',
+    'export.createPdfBtn':'⚙️ Create PDF',
+    'export.createZipBtn':'🗜️ Create ZIP (PNG)',
+    'export.createDxfBtn':'✂️ Export DXF for cutting',
+    'export.backToEditBtn':'← Back to editing',
+    'export.printShopFold':'🖨️ For a print shop',
+    'export.printPageBtn':'📦 PDF — one page per card',
+    'export.sheetBtn':'🗞️ Sheet 33×48.8',
+    'export.sheetDiameterTitle':'Card diameter on the sheet',
+    'export.sheetDiameterNormalBtn':'Regular · 71 mm',
+    'export.sheetDiameterLargeBtn':'Large · 85 mm',
+    'export.trayTitle':'Sheet tray (admin)',
+    'export.trayAddBtn':'➕ Add game to sheet',
+    'export.trayClearBtn':'🗑️ Clear tray',
+    'export.readyLabel':'✅ File ready!',
+    'export.downloadBtn':'📥 Download file',
+    'export.shareBtn':'📤 Save to Files / Share',
+    'export.iosTip':'On iPhone, "Save to Files" is best — that way the file is saved and you can find it later.',
+    'export.printOrderBtn2':'🚚 Or: printing and home delivery',
+    'export.printOrderBadge':'🚚 Extra fee',
+    'export.printOrderTitle':'🖨️ Want the game printed and ready?',
+    'export.printOrderDesc':'No need to print it yourself — we’ll print your game at a quality print shop, cut each card precisely, and ship it to your door.',
+    'export.printOrderFeature1':'🖨️ Professional printing on card stock',
+    'export.printOrderFeature2':'✂️ Precise cutting for every card',
+    'export.printOrderFeature3':'📦 Packaging and home delivery',
+    'export.printOrderBtn':'💬 Order printing & delivery on WhatsApp',
+    'export.printOrderNote':'The message will include your game’s details — we’ll get back to you with a price and delivery time.',
+    'export.printPreviewTitle':'👁 Preview before printing',
+    'export.printPreviewPrevBtn':'‹ Previous',
+    'export.printPreviewNextBtn':'Next ›',
+    'export.cardTooLargeForA4Warning':'⚠️ The card is too large for an A4 sheet with these settings — reduce the card size or the spacing',
+    'export.paperPreviewBackPagesSuffix':' · + {n} back pages',
+    'export.pagesPlural':'pages',
+    'export.pageSingular':'page',
+    'export.paperPreviewSummary':'A4 · {perPage} cards/page · {cardMm} mm · {spacing} spacing · {pages} {pageWord}{backTxt}',
+    'export.estimatedPdfWeight':' · estimated PDF size: about {size}',
+    'export.sheetLayoutSummary':'{cols}×{rows} = {perSheet} cards per sheet',
+    'export.sheetLayoutTotals':' · {n} cards = {sheets} front sheets + {sheets} back',
+    'export.printPreviewBackPageLabel':'Back · page {n}',
+    'export.printPreviewPageOfTotal':'Page {page} of {total}',
+    'export.printPreviewBackSuffix':' (back)',
+    'export.printQuotaReached':'You’ve reached your plan’s print quota ({limit}). Contact us for more prints',
+    'export.exportErrorAlert':'Export error:\n{error}\n\nMake sure the page loaded with an internet connection (jsPDF / JSZip required).',
+    'export.pdfPageCardProgress':'Page {page} — card {i}/{total}…',
+    'export.pdfBackPageCardProgress':'Back · page {page} — card {i}/{total}…',
+    'export.trimTooLargeReducedDpi':'A {trim} mm card is very large — export will use {dpi} DPI instead of {minDpi}. For full quality, reduce the card size.',
+    'export.cardProgress':'Card {i}/{total}…',
+    'export.jobMissingBackDesign':'The game "{name}" has no back design — it can’t be included in a double-sided export',
+    'export.currentGameFallbackName':'Current',
+    'back.title':'🎴 Card back design',
+    'back.tabBg':'Background',
+    'back.tabFrame':'Frame',
+    'back.tabSymbol':'Symbol',
+    'back.tabText':'Text',
+    'back.tabLogo':'Logo',
+    'back.tabPrint':'Print',
+    'back.bgModeTitle':'Background mode',
+    'back.bgModeSolid':'Solid',
+    'back.bgModeRadial':'Radial',
+    'back.bgModeDiagonal':'Diagonal',
+    'back.mainColorTitle':'Main color',
+    'back.customColorLabel':'Custom color',
+    'back.gradientColorTitle':'Secondary color (gradient)',
+    'back.customColorLabel2':'Custom color',
+    'back.patternTitle':'Pattern',
+    'back.customColorLabel3':'Custom color',
+    'back.patternOpacityLabel':'Pattern opacity',
+    'back.patternScaleLabel':'Scale',
+    'back.frameStyleTitle':'Frame style',
+    'back.frameColorTitle':'Color',
+    'back.customColorLabel4':'Custom color',
+    'back.frameWidthLabel':'Width',
+    'back.frameOpacityLabel':'Opacity',
+    'back.symbolTitle':'Central symbol',
+    'back.symbolColorTitle':'Color',
+    'back.customColorLabel5':'Custom color',
+    'back.symbolSizeLabel':'Size',
+    'back.symbolOffsetLabel':'Vertical offset',
+    'back.mainTextTitle':'Main text',
+    'back.subTextTitle':'Secondary text',
+    'back.fontTitle':'Font',
+    'back.fontNormalBtn':'Regular',
+    'back.fontClassicBtn':'Classic',
+    'back.fontRoundBtn':'Round',
+    'back.textColorTitle':'Color',
+    'back.customColorLabel6':'Custom color',
+    'back.textSizeLabel':'Size',
+    'back.textOffsetLabel':'Vertical offset',
+    'back.logoTitle':'Logo (optional)',
+    'back.logoUploadBtn':'📤 Upload logo',
+    'back.logoRemoveBtn':'🗑 Remove logo',
+    'back.logoSizeLabel':'Size',
+    'back.logoOffsetLabel':'Vertical offset',
+    'back.flipDirectionTitle':'Page flip direction',
+    'back.flipShortEdgeBtn':'↕ Short edge',
+    'back.flipLongEdgeBtn':'↔ Long edge',
+    'back.flipNote':'After the page comes out of the printer, flip it like a page in a notebook (top to bottom) and put it back in the tray.',
+    'back.pageOrderTitle':'Page order in file',
+    'back.pageOrderFrontBackBtn':'Fronts then backs',
+    'back.pageOrderAlternateBtn':'Alternating',
+    'back.fineTuneTitle':'Fine-tuning (mm)',
+    'back.offsetXLabel':'Horizontal shift (dx)',
+    'back.offsetYLabel':'Vertical shift (dy)',
+    'back.resetFineTuneBtn':'↺ Reset fine-tuning',
+    'back.bleedTitle':'Back bleed',
+    'back.calibBtn':'📐 Generate calibration page (2 pages)',
+    'back.calibNote':'Print the calibration page, flip it, and measure the offset between the rulers — enter it here in fine-tuning.',
+    'back.cancelBtn':'Cancel',
+    'back.saveBtn':'✅ Save',
+    'back.noneLabel':'None',
+    'back.symbolNameSparkle':'Sparkle',
+    'back.symbolNameStar':'Star',
+    'back.symbolNameHeart':'Heart',
+    'back.symbolNameFlower':'Flower',
+    'back.symbolNameSun':'Sun',
+    'back.symbolNameMoon':'Moon',
+    'back.symbolNameClover':'Clover',
+    'back.symbolNameDiamond':'Diamond',
+    'back.symbolNameBalloon':'Balloon',
+    'back.symbolNameGift':'Gift',
+    'back.symbolNameCrown':'Crown',
+    'back.symbolNameNote':'Music note',
+    'back.symbolNameSnow':'Snowflake',
+    'back.symbolNameSmile':'Smile',
+    'back.symbolNameSpiral':'Spiral',
+    'back.frameNameSingle':'Single line',
+    'back.frameNameDouble':'Double line',
+    'back.frameNameDashed':'Dashed',
+    'back.frameNameBeads':'Beads',
+    'back.frameNameScallop':'Scalloped',
+    'back.frameNameZigzag':'Zigzag',
+    'back.frameNameCorners':'Corners',
+    'back.patternNameDots':'Dots',
+    'back.patternNameStripes':'Stripes',
+    'back.patternNameChecker':'Checkers',
+    'back.patternNameConfetti':'Confetti',
+    'back.patternNameStars':'Little stars',
+    'back.patternNameGrid':'Grid',
+    'back.patternNameWaves':'Waves',
+    'back.presetNameClassic':'Classic',
+    'back.presetNameParty':'Party',
+    'back.presetNameBirthday':'Birthday',
+    'back.presetNameKids':'Kids',
+    'back.presetNameElegant':'Elegant',
+    'back.presetNameNature':'Nature',
+    'edit.verifyTitle':'🔍 Check a pair of cards',
+    'edit.verifyCardALabel':'Card A',
+    'edit.verifyCardBLabel':'Card B',
+    'edit.cardEditOverlapWarning':'⚠️ Symbols overlap on this card',
+    'edit.cardEditSizeLabel':'Size of the selected symbol',
+    'edit.cardEditResetOneBtn':'↩️ Reset symbol',
+    'edit.cardEditResetAllBtn':'🧹 Reset card',
+    'edit.cardEditButtonTitle':'Edit card',
+    'msg.confirmCancel':'Cancel',
+    'emoji.modalTitle':'🔎 Symbol library',
+    'emoji.noResults':'No matching symbol found',
+    'emoji.tryAiBtn':'✨ Generate with AI',
+    'emoji.addBtn':'Add selected (0)',
+    'emoji.creditsLine':'Icons: Twemoji (CC-BY 4.0) · OpenMoji (CC-BY-SA 4.0) · Noto Emoji (Apache 2.0)',
+    'edit.cropTitle':'✂️ Extract symbols from an image',
+    'edit.cropToolLabel':'Crop tool:',
+    'edit.cropCircleBtn':'⭕ Circle',
+    'edit.cropRoundedSquareBtn':'⬜ Rounded square',
+    'edit.removeBgLabel':'✨ Remove background',
+    'edit.removeBgSensitivityLabel':'Sensitivity:',
+    'edit.cropDragHint':'Click and drag on the image to select symbols',
+    'edit.cropCancelBtn':'Cancel',
+    'edit.cropAddBtn':'✅ Add to library',
+    'edit.cutoutButtonTitle':'Smart cutout',
+    'edit.cutoutTitle':'🪄 Smart background removal',
+    'edit.cutoutKeepLabel':'keep',
+    'edit.cutoutRemoveLabel':'background',
+    'edit.cutoutKeepBtn':'✅ Keep',
+    'edit.cutoutRemoveBtn':'❌ Background',
+    'edit.cutoutEraseBtn':'🧽 Erase marks',
+    'edit.cutoutBrushSizeLabel':'Brush size',
+    'edit.cutoutFeatherLabel':'Cutout softness',
+    'edit.cutoutComputing':'Computing…',
+    'edit.cutoutUndoBtn':'↩︎ Undo',
+    'edit.cutoutResetBtn':'🔄 Reset',
+    'edit.cutoutPeekBtn':'👁 Preview result',
+    'edit.cutoutCancelBtn':'Cancel',
+    'edit.cutoutOkBtn':'✅ Confirm',
+    'edit.overlapLabelPositive':'Overlap {v}%',
+    'edit.overlapLabelNegative':'Spacing {v}%',
+    'edit.overlapLabelZero':'Snug',
+    'edit.drawingCardProgress':'Drawing card {i}/{total}…',
+    'edit.cardsGenerated':'{n} cards created 🎉',
+    'edit.cropSymbolsSelectedCount':'{n} symbols selected',
+    'edit.symbolsAddedToPool':'{n} symbols added to your library ✓',
+    'unit.mm':'{v} mm',
+    'account.title':'☁️ Account & sync',
+    'account.desc':'Sign in to back up your designs to your personal account — so they won’t disappear if you switch devices or clear your browser. Sign in by email, no password needed.',
+    'account.emailLabel':'Your email',
+    'account.sendLinkBtn':'✉️ Send me a sign-in link',
+    'account.signedInAs':'Signed in as ',
+    'account.syncedNote':'Your designs and images are backed up to your account and available from any device.',
+    'account.signOutBtn':'Sign out',
+    'account.cloudSaveTitle':'☁️ Cloud save — free',
+    'account.cloudSaveNote':'Your plan won’t change — the email is used for backup only.',
+    'account.cloudSaveEmailLabel':'Your email',
+    'account.cloudSaveSendBtn':'✉️ Send me a sign-in link',
+    'account.designSavedToCloud':'Design "{name}" saved to the cloud ☁️',
+    'account.codeInfoLine':'{code} · up to {max} cards · valid until {exp}',
+    'account.noExpiryLabel':'No expiry',
+    'account.designsInAccountCount':'☁️ {total} designs in your account',
+    'account.designsUploadedSuffix':' ({n} uploaded with images)',
+    'lock.freeCodePh':'Choose a personal code (4–20 characters)',
+    'lock.claimCodePh':'For example: dana2026',
+    'back.mainTextPh':'For example: Congratulations',
+    'back.subTextPh':'For example: child’s name',
+    'emoji.searchPh':'Search for a symbol… e.g. lion, fire truck, star',
+    'msg.backDesignSaved':'Back design saved ✓',
+    'msg.backLogoMissingFromBackup':'The back logo was not found in the backup — please upload it again in the back editor',
+    'msg.backedUpToAccount':'Backed up to your account ☁️',
+    'msg.calibrationPageReady':'Calibration page generated — print it, flip it according to your chosen flip direction, and measure the offset',
+    'msg.cantReachCountWithSpacing':'Can’t reach this number with the current spacing — reduce the spacing',
+    'msg.cardTooLargeForA4':'The card size is too large for an A4 sheet — there’s no room for even one card.\nReduce the card size and try again.',
+    'msg.cardsReshuffled':'Cards reshuffled ✓',
+    'msg.checkingCode':'Checking…',
+    'msg.cloudSaveFailed':'Cloud save failed',
+    'msg.codeMustBe4to20':'The code must be 4–20 characters, no spaces',
+    'msg.codeSaveFailedGeneric':'We couldn’t save the code. Please try again.',
+    'msg.codeSavedEntering':'Code saved! Signing you in…',
+    'msg.codeTakenChooseAnother':'This code is already taken. Choose a different one — preferably not a phone number.',
+    'msg.communicationError':'Communication error — please try again.',
+    'msg.createCardsFirst':'Create cards first (click the ‘Create game’ button)',
+    'msg.deletedFromAccount':'Deleted from your account',
+    'msg.designDeleted':'Design deleted',
+    'msg.designImagesNotOnDevice':'This design’s images were not found on this device. They’re only saved in your account — sign in by email to restore them, or upload the images again. Your current work has been saved and was not deleted.',
+    'msg.designNotFound':'Design not found',
+    'msg.designSaveFailed':'Failed to save the design',
+    'msg.downloadingDesignFromAccount':'Downloading design from your account…',
+    'msg.fileDownloadedFallback':'File downloaded to your device ✅',
+    'msg.gameNeedsBackForSheet':'This game has no back design. On a double-sided sheet, every game needs its own back — it’s also what tells the games apart after cutting.',
+    'msg.invalidEmail':'Please enter a valid email address',
+    'msg.invalidEmailAddress':'Invalid email address',
+    'msg.jspdfNotLoaded':'The jsPDF library did not load — an internet connection is required',
+    'msg.jszipNotLoaded':'The JSZip library did not load — an internet connection is required',
+    'msg.loadDesignFromAccountFailed':'Failed to load the design from your account',
+    'msg.loginLinkSentShowCode':'A sign-in link has been sent to you. Open it from your email, and your code will appear here.',
+    'msg.logoUploadFailed':'Logo upload failed — try a different file',
+    'msg.magicLinkSent':'📩 We’ve sent a sign-in link to your email — open it from this device',
+    'msg.magicLinkSentCloudsave':'📩 We’ve sent a sign-in link to your email — open it from this device. Your design will save automatically once you sign in.',
+    'msg.needCodeToSendStuck':'To send this to Hoshaya you need to sign in with a subscriber code',
+    'msg.noCodesForThisEmail':'No codes were found for this email. If you paid with a different email, try that one.',
+    'msg.noGameToAddToSheet':'No game to add — click "Create game" first',
+    'msg.noImageFilesInSelection':'No image files were found in your selection.\n\nSupported: JPG, PNG, HEIC/HEIF (iPhone), WebP, AVIF, GIF, BMP, TIFF, SVG.',
+    'msg.noImagesForThisDesign':'No images found for this design',
+    'msg.noImagesInPoolUpload':'No images in your library — upload images first',
+    'msg.noImagesSelected':'No images selected',
+    'msg.noImagesToSave':'No images found to save',
+    'msg.noImagesToSend':'No images to send — upload images first',
+    'msg.noSymbolsSelectedForDelete':'No symbols marked for deletion',
+    'msg.nothingToRestore':'Nothing to restore',
+    'msg.paymentServiceUnavailable':'The payment service is currently unavailable',
+    'msg.preparingFile':'Preparing the file…',
+    'msg.readingFile':'Reading the file…',
+    'msg.registeredSuccessEntering':'Signed up successfully! Signing you in…',
+    'msg.registering':'Signing up…',
+    'msg.registrationFailedGeneric':'We couldn’t complete the signup. Please try again.',
+    'msg.resetToDefault':'Reset to default ↺',
+    'msg.saveFailedRetry':'Save failed — please try again',
+    'msg.savedAndSentToHoshaya':'Saved and sent to Hoshaya ✓',
+    'msg.savingAndSendingToHoshaya':'Saving and sending to Hoshaya…',
+    'msg.sendingLink':'Sending…',
+    'msg.serviceUnavailable':'The service is currently unavailable',
+    'msg.serviceUnavailableRetrySoon':'The service is currently unavailable — try again in a moment',
+    'msg.shareUnavailableUseDownload':'Sharing is currently unavailable — try the download button',
+    'msg.shareUnavailableUseSave':'Sharing is currently unavailable — try the save button',
+    'msg.signedInLoadingDesigns':'You’re signed in — loading your designs ☁️',
+    'msg.syncFailedRetryNextLogin':'Sync failed — we’ll try again next time you sign in',
+    'msg.signedInSyncingDesigns':'You’re signed in — syncing your designs ☁️',
+    'msg.signedOut':'You’ve signed out',
+    'msg.silhouetteBackUnsupported':'⚠️ Combining Silhouette + a designed back is not supported — export will be blocked',
+    'msg.silhouetteBackUnsupportedAlert':'Combining "Silhouette mode + designed back" is not supported — turn one of them off and try again.',
+    'msg.subscriptionExpiredBody':'Your plan is no longer active. To renew, choose a plan on the lock screen — your existing code will update automatically.',
+    'msg.subscriptionExpiredTitle':'Your plan has expired',
+    'msg.syncUnavailable':'Sync is currently unavailable — try again later',
+    'msg.whatsappMessageOpened':'A WhatsApp message with your game details has been opened 💬',
+    'msg.tierUpgraded':'Your plan has been upgraded — up to {n} cards now available 🎉',
+    'msg.uploadsFailed':'Failed to upload {n} images — try saving again',
   }
 };
+// ⚠️ שלב ג1: האנגלית מוסתרת מאחורי ?lang=en בלבד. אין מתג ואין זיהוי
+// שפת דפדפן — לקוח רגיל ממשיך לראות עברית בדיוק כמו היום.
+// המתג ופריסת LTR יגיעו בשלב ג2.
 let LANG='he';
+try{
+  if(new URLSearchParams(location.search).get('lang')==='en')LANG='en';
+}catch(e){}
 function t(key,vars){
   const d=I18N[LANG]||I18N.he;
   // ⛔ מפתח חסר מחזיר את המפתח עצמו ולא מחרוזת ריקה — כך שגיאה נראית
@@ -4651,7 +5157,7 @@ function updatePaperPrev(){
       `<span style="color:#b91c1c;font-weight:700">${t('export.cardTooLargeForA4Warning')}</span>`;
     return;
   }
-  const spacingLabel=S.spacingMm===0?'hex':S.spacingMm+' מ"מ';
+  const spacingLabel=S.spacingMm===0?'hex':t('unit.mm',{v:S.spacingMm});
   const backTxt=(S.back.enabled&&S.deck.length)?t('export.paperPreviewBackPagesSuffix',{n:pages}):'';
   const pageWord=pages!==1?t('export.pagesPlural'):t('export.pageSingular');
   document.getElementById('prev-info').textContent=
@@ -4764,7 +5270,7 @@ const slCardSize=document.getElementById('sl-card-size');
 const lblCardSize=document.getElementById('lbl-card-size');
 let _cardSizeRedrawT=null;
 slCardSize.addEventListener('input',()=>{
-  S.cardSizeMm=+slCardSize.value;lblCardSize.textContent=slCardSize.value+' מ"מ';
+  S.cardSizeMm=+slCardSize.value;lblCardSize.textContent=t('unit.mm',{v:slCardSize.value});
   syncSymPadRange();updatePaperPrev();markPerPageActive();
   clearTimeout(_cardSizeRedrawT);
   _cardSizeRedrawT=setTimeout(()=>{redrawCards();},180);   // debounce — 57 קנבסים בנייד
@@ -4797,14 +5303,14 @@ document.getElementById('perpage-grp').addEventListener('click',e=>{
   if(d==null){toast(t('msg.cantReachCountWithSpacing'),'err');return;}
   S.cardSizeMm=d;
   slCardSize.value=String(d);
-  lblCardSize.textContent=d+' מ"מ';
+  lblCardSize.textContent=t('unit.mm',{v:d});
   syncSymPadRange();updatePaperPrev();markPerPageActive();
   redrawCards();resetExport();
 });
 
 const slSpacing=document.getElementById('sl-spacing');
 const lblSpacing=document.getElementById('lbl-spacing');
-slSpacing.addEventListener('input',()=>{S.spacingMm=+slSpacing.value;lblSpacing.textContent=slSpacing.value+' מ"מ';updatePaperPrev();markPerPageActive();});
+slSpacing.addEventListener('input',()=>{S.spacingMm=+slSpacing.value;lblSpacing.textContent=t('unit.mm',{v:slSpacing.value});updatePaperPrev();markPerPageActive();});
 slSpacing.addEventListener('change',resetExport);
 
 document.getElementById('startpos-grp').addEventListener('click',e=>{
@@ -4847,7 +5353,7 @@ buildSwatches('sw-bg',BG_COLORS,()=>S.bg.color,c=>{S.bg.color=c;},'pick-bg');
 
 document.getElementById('sl-fw').addEventListener('input',e=>{
   S.frame.w=parseFloat(e.target.value);
-  document.getElementById('lbl-fw').textContent=S.frame.w+' מ"מ';onDesignChange();
+  document.getElementById('lbl-fw').textContent=t('unit.mm',{v:S.frame.w});onDesignChange();
   if(syncSymPadRange())redrawCards();
 });
 document.getElementById('sl-fop').addEventListener('input',e=>{
@@ -4856,7 +5362,7 @@ document.getElementById('sl-fop').addEventListener('input',e=>{
 });
 document.getElementById('sl-sympad').addEventListener('input',e=>{
   S.symPad=parseFloat(e.target.value);
-  document.getElementById('lbl-sympad').textContent=S.symPad+' מ"מ';onDesignChange();
+  document.getElementById('lbl-sympad').textContent=t('unit.mm',{v:S.symPad});onDesignChange();
 });
 // טווח המרווח תלוי בקוטר הקלף וברוחב המסגרת — בלי סנכרון, חלק מהסליידר מת ולא משפיע
 function syncSymPadRange(){
@@ -4864,7 +5370,7 @@ function syncSymPadRange(){
   const maxPad=Math.max(1,Math.round((0.375*S.cardSizeMm-S.frame.w)*2)/2);
   sl.max=maxPad;
   if(S.symPad>maxPad){
-    S.symPad=maxPad;sl.value=maxPad;lbl.textContent=maxPad+' מ"מ';
+    S.symPad=maxPad;sl.value=maxPad;lbl.textContent=t('unit.mm',{v:maxPad});
     return true;   // הערך נחתך — צריך רענון ציור
   }
   return false;
@@ -5034,7 +5540,7 @@ document.getElementById('back-pattern-scale').addEventListener('input',e=>{
   S.back.pattern.scale=parseInt(e.target.value);document.getElementById('lbl-back-pattern-scale').textContent=S.back.pattern.scale+'%';markBackDirty();
 });
 document.getElementById('back-frame-w').addEventListener('input',e=>{
-  S.back.frame.w=parseFloat(e.target.value);document.getElementById('lbl-back-frame-w').textContent=S.back.frame.w+' מ"מ';markBackDirty();
+  S.back.frame.w=parseFloat(e.target.value);document.getElementById('lbl-back-frame-w').textContent=t('unit.mm',{v:S.back.frame.w});markBackDirty();
 });
 document.getElementById('back-frame-op').addEventListener('input',e=>{
   S.back.frame.op=parseInt(e.target.value);document.getElementById('lbl-back-frame-op').textContent=S.back.frame.op+'%';markBackDirty();
@@ -5106,7 +5612,7 @@ document.getElementById('back-duplex-reset').addEventListener('click',()=>{
   document.getElementById('back-dy').value=0;document.getElementById('lbl-back-dy').textContent='0';
 });
 document.getElementById('back-grow').addEventListener('input',e=>{
-  S.back.duplex.grow=parseFloat(e.target.value);document.getElementById('lbl-back-grow').textContent=S.back.duplex.grow+' מ"מ';
+  S.back.duplex.grow=parseFloat(e.target.value);document.getElementById('lbl-back-grow').textContent=t('unit.mm',{v:S.back.duplex.grow});
 });
 document.getElementById('back-calib-btn').addEventListener('click',()=>{
   if(typeof generateCalibrationPDF==='function')generateCalibrationPDF();
@@ -5144,7 +5650,7 @@ function syncBackUIFromState(){
   document.getElementById('back-pattern-scale').value=B.pattern.scale;document.getElementById('lbl-back-pattern-scale').textContent=B.pattern.scale+'%';
   document.querySelectorAll('#back-frame-grid .back-frame-btn').forEach(b=>b.classList.toggle('on',b.dataset.id===B.frame.id));
   document.getElementById('back-frame-pick').value=B.frame.color;syncSwatchRow('back-frame-sw',B.frame.color);
-  document.getElementById('back-frame-w').value=B.frame.w;document.getElementById('lbl-back-frame-w').textContent=B.frame.w+' מ"מ';
+  document.getElementById('back-frame-w').value=B.frame.w;document.getElementById('lbl-back-frame-w').textContent=t('unit.mm',{v:B.frame.w});
   document.getElementById('back-frame-op').value=B.frame.op;document.getElementById('lbl-back-frame-op').textContent=B.frame.op+'%';
   setIconGridActive(document.getElementById('back-sym-grid'),B.symbol.id);
   document.getElementById('back-sym-pick').value=B.symbol.color;syncSwatchRow('back-sym-sw',B.symbol.color);
@@ -5163,7 +5669,7 @@ function syncBackUIFromState(){
   document.querySelectorAll('#back-order-grp .sbt').forEach(b=>b.classList.toggle('on',b.dataset.order===B.duplex.order));
   document.getElementById('back-dx').value=B.duplex.dx;document.getElementById('lbl-back-dx').textContent=B.duplex.dx;
   document.getElementById('back-dy').value=B.duplex.dy;document.getElementById('lbl-back-dy').textContent=B.duplex.dy;
-  document.getElementById('back-grow').value=B.duplex.grow;document.getElementById('lbl-back-grow').textContent=B.duplex.grow+' מ"מ';
+  document.getElementById('back-grow').value=B.duplex.grow;document.getElementById('lbl-back-grow').textContent=t('unit.mm',{v:B.duplex.grow});
 }
 
 function openBackModal(){
@@ -6267,7 +6773,7 @@ function renderModalCrops(){
   strip.innerHTML='';
   if(!CM.crops.length){
     strip.innerHTML=`<span class="ext-empty">${t('edit.cropDragHint')}</span>`;
-    countEl.textContent='0 סמלים נבחרו';return;
+    countEl.textContent=t('edit.cropSymbolsSelectedCount',{n:0});return;
   }
   CM.crops.forEach(c=>{
     const wrap=document.createElement('div');
@@ -7217,13 +7723,13 @@ function applySettingsToUI(st){
   ckTightFill.checked=!!st.tightFill&&(st.overlap??0)>=0;
   ckTightFill.disabled=(st.overlap??0)<0;
   // ייצוא
-  slCardSize.value=st.cardSizeMm;lblCardSize.textContent=st.cardSizeMm+' מ"מ';
-  slSpacing.value=st.spacingMm;lblSpacing.textContent=st.spacingMm+' מ"מ';
+  slCardSize.value=st.cardSizeMm;lblCardSize.textContent=t('unit.mm',{v:st.cardSizeMm});
+  slSpacing.value=st.spacingMm;lblSpacing.textContent=t('unit.mm',{v:st.spacingMm});
   document.querySelectorAll('#startpos-grp .sbt').forEach(b=>b.classList.toggle('on',b.dataset.sp===st.startPos));
   // עיצוב קלף
-  document.getElementById('sl-fw').value=st.frame.w;document.getElementById('lbl-fw').textContent=st.frame.w+' מ"מ';
+  document.getElementById('sl-fw').value=st.frame.w;document.getElementById('lbl-fw').textContent=t('unit.mm',{v:st.frame.w});
   document.getElementById('sl-fop').value=st.frame.op;document.getElementById('lbl-fop').textContent=st.frame.op+'%';
-  document.getElementById('sl-sympad').value=st.symPad;document.getElementById('lbl-sympad').textContent=st.symPad+' מ"מ';
+  document.getElementById('sl-sympad').value=st.symPad;document.getElementById('lbl-sympad').textContent=t('unit.mm',{v:st.symPad});
   syncSymPadRange();
   document.getElementById('sl-bop').value=st.bg.op;document.getElementById('lbl-bop').textContent=st.bg.op+'%';
   document.getElementById('pick-frame').value=st.frame.color;
@@ -8916,6 +9422,15 @@ window._initAdminPanel=()=>{_admAuthed=true;openAdminPanel();};
 // אם כבר פתוח מהסשן — שחזור המאגר מיד
 // טעינת דף: הלקוחה חזרה לאתר אחרי ששילמה בלשונית אחרת.
 if(sessionStorage.getItem('dobble_unlocked')==='1'){idbLoad();refreshCodeTier();}
+// ⚠️ שלב ג1: כמה "תצוגות חיות" (readout) יש להן ברירת-מחדל עברית קשיחה ב-HTML
+// שנשארת עד לאינטראקציה ראשונה (למשל: "ייצר משחק מ-0 נכסים" ב-btn-create).
+// בעברית זה בלתי מורגש (זו ממילא השפה של ה-HTML הסטטי), אבל תחת ?lang=en זו
+// דליפת עברית אמיתית עד ללחיצה ראשונה. קריאה חד-פעמית כאן — עם אותו מצב-דיפולט
+// שכבר מוצג ב-HTML — מעבירה את אותן תצוגות דרך t() כבר מהציור הראשון, בלי
+// לשנות שום ערך (0 נכסים / 0 סמלים / 85 מ"מ וכו' נשארים זהים).
+updateCounter();
+applySettingsToUI(S);
+renderModalCrops();
 
 // ══ UTILS ══
 function loadImg(url,maxSide){
