@@ -3781,17 +3781,14 @@ function skipToNextBackFont(brokenFamily,attempt){
 // IntersectionObserver (אותו דפוס כמו pencil-stickers.html). נבנה מחדש
 // בכל פתיחה כדי שהתצוגה המקדימה תשקף את הטקסט הראשי הנוכחי. נבנה עם DOM
 // (לא innerHTML+שרשור) כי dobble.html לא כולל helper של escapeHtml.
-// במצב אנגלית (?lang=en) מוצגים רק פונטים עם latin:true.
 function buildBackFontAllList(){
   const box=document.getElementById('back-font-all-list');
   box.textContent='';
   const previewText=S.back.text.main||'אבגד';
   const order=['daily','friendly','display','serif','hand','fx'];
-  const onlyLatin=(LANG==='en');
   const tilesToObserve=[];
   order.forEach(cat=>{
     let recs=HebrewFonts.list(cat);
-    if(onlyLatin)recs=recs.filter(r=>r.latin);
     if(!recs.length)return;
     const heading=document.createElement('div');
     heading.className='font-cat-heading';
