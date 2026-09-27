@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>One Match — Custom Matching Card Game | Hoshaya</title>
+  <meta name="description" content="Turn personal photos and memories into a professional card game in minutes — for birthdays, weddings, bar/bat mitzvahs, schools, youth groups and team-building days. One pack, 4 different games.">
+  <meta property="og:title" content="One Match — Custom Matching Card Game | Hoshaya">
+  <meta property="og:description" content="Turn personal photos and memories into a professional card game in minutes — for any event, group or classroom. One pack, 4 different games.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.hoshaya.co.il/one-match.html">
+  <link rel="canonical" href="https://www.hoshaya.co.il/one-match.html">
+  <link rel="alternate" hreflang="he" href="https://www.hoshaya.co.il/dobble-info.html">
+  <link rel="alternate" hreflang="en" href="https://www.hoshaya.co.il/one-match.html">
+  <meta name="theme-color" content="#4338CA">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=202607080728">
+  <style>
+    /* ── per-game "How to play" expander — accessible (details/summary), no JS ── */
+    .game-details{margin-top:.6rem;border-top:1px dashed var(--border);padding-top:.7rem}
+    .game-details summary{
+      cursor:pointer;font-weight:700;color:var(--indigo);list-style:none;
+      display:flex;align-items:center;gap:.4rem;user-select:none;
+    }
+    .game-details summary::-webkit-details-marker{display:none}
+    .game-details summary::after{content:'→';transition:transform .25s var(--transition)}
+    .game-details[open] summary::after{transform:rotate(90deg)}
+    .game-details-body{margin-top:.8rem;font-size:.94rem}
+    .game-goal{
+      background:var(--blue-light);color:var(--blue-dark);font-weight:700;
+      border-radius:.6rem;padding:.55rem .8rem;margin-bottom:.7rem;
+    }
+    .game-details-body .check-list{margin-bottom:.7rem}
+    .game-winner{
+      background:rgba(245,158,11,.14);color:#92400E;font-weight:700;
+      border-radius:.6rem;padding:.55rem .8rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== HEADER / NAV ===== -->
+  <header class="site-header" id="site-header">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand">
+        <img
+          src="images/logo.jpg"
+          alt="Hoshaya logo — design, creation and events"
+          class="nav-logo-img"
+          width="44" height="44">
+        <span class="nav-brand-text">Hoshaya — Balloon Artist</span>
+      </a>
+
+      <button class="nav-toggle" id="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </button>
+
+      <ul class="nav-links" id="nav-links" role="list">
+        <li><a href="index.html" class="nav-link">Home</a></li>
+        <li><a href="events.html" class="nav-link">Events &amp; Balloons</a></li>
+        <li><a href="communities.html" class="nav-link">Communities &amp; Institutions</a></li>
+        <li><a href="workshops.html" class="nav-link">Classes &amp; Workshops</a></li>
+        <li><a href="about.html" class="nav-link">About &amp; Contact</a></li>
+        <li><a href="dobble.html?lang=en" class="nav-link">🎯 One Match</a></li>
+        <li><a href="dobble-info.html" class="nav-link">עברית</a></li>
+        <li><a href="https://wa.me/972505918734?text=%D7%A9%D7%9C%D7%95%D7%9D%20%D7%94%D7%95%D7%A9%D7%A2%D7%99%D7%94%2C%20%D7%A8%D7%90%D7%99%D7%AA%D7%99%20%D7%90%D7%AA%20%D7%9E%D7%97%D7%95%D7%9C%D7%9C%20%D7%94%D7%93%D7%90%D7%91%D7%9C%20%D7%94%D7%90%D7%99%D7%A9%D7%99%20%D7%95%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%A9%D7%9E%D7%95%D7%A2%20%D7%A2%D7%95%D7%93%20%D7%A4%D7%A8%D7%98%D7%99%D7%9D%20%F0%9F%8E%AF" class="nav-link nav-cta" target="_blank" rel="noopener noreferrer">WhatsApp</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ===== PAGE HERO ===== -->
+    <section class="page-hero" aria-label="One Match — custom matching card game">
+      <div class="hero-content">
+        <p class="reveal" style="margin-bottom:1rem;"><span class="pill-badge">🎨 New</span></p>
+        <h1 class="hero-title reveal">One Match — the game that tells your story</h1>
+        <p class="hero-subtitle reveal">A smart engine that turns personal photos, characters and symbols into a completely custom card game — in minutes. Choose based on the person, family, event, group or subject you're teaching.</p>
+        <div class="hero-actions reveal">
+          <a href="dobble.html?lang=en" class="btn btn-hero-phone">
+            🎯 Enter the generator
+          </a>
+          <a href="https://wa.me/972505918734?text=%D7%A9%D7%9C%D7%95%D7%9D%20%D7%94%D7%95%D7%A9%D7%A2%D7%99%D7%94%2C%20%D7%A8%D7%90%D7%99%D7%AA%D7%99%20%D7%90%D7%AA%20%D7%9E%D7%97%D7%95%D7%9C%D7%9C%20%D7%94%D7%93%D7%90%D7%91%D7%9C%20%D7%94%D7%90%D7%99%D7%A9%D7%99%20%D7%95%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%A9%D7%9E%D7%95%D7%A2%20%D7%A2%D7%95%D7%93%20%D7%A4%D7%A8%D7%98%D7%99%D7%9D%20%F0%9F%8E%AF" class="btn btn-ghost-hero" target="_blank" rel="noopener noreferrer">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            WhatsApp questions
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== THE MATH PRINCIPLE ===== -->
+    <section class="section" aria-label="The math principle">
+      <div class="container">
+        <div class="price-card reveal" style="text-align:center;border:2px solid var(--blue-light)">
+          <p style="font-weight:700;color:var(--indigo);font-size:1.05rem">📐 The math principle is preserved</p>
+          <p style="color:var(--muted);margin-top:.5rem">No matter how many cards or images you choose — between any two cards in the deck, exactly one shared image always appears!</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== WHAT CAN YOU CREATE ===== -->
+    <section class="section section-alt" aria-labelledby="usecases-title">
+      <div class="container">
+        <header class="section-header">
+          <h2 class="section-title reveal" id="usecases-title">🎈 What can you create with the generator?</h2>
+          <div class="section-line reveal"></div>
+        </header>
+        <div class="offer-grid cols-3">
+          <div class="offer-card reveal">
+            <span class="offer-card-icon" aria-hidden="true">🎂</span>
+            <h3 class="offer-card-title">Birthdays</h3>
+            <p>Photos from every era, favorite things, and personal jokes.</p>
+          </div>
+          <div class="offer-card reveal">
+            <span class="offer-card-icon" aria-hidden="true">💍</span>
+            <h3 class="offer-card-title">Engagements &amp; Weddings</h3>
+            <p>Photos of the couple, shared experiences and highlight moments.</p>
+          </div>
+          <div class="offer-card reveal">
+            <span class="offer-card-icon" aria-hidden="true">🥳</span>
+            <h3 class="offer-card-title">Bar / Bat Mitzvah</h3>
+            <p>Photos of the guest of honor, hobbies, friends and family.</p>
+          </div>
+          <div class="offer-card reveal">
+            <span class="offer-card-icon" aria-hidden="true">👨‍👩‍👧‍👦</span>
+            <h3 class="offer-card-title">Family Game / Holidays</h3>
+            <p>A deeper connection and a shared experience across every generation.</p>
+          </div>
+          <div class="offer-card reveal">
+            <span class="offer-card-icon" aria-hidden="true">🏫</span>
+            <h3 class="offer-card-title">Schools &amp; Kindergartens</h3>
+            <p>Learning letters, numbers, English words, shapes or concepts.</p>
+          </div>
+          <div class="offer-card reveal">
+            <span class="offer-card-icon" aria-hidden="true">🏕️</span>
+            <h3 class="offer-card-title">Youth Movements &amp; Community Centers</h3>
+            <p>Tribe/chapter symbols, memories from camp, and group spirit.</p>
+          </div>
+          <div class="offer-card reveal">
+            <span class="offer-card-icon" aria-hidden="true">🤝</span>
+            <h3 class="offer-card-title">Company &amp; Team-Building Days</h3>
+            <p>Employee photos, logos, office jokes and company values.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== ONE PACK, 4 GAMES ===== -->
+    <section class="section" aria-labelledby="games-title">
+      <div class="container">
+        <header class="section-header">
+          <h2 class="section-title reveal" id="games-title">🕹️ One pack — 4 different games!</h2>
+          <div class="section-line reveal"></div>
+          <p class="section-sub reveal">Downloaded the cards? You just got a whole games engine in one product.</p>
+        </header>
+        <div class="offer-grid cols-4">
+          <div class="offer-card reveal">
+            <span class="offer-card-icon" aria-hidden="true">🔵</span>
+            <h3 class="offer-card-title">Classic Match</h3>
+            <p>"Who sees it first?" — find the one shared symbol between two cards, fast, and shout its name.</p>
+            <details class="game-details">
+              <summary>How to play?</summary>
+              <div class="game-details-body">
+                <div class="game-goal">🎯 Goal: be the fastest to find the matching picture!</div>
+                <ul class="check-list">
+                  <li>Place two cards face-up on the table.</li>
+                  <li>Everyone looks together.</li>
+                  <li>The first child to spot the picture that appears on both cards shouts it out loud: "Dad!" or "Dog!"</li>
+                  <li>Whoever shouted first wins the round! Place a new card and keep going.</li>
+                </ul>
+              </div>
+            </details>
+          </div>
+          <div class="offer-card reveal">
+            <span class="offer-card-icon" aria-hidden="true">🟢</span>
+            <h3 class="offer-card-title">The Tower</h3>
+            <p>"Collect them all!" — gather as many cards as you can from the central pile.</p>
+            <details class="game-details">
+              <summary>How to play?</summary>
+              <div class="game-details-body">
+                <div class="game-goal">🎯 Goal: collect as many cards as you can from the tower in the middle.</div>
+                <ul class="check-list">
+                  <li>Stack the whole deck in the middle of the table like a tall tower, pictures facing up.</li>
+                  <li>Each player gets one card in hand (or on the table in front of them).</li>
+                  <li>Look at your card and the card on top of the tower: found a matching picture? Shout its name and take the top card for yourself!</li>
+                  <li>Now there's a new card on top of the tower, and the game keeps moving fast.</li>
+                </ul>
+                <div class="game-winner">🏆 Winner: whoever builds the tallest tower of cards by the time the pile runs out!</div>
+              </div>
+            </details>
+          </div>
+          <div class="offer-card reveal">
+            <span class="offer-card-icon" aria-hidden="true">🟠</span>
+            <h3 class="offer-card-title">The Well</h3>
+            <p>"Throw your cards fast!" — try to be the first to get rid of every card in your hand.</p>
+            <details class="game-details">
+              <summary>How to play?</summary>
+              <div class="game-details-body">
+                <div class="game-goal">🎯 Goal: be the first to get rid of all your cards and end up with nothing left!</div>
+                <ul class="check-list">
+                  <li>Place a single card in the middle of the table (this is "the well").</li>
+                  <li>Deal out the rest of the cards equally among all the kids. Everyone keeps their stack face-down in front of them.</li>
+                  <li>Everyone flips their top card at the same time.</li>
+                  <li>See a matching picture between your card and the one in the middle? Shout the name and quickly throw your card onto the middle pile!</li>
+                  <li>Now your card becomes the new middle card, and everyone tries to match it.</li>
+                </ul>
+                <div class="game-winner">🏆 Winner: the first child to finish all the cards in their hand!</div>
+              </div>
+            </details>
+          </div>
+          <div class="offer-card reveal">
+            <span class="offer-card-icon" aria-hidden="true">🔴</span>
+            <h3 class="offer-card-title">The Trio (Catch Nine)</h3>
+            <p>"Picture detective" — lay out 9 cards on the table and look for one picture that appears on 3 different cards at once!</p>
+            <details class="game-details">
+              <summary>How to play?</summary>
+              <div class="game-details-body">
+                <div class="game-goal">🎯 Goal: find one picture hiding across three different cards at the same time!</div>
+                <ul class="check-list">
+                  <li>Lay out 9 cards on the table in a neat grid (3 rows of 3 cards).</li>
+                  <li>Everyone looks at the nine cards together.</li>
+                  <li>Look for a picture that appears on a first card, a second card, and a third card, all at once!</li>
+                  <li>Found it? Shout the name of the picture, point to the 3 cards, and win them!</li>
+                  <li>The player who took the cards replaces them with 3 new cards from the pile.</li>
+                </ul>
+                <div class="game-winner">🏆 Winner: whoever searches best and collects the highest number of cards!</div>
+              </div>
+            </details>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== HOW IT WORKS ===== -->
+    <section class="section section-alt" aria-labelledby="how-title">
+      <div class="container">
+        <header class="section-header">
+          <h2 class="section-title reveal" id="how-title">⚙️ How does it work?</h2>
+          <div class="section-line reveal"></div>
+        </header>
+        <div class="offer-grid cols-4">
+          <div class="offer-card reveal">
+            <span class="offer-card-icon" aria-hidden="true">1️⃣</span>
+            <h3 class="offer-card-title">Choose a style</h3>
+            <p>Family · classroom · event/celebration · group/movement · educational.</p>
+          </div>
+          <div class="offer-card reveal">
+            <span class="offer-card-icon" aria-hidden="true">2️⃣</span>
+            <h3 class="offer-card-title">Upload content</h3>
+            <p>📸 Photos · 😄 inside jokes · 👤 faces · 🏷️ words/concepts · 🖼️ any mix you like.</p>
+          </div>
+          <div class="offer-card reveal">
+            <span class="offer-card-icon" aria-hidden="true">3️⃣</span>
+            <h3 class="offer-card-title">Set the difficulty level</h3>
+            <ul class="check-list">
+              <li>🟢 Easy (13 cards / 3 symbols) — kindergarten and early childhood</li>
+              <li>🟡 Medium (31 cards / 6 symbols) — families and short events</li>
+              <li>🔴 Challenging (57 cards / 8 symbols) — the full classic version</li>
+            </ul>
+          </div>
+          <div class="offer-card reveal">
+            <span class="offer-card-icon" aria-hidden="true">4️⃣</span>
+            <h3 class="offer-card-title">Click "Create my game" ✨</h3>
+            <p>The system arranges the images, checks the math is valid, and produces a PDF ready for home printing or a print shop!</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CTA ===== -->
+    <section class="section" aria-label="Quick contact">
+      <div class="container">
+        <div class="cta-band reveal">
+          <h2>Ready to create your game?</h2>
+          <p>Enter the generator, upload photos, and get a personal card game in minutes — or send a message and we'll be happy to help you pick the right style.</p>
+          <div class="cta-actions">
+            <a href="dobble.html?lang=en" class="btn btn-hero-phone">
+              🎯 Enter the generator
+            </a>
+            <a href="tel:0505918734" class="btn btn-ghost-hero">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8a19.79 19.79 0 01-3.07-8.67A2 2 0 012 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 9.91a16 16 0 006.59 6.59l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+              050-591-8734
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <img
+        src="images/logo.jpg"
+        alt="Hoshaya — design, creation and events"
+        class="footer-logo"
+        width="48" height="48" loading="lazy">
+      <div class="footer-text">
+        <p>© 2026 Hoshaya Wollman — Design, Creation &amp; Events · Jordan Valley and Northern Dead Sea</p>
+        <p class="footer-sub">All rights reserved · <a href="dobble.html?lang=en" style="text-decoration:underline">🎯 One Match</a></p>
+      </div>
+      <div class="footer-links">
+        <a href="https://www.facebook.com/hoshaya1" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+        </a>
+        <a href="https://www.instagram.com/hoshaya_balonim/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+        </a>
+        <a href="https://wa.me/972505918734?text=%D7%A9%D7%9C%D7%95%D7%9D%20%D7%94%D7%95%D7%A9%D7%A2%D7%99%D7%94%2C%20%D7%A8%D7%90%D7%99%D7%AA%D7%99%20%D7%90%D7%AA%20%D7%94%D7%90%D7%AA%D7%A8%20%D7%95%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%A9%D7%9E%D7%95%D7%A2%20%D7%A4%D7%A8%D7%98%D7%99%D7%9D%0A%28%D7%9E%D7%A7%D7%95%D7%A8%3A%20%D7%A2%D7%9E%D7%95%D7%93%20%D7%91%D7%AA%D7%99%20%D7%A1%D7%A4%D7%A8%29" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===== FLOATING WHATSAPP ===== -->
+  <a href="https://wa.me/972505918734?text=%D7%A9%D7%9C%D7%95%D7%9D%20%D7%94%D7%95%D7%A9%D7%A2%D7%99%D7%94%2C%20%D7%A8%D7%90%D7%99%D7%AA%D7%99%20%D7%90%D7%AA%20%D7%9E%D7%97%D7%95%D7%9C%D7%9C%20%D7%94%D7%93%D7%90%D7%91%D7%9C%20%D7%94%D7%90%D7%99%D7%A9%D7%99%20%D7%95%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%A9%D7%9E%D7%95%D7%A2%20%D7%A2%D7%95%D7%93%20%D7%A4%D7%A8%D7%98%D7%99%D7%9D%20%F0%9F%8E%AF"
+     class="wa-float"
+     target="_blank"
+     rel="noopener noreferrer"
+     aria-label="Start a WhatsApp chat">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    <span class="wa-float-label">Send a message</span>
+  </a>
+
+  <script src="js/site-data.js?v=202607080728"></script>
+  <script src="js/main.js?v=202607080728"></script>
+</body>
+</html>
