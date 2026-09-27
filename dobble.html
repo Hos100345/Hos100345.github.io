@@ -2404,6 +2404,8 @@ const I18N={
     'account.cloudSaveTitle':'☁️ שמירה בענן — חינם',
     'account.cloudSaveEmailLabel':'המייל שלכם',
     'account.cloudSaveSendBtn':'✉️ שלחו לי קישור כניסה',
+    'account.cloudSaveProgressTitle':'שומר בענן…',
+    'account.cloudSaveProgressHint':'מעלה את התמונות לחשבון שלך — תלוי במספר התמונות ובמהירות האינטרנט',
     'account.designSavedToCloud':'העיצוב "{name}" נשמר בענן ☁️',
     'account.codeInfoLine':'{code} · עד {max} קלפים · בתוקף עד {exp}',
     'account.noExpiryLabel':'ללא הגבלה',
@@ -2919,6 +2921,8 @@ const I18N={
     'account.cloudSaveTitle':'☁️ Cloud save — free',
     'account.cloudSaveEmailLabel':'Your email',
     'account.cloudSaveSendBtn':'✉️ Send me a sign-in link',
+    'account.cloudSaveProgressTitle':'Saving to the cloud…',
+    'account.cloudSaveProgressHint':'Uploading your images to your account — how long this takes depends on the number of images and your internet speed',
     'account.designSavedToCloud':'Design "{name}" saved to the cloud ☁️',
     'account.codeInfoLine':'{code} · up to {max} cards · valid until {exp}',
     'account.noExpiryLabel':'No expiry',
@@ -8956,17 +8960,35 @@ function updateCloudSaveBtn(){
   btn.textContent=isSignedIn()?'☁️ שמור בענן':'☁️ לשמור בענן?';
 }
 
+let _cloudSaveBusy=false;
 document.getElementById('btn-cloud-save').addEventListener('click',async()=>{
+  if(_cloudSaveBusy)return;                       // ⛔ מונע שמירה כפולה
   if(!S.assets.length){toast(t('msg.noImagesInPoolUpload'),'err');return;}
   if(isSignedIn()){
     const defName='העיצוב שלי '+new Date().toLocaleDateString('he-IL');
     const name=(prompt('שם לעיצוב:',defName)||'').trim();
     if(!name)return;
+    const btn=document.getElementById('btn-cloud-save');
+    const obj=buildDesignObject(name);
+    const total=(obj.rows||[]).length;
+    _cloudSaveBusy=true;
+    if(btn)btn.disabled=true;
+    // החלונית נפתחת מיד עם אישור השם — ההעלאה מתחילה לפני שהמשתמש
+    // רואה משהו, ובלי זה נוצר חלון של דקות שבו "לא קורה כלום".
+    uploadProgressOpen(total,{title:t('account.cloudSaveProgressTitle'),
+      hint:t('account.cloudSaveProgressHint')});
     try{
-      await cloudSaveDesign(buildDesignObject(name));
+      await cloudSaveDesign(obj,(done,t2,nm)=>uploadProgressStep(done,t2,nm));
       toast(t('account.designSavedToCloud',{name}),'ok');
       renderDesigns();
     }catch(e){console.warn('cloud save:',e);toast(t('msg.cloudSaveFailed'),'err');}
+    finally{
+      // ⛔ חובה ב-finally: כישלון באמצע חייב לשחרר את הכפתור ולסגור את
+      // החלונית, אחרת המשתמש נשאר עם מסך חסום בלי דרך לצאת.
+      uploadProgressClose();
+      if(btn)btn.disabled=false;
+      _cloudSaveBusy=false;
+    }
     return;
   }
   document.getElementById('cloudsave-modal').hidden=false;
@@ -9257,7 +9279,9 @@ async function cloudListDesigns(){
   return data||[];
 }
 
-async function cloudSaveDesign(design){
+// onProgress אופציונלי: נקרא אחרי כל תמונה, גם כשהעלאה נכשלה, כדי
+// שהסרגל לא ייתקע על תמונה בעייתית.
+async function cloudSaveDesign(design,onProgress){
   if(!isSignedIn())return null;
   const uid=authSession.user.id;
   // 1) יצירת שורה (הגדרות בלבד) וקבלת id
@@ -9270,11 +9294,16 @@ async function cloudSaveDesign(design){
   // 2) העלאת התמונות ל-Storage תחת {uid}/{rowId}/{assetId}.{jpg|png}
   const images=[];
   let failed=0;
-  for(const row of (design.rows||[])){
+  const rows=design.rows||[];
+  const total=rows.length;
+  let done=0;
+  for(const row of rows){
     const mime=dataURLMime(row.dataURL);
     const ext=mime==='image/png'?'png':'jpg';
     const path=`${uid}/${rowId}/${row.id}.${ext}`;
     const ok=await sbUploadRetry(path,row.dataURL,mime);
+    done++;
+    if(onProgress){try{onProgress(done,total,row.name||'');}catch(e){}}
     if(!ok){failed++;continue;}
     images.push({id:row.id,name:row.name,type:row.type,srcAssetId:row.srcAssetId||null,isCropSource:row.isCropSource||false,selected:row.selected!==false,path});
   }
