@@ -184,8 +184,6 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   background: rgba(255,255,255,.92);
   /* אין backdrop-filter כשהתפריט פתוח */
 }
-.site-header.hidden  { transform: translateY(-100%); }
-.site-header.visible { transform: translateY(0); }
 
 .nav-inner {
   max-width: var(--container);

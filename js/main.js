@@ -48,16 +48,11 @@ if (navLinks) navLinks.querySelectorAll('.nav-link').forEach(link => {
   });
 });
 
-let lastY = 0;
+// ההדר תמיד נשאר נגיש — הוסרה הסתרה-אוטומטית בגלילה למטה (הפכה את כפתור
+// התפריט לבלתי-נגיש עד שגוללים בחזרה למעלה, ולקוחות דיווחו שהכפתור
+// "נעלם"). נשאר רק אפקט ה-scrolled (רקע/גודל) לפי מיקום הגלילה.
 if (header) window.addEventListener('scroll', () => {
-  const y = window.scrollY;
-  header.classList.toggle('scrolled', y > 60);
-  // כשהתפריט פתוח ההדר לא מתחבא — אחרת התפריט "נתקע" בלי כותרת
-  if (y > 200 && !header.classList.contains('nav-open')) {
-    header.classList.toggle('hidden',  y > lastY + 8);
-    header.classList.toggle('visible', y < lastY - 8);
-  }
-  lastY = y;
+  header.classList.toggle('scrolled', window.scrollY > 60);
 }, { passive: true });
 
 // מעבר לדסקטופ בזמן שהתפריט פתוח — משחררים את נעילת הגלילה ואת מצב התפריט
