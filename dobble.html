@@ -422,6 +422,7 @@
 <script src="js/dobble-config.js?v=2"></script>
 <script src="js/supabase-config.js?v=1"></script>
 <script src="js/hebrew-fonts.js?v=1"></script>
+<script src="js/latin-fonts.js?v=1"></script>
 <script>
 // קונפיג בזמן ריצה: ברירות מחדל ← קובץ הקונפיג ← עריכות מקומיות מפאנל הניהול
 window.DCFG=(function(){
@@ -1561,6 +1562,10 @@ function dcfgSave(patch){
       <div data-i18n="back.fontAllTitle" class="modal-title">כל הפונטים</div>
       <button class="modal-x" id="back-font-all-close">✕</button>
     </div>
+    <div class="shape-grp" id="back-font-tabs" style="margin-top:.5rem">
+      <button data-i18n="back.fontTabHebrew" class="sbt on" data-tab="he" style="flex:1">עברית</button>
+      <button data-i18n="back.fontTabEnglish" class="sbt" data-tab="en" style="flex:1">English</button>
+    </div>
     <div id="back-font-all-list" class="font-all-list"></div>
   </div>
 </div>
@@ -2312,6 +2317,8 @@ const I18N={
     'back.fontRoundBtn':'עגול',
     'back.fontPickHint':'לחץ לבחירת פונט',
     'back.fontAllTitle':'כל הפונטים',
+    'back.fontTabHebrew':'עברית',
+    'back.fontTabEnglish':'English',
     'back.textColorTitle':'צבע',
     'back.customColorLabel6':'צבע חופשי',
     'back.textSizeLabel':'גודל',
@@ -2832,6 +2839,8 @@ const I18N={
     'back.fontRoundBtn':'Round',
     'back.fontPickHint':'Tap to choose a font',
     'back.fontAllTitle':'All fonts',
+    'back.fontTabHebrew':'Hebrew',
+    'back.fontTabEnglish':'English',
     'back.textColorTitle':'Color',
     'back.customColorLabel6':'Custom color',
     'back.textSizeLabel':'Size',
@@ -3722,43 +3731,65 @@ function mergeBack(saved){
 const BACK_FONT_STACK={sans:"system-ui,'Segoe UI',Arial,sans-serif",serif:"Georgia,'Times New Roman',serif",round:"'Varela Round','Comic Sans MS',system-ui"};
 
 // תאימות אחורה: 'sans'/'serif'/'round' (עיצובים ישנים) ממשיכים לפתור בדיוק
-// כמו קודם. כל מחרוזת אחרת = שם משפחת גופן אמיתי מ-HebrewFonts (הבורר החדש),
+// כמו קודם. כל מחרוזת אחרת = שם משפחת גופן אמיתי (HebrewFonts או LatinFonts),
 // עם ה-stack הרגיל כ-fallback אם הטעינה מגוגל נכשלת.
 function resolveBackFont(key){
   return BACK_FONT_STACK[key] || `"${key}", ${BACK_FONT_STACK.sans}`;
 }
 
+// שני מאגרים, זמינים תמיד לכולם — LANG קובע רק איזה טאב נפתח כברירת מחדל.
+// ⛔ המפתח ב-S.back.text.font הוא שם המשפחה בלבד, בלי קידומת של מאגר —
+// הוא נשמר בענן וב-IndexedDB, וקידומת הייתה שוברת כל עיצוב קיים. לכן
+// backFontLookup מחפש את השם בשני המאגרים ומחזיר את זה שמחזיק אותו.
+const BACK_FONT_TABS=['he','en'];
+function backFontLib(tab){return tab==='en'?window.LatinFonts:window.HebrewFonts;}
+function backFontLookup(key){
+  for(const tab of BACK_FONT_TABS){
+    const lib=backFontLib(tab);
+    const rec=lib&&lib.FONTS.find(r=>r.f===key);
+    if(rec)return{tab,lib,rec};
+  }
+  return null;
+}
+function backFontRecLabel(hit){
+  return (hit.tab==='en'&&LANG==='en')?hit.rec.en:hit.rec.he;
+}
+function backFontCatLabel(tab,cat){
+  const c=backFontLib(tab).CATS[cat];
+  return typeof c==='string'?c:(LANG==='en'?c.en:c.he);
+}
+
 // תצוגה בלבד — לא נוגעת ב-S.back. loaded=false מציג את השם בדהייה עד
 // שהפונט אומת שנטען (מראה ל-pencil-stickers.html). מפתחות legacy
-// (sans/serif/round, בלי רשומה ב-HebrewFonts.FONTS) אין מה לטעון —
-// תמיד "נטענים" (גופן מערכת מוכן תמיד).
+// (sans/serif/round, בלי רשומה באף מאגר) אין מה לטעון — תמיד "נטענים"
+// (גופן מערכת מוכן תמיד). העיצוב מוצג תמיד בפונט שנשמר, בלי קשר לטאב או לשפה.
 function renderBackFontPreview(key,loaded){
   const nameEl=document.getElementById('back-font-name-display');
   const metaEl=document.getElementById('back-font-meta-display');
   if(!nameEl||!metaEl)return;
-  const rec=HebrewFonts.FONTS.find(r=>r.f===key);
+  const hit=backFontLookup(key);
   const legacyLabels={sans:'back.fontNormalBtn',serif:'back.fontClassicBtn',round:'back.fontRoundBtn'};
-  nameEl.textContent=rec?rec.he:t(legacyLabels[key]||'back.fontNormalBtn');
+  nameEl.textContent=hit?backFontRecLabel(hit):t(legacyLabels[key]||'back.fontNormalBtn');
   nameEl.style.fontFamily=resolveBackFont(key);
-  nameEl.style.opacity=(loaded||!rec)?'1':'.45';
+  nameEl.style.opacity=(loaded||!hit)?'1':'.45';
   metaEl.textContent=t('back.fontPickHint');
 }
 
 // נקודת הכניסה היחידה שקובעת פונט לגב: אופטימי + timeout (כלל timeout —
 // זו קריאת רשת), ודילוג שקט על פונט שבור (attempt חוסם לולאה אינסופית
 // אופליין). key יכול להיות 'sans'/'serif'/'round' (legacy, בלי טעינה) או
-// שם משפחה אמיתי מ-HebrewFonts.
+// שם משפחה אמיתי מאחד משני המאגרים.
 async function setBackFont(key,attempt){
   S.back.text.font=key;
   renderBackFontPreview(key,false);
   markBackDirty();
-  const rec=HebrewFonts.FONTS.find(r=>r.f===key);
-  if(!rec){renderBackFontPreview(key,true);return;}
+  const hit=backFontLookup(key);
+  if(!hit){renderBackFontPreview(key,true);return;}
   try{
-    await withTimeout(HebrewFonts.load(key),10000,'טעינת הפונט נתקעה');
+    await withTimeout(hit.lib.load(key),10000,'טעינת הפונט נתקעה');
   }catch(e){
     console.warn('back font load failed:',key,e);
-    skipToNextBackFont(key,attempt);
+    skipToNextBackFont(hit,attempt);
     return;
   }
   if(S.back.text.font!==key)return;
@@ -3766,33 +3797,47 @@ async function setBackFont(key,attempt){
   markBackDirty();
 }
 
-function skipToNextBackFont(brokenFamily,attempt){
+// דילוג שקט לפונט הבא באותו מאגר — לא קופצים בין עברית לאנגלית.
+function skipToNextBackFont(hit,attempt){
   attempt=(attempt||0)+1;
-  if(attempt>=HebrewFonts.FONTS.length){
+  const fonts=hit.lib.FONTS;
+  if(attempt>=fonts.length){
     console.warn('כל הפונטים נכשלו בטעינה — נשאר בגופן מערכת');
     return;
   }
-  const idx=HebrewFonts.FONTS.findIndex(r=>r.f===brokenFamily);
-  const nextFamily=HebrewFonts.FONTS[(idx+1)%HebrewFonts.FONTS.length].f;
-  setBackFont(nextFamily,attempt);
+  const idx=fonts.findIndex(r=>r.f===hit.rec.f);
+  setBackFont(fonts[(idx+1)%fonts.length].f,attempt);
 }
 
-// "כל הפונטים" — מקובץ לפי HebrewFonts.CATS, טעינה עצלה דרך
+// הטאב שנפתח: המאגר שמחזיק את הפונט הנוכחי (כדי שהאריח הנבחר ייראה),
+// ואם הפונט הוא legacy — ברירת המחדל לפי LANG.
+function backFontDefaultTab(){
+  const hit=backFontLookup(S.back.text.font);
+  return hit?hit.tab:(LANG==='en'?'en':'he');
+}
+function setBackFontTab(tab){
+  document.querySelectorAll('#back-font-tabs .sbt').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
+  buildBackFontAllList(tab);
+}
+
+// "כל הפונטים" — מקובץ לפי הקטגוריות של המאגר הנבחר, טעינה עצלה דרך
 // IntersectionObserver (אותו דפוס כמו pencil-stickers.html). נבנה מחדש
-// בכל פתיחה כדי שהתצוגה המקדימה תשקף את הטקסט הראשי הנוכחי. נבנה עם DOM
-// (לא innerHTML+שרשור) כי dobble.html לא כולל helper של escapeHtml.
-function buildBackFontAllList(){
+// בכל פתיחה/החלפת טאב כדי שהתצוגה המקדימה תשקף את הטקסט הראשי הנוכחי.
+// נבנה עם DOM (לא innerHTML+שרשור) כי dobble.html לא כולל helper של escapeHtml.
+function buildBackFontAllList(tab){
+  const lib=backFontLib(tab);
   const box=document.getElementById('back-font-all-list');
   box.textContent='';
-  const previewText=S.back.text.main||'אבגד';
+  if(!lib){return;}
+  const previewText=S.back.text.main||(tab==='en'?'Aa Bb':'אבגד');
   const order=['daily','friendly','display','serif','hand','fx'];
   const tilesToObserve=[];
   order.forEach(cat=>{
-    let recs=HebrewFonts.list(cat);
+    const recs=lib.list(cat);
     if(!recs.length)return;
     const heading=document.createElement('div');
     heading.className='font-cat-heading';
-    heading.textContent=HebrewFonts.CATS[cat];
+    heading.textContent=backFontCatLabel(tab,cat);
     const grid=document.createElement('div');
     grid.className='font-tile-grid';
     recs.forEach(rec=>{
@@ -3818,7 +3863,7 @@ function buildBackFontAllList(){
       observer.unobserve(entry.target);
       const family=entry.target.dataset.font;
       try{
-        await withTimeout(HebrewFonts.load(family),10000,'טעינת הפונט נתקעה');
+        await withTimeout(lib.load(family),10000,'טעינת הפונט נתקעה');
         entry.target.style.fontFamily=`"${family}", sans-serif`;
         entry.target.style.opacity='1';
       }catch(e){/* נשאר בפונט גיבוי בשקט */}
@@ -5736,8 +5781,12 @@ document.getElementById('back-sym-dy').addEventListener('input',e=>{
 document.getElementById('back-text-main').addEventListener('input',e=>{S.back.text.main=e.target.value;markBackDirty();});
 document.getElementById('back-text-sub').addEventListener('input',e=>{S.back.text.sub=e.target.value;markBackDirty();});
 document.getElementById('back-font-display-btn').addEventListener('click',()=>{
-  buildBackFontAllList();
+  setBackFontTab(backFontDefaultTab());
   document.getElementById('back-font-all-modal').hidden=false;
+});
+document.getElementById('back-font-tabs').addEventListener('click',e=>{
+  const b=e.target.closest('.sbt');if(!b)return;
+  setBackFontTab(b.dataset.tab);
 });
 document.getElementById('back-font-display-btn').addEventListener('keydown',e=>{
   if(e.key==='Enter'||e.key===' '){e.preventDefault();document.getElementById('back-font-display-btn').click();}
@@ -6035,9 +6084,9 @@ async function doExport(type){
   // בייצוא בזמן שהתצוגה החיה כבר מציגה את הפונט הנכון. fail-open — כשל
   // רשת לא חוסם ייצוא, הטקסט פשוט יוצא בפונט הגיבוי כמו קודם.
   if(S.back.text.font&&(S.back.text.main||S.back.text.sub)){
-    const rec=HebrewFonts.FONTS.find(r=>r.f===S.back.text.font);
-    if(rec){
-      try{await withTimeout(HebrewFonts.load(S.back.text.font),10000,'טעינת הפונט נתקעה');}
+    const hit=backFontLookup(S.back.text.font);
+    if(hit){
+      try{await withTimeout(hit.lib.load(S.back.text.font),10000,'טעינת הפונט נתקעה');}
       catch(e){console.warn('export font load:',e);}
     }
   }
