@@ -8,6 +8,8 @@
      טוען כל משפחה רק כשהיא נבחרת בפועל (HebrewFonts.load), ומטמון ה-Map הפנימי
      שלו מונע טעינה כפולה של אותה משפחה. -->
 <script src="js/hebrew-fonts.js"></script>
+<!-- סמלי גב הקלף (ציור וקטורי) — משותפים עם dobble.html, ראה js/back-assets.js -->
+<script src="js/back-assets.js?v=1"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   *{box-sizing:border-box} body{margin:0;font-family:Heebo,system-ui;background:#f8fafc;color:#1e293b}
@@ -152,6 +154,10 @@
             </select>
           </div>
         </div>
+      </div>
+      <div id="symbol-color-box" style="display:none">
+        <label style="font-size:11px">צבע הסמל:</label>
+        <input type="color" id="sel-symbol-color" value="#4338CA">
       </div>
       <div class="row" style="margin-top:8px">
         <button class="btn btn-small" id="sel-dup">שכפל</button>
@@ -366,6 +372,10 @@
       <button class="btn" id="close-modal" style="padding:2px 8px;">✕</button>
     </div>
     <div class="emoji-grid" id="emoji-grid"></div>
+    <!-- סמלים וקטוריים מ-js/back-assets.js — אותם סמלים כמו בגב קלף הדאבל,
+         מצוירים בקוד (חדים בכל DPI) בצבע שנבחר בפאנל העריכה -->
+    <div style="font-size:12px;font-weight:800;color:#64748b;margin-top:8px">סמלים (צבע לבחירה)</div>
+    <div class="emoji-grid" id="symbol-grid"></div>
   </div>
 </div>
 
@@ -861,6 +871,9 @@ function updateSelectedControls(){
   } else {
     textEditBox.style.display='none';
   }
+  const symBox = document.getElementById('symbol-color-box');
+  symBox.style.display = l.symbol ? 'block' : 'none';
+  if(l.symbol) document.getElementById('sel-symbol-color').value = l.color || '#4338CA';
 }
 
 function escapeHtml(s){
@@ -870,6 +883,7 @@ function escapeHtml(s){
 function layerLabel(l){
   if(l.type === 'text') return `✏️ "${escapeHtml((l.text||'').slice(0,20))}"`;
   if(l.imageId) return '🖼️ תמונה';
+  if(l.symbol){ const sym = BackAssets.symbol(l.symbol); return `✦ ${escapeHtml(sym ? sym.he : l.symbol)}`; }
   return `${escapeHtml(l.emoji||'⭐')} אייקון`;
 }
 
@@ -1131,7 +1145,15 @@ function drawLayers(ctx, boxX, boxY, boxW, boxH, scaleFactor = 1, layersArr = la
     ctx.rotate((l.rot||0)*Math.PI/180);
 
     if(l.type==='icon'){
-      if(l.image && l.image.complete){
+      const sym = l.symbol ? BackAssets.symbol(l.symbol) : null;
+      if(sym){
+        // סמל וקטורי — draw() מצייר בטווח [-1..1], לכן scale של חצי הקוטר.
+        // נשאר חד בכל scaleFactor (300 DPI) כי זה path, לא תמונה מוקטנת.
+        const s = boxH * l.scale * 0.85;
+        ctx.scale(s/2, s/2);
+        ctx.fillStyle = l.color || '#4338CA'; ctx.strokeStyle = ctx.fillStyle;
+        sym.draw(ctx);
+      }else if(l.image && l.image.complete){
         const s = boxH * l.scale * 0.85;
         ctx.drawImage(l.image, -s/2, -s/2, s, s);
       }else{
@@ -1201,7 +1223,7 @@ function layerHalfSize(l, ctx, boxH, boxW, scaleFactor = 1.2){
     const halfH = Math.max(24, (layout.lines.length*layout.lineHeight)/2 + 10);
     return { halfW, halfH };
   }
-  const s = l.image ? boxH * l.scale * 0.85 : boxH * l.scale * 0.75;
+  const s = (l.image || l.symbol) ? boxH * l.scale * 0.85 : boxH * l.scale * 0.75;
   return { halfW: Math.max(30, s/2 + 10), halfH: Math.max(30, s/2 + 10) };
 }
 
@@ -2375,6 +2397,29 @@ emojis.forEach(em=>{
   });
   emojiGrid.appendChild(b);
 });
+// סמלים וקטוריים משותפים (js/back-assets.js) — אותה זרימה כמו אימוג'י:
+// ניקוי placeholder, נקודה פנויה, שכבת icon. השדה symbol מבדיל אותה
+// מאימוג'י/תמונה ב-drawLayers/layerHalfSize/serializeLayers.
+const symbolGrid = document.getElementById('symbol-grid');
+BackAssets.SYMBOLS.filter(s => s.id !== 'none').forEach(sym=>{
+  const b=document.createElement('button'); b.className='emoji-btn'; b.title=sym.he; b.type='button';
+  const cv=document.createElement('canvas'); cv.width=cv.height=32; cv.style.display='block';
+  const c=cv.getContext('2d'); c.translate(16,16); c.scale(12,12); c.fillStyle='#4338CA'; c.strokeStyle='#4338CA'; sym.draw(c);
+  b.appendChild(cv);
+  b.addEventListener('click', ()=>{
+    const stale = layers.find(l => l.type==='icon' && l.isPlaceholder);
+    if(stale) layers = layers.filter(l => l !== stale);
+    const spot = findFreeSpot();
+    const nl={id:'l'+Date.now(), type:'icon', symbol:sym.id, color:'#4338CA', emoji:null, x:spot.x, y:spot.y, scale:0.5, rot:0, z:maxZ()+1, image:null};
+    layers.push(nl); selectedId=nl.id; updateSelectedControls(); drawSingle(); schedSheet();
+    document.getElementById('emoji-modal').style.display='none';
+  });
+  symbolGrid.appendChild(b);
+});
+document.getElementById('sel-symbol-color').addEventListener('input', e=>{
+  const l=getLayer(selectedId); if(!l || !l.symbol) return;
+  l.color = e.target.value; l.isPlaceholder=false; drawSingle(); schedSheet();
+});
 document.getElementById('open-emoji-modal').addEventListener('click', ()=> document.getElementById('emoji-modal').style.display='flex');
 document.getElementById('close-modal').addEventListener('click', ()=> document.getElementById('emoji-modal').style.display='none');
 
@@ -2665,7 +2710,7 @@ function serializeLayers(){
     if(l.type === 'text'){
       return {id:l.id, type:'text', text:l.text, x:l.x, y:l.y, scale:l.scale, rot:l.rot||0, z:l.z, font:l.font, color:l.color, stroke:l.stroke};
     }
-    return {id:l.id, type:'icon', emoji:l.imageId ? null : (l.emoji||null), imageId:l.imageId||null, x:l.x, y:l.y, scale:l.scale, rot:l.rot||0, z:l.z};
+    return {id:l.id, type:'icon', emoji:l.imageId ? null : (l.emoji||null), imageId:l.imageId||null, symbol:l.symbol||null, color:l.symbol ? (l.color||null) : null, x:l.x, y:l.y, scale:l.scale, rot:l.rot||0, z:l.z};
   });
 }
 
