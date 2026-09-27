@@ -72,7 +72,24 @@ textarea{resize:vertical;line-height:1.5}
 .shapes button canvas{display:block;width:100%;height:44px}
 .shapes button[aria-pressed="true"]{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold-soft);color:var(--navy);font-weight:700}
 .files{display:flex;flex-wrap:wrap;gap:6px}
-.files .th{width:44px;height:44px;border-radius:8px;object-fit:cover;border:1px solid var(--line)}
+.files .th{width:52px;height:52px;border-radius:8px;border:1px solid var(--line);display:block}
+.chk{background:repeating-conic-gradient(#E5E7EB 0 25%,#fff 0 50%) 0 0/10px 10px}
+.files .tb{position:relative}
+.files .tb .open{border:0;padding:0;background:none;cursor:pointer;border-radius:8px}
+.files .tb .open:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.files .tb .x,.cth .x,.cth .cut{position:absolute;width:28px;height:28px;border-radius:50%;border:2px solid #fff;color:#fff;cursor:pointer;font-size:.95rem;line-height:1;display:flex;align-items:center;justify-content:center;padding:0}
+.files .tb .x{top:-10px;inset-inline-end:-10px;background:#B91C1C}
+.cstrip{display:flex;flex-wrap:wrap;gap:14px;min-height:72px;align-items:center;padding:8px 4px}
+.cth{position:relative}
+.cth canvas{width:68px;height:68px;border-radius:10px;border:2px solid var(--line);display:block}
+.cth.sel canvas{border-color:var(--gold)}
+.cth .x{top:-10px;inset-inline-end:-10px;background:#B91C1C}
+.cth .cut{bottom:-10px;inset-inline-end:-10px;background:var(--navy)}
+.cth .cut.on{background:#16A34A}
+.edwrap{display:flex;justify-content:center;touch-action:none}
+.edwrap canvas{max-width:100%;touch-action:none;border-radius:6px;cursor:crosshair}
+.busy{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.6);font-weight:700;color:var(--navy)}
+.busy[hidden],.row[hidden]{display:none}
 .btn{border:0;border-radius:10px;padding:10px 14px;cursor:pointer;font-weight:700}
 .btn.gold{background:var(--gold);color:var(--navy)}
 .btn.navy{background:var(--navy);color:#fff}
@@ -117,6 +134,8 @@ textarea{resize:vertical;line-height:1.5}
 .gitem .gb button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 8px;cursor:pointer;font-size:.8rem}
 .obody{padding:14px;display:grid;gap:10px;overflow-y:auto}
 .obody input,.obody textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;min-height:44px}
+.obody input[type=checkbox]{width:20px;height:20px;min-height:0;padding:0;accent-color:var(--navy)}
+.obody input[type=range]{min-height:0;padding:0;border:0;accent-color:var(--navy)}
 .obody .price{font-family:var(--display);font-size:1.6rem;color:var(--navy)}
 .obody .big{font-family:var(--display);font-size:2rem;color:var(--navy);letter-spacing:1px}
 .obody .err{color:#B91C1C;font-size:.9rem}
@@ -185,7 +204,7 @@ body.admin .cust{display:none!important}
 <script>
 const NETS={"d4":{"faces":4,"sides":3,"pos":[[[1.2247,0.9659],[0.2588,1.2247],[0.5176,0.2588]],[[0,2.1907],[0.2588,1.2247],[0.9659,1.9319]],[[0.9659,1.9319],[0.2588,1.2247],[1.2247,0.9659]],[[1.2247,0.9659],[0.5176,0.2588],[1.4836,0]]],"tabs":[{"e":[[0.2588,1.2247],[0.5176,0.2588]],"f":0,"d":0.28,"t":0.25},{"e":[[0.9659,1.9319],[0,2.1907]],"f":1,"d":0.28,"t":0.25},{"e":[[1.2247,0.9659],[0.9659,1.9319]],"f":2,"d":0.28,"t":0.25}],"cuts":[[[0,2.1907],[0.2588,1.2247]],[[0.5176,0.2588],[1.4836,0]],[[1.4836,0],[1.2247,0.9659]]],"folds":[[[1.2247,0.9659],[0.2588,1.2247]],[[0.5176,0.2588],[1.2247,0.9659]],[[0.2588,1.2247],[0.9659,1.9319]]],"w":1.4836,"h":2.3964,"opp":[-1,-1,-1,-1],"maxEdge":104.3},"d6":{"faces":6,"sides":4,"pos":[[[1.1953,4.1008],[0.2557,3.7588],[0.5977,2.8191],[1.5374,3.1611]],[[0,1.5374],[0.342,0.5977],[1.2817,0.9397],[0.9397,1.8794]],[[1.2817,0.9397],[1.6237,0],[2.5634,0.342],[2.2214,1.2817]],[[1.5374,3.1611],[0.5977,2.8191],[0.9397,1.8794],[1.8794,2.2214]],[[2.8191,2.5634],[2.4771,3.5031],[1.5374,3.1611],[1.8794,2.2214]],[[0.9397,1.8794],[1.2817,0.9397],[2.2214,1.2817],[1.8794,2.2214]]],"tabs":[{"e":[[1.1953,4.1008],[0.2557,3.7588]],"f":0,"d":0.28,"t":0.25},{"e":[[0.2557,3.7588],[0.5977,2.8191]],"f":0,"d":0.28,"t":0.25},{"e":[[1.5374,3.1611],[1.1953,4.1008]],"f":0,"d":0.28,"t":0.25},{"e":[[0.342,0.5977],[1.2817,0.9397]],"f":1,"d":0.28,"t":0.25},{"e":[[0.9397,1.8794],[0,1.5374]],"f":1,"d":0.28,"t":0.25},{"e":[[2.5634,0.342],[2.2214,1.2817]],"f":2,"d":0.28,"t":0.25},{"e":[[1.8794,2.2214],[2.8191,2.5634]],"f":4,"d":0.28,"t":0.25}],"cuts":[[[1.6237,0],[2.5634,0.342]],[[0,1.5374],[0.342,0.5977]],[[2.4771,3.5031],[1.5374,3.1611]],[[1.2817,0.9397],[1.6237,0]],[[0.5977,2.8191],[0.9397,1.8794]],[[2.8191,2.5634],[2.4771,3.5031]],[[2.2214,1.2817],[1.8794,2.2214]]],"folds":[[[0.5977,2.8191],[1.5374,3.1611]],[[1.2817,0.9397],[0.9397,1.8794]],[[2.2214,1.2817],[1.2817,0.9397]],[[0.9397,1.8794],[1.8794,2.2214]],[[1.8794,2.2214],[1.5374,3.1611]]],"w":2.8191,"h":4.2784,"opp":[5,4,3,2,1,0],"maxEdge":58.4},"d8":{"faces":8,"sides":3,"pos":[[[0.684,1.172],[1.3268,1.9381],[0.342,2.1117]],[[0.342,2.1117],[1.3268,1.9381],[0.9848,2.8778]],[[1.6688,0.9984],[1.3268,1.9381],[0.684,1.172]],[[0.9848,2.8778],[1.3268,1.9381],[1.9696,2.7041]],[[0.0413,0.406],[1.0261,0.2323],[0.684,1.172]],[[0.9848,2.8778],[0,3.0514],[0.342,2.1117]],[[0.684,1.172],[1.0261,0.2323],[1.6688,0.9984]],[[1.6688,0.9984],[1.0261,0.2323],[2.0109,0.0587]]],"tabs":[{"e":[[0.342,2.1117],[0.684,1.172]],"f":0,"d":0.28,"t":0.25},{"e":[[1.6688,0.9984],[1.3268,1.9381]],"f":2,"d":0.28,"t":0.25},{"e":[[1.9696,2.7041],[0.9848,2.8778]],"f":3,"d":0.28,"t":0.25},{"e":[[0.0413,0.406],[1.0261,0.2323]],"f":4,"d":0.28,"t":0.25},{"e":[[0.9848,2.8778],[0,3.0514]],"f":5,"d":0.28,"t":0.25}],"cuts":[[[0.684,1.172],[0.0413,0.406]],[[1.3268,1.9381],[1.9696,2.7041]],[[2.0109,0.0587],[1.6688,0.9984]],[[0,3.0514],[0.342,2.1117]],[[1.0261,0.2323],[2.0109,0.0587]]],"folds":[[[0.684,1.172],[1.3268,1.9381]],[[1.3268,1.9381],[0.342,2.1117]],[[1.3268,1.9381],[0.9848,2.8778]],[[0.9848,2.8778],[0.342,2.1117]],[[0.684,1.172],[1.6688,0.9984]],[[1.0261,0.2323],[0.684,1.172]],[[1.0261,0.2323],[1.6688,0.9984]]],"w":2.0109,"h":3.2837,"opp":[7,6,5,4,3,2,1,0],"maxEdge":76.1},"d12":{"faces":12,"sides":5,"pos":[[[2.9967,3.8222],[3.0491,4.8209],[2.1155,5.1792],[1.4862,4.4021],[2.0308,3.5634]],[[3.1337,6.4367],[2.1678,6.1778],[2.1155,5.1792],[3.0491,4.8209],[3.6784,5.598]],[[0.5526,4.7604],[1.4862,4.4021],[2.1155,5.1792],[1.5708,6.0179],[0.6049,5.7591]],[[3.5414,2.9836],[2.9967,3.8222],[2.0308,3.5634],[1.9785,2.5648],[2.912,2.2064]],[[1.0125,2.306],[1.9785,2.5648],[2.0308,3.5634],[1.0972,3.9218],[0.4679,3.1446]],[[3.5414,2.9836],[4.5073,3.2424],[4.5596,4.241],[3.626,4.5994],[2.9967,3.8222]],[[3.7631,7.2138],[3.1337,6.4367],[3.6784,5.598],[4.6443,5.8568],[4.6966,6.8554]],[[4.4226,1.6266],[4.4749,2.6252],[3.5414,2.9836],[2.912,2.2064],[3.4567,1.3677]],[[1.3491,1.7876],[0.3832,1.5288],[0.3309,0.5302],[1.2645,0.1718],[1.8938,0.949]],[[0.6896,7.3749],[0.0603,6.5977],[0.6049,5.7591],[1.5708,6.0179],[1.6232,7.0165]],[[2.912,2.2064],[1.9785,2.5648],[1.3491,1.7876],[1.8938,0.949],[2.8597,1.2078]],[[3.4043,0.3691],[4.3379,0.0107],[4.9672,0.7879],[4.4226,1.6266],[3.4567,1.3677]]],"tabs":[{"e":[[2.9967,3.8222],[3.0491,4.8209]],"f":0,"d":0.22,"t":0.3},{"e":[[1.4862,4.4021],[2.0308,3.5634]],"f":0,"d":0.22,"t":0.3},{"e":[[3.1337,6.4367],[2.1678,6.1778]],"f":1,"d":0.28,"t":0.25},{"e":[[2.1678,6.1778],[2.1155,5.1792]],"f":1,"d":0.22,"t":0.3},{"e":[[3.0491,4.8209],[3.6784,5.598]],"f":1,"d":0.28,"t":0.25},{"e":[[0.5526,4.7604],[1.4862,4.4021]],"f":2,"d":0.28,"t":0.25},{"e":[[0.6049,5.7591],[0.5526,4.7604]],"f":2,"d":0.28,"t":0.25},{"e":[[1.0125,2.306],[1.9785,2.5648]],"f":4,"d":0.22,"t":0.3},{"e":[[0.4679,3.1446],[1.0125,2.306]],"f":4,"d":0.28,"t":0.25},{"e":[[3.5414,2.9836],[4.5073,3.2424]],"f":5,"d":0.22,"t":0.3},{"e":[[4.5073,3.2424],[4.5596,4.241]],"f":5,"d":0.28,"t":0.25},{"e":[[3.7631,7.2138],[3.1337,6.4367]],"f":6,"d":0.28,"t":0.25},{"e":[[4.6443,5.8568],[4.6966,6.8554]],"f":6,"d":0.28,"t":0.25},{"e":[[4.6966,6.8554],[3.7631,7.2138]],"f":6,"d":0.28,"t":0.25},{"e":[[2.912,2.2064],[3.4567,1.3677]],"f":7,"d":0.22,"t":0.3},{"e":[[0.3309,0.5302],[1.2645,0.1718]],"f":8,"d":0.28,"t":0.25},{"e":[[1.2645,0.1718],[1.8938,0.949]],"f":8,"d":0.28,"t":0.25},{"e":[[0.6896,7.3749],[0.0603,6.5977]],"f":9,"d":0.28,"t":0.25},{"e":[[1.8938,0.949],[2.8597,1.2078]],"f":10,"d":0.28,"t":0.25}],"cuts":[[[3.626,4.5994],[2.9967,3.8222]],[[2.0308,3.5634],[1.0972,3.9218]],[[1.5708,6.0179],[1.6232,7.0165]],[[2.1155,5.1792],[1.5708,6.0179]],[[4.5596,4.241],[3.626,4.5994]],[[1.0972,3.9218],[0.4679,3.1446]],[[0.3832,1.5288],[0.3309,0.5302]],[[1.9785,2.5648],[1.3491,1.7876]],[[1.3491,1.7876],[0.3832,1.5288]],[[4.4749,2.6252],[3.5414,2.9836]],[[3.6784,5.598],[4.6443,5.8568]],[[1.6232,7.0165],[0.6896,7.3749]],[[4.4226,1.6266],[4.4749,2.6252]],[[4.9672,0.7879],[4.4226,1.6266]],[[2.8597,1.2078],[2.912,2.2064]],[[0.0603,6.5977],[0.6049,5.7591]],[[3.4043,0.3691],[4.3379,0.0107]],[[4.3379,0.0107],[4.9672,0.7879]],[[3.4567,1.3677],[3.4043,0.3691]]],"folds":[[[3.0491,4.8209],[2.1155,5.1792]],[[2.1155,5.1792],[1.4862,4.4021]],[[2.0308,3.5634],[2.9967,3.8222]],[[3.6784,5.598],[3.1337,6.4367]],[[1.5708,6.0179],[0.6049,5.7591]],[[3.5414,2.9836],[2.9967,3.8222]],[[2.0308,3.5634],[1.9785,2.5648]],[[1.9785,2.5648],[2.912,2.2064]],[[2.912,2.2064],[3.5414,2.9836]],[[3.4567,1.3677],[4.4226,1.6266]],[[1.8938,0.949],[1.3491,1.7876]]],"w":4.9672,"h":7.3856,"opp":[11,10,7,9,6,8,4,2,5,3,1,0],"maxEdge":33.6},"d20":{"faces":20,"sides":3,"pos":[[[2.0234,2.2854],[1.0386,2.1117],[1.6814,1.3457]],[[1.6814,1.3457],[1.0386,2.1117],[0.6966,1.172]],[[1.3806,3.0514],[1.0386,2.1117],[2.0234,2.2854]],[[0.7378,3.8175],[0.3958,2.8778],[1.3806,3.0514]],[[0.6966,1.172],[1.0386,2.1117],[0.0538,1.9381]],[[2.0234,2.2854],[1.6814,1.3457],[2.6662,1.5193]],[[2.6662,1.5193],[1.6814,1.3457],[2.3242,0.5796]],[[1.3394,0.406],[1.6814,1.3457],[0.6966,1.172]],[[2.3654,3.2251],[2.0234,2.2854],[3.0082,2.459]],[[1.3806,3.0514],[2.0234,2.2854],[2.3654,3.2251]],[[2.6662,1.5193],[2.3242,0.5796],[3.309,0.7533]],[[0.3546,0.2323],[1.3394,0.406],[0.6966,1.172]],[[2.7075,4.1648],[3.0495,5.1044],[2.0647,4.9308]],[[2.7075,4.1648],[2.3654,3.2251],[3.3502,3.3987]],[[1.3806,3.0514],[2.3654,3.2251],[1.7226,3.9911]],[[1.7226,3.9911],[2.3654,3.2251],[2.7075,4.1648]],[[0.7378,3.8175],[1.3806,3.0514],[1.7226,3.9911]],[[1.0799,4.7571],[0.095,4.5835],[0.7378,3.8175]],[[1.0799,4.7571],[0.7378,3.8175],[1.7226,3.9911]],[[1.7226,3.9911],[2.7075,4.1648],[2.0647,4.9308]]],"tabs":[{"e":[[1.3806,3.0514],[1.0386,2.1117]],"f":2,"d":0.28,"t":0.25},{"e":[[0.7378,3.8175],[0.3958,2.8778]],"f":3,"d":0.28,"t":0.25},{"e":[[0.0538,1.9381],[0.6966,1.172]],"f":4,"d":0.28,"t":0.25},{"e":[[2.6662,1.5193],[2.0234,2.2854]],"f":5,"d":0.28,"t":0.25},{"e":[[1.6814,1.3457],[2.3242,0.5796]],"f":6,"d":0.28,"t":0.25},{"e":[[3.0082,2.459],[2.3654,3.2251]],"f":8,"d":0.28,"t":0.25},{"e":[[2.3242,0.5796],[3.309,0.7533]],"f":10,"d":0.28,"t":0.25},{"e":[[3.309,0.7533],[2.6662,1.5193]],"f":10,"d":0.28,"t":0.25},{"e":[[0.3546,0.2323],[1.3394,0.406]],"f":11,"d":0.28,"t":0.25},{"e":[[0.6966,1.172],[0.3546,0.2323]],"f":11,"d":0.28,"t":0.25},{"e":[[1.7226,3.9911],[1.0799,4.7571]],"f":18,"d":0.28,"t":0.25}],"cuts":[[[0.3958,2.8778],[1.3806,3.0514]],[[1.0386,2.1117],[0.0538,1.9381]],[[0.095,4.5835],[0.7378,3.8175]],[[2.0234,2.2854],[3.0082,2.459]],[[1.3394,0.406],[1.6814,1.3457]],[[2.3654,3.2251],[3.3502,3.3987]],[[2.7075,4.1648],[3.0495,5.1044]],[[3.3502,3.3987],[2.7075,4.1648]],[[3.0495,5.1044],[2.0647,4.9308]],[[1.0799,4.7571],[0.095,4.5835]],[[2.0647,4.9308],[1.7226,3.9911]]],"folds":[[[2.0234,2.2854],[1.0386,2.1117]],[[1.0386,2.1117],[1.6814,1.3457]],[[1.6814,1.3457],[2.0234,2.2854]],[[1.0386,2.1117],[0.6966,1.172]],[[0.6966,1.172],[1.6814,1.3457]],[[2.0234,2.2854],[1.3806,3.0514]],[[1.3806,3.0514],[0.7378,3.8175]],[[1.6814,1.3457],[2.6662,1.5193]],[[2.3242,0.5796],[2.6662,1.5193]],[[0.6966,1.172],[1.3394,0.406]],[[2.3654,3.2251],[2.0234,2.2854]],[[2.3654,3.2251],[1.3806,3.0514]],[[2.0647,4.9308],[2.7075,4.1648]],[[2.7075,4.1648],[2.3654,3.2251]],[[2.3654,3.2251],[1.7226,3.9911]],[[1.7226,3.9911],[1.3806,3.0514]],[[2.7075,4.1648],[1.7226,3.9911]],[[1.7226,3.9911],[0.7378,3.8175]],[[0.7378,3.8175],[1.0799,4.7571]]],"w":3.3628,"h":5.1044,"opp":[19,15,12,10,13,18,16,14,17,11,3,9,2,4,7,1,6,8,5,0],"maxEdge":49}};
 'use strict';
-const VERSION='studio-v0.4';
+const VERSION='studio-v0.5';
 // ═══════════ קבצים משותפים מהריפו (פונטים, עיצובי גב) ═══════════
 // נעוץ לקומיט ספציפי — שינוי בריפו לא ישבור את הקובץ הזה בלי שנעדכן כאן במכוון.
 const SHARED_COMMIT='f196a73a41a063231ba207a4296395f889aac265';
@@ -472,13 +491,256 @@ function fontSel(o,k,label,previewFn){
   const b=el('button',{type:'button',class:'fontbtn',on:{click:()=>openFontGallery(o,k,previewFn)}},
     el('span',{class:'fsample',style:`font-family:"${f}",sans-serif`},(previewFn&&previewFn())||'אבגד'),el('span',{class:'fname'},(rec?rec.he:f)+' · כל הפונטים'));
   loadFont(f);return row(label,b);}
-function filesInput(o,k,label,{max=60,after}={}){
+function thumbCanvas(src,S=64){const c=el('canvas',{width:S,height:S,class:'chk'});drawCover(c.getContext('2d'),src,0,0,S,S);return c;}
+// edit:true → לחיצה על תמונה פותחת חיתוך והסרת רקע (openImageEditor); התמונה מוחלפת בחיתוכים שלה, באותו מקום ברשימה.
+function filesInput(o,k,label,{max=60,after,edit=false}={}){
   const thumbs=el('div',{class:'files'});
-  const draw=()=>{thumbs.innerHTML='';(o[k]||[]).slice(0,24).forEach(f=>{const src=f.img.toDataURL?f.img.toDataURL('image/jpeg',.6):f.img.src;thumbs.append(el('img',{class:'th',src,alt:f.name}));});
-    if((o[k]||[]).length>24)thumbs.append(el('span',{class:'hint'},'+'+((o[k].length-24))));};
-  const inp=el('input',{type:'file',accept:'image/*',multiple:'',on:{change:async e=>{const add=await readImages(e.target.files,max);o[k]=(o[k]||[]).concat(add).slice(0,max);draw();after&&after();rerender();e.target.value='';}}});
-  const clr=el('button',{type:'button',class:'btn ghost',on:{click:()=>{o[k]=[];draw();after&&after();rerender();}}},'נקה תמונות');
-  draw();return el('div',{},el('label',{class:'hint'},label),el('div',{class:'inline'},inp,clr),thumbs);}
+  const changed=()=>{draw();after&&after();rerender();};
+  const replace=(f,out)=>{const L=o[k]||[],j=L.indexOf(f);if(j<0)return;const nl=L.slice(0,j).concat(out,L.slice(j+1));
+    if(nl.length>max)toast('נשמרו רק '+max+' תמונות — זה המקסימום כאן');o[k]=nl.slice(0,max);changed();};
+  const draw=()=>{thumbs.innerHTML='';const L=o[k]||[],lim=edit?L.length:24;
+    L.slice(0,lim).forEach(f=>{const c=thumbCanvas(f.img,88);c.classList.add('th');
+      if(!edit){thumbs.append(c);return;}
+      thumbs.append(el('div',{class:'tb'},el('button',{type:'button',class:'open','aria-label':'חיתוך והסרת רקע: '+(f.name||''),on:{click:()=>openImageEditor(f,out=>replace(f,out))}},c),
+        el('button',{type:'button',class:'x','aria-label':'הסרת התמונה',on:{click:()=>{o[k]=(o[k]||[]).filter(x=>x!==f);changed();}}},'×')));});
+    if(L.length>lim)thumbs.append(el('span',{class:'hint'},'+'+(L.length-lim)));};
+  const inp=el('input',{type:'file',accept:'image/*',multiple:'',on:{change:async e=>{const add=await readImages(e.target.files,max);o[k]=(o[k]||[]).concat(add).slice(0,max);changed();e.target.value='';}}});
+  const clr=el('button',{type:'button',class:'btn ghost',on:{click:()=>{o[k]=[];changed();}}},'נקה תמונות');
+  draw();return el('div',{},el('label',{class:'hint'},label),el('div',{class:'inline'},inp,clr),
+    edit?el('p',{class:'hint'},'✂️ לחיצה על תמונה: חיתוך פרצופים (גם כמה מתמונה קבוצתית אחת) והסרת רקע.'):null,thumbs);}
+// ═══════════ עריכת תמונה: חיתוך פרצופים מתמונה + הסרת רקע ═══════════
+// הועתק מהדאבל (dobble.html — openCropModal, removeBackground, cutComputeMask, cutMorphCleanup,
+// cutApplyMaskFull, trimAlphaSquare). האלגוריתמים כמו שהם; הממשק נבנה מחדש בסגנון הסטודיו.
+// ההבדל היחיד: גודל הפלט נגזר מגודל הסימון בתמונה המקורית (עד 1200px) במקום 400px קבוע — כאן מדפיסים ב-300 DPI.
+// הפלט הוא קנבס עם שקיפות; הוא נשאר בזיכרון ומצויר ישירות ל-PDF (לא עובר JPEG), כך שהרקע לא יוצא שחור.
+const CM={src:null,crops:[],tool:'circle',dragging:false,drag:{sx:0,sy:0,ex:0,ey:0},dispW:1,dispH:1,idSeq:0,
+  selId:null,editMode:null,editHandle:null,editOrig:null,rmbg:false,tol:35,onDone:null};
+const CUT={cropId:null,work:null,W:0,H:0,rgb:null,sFG:null,sBG:null,mask:null,brush:'fg',brushPx:28,fine:50,
+  drawing:false,lastX:0,lastY:0,history:[],peek:false,dispScale:1,timer:0};
+const CUT_WORK_MAX=320,CUT_HIST_MAX=12,CROP_HIT=18;
+const natW=i=>i.naturalWidth||i.width,natH=i=>i.naturalHeight||i.height;
+function trimAlphaSquare(cv,SZ,padPct){
+  padPct=padPct==null?0.02:padPct;const W=cv.width,H=cv.height;let minX=W,minY=H,maxX=-1,maxY=-1;
+  try{const{data}=cv.getContext('2d').getImageData(0,0,W,H);
+    for(let y=0;y<H;y++)for(let x=0;x<W;x++){if(data[(y*W+x)*4+3]>10){if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y;}}}catch(e){return cv;}
+  if(maxX<minX||maxY<minY)return cv;
+  const bw=maxX-minX+1,bh=maxY-minY+1,content=Math.max(bw,bh),pad=SZ*padPct,scale=(SZ-2*pad)/content;
+  const dw=bw*scale,dh=bh*scale,dx=(SZ-dw)/2,dy=(SZ-dh)/2,out=document.createElement('canvas');out.width=out.height=SZ;
+  const ctx=out.getContext('2d');ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(cv,minX,minY,bw,bh,dx,dy,dw,dh);return out;}
+function drawCropShape(ctx,x,y,w,h,shape){
+  if(shape==='circle')ctx.arc(x+w/2,y+h/2,w/2,0,Math.PI*2);
+  else{const r=Math.min(w,h)*.1;ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();}}
+function _clipShape(ctx,SZ,shape){ctx.beginPath();drawCropShape(ctx,0,0,SZ,SZ,shape);ctx.clip();}
+function removeBackground(cv,tolerance){
+  tolerance=tolerance==null?35:tolerance;const ctx=cv.getContext('2d'),W=cv.width,H=cv.height,id=ctx.getImageData(0,0,W,H),d=id.data;
+  const corners=[[0,0],[W-1,0],[0,H-1],[W-1,H-1]];let br=0,bg=0,bb=0,cnt=0;
+  corners.forEach(([x,y])=>{const i=(y*W+x)*4;if(d[i+3]>128){br+=d[i];bg+=d[i+1];bb+=d[i+2];cnt++;}});
+  if(cnt){br=Math.round(br/cnt);bg=Math.round(bg/cnt);bb=Math.round(bb/cnt);}else{br=255;bg=255;bb=255;}
+  const dist=i=>{const dr=d[i]-br,dg=d[i+1]-bg,db=d[i+2]-bb;return Math.sqrt(dr*dr+dg*dg+db*db);};
+  const visited=new Uint8Array(W*H),queue=[];
+  const seed=idx=>{if(!visited[idx]&&d[idx*4+3]>0&&dist(idx*4)<=tolerance){visited[idx]=1;queue.push(idx);}};
+  for(let x=0;x<W;x++){seed(x);seed((H-1)*W+x);}for(let y=1;y<H-1;y++){seed(y*W);seed(y*W+W-1);}
+  let qi=0;while(qi<queue.length){const idx=queue[qi++];d[idx*4+3]=0;const x=idx%W,y=(idx/W)|0;
+    for(const n of [x>0?idx-1:-1,x<W-1?idx+1:-1,y>0?idx-W:-1,y<H-1?idx+W:-1])if(n>=0&&!visited[n]&&d[n*4+3]>0&&dist(n*4)<=tolerance){visited[n]=1;queue.push(n);}}
+  ctx.putImageData(id,0,0);}
+// חילוץ סימון לקנבס בגודל SZ. מסכה חכמה (אם נעשתה) גוברת על "הסרת רקע מהירה".
+function cropRender(src,crop,SZ){
+  const scX=natW(src)/CM.dispW,scY=natH(src)/CM.dispH,cv=document.createElement('canvas');cv.width=cv.height=SZ;const ctx=cv.getContext('2d');
+  if(crop.useMask&&crop.mask){ctx.drawImage(src,crop.x*scX,crop.y*scY,crop.w*scX,crop.h*scY,0,0,SZ,SZ);cutApplyMaskFull(cv,crop.mask,crop.mw,crop.mh);return trimAlphaSquare(cv,SZ,0.02);}
+  if(CM.rmbg){const tmp=document.createElement('canvas');tmp.width=tmp.height=SZ;tmp.getContext('2d').drawImage(src,crop.x*scX,crop.y*scY,crop.w*scX,crop.h*scY,0,0,SZ,SZ);
+    removeBackground(tmp,CM.tol);_clipShape(ctx,SZ,crop.shape);ctx.drawImage(tmp,0,0);return cv;}
+  _clipShape(ctx,SZ,crop.shape);ctx.drawImage(src,crop.x*scX,crop.y*scY,crop.w*scX,crop.h*scY,0,0,SZ,SZ);return cv;}
+const cropThumb=c=>cropRender(CM.src,c,96);
+const cropFull=c=>cropRender(CM.src,c,Math.max(300,Math.min(1200,Math.round(c.w*natW(CM.src)/CM.dispW))));
+function edNode(){return document.getElementById('imgEd');}
+function openImageEditor(item,onDone){
+  if(!edNode())buildEditorDom();
+  CM.src=item.img;CM.name=(item.name||'תמונה').replace(/\.[^.]+$/,'');CM.crops=[];CM.idSeq=0;CM.selId=null;CM.editMode=null;CM.dragging=false;CM.onDone=onDone;
+  edNode().hidden=false;document.body.style.overflow='hidden';
+  requestAnimationFrame(()=>{setupCropCanvas();renderCropStrip();});}
+function closeImageEditor(){edNode().hidden=true;document.body.style.overflow='';CM.src=null;CM.crops=[];cutRelease();}
+function setupCropCanvas(){
+  const wrap=document.getElementById('edWrap'),cv=document.getElementById('edCv');
+  const maxW=Math.max(200,Math.min(wrap.clientWidth||640,640)),maxH=Math.max(220,Math.min(420,innerHeight*.45));
+  const s=Math.min(maxW/natW(CM.src),maxH/natH(CM.src));CM.dispW=Math.max(1,Math.round(natW(CM.src)*s));CM.dispH=Math.max(1,Math.round(natH(CM.src)*s));
+  cv.width=CM.dispW;cv.height=CM.dispH;redrawCropCanvas();}
+function cvPoint(cv,e){const r=cv.getBoundingClientRect(),t=e.touches?e.touches[0]||e.changedTouches[0]:e;return[(t.clientX-r.left)*(cv.width/r.width),(t.clientY-r.top)*(cv.height/r.height)];}
+const cropHandles=c=>[['nw',c.x,c.y],['ne',c.x+c.w,c.y],['sw',c.x,c.y+c.h],['se',c.x+c.w,c.y+c.h]];
+function pointInCrop(px,py,c){if(c.shape==='circle'){const dx=px-(c.x+c.w/2),dy=py-(c.y+c.h/2);return dx*dx+dy*dy<=(c.w/2)*(c.w/2);}return px>=c.x&&px<=c.x+c.w&&py>=c.y&&py<=c.y+c.h;}
+// ידיות רק של הסימון הנבחר (בדאבל — של כולם): באצבע, ידית של שכן קרוב "חוטפת" גרירה שנועדה לסימון חדש.
+function hitTestCrops(x,y){const sel=CM.crops.find(c=>c.id===CM.selId);if(sel)for(const[h,hx,hy]of cropHandles(sel))if(Math.hypot(x-hx,y-hy)<=CROP_HIT)return{c:sel,h};
+  for(const c of [...CM.crops].reverse())if(pointInCrop(x,y,c))return{c,h:null};return null;}
+function onCropStart(x,y){const hit=hitTestCrops(x,y);CM.drag={sx:x,sy:y,ex:x,ey:y};CM.dragging=true;
+  if(hit){CM.selId=hit.c.id;CM.editOrig={...hit.c};CM.editMode=hit.h?'resize':'move';CM.editHandle=hit.h;}else{CM.selId=null;CM.editMode='draw';CM.editHandle=null;CM.editOrig=null;}
+  redrawCropCanvas();}
+function onCropMove(x,y){if(!CM.dragging)return;CM.drag.ex=x;CM.drag.ey=y;const c=CM.crops.find(c=>c.id===CM.selId),o=CM.editOrig;
+  if(CM.editMode==='move'&&c){c.x=o.x+(x-CM.drag.sx);c.y=o.y+(y-CM.drag.sy);}
+  else if(CM.editMode==='resize'&&c){let sz,nx,ny;
+    switch(CM.editHandle){case'se':sz=Math.max(20,Math.max(x-o.x,y-o.y));nx=o.x;ny=o.y;break;
+      case'nw':sz=Math.max(20,Math.max((o.x+o.w)-x,(o.y+o.h)-y));nx=(o.x+o.w)-sz;ny=(o.y+o.h)-sz;break;
+      case'ne':sz=Math.max(20,Math.max(x-o.x,(o.y+o.h)-y));nx=o.x;ny=(o.y+o.h)-sz;break;
+      case'sw':sz=Math.max(20,Math.max((o.x+o.w)-x,y-o.y));nx=(o.x+o.w)-sz;ny=o.y;break;}
+    c.w=c.h=sz;c.x=nx;c.y=ny;}
+  redrawCropCanvas();}
+function onCropEnd(){if(!CM.dragging)return;CM.dragging=false;
+  if(CM.editMode==='draw'){const{sx,sy,ex,ey}=CM.drag,dw=Math.abs(ex-sx),dh=Math.abs(ey-sy);
+    if(dw>10&&dh>10){const sz=Math.max(dw,dh),c={id:++CM.idSeq,shape:CM.tool,x:Math.min(sx,ex)+(dw-sz)/2,y:Math.min(sy,ey)+(dh-sz)/2,w:sz,h:sz};c.thumb=cropThumb(c);CM.crops.push(c);CM.selId=c.id;}}
+  else{const c=CM.crops.find(c=>c.id===CM.selId);if(c)c.thumb=cropThumb(c);}
+  CM.editMode=null;CM.editHandle=null;CM.editOrig=null;renderCropStrip();redrawCropCanvas();}
+function redrawCropCanvas(){const cv=document.getElementById('edCv');if(!cv||!CM.src)return;const ctx=cv.getContext('2d');
+  ctx.clearRect(0,0,CM.dispW,CM.dispH);ctx.drawImage(CM.src,0,0,CM.dispW,CM.dispH);ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(0,0,CM.dispW,CM.dispH);
+  CM.crops.forEach(c=>{const sel=c.id===CM.selId;
+    ctx.save();ctx.globalCompositeOperation='destination-out';ctx.beginPath();drawCropShape(ctx,c.x,c.y,c.w,c.h,c.shape);ctx.fillStyle='#000';ctx.fill();ctx.restore();
+    ctx.save();ctx.strokeStyle=sel?'#C6A135':'#14294D';ctx.lineWidth=sel?3:2;ctx.beginPath();drawCropShape(ctx,c.x,c.y,c.w,c.h,c.shape);ctx.stroke();ctx.restore();
+    if(sel)cropHandles(c).forEach(([,hx,hy])=>{ctx.beginPath();ctx.arc(hx,hy,8,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#14294D';ctx.lineWidth=2;ctx.stroke();});});
+  // destination-out חתך חור גם בתמונה — מציירים אותה שוב מתחת
+  ctx.save();ctx.globalCompositeOperation='destination-over';ctx.drawImage(CM.src,0,0,CM.dispW,CM.dispH);ctx.restore();
+  if(CM.dragging&&CM.editMode==='draw'){const{sx,sy,ex,ey}=CM.drag,dw=Math.abs(ex-sx),dh=Math.abs(ey-sy);
+    if(dw>4&&dh>4){const sz=Math.max(dw,dh),x=Math.min(sx,ex)+(dw-sz)/2,y=Math.min(sy,ey)+(dh-sz)/2;
+      ctx.save();ctx.strokeStyle='#C6A135';ctx.lineWidth=2.5;ctx.setLineDash([5,3]);ctx.beginPath();drawCropShape(ctx,x,y,sz,sz,CM.tool);ctx.stroke();ctx.restore();}}}
+function cropWhole(){const sz=Math.min(CM.dispW,CM.dispH),c={id:++CM.idSeq,shape:CM.tool,x:(CM.dispW-sz)/2,y:(CM.dispH-sz)/2,w:sz,h:sz};c.thumb=cropThumb(c);CM.crops.push(c);CM.selId=c.id;renderCropStrip();redrawCropCanvas();}
+function refreshCropThumbs(){CM.crops.forEach(c=>c.thumb=cropThumb(c));renderCropStrip();}
+function thumbCanvas(src,S=64){const c=el('canvas',{width:S,height:S,class:'chk'});c.getContext('2d').drawImage(src,0,0,S,S);return c;}
+function renderCropStrip(){const strip=document.getElementById('edStrip'),n=CM.crops.length;strip.innerHTML='';
+  if(!n)strip.append(el('span',{class:'hint'},'עוד לא סימנתם כלום.'));
+  CM.crops.forEach(c=>strip.append(el('div',{class:'cth'+(c.id===CM.selId?' sel':'')},thumbCanvas(c.thumb),
+    el('button',{type:'button',class:'x',title:'מחיקה',on:{click:()=>{CM.crops=CM.crops.filter(x=>x.id!==c.id);renderCropStrip();redrawCropCanvas();}}},'×'),
+    el('button',{type:'button',class:'cut'+(c.useMask?' on':''),title:'הסרת רקע מדויקת',on:{click:()=>openCutout(c.id)}},'🪄'))));
+  const ok=document.getElementById('edOk');ok.disabled=!n;ok.textContent=n?(n===1?'שמירת התמונה':'שמירת '+n+' תמונות'):'שמירה';}
+function edDone(){if(!CM.crops.length)return;const out=CM.crops.map((c,i)=>({img:cropFull(c),name:CM.name+(CM.crops.length>1?' #'+(i+1):''),edited:true}));const cb=CM.onDone;closeImageEditor();cb&&cb(out);}
+// ── הסרת רקע חכמה: מברשות "לשמור"/"רקע" → מרחק גאודזי + מודל צבע (מהדאבל) ──
+function cutRelease(){Object.assign(CUT,{cropId:null,work:null,rgb:null,sFG:null,sBG:null,mask:null,history:[],peek:false,drawing:false});}
+function openCutout(cropId){const c=CM.crops.find(x=>x.id===cropId);if(!c)return;
+  CUT.cropId=cropId;CUT.history=[];CUT.peek=false;CUT.brush='fg';
+  const W=Math.min(CUT_WORK_MAX,Math.max(64,Math.round(c.w*natW(CM.src)/CM.dispW)));CUT.W=W;CUT.H=W;
+  const work=document.createElement('canvas');work.width=work.height=W;const wctx=work.getContext('2d'),scX=natW(CM.src)/CM.dispW,scY=natH(CM.src)/CM.dispH;
+  wctx.drawImage(CM.src,c.x*scX,c.y*scY,c.w*scX,c.h*scY,0,0,W,W);CUT.work=work;CUT.rgb=wctx.getImageData(0,0,W,W).data;
+  const n=W*W;if(c.useMask&&c.sFG&&c.sFG.length===n){CUT.sFG=c.sFG.slice();CUT.sBG=c.sBG.slice();}else{CUT.sFG=new Uint8Array(n);CUT.sBG=new Uint8Array(n);cutSeedDefaults();}
+  CUT.mask=new Uint8Array(n);document.getElementById('cutEd').hidden=false;
+  document.querySelectorAll('#cutBrush button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.b==='fg')));
+  requestAnimationFrame(()=>{cutSetupCanvas();cutComputeMask();cutRedraw();});}
+function cutSeedDefaults(){const W=CUT.W,H=CUT.H;
+  for(let x=0;x<W;x++)for(let t=0;t<3;t++){CUT.sBG[t*W+x]=1;CUT.sBG[(H-1-t)*W+x]=1;}
+  for(let y=0;y<H;y++)for(let t=0;t<3;t++){CUT.sBG[y*W+t]=1;CUT.sBG[y*W+(W-1-t)]=1;}
+  const mx0=Math.round(W*.375),mx1=Math.round(W*.625),my0=Math.round(H*.375),my1=Math.round(H*.625);
+  for(let y=my0;y<my1;y++)for(let x=mx0;x<mx1;x++)CUT.sFG[y*W+x]=1;}
+function cutSetupCanvas(){const wrap=document.getElementById('cutWrap'),cv=document.getElementById('cutCv');
+  const maxW=Math.max(200,Math.min(wrap.clientWidth||420,420,innerHeight*.5));CUT.dispScale=maxW/CUT.W;cv.width=cv.height=Math.round(CUT.W*CUT.dispScale);}
+function cutStampBrush(dx,dy){const wx=dx/CUT.dispScale,wy=dy/CUT.dispScale,rr=CUT.brushPx/2/CUT.dispScale,W=CUT.W,H=CUT.H;
+  const x0=Math.max(0,Math.floor(wx-rr)),x1=Math.min(W-1,Math.ceil(wx+rr)),y0=Math.max(0,Math.floor(wy-rr)),y1=Math.min(H-1,Math.ceil(wy+rr)),rr2=rr*rr;
+  for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){const ddx=x-wx,ddy=y-wy;if(ddx*ddx+ddy*ddy>rr2)continue;const i=y*W+x;
+    if(CUT.brush==='fg'){CUT.sFG[i]=1;CUT.sBG[i]=0;}else if(CUT.brush==='bg'){CUT.sBG[i]=1;CUT.sFG[i]=0;}else{CUT.sFG[i]=0;CUT.sBG[i]=0;}}}
+function cutStampLine(x0,y0,x1,y1){const steps=Math.max(1,Math.ceil(Math.hypot(x1-x0,y1-y0)/2));for(let i=0;i<=steps;i++)cutStampBrush(x0+(x1-x0)*i/steps,y0+(y1-y0)*i/steps);}
+function cutPushHistory(){CUT.history.push({sFG:CUT.sFG.slice(),sBG:CUT.sBG.slice()});if(CUT.history.length>CUT_HIST_MAX)CUT.history.shift();}
+function cutScheduleCompute(){clearTimeout(CUT.timer);document.getElementById('cutBusy').hidden=false;
+  CUT.timer=setTimeout(()=>{cutComputeMask();document.getElementById('cutBusy').hidden=true;cutRedraw();},50);}
+function cutRedraw(){const cv=document.getElementById('cutCv');if(!cv||!CUT.work)return;const ctx=cv.getContext('2d'),W=CUT.W,H=CUT.H,dw=cv.width,dh=cv.height;
+  ctx.clearRect(0,0,dw,dh);ctx.imageSmoothingEnabled=false;
+  const layer=(fn)=>{const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');fn(x);ctx.drawImage(c,0,0,dw,dh);};
+  if(CUT.peek){const sq=10;for(let y=0;y<dh;y+=sq)for(let x=0;x<dw;x+=sq){ctx.fillStyle=((x/sq+y/sq)%2===0)?'#e5e7eb':'#f9fafb';ctx.fillRect(x,y,sq,sq);}
+    layer(m=>{m.drawImage(CUT.work,0,0);const id=m.getImageData(0,0,W,H);for(let i=0;i<W*H;i++)if(!CUT.mask[i])id.data[i*4+3]=0;m.putImageData(id,0,0);});return;}
+  ctx.drawImage(CUT.work,0,0,dw,dh);
+  layer(o=>{const id=o.createImageData(W,H);for(let i=0;i<W*H;i++){const p=i*4;
+    if(CUT.sFG[i]){id.data[p]=34;id.data[p+1]=197;id.data[p+2]=94;id.data[p+3]=150;}
+    else if(CUT.sBG[i]){id.data[p]=239;id.data[p+1]=68;id.data[p+2]=68;id.data[p+3]=150;}
+    else if(!CUT.mask[i]){id.data[p]=220;id.data[p+1]=38;id.data[p+2]=38;id.data[p+3]=115;}}o.putImageData(id,0,0);});}
+function cutComputeMask(){
+  const W=CUT.W,H=CUT.H,n=W*H,rgb=CUT.rgb,GAMMA=1+(CUT.fine||0)/25;
+  const colorDist=(i,j)=>{const ii=i*4,jj=j*4,dr=rgb[ii]-rgb[jj],dg=rgb[ii+1]-rgb[jj+1],db=rgb[ii+2]-rgb[jj+2];return Math.sqrt(dr*dr+dg*dg+db*db);};
+  const w=(i,j,diag)=>{const base=1+GAMMA*colorDist(i,j)/32;return diag?base*1.414:base;};
+  const dFG=new Float32Array(n).fill(Infinity),dBG=new Float32Array(n).fill(Infinity);let hasFG=false;
+  for(let i=0;i<n;i++){if(CUT.sFG[i]){dFG[i]=0;hasFG=true;}if(CUT.sBG[i])dBG[i]=0;}
+  if(!hasFG){const mx0=Math.round(W*.375),mx1=Math.round(W*.625),my0=Math.round(H*.375),my1=Math.round(H*.625);for(let y=my0;y<my1;y++)for(let x=mx0;x<mx1;x++)dFG[y*W+x]=0;}
+  function relax(d){
+    for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=y*W+x;let v=d[i];
+      if(x>0)v=Math.min(v,d[i-1]+w(i,i-1,false));if(y>0)v=Math.min(v,d[i-W]+w(i,i-W,false));
+      if(x>0&&y>0)v=Math.min(v,d[i-W-1]+w(i,i-W-1,true));if(x<W-1&&y>0)v=Math.min(v,d[i-W+1]+w(i,i-W+1,true));d[i]=v;}
+    for(let y=H-1;y>=0;y--)for(let x=W-1;x>=0;x--){const i=y*W+x;let v=d[i];
+      if(x<W-1)v=Math.min(v,d[i+1]+w(i,i+1,false));if(y<H-1)v=Math.min(v,d[i+W]+w(i,i+W,false));
+      if(x<W-1&&y<H-1)v=Math.min(v,d[i+W+1]+w(i,i+W+1,true));if(x>0&&y<H-1)v=Math.min(v,d[i+W-1]+w(i,i+W-1,true));d[i]=v;}}
+  for(let it=0;it<3;it++){relax(dFG);relax(dBG);}
+  const hFG=new Int32Array(4096),hBG=new Int32Array(4096);let maxCount=1;
+  const binOf=ii=>((rgb[ii]>>4)<<8)|((rgb[ii+1]>>4)<<4)|(rgb[ii+2]>>4);
+  for(let i=0;i<n;i++){const b=binOf(i*4);if(CUT.sFG[i]){hFG[b]++;if(hFG[b]>maxCount)maxCount=hFG[b];}if(CUT.sBG[i]){hBG[b]++;if(hBG[b]>maxCount)maxCount=hBG[b];}}
+  const logMax=Math.log(maxCount+1)||1,mask=new Uint8Array(n);
+  for(let i=0;i<n;i++){const b=binOf(i*4),colorTerm=(Math.log(hBG[b]+1)-Math.log(hFG[b]+1))/logMax,df=dFG[i],db_=dBG[i],geo=(df-db_)/(df+db_+1);
+    let isBG=0.75*geo+0.25*colorTerm>0;if(CUT.sFG[i])isBG=false;if(CUT.sBG[i])isBG=true;mask[i]=isBG?0:1;}
+  cutMorphCleanup(mask,W,H);CUT.mask=mask;}
+function cutMorphCleanup(mask,W,H){
+  function erodeDilate(src,dilate){const out=new Uint8Array(src.length);
+    for(let y=0;y<H;y++)for(let x=0;x<W;x++){let v=dilate?0:1;
+      for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const xx=x+dx,yy=y+dy,nv=(xx<0||yy<0||xx>=W||yy>=H)?0:src[yy*W+xx];v=dilate?Math.max(v,nv):Math.min(v,nv);}
+      out[y*W+x]=v;}return out;}
+  let m=erodeDilate(mask,false);m=erodeDilate(m,true);m=erodeDilate(m,true);m=erodeDilate(m,false);
+  const label=new Int32Array(m.length).fill(-1),comps=[];
+  for(let s=0;s<m.length;s++){if(m[s]!==1||label[s]!==-1)continue;const q=[s];label[s]=comps.length;let hasSeed=false,size=0;
+    while(q.length){const i=q.pop();size++;if(CUT.sFG[i])hasSeed=true;const x=i%W,y=(i/W)|0;
+      for(const ni of [x>0?i-1:-1,x<W-1?i+1:-1,y>0?i-W:-1,y<H-1?i+W:-1])if(ni>=0&&m[ni]===1&&label[ni]===-1){label[ni]=comps.length;q.push(ni);}}
+    comps.push({hasSeed,size});}
+  const anySeed=comps.some(c=>c.hasSeed);let bestIdx=0;
+  if(!anySeed&&comps.length){let bestSize=-1;comps.forEach((c,idx)=>{if(c.size>bestSize){bestSize=c.size;bestIdx=idx;}});}
+  for(let i=0;i<m.length;i++){if(m[i]!==1)continue;if(!(anySeed?comps[label[i]].hasSeed:label[i]===bestIdx))m[i]=0;}
+  const bgReached=new Uint8Array(m.length),q2=[];const seedBG=i=>{if(m[i]===0&&!bgReached[i]){bgReached[i]=1;q2.push(i);}};
+  for(let x=0;x<W;x++){seedBG(x);seedBG((H-1)*W+x);}for(let y=1;y<H-1;y++){seedBG(y*W);seedBG(y*W+W-1);}
+  let qi=0;while(qi<q2.length){const i=q2[qi++],x=i%W,y=(i/W)|0;if(x>0)seedBG(i-1);if(x<W-1)seedBG(i+1);if(y>0)seedBG(i-W);if(y<H-1)seedBG(i+W);}
+  for(let i=0;i<m.length;i++)if(m[i]===0&&!bgReached[i])m[i]=1;
+  mask.set(m);}
+function cutApplyMaskFull(cv,mask,mw,mh){
+  const W=cv.width,H=cv.height,mcv=document.createElement('canvas');mcv.width=mw;mcv.height=mh;const mctx=mcv.getContext('2d'),mid=mctx.createImageData(mw,mh);
+  for(let i=0;i<mw*mh;i++){const v=mask[i]?255:0;mid.data[i*4]=v;mid.data[i*4+1]=v;mid.data[i*4+2]=v;mid.data[i*4+3]=255;}mctx.putImageData(mid,0,0);
+  const big=document.createElement('canvas');big.width=W;big.height=H;const bctx=big.getContext('2d');bctx.imageSmoothingEnabled=true;bctx.imageSmoothingQuality='high';bctx.drawImage(mcv,0,0,W,H);
+  const bd=bctx.getImageData(0,0,W,H).data,ctx=cv.getContext('2d'),id=ctx.getImageData(0,0,W,H),d=id.data;
+  const smoothstep=(e0,e1,x)=>{const t=Math.min(1,Math.max(0,(x-e0)/(e1-e0)));return t*t*(3-2*t);};
+  for(let i=0;i<W*H;i++)d[i*4+3]=Math.round(d[i*4+3]*smoothstep(0.35,0.65,bd[i*4]/255));ctx.putImageData(id,0,0);}
+function cutOk(){const c=CM.crops.find(x=>x.id===CUT.cropId);
+  if(c){c.useMask=true;c.mask=CUT.mask.slice();c.mw=CUT.W;c.mh=CUT.H;c.sFG=CUT.sFG.slice();c.sBG=CUT.sBG.slice();c.thumb=cropThumb(c);}
+  document.getElementById('cutEd').hidden=true;cutRelease();renderCropStrip();}
+function buildEditorDom(){
+  const cv=el('canvas',{id:'edCv','aria-label':'התמונה לחיתוך'}),rng=el('input',{type:'range',min:2,max:140,value:CM.tol,'aria-label':'רגישות'});
+  const pd=e=>{e.preventDefault();return cvPoint(cv,e);};
+  cv.addEventListener('mousedown',e=>onCropStart(...cvPoint(cv,e)));cv.addEventListener('mousemove',e=>onCropMove(...cvPoint(cv,e)));
+  addEventListener('mouseup',onCropEnd);
+  cv.addEventListener('touchstart',e=>onCropStart(...pd(e)),{passive:false});cv.addEventListener('touchmove',e=>onCropMove(...pd(e)),{passive:false});
+  cv.addEventListener('touchend',e=>{e.preventDefault();onCropEnd();},{passive:false});
+  const tool=el('div',{class:'seg'},[['circle','⭕ עיגול'],['rounded','⬜ ריבוע מעוגל']].map(([v,t])=>el('button',{type:'button','aria-pressed':String(CM.tool===v),'data-t':v,on:{click:e=>{CM.tool=v;tool.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.t===v)));}}},t)));
+  const rm=el('input',{type:'checkbox',on:{change:e=>{CM.rmbg=e.target.checked;rr.hidden=!CM.rmbg;refreshCropThumbs();}}});
+  let rt=0;rng.addEventListener('input',()=>{CM.tol=+rng.value;clearTimeout(rt);rt=setTimeout(refreshCropThumbs,120);});
+  const rr=el('div',{class:'row',hidden:''},el('label',{},'רגישות'),rng);
+  const ed=el('div',{class:'fmodal',id:'imgEd',hidden:'',role:'dialog','aria-modal':'true','aria-label':'חיתוך והסרת רקע'},el('div',{class:'fsheet'},
+    el('div',{class:'fhead'},el('h2',{},'חיתוך והסרת רקע'),el('span',{style:'flex:1'}),el('button',{type:'button','aria-label':'סגירה',on:{click:closeImageEditor}},'✕')),
+    el('div',{class:'obody'},
+      el('p',{class:'hint'},'גוררים על התמונה כדי לסמן פרצוף. בתמונה קבוצתית מסמנים כל אחד בנפרד — כל סימון הופך לתמונה משלו. גוררים סימון כדי להזיז אותו, ואת הנקודות בפינות כדי לשנות גודל.'),
+      el('div',{class:'inline',style:'justify-content:space-between'},tool,el('button',{type:'button',class:'btn ghost',on:{click:cropWhole}},'כל התמונה')),
+      el('label',{class:'inline'},rm,'✨ הסרת רקע מהירה (לרקע בצבע אחיד)'),rr,
+      el('div',{id:'edWrap',class:'edwrap'},cv),
+      el('div',{id:'edStrip',class:'cstrip'}),
+      el('p',{class:'hint'},'🪄 ליד כל תמונה = הסרת רקע מדויקת, גם כשהרקע צבעוני או עמוס.'),
+      el('div',{class:'inline',style:'justify-content:flex-end'},el('button',{type:'button',class:'btn ghost',on:{click:closeImageEditor}},'ביטול'),el('button',{type:'button',class:'btn gold',id:'edOk',on:{click:edDone}},'שמירה')))));
+  // הסרת רקע מדויקת
+  const ccv=el('canvas',{id:'cutCv','aria-label':'סימון מה לשמור ומה רקע'});
+  const cp=e=>{e.preventDefault();return cvPoint(ccv,e);};
+  const down=(x,y)=>{cutPushHistory();CUT.drawing=true;CUT.lastX=x;CUT.lastY=y;cutStampBrush(x,y);cutRedraw();};
+  const move=(x,y)=>{if(!CUT.drawing)return;cutStampLine(CUT.lastX,CUT.lastY,x,y);CUT.lastX=x;CUT.lastY=y;cutRedraw();};
+  const up=()=>{if(!CUT.drawing)return;CUT.drawing=false;cutScheduleCompute();};
+  ccv.addEventListener('mousedown',e=>down(...cvPoint(ccv,e)));ccv.addEventListener('mousemove',e=>move(...cvPoint(ccv,e)));addEventListener('mouseup',up);
+  ccv.addEventListener('touchstart',e=>down(...cp(e)),{passive:false});ccv.addEventListener('touchmove',e=>move(...cp(e)),{passive:false});ccv.addEventListener('touchend',e=>{e.preventDefault();up();},{passive:false});
+  const brush=el('div',{class:'seg',id:'cutBrush'},[['fg','✅ לשמור'],['bg','❌ רקע'],['er','🧽 מחיקת סימון']].map(([v,t])=>el('button',{type:'button','data-b':v,'aria-pressed':String(v==='fg'),on:{click:()=>{CUT.brush=v;brush.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.b===v)));}}},t)));
+  const bs=el('input',{type:'range',min:8,max:70,step:2,value:CUT.brushPx,on:{input:e=>CUT.brushPx=+e.target.value}});
+  const fn=el('input',{type:'range',min:0,max:100,step:5,value:CUT.fine,on:{input:e=>{CUT.fine=+e.target.value;cutScheduleCompute();}}});
+  const peek=el('button',{type:'button',class:'btn ghost',on:{click:()=>{CUT.peek=!CUT.peek;peek.textContent=CUT.peek?'✏️ חזרה לסימון':'👁 תוצאה';cutRedraw();}}},'👁 תוצאה');
+  const cut=el('div',{class:'fmodal',id:'cutEd',hidden:'',style:'z-index:60',role:'dialog','aria-modal':'true','aria-label':'הסרת רקע מדויקת'},el('div',{class:'fsheet'},
+    el('div',{class:'fhead'},el('h2',{},'הסרת רקע מדויקת'),el('span',{style:'flex:1'}),el('button',{type:'button','aria-label':'סגירה',on:{click:()=>{document.getElementById('cutEd').hidden=true;cutRelease();}}},'✕')),
+    el('div',{class:'obody'},
+      el('p',{class:'hint',html:'צובעים בירוק על מה ש<b>שומרים</b> ובאדום על ה<b>רקע</b>. מספיקים קווים גסים, ואפשר לתקן שוב ושוב. מה שמסומן באדום שקוף ייעלם.'}),
+      brush,el('div',{class:'row'},el('label',{},'גודל מברשת'),bs),el('div',{class:'row'},el('label',{},'עדינות הגזירה'),fn),
+      el('div',{id:'cutWrap',class:'edwrap',style:'position:relative'},ccv,el('div',{id:'cutBusy',class:'busy',hidden:''},'מחשב…')),
+      el('div',{class:'inline',style:'justify-content:space-between'},
+        el('div',{class:'inline'},el('button',{type:'button',class:'btn ghost',on:{click:()=>{const s=CUT.history.pop();if(!s)return;CUT.sFG=s.sFG;CUT.sBG=s.sBG;cutRedraw();cutScheduleCompute();}}},'↩ בטל'),
+          el('button',{type:'button',class:'btn ghost',on:{click:()=>{cutPushHistory();const n=CUT.W*CUT.H;CUT.sFG=new Uint8Array(n);CUT.sBG=new Uint8Array(n);cutSeedDefaults();cutRedraw();cutScheduleCompute();}}},'איפוס'),peek),
+        el('button',{type:'button',class:'btn gold',on:{click:cutOk}},'אישור')))));
+  document.body.append(ed,cut);}
+
 function shapePicker(o,k,allowed,{w=40,h=20,r=3,after}={}){
   const wrap=el('div',{class:'shapes'});
   allowed.forEach(id=>{const c=el('canvas',{width:160,height:88});const b=el('button',{type:'button','aria-pressed':String(o[k]===id),on:{click:()=>{o[k]=id;after&&after(id);rebuild();}}},c,SHAPES[id].he);
@@ -642,7 +904,7 @@ const Cards={id:'cards',label:'קלפים',
       CD.type==='war'?[num(CD.war,'w','רוחב',{min:40,max:100,step:.5}),num(CD.war,'h','גובה',{min:50,max:140,step:.5}),rng(CD.war,'r','עיגול פינות',0,8,.5),tog(CD.war,'jokers','כולל 2 ג\'וקרים'),isAdmin?el('p',{class:'hint'},'קלף 63×88: בסילואט נכנסים 4 בדף (סימני הרישום תופסים שוליים), בחיתוך ידני 9. מחליפים ב"הדפסה וחיתוך".'):null,tog(CD.war,'fronts','להדפיס גם את צד הפנים (בלי זה — רק הגב)',{rebuildOnChange:true}),col(CD.war,'red','צבע אדום'),col(CD.war,'black','צבע שחור')]:null,
       CD.type==='round'?[el('div',{class:'seg'},[71,78,85].map(v=>el('button',{type:'button','aria-pressed':String(CD.round.d===v),on:{click:()=>{CD.round.d=v;rebuild();}}},v+' מ"מ'))),el('p',{class:'hint'},isAdmin?'לפי טבעות החיתוך שלך.':'שלושה גדלים שאפשר לחתוך אצלנו בדיוק.'),num(CD.round,'d','קוטר',{min:30,max:120,step:.5})]:null,
       CD.type==='rect'?[num(CD.rect,'w','רוחב',{min:30,max:120,step:.5}),num(CD.rect,'h','גובה',{min:30,max:160,step:.5}),rng(CD.rect,'r','עיגול פינות',0,10,.5)]:null),
-    CD.type!=='war'?sec('תוכן הקלפים',true,filesInput(CD,'images','תמונות — קלף לכל תמונה',{max:120}),area(CD,'names','כיתוב — שורה לכל קלף (לפי סדר התמונות)','סבא משה\nסבתא רחל'),
+    CD.type!=='war'?sec('תוכן הקלפים',true,filesInput(CD,'images','תמונות — קלף לכל תמונה',{max:120,edit:true}),area(CD,'names','כיתוב — שורה לכל קלף (לפי סדר התמונות)','סבא משה\nסבתא רחל'),
       num(CD,'count','מספר קלפים לדוגמה (כשאין תמונות)',{min:1,max:200}),fontSel(CD,'font','פונט כיתוב',()=>lines(CD.names)[0]||'כיתוב'),col(CD,'capColor','צבע כיתוב'),col(CD,'capOutline','קו מתאר')):null,
     CD.type!=='war'?decoEditor(CD.front,{title:'רקע הפנים',text:false}):null,
     sec('גב הקלף',CD.type==='war',tog(CD,'backs','להוסיף גב מעוצב',{rebuildOnChange:true}),el('p',{class:'hint'},isAdmin?'דף הגב מודפס במיקום הפוך כך שבהדפסה דו-צדדית (היפוך בצד הארוך) הוא נופל על הפנים. לבדוק על דף אחד לפני הדפסה מלאה.':'הגב מודפס על הצד השני של אותו דף — בלי תוספת מחיר.')),
@@ -663,7 +925,7 @@ const Memory={id:'memory',label:'זיכרון',
   panel(){return[
     sec('קלפים',true,num(MM,'size','גודל (מ"מ)',{min:25,max:100,step:.5}),
       shapePicker(MM,'shape',['rounded','rect','circle','hex','heart','star','cloud'],{w:40,h:40,r:MM.r}),MM.shape==='rounded'?rng(MM,'r','עיגול פינות',0,15,.5):null),
-    sec('תמונות וזוגות',true,filesInput(MM,'images','תמונות — כל תמונה הופכת לזוג',{max:60}),
+    sec('תמונות וזוגות',true,filesInput(MM,'images','תמונות — כל תמונה הופכת לזוג',{max:60,edit:true}),
       seg(MM,'mode',[['same','שני קלפים זהים'],['imageName','תמונה + שם']]),area(MM,'names','שמות — שורה לכל תמונה','כלב\nחתול\nפרה'),
       num(MM,'demo','מספר זוגות לדוגמה (כשאין תמונות)',{min:2,max:60}),fontSel(MM,'font','פונט',()=>lines(MM.names)[0]||'כלב'),col(MM,'color','צבע כיתוב')),
     decoEditor(MM.front,{title:'רקע הפנים',text:false}),
@@ -682,6 +944,17 @@ const DOM_RULES={
   tri:{how:'אבנים משולשות עם תמונה בכל פינה. מניחים משולש ליד משולש רק אם שתי התמונות לאורך הצלע המשותפת זהות לשתי התמונות שבצלע שעל השולחן.',who:'מי שכבר מכיר דומינו ורוצה אתגר. עדיין רק זיהוי תמונות, בלי חשבון.',extra:'6 תמונות = 56 משולשים, כמו הסט המקורי — בצלע 40 מ"מ זה שני דפים. עד 7 תמונות.'}
 };
 const TRI_MAX=7,DOM_MAX=13;
+const domTiles=(n,tri)=>tri?n*(n+1)*(n+2)/6:n*(n+1)/2;
+const DOM_NEED={classic:7,block:7,train:10,tri:6};
+// כמה תמונות להעלות: יעד לכל גרסה, ומה יוצא ממה שכבר הועלה.
+function domImageStatus(){const tri=DM.variant==='tri',need=DOM_NEED[DM.variant]||7,have=DM.images.length,used=Math.min(have,tri?TRI_MAX:DOM_MAX),unit=tri?'משולשים':'אבנים';
+  const full='לסט מלא צריך '+need+' תמונות שונות ('+domTiles(need,tri)+' '+unit+')'+(DM.variant==='train'?'; לסט גדול — 13 תמונות (91 אבנים)':'')+'.';
+  let msg;
+  const tip=' יש תמונה קבוצתית? מעלים אותה ולוחצים עליה כדי לחלק לפרצופים.';
+  if(!have)msg=[el('b',{},'כמה תמונות להעלות? '),full+' כל תמונה = "מספר" אחד: אדם, חיה או חפץ.'+tip];
+  else if(used<need)msg=[el('b',{},used===1?'העליתם תמונה אחת.':'העליתם '+used+' תמונות'),(used>1?' → '+domTiles(used,tri)+' '+unit+'.':'')+' '+full+' '+(need-used===1?'חסרה עוד אחת.':'חסרות עוד '+(need-used)+'.')+(used===1?tip:'')];
+  else msg=[el('b',{},'✓ '+used+' תמונות'),' → '+domTiles(used,tri)+' '+unit+(used===need?' — סט מלא.':'.')];
+  return el('div',{class:'rules'},el('p',{},...msg));}
 function domN(){const cap=DM.variant==='tri'?TRI_MAX:DOM_MAX;return Math.min(cap,DM.images.length>=2?DM.images.length:DM.n);}
 function domPaint(ctx,v,cx,cy,q){ // תמונה (בעיגול) או סמל מספר v בקוטר q סביב (cx,cy) — למשולשים ולתחנה
   const imgs=DM.images;
@@ -751,7 +1024,7 @@ const Domino={id:'domino',label:'דומינו',
       tri?null:rng(DM,'r','עיגול פינות',0,8,.5),col(DM,'bg','צבע אבן'),col(DM,'line',tri?'צבע סימון':'קו אמצע'),
       DM.images.length<2?num(DM,'n','מספר תמונות',{min:3,max:cap,after:()=>rebuild()}):null,
       el('p',{class:'hint'},tri?'5 תמונות = 35 משולשים · 6 = 56 · 7 = 84.':'7 תמונות = 28 אבנים (סט רגיל) · 10 = 55 · 13 = 91.')),
-    sec('תמונות',true,filesInput(DM,'images','תמונה אחת לכל "מספר" (לפחות 2, עד '+DOM_MAX+')',{max:DOM_MAX,after:()=>rebuild()}),
+    sec('תמונות',true,domImageStatus(),filesInput(DM,'images','תמונה אחת לכל "מספר" (לפחות 2, עד '+DOM_MAX+')',{max:DOM_MAX,edit:true,after:()=>rebuild()}),
       tri&&DM.images.length>TRI_MAX?el('p',{class:'hint',style:'color:#B91C1C'},'במשולשים משתמשים רק ב-'+TRI_MAX+' התמונות הראשונות.'):null),
     tri?null:sec('גב',false,tog(DM,'backs','להוסיף גב מעוצב',{rebuildOnChange:true})),!tri&&DM.backs?decoEditor(DM.back,{title:'עיצוב הגב'}):null,
     printSection()];}
@@ -798,7 +1071,7 @@ const Dice={id:'dice',label:'קוביות',
       num(DC,'edge','אורך צלע (מ"מ)',{min:8,max:mx,step:.5}),el('p',{class:'hint'},'הגודל המקסימלי בדף: '+mx+' מ"מ.'+(isAdmin?' קו כחול בקובץ החיתוך = קיפול.':'')),
       num(DC,'count','מספר קוביות (0 = כמה שנכנס בדף)',{min:0,max:40})),
     sec('מה על הפאות',true,seg(DC,'mode',[['numbers','מספרים']].concat(DC.type==='d6'?[['pips','נקודות']]:[]).concat([['images','תמונות'],['text','מילים']])),
-      DC.mode==='images'?filesInput(DC,'images','תמונה לכל פאה (לפי הסדר)',{max:20}):null,
+      DC.mode==='images'?filesInput(DC,'images','תמונה לכל פאה (לפי הסדר)',{max:20,edit:true}):null,
       DC.mode==='text'?area(DC,'texts','מילה או משפט לכל פאה','לקפוץ\nלמחוא כפיים\nלהסתובב'):null,
       fontSel(DC,'font','פונט',()=>lines(DC.texts)[0]||'1 2 3 4 5 6'),col(DC,'numColor','צבע'),col(DC,'faceBg','רקע פאה'),col(DC,'tabColor','צבע לשוניות')),
     printSection()];}
@@ -898,7 +1171,7 @@ const Admin={id:'admin',label:'מנהל',
       num(G.reg,'inset','מרחק מהקצה',{min:5,max:30,step:.1}),num(G.reg,'length','אורך זרוע',{min:5,max:40,step:.1}),num(G.reg,'thickness','עובי',{min:.3,max:3,step:.1}),num(G.reg,'square','ריבוע',{min:2,max:10,step:.1}),
       el('p',{class:'hint'},'ברירת מחדל זהה למחולל המדבקות (15.9 / 20 / 1.3 / 5). ב-Studio: סימני רישום → Restore Defaults.')),
     printSection(),
-    sec('גרסה וקבצים משותפים',false,el('p',{class:'hint'},'v0.4 — דומינו: ארבע גרסאות (קלאסי, חסום, רכבת מקסיקנית, משולשים) עם הסבר; ניסוח טקסטים ללקוח. v0.3 — הזמנות: לקוח שולח הזמנה ולא מוריד קבצים; מנהל נכנס עם קישור במייל ומוריד. v0.2 — גלריית פונטים עם הטקסט של הלקוח, קבוצות מדבקות על אותו דף, פאזל. v0.1 — בנייה ראשונית: מדבקות, קלפים, זיכרון, דומינו, קוביות.'),el('p',{class:'hint'},VERSION+' · פונטים ועיצובי גב נטענים מהריפו, נעוצים לקומיט '+SHARED_COMMIT.slice(0,7)+'.'),st,
+    sec('גרסה וקבצים משותפים',false,el('p',{class:'hint'},'v0.5 — עריכת תמונות מהדאבל: חיתוך פרצופים מתמונה קבוצתית, הסרת רקע מהירה ומדויקת; בדומינו — כמה תמונות להעלות. v0.4 — דומינו: ארבע גרסאות (קלאסי, חסום, רכבת מקסיקנית, משולשים) עם הסבר; ניסוח טקסטים ללקוח. v0.3 — הזמנות: לקוח שולח הזמנה ולא מוריד קבצים; מנהל נכנס עם קישור במייל ומוריד. v0.2 — גלריית פונטים עם הטקסט של הלקוח, קבוצות מדבקות על אותו דף, פאזל. v0.1 — בנייה ראשונית: מדבקות, קלפים, זיכרון, דומינו, קוביות.'),el('p',{class:'hint'},VERSION+' · פונטים ועיצובי גב נטענים מהריפו, נעוצים לקומיט '+SHARED_COMMIT.slice(0,7)+'.'),st,
       el('button',{type:'button',class:'btn ghost',on:{click:()=>{try{localStorage.removeItem('studio.v1');}catch(e){}location.reload();}}},'איפוס כל ההגדרות'))];}
 };
 const PRODUCTS=[Stickers,Cards,Memory,Domino,Dice,Puzzle,Admin];
