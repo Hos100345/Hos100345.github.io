@@ -480,7 +480,7 @@ function dcfgSave(patch){
     <a id="lock-wa" href="#" target="_blank" rel="noopener noreferrer"
        style="display:inline-flex;align-items:center;gap:.5rem;background:#25D366;color:#fff;font-weight:700;font-size:.88rem;padding:.55rem 1.2rem;border-radius:100px;text-decoration:none;box-shadow:0 6px 24px rgba(37,211,102,.45)">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-      עזרה בוואטסאפ
+      <span data-i18n="lock.waHelpBtn">עזרה בוואטסאפ</span>
     </a>
     <div id="lock-phone" style="color:rgba(255,255,255,.7);font-size:.85rem;direction:ltr"></div>
     <button data-i18n="lock.cancelBtn" id="lock-cancel" type="button" hidden
@@ -505,11 +505,11 @@ function dcfgSave(patch){
   <div class="modal-card" style="max-width:420px;width:94%;text-align:center">
     <div style="font-size:2.6rem;margin-bottom:.3rem">🔒</div>
     <div data-i18n="lock.upgradeTitle" style="font-size:1.3rem;font-weight:800;margin-bottom:.5rem">המשחק הזה דורש שדרוג</div>
-    <div style="color:var(--muted);font-size:.96rem;line-height:1.6;margin-bottom:.7rem">הקוד שלך פותח עד <b id="upg-current"></b> קלפים. אפשר להמשיך לצפות בתצוגה מקדימה, ולשדרג להורדה:</div>
-    <div style="background:var(--purple-light);border-radius:var(--rs);padding:.7rem .85rem;margin-bottom:.9rem;font-size:.88rem;line-height:1.65;text-align:right">
-      <b data-i18n="lock.upgradeOneGameTitle">רוצים רק משחק אחד? זה בדיוק זה.</b><br>
+    <div data-i18n-html="lock.upgradeCurrentTierInfo" style="color:var(--muted);font-size:.96rem;line-height:1.6;margin-bottom:.7rem">הקוד שלך פותח עד <b id="upg-current"></b> קלפים. אפשר להמשיך לצפות בתצוגה מקדימה, ולשדרג להורדה:</div>
+    <div data-i18n-html="lock.upgradeOfferBodyHtml" style="background:var(--purple-light);border-radius:var(--rs);padding:.7rem .85rem;margin-bottom:.9rem;font-size:.88rem;line-height:1.65;text-align:right">
+      <b>רוצים רק משחק אחד? זה בדיוק זה.</b><br>
       משלמים פעם אחת, ובמשך חודש יוצרים ומדפיסים כמה משחקים שרוצים.
-      <b data-i18n="lock.upgradeNoRecurring">אין חיוב חוזר</b> — אחרי חודש פשוט נגמר, אלא אם תבחרו לחדש.
+      <b>אין חיוב חוזר</b> — אחרי חודש פשוט נגמר, אלא אם תבחרו לחדש.
     </div>
     <div id="upg-tiers" style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:.8rem"></div>
     <div id="upg-email-wrap" hidden>
@@ -990,9 +990,9 @@ function dcfgSave(patch){
         <div><strong data-i18n="onboard.step3Title" style="color:var(--green)">שלב 3 — ייצוא</strong><div data-i18n="onboard.step3Desc" class="ob-s">PDF מוכן להדפסה בבית או ZIP של PNG בודדים — ואפשר גם להזמין הדפסה מקצועית בבית דפוס עם משלוח עד הבית (בתוספת תשלום)</div></div>
       </div>
     </div>
-    <div style="background:rgba(238,236,251,.7);border:1.5px solid #c7d2fe;border-radius:10px;padding:.7rem 1rem;text-align:center;margin-bottom:.7rem;font-size:.78rem;color:var(--indigo);line-height:1.6">
-      🕹️ <strong data-i18n="onboard.packageNote">חבילה אחת = 4 משחקים שונים</strong> (דאבל קלאסי, המגדל, הבאר, השלישייה) · מתאים לימי הולדת, חתונות, בר/בת מצווה, בתי ספר, תנועות נוער ועוד —
-      <a data-i18n="onboard.infoLink" href="dobble-info.html" target="_blank" rel="noopener noreferrer" style="color:var(--purple);font-weight:700;text-decoration:underline">לכל הרעיונות וההשראה ←</a>
+    <div data-i18n-html="onboard.packageInfoHtml" style="background:rgba(238,236,251,.7);border:1.5px solid #c7d2fe;border-radius:10px;padding:.7rem 1rem;text-align:center;margin-bottom:.7rem;font-size:.78rem;color:var(--indigo);line-height:1.6">
+      🕹️ <strong>חבילה אחת = 4 משחקים שונים</strong> (דאבל קלאסי, המגדל, הבאר, השלישייה) · מתאים לימי הולדת, חתונות, בר/בת מצווה, בתי ספר, תנועות נוער ועוד —
+      <a href="dobble-info.html" target="_blank" rel="noopener noreferrer" style="color:var(--purple);font-weight:700;text-decoration:underline">לכל הרעיונות וההשראה ←</a>
     </div>
     <div style="background:rgba(240,253,244,.85);border:1.5px solid #bbf7d0;border-radius:10px;padding:.75rem 1rem;text-align:center;margin-bottom:.9rem">
       <div data-i18n="onboard.contactLabel" style="font-size:.8rem;color:#166534;font-weight:600;margin-bottom:.35rem">💬 לרכישת קוד גישה — צרו קשר</div>
@@ -1012,11 +1012,11 @@ function dcfgSave(patch){
     <div class="sub">Dobble / Spot It! · Finite Projective Plane</div>
   </div>
   <nav class="step-ind">
-    <div class="si active" id="si1"><span class="n">1</span>העלאה</div>
+    <div class="si active" id="si1" data-i18n-html="header.stepUploadHtml"><span class="n">1</span>העלאה</div>
     <div class="si-sep"></div>
-    <div class="si" id="si2"><span class="n">2</span>עריכה</div>
+    <div class="si" id="si2" data-i18n-html="header.stepEditHtml"><span class="n">2</span>עריכה</div>
     <div class="si-sep"></div>
-    <div class="si" id="si3"><span class="n">3</span>ייצוא</div>
+    <div class="si" id="si3" data-i18n-html="header.stepExportHtml"><span class="n">3</span>ייצוא</div>
   </nav>
   <!-- מצב תמיכה: מנהל צופה בעיצוב לקוח (בזיכרון, לא נשמר) — כפתור קומפקטי בתוך ה-header עצמו,
        לא סרגל צף נפרד, כדי שלא יכסה/יחסום שום דבר. -->
@@ -1085,7 +1085,7 @@ function dcfgSave(patch){
         <span class="under-lim" id="under-lim" style="display:none"></span>
       </div>
       <div id="crop-hint" class="crop-hint" style="display:none">
-        <span>💡 יש לך תמונות שאינן מרובעות — לחצו על <strong>✂</strong> ליד תמונה כדי לחתוך ולמקד את הסמל.</span>
+        <span data-i18n-html="upload.cropHintTextHtml">💡 יש לך תמונות שאינן מרובעות — לחצו על <strong>✂</strong> ליד תמונה כדי לחתוך ולמקד את הסמל.</span>
         <button type="button" id="crop-hint-x" data-i18n-title="upload.cropHintCloseBtnTitle" title="סגור">✕</button>
       </div>
       <div class="gallery-bulk" id="gallery-bulk">
@@ -1215,7 +1215,7 @@ function dcfgSave(patch){
       </aside>
 
       <div class="cards-main">
-        <div class="vfy-banner">🔍 <strong data-i18n="edit.algoCheckLabel">בדיקת אלגוריתם:</strong> לחץ/י על שני קלפים — הסמל המשותף היחיד יסומן אוטומטית</div>
+        <div class="vfy-banner" data-i18n-html="edit.algoCheckBannerHtml">🔍 <strong>בדיקת אלגוריתם:</strong> לחץ/י על שני קלפים — הסמל המשותף היחיד יסומן אוטומטית</div>
         <div class="cards-grid" id="cgrid"></div>
       </div>
 
@@ -1334,7 +1334,7 @@ function dcfgSave(patch){
           <button data-i18n="export.printPageBtn" class="btn btn-out" id="btn-doprint">📦 PDF — עמוד לכל קלף</button>
           <button data-i18n="export.sheetBtn" class="btn btn-out" id="btn-dosheet">🗞️ גיליון 33×48.8</button>
         </div>
-        <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem;line-height:1.5">
+        <div data-i18n-html="export.printShopNotesHtml" style="font-size:.72rem;color:var(--muted);margin-top:.3rem;line-height:1.5">
           📦 עמוד לכל קלף · בליד 4 מ"מ · 300 DPI · העמוד האחרון הוא הגב.<br>
           🗞️ גיליון גדול לבית דפוס — דורש חיתוך עצמי.
         </div>
@@ -1567,14 +1567,14 @@ function dcfgSave(patch){
 <div class="modal-bg" id="cemodal" hidden style="z-index:10002">
   <div class="modal-card" style="max-width:440px">
     <div class="modal-hdr">
-      <div class="modal-title">✏️ עריכת קלף <span id="ce-idx"></span></div>
+      <div class="modal-title" data-i18n-html="edit.cardEditModalTitleHtml">✏️ עריכת קלף <span id="ce-idx"></span></div>
       <button class="modal-x" id="ce-x">✕</button>
     </div>
     <div style="display:flex;flex-direction:column;gap:.7rem;align-items:center">
       <div class="ce-wrap" id="ce-wrap" style="width:min(76vw,340px);height:min(76vw,340px)">
         <canvas id="ce-cv" width="720" height="720"></canvas>
       </div>
-      <div style="font-size:.78rem;color:var(--muted);text-align:center;line-height:1.55">
+      <div data-i18n-html="edit.cardEditInstructionsHtml" style="font-size:.78rem;color:var(--muted);text-align:center;line-height:1.55">
         לחצו על סמל כדי לבחור אותו · גררו כדי להזיז · הסרגל משנה גודל<br>
         השינויים חלים על הקלף הזה בלבד
       </div>
@@ -1728,8 +1728,8 @@ function dcfgSave(patch){
       <button class="modal-x" id="cutout-x">✕</button>
     </div>
 
-    <div style="font-size:.82rem;color:var(--muted);line-height:1.6;margin-bottom:.5rem">
-      צבעו בירוק על מה שרוצים <b data-i18n="edit.cutoutKeepLabel">לשמור</b>, ובאדום על ה<b data-i18n="edit.cutoutRemoveLabel">רקע</b>. מספיקים קווים גסים — אפשר לתקן שוב ושוב.
+    <div data-i18n-html="edit.cutoutInstructionsHtml" style="font-size:.82rem;color:var(--muted);line-height:1.6;margin-bottom:.5rem">
+      צבעו בירוק על מה שרוצים <b>לשמור</b>, ובאדום על ה<b>רקע</b>. מספיקים קווים גסים — אפשר לתקן שוב ושוב.
     </div>
 
     <div class="tool-row" style="gap:.4rem;flex-wrap:wrap;margin-bottom:.5rem">
@@ -1813,9 +1813,9 @@ function dcfgSave(patch){
       <div data-i18n="account.cloudSaveTitle" class="modal-title">☁️ שמירה בענן — חינם</div>
       <button class="modal-x" id="cloudsave-x">✕</button>
     </div>
-    <p style="font-size:.9rem;color:var(--muted);line-height:1.6;margin-bottom:1rem">
+    <p data-i18n-html="account.cloudSaveDescHtml" style="font-size:.9rem;color:var(--muted);line-height:1.6;margin-bottom:1rem">
       חברו כתובת מייל והעיצובים שלכם יישמרו אונליין. תוכלו להמשיך מכל מכשיר, וגם אם תאבדו את הטלפון העבודה לא תלך לאיבוד.<br>
-      <strong data-i18n="account.cloudSaveNote">המסלול שלכם לא משתנה — המייל משמש לגיבוי בלבד.</strong>
+      <strong>המסלול שלכם לא משתנה — המייל משמש לגיבוי בלבד.</strong>
     </p>
     <div class="adm-field">
       <label data-i18n="account.cloudSaveEmailLabel" for="cloudsave-email">המייל שלכם</label>
@@ -2021,8 +2021,6 @@ const I18N={
     'lock.wrongCodeMsg':'ייתכן שהקוד שגוי או שפג תוקף המנוי.',
     'lock.wrongCodeClose':'סגירה',
     'lock.upgradeTitle':'המשחק הזה דורש שדרוג',
-    'lock.upgradeOneGameTitle':'רוצים רק משחק אחד? זה בדיוק זה.',
-    'lock.upgradeNoRecurring':'אין חיוב חוזר',
     'lock.upgradeEmailLabel':'האימייל שאיתו תרצה/י לשלם',
     'lock.upgradeHaveCodeBtn':'יש לי כבר קוד אחר',
     'lock.upgradeClose':'סגירה',
@@ -2042,8 +2040,6 @@ const I18N={
     'onboard.step2Desc':'המערכת מחשבת קלפים אוטומטית לפי מתמטיקה מדויקת. ניתן לעצב מסגרת, רקע ופריסת סמלים',
     'onboard.step3Title':'שלב 3 — ייצוא',
     'onboard.step3Desc':'PDF מוכן להדפסה בבית או ZIP של PNG בודדים — ואפשר גם להזמין הדפסה מקצועית בבית דפוס עם משלוח עד הבית (בתוספת תשלום)',
-    'onboard.packageNote':'חבילה אחת = 4 משחקים שונים',
-    'onboard.infoLink':'לכל הרעיונות וההשראה ←',
     'onboard.contactLabel':'💬 לרכישת קוד גישה — צרו קשר',
     'onboard.contactBtn':'📱 פנה/י אלינו בוואטסאפ',
     'onboard.startBtn':'🚀 בואו נתחיל!',
@@ -2181,7 +2177,6 @@ const I18N={
     'edit.stuckBtn':'🆘 תקוע/ה? שלח את העבודה להושעיה',
     'edit.backToUploadBtn':'← חזרה להעלאה',
     'edit.goExportBtn':'ייצא / הדפס →',
-    'edit.algoCheckLabel':'בדיקת אלגוריתם:',
     'export.title':'ייצוא והדפסה',
     'export.desc':'בחר/י פריסה ואפשרויות הדפסה, ואז לחץ/י על הפקת הקובץ.',
     'export.cardSizeTitle':'גודל קלף',
@@ -2380,8 +2375,6 @@ const I18N={
     'edit.cropAddBtn':'✅ הוסף למאגר',
     'edit.cutoutButtonTitle':'חיתוך חכם',
     'edit.cutoutTitle':'🪄 הסרת רקע חכמה',
-    'edit.cutoutKeepLabel':'לשמור',
-    'edit.cutoutRemoveLabel':'רקע',
     'edit.cutoutKeepBtn':'✅ לשמור',
     'edit.cutoutRemoveBtn':'❌ רקע',
     'edit.cutoutEraseBtn':'🧽 מחק סימון',
@@ -2409,7 +2402,6 @@ const I18N={
     'account.syncedNote':'העיצובים והתמונות מגובים לחשבון וזמינים מכל מכשיר.',
     'account.signOutBtn':'התנתקות',
     'account.cloudSaveTitle':'☁️ שמירה בענן — חינם',
-    'account.cloudSaveNote':'המסלול שלכם לא משתנה — המייל משמש לגיבוי בלבד.',
     'account.cloudSaveEmailLabel':'המייל שלכם',
     'account.cloudSaveSendBtn':'✉️ שלחו לי קישור כניסה',
     'account.designSavedToCloud':'העיצוב "{name}" נשמר בענן ☁️',
@@ -2492,6 +2484,37 @@ const I18N={
     'msg.whatsappMessageOpened':'נפתחה הודעת וואטסאפ עם פרטי המשחק 💬',
     'msg.tierUpgraded':'המסלול שלכם עודכן — עד {n} קלפים זמינים עכשיו 🎉',
     'msg.uploadsFailed':'{n} תמונות לא עלו — נסה לשמור שוב',
+    // ⚠️ שלב ג1ב: אלמנטים שהטקסט שלהם מעורב עם תגיות פנימיות (<strong>/<b>/<br>/<span>) —
+    // תויגו רק חלקית בשלב א׳ (leaf-only). data-i18n-html מכיל את ה-HTML המלא.
+    'lock.waHelpBtn':'עזרה בוואטסאפ',
+    'lock.upgradeCurrentTierInfo':'הקוד שלך פותח עד <b id="upg-current"></b> קלפים. אפשר להמשיך לצפות בתצוגה מקדימה, ולשדרג להורדה:',
+    'lock.upgradeOfferBodyHtml':'<b>רוצים רק משחק אחד? זה בדיוק זה.</b><br>\n      משלמים פעם אחת, ובמשך חודש יוצרים ומדפיסים כמה משחקים שרוצים.\n      <b>אין חיוב חוזר</b> — אחרי חודש פשוט נגמר, אלא אם תבחרו לחדש.',
+    'onboard.packageInfoHtml':'🕹️ <strong>חבילה אחת = 4 משחקים שונים</strong> (דאבל קלאסי, המגדל, הבאר, השלישייה) · מתאים לימי הולדת, חתונות, בר/בת מצווה, בתי ספר, תנועות נוער ועוד —\n      <a href="dobble-info.html" target="_blank" rel="noopener noreferrer" style="color:var(--purple);font-weight:700;text-decoration:underline">לכל הרעיונות וההשראה ←</a>',
+    'header.stepUploadHtml':'<span class="n">1</span>העלאה',
+    'header.stepEditHtml':'<span class="n">2</span>עריכה',
+    'header.stepExportHtml':'<span class="n">3</span>ייצוא',
+    'upload.cropHintTextHtml':'💡 יש לך תמונות שאינן מרובעות — לחצו על <strong>✂</strong> ליד תמונה כדי לחתוך ולמקד את הסמל.',
+    'edit.algoCheckBannerHtml':'🔍 <strong>בדיקת אלגוריתם:</strong> לחץ/י על שני קלפים — הסמל המשותף היחיד יסומן אוטומטית',
+    'export.printShopNotesHtml':'📦 עמוד לכל קלף · בליד 4 מ"מ · 300 DPI · העמוד האחרון הוא הגב.<br>\n          🗞️ גיליון גדול לבית דפוס — דורש חיתוך עצמי.',
+    'edit.cardEditModalTitleHtml':'✏️ עריכת קלף <span id="ce-idx"></span>',
+    'edit.cardEditInstructionsHtml':'לחצו על סמל כדי לבחור אותו · גררו כדי להזיז · הסרגל משנה גודל<br>\n        השינויים חלים על הקלף הזה בלבד',
+    'edit.cutoutInstructionsHtml':'צבעו בירוק על מה שרוצים <b>לשמור</b>, ובאדום על ה<b>רקע</b>. מספיקים קווים גסים — אפשר לתקן שוב ושוב.',
+    'account.cloudSaveDescHtml':'חברו כתובת מייל והעיצובים שלכם יישמרו אונליין. תוכלו להמשיך מכל מכשיר, וגם אם תאבדו את הטלפון העבודה לא תלך לאיבוד.<br>\n      <strong>המסלול שלכם לא משתנה — המייל משמש לגיבוי בלבד.</strong>',
+    // ⚠️ שלב ג1ב: תבניות innerHTML ב-JS שהוחרגו בשלב ב׳ "כי הן מכילות HTML" —
+    // חלקן גלויות ללקוח. הועברו למילון עם ה-HTML המלא, כמו data-i18n-html.
+    'upload.needMoreImagesHtml':'⚠️ נדרשות לפחות <strong>7 תמונות</strong>. העלית {n} — אנא הוסף עוד {need}.',
+    'upload.mathRecommendationHtml':'💡 <strong>המלצה מתמטית:</strong> העלית <strong>{n} נכסים</strong>. כדי ליצור משחק מושלם, באפשרותך:',
+    'upload.roptCardsCount':'{total} קלפים',
+    'upload.roptSymbolsPerCard':'{spc} סמלים לקלף',
+    'edit.deckStatsHtml':'<div class="stat-row"><span>קלפים</span><span class="stat-v">{cards}</span></div>\n     <div class="stat-row"><span>סמלים/קלף</span><span class="stat-v">{spc}</span></div>\n     <div class="stat-row"><span>תמונות</span><span class="stat-v">{total}</span></div>\n     <div class="stat-row"><span>סדר (q)</span><span class="stat-v">{q}</span></div>',
+    'export.downloadDoneTitle':'✅ הקובץ ירד למכשיר',
+    'export.downloadDoneFindHint':'חפש/י אותו בתיקיית ההורדות (Downloads) או בהתראות של הדפדפן.',
+    'export.downloadDoneCloseBtn':'סגור',
+    'export.readyHtmlTitle':'✅ הקובץ מוכן',
+    'export.readyClickHint':'לחצו על <strong>{btn}</strong> כדי לשמור אותו.',
+    'upload.packImageCount':'{n} תמונות',
+    'msg.loadingGeneric':'טוען…',
+    'upload.packFolderPrefix':'חבילה: ',
   },
   // מילון אנגלי. ⛔ Dobble ו-Spot It הם סימני מסחר של Asmodee ואסור
   // שיופיעו כאן. שם המוצר באנגלית: One Match.
@@ -2513,8 +2536,6 @@ const I18N={
     'lock.wrongCodeMsg':'The code may be wrong, or your plan may have expired.',
     'lock.wrongCodeClose':'Close',
     'lock.upgradeTitle':'This game requires an upgrade',
-    'lock.upgradeOneGameTitle':'Just want one game? This is exactly that.',
-    'lock.upgradeNoRecurring':'No recurring charges',
     'lock.upgradeEmailLabel':'The email you’d like to pay with',
     'lock.upgradeHaveCodeBtn':'I already have a different code',
     'lock.upgradeClose':'Close',
@@ -2534,8 +2555,6 @@ const I18N={
     'onboard.step2Desc':'The system calculates cards automatically using precise math. You can design the frame, background and symbol layout',
     'onboard.step3Title':'Step 3 — Export',
     'onboard.step3Desc':'A print-ready PDF at home, or a ZIP of individual PNGs — you can also order professional printing with home delivery (for an extra fee)',
-    'onboard.packageNote':'One pack = 4 different games',
-    'onboard.infoLink':'For all the ideas and inspiration ←',
     'onboard.contactLabel':'💬 To buy an access code — get in touch',
     'onboard.contactBtn':'📱 Message us on WhatsApp',
     'onboard.startBtn':'🚀 Let’s get started!',
@@ -2673,7 +2692,6 @@ const I18N={
     'edit.stuckBtn':'🆘 Stuck? Send your work to Hoshaya',
     'edit.backToUploadBtn':'← Back to upload',
     'edit.goExportBtn':'Export / Print →',
-    'edit.algoCheckLabel':'Algorithm check:',
     'export.title':'Export & print',
     'export.desc':'Choose a layout and print options, then click to generate the file.',
     'export.cardSizeTitle':'Card size',
@@ -2872,8 +2890,6 @@ const I18N={
     'edit.cropAddBtn':'✅ Add to library',
     'edit.cutoutButtonTitle':'Smart cutout',
     'edit.cutoutTitle':'🪄 Smart background removal',
-    'edit.cutoutKeepLabel':'keep',
-    'edit.cutoutRemoveLabel':'background',
     'edit.cutoutKeepBtn':'✅ Keep',
     'edit.cutoutRemoveBtn':'❌ Background',
     'edit.cutoutEraseBtn':'🧽 Erase marks',
@@ -2901,7 +2917,6 @@ const I18N={
     'account.syncedNote':'Your designs and images are backed up to your account and available from any device.',
     'account.signOutBtn':'Sign out',
     'account.cloudSaveTitle':'☁️ Cloud save — free',
-    'account.cloudSaveNote':'Your plan won’t change — the email is used for backup only.',
     'account.cloudSaveEmailLabel':'Your email',
     'account.cloudSaveSendBtn':'✉️ Send me a sign-in link',
     'account.designSavedToCloud':'Design "{name}" saved to the cloud ☁️',
@@ -2984,6 +2999,33 @@ const I18N={
     'msg.whatsappMessageOpened':'A WhatsApp message with your game details has been opened 💬',
     'msg.tierUpgraded':'Your plan has been upgraded — up to {n} cards now available 🎉',
     'msg.uploadsFailed':'Failed to upload {n} images — try saving again',
+    'lock.waHelpBtn':'Help on WhatsApp',
+    'lock.upgradeCurrentTierInfo':'Your code currently unlocks up to <b id="upg-current"></b> cards. You can keep browsing the preview, or upgrade to download:',
+    'lock.upgradeOfferBodyHtml':'<b>Just want one game? This is exactly that.</b><br>\n      Pay once, and for a month create and print as many games as you like.\n      <b>No recurring charges</b> — after a month it simply ends, unless you choose to renew.',
+    'onboard.packageInfoHtml':'🕹️ <strong>One pack = 4 different games</strong> (Classic Match, The Tower, The Well, The Trio) · great for birthdays, weddings, bar/bat mitzvahs, schools, youth groups and more —\n      <a href="dobble-info.html" target="_blank" rel="noopener noreferrer" style="color:var(--purple);font-weight:700;text-decoration:underline">For all the ideas and inspiration ←</a>',
+    'header.stepUploadHtml':'<span class="n">1</span>Upload',
+    'header.stepEditHtml':'<span class="n">2</span>Edit',
+    'header.stepExportHtml':'<span class="n">3</span>Export',
+    'upload.cropHintTextHtml':'💡 You have non-square images — click <strong>✂</strong> next to an image to crop and focus the symbol.',
+    'edit.algoCheckBannerHtml':'🔍 <strong>Algorithm check:</strong> click two cards — the one shared symbol will be highlighted automatically',
+    'export.printShopNotesHtml':'📦 One page per card · 4 mm bleed · 300 DPI · the last page is the back.<br>\n          🗞️ Large sheet for a print shop — requires self-cutting.',
+    'edit.cardEditModalTitleHtml':'✏️ Edit card <span id="ce-idx"></span>',
+    'edit.cardEditInstructionsHtml':'Click a symbol to select it · drag to move it · the slider changes its size<br>\n        Changes apply to this card only',
+    'edit.cutoutInstructionsHtml':'Paint green over what you want to <b>keep</b>, and red over the <b>background</b>. Rough strokes are enough — you can always fix it again.',
+    'account.cloudSaveDescHtml':'Connect your email and your designs will be saved online. You can continue from any device, and even if you lose your phone the work won’t be lost.<br>\n      <strong>Your plan won’t change — the email is used for backup only.</strong>',
+    'upload.needMoreImagesHtml':'⚠️ At least <strong>7 images</strong> are required. You uploaded {n} — please add {need} more.',
+    'upload.mathRecommendationHtml':'💡 <strong>Math recommendation:</strong> You uploaded <strong>{n} assets</strong>. To create a perfect game, you can:',
+    'upload.roptCardsCount':'{total} cards',
+    'upload.roptSymbolsPerCard':'{spc} symbols/card',
+    'edit.deckStatsHtml':'<div class="stat-row"><span>Cards</span><span class="stat-v">{cards}</span></div>\n     <div class="stat-row"><span>Symbols/card</span><span class="stat-v">{spc}</span></div>\n     <div class="stat-row"><span>Images</span><span class="stat-v">{total}</span></div>\n     <div class="stat-row"><span>Order (q)</span><span class="stat-v">{q}</span></div>',
+    'export.downloadDoneTitle':'✅ File downloaded to your device',
+    'export.downloadDoneFindHint':'Look for it in your Downloads folder or your browser’s notifications.',
+    'export.downloadDoneCloseBtn':'Close',
+    'export.readyHtmlTitle':'✅ File ready',
+    'export.readyClickHint':'Click <strong>{btn}</strong> to save it.',
+    'upload.packImageCount':'{n} images',
+    'msg.loadingGeneric':'Loading…',
+    'upload.packFolderPrefix':'Pack: ',
   }
 };
 // ⚠️ שלב ג1: האנגלית מוסתרת מאחורי ?lang=en בלבד. אין מתג ואין זיהוי
@@ -3022,6 +3064,13 @@ function applyI18n(root){
   (root||document).querySelectorAll('[data-i18n-title]').forEach(el=>{
     const k=el.getAttribute('data-i18n-title');const v=t(k);
     if(v!==k){el.title=v;if(el.hasAttribute('aria-label'))el.setAttribute('aria-label',v);}
+  });
+  // אלמנטים שהטקסט שלהם מעורב עם תגיות פנימיות (<strong>, <br>) —
+  // textContent היה מוחק אותן, ולכן הערך במילון מכיל את ה-HTML הפנימי.
+  // ⛔ הערכים נכתבים על ידינו בלבד ואינם מכילים קלט משתמש.
+  (root||document).querySelectorAll('[data-i18n-html]').forEach(el=>{
+    const k=el.getAttribute('data-i18n-html');const v=t(k);
+    if(v!==k)el.innerHTML=v;
   });
 }
 window.applyI18n=applyI18n;
@@ -4455,17 +4504,17 @@ function updateCounter(){
   if(!n){rec.classList.remove('on');S.order=null;document.getElementById('btn-create').disabled=true;return;}
   rec.classList.add('on');
   if(!best){
-    recT.innerHTML=`⚠️ נדרשות לפחות <strong>7 תמונות</strong>. העלית ${n} — אנא הוסף עוד ${7-n}.`;
+    recT.innerHTML=t('upload.needMoreImagesHtml',{n,need:7-n});
     S.order=null;document.getElementById('btn-create').disabled=true;return;
   }
-  recT.innerHTML=`💡 <strong>המלצה מתמטית:</strong> העלית <strong>${n} נכסים</strong>. כדי ליצור משחק מושלם, באפשרותך:`;
+  recT.innerHTML=t('upload.mathRecommendationHtml',{n});
   const addOpt=(ord,sel)=>{
     const need=ord.total-n;
     const d=document.createElement('div');
     d.className='ropt'+(sel?' sel':'')+(need>0?' dim':'');
     d.dataset.total=ord.total;
     const badge=need<=0?t('upload.exactMatch'):t('upload.addNeeded',{need});
-    d.innerHTML=`<div class="ropt-h">${ord.total} קלפים</div><div class="ropt-s">${ord.spc} סמלים לקלף</div><div class="ropt-b">${badge}</div>`;
+    d.innerHTML=`<div class="ropt-h">${t('upload.roptCardsCount',{total:ord.total})}</div><div class="ropt-s">${t('upload.roptSymbolsPerCard',{spc:ord.spc})}</div><div class="ropt-b">${badge}</div>`;
     if(need<=0){
       d.addEventListener('click',()=>{
         S.order=ORDERS.find(o=>o.total===+d.dataset.total);
@@ -4727,11 +4776,7 @@ async function generate(){
     setp(35+Math.round(65*(i+1)/S.deck.length),t('edit.drawingCardProgress',{i:i+1,total:S.deck.length}));
     if(i%6===5)await tick();
   }
-  document.getElementById('sb-stats').innerHTML=
-    `<div class="stat-row"><span>קלפים</span><span class="stat-v">${S.deck.length}</span></div>
-     <div class="stat-row"><span>סמלים/קלף</span><span class="stat-v">${S.order.spc}</span></div>
-     <div class="stat-row"><span>תמונות</span><span class="stat-v">${S.order.total}</span></div>
-     <div class="stat-row"><span>סדר (q)</span><span class="stat-v">${S.order.q}</span></div>`;
+  document.getElementById('sb-stats').innerHTML=t('edit.deckStatsHtml',{cards:S.deck.length,spc:S.order.spc,total:S.order.total,q:S.order.q});
   document.getElementById('gen-ov').style.display='none';
   document.getElementById('prev-wrap').style.display='block';
   toast(t('edit.cardsGenerated',{n:S.deck.length}),'ok');
@@ -5007,12 +5052,12 @@ function showDownloadDone(name){
   const box=document.createElement('div');
   box.id='dl-done';
   box.style.cssText='margin-top:.6rem;padding:.7rem .8rem;border-radius:.6rem;background:#ecfdf5;border:1px solid #6ee7b7;font-size:.85rem;line-height:1.6';
-  box.innerHTML='<strong>✅ הקובץ ירד למכשיר</strong><br>'+
+  box.innerHTML=`<strong>${t('export.downloadDoneTitle')}</strong><br>`+
     (name?'<span style="direction:ltr;display:inline-block;font-weight:700">'+
       name.replace(/[<>&]/g,'')+'</span><br>':'')+
     (S._lastSize?'<span style="color:#065f46;font-weight:700">'+fmtSize(S._lastSize)+'</span><br>':'')+
-    '<span style="color:#065f46">חפש/י אותו בתיקיית ההורדות (Downloads) או בהתראות של הדפדפן.</span>'+
-    '<br><button type="button" class="btn btn-ghost" style="margin-top:.5rem;font-size:.78rem" onclick="this.closest(\'#dl-done\').remove()">סגור</button>';
+    `<span style="color:#065f46">${t('export.downloadDoneFindHint')}</span>`+
+    `<br><button type="button" class="btn btn-ghost" style="margin-top:.5rem;font-size:.78rem" onclick="this.closest('#dl-done').remove()">${t('export.downloadDoneCloseBtn')}</button>`;
   const old=document.getElementById('dl-done');if(old)old.remove();
   host.insertAdjacentElement('afterend',box);
 }
@@ -5025,10 +5070,10 @@ function showExportReady(name){
   const box=document.createElement('div');
   box.id='dl-done';
   box.style.cssText='margin-top:.6rem;padding:.7rem .8rem;border-radius:.6rem;background:#eef2ff;border:1px solid #a5b4fc;font-size:.85rem;line-height:1.6';
-  box.innerHTML='<strong>✅ הקובץ מוכן</strong><br>'+
+  box.innerHTML=`<strong>${t('export.readyHtmlTitle')}</strong><br>`+
     (name?'<span style="direction:ltr;display:inline-block;font-weight:700">'+name.replace(/[<>&]/g,'')+'</span><br>':'')+
     (S._lastSize?'<span style="font-weight:700">'+fmtSize(S._lastSize)+'</span><br>':'')+
-    '<span style="color:#3730a3">לחצו על <strong>📥 הורד קובץ</strong> כדי לשמור אותו.</span>';
+    `<span style="color:#3730a3">${t('export.readyClickHint',{btn:t('export.downloadBtn')})}</span>`;
   host.insertAdjacentElement('afterend',box);
 }
 
@@ -7313,7 +7358,7 @@ function renderPacks(){
     if(!pk||!pk.name||!Array.isArray(pk.images)||!pk.images.length)return;
     const b=document.createElement('button');
     b.type='button';b.className='pack-btn';
-    b.innerHTML=`<span>${pk.icon||'📦'}</span><span>${pk.name}</span><span class="pk-count">${pk.images.length} תמונות</span>`;
+    b.innerHTML=`<span>${pk.icon||'📦'}</span><span>${pk.name}</span><span class="pk-count">${t('upload.packImageCount',{n:pk.images.length})}</span>`;
     b.addEventListener('click',()=>loadPack(pk,b));
     grid.appendChild(b);
   });
@@ -7322,9 +7367,9 @@ function renderPacks(){
 async function loadPack(pk,btn){
   btn.disabled=true;
   const orig=btn.innerHTML;
-  btn.innerHTML='<span class="spin" style="border-color:rgba(67,56,202,.3);border-top-color:var(--indigo)"></span> טוען…';
+  btn.innerHTML=`<span class="spin" style="border-color:rgba(67,56,202,.3);border-top-color:var(--indigo)"></span> ${t('msg.loadingGeneric')}`;
   let ok=0,fail=0;
-  const folder=newFolder('חבילה: '+pk.name+' ·');
+  const folder=newFolder(t('upload.packFolderPrefix')+pk.name+' ·');
   for(const url of pk.images){
     try{
       // תג <img> על URL מרוחק לא נחסם בזמן קבוע — בלי timeout, קישור שנתקע קופא כאן לנצח
