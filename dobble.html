@@ -1074,6 +1074,7 @@ const I18N={
     'back.fontAllTitle':'כל הפונטים',
     'back.fontTabHebrew':'עברית',
     'back.fontTabEnglish':'English',
+    'edit.symbolSizePctMm':'{pct}% · ~{mm} מ"מ',
     'header.langToggle':'EN',
     'lang.switchConfirm':'החלפת שפה טוענת את הדף מחדש — תמונות שהועלו ולא נשמרו יאבדו. להמשיך?',
     'lock.usdNote':'המחירים בשקלים (₪). הכרטיס מחויב בשקלים והבנק ממיר אוטומטית — כ-<strong>${usd}</strong> לתוכנית של {ils} ₪. ייתכן שתחול עמלת המרה קטנה.',
@@ -1601,6 +1602,7 @@ const I18N={
     'back.fontAllTitle':'All fonts',
     'back.fontTabHebrew':'Hebrew',
     'back.fontTabEnglish':'English',
+    'edit.symbolSizePctMm':'{pct}% · ~{mm} mm',
     'header.langToggle':'עב',
     'lang.switchConfirm':'Switching language reloads the page — uploaded images that were not saved will be lost. Continue?',
     'lock.usdNote':'Prices are in Israeli Shekels (₪). Your card is charged in ILS and your bank converts automatically — about <strong>${usd}</strong> for the {ils} ₪ plan. A small foreign-transaction fee may apply.',
@@ -2356,18 +2358,32 @@ window.applyI18n=applyI18n;
         </div>
         <div class="sb-sec">
           <div data-i18n="edit.symbolSizeTitle" class="sb-t">גודל סמלים</div>
-          <div class="sl-row">
+          <!-- שלושת הסרגלים נעולים (pointer-events:none) עד נגיעה מכוונת בשורה — גלילה
+               בדף מעל סליידר בנייד הזיזה אותו בלי שהמשתמש שם לב. כפתורי −/+ לצעד מדויק. -->
+          <div class="sl-row" data-sl-lock="sl-mn">
             <div class="sl-lbl"><span data-i18n="edit.symbolSizeMin">מינימום</span><strong id="lbl-mn">70%</strong></div>
-            <input type="range" id="sl-mn" min="20" max="160" value="70" step="5">
+            <div style="display:flex;align-items:center;gap:.4rem">
+              <button class="btn btn-ghost" type="button" data-step="sl-mn" data-dir="-1" aria-label="−" style="padding:.15rem .6rem;min-width:2rem;justify-content:center">−</button>
+              <input type="range" id="sl-mn" min="20" max="160" value="70" step="5" style="pointer-events:none">
+              <button class="btn btn-ghost" type="button" data-step="sl-mn" data-dir="1" aria-label="+" style="padding:.15rem .6rem;min-width:2rem;justify-content:center">+</button>
+            </div>
           </div>
           <div data-i18n="edit.symbolSizeAutoNote" id="mn-auto-hint" style="display:none;font-size:.72rem;color:var(--indigo);font-weight:700;margin:-.45rem 0 .6rem">⚙️ הותאם אוטומטית לגודל המקסימלי</div>
-          <div class="sl-row">
+          <div class="sl-row" data-sl-lock="sl-mx">
             <div class="sl-lbl"><span data-i18n="edit.symbolSizeMax">מקסימום</span><strong id="lbl-mx">130%</strong></div>
-            <input type="range" id="sl-mx" min="40" max="300" value="130" step="5">
+            <div style="display:flex;align-items:center;gap:.4rem">
+              <button class="btn btn-ghost" type="button" data-step="sl-mx" data-dir="-1" aria-label="−" style="padding:.15rem .6rem;min-width:2rem;justify-content:center">−</button>
+              <input type="range" id="sl-mx" min="40" max="300" value="130" step="5" style="pointer-events:none">
+              <button class="btn btn-ghost" type="button" data-step="sl-mx" data-dir="1" aria-label="+" style="padding:.15rem .6rem;min-width:2rem;justify-content:center">+</button>
+            </div>
           </div>
-          <div class="sl-row">
+          <div class="sl-row" data-sl-lock="sl-ov">
             <div class="sl-lbl"><span data-i18n="edit.overlapTitle">חפיפה / מרווח</span><strong id="lbl-ov">צמוד</strong></div>
-            <input type="range" id="sl-ov" min="-100" max="100" value="0" step="5">
+            <div style="display:flex;align-items:center;gap:.4rem">
+              <button class="btn btn-ghost" type="button" data-step="sl-ov" data-dir="-1" aria-label="−" style="padding:.15rem .6rem;min-width:2rem;justify-content:center">−</button>
+              <input type="range" id="sl-ov" min="-100" max="100" value="0" step="5" style="pointer-events:none">
+              <button class="btn btn-ghost" type="button" data-step="sl-ov" data-dir="1" aria-label="+" style="padding:.15rem .6rem;min-width:2rem;justify-content:center">+</button>
+            </div>
           </div>
           <label class="tool-row" style="gap:.45rem;cursor:pointer;margin-top:.4rem">
             <input type="checkbox" id="ck-tight" checked style="width:16px;height:16px;accent-color:var(--indigo)">
@@ -4850,6 +4866,29 @@ document.getElementById('layout-mode-grp').addEventListener('click',e=>{
 const slMn=document.getElementById('sl-mn'),slMx=document.getElementById('sl-mx');
 const lblMn=document.getElementById('lbl-mn'),lblMx=document.getElementById('lbl-mx');
 
+// קוטר סמל במ"מ בפועל לגורם-גודל נתון — מורכב מאותם מקורות בדיוק שדרכם drawCard
+// מצייר (computeCardPositions: hs·rSym, ואז ds=hs·sc·2 ב-drawCard; cardGeom נותן
+// rSym ו-ppMm). ⛔ לא נוסחה משוכפלת: cardGeom/symPos הן הפונקציות האמיתיות.
+// "~" כי זה הגודל לפני ההרפיה/הכיווץ לפי צורה (packNormalized), שמשתנה מקלף לקלף.
+// מוצג הסמל הממוצע בפריסה (symPos נותן חצי-גודל שונה למרכז ולטבעות).
+function symDiameterMm(sc){
+  if(!S.order)return null;
+  const G=cardGeom(CARD_PX);
+  const H=symPos(S.order.spc,0,0,1).map(p=>p.hs);
+  if(!H.length)return null;
+  const hsAvg=H.reduce((a,h)=>a+h,0)/H.length;
+  return 2*hsAvg*G.rSym*sc/G.ppMm;
+}
+function symSizeLabel(pct){
+  const mm=symDiameterMm(pct/100);
+  return mm==null?pct+'%':t('edit.symbolSizePctMm',{pct,mm:mm<10?mm.toFixed(1):Math.round(mm)});
+}
+// נקרא בכל שינוי שמשפיע על הגודל: הסליידרים עצמם, קוטר הקלף, המסגרת, המרווח, ומספר הסמלים לקלף.
+function setSymSizeLabels(){
+  lblMn.textContent=symSizeLabel(+slMn.value);
+  lblMx.textContent=symSizeLabel(+slMx.value);
+}
+
 // ── התאמה אוטומטית של הגודל המינימלי ──
 // כשמגדילים את המקסימום, שטח הסמלים הצפוי גדל ריבועית ומהר מאוד עובר את שטח הקלף.
 // במקום לתת לזה לגלוש, פותרים אנליטית את המינימום הגדול ביותר שעדיין נכנס:
@@ -4903,16 +4942,18 @@ function schedSymRedraw(){
   _symSizeT=setTimeout(()=>{redrawCards();},180);   // אותו debounce כמו sl-card-size
 }
 slMn.addEventListener('input',()=>{
-  if(+slMn.value>+slMx.value){slMx.value=slMn.value;S.sMax=+slMx.value/100;lblMx.textContent=slMx.value+'%';}
-  S.sMin=+slMn.value/100;lblMn.textContent=slMn.value+'%';
+  if(+slMn.value>+slMx.value){slMx.value=slMn.value;S.sMax=+slMx.value/100;}
+  S.sMin=+slMn.value/100;
   applyAutoMin();                       // גם כאן — התקרה תלויה גם במינימום
+  setSymSizeLabels();                   // אחרי applyAutoMin — הוא עלול לשנות את המינימום
   schedSymRedraw();
 });
 slMx.addEventListener('input',()=>{
   const prevMn=slMn.value;
-  if(+slMx.value<+slMn.value){slMn.value=slMx.value;S.sMin=+slMn.value/100;lblMn.textContent=slMn.value+'%';}
-  S.sMax=+slMx.value/100;lblMx.textContent=slMx.value+'%';
+  if(+slMx.value<+slMn.value){slMn.value=slMx.value;S.sMin=+slMn.value/100;}
+  S.sMax=+slMx.value/100;
   applyAutoMin();                       // עדכון בזמן אמת — דרישה 2 באפיון
+  setSymSizeLabels();
   // applyAutoMin עלול להוריד את המינימום; בלי הודעה זה נראה כמו סליידר תקול
   if(slMn.value!==prevMn)flashAutoMinHint();
   schedSymRedraw();
@@ -4930,9 +4971,53 @@ slOv.addEventListener('input',()=>{
   ckTightFill.disabled=S.overlap<0;
   if(S.overlap<0)ckTightFill.checked=false,S.tightFill=false;
   applyAutoMin();                       // ← חדש
+  setSymSizeLabels();
   redrawCards();
 });
-ckTight.addEventListener('change',()=>{S.tightPack=ckTight.checked;applyAutoMin();redrawCards();});
+ckTight.addEventListener('change',()=>{S.tightPack=ckTight.checked;applyAutoMin();setSymSizeLabels();redrawCards();});
+
+// ── כפתורי צעד −/+ לסרגלי הסמלים: צעד אחד מדויק, דרך אותם אירועים שהגרירה מפעילה ──
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-step]');
+  if(!b)return;
+  const el=document.getElementById(b.dataset.step);
+  if(!el)return;
+  if(+b.dataset.dir>0)el.stepUp();else el.stepDown();
+  el.dispatchEvent(new Event('input',{bubbles:true}));
+  el.dispatchEvent(new Event('change',{bubbles:true}));
+});
+
+// ── נעילת סרגלי הסמלים מפני הזזה בטעות ──
+// גלילה בדף מעל סליידר מזיזה אותו בטעות בנייד, והעיצוב משתנה בלי
+// שהמשתמש יודע. הסליידר נעול (pointer-events:none) עד נגיעה מכוונת בשורה
+// שלו; נגיעה מחוץ לשורה או גלילת הדף נועלות אותו מחדש. המקלדת לא מושפעת
+// (pointer-events לא נוגע ב-focus/חצים), והנגיעה בשורה גם ממקדת אותו.
+(function(){
+  const rows=[...document.querySelectorAll('[data-sl-lock]')];
+  if(!rows.length)return;
+  const input=row=>document.getElementById(row.dataset.slLock);
+  // הבעיה קיימת רק במגע — עכבר לא גולל דף בגרירה. במכשיר בלי מצביע גס
+  // הנעילה רק מוסיפה חיכוך (לחיצה ראשונה משחררת, שנייה גוררת), אז משחררים לצמיתות.
+  if(!(window.matchMedia&&matchMedia('(any-pointer:coarse)').matches)){
+    rows.forEach(r=>{input(r).style.pointerEvents='auto';});
+    return;
+  }
+  function lockAll(except){
+    rows.forEach(r=>{if(r!==except){const el=input(r);el.style.pointerEvents='none';el.style.outline='';}});
+  }
+  rows.forEach(row=>{
+    row.addEventListener('pointerdown',()=>{
+      const el=input(row);
+      lockAll(row);
+      el.style.pointerEvents='auto';
+      el.style.outline='2px solid var(--indigo)';
+      el.style.outlineOffset='3px';
+      el.focus({preventScroll:true});
+    });
+  });
+  document.addEventListener('pointerdown',e=>{if(!e.target.closest('[data-sl-lock]'))lockAll(null);});
+  window.addEventListener('scroll',()=>lockAll(null),{passive:true});
+})();
 ckTightFill.addEventListener('change',()=>{S.tightFill=ckTightFill.checked;redrawCards();});
 
 // ══ GENERATE ══
@@ -4947,6 +5032,7 @@ async function generate(){
   setp(5,'מחשב מטריצת קלפים…');
   S.deck=genDeck(S.order.q);
   applyAutoMin();                       // S.order זמין רק עכשיו — התאמה ראשונית לפי מספר הסמלים
+  setSymSizeLabels();                   // מספר הסמלים לקלף משפיע על המ"מ
   S.seed=Math.floor(Math.random()*90000)+10000;
   S.cardEdits={};
   S.layouts=buildLayouts(S.deck,S.seed,S.sMin,S.sMax);
@@ -5515,6 +5601,7 @@ const lblCardSize=document.getElementById('lbl-card-size');
 let _cardSizeRedrawT=null;
 slCardSize.addEventListener('input',()=>{
   S.cardSizeMm=+slCardSize.value;lblCardSize.textContent=t('unit.mm',{v:slCardSize.value});
+  setSymSizeLabels();                   // המ"מ של הסמלים נגזרים מקוטר הקלף
   syncSymPadRange();updatePaperPrev();markPerPageActive();
   clearTimeout(_cardSizeRedrawT);
   _cardSizeRedrawT=setTimeout(()=>{redrawCards();},180);   // debounce — 57 קנבסים בנייד
@@ -5598,6 +5685,7 @@ buildSwatches('sw-bg',BG_COLORS,()=>S.bg.color,c=>{S.bg.color=c;},'pick-bg');
 document.getElementById('sl-fw').addEventListener('input',e=>{
   S.frame.w=parseFloat(e.target.value);
   document.getElementById('lbl-fw').textContent=t('unit.mm',{v:S.frame.w});onDesignChange();
+  setSymSizeLabels();                   // rSym תלוי ברוחב המסגרת
   if(syncSymPadRange())redrawCards();
 });
 document.getElementById('sl-fop').addEventListener('input',e=>{
@@ -5607,6 +5695,7 @@ document.getElementById('sl-fop').addEventListener('input',e=>{
 document.getElementById('sl-sympad').addEventListener('input',e=>{
   S.symPad=parseFloat(e.target.value);
   document.getElementById('lbl-sympad').textContent=t('unit.mm',{v:S.symPad});onDesignChange();
+  setSymSizeLabels();                   // rSym תלוי במרווח מהשפה
 });
 // טווח המרווח תלוי בקוטר הקלף וברוחב המסגרת — בלי סנכרון, חלק מהסליידר מת ולא משפיע
 function syncSymPadRange(){
@@ -6487,14 +6576,23 @@ async function expSheetPDF(setp){
         // הבליד חורג מהשוליים בכוונה — אין להצמיד ל-marginMm, זה יעוות את הקלף.
         pdf.addImage(big.toDataURL('image/jpeg',PRINT_SHOP.jpegQuality),'JPEG',
                      p.x-bleedMm,p.y-bleedMm,pageMm,pageMm);
+        // ⚠️ השכבה הזו חסרה הייתה והקלף יצא מנופח ב-8.5%: big הוא הרקע
+        // המנופח למילוי הבליד, ו-trim הוא הקלף בגודלו האמיתי. בלי שתיהן
+        // הסמלים ליד השפה נחתכים בדייקה. אותו דפוס בדיוק כמו expPrintPDF.
+        // p.x/p.y הם הפינה של אזור החיתוך — לא p.x-bleedMm.
+        pdf.addImage(trim.toDataURL('image/jpeg',PRINT_SHOP.jpegQuality),'JPEG',
+                     p.x,p.y,trimMm,trimMm);
         big.width=big.height=trim.width=trim.height=0;   // ⛔ שחרור זיכרון
         globalIdx++;
         setp(3+Math.round(70*globalIdx/totalCards),t('export.cardProgress',{i:globalIdx,total:totalCards}));
         if(globalIdx%3===0)await tick();
       }
       // הגב מרונדר פעם אחת לכל משחק, לא לכל מקום — במגש מלא זה 4 רינדורים, לא 24.
+      // אותו באג ניפוח היה גם כאן: נשמר רק bBig, והגב (כולל המסגרת שעוצבה
+      // לשפה) צויר ב-pageMm במקום ב-trimMm. שומרים את שתי השכבות.
       const{big:bBig,trim:bTrim}=renderBleedPair(cv=>drawCardBack(cv),pxTrim,pxPage,jpg);
-      backJobs.push({url:bBig.toDataURL('image/jpeg',PRINT_SHOP.jpegQuality),count:deckLen});
+      backJobs.push({url:bBig.toDataURL('image/jpeg',PRINT_SHOP.jpegQuality),
+                     trimUrl:bTrim.toDataURL('image/jpeg',PRINT_SHOP.jpegQuality),count:deckLen});
       bBig.width=bBig.height=bTrim.width=bTrim.height=0;
     }
 
@@ -6513,6 +6611,7 @@ async function expSheetPDF(setp){
       while(bRemain===0&&bi<backJobs.length-1){bi++;bRemain=backJobs[bi].count;}
       const p=L.pts[i%L.perSheet];
       pdf.addImage(backJobs[bi].url,'JPEG',p.x-bleedMm,p.y-bleedMm,pageMm,pageMm);
+      pdf.addImage(backJobs[bi].trimUrl,'JPEG',p.x,p.y,trimMm,trimMm);   // שכבת הגב בגודל האמיתי, כמו בחזית
       bRemain--;
     }
 
@@ -7981,8 +8080,9 @@ function applySettingsToUI(st){
   document.querySelectorAll('#symshp .sbt').forEach(b=>b.classList.toggle('on',b.dataset.s===(st.symShape||'circle')));
   document.querySelectorAll('#layout-mode-grp .sbt').forEach(b=>b.classList.toggle('on',b.dataset.lm===st.layoutMode));
   // סליידרים של גודל סמלים
-  slMn.value=Math.round(st.sMin*100);lblMn.textContent=slMn.value+'%';
-  slMx.value=Math.round(st.sMax*100);lblMx.textContent=slMx.value+'%';
+  slMn.value=Math.round(st.sMin*100);
+  slMx.value=Math.round(st.sMax*100);
+  setSymSizeLabels();
   slOv.value=st.overlap??0;lblOv.textContent=ovLabel(+slOv.value);
   ckTight.checked=st.tightPack!==false;
   ckTightFill.checked=!!st.tightFill&&(st.overlap??0)>=0;
@@ -7999,7 +8099,11 @@ function applySettingsToUI(st){
   document.getElementById('sl-bop').value=st.bg.op;document.getElementById('lbl-bop').textContent=st.bg.op+'%';
   document.getElementById('pick-frame').value=st.frame.color;
   document.getElementById('pick-bg').value=st.bg.color;
-  applyAutoMin();
+  // ⚠️ בלי משחק autoMinCap מחזיר 0.20 → slMn.max=20 והדפדפן מצמיד את הסליידר
+  // ל-20 בעוד S.sMin נשאר 0.7: הידית ישבה בקצה השמאלי עם תווית "70%" (באג קיים
+  // ב-main, התגלה כשהתווית התחילה לקרוא את ערך הסליידר). התקרה שייכת רק למשחק קיים.
+  if(S.order)applyAutoMin();
+  setSymSizeLabels();                   // אחרי applyAutoMin — הוא עלול לשנות את המינימום
 }
 
 // טעינת מבנה עיצוב {name,rows,settings} לתוך מצב האפליקציה
