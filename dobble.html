@@ -582,8 +582,8 @@ function dcfgSave(patch){
 
   function doUserUnlock(code,label,maxOrder){
     sessionStorage.setItem('dobble_unlocked','1');
-    // ברירת מחדל 57 (גישה מלאה) — למסלולי כניסה ישנים שלא מדווחים max_order (קוד מקומי/מנהל)
-    sessionStorage.setItem('dobble_max_order',String(maxOrder!=null?maxOrder:57));
+    // ברירת מחדל 91 (גישה מלאה = החפיסה הגדולה ביותר) — למסלולי כניסה ישנים שלא מדווחים max_order (קוד מקומי/מנהל)
+    sessionStorage.setItem('dobble_max_order',String(maxOrder!=null?maxOrder:91));
     // שומרים איזה מנוי נכנס — יצורף לכל אירוע מעקב
     try{sessionStorage.setItem('dobble_sub',JSON.stringify({code:code||'',label:label||''}));}catch(e){}
     removeLockScreen(()=>{
@@ -594,7 +594,7 @@ function dcfgSave(patch){
 
   function doAdminUnlock(){
     sessionStorage.setItem('dobble_unlocked','1');
-    sessionStorage.setItem('dobble_max_order','57');
+    sessionStorage.setItem('dobble_max_order','91');
     removeLockScreen(()=>{window._initAdminPanel&&window._initAdminPanel();});
   }
 
@@ -877,6 +877,8 @@ const I18N={
     'upload.suitableFamily':'משפחה',
     'upload.suitableMediumHard':'בינוני–קשה',
     'upload.suitableStandard':'⭐ דאבל סטנדרטי',
+    'upload.suitableAdvanced':'מתקדמים',
+    'upload.suitableMax':'המקסימום',
     'upload.allAlreadyInPool':'כל {n} התמונות כבר קיימות במאגר — לא נוסף כלום',
     'upload.tooManyImagesBody':'אחרי ההעלאה יהיו במאגר {total} סמלים, אבל משחק דאבל משתמש לכל היותר ב-{max}. התמונות שמעבר לכך לא יופיעו באף משחק — הן רק יאטו את השמירה ואת הגלריה.\n\nאפשר להמשיך ולבחור אחר כך אילו סמלים ייכנסו, או לבטל ולהעלות פחות תמונות.',
     'upload.tooManyImagesWarn':'שים לב: {n} תמונות בהעלאה אחת — זה עלול לקחת זמן רב מאוד.',
@@ -1402,6 +1404,8 @@ const I18N={
     'upload.suitableFamily':'Family',
     'upload.suitableMediumHard':'Medium–hard',
     'upload.suitableStandard':'⭐ Classic size',
+    'upload.suitableAdvanced':'Advanced',
+    'upload.suitableMax':'Maximum',
     'upload.allAlreadyInPool':'All {n} images are already in your library — nothing was added',
     'upload.tooManyImagesBody':'After this upload your library will have {total} symbols, but a matching game uses at most {max}. The extra images won’t appear in any game — they’ll just slow down saving and the gallery.\n\nYou can continue and choose later which symbols to use, or cancel and upload fewer images.',
     'upload.tooManyImagesWarn':'Note: {n} images in one upload — this could take a very long time.',
@@ -1887,19 +1891,22 @@ window.applyI18n=applyI18n;
   // מדרגות המחיר — חייב להישאר תואם ל-allowlist ב-morning-webhook (productId+amount).
   // עודכן 08/09/2026: מדרגת 5 ₪ בוטלה (נטו 3.50 ₪ בלבד אחרי עמלות).
   // כל מדרגה כוללת גם את כל החפיסות הקטנות ממנה — 10 ₪ פותח 13 וגם 21.
-  window.TIER_PRICES={21:10,31:15,57:25};
+  // המדרגה העליונה היא 91 (כוללת 57 ו-73) — חייבת להתאים למפתח ש-get_pricing
+  // מחזיר ולמה ש-morning-webhook מעניק. ⛔ 57 כמפתח כאן = הבורר יציג מדרגה
+  // שהשרת כבר לא מכיר.
+  window.TIER_PRICES={21:10,31:15,91:25};
   // מפת תצוגה בלבד — אילו חפיסות כלולות בכל מדרגה. מתוחזקת יחד עם
   // TIER_PRICES שכבר מקודד את אותם מספרים, ולכן אין כאן מקור אמת חדש.
   // ⛔ לא נגזר מ-ORDERS: הוא מוגדר בבלוק סקריפט 4 (שורה ~1949) בעוד
   // renderTierPicker נקראת כבר בשורה 809 (טעינת הדף) — ORDERS ב-TDZ שם.
   // גם window.ORDERS לא פותר, כי גם ההשמה אליו הייתה קורית רק בשורה 1949.
-  window.TIER_INCLUDES={21:'13 · 21',31:'13 · 21 · 31',57:'13 · 21 · 31 · 57'};
+  window.TIER_INCLUDES={21:'13 · 21',31:'13 · 21 · 31',91:'13 · 21 · 31 · 57 · 73 · 91'};
   // ⛔ לינקים חדשים. לינק ישן עם מחיר חדש = ה-webhook דוחה את התשלום
   // (הוא מוודא התאמה מדויקת בין productId לסכום) והלקוחה משלמת בלי לקבל גישה.
   window.PAYMENT_LINKS={
     21:'https://mrng.to/TZVJeGREXO',
     31:'https://mrng.to/AF9SBK5Kva',
-    57:'https://mrng.to/xcFX1lMfwQ'
+    91:'https://mrng.to/xcFX1lMfwQ'
   };
 
   // המחירון מגיע מהשרת כדי שגם טאב שנשאר פתוח יקבל מחיר עדכני, וכדי
@@ -2318,6 +2325,8 @@ window.applyI18n=applyI18n;
         <tr><td>21</td><td>5</td><td>21</td><td data-i18n="upload.suitableFamily">משפחה</td></tr>
         <tr><td>31</td><td>6</td><td>31</td><td data-i18n="upload.suitableMediumHard">בינוני–קשה</td></tr>
         <tr><td>57</td><td>8</td><td>57</td><td data-i18n="upload.suitableStandard">⭐ דאבל סטנדרטי</td></tr>
+        <tr><td>73</td><td>9</td><td>73</td><td data-i18n="upload.suitableAdvanced">מתקדמים</td></tr>
+        <tr><td>91</td><td>10</td><td>91</td><td data-i18n="upload.suitableMax">המקסימום</td></tr>
       </tbody>
     </table>
   </div>
@@ -2833,7 +2842,7 @@ window.applyI18n=applyI18n;
         <input type="text" id="ai-sym-topic" style="width:100%;margin-top:.25rem;padding:.5rem;border:1px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:.88rem" placeholder="נושא למשחק — למשל: חיות, אותיות, כלי תחבורה">
       </label>
       <label style="width:90px;font-size:.8rem;color:var(--muted)">כמות
-        <input type="number" id="ai-sym-count" min="1" max="57" value="12" style="width:100%;margin-top:.25rem;padding:.5rem;border:1px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:.88rem">
+        <input type="number" id="ai-sym-count" min="1" max="91" value="12" style="width:100%;margin-top:.25rem;padding:.5rem;border:1px solid var(--border);border-radius:var(--rs);font-family:inherit;font-size:.88rem">
       </label>
       <button type="button" class="btn btn-sec" id="ai-sym-theme-btn" style="white-space:nowrap">✨ צור רשימה</button>
     </div>
@@ -3219,7 +3228,12 @@ var SB=null, authSession=null;
 const SB_BUCKET='symbols';
 
 // ══ MATH ══
-const ORDERS=[{q:2,total:7,spc:3},{q:3,total:13,spc:4},{q:4,total:21,spc:5},{q:5,total:31,spc:6},{q:7,total:57,spc:8}];
+// ⚠️ q חייב להיות חזקת ראשוני, ו-gfOps חייב להחזיר שדה סופי אמיתי עבורו.
+// q=4, 8, 9 אינם ראשוניים — חשבון מודולרי מייצר חפיסה שנראית תקינה על המסך
+// ונשברת במשחק (שני סמלים משותפים לזוג קלפים). ראו gf4/gf8/gf9 למטה.
+const ORDERS=[{q:2,total:7,spc:3},{q:3,total:13,spc:4},{q:4,total:21,spc:5},
+              {q:5,total:31,spc:6},{q:7,total:57,spc:8},
+              {q:8,total:73,spc:9},{q:9,total:91,spc:10}];
 const CARD_PX=500;
 // איכות הייצוא — נבחרת ע"י הלקוח במסך הייצוא. CARD_PX נשאר 500 לתצוגה
 // המקדימה בגלריה (מהירות) ומשמש כברירת מחדל.
@@ -3240,7 +3254,38 @@ function gf4m(a,b){
   const a1=(a>>1)&1,a0=a&1,b1=(b>>1)&1,b0=b&1;
   return((((a1&b1)^(a1&b0)^(a0&b1))&1)<<1)|(((a1&b1)^(a0&b0))&1);
 }
-function gfOps(q){return q===4?{a:gf4a,m:gf4m}:{a:(a,b)=>(a+b)%q,m:(a,b)=>(a*b)%q}}
+// GF(8): כל איבר הוא 3 ביטים. חיבור = XOR. כפל = כפל פולינומים
+// מודולו x³+x+1 (0b1011). ⛔ חשבון מודולו 8 שגוי כאן — 8 אינו ראשוני.
+function gf8a(a,b){return a^b;}
+function gf8m(a,b){
+  let r=0;
+  while(b){
+    if(b&1)r^=a;
+    a<<=1;
+    if(a&0b1000)a^=0b1011;
+    b>>=1;
+  }
+  return r;
+}
+// GF(9): כל איבר מקודד כ-hi*3+lo ומייצג hi·t + lo מעל GF(3), כאשר t²=-1=2.
+// ⛔ חשבון מודולו 9 שגוי כאן — 9 אינו ראשוני.
+function gf9a(a,b){
+  const h=((a/3|0)+(b/3|0))%3, l=(a%3+b%3)%3;
+  return h*3+l;
+}
+function gf9m(a,b){
+  const h1=a/3|0,l1=a%3,h2=b/3|0,l2=b%3;
+  const hi=(h1*l2+l1*h2)%3;
+  const lo=(l1*l2+2*h1*h2)%3;
+  return hi*3+lo;
+}
+// חשבון מודולרי תקף רק ל-q ראשוני (2,3,5,7). לחזקות ראשוניות — שדה מפורש.
+function gfOps(q){
+  if(q===4)return{a:gf4a,m:gf4m};
+  if(q===8)return{a:gf8a,m:gf8m};
+  if(q===9)return{a:gf9a,m:gf9m};
+  return{a:(a,b)=>(a+b)%q,m:(a,b)=>(a*b)%q};
+}
 
 function genDeck(q){
   const{a,m}=gfOps(q),D=[];
@@ -3318,7 +3363,19 @@ function symPos(n,cx,cy,r){
     p(cx,cy,r*.27);const rr=r*.60*ov,hs=r*.25;for(let i=0;i<4;i++){const a=i*Math.PI/2-Math.PI/4;p(cx+rr*Math.cos(a),cy+rr*Math.sin(a),hs);}
   }else if(n===6){
     p(cx,cy,r*.24);const rr=r*.60*ov,hs=r*.23;for(let i=0;i<5;i++){const a=i*2*Math.PI/5-Math.PI/2;p(cx+rr*Math.cos(a),cy+rr*Math.sin(a),hs);}
+  }else if(n===9){
+    // 73 קלפים (q=8): מרכז + טבעת פנימית 3 + טבעת חיצונית 5. אותו יחס טבעת+חצי-גודל
+    // ≤ .90r כמו ב-8, כדי שהסמלים לא יחרגו מהקלף לפני ההרפיה.
+    p(cx,cy,r*.18);
+    const ri=r*.36*ov,hsi=r*.17;for(let i=0;i<3;i++){const a=i*2*Math.PI/3-Math.PI/2;p(cx+ri*Math.cos(a),cy+ri*Math.sin(a),hsi);}
+    const ro=r*.73*ov,hso=r*.17;for(let i=0;i<5;i++){const a=i*2*Math.PI/5+Math.PI/10;p(cx+ro*Math.cos(a),cy+ro*Math.sin(a),hso);}
+  }else if(n===10){
+    // 91 קלפים (q=9): מרכז + 3 + 6.
+    p(cx,cy,r*.17);
+    const ri=r*.35*ov,hsi=r*.16;for(let i=0;i<3;i++){const a=i*2*Math.PI/3-Math.PI/2;p(cx+ri*Math.cos(a),cy+ri*Math.sin(a),hsi);}
+    const ro=r*.74*ov,hso=r*.16;for(let i=0;i<6;i++){const a=i*Math.PI/3;p(cx+ro*Math.cos(a),cy+ro*Math.sin(a),hso);}
   }else{
+    // 8 סמלים (57 קלפים): מרכז + 3 + 4.
     p(cx,cy,r*.20);
     const ri=r*.38*ov,hsi=r*.19;for(let i=0;i<3;i++){const a=i*2*Math.PI/3;p(cx+ri*Math.cos(a),cy+ri*Math.sin(a),hsi);}
     const ro=r*.72*ov,hso=r*.18;for(let i=0;i<4;i++){const a=i*Math.PI/2-Math.PI/4;p(cx+ro*Math.cos(a),cy+ro*Math.sin(a),hso);}
@@ -3328,7 +3385,8 @@ function symPos(n,cx,cy,r){
 
 function symPosPeriph(n,cx,cy,r){
   // All symbols on one ring — evenly spaced, sized so neighbours don't overlap
-  const cfg={3:{rr:.52,hs:.396},4:{rr:.57,hs:.330},5:{rr:.61,hs:.286},6:{rr:.64,hs:.253},8:{rr:.68,hs:.220}};
+  // hs ≤ rr·sin(π/n) כדי ששכנים על הטבעת לא ייגעו, ו-rr+hs ≤ ~.90 כדי להישאר בקלף.
+  const cfg={3:{rr:.52,hs:.396},4:{rr:.57,hs:.330},5:{rr:.61,hs:.286},6:{rr:.64,hs:.253},8:{rr:.68,hs:.220},9:{rr:.70,hs:.205},10:{rr:.72,hs:.190}};
   const{rr,hs}=cfg[n]||{rr:.65,hs:.20};
   const P=[],ringR=r*rr*overlapFactor(),hsz=r*hs;
   for(let i=0;i<n;i++){const a=i*2*Math.PI/n-Math.PI/2;P.push({x:cx+ringR*Math.cos(a),y:cy+ringR*Math.sin(a),hs:hsz});}
@@ -4213,7 +4271,7 @@ function withTimeout(promise,ms,msg){
 
 // המספר הגדול ביותר של סמלים שמשחק דאבל יכול להשתמש בו — מגיע ממבנה GF(4) (ORDERS),
 // לא ממגבלה שבחרנו. כל מה שמעבר לזה לא יופיע בשום משחק, רק מאט שמירה ורינדור.
-const MAX_USABLE_SYMBOLS=ORDERS[ORDERS.length-1].total;   // 57
+const MAX_USABLE_SYMBOLS=ORDERS[ORDERS.length-1].total;   // 91
 
 // זיהוי כפילות: שם + גודל קובץ. נכסים ישנים (לפני שהתחלנו לשמור fsize) נבדקים לפי שם בלבד —
 // בתרחיש שגרם לבעיה (משתמש מעלה שוב את אותה אצווה אחרי תקיעה) השם תמיד זהה, ועדיף לתפוס
@@ -8496,9 +8554,12 @@ function callSelectEvents(){
 // כרטיס לקוח מאוחד: זהות + סטטוס/תוקף/מסלול + שימוש בזמן אמת + תיקיית עיצובים, עם פעולות בלחיצה אחת.
 // חמש הרמות החוקיות היחידות ל-max_order (תואם ל-ORDERS.total בפרונט ול-VALID_MAX_ORDERS בשרת) — כולל
 // 13/21 שקיימות ב-Morning, לא רק שלושת הכינויים המאושרים freemium/paid/full.
-const ADM_TIER_VALUES=[7,13,21,31,57];
-const ADM_TIER_LABELS={7:'חינמי (7)',13:'13 סמלים',21:'21 סמלים',31:'בתשלום (31)',57:'מלא (57)'};
-function admCurrentTier(maxOrder){return ADM_TIER_VALUES.includes(maxOrder)?maxOrder:57;}
+// ⚠️ 57 → 91: המדרגה העליונה כוללת עכשיו 57/73/91 (dobble_pricing עודכן, 11 קודים
+// קיימים הועלו ל-91 בשרת). ⛔ VALID_MAX_ORDERS ב-manage-customers/manage-subscriber
+// עדיין [7,13,21,31,57] — עד שהושעיה יעדכן דרך MCP, שינוי מסלול ל-91 מהפאנל יידחה בשרת.
+const ADM_TIER_VALUES=[7,13,21,31,91];
+const ADM_TIER_LABELS={7:'חינמי (7)',13:'13 סמלים',21:'21 סמלים',31:'בתשלום (31)',91:'מלא (91)'};
+function admCurrentTier(maxOrder){return ADM_TIER_VALUES.includes(maxOrder)?maxOrder:91;}
 function admEsc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 async function renderSubscribers(){
@@ -9286,12 +9347,12 @@ async function guardedUnlock(session){
 
 // פותח את האפליקציה כשיש סשן פעיל (למשל אחרי כניסת קוד מנוי) והנעילה עדיין למעלה
 // maxOrder: מגיע מ-profiles.max_order (נקבע ע"י המנהל, סעיף "שדרוג/שינוי מסלול" בלוח הבקרה).
-// null/undefined (ברירת המחדל להיסטוריים שלא הוגדר להם מסלול) → 57, גישה מלאה כמו היום.
+// null/undefined (ברירת המחדל להיסטוריים שלא הוגדר להם מסלול) → 91, גישה מלאה כמו היום.
 function unlockFromSession(session,maxOrder){
   const ls=document.getElementById('lock-screen');
   if(!ls)return;
   sessionStorage.setItem('dobble_unlocked','1');
-  sessionStorage.setItem('dobble_max_order',String(maxOrder!=null?maxOrder:57));
+  sessionStorage.setItem('dobble_max_order',String(maxOrder!=null?maxOrder:91));
   // שומרים מי נכנס — לקוד מנוי מוציאים את הקוד מהמייל הסינתטי; אחרת המייל האמיתי
   try{
     const email=(session.user&&session.user.email)||'';
@@ -9411,8 +9472,8 @@ window.addEventListener('focus',()=>{refreshCodeTier();});
 // עד עכשיו הוחזר כאן 57 קשיח לכל מייל אמיתי — לקוח חינמי שחיבר מייל קיבל הכול בחינם.
 async function tierFromGate(session,gate){
   const email=String((session&&session.user&&session.user.email)||'').toLowerCase();
-  if(typeof adminEmails==='function'&&adminEmails().includes(email))return 57;
-  if(isSubscriberEmail(email))return gate.maxOrder!=null?gate.maxOrder:57;
+  if(typeof adminEmails==='function'&&adminEmails().includes(email))return 91;
+  if(isSubscriberEmail(email))return gate.maxOrder!=null?gate.maxOrder:91;
   try{
     if(!SB)return null;
     const{data,error}=await SB.rpc('my_access_tier');
