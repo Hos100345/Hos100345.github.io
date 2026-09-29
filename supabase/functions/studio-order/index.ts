@@ -60,7 +60,9 @@ Deno.serve(async (req) => {
         return fail('server_error', 500);
       }
       const { id, code, price } = data as { id: string; code: string; price: number };
-      const names = ['print.pdf', 'preview.jpg', `cut.${cutExt}`];
+      // design.zip = העיצוב המלא (הגדרות + תמונות) — המנהל פותח אותו בסטודיו ומחליט: גיליון לבית דפוס או דפי A4.
+      // לא חובה ב-finalize: לקוח עם גרסה ישנה של הדף לא מעלה אותו.
+      const names = ['print.pdf', 'preview.jpg', `cut.${cutExt}`, 'design.zip'];
       const uploads: Record<string, string> = {};
       for (const n of names) {
         const { data: s, error: e } = await admin.storage.from(BUCKET).createSignedUploadUrl(`${id}/${n}`);
