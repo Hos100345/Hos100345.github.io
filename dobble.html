@@ -6509,8 +6509,11 @@ async function expPrintPDF(setp){
   setp(100,'✅ מוכן!');
 }
 
-// פריסה ממורכזת. המרכוז אינו אסתטי — הוא מה שהופך את הפריסה לסימטרית
-// סביב הציר האנכי, וכך גיליון הגב מתיישר על החזית בהיפוך בלי שיקוף.
+// פריסה ממורכזת. המרכוז אינו אסתטי — הוא מה שהופך את *קבוצת* המיקומים
+// לסימטרית סביב הציר האנכי. ⚠️ סימטריה של הקבוצה אינה זהות של המיפוי: בהיפוך
+// הגיליון עמודה c נוחתת על עמודה cols-1-c (0↔3, 1↔2), ולכן גיליון הגב חייב
+// שיקוף מפורש של x (ראו expSheetPDF). "בלי שיקוף" שהיה כתוב כאן היה שגוי —
+// בגיליון חלקי או במגש עם גבים שונים הגב נחת על הקלף הלא נכון.
 function sheetLayout(d){
   const g=PRINT_SHEET.gapMm,M=PRINT_SHEET.marginMm;
   const uw=PRINT_SHEET.wMm-2*M, uh=PRINT_SHEET.hMm-2*M;
@@ -6596,10 +6599,12 @@ async function expSheetPDF(setp){
       bBig.width=bBig.height=bTrim.width=bTrim.height=0;
     }
 
-    // ── גב: אותו רצף מיקומים בדיוק כמו החזית, כדי שגיליון הגב יתיישר על
-    // גיליון החזית התואם בהיפוך — כל טווח מיקומים מקבל את הגב של ה-job
-    // שממנו הגיע הקלף באותו מקום. גיליון הגב האחרון נחתך בדיוק כמו החזית
-    // כי הלולאה עוצרת באותו globalIdx, לא ב-L.perSheet מלא. ──
+    // ── גב: אותו רצף אינדקסים כמו החזית, אבל x משוקף — בהיפוך הגיליון
+    // (סביב הציר האנכי) עמודה c נוחתת על עמודה cols-1-c, ולכן הגב של הקלף
+    // ה-i חייב לשבת ב-wMm-x-trimMm. בלי השיקוף, בגיליון חלקי הגבים התחילו
+    // משמאל בעוד החזיתות (אחרי היפוך) יושבות מימין, ובמגש עם גבים שונים הגב
+    // נחת על קלף של job אחר. y לא משתקף (ההיפוך הוא סביב הציר האנכי).
+    // גיליון הגב האחרון נחתך בדיוק כמו החזית כי הלולאה עוצרת באותו globalIdx. ──
     setp(92,'גיליונות הגב…');
     let bi=0,bRemain=backJobs[0]?backJobs[0].count:0;
     for(let i=0;i<globalIdx;i++){
@@ -6610,8 +6615,9 @@ async function expSheetPDF(setp){
       if(i%L.perSheet===0)pdf.addPage([PRINT_SHEET.wMm,PRINT_SHEET.hMm]);
       while(bRemain===0&&bi<backJobs.length-1){bi++;bRemain=backJobs[bi].count;}
       const p=L.pts[i%L.perSheet];
-      pdf.addImage(backJobs[bi].url,'JPEG',p.x-bleedMm,p.y-bleedMm,pageMm,pageMm);
-      pdf.addImage(backJobs[bi].trimUrl,'JPEG',p.x,p.y,trimMm,trimMm);   // שכבת הגב בגודל האמיתי, כמו בחזית
+      const mx=PRINT_SHEET.wMm-p.x-trimMm;   // שיקוף x של אזור החיתוך — ראו הערת הגב למעלה
+      pdf.addImage(backJobs[bi].url,'JPEG',mx-bleedMm,p.y-bleedMm,pageMm,pageMm);
+      pdf.addImage(backJobs[bi].trimUrl,'JPEG',mx,p.y,trimMm,trimMm);   // שכבת הגב בגודל האמיתי, כמו בחזית
       bRemain--;
     }
 
