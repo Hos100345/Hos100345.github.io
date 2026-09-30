@@ -221,6 +221,8 @@
     .g-item.source canvas{border-style:dashed;border-color:#f59e0b;opacity:.7}
     .g-item.off{opacity:.4}
     .g-source-lbl{font-size:.6rem;color:#92400e;background:#fef3c7;border-radius:4px;padding:1px 4px;margin-top:2px;display:inline-block}
+    .help-btn{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;border:1px solid currentColor;background:transparent;color:inherit;opacity:.5;font:700 .68rem/1 inherit;padding:0;margin-inline-start:.35rem;cursor:pointer;vertical-align:middle;flex-shrink:0;transition:opacity var(--tr)}
+    .help-btn:hover,.help-btn:focus-visible{opacity:1}
     .g-del{position:absolute;top:-5px;inset-inline-end:-5px;width:18px;height:18px;background:#ef4444;color:#fff;border-radius:50%;font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;line-height:1;box-shadow:0 1px 3px rgba(0,0,0,.25)}
     .g-edit{position:absolute;bottom:-6px;inset-inline-end:-6px;width:24px;height:24px;background:var(--indigo);color:#fff;border-radius:50%;font-size:.85rem;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid #fff;line-height:1;box-shadow:0 1px 4px rgba(0,0,0,.3)}
     .g-edit:hover{transform:scale(1.15)}
@@ -470,7 +472,7 @@ function dcfgSave(patch){
 
     <!-- טאב: הרשמה חינם -->
     <div id="lock-panel-free" style="display:none;flex-direction:column;align-items:center;gap:.65rem;width:100%">
-      <div data-i18n="lock.freeDesc" style="color:#a5b4fc;font-size:.88rem;line-height:1.6">משחק 7 תמונות — חינם לגמרי. הרשמה עם אימייל ובחירת קוד אישי:</div>
+      <div style="display:flex;align-items:flex-start;gap:.4rem;width:100%"><div data-i18n="lock.freeDesc" style="color:#a5b4fc;font-size:.88rem;line-height:1.6;flex:1">גרסה חינמית מלאה — בנו משחק בכל גודל, עם כל האפשרויות. ההורדה להדפסה בתשלום. הרשמה עם אימייל ובחירת קוד אישי:</div><button type="button" class="help-btn" data-help="free" data-i18n-title="help.btnTitle" title="הסבר" style="color:#a5b4fc;margin-top:.15rem">?</button></div>
       <input id="free-email" type="email" inputmode="email" placeholder="name@example.com"
         style="width:100%;box-sizing:border-box;padding:.65rem .8rem;border-radius:14px;border:2px solid rgba(255,255,255,.35);outline:none;background:rgba(255,255,255,.94);font-family:inherit;font-size:1rem;direction:ltr;text-align:left">
       <input id="free-code" type="text" maxlength="20" placeholder="בחר/י קוד אישי (4–20 תווים)"
@@ -481,7 +483,7 @@ function dcfgSave(patch){
 
     <!-- טאב: רכישת מנוי -->
     <div id="lock-panel-buy" style="display:none;flex-direction:column;align-items:center;gap:.6rem;width:100%">
-      <div data-i18n="lock.chooseTierLabel" style="color:#a5b4fc;font-size:.88rem">בחר/י רמת מנוי:</div>
+      <div style="display:flex;align-items:center;gap:.3rem"><div data-i18n="lock.chooseTierLabel" style="color:#a5b4fc;font-size:.88rem">בחר/י רמת מנוי:</div><button type="button" class="help-btn" data-help="tiers" data-i18n-title="help.btnTitle" title="הסבר" style="color:#a5b4fc">?</button></div>
       <div id="lock-tiers" style="display:flex;flex-direction:column;gap:.45rem;width:100%"></div>
       <div id="lock-usd-note" hidden style="font-size:.78rem;opacity:.8;line-height:1.5;margin-top:.4rem"></div>
       <input id="buy-email" type="email" inputmode="email" placeholder="name@example.com" hidden
@@ -519,7 +521,7 @@ function dcfgSave(patch){
   <div class="modal-card" style="max-width:420px;width:94%;text-align:center">
     <div style="font-size:2.6rem;margin-bottom:.3rem">🔒</div>
     <div data-i18n="lock.upgradeTitle" style="font-size:1.3rem;font-weight:800;margin-bottom:.5rem">המשחק הזה דורש שדרוג</div>
-    <div data-i18n-html="lock.upgradeCurrentTierInfo" style="color:var(--muted);font-size:.96rem;line-height:1.6;margin-bottom:.7rem">הקוד שלך פותח עד <b id="upg-current"></b> קלפים. אפשר להמשיך לצפות בתצוגה מקדימה, ולשדרג להורדה:</div>
+    <div data-i18n-html="lock.upgradeCurrentTierInfo" style="color:var(--muted);font-size:.96rem;line-height:1.6;margin-bottom:.7rem">הקוד שלך פותח <b>להורדה</b> עד <b id="upg-current"></b> קלפים. המשחק עצמו נשאר שלכם בכל גודל — אפשר להמשיך לערוך ולצפות בתצוגה מקדימה, והתשלום הוא על ההורדה להדפסה:</div>
     <div data-i18n-html="lock.upgradeOfferBodyHtml" style="background:var(--purple-light);border-radius:var(--rs);padding:.7rem .85rem;margin-bottom:.9rem;font-size:.88rem;line-height:1.65;text-align:right">
       <b>רוצים רק משחק אחד? זה בדיוק זה.</b><br>
       משלמים פעם אחת, ובמשך חודש יוצרים ומדפיסים כמה משחקים שרוצים.
@@ -790,7 +792,7 @@ const I18N={
     'lock.enterCodeLabel':'הזן/י קוד כניסה',
     'lock.enterBtn':'כניסה ✓',
     'lock.forgotCode':'שכחתי את הקוד שלי',
-    'lock.freeDesc':'משחק 7 תמונות — חינם לגמרי. הרשמה עם אימייל ובחירת קוד אישי:',
+    'lock.freeDesc':'גרסה חינמית מלאה — בנו משחק בכל גודל, עם כל האפשרויות. ההורדה להדפסה בתשלום. הרשמה עם אימייל ובחירת קוד אישי:',
     'lock.freeSignupBtn':'הרשמה וכניסה ✓',
     'lock.chooseTierLabel':'בחר/י רמת מנוי:',
     'lock.goToPaymentBtn':'מעבר לתשלום',
@@ -1075,6 +1077,21 @@ const I18N={
     'back.fontTabHebrew':'עברית',
     'back.fontTabEnglish':'English',
     'edit.symbolSizePctMm':'{pct}% · ~{mm} מ"מ',
+    'export.cutLinesLabel':'✂️ הצג קווי חיתוך (A4 ביתי)',
+    'help.btnTitle':'הסבר',
+    'help.gotIt':'הבנתי ✓',
+    'help.tiers.title':'איך המשחק בנוי?',
+    'help.tiers.bodyHtml':'בכל שני קלפים יש <b>בדיוק סמל משותף אחד</b> — לא פחות ולא יותר. זו לא הגרלה אלא מבנה מתמטי מדויק שנקרא "מישור השלכתי".\n\nהמבנה קובע את המספרים, ולכן הם לא שרירותיים:\n<b>21 קלפים</b> · 5 סמלים בקלף\n<b>31 קלפים</b> · 6 סמלים\n<b>57 קלפים</b> · 8 סמלים\n<b>73 קלפים</b> · 9 סמלים\n<b>91 קלפים</b> · 10 סמלים\n\n<b>מספר הקלפים שווה למספר התמונות שצריך.</b> משחק של 31 קלפים דורש 31 תמונות, וכל תמונה מופיעה על 6 קלפים שונים.',
+    'help.crop.title':'מתמונה אחת — כמה סמלים',
+    'help.crop.bodyHtml':'לא חייבים תמונה נפרדת לכל סמל. לחצו על <b>✂</b> ליד תמונה קבוצתית וחתכו ממנה כל פרצוף, חפץ או פרט בנפרד — כל חיתוך הופך לסמל משלו במאגר, והתמונה המקורית נשארת.\n\n<b>כך חמש תמונות משפחתיות מספיקות למשחק שלם.</b> הכלי גם ממקד סמל בתוך תמונה גדולה, ומאפשר חיתוך עגול.',
+    'help.overlap.title':'חפיפה, מרווח ומילוי מיטבי',
+    'help.overlap.bodyHtml':'הסרגל קובע כמה הסמלים קרובים זה לזה: <b>אפס</b> = נוגעים בדיוק, <b>ימינה</b> = נכנסים זה בזה (מתאים לסמלים עם רקע שקוף), <b>שמאלה</b> = מתרחקים.\n\n<b>📐 מילוי מיטבי</b> מגדיל את הסמלים עד שהם ממלאים את הקלף בלי לחרוג ובלי לחפוף — זה מה שמעלים את החללים הלבנים בפריסה המפוזרת. הוא דלוק כברירת מחדל; כבו אותו אם אתם רוצים סמלים קטנים עם הרבה אוויר.',
+    'help.cardedit.title':'עריכת קלף בודד ✏️',
+    'help.cardedit.bodyHtml':'הפריסה נוצרת אוטומטית, אבל כל קלף אפשר לכוונן ביד: העבירו את העכבר (או געו) בקלף ולחצו על <b>✏️</b> בפינה. בחלון שנפתח גוררים כל סמל למקום אחר, משנים את גודלו ומסובבים אותו.\n\nההתאמות נשמרות עם העיצוב ומופיעות בדיוק כך ב-PDF. <b>לחיצה על שני קלפים</b> ברשת מסמנת את הסמל המשותף היחיד — כך בודקים שהמשחק תקין.',
+    'help.cardsize.title':'איזה קוטר לבחור?',
+    'help.cardsize.bodyHtml':'<b>85 מ"מ</b> — הגודל הנוח ביד, 6 קלפים בדף A4. <b>71 מ"מ</b> — הגודל של בית הדפוס (הדייקה חותכת בקוטר הזה), 9 קלפים בדף. גדלים אחרים חופשיים — הסליידר קובע גם כמה קלפים נכנסים בדף.\n\n<b>מסגרת מוסתרת כברירת מחדל.</b> אם מדפיסים בבית וחותכים במספריים — כדאי להוסיף מסגרת דקה (בעיצוב הקלף), היא מסתירה אי-דיוקים בחיתוך. ב-A4 מצויר גם קו חיתוך אפור עדין על שפת כל קלף.',
+    'help.free.title':'מה חינם ועל מה משלמים?',
+    'help.free.bodyHtml':'<b>חינם:</b> הכול. העלאת תמונות, חיתוך, בניית משחק <b>בכל גודל</b> — 7 עד 91 קלפים — עיצוב הגב, עריכת כל קלף, ותצוגה מקדימה מלאה.\n\n<b>בתשלום:</b> ההורדה להדפסה בלבד (PDF / ZIP). המחיר נקבע לפי גודל המשחק שמורידים, חד-פעמי, ופותח חודש של הורדות. המשחק שבניתם נשמר אצלכם גם בלי לשלם.',
     'header.langToggle':'EN',
     'lang.switchConfirm':'החלפת שפה טוענת את הדף מחדש — תמונות שהועלו ולא נשמרו יאבדו. להמשיך?',
     'lock.usdNote':'המחירים בשקלים (₪). הכרטיס מחויב בשקלים והבנק ממיר אוטומטית — כ-<strong>${usd}</strong> לתוכנית של {ils} ₪. ייתכן שתחול עמלת המרה קטנה.',
@@ -1279,13 +1296,13 @@ const I18N={
     // ⚠️ שלב ג1ב: אלמנטים שהטקסט שלהם מעורב עם תגיות פנימיות (<strong>/<b>/<br>/<span>) —
     // תויגו רק חלקית בשלב א׳ (leaf-only). data-i18n-html מכיל את ה-HTML המלא.
     'lock.waHelpBtn':'עזרה בוואטסאפ',
-    'lock.upgradeCurrentTierInfo':'הקוד שלך פותח עד <b id="upg-current"></b> קלפים. אפשר להמשיך לצפות בתצוגה מקדימה, ולשדרג להורדה:',
+    'lock.upgradeCurrentTierInfo':'הקוד שלך פותח <b>להורדה</b> עד <b id="upg-current"></b> קלפים. המשחק עצמו נשאר שלכם בכל גודל — אפשר להמשיך לערוך ולצפות בתצוגה מקדימה, והתשלום הוא על ההורדה להדפסה:',
     'lock.upgradeOfferBodyHtml':'<b>רוצים רק משחק אחד? זה בדיוק זה.</b><br>\n      משלמים פעם אחת, ובמשך חודש יוצרים ומדפיסים כמה משחקים שרוצים.\n      <b>אין חיוב חוזר</b> — אחרי חודש פשוט נגמר, אלא אם תבחרו לחדש.',
     'onboard.packageInfoHtml':'🕹️ <strong>חבילה אחת = 4 משחקים שונים</strong> (דאבל קלאסי, המגדל, הבאר, השלישייה) · מתאים לימי הולדת, חתונות, בר/בת מצווה, בתי ספר, תנועות נוער ועוד —\n      <a href="dobble-info.html" target="_blank" rel="noopener noreferrer" style="color:var(--purple);font-weight:700;text-decoration:underline">לכל הרעיונות וההשראה ←</a>',
     'header.stepUploadHtml':'<span class="n">1</span>העלאה',
     'header.stepEditHtml':'<span class="n">2</span>עריכה',
     'header.stepExportHtml':'<span class="n">3</span>ייצוא',
-    'upload.cropHintTextHtml':'💡 יש לך תמונות שאינן מרובעות — לחצו על <strong>✂</strong> ליד תמונה כדי לחתוך ולמקד את הסמל.',
+    'upload.cropHintTextHtml':'✂️ <strong>מתמונה אחת אפשר להפיק כמה סמלים</strong> — לחצו על ✂ ליד תמונה קבוצתית וחתכו כל פרצוף בנפרד. <strong>כך חמש תמונות מספיקות למשחק שלם.</strong>',
     'edit.algoCheckBannerHtml':'🔍 <strong>בדיקת אלגוריתם:</strong> לחץ/י על שני קלפים — הסמל המשותף היחיד יסומן אוטומטית',
     'export.printShopNotesHtml':'📦 עמוד לכל קלף · בליד 4 מ"מ · 300 DPI · העמוד האחרון הוא הגב.<br>\n          🗞️ גיליון גדול לבית דפוס — דורש חיתוך עצמי.',
     'edit.cardEditModalTitleHtml':'✏️ עריכת קלף <span id="ce-idx"></span>',
@@ -1318,7 +1335,7 @@ const I18N={
     'lock.enterCodeLabel':'Enter your access code',
     'lock.enterBtn':'Enter ✓',
     'lock.forgotCode':'I forgot my code',
-    'lock.freeDesc':'A 7-image game — totally free. Sign up with your email and pick a personal code:',
+    'lock.freeDesc':'Full free version — build a game of any size, with every option. Downloading for print is paid. Sign up with your email and pick a personal code:',
     'lock.freeSignupBtn':'Sign up and enter ✓',
     'lock.chooseTierLabel':'Choose a plan:',
     'lock.goToPaymentBtn':'Go to payment',
@@ -1603,6 +1620,21 @@ const I18N={
     'back.fontTabHebrew':'Hebrew',
     'back.fontTabEnglish':'English',
     'edit.symbolSizePctMm':'{pct}% · ~{mm} mm',
+    'export.cutLinesLabel':'✂️ Show cut lines (home A4)',
+    'help.btnTitle':'What is this?',
+    'help.gotIt':'Got it ✓',
+    'help.tiers.title':'How is the game built?',
+    'help.tiers.bodyHtml':'Any two cards share <b>exactly one symbol</b> — never more, never less. That is not luck but an exact mathematical structure called a "projective plane".\n\nThe structure fixes the numbers, so they are not arbitrary:\n<b>21 cards</b> · 5 symbols per card\n<b>31 cards</b> · 6 symbols\n<b>57 cards</b> · 8 symbols\n<b>73 cards</b> · 9 symbols\n<b>91 cards</b> · 10 symbols\n\n<b>The number of cards equals the number of images you need.</b> A 31-card game needs 31 images, and each image appears on 6 different cards.',
+    'help.crop.title':'One photo — several symbols',
+    'help.crop.bodyHtml':'You do not need a separate image per symbol. Click <b>✂</b> next to a group photo and crop each face, object or detail separately — every crop becomes its own symbol in the library, and the original stays.\n\n<b>Five family photos are enough for a whole game.</b> The tool also focuses a symbol inside a large image and allows a round crop.',
+    'help.overlap.title':'Overlap, spacing and best fill',
+    'help.overlap.bodyHtml':'The slider sets how close symbols sit: <b>zero</b> = exactly touching, <b>right</b> = overlapping (good for transparent-background symbols), <b>left</b> = spread apart.\n\n<b>📐 Best fill</b> enlarges the symbols until they fill the card without crossing the edge or overlapping — that is what removes the white gaps in the scattered layout. It is on by default; turn it off if you want small symbols with lots of air.',
+    'help.cardedit.title':'Editing a single card ✏️',
+    'help.cardedit.bodyHtml':'The layout is generated automatically, but every card can be fine-tuned by hand: hover (or tap) a card and click <b>✏️</b> in its corner. In the window that opens, drag any symbol, resize it and rotate it.\n\nThe tweaks are saved with the design and appear exactly like that in the PDF. <b>Clicking two cards</b> in the grid highlights their single shared symbol — that is how you verify the game.',
+    'help.cardsize.title':'Which diameter?',
+    'help.cardsize.bodyHtml':'<b>85 mm</b> — comfortable in the hand, 6 cards per A4 sheet. <b>71 mm</b> — the print shop size (the die cuts at this diameter), 9 cards per sheet. Other sizes are free — the slider also decides how many cards fit a page.\n\n<b>The frame is hidden by default.</b> If you print at home and cut with scissors, add a thin frame (in card design) — it hides cutting inaccuracies. On A4 a faint grey cut line is also drawn on the edge of every card.',
+    'help.free.title':'What is free and what is paid?',
+    'help.free.bodyHtml':'<b>Free:</b> everything. Uploading images, cropping, building a game <b>of any size</b> — 7 to 91 cards — designing the back, editing every card, and a full preview.\n\n<b>Paid:</b> only the download for printing (PDF / ZIP). The price depends on the size of the game you download, one-time, and unlocks a month of downloads. The game you built stays yours even without paying.',
     'header.langToggle':'עב',
     'lang.switchConfirm':'Switching language reloads the page — uploaded images that were not saved will be lost. Continue?',
     'lock.usdNote':'Prices are in Israeli Shekels (₪). Your card is charged in ILS and your bank converts automatically — about <strong>${usd}</strong> for the {ils} ₪ plan. A small foreign-transaction fee may apply.',
@@ -1805,13 +1837,13 @@ const I18N={
     'msg.tierUpgraded':'Your plan has been upgraded — up to {n} cards now available 🎉',
     'msg.uploadsFailed':'Failed to upload {n} images — try saving again',
     'lock.waHelpBtn':'Help on WhatsApp',
-    'lock.upgradeCurrentTierInfo':'Your code currently unlocks up to <b id="upg-current"></b> cards. You can keep browsing the preview, or upgrade to download:',
+    'lock.upgradeCurrentTierInfo':'Your code unlocks <b>downloading</b> up to <b id="upg-current"></b> cards. The game itself stays yours at any size — keep editing and previewing; payment is only for the print download:',
     'lock.upgradeOfferBodyHtml':'<b>Just want one game? This is exactly that.</b><br>\n      Pay once, and for a month create and print as many games as you like.\n      <b>No recurring charges</b> — after a month it simply ends, unless you choose to renew.',
     'onboard.packageInfoHtml':'🕹️ <strong>One pack = 4 different games</strong> (Classic Match, The Tower, The Well, The Trio) · great for birthdays, weddings, bar/bat mitzvahs, schools, youth groups and more —\n      <a href="dobble-info.html" target="_blank" rel="noopener noreferrer" style="color:var(--purple);font-weight:700;text-decoration:underline">For all the ideas and inspiration ←</a>',
     'header.stepUploadHtml':'<span class="n">1</span>Upload',
     'header.stepEditHtml':'<span class="n">2</span>Edit',
     'header.stepExportHtml':'<span class="n">3</span>Export',
-    'upload.cropHintTextHtml':'💡 You have non-square images — click <strong>✂</strong> next to an image to crop and focus the symbol.',
+    'upload.cropHintTextHtml':'✂️ <strong>One photo can yield several symbols</strong> — click ✂ next to a group photo and crop each face separately. <strong>Five photos are enough for a whole game.</strong>',
     'edit.algoCheckBannerHtml':'🔍 <strong>Algorithm check:</strong> click two cards — the one shared symbol will be highlighted automatically',
     'export.printShopNotesHtml':'📦 One page per card · 4 mm bleed · 300 DPI · the last page is the back.<br>\n          🗞️ Large sheet for a print shop — requires self-cutting.',
     'edit.cardEditModalTitleHtml':'✏️ Edit card <span id="ce-idx"></span>',
@@ -2274,12 +2306,12 @@ window.applyI18n=applyI18n;
     <!-- ── Inline Active Gallery ── -->
     <div id="gallery" class="gallery" style="display:none">
       <div class="gallery-hdr">
-        <div data-i18n="upload.galleryTitle" class="og-t">📦 מאגר נכסים</div>
+        <div data-i18n="upload.galleryTitle" class="og-t">📦 מאגר נכסים</div><button type="button" class="help-btn" data-help="crop" data-i18n-title="help.btnTitle" title="הסבר">?</button>
         <span class="gallery-count" id="gallery-count">0 נכסים</span>
         <span class="under-lim" id="under-lim" style="display:none"></span>
       </div>
       <div id="crop-hint" class="crop-hint" style="display:none">
-        <span data-i18n-html="upload.cropHintTextHtml">💡 יש לך תמונות שאינן מרובעות — לחצו על <strong>✂</strong> ליד תמונה כדי לחתוך ולמקד את הסמל.</span>
+        <span data-i18n-html="upload.cropHintTextHtml">✂️ <strong>מתמונה אחת אפשר להפיק כמה סמלים</strong> — לחצו על ✂ ליד תמונה קבוצתית וחתכו כל פרצוף בנפרד. <strong>כך חמש תמונות מספיקות למשחק שלם.</strong></span>
         <button type="button" id="crop-hint-x" data-i18n-title="upload.cropHintCloseBtnTitle" title="סגור">✕</button>
       </div>
       <div class="gallery-bulk" id="gallery-bulk">
@@ -2293,7 +2325,7 @@ window.applyI18n=applyI18n;
     </div>
 
     <div class="rec" id="rec">
-      <div class="rec-t" id="rec-t"></div>
+      <div style="display:flex;align-items:flex-start;gap:.3rem"><div class="rec-t" id="rec-t" style="flex:1"></div><button type="button" class="help-btn" data-help="tiers" data-i18n-title="help.btnTitle" title="הסבר" style="color:#78350f;margin-top:.1rem">?</button></div>
       <div class="rec-opts" id="rec-opts"></div>
     </div>
 
@@ -2378,7 +2410,7 @@ window.applyI18n=applyI18n;
             </div>
           </div>
           <div class="sl-row" data-sl-lock="sl-ov">
-            <div class="sl-lbl"><span data-i18n="edit.overlapTitle">חפיפה / מרווח</span><strong id="lbl-ov">צמוד</strong></div>
+            <div class="sl-lbl"><span><span data-i18n="edit.overlapTitle">חפיפה / מרווח</span><button type="button" class="help-btn" data-help="overlap" data-i18n-title="help.btnTitle" title="הסבר">?</button></span><strong id="lbl-ov">צמוד</strong></div>
             <div style="display:flex;align-items:center;gap:.4rem">
               <button class="btn btn-ghost" type="button" data-step="sl-ov" data-dir="-1" aria-label="−" style="padding:.15rem .6rem;min-width:2rem;justify-content:center">−</button>
               <input type="range" id="sl-ov" min="-100" max="100" value="0" step="5" style="pointer-events:none">
@@ -2390,7 +2422,7 @@ window.applyI18n=applyI18n;
             <span data-i18n="edit.overlapShapeMode" style="font-size:.83rem;font-weight:700;color:var(--indigo)">🧩 חפיפה לפי צורת הסמל</span>
           </label>
           <label class="tool-row" style="gap:.45rem;cursor:pointer;margin-top:.25rem">
-            <input type="checkbox" id="ck-tightfill" style="width:16px;height:16px;accent-color:var(--indigo)">
+            <input type="checkbox" id="ck-tightfill" checked style="width:16px;height:16px;accent-color:var(--indigo)">
             <span data-i18n="edit.overlapFillMode" style="font-size:.83rem;font-weight:700;color:var(--indigo)">📐 מילוי מיטבי של הקלף</span>
           </label>
           <div data-i18n="edit.overlapNote" style="font-size:.75rem;color:var(--muted);line-height:1.5;margin-top:.3rem">
@@ -2402,8 +2434,8 @@ window.applyI18n=applyI18n;
         <div class="sb-sec">
           <div data-i18n="edit.paddingTitle" class="sb-t">מרווח מהמסגרת</div>
           <div class="sl-row">
-            <div class="sl-lbl"><span data-i18n="edit.paddingLabel">מרווח סמלים ← מסגרת</span><strong id="lbl-sympad">2 מ"מ</strong></div>
-            <input type="range" id="sl-sympad" min="0" max="30" step="0.5" value="2">
+            <div class="sl-lbl"><span data-i18n="edit.paddingLabel">מרווח סמלים ← מסגרת</span><strong id="lbl-sympad">0 מ"מ</strong></div>
+            <input type="range" id="sl-sympad" min="0" max="30" step="0.5" value="0">
           </div>
           <div data-i18n="edit.paddingNote" style="font-size:.75rem;color:var(--muted);line-height:1.5;margin-top:.3rem">
             מרחק הסמלים מהמסגרת, במ"מ אמיתיים. הטווח מותאם אוטומטית לקוטר הקלף ולרוחב המסגרת.
@@ -2425,7 +2457,7 @@ window.applyI18n=applyI18n;
       </aside>
 
       <div class="cards-main">
-        <div class="vfy-banner" data-i18n-html="edit.algoCheckBannerHtml">🔍 <strong>בדיקת אלגוריתם:</strong> לחץ/י על שני קלפים — הסמל המשותף היחיד יסומן אוטומטית</div>
+        <div class="vfy-banner"><span data-i18n-html="edit.algoCheckBannerHtml">🔍 <strong>בדיקת אלגוריתם:</strong> לחץ/י על שני קלפים — הסמל המשותף היחיד יסומן אוטומטית</span><button type="button" class="help-btn" data-help="cardedit" data-i18n-title="help.btnTitle" title="הסבר">?</button></div>
         <div class="cards-grid" id="cgrid"></div>
       </div>
 
@@ -2451,7 +2483,7 @@ window.applyI18n=applyI18n;
             <button class="sbt" data-pp="9"  style="flex:1">9</button>
           </div>
           <div data-i18n="export.perA4Title" style="font-size:.75rem;color:var(--muted);margin:-.25rem 0 .5rem">קלפים בדף A4</div>
-          <div class="sl-lbl"><span data-i18n="export.diameterLabel">קוטר</span><strong id="lbl-card-size">85 מ"מ</strong></div>
+          <div class="sl-lbl"><span><span data-i18n="export.diameterLabel">קוטר</span><button type="button" class="help-btn" data-help="cardsize" data-i18n-title="help.btnTitle" title="הסבר">?</button></span><strong id="lbl-card-size">85 מ"מ</strong></div>
           <input type="range" id="sl-card-size" min="20" max="195" value="85" step="1">
           <button data-i18n="export.cardSizeResetBtn" class="btn btn-ghost" type="button" data-reset="sl-card-size,sl-spacing"
                   style="width:100%;justify-content:center;margin-top:.5rem;font-size:.8rem">↺ ברירת מחדל</button>
@@ -2486,8 +2518,8 @@ window.applyI18n=applyI18n;
             <div class="dp-inner">
               <div class="dp-sec">
                 <div data-i18n="export.frameTitle" class="dp-sec-hd">מסגרת</div>
-                <div class="sl-lbl"><span data-i18n="export.frameWidthLabel">רוחב מסגרת</span><strong id="lbl-fw">3 מ"מ</strong></div>
-                <input type="range" id="sl-fw" min="0" max="25" step="0.5" value="3">
+                <div class="sl-lbl"><span data-i18n="export.frameWidthLabel">רוחב מסגרת</span><strong id="lbl-fw">0 מ"מ</strong></div>
+                <input type="range" id="sl-fw" min="0" max="25" step="0.5" value="0">
                 <div class="sl-lbl"><span data-i18n="export.pigmentLabel">עוצמת פיגמנט</span><strong id="lbl-fop">100%</strong></div>
                 <input type="range" id="sl-fop" min="0" max="100" step="1" value="100">
                 <div class="swatch-row" id="sw-frame"></div>
@@ -2527,6 +2559,10 @@ window.applyI18n=applyI18n;
       <button data-i18n="export.qualityPrintBtn" type="button" class="sbt" data-q="print">איכות הדפסה</button>
     </div>
     <div id="exp-quality-note" style="font-size:.72rem;color:var(--muted);margin-top:.35rem;line-height:1.5"></div>
+    <label class="tool-row" style="gap:.45rem;cursor:pointer;margin-top:.55rem">
+      <input type="checkbox" id="ck-cutlines" checked style="width:16px;height:16px;accent-color:var(--indigo)">
+      <span data-i18n="export.cutLinesLabel" style="font-size:.83rem;font-weight:700;color:var(--indigo)">✂️ הצג קווי חיתוך (A4 ביתי)</span>
+    </label>
 
     <div class="brow">
       <button data-i18n="export.previewBtn" class="btn btn-sec" id="btn-prevprint">👁 תצוגה מקדימה</button>
@@ -4158,14 +4194,15 @@ const S={
   assets:[],
   order:null,deck:[],layouts:[],imgEls:[],canvases:[],
   shape:'circle',symShape:'circle',sMin:.70,sMax:1.30,seed:1,layoutMode:'scatter',overlap:0,
-  tightPack:true,tightFill:false,   // חפיפה לפי צורת הסמל / מילוי מיטבי של הקלף
+  tightPack:true,tightFill:true,    // חפיפה לפי צורת הסמל / מילוי מיטבי של הקלף (דלוק כברירת מחדל מאז 30/09 — ראו מרשם-מחולל D-52)
   sel:[],
   cardEdits:{},   // { [cardIdx]: { [slot]: {s,dx,dy} } } — התאמות ידניות לקלף בודד. dx/dy ביחידות rSym.
   metaVer:0,
   cardSizeMm:85,spacingMm:5,startPos:'center',exportQuality:'fast',sheetDiam:71,
   crop:true,isSilhouette:false,
-  frame:{w:3,color:'#4338CA',op:100},
-  symPad:2,
+  cutLines:true,   // קו חיתוך עדין על שפת כל קלף ב-A4 ביתי בלבד (expPDF). לא בבית דפוס — שם הדייקה חותכת.
+  frame:{w:0,color:'#4338CA',op:100},
+  symPad:0,
   bg:{color:'#FFFEF5',op:100},
   idSeq:0,
   back:backDefaults(),backCanvas:null,   // backCanvas לעולם לא נשמר — נגזר תמיד מ-back דרך markBackDirty()
@@ -4237,6 +4274,9 @@ function uploadProgressClose(){document.getElementById('upload-modal').hidden=tr
 let _cfmResolve=null;
 function confirmDialog(opt){
   const o=opt||{};
+  // helpDialog מסתירה את "כן" ומחליפה את הטקסט של "ביטול" — כאן מחזירים למצב מחיקה
+  document.getElementById('cfm-yes').style.display='';
+  document.getElementById('cfm-no').textContent=t('msg.confirmCancel');
   document.getElementById('cfm-ico').textContent=o.icon||'🗑';
   document.getElementById('cfm-title').textContent=o.title||t('confirm.defaultTitle');
   document.getElementById('cfm-body').textContent=o.body||'';
@@ -4255,6 +4295,29 @@ document.getElementById('cfm-yes').addEventListener('click',()=>_cfmClose(true))
 document.getElementById('confirm-modal').addEventListener('click',e=>{if(e.target.id==='confirm-modal')_cfmClose(false);});
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'&&!document.getElementById('confirm-modal').hidden)_cfmClose(false);
+});
+
+// ── כפתורי עזרה ❓ — מנגנון אחד: <button class="help-btn" data-help="key"> פותח את
+// confirm-modal הקיים עם help.<key>.title / help.<key>.bodyHtml מהמילון. אין מודל חדש.
+// כפתור יחיד "הבנתי" (cfm-no, כי הוא ה-ghost); cfm-yes האדום מוסתר. הטקסט הוא מהמילון
+// שלנו בלבד, לכן innerHTML בטוח כאן. סגירה: הכפתור, רקע, Escape — הכול קיים כבר.
+function helpDialog(key){
+  const title=t('help.'+key+'.title'),body=t('help.'+key+'.bodyHtml');
+  if(title==='help.'+key+'.title')return;           // מפתח לא מוכר — לא פותחים חלון ריק
+  document.getElementById('cfm-ico').textContent='💡';
+  document.getElementById('cfm-title').textContent=title;
+  document.getElementById('cfm-body').innerHTML=body;
+  document.getElementById('cfm-warn').style.display='none';
+  document.getElementById('cfm-yes').style.display='none';
+  document.getElementById('cfm-no').textContent=t('help.gotIt');
+  document.getElementById('confirm-modal').hidden=false;
+  return new Promise(res=>{_cfmResolve=res;});
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-help]');
+  if(!b)return;
+  e.preventDefault();e.stopPropagation();   // הכפתור יושב בתוך label/שורות לחיצות — לא להפעיל אותן
+  helpDialog(b.dataset.help);
 });
 
 function cloudDeleteWarn(){
@@ -4683,9 +4746,11 @@ function updateCropHint(){
   const hint=document.getElementById('crop-hint');
   if(!hint)return;
   if(localStorage.getItem('dobble_hide_crop_hint')==='1'){hint.style.display='none';return;}
-  const hasNonSquare=S.assets.some(a=>a.type==='image'&&!a.isCropSource&&
-    Math.abs(imgNatW(a.imgEl)-imgNatH(a.imgEl))>imgNatW(a.imgEl)*0.05);
-  hint.style.display=hasNonSquare?'flex':'none';
+  // היה: רק כשיש תמונה שאינה מרובעת (סטייה >5% בין רוחב לגובה) — הרמז דיבר על
+  // תיקון פרופורציות. עכשיו: בכל מאגר עם תמונה אחת לפחות — הרמז מסביר שמתמונה
+  // קבוצתית מפיקים כמה סמלים, וזה רלוונטי גם לתמונות מרובעות לגמרי.
+  const hasImage=S.assets.some(a=>a.type==='image'&&!a.isCropSource);
+  hint.style.display=hasImage?'flex':'none';
 }
 document.getElementById('crop-hint-x').addEventListener('click',()=>{
   localStorage.setItem('dobble_hide_crop_hint','1');
@@ -5652,6 +5717,7 @@ document.getElementById('startpos-grp').addEventListener('click',e=>{
 });
 
 document.getElementById('chk-crop').addEventListener('change',e=>{S.crop=e.target.checked;updatePaperPrev();});
+document.getElementById('ck-cutlines').addEventListener('change',e=>{S.cutLines=e.target.checked;});
 document.getElementById('chk-sil').addEventListener('change',e=>{
   S.isSilhouette=e.target.checked;
   document.getElementById('btn-dodxf').style.display=S.isSilhouette?'':'none';
@@ -6316,6 +6382,16 @@ async function expPDF(setp){
           pdf.line(lx+d+cg,ly,lx+d+cg+cl,ly);pdf.line(lx+d,ly-cg-cl,lx+d,ly-cg);
           pdf.line(lx-cg-cl,ly+d,lx-cg,ly+d);pdf.line(lx,ly+d+cg,lx,ly+d+cg+cl);
           pdf.line(lx+d+cg,ly+d,lx+d+cg+cl,ly+d);pdf.line(lx+d,ly+d+cg,lx+d,ly+d+cg+cl);
+        }
+        if(S.cutLines&&!S.isSilhouette){
+          // קו חיתוך עדין בדיוק על שפת הקלף המצוירת — אותה גאומטריה של drawCard
+          // (cardGeom: r=sz/2-M, ריבוע sq/sqcr), מומרת למ"מ. לא על גבול התמונה (d/2):
+          // הקלף מצויר עם שוליים M בתוך התמונה, וקו שם היה משאיר טבעת לבנה.
+          // Silhouette מקבל קו וקטורי אדום משלו למעלה. ⛔ A4 ביתי בלבד.
+          const G=cardGeom(px),k=d/px;
+          pdf.setDrawColor(204,204,204);pdf.setLineWidth(0.2);
+          if(S.shape==='circle')pdf.circle(x,y,G.r*k,'S');
+          else pdf.roundedRect(x-d/2+G.sqx*k,y-d/2+G.sqy*k,G.sq*k,G.sq*k,G.sqcr*k,G.sqcr*k,'S');
         }
         cardsDone++;
         setp(3+Math.round(92*cardsDone/totalCardUnits),t('export.pdfPageCardProgress',{page:entry.k+1,i:j+1,total:idxs.length}));
