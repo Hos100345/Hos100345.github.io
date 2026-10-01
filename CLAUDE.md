@@ -191,6 +191,7 @@
 | `js/back-assets.js` | `dobble.html` (עורך גב הקלף), `pencil-stickers.html` (סמלים בחלון האייקונים) | גב: `toDataURL` זהה בייט-לבייט לכל preset/סמל מול `main` (הבדיקה מ-PR #149) · מדבקות: הוספת סמל, צבע, ייצוא ×4 וקטורי |
 | `js/hebrew-fonts.js` | `pencil-stickers.html` (בורר הפונטים), `dobble.html` (טאב "עברית" בבורר הגב, `backFontLookup`) | שני הבוררים נפתחים עם 35 אריחים; `sans`/`serif`/`round` בגב ללא רגרסיה |
 | `js/latin-fonts.js` | `dobble.html` (טאב "English") | 30 אריחים, בדיקת חפיפה מול העברי ריקה |
+| `js/lineart.js` | `studio/index.html` (עריכת תמונה ← ציור קווים; נטען כ-`../js/lineart.js?v=N`). הדאבל — בהמשך | הורדה+מטמון (בפעם השנייה בלי רשת), ביטול באמצע, כשל רשת = הודעה והמקור לא נוגע, תמונה עם שקיפות → PNG. ⛔ שינוי = להעלות `LINEART_V` בסטודיו |
 
 הרשימה תגדל — הסטודיו צפוי לטעון את `back-assets.js` ו-`hebrew-fonts.js`. **מי שמוסיף דף לרשימה מעדכן את הטבלה הזו באותו PR.**
 
