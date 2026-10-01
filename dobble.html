@@ -1195,6 +1195,7 @@ const I18N={
     'lineart.downloaded':'התמונה נשמרה בהורדות',
     'lineart.saved':'ציור הקווים נשמר כסמל חדש — המקור נשאר במאגר',
     'lineart.nameSuffix':'קווים',
+    'lineart.lowMemory':'ציור קווים דורש מכשיר חזק יותר — נסו במחשב.',
     'edit.removeBgSensitivityLabel':'רגישות:',
     'edit.cropDragHint':'לחץ/י וגרור/י על התמונה לבחירת סמלים',
     'edit.cropCancelBtn':'ביטול',
@@ -1758,6 +1759,7 @@ const I18N={
     'lineart.downloaded':'The image was saved to your downloads',
     'lineart.saved':'The line drawing was saved as a new symbol — the original stays in the library',
     'lineart.nameSuffix':'lines',
+    'lineart.lowMemory':'Line drawing needs a more powerful device — try on a computer.',
     'edit.removeBgSensitivityLabel':'Sensitivity:',
     'edit.cropDragHint':'Click and drag on the image to select symbols',
     'edit.cropCancelBtn':'Cancel',
@@ -7372,10 +7374,23 @@ function laEnabled(){
 const LA={ac:null,res:null,out:null,dark:60,before:false,t0:0,done:false,srcId:null,failed:false};
 function laTrack(detail){try{window.track&&window.track('lineart',{detail:String(detail).slice(0,300)});}catch(e){}}
 function laDevice(){return window.LineArt?LineArt.device():'';}
+// ⛔ שחרור זיכרון — בנייד זה מה שמפריד בין "עובד" ל"הדף נטען מחדש". נקרא אחרי אישור וביטול כאחד:
+//  · LA.res — התוצאה של המודל: Float32Array (w·h) + מסכת alpha (aw·ah) → null
+//  · LA.out — קנבס ה-"אחרי" (עד 1200px) → width=height=0 ונ-null. keepOut=true אחרי אישור, כי אז
+//    הקנבס הזה הוא ה-imgEl של הנכס החדש ואסור לאפס אותו (רק ההפניה כאן מתנתקת).
+//  · #la-cv — קנבס התצוגה (לפני/אחרי מצוירים עליו לסירוגין) → width=height=0.
+//  · קנבס ה-"לפני" הוא imgEl של המקור — לא נוגעים בו.
+function laRelease(keepOut){
+  LA.res=null;
+  if(LA.out&&!keepOut){LA.out.width=LA.out.height=0;}
+  LA.out=null;
+  const cv=document.getElementById('la-cv');if(cv)cv.width=cv.height=0;
+}
 // סגירה: אם העיבוד עוד רץ — AbortSignal עוצר הורדה / מסיים את ה-Worker. התמונה המקורית לא נגעה בשום מסלול.
-function laClose(){
+function laClose(keepOut){
   if(!LA.done&&LA.ac)LA.ac.abort();
-  LA.ac=null;LA.res=null;LA.out=null;
+  LA.ac=null;
+  laRelease(keepOut);
   document.getElementById('lineart-modal').hidden=true;
 }
 function laCancel(){
@@ -7408,6 +7423,17 @@ function laProgress(p){
 function openLineArt(assetId){
   const asset=S.assets.find(a=>a.id===assetId);
   if(!asset||!asset.imgEl)return;
+  // ⛔ מכשיר חלש (deviceMemory<4GB, רק כרום/אנדרואיד מדווחים): לא מתחילים בכלל — לא מורידים ולא פותחים Worker.
+  // המודל + המנוע + הקנבסים דורשים כמה מאות MB, ובטלפון של 2–3GB הדף נטען מחדש באמצע.
+  if(navigator.deviceMemory&&navigator.deviceMemory<4){
+    Object.assign(LA,{ac:null,res:null,out:null,done:true,failed:true,srcId:assetId,t0:performance.now()});
+    document.getElementById('la-wait').hidden=false;document.getElementById('la-result').hidden=true;
+    document.getElementById('la-bar').hidden=true;
+    document.getElementById('la-msg').textContent='⚠️ '+t('lineart.lowMemory');
+    document.getElementById('lineart-modal').hidden=false;
+    laTrack('blocked · lowmem '+navigator.deviceMemory+'GB · '+(window.LineArt?LineArt.device():'mobile'));
+    return;
+  }
   // עריכה חוזרת מתחילה מהכהות של הנגזרת האחרונה של אותו מקור
   const prev=[...S.assets].reverse().find(a=>a.type==='crop'&&a.srcAssetId===assetId&&a.la&&a.la.d!=null);
   Object.assign(LA,{ac:new AbortController(),res:null,out:null,dark:prev?prev.la.d:60,before:false,t0:performance.now(),done:false,srcId:assetId,failed:false});
@@ -7444,7 +7470,7 @@ document.getElementById('la-dark').addEventListener('input',function(){
   LA.dark=+this.value;document.getElementById('la-dark-lbl').textContent=this.value;
   if(!LA.res)return;
   cancelAnimationFrame(_laRaf);
-  _laRaf=requestAnimationFrame(()=>{LA.out=LineArt.render(LA.res,LA.dark);LA.before=false;laDraw();});
+  _laRaf=requestAnimationFrame(()=>{if(!LA.res)return;const prev=LA.out;LA.out=LineArt.render(LA.res,LA.dark);if(prev){prev.width=prev.height=0;}LA.before=false;laDraw();});
 });
 // הורדה דרך blob + <a download> — לא location.href, שבאנדרואיד בתוך אפליקציה לא עושה כלום. שקיפות = PNG, אחרת JPEG.
 document.getElementById('la-dl').addEventListener('click',()=>{
@@ -7468,7 +7494,7 @@ document.getElementById('la-ok').addEventListener('click',()=>{
   S.assets.push({id:++S.idSeq,type:'crop',name:srcName+' — '+t('lineart.nameSuffix'),url:'',thumb:makeThumb(out),imgEl:out,
                  srcAssetId:asset.id,selected:true,folder:asset.folder,la:{d:LA.dark}});
   asset.isCropSource=true;
-  LA.done=true;laClose();closeCropModal();
+  LA.done=true;laClose(true);closeCropModal();   // keepOut — out הוא עכשיו imgEl של הנכס; res וקנבס התצוגה משתחררים
   renderGallery();updateCounter();schedIdbSave();
   toast(t('lineart.saved'),'ok');
 });
