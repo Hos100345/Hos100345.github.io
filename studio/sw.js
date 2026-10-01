@@ -3,7 +3,7 @@
 // ספריות מ-CDN ופונטים: מהמטמון מיד, ומתעדכנים ברקע.
 // Supabase (הזמנות, כניסה) לא עובר כאן בכלל.
 // שינוי בקובץ הזה = להעלות את V, כדי לנקות מטמון ישן.
-const V = 'studio-sw-2';
+const V = 'studio-sw-3';
 const SHELL = ['./', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 const CDN = ['cdnjs.cloudflare.com', 'cdn.jsdelivr.net', 'fonts.googleapis.com', 'fonts.gstatic.com'];
 
@@ -20,6 +20,9 @@ self.addEventListener('fetch', e => {
   if (r.method !== 'GET') return;
   const u = new URL(r.url);
   if (u.hostname.endsWith('supabase.co')) return;
+  // ציור קווים (js/lineart.js) מנהל מטמון משלו (Cache API, 'lineart-v1'): המנוע (‎.wasm, 11MB) והמודל (Hugging Face, 17MB)
+  // לא עוברים כאן — אחרת הם נשמרים פעמיים ומתעדכנים ברקע (הורדה מחדש של 11MB בכל שימוש).
+  if (u.pathname.endsWith('.wasm') || u.hostname.endsWith('huggingface.co') || u.hostname.endsWith('hf.co')) return;
   if (u.origin === location.origin) {
     e.respondWith(fetch(r).then(res => {
       if (res.ok) { const copy = res.clone(); caches.open(V).then(c => c.put(r, copy)); }
