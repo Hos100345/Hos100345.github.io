@@ -122,6 +122,10 @@ details.face>.body{padding:0 12px 12px;display:grid;gap:8px}
 .fe{display:grid;gap:6px}.fewrap{display:flex;justify-content:center}.fecv{touch-action:none;border-radius:8px;box-shadow:0 1px 6px rgba(20,41,77,.18);cursor:pointer}.fei{text-align:center;min-height:1.4em}
 .labar{height:8px;border-radius:4px;background:#E5E7EB;overflow:hidden;margin:8px 0}.lafill{height:100%;width:0;background:var(--gold,#C6A135);transition:width .2s}.labar.busy .lafill{width:40%!important;animation:labusy 1.2s ease-in-out infinite}@keyframes labusy{0%{margin-inline-start:-40%}100%{margin-inline-start:100%}}
 .lawait{display:grid;gap:6px;padding:8px 0}.lares{display:grid;gap:10px}.lares[hidden],.lawait[hidden]{display:none}.lawrap{display:flex;justify-content:center}.lacv{max-width:100%;border-radius:6px;box-shadow:0 1px 6px rgba(20,41,77,.18);background:#fff}
+.phgal{display:flex;flex-wrap:wrap;gap:8px}.phth{position:relative}.phth>button:first-child{border:2px solid transparent;border-radius:8px;padding:0;background:none;cursor:pointer}.phth.sel>button:first-child{border-color:var(--gold,#C6A135)}
+.phth .x{position:absolute;top:-8px;inset-inline-end:-8px;width:26px;height:26px;border-radius:50%;border:2px solid #fff;background:#E23B2E;color:#fff;cursor:pointer;line-height:1}
+.phfl{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px}.phfl button{display:flex;flex-direction:column;align-items:center;gap:2px;border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:4px 2px;cursor:pointer;font-size:.7rem;color:var(--muted)}.phfl button[aria-pressed=true]{border-color:var(--gold,#C6A135);color:var(--navy)}
+.adminonly{background:#FEF3C7;border-radius:8px;padding:6px 8px;color:#7C2D12}
 .icon4w{display:grid;gap:4px}.icon4e{padding:4px 6px;font-size:.72rem}
 .icons4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.icon4{display:flex;flex-direction:column;align-items:center;gap:2px;border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:6px 2px;cursor:pointer;font-size:.75rem;color:var(--muted)}
 .shaperow{display:flex;align-items:center;gap:8px;flex:1;min-width:160px;max-width:320px}.shaperow input{flex:1}.shaperow span{font-size:.8rem;color:var(--muted);white-space:nowrap}
@@ -218,6 +222,7 @@ body.admin .cust{display:none!important}
     <div class="pagebar" id="pagebar"></div>
     <div class="actions">
       <button class="btn gold cust" data-act="order">שלח הזמנה</button>
+      <button class="btn gold" data-act="phdl" hidden>⬇️ הורדת התמונה</button>
       <button class="btn gold adm" data-act="pdf">הורד PDF להדפסה</button>
       <button class="btn ghost adm" data-act="pdfa4" hidden>PDF דפי A4</button>
       <button class="btn navy adm" data-act="svg">הורד קובץ חיתוך</button>
@@ -227,6 +232,7 @@ body.admin .cust{display:none!important}
 </main>
 <div class="actions">
   <button class="btn gold cust" data-act="order">שלח הזמנה</button>
+      <button class="btn gold" data-act="phdl" hidden>⬇️ הורדת התמונה</button>
   <button class="btn gold adm" data-act="pdf">הורד PDF להדפסה</button>
       <button class="btn ghost adm" data-act="pdfa4" hidden>PDF דפי A4</button>
   <button class="btn navy adm" data-act="svg">הורד קובץ חיתוך</button>
@@ -248,7 +254,7 @@ body.admin .cust{display:none!important}
 <script>
 const NETS={"d4":{"faces":4,"sides":3,"pos":[[[1.2247,0.9659],[0.2588,1.2247],[0.5176,0.2588]],[[0,2.1907],[0.2588,1.2247],[0.9659,1.9319]],[[0.9659,1.9319],[0.2588,1.2247],[1.2247,0.9659]],[[1.2247,0.9659],[0.5176,0.2588],[1.4836,0]]],"tabs":[{"e":[[0.2588,1.2247],[0.5176,0.2588]],"f":0,"d":0.28,"t":0.25},{"e":[[0.9659,1.9319],[0,2.1907]],"f":1,"d":0.28,"t":0.25},{"e":[[1.2247,0.9659],[0.9659,1.9319]],"f":2,"d":0.28,"t":0.25}],"cuts":[[[0,2.1907],[0.2588,1.2247]],[[0.5176,0.2588],[1.4836,0]],[[1.4836,0],[1.2247,0.9659]]],"folds":[[[1.2247,0.9659],[0.2588,1.2247]],[[0.5176,0.2588],[1.2247,0.9659]],[[0.2588,1.2247],[0.9659,1.9319]]],"w":1.4836,"h":2.3964,"opp":[-1,-1,-1,-1],"maxEdge":104.3},"d6":{"faces":6,"sides":4,"pos":[[[1.1953,4.1008],[0.2557,3.7588],[0.5977,2.8191],[1.5374,3.1611]],[[0,1.5374],[0.342,0.5977],[1.2817,0.9397],[0.9397,1.8794]],[[1.2817,0.9397],[1.6237,0],[2.5634,0.342],[2.2214,1.2817]],[[1.5374,3.1611],[0.5977,2.8191],[0.9397,1.8794],[1.8794,2.2214]],[[2.8191,2.5634],[2.4771,3.5031],[1.5374,3.1611],[1.8794,2.2214]],[[0.9397,1.8794],[1.2817,0.9397],[2.2214,1.2817],[1.8794,2.2214]]],"tabs":[{"e":[[1.1953,4.1008],[0.2557,3.7588]],"f":0,"d":0.28,"t":0.25},{"e":[[0.2557,3.7588],[0.5977,2.8191]],"f":0,"d":0.28,"t":0.25},{"e":[[1.5374,3.1611],[1.1953,4.1008]],"f":0,"d":0.28,"t":0.25},{"e":[[0.342,0.5977],[1.2817,0.9397]],"f":1,"d":0.28,"t":0.25},{"e":[[0.9397,1.8794],[0,1.5374]],"f":1,"d":0.28,"t":0.25},{"e":[[2.5634,0.342],[2.2214,1.2817]],"f":2,"d":0.28,"t":0.25},{"e":[[1.8794,2.2214],[2.8191,2.5634]],"f":4,"d":0.28,"t":0.25}],"cuts":[[[1.6237,0],[2.5634,0.342]],[[0,1.5374],[0.342,0.5977]],[[2.4771,3.5031],[1.5374,3.1611]],[[1.2817,0.9397],[1.6237,0]],[[0.5977,2.8191],[0.9397,1.8794]],[[2.8191,2.5634],[2.4771,3.5031]],[[2.2214,1.2817],[1.8794,2.2214]]],"folds":[[[0.5977,2.8191],[1.5374,3.1611]],[[1.2817,0.9397],[0.9397,1.8794]],[[2.2214,1.2817],[1.2817,0.9397]],[[0.9397,1.8794],[1.8794,2.2214]],[[1.8794,2.2214],[1.5374,3.1611]]],"w":2.8191,"h":4.2784,"opp":[5,4,3,2,1,0],"maxEdge":58.4},"d8":{"faces":8,"sides":3,"pos":[[[0.684,1.172],[1.3268,1.9381],[0.342,2.1117]],[[0.342,2.1117],[1.3268,1.9381],[0.9848,2.8778]],[[1.6688,0.9984],[1.3268,1.9381],[0.684,1.172]],[[0.9848,2.8778],[1.3268,1.9381],[1.9696,2.7041]],[[0.0413,0.406],[1.0261,0.2323],[0.684,1.172]],[[0.9848,2.8778],[0,3.0514],[0.342,2.1117]],[[0.684,1.172],[1.0261,0.2323],[1.6688,0.9984]],[[1.6688,0.9984],[1.0261,0.2323],[2.0109,0.0587]]],"tabs":[{"e":[[0.342,2.1117],[0.684,1.172]],"f":0,"d":0.28,"t":0.25},{"e":[[1.6688,0.9984],[1.3268,1.9381]],"f":2,"d":0.28,"t":0.25},{"e":[[1.9696,2.7041],[0.9848,2.8778]],"f":3,"d":0.28,"t":0.25},{"e":[[0.0413,0.406],[1.0261,0.2323]],"f":4,"d":0.28,"t":0.25},{"e":[[0.9848,2.8778],[0,3.0514]],"f":5,"d":0.28,"t":0.25}],"cuts":[[[0.684,1.172],[0.0413,0.406]],[[1.3268,1.9381],[1.9696,2.7041]],[[2.0109,0.0587],[1.6688,0.9984]],[[0,3.0514],[0.342,2.1117]],[[1.0261,0.2323],[2.0109,0.0587]]],"folds":[[[0.684,1.172],[1.3268,1.9381]],[[1.3268,1.9381],[0.342,2.1117]],[[1.3268,1.9381],[0.9848,2.8778]],[[0.9848,2.8778],[0.342,2.1117]],[[0.684,1.172],[1.6688,0.9984]],[[1.0261,0.2323],[0.684,1.172]],[[1.0261,0.2323],[1.6688,0.9984]]],"w":2.0109,"h":3.2837,"opp":[7,6,5,4,3,2,1,0],"maxEdge":76.1},"d12":{"faces":12,"sides":5,"pos":[[[2.9967,3.8222],[3.0491,4.8209],[2.1155,5.1792],[1.4862,4.4021],[2.0308,3.5634]],[[3.1337,6.4367],[2.1678,6.1778],[2.1155,5.1792],[3.0491,4.8209],[3.6784,5.598]],[[0.5526,4.7604],[1.4862,4.4021],[2.1155,5.1792],[1.5708,6.0179],[0.6049,5.7591]],[[3.5414,2.9836],[2.9967,3.8222],[2.0308,3.5634],[1.9785,2.5648],[2.912,2.2064]],[[1.0125,2.306],[1.9785,2.5648],[2.0308,3.5634],[1.0972,3.9218],[0.4679,3.1446]],[[3.5414,2.9836],[4.5073,3.2424],[4.5596,4.241],[3.626,4.5994],[2.9967,3.8222]],[[3.7631,7.2138],[3.1337,6.4367],[3.6784,5.598],[4.6443,5.8568],[4.6966,6.8554]],[[4.4226,1.6266],[4.4749,2.6252],[3.5414,2.9836],[2.912,2.2064],[3.4567,1.3677]],[[1.3491,1.7876],[0.3832,1.5288],[0.3309,0.5302],[1.2645,0.1718],[1.8938,0.949]],[[0.6896,7.3749],[0.0603,6.5977],[0.6049,5.7591],[1.5708,6.0179],[1.6232,7.0165]],[[2.912,2.2064],[1.9785,2.5648],[1.3491,1.7876],[1.8938,0.949],[2.8597,1.2078]],[[3.4043,0.3691],[4.3379,0.0107],[4.9672,0.7879],[4.4226,1.6266],[3.4567,1.3677]]],"tabs":[{"e":[[2.9967,3.8222],[3.0491,4.8209]],"f":0,"d":0.22,"t":0.3},{"e":[[1.4862,4.4021],[2.0308,3.5634]],"f":0,"d":0.22,"t":0.3},{"e":[[3.1337,6.4367],[2.1678,6.1778]],"f":1,"d":0.28,"t":0.25},{"e":[[2.1678,6.1778],[2.1155,5.1792]],"f":1,"d":0.22,"t":0.3},{"e":[[3.0491,4.8209],[3.6784,5.598]],"f":1,"d":0.28,"t":0.25},{"e":[[0.5526,4.7604],[1.4862,4.4021]],"f":2,"d":0.28,"t":0.25},{"e":[[0.6049,5.7591],[0.5526,4.7604]],"f":2,"d":0.28,"t":0.25},{"e":[[1.0125,2.306],[1.9785,2.5648]],"f":4,"d":0.22,"t":0.3},{"e":[[0.4679,3.1446],[1.0125,2.306]],"f":4,"d":0.28,"t":0.25},{"e":[[3.5414,2.9836],[4.5073,3.2424]],"f":5,"d":0.22,"t":0.3},{"e":[[4.5073,3.2424],[4.5596,4.241]],"f":5,"d":0.28,"t":0.25},{"e":[[3.7631,7.2138],[3.1337,6.4367]],"f":6,"d":0.28,"t":0.25},{"e":[[4.6443,5.8568],[4.6966,6.8554]],"f":6,"d":0.28,"t":0.25},{"e":[[4.6966,6.8554],[3.7631,7.2138]],"f":6,"d":0.28,"t":0.25},{"e":[[2.912,2.2064],[3.4567,1.3677]],"f":7,"d":0.22,"t":0.3},{"e":[[0.3309,0.5302],[1.2645,0.1718]],"f":8,"d":0.28,"t":0.25},{"e":[[1.2645,0.1718],[1.8938,0.949]],"f":8,"d":0.28,"t":0.25},{"e":[[0.6896,7.3749],[0.0603,6.5977]],"f":9,"d":0.28,"t":0.25},{"e":[[1.8938,0.949],[2.8597,1.2078]],"f":10,"d":0.28,"t":0.25}],"cuts":[[[3.626,4.5994],[2.9967,3.8222]],[[2.0308,3.5634],[1.0972,3.9218]],[[1.5708,6.0179],[1.6232,7.0165]],[[2.1155,5.1792],[1.5708,6.0179]],[[4.5596,4.241],[3.626,4.5994]],[[1.0972,3.9218],[0.4679,3.1446]],[[0.3832,1.5288],[0.3309,0.5302]],[[1.9785,2.5648],[1.3491,1.7876]],[[1.3491,1.7876],[0.3832,1.5288]],[[4.4749,2.6252],[3.5414,2.9836]],[[3.6784,5.598],[4.6443,5.8568]],[[1.6232,7.0165],[0.6896,7.3749]],[[4.4226,1.6266],[4.4749,2.6252]],[[4.9672,0.7879],[4.4226,1.6266]],[[2.8597,1.2078],[2.912,2.2064]],[[0.0603,6.5977],[0.6049,5.7591]],[[3.4043,0.3691],[4.3379,0.0107]],[[4.3379,0.0107],[4.9672,0.7879]],[[3.4567,1.3677],[3.4043,0.3691]]],"folds":[[[3.0491,4.8209],[2.1155,5.1792]],[[2.1155,5.1792],[1.4862,4.4021]],[[2.0308,3.5634],[2.9967,3.8222]],[[3.6784,5.598],[3.1337,6.4367]],[[1.5708,6.0179],[0.6049,5.7591]],[[3.5414,2.9836],[2.9967,3.8222]],[[2.0308,3.5634],[1.9785,2.5648]],[[1.9785,2.5648],[2.912,2.2064]],[[2.912,2.2064],[3.5414,2.9836]],[[3.4567,1.3677],[4.4226,1.6266]],[[1.8938,0.949],[1.3491,1.7876]]],"w":4.9672,"h":7.3856,"opp":[11,10,7,9,6,8,4,2,5,3,1,0],"maxEdge":33.6},"d20":{"faces":20,"sides":3,"pos":[[[2.0234,2.2854],[1.0386,2.1117],[1.6814,1.3457]],[[1.6814,1.3457],[1.0386,2.1117],[0.6966,1.172]],[[1.3806,3.0514],[1.0386,2.1117],[2.0234,2.2854]],[[0.7378,3.8175],[0.3958,2.8778],[1.3806,3.0514]],[[0.6966,1.172],[1.0386,2.1117],[0.0538,1.9381]],[[2.0234,2.2854],[1.6814,1.3457],[2.6662,1.5193]],[[2.6662,1.5193],[1.6814,1.3457],[2.3242,0.5796]],[[1.3394,0.406],[1.6814,1.3457],[0.6966,1.172]],[[2.3654,3.2251],[2.0234,2.2854],[3.0082,2.459]],[[1.3806,3.0514],[2.0234,2.2854],[2.3654,3.2251]],[[2.6662,1.5193],[2.3242,0.5796],[3.309,0.7533]],[[0.3546,0.2323],[1.3394,0.406],[0.6966,1.172]],[[2.7075,4.1648],[3.0495,5.1044],[2.0647,4.9308]],[[2.7075,4.1648],[2.3654,3.2251],[3.3502,3.3987]],[[1.3806,3.0514],[2.3654,3.2251],[1.7226,3.9911]],[[1.7226,3.9911],[2.3654,3.2251],[2.7075,4.1648]],[[0.7378,3.8175],[1.3806,3.0514],[1.7226,3.9911]],[[1.0799,4.7571],[0.095,4.5835],[0.7378,3.8175]],[[1.0799,4.7571],[0.7378,3.8175],[1.7226,3.9911]],[[1.7226,3.9911],[2.7075,4.1648],[2.0647,4.9308]]],"tabs":[{"e":[[1.3806,3.0514],[1.0386,2.1117]],"f":2,"d":0.28,"t":0.25},{"e":[[0.7378,3.8175],[0.3958,2.8778]],"f":3,"d":0.28,"t":0.25},{"e":[[0.0538,1.9381],[0.6966,1.172]],"f":4,"d":0.28,"t":0.25},{"e":[[2.6662,1.5193],[2.0234,2.2854]],"f":5,"d":0.28,"t":0.25},{"e":[[1.6814,1.3457],[2.3242,0.5796]],"f":6,"d":0.28,"t":0.25},{"e":[[3.0082,2.459],[2.3654,3.2251]],"f":8,"d":0.28,"t":0.25},{"e":[[2.3242,0.5796],[3.309,0.7533]],"f":10,"d":0.28,"t":0.25},{"e":[[3.309,0.7533],[2.6662,1.5193]],"f":10,"d":0.28,"t":0.25},{"e":[[0.3546,0.2323],[1.3394,0.406]],"f":11,"d":0.28,"t":0.25},{"e":[[0.6966,1.172],[0.3546,0.2323]],"f":11,"d":0.28,"t":0.25},{"e":[[1.7226,3.9911],[1.0799,4.7571]],"f":18,"d":0.28,"t":0.25}],"cuts":[[[0.3958,2.8778],[1.3806,3.0514]],[[1.0386,2.1117],[0.0538,1.9381]],[[0.095,4.5835],[0.7378,3.8175]],[[2.0234,2.2854],[3.0082,2.459]],[[1.3394,0.406],[1.6814,1.3457]],[[2.3654,3.2251],[3.3502,3.3987]],[[2.7075,4.1648],[3.0495,5.1044]],[[3.3502,3.3987],[2.7075,4.1648]],[[3.0495,5.1044],[2.0647,4.9308]],[[1.0799,4.7571],[0.095,4.5835]],[[2.0647,4.9308],[1.7226,3.9911]]],"folds":[[[2.0234,2.2854],[1.0386,2.1117]],[[1.0386,2.1117],[1.6814,1.3457]],[[1.6814,1.3457],[2.0234,2.2854]],[[1.0386,2.1117],[0.6966,1.172]],[[0.6966,1.172],[1.6814,1.3457]],[[2.0234,2.2854],[1.3806,3.0514]],[[1.3806,3.0514],[0.7378,3.8175]],[[1.6814,1.3457],[2.6662,1.5193]],[[2.3242,0.5796],[2.6662,1.5193]],[[0.6966,1.172],[1.3394,0.406]],[[2.3654,3.2251],[2.0234,2.2854]],[[2.3654,3.2251],[1.3806,3.0514]],[[2.0647,4.9308],[2.7075,4.1648]],[[2.7075,4.1648],[2.3654,3.2251]],[[2.3654,3.2251],[1.7226,3.9911]],[[1.7226,3.9911],[1.3806,3.0514]],[[2.7075,4.1648],[1.7226,3.9911]],[[1.7226,3.9911],[0.7378,3.8175]],[[0.7378,3.8175],[1.0799,4.7571]]],"w":3.3628,"h":5.1044,"opp":[19,15,12,10,13,18,16,14,17,11,3,9,2,4,7,1,6,8,5,0],"maxEdge":49}};
 'use strict';
-const VERSION='studio-v0.26';
+const VERSION='studio-v0.27';
 // ═══════════ קבצים משותפים מהריפו (פונטים, עיצובי גב) ═══════════
 // נעוץ לקומיט ספציפי — שינוי בריפו לא ישבור את הקובץ הזה בלי שנעדכן כאן במכוון.
 const SHARED_COMMIT='f196a73a41a063231ba207a4296395f889aac265';
@@ -486,9 +492,9 @@ function drawTextBox(ctx,text,{family='Rubik',weight=800,color='#14294D',outline
 }
 function drawCover(ctx,img,x,y,w,h){const s=Math.max(w/img.width,h/img.height),sw=w/s,sh=h/s;ctx.drawImage(img,(img.width-sw)/2,(img.height-sh)/2,sw,sh,x,y,w,h);}
 function drawSymbolAt(ctx,id,cx,cy,size,color){const s=symById(id)||symbols()[0];if(!s)return;ctx.save();ctx.translate(cx,cy);ctx.scale(size,size);ctx.fillStyle=color;ctx.strokeStyle=color;ctx.lineWidth=.08;s.draw(ctx);ctx.restore();}
-function readImages(fileList,max=60){
+function readImages(fileList,max=60,maxSide=1600){ // עריכת תמונות קוראת עד 4000 — שם רוצים את הרזולוציה המלאה
   return Promise.all([...fileList].slice(0,max).map(f=>new Promise(ok=>{const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{
-    const m=1600,s=Math.min(1,m/Math.max(im.width,im.height));if(s>=1)return ok({img:im,name:f.name});
+    const m=maxSide,s=Math.min(1,m/Math.max(im.width,im.height));if(s>=1)return ok({img:im,name:f.name});
     const c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);ok({img:c,name:f.name});};
     im.onerror=()=>ok(null);im.src=fr.result;};fr.readAsDataURL(f);}))).then(a=>a.filter(Boolean));
 }
@@ -870,9 +876,10 @@ function printSection(){
 }
 // ═══════════ המוצרים ═══════════
 // כל מוצר = state + build() שמחזיר עמודים + panel() שבונה את הפקדים. המנוע משותף.
-let ST,CD,MM,DM,DC,PZ;
+let ST,CD,MM,DM,DC,PZ,PH;
 function makeStates(){
   ST={shape:'banner',w:42,h:15,r:3,text:'שם הילד',names:'',copies:6,font:'Secular One',color:'#14294D',outline:'#FFFFFF',outlineOn:true,side:'none',sideSym:'star',sideColor:'#C6A135',photo:[],deco:defDeco(),groups:[],useGroups:false,editing:null,layers:null,kid:{}};
+  PH={images:[],sel:0,edits:{},out:{fmt:'jpg',q:92,size:0,cm:10,kb:0},peek:false};
   PZ={img:[],style:'classic',pieces:24,split:false,text:'',font:'Secular One',textColor:'#FFFFFF',seed:7};
   CD={type:'war',war:{w:63,h:88,r:3,red:'#C62828',black:'#16202E',bg:'#FFFFFF',jokers:true,fronts:true,style:'classic',faces:defFaces(),faceFont:'Secular One',font:'',pip:1,artSet:'fr',artTone:'none',pics:'',cu:customFrom('classic')},round:{d:71},rect:{w:63,h:88,r:3},
       images:[],names:'',count:12,font:'Secular One',capColor:'#FFFFFF',capOutline:'#14294D',front:defDeco({frame:{id:'single',color:'#C6A135',w:1.2}}),back:Object.assign(presetDeco('classic'),{layers:[],photo:[]}),backs:true};
@@ -1638,6 +1645,160 @@ const Puzzle={id:'puzzle',label:'פאזל',
     printSection()];}
 };
 
+// ═══ עריכת תמונות (v0.27) — לשונית לעריכה והורדה בלבד, בלי הדפסה. כל העריכות לא הורסות: התמונה המקורית נשמרת,
+// וההגדרות (PH.edits לפי id התמונה) מצוירות מחדש בכל פעם. כל הכלים כאן = קוד שלנו או מודלים ברישיון מסחרי.
+// ⛔ כלי עם רישיון לא-מסחרי → רק בתוך adminOnlySec (מנהל בלבד, עם תווית "🔒"), ותוצר שלו לא יוצא ללקוח.
+const PHD={rot:0,ang:0,fh:false,fv:false,bri:0,con:0,sat:0,hue:0,warm:0,shad:0,high:0,filter:'none',fstr:100,sharp:0,blur:0,vig:0,grain:0,pix:0,
+  round:0,border:0,bcol:'#FFFFFF',bg:'',text:'',font:'Secular One',tcol:'#FFFFFF',tsize:12,ty:86,tout:true};
+const PH_FILTERS=[['none','מקורי'],['auto','✨ אוטומטי'],['vintage','וינטג\''],['sepia','ספיה'],['bw','שחור-לבן'],['noir','נואר'],['pop','פופ'],['warm','חם'],['cool','קר'],
+  ['fade','דהוי'],['drama','דרמטי'],['vivid','עז'],['duo','דו-גוני'],['poster','פוסטר'],['invert','נגטיב'],['pencil','עיפרון'],['comic','קומיקס']];
+const phId=f=>f.id||(f.id=newImgId());
+const phCur=()=>PH.images[Math.min(PH.sel,PH.images.length-1)]||null;
+function phEd(f){const id=phId(f);return PH.edits[id]||(PH.edits[id]={...PHD});}
+// טשטוש מהיר: box blur מופרד ×3 ≈ גאוסיאני. על ערוצי RGBA, בלי לגעת בגבולות התמונה.
+function phBoxBlur(src,W,H,r){const n=src.length,o=new Float32Array(n),t=new Float32Array(n);o.set(src);if(r<1)return o;const k=1/(2*r+1);
+  for(let it=0;it<3;it++){
+    for(let y=0;y<H;y++){const row=y*W;for(let ch=0;ch<3;ch++){let acc=0;for(let i=-r;i<=r;i++)acc+=o[(row+(i<0?0:i>=W?W-1:i))*4+ch];
+      for(let x=0;x<W;x++){t[(row+x)*4+ch]=acc*k;const a=x+r+1,b=x-r;acc+=o[(row+(a>=W?W-1:a))*4+ch]-o[(row+(b<0?0:b))*4+ch];}}}
+    for(let x=0;x<W;x++){for(let ch=0;ch<3;ch++){let acc=0;for(let i=-r;i<=r;i++)acc+=t[((i<0?0:i>=H?H-1:i)*W+x)*4+ch];
+      for(let y=0;y<H;y++){o[(y*W+x)*4+ch]=acc*k;const a=y+r+1,b=y-r;acc+=t[((a>=H?H-1:a)*W+x)*4+ch]-t[((b<0?0:b)*W+x)*4+ch];}}}}
+  return o;}
+function phHue(r,g,b,deg){const a=deg*Math.PI/180,c=Math.cos(a),s=Math.sin(a);
+  return[r*(.213+c*.787-s*.213)+g*(.715-c*.715-s*.715)+b*(.072-c*.072+s*.928),r*(.213-c*.213+s*.143)+g*(.715+c*.285+s*.140)+b*(.072-c*.072-s*.283),r*(.213-c*.213-s*.787)+g*(.715-c*.715+s*.715)+b*(.072+c*.928+s*.072)];}
+function phAutoLevels(d){const h=new Uint32Array(256);let n=0;for(let i=0;i<d.length;i+=16){if(d[i+3]<10)continue;h[(d[i]*77+d[i+1]*150+d[i+2]*29)>>8]++;n++;}
+  let lo=0,hi=255,a=0;for(let v=0;v<256;v++){a+=h[v];if(a>n*.01){lo=v;break;}}a=0;for(let v=255;v>=0;v--){a+=h[v];if(a>n*.01){hi=v;break;}}return{lo,hi:Math.max(hi,lo+40)};}
+// הצינור: גאומטריה → אור/צבע → פילטר → חדות/טשטוש → אפקטים → צורה/מסגרת/רקע → כיתוב. maxSide = הצלע הארוכה של הפלט.
+function phRender(f,e,maxSide){const src=f.img,sw=natW(src),sh=natH(src),q=e.rot&3,swap=q%2===1;
+  const k=Math.min(1,maxSide/Math.max(sw,sh)),w0=Math.max(1,Math.round(sw*k)),h0=Math.max(1,Math.round(sh*k)),W=swap?h0:w0,H=swap?w0:h0;
+  const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');x.imageSmoothingQuality='high';
+  const a=e.ang*Math.PI/180,cs=Math.abs(Math.cos(a)),sn=Math.abs(Math.sin(a)),cover=Math.max((W*cs+H*sn)/W,(W*sn+H*cs)/H); // יישור: מגדילים כדי שלא יהיו פינות ריקות
+  x.save();x.translate(W/2,H/2);x.rotate(q*Math.PI/2+a);x.scale((e.fh?-1:1)*cover,(e.fv?-1:1)*cover);x.drawImage(src,-w0/2,-h0/2,w0,h0);x.restore();
+  const id=x.getImageData(0,0,W,H),d=id.data,N=W*H,fl=e.filter,st=(e.fstr==null?100:e.fstr)/100;
+  const cf=(259*(e.con*2.55+255))/(255*(259-e.con*2.55)),sat=1+e.sat/100,auto=fl==='auto'?phAutoLevels(d):null,cx=W/2,cy=H/2,R=Math.hypot(cx,cy);
+  const pq=v=>Math.round(v/255*3)/3*255,pq5=v=>Math.round(v/255*4)/4*255,cl=v=>v<0?0:v>255?255:v;
+  for(let p=0,i=0;p<N;p++,i+=4){let r=d[i],g=d[i+1],b=d[i+2];
+    if(auto){const s=255/(auto.hi-auto.lo);r=(r-auto.lo)*s;g=(g-auto.lo)*s;b=(b-auto.lo)*s;const L0=.299*r+.587*g+.114*b;r=L0+(r-L0)*1.12;g=L0+(g-L0)*1.12;b=L0+(b-L0)*1.12;}
+    r+=e.bri*1.6;g+=e.bri*1.6;b+=e.bri*1.6;
+    let L=.299*r+.587*g+.114*b;
+    if(e.shad||e.high){const t=L/255,ws=(1-t)*(1-t),wh=t*t,dv=e.shad*ws*1.2+e.high*wh*1.2;r+=dv;g+=dv;b+=dv;L+=dv;}
+    r=(r-128)*cf+128;g=(g-128)*cf+128;b=(b-128)*cf+128;L=.299*r+.587*g+.114*b;
+    r=L+(r-L)*sat;g=L+(g-L)*sat;b=L+(b-L)*sat;
+    if(e.warm){r+=e.warm*.7;b-=e.warm*.7;}
+    if(e.hue){[r,g,b]=phHue(r,g,b,e.hue);}
+    if(fl!=='none'&&fl!=='auto'&&fl!=='pencil'&&fl!=='comic'){L=.299*r+.587*g+.114*b;let R2=r,G2=g,B2=b;
+      if(fl==='bw'){R2=G2=B2=L;}
+      else if(fl==='noir'){const v=cl((L-128)*1.6+128);R2=G2=B2=v;}
+      else if(fl==='sepia'){R2=.393*r+.769*g+.189*b;G2=.349*r+.686*g+.168*b;B2=.272*r+.534*g+.131*b;}
+      else if(fl==='vintage'){const sr=.393*r+.769*g+.189*b,sg=.349*r+.686*g+.168*b,sb=.272*r+.534*g+.131*b;R2=28+(.55*sr+.45*r)*.86;G2=22+(.55*sg+.45*g)*.84;B2=14+(.55*sb+.45*b)*.78;
+        const px=p%W,py=(p/W)|0,v=1-.45*Math.pow(Math.hypot(px-cx,py-cy)/R,2.2);R2*=v;G2*=v;B2*=v;}
+      else if(fl==='pop'){R2=pq(L+(r-L)*1.6);G2=pq(L+(g-L)*1.6);B2=pq(L+(b-L)*1.6);}
+      else if(fl==='warm'){R2=r*1.08+12;G2=g*1.02+4;B2=b*.88;}
+      else if(fl==='cool'){R2=r*.9;G2=g*1.0+4;B2=b*1.1+14;}
+      else if(fl==='fade'){R2=40+r*.78;G2=40+g*.78;B2=46+b*.76;const l2=.299*R2+.587*G2+.114*B2;R2=l2+(R2-l2)*.75;G2=l2+(G2-l2)*.75;B2=l2+(B2-l2)*.75;}
+      else if(fl==='drama'){const f2=v=>cl((v-128)*1.35+128);R2=f2(L+(r-L)*.6);G2=f2(L+(g-L)*.6);B2=f2(L+(b-L)*.6);}
+      else if(fl==='vivid'){R2=L+(r-L)*1.7;G2=L+(g-L)*1.7;B2=L+(b-L)*1.7;}
+      else if(fl==='duo'){const t=cl(L)/255;R2=20+t*(198-20);G2=41+t*(161-41);B2=77+t*(53-77);} // נייבי → זהב, צבעי המותג
+      else if(fl==='poster'){R2=pq5(r);G2=pq5(g);B2=pq5(b);}
+      else if(fl==='invert'){R2=255-r;G2=255-g;B2=255-b;}
+      r=r+(R2-r)*st;g=g+(G2-g)*st;b=b+(B2-b)*st;}
+    d[i]=cl(r);d[i+1]=cl(g);d[i+2]=cl(b);}
+  // פילטרים שצריכים שכנים: עיפרון (dodge של אפור על טשטוש הנגטיב) וקומיקס (פוסטר + קווי מתאר)
+  if(fl==='pencil'||fl==='comic'){const g=new Float32Array(N*4);for(let i=0;i<N*4;i+=4){const L=.299*d[i]+.587*d[i+1]+.114*d[i+2];g[i]=g[i+1]=g[i+2]=fl==='pencil'?255-L:L;g[i+3]=255;}
+    const bl=phBoxBlur(g,W,H,Math.max(1,Math.round(Math.max(W,H)/(fl==='pencil'?160:400))));
+    for(let i=0;i<N*4;i+=4){const L=.299*d[i]+.587*d[i+1]+.114*d[i+2];let R2,G2,B2;
+      if(fl==='pencil'){const v=Math.min(255,L*255/Math.max(1,255-bl[i]));R2=G2=B2=v;}
+      else{const edge=Math.abs(L-bl[i])>14?0:1;R2=pq5(d[i])*edge;G2=pq5(d[i+1])*edge;B2=pq5(d[i+2])*edge;}
+      d[i]=d[i]+(R2-d[i])*st;d[i+1]=d[i+1]+(G2-d[i+1])*st;d[i+2]=d[i+2]+(B2-d[i+2])*st;}}
+  if(e.blur>0||e.sharp>0){const sc=Math.max(W,H)/800,bl=phBoxBlur(d,W,H,Math.max(1,Math.round((e.blur>0?e.blur/8:1)*sc)));
+    for(let i=0;i<N*4;i+=4)for(let ch=0;ch<3;ch++){const v=d[i+ch];d[i+ch]=e.blur>0?bl[i+ch]:cl(v+(v-bl[i+ch])*e.sharp/40);}}
+  if(e.vig||e.grain){for(let p=0,i=0;p<N;p++,i+=4){let m=1;if(e.vig){const px=p%W,py=(p/W)|0;m=1-e.vig/100*.8*Math.pow(Math.hypot(px-cx,py-cy)/R,2);}
+    const n=e.grain?(Math.random()-.5)*e.grain*1.2:0;d[i]=cl(d[i]*m+n);d[i+1]=cl(d[i+1]*m+n);d[i+2]=cl(d[i+2]*m+n);}}
+  x.putImageData(id,0,0);
+  if(e.pix>0){const b2=Math.max(2,Math.round(Math.max(W,H)*e.pix/600)),t=document.createElement('canvas');t.width=Math.ceil(W/b2);t.height=Math.ceil(H/b2);t.getContext('2d').drawImage(c,0,0,t.width,t.height);
+    x.clearRect(0,0,W,H);x.imageSmoothingEnabled=false;x.drawImage(t,0,0,W,H);x.imageSmoothingEnabled=true;}
+  // צורה (סליידר ריבוע→עיגול, כמו בחיתוך), מסגרת, ורקע לשקיפות
+  const out=document.createElement('canvas');out.width=W;out.height=H;const o=out.getContext('2d');
+  if(e.bg){o.fillStyle=e.bg;o.fillRect(0,0,W,H);}
+  if(e.round>0){o.save();o.beginPath();drawCropShape(o,0,0,W,H,e.round/100);o.clip();if(e.bg){o.fillStyle=e.bg;o.fillRect(0,0,W,H);}}
+  o.drawImage(c,0,0);
+  if(e.border>0){const bw=Math.min(W,H)*e.border/200;o.save();o.beginPath();drawCropShape(o,bw/2,bw/2,W-bw,H-bw,e.round/100);o.lineWidth=bw;o.strokeStyle=e.bcol;o.stroke();o.restore();}
+  if(e.round>0)o.restore();
+  if(e.round>0&&!e.bg){o.globalCompositeOperation='destination-in';o.beginPath();drawCropShape(o,0,0,W,H,e.round/100);o.fill();o.globalCompositeOperation='source-over';}
+  if(String(e.text||'').trim()){const th=H*e.tsize/100*2.2;drawTextBox(o,e.text,{family:e.font,color:e.tcol,outline:e.tout?(e.tcol.toUpperCase()==='#FFFFFF'?'#14294D':'#FFFFFF'):null,x:W*.05,y:H*e.ty/100-th/2,w:W*.9,h:th,maxLines:3});}
+  return out;}
+const _phCache=new Map();
+function phRenderCached(f,maxSide){const e=phEd(f),key=phId(f)+'|'+maxSide+'|'+JSON.stringify(e);let hit=_phCache.get(key);
+  if(!hit){if(_phCache.size>12)_phCache.delete(_phCache.keys().next().value);hit=phRender(f,e,maxSide);_phCache.set(key,hit);}return hit;}
+// הורדה: פורמט, איכות, גודל (מקורי / פיקסלים / ס"מ ב-300DPI) ומשקל מקסימלי
+const PH_SIZES=[[0,'מקורי'],[2048,'2048'],[1200,'1200'],[800,'800'],['cm','ס"מ להדפסה']];
+async function phExportBlob(f){const O=PH.out,src=Math.max(natW(f.img),natH(f.img));let side=O.size==='cm'?Math.round((O.cm||10)/2.54*300):(O.size||src);
+  const cv=phRender(f,phEd(f),Math.min(4000,side));let c=cv;
+  if(Math.max(cv.width,cv.height)<side){c=document.createElement('canvas');const k=side/Math.max(cv.width,cv.height);c.width=Math.round(cv.width*k);c.height=Math.round(cv.height*k);const x=c.getContext('2d');x.imageSmoothingQuality='high';x.drawImage(cv,0,0,c.width,c.height);}
+  const alpha=canvasHasAlpha(c),fmt=O.fmt==='jpg'&&alpha?'png':O.fmt,mime={jpg:'image/jpeg',png:'image/png',webp:'image/webp'}[fmt]; // שקיפות ב-JPEG יוצאת שחורה → PNG
+  const enc=(cc,q)=>new Promise(ok=>cc.toBlob(b=>ok(b),mime,q));
+  let q=O.q/100,b=await enc(c,q);
+  if(O.kb>0&&fmt!=='png'){for(let n=0;n<8&&b.size>O.kb*1024&&q>.35;n++){q-=.08;b=await enc(c,q);}
+    for(let n=0;n<6&&b.size>O.kb*1024;n++){const s=document.createElement('canvas');s.width=Math.round(c.width*.85);s.height=Math.round(c.height*.85);s.getContext('2d').drawImage(c,0,0,s.width,s.height);c=s;b=await enc(c,q);}}
+  return{blob:b,ext:fmt,w:c.width,h:c.height,alphaPng:alpha&&O.fmt==='jpg'};}
+const phName=(f,i,ext)=>'photo-'+(i+1)+'-'+stamp()+'.'+ext; // שם באנגלית — שם בעברית נופל ל-"download" בכרום
+async function phDownload(){const f=phCur();if(!f){toast('קודם מעלים תמונה');return;}toast('מכין את התמונה…');
+  try{const r=await phExportBlob(f);download(r.blob,phName(f,PH.sel,r.ext));toast('נשמר בהורדות · '+r.w+'×'+r.h+' · '+Math.round(r.blob.size/1024)+'KB'+(r.alphaPng?' · PNG כי יש שקיפות':''));}
+  catch(e){console.error(e);toast('ההורדה נכשלה — נסו גודל קטן יותר');}}
+async function phDownloadAll(){if(!PH.images.length){toast('קודם מעלים תמונות');return;}if(!window.JSZip){toast('ספריית ה-ZIP לא נטענה — צריך חיבור לאינטרנט');return;}
+  const z=new JSZip();for(let i=0;i<PH.images.length;i++){toast('מכין '+(i+1)+'/'+PH.images.length+'…');const r=await phExportBlob(PH.images[i]);z.file(phName(PH.images[i],i,r.ext).replace(/-\d{8}-\d{4}/,''),r.blob);await new Promise(r=>setTimeout(r,0));}
+  download(await z.generateAsync({type:'blob'}),'photos-'+stamp()+'.zip');toast(PH.images.length+' תמונות בקובץ ZIP');}
+function phReplace(f,out){const i=PH.images.indexOf(f);if(i<0)return;const e=phEd(f);out.forEach(n=>{PH.edits[phId(n)]={...e,rot:0,ang:0,fh:false,fv:false};}); // החיתוך כבר "אפה" את הגאומטריה
+  PH.images.splice(i,1,...out);PH.sel=i;_phCache.clear();rebuild();}
+function phUpload(files){readImages(files,60,4000).then(add=>{if(!add.length)return;PH.images=PH.images.concat(add).slice(0,60);PH.sel=PH.images.length-add.length;rebuild();
+  if(PH.images.length>=60)toast('עד 60 תמונות בבת אחת');});}
+// סקציה למנהל בלבד — כלים עם רישיון לא-מסחרי. התווית גלויה כדי שהושעיה יידע מה הלקוחות לא רואים.
+function adminOnlySec(title,...kids){if(!isAdmin)return null;return sec('🔒 '+title+' — רק מנהל רואה',false,el('p',{class:'hint adminonly'},'רק אתה רואה את זה (מנהל). רישיון לא-מסחרי — לבדיקה בלבד, לא להדפסה ולא ללקוחות.'),...kids);}
+const Photo={id:'photo',label:'עריכת תמונות',
+  intro:'מעלים תמונות, עורכים ומורידים — בלי הדפסה. חיתוך, הסרת רקע, ציור קווים, אור וצבע, פילטרים, יישור, צורה ומסגרת, כיתוב, ושמירה בגודל ובפורמט שתבחרו. התמונה המקורית לא נהרסת — אפשר תמיד לאפס.',
+  fonts:()=>{const f=phCur();return f?[phEd(f).font]:[];},
+  build(){const f=phCur();if(!f)return{pages:[],summary:'העלו תמונה כדי להתחיל'};
+    const cv=PH.peek?f.img:phRenderCached(f,700),U={x:12,y:12,w:186,h:273},iw=natW(cv),ih=natH(cv),s=Math.min(U.w/iw,U.h/ih),w=iw*s,h=ih*s;
+    const item={w,h,draw(ctx){ctx.save();if(canvasHasAlpha(cv)){const t=4;for(let yy=0;yy<h;yy+=t)for(let xx=0;xx<w;xx+=t){ctx.fillStyle=((xx/t+yy/t)&1)?'#E5E7EB':'#F9FAFB';ctx.fillRect(xx,yy,Math.min(t,w-xx),Math.min(t,h-yy));}}ctx.drawImage(cv,0,0,w,h);ctx.restore();}};
+    return{pages:[{kind:'front',label:'תמונה '+(PH.sel+1),cut:false,placed:[{X:U.x+(U.w-w)/2,Y:U.y+(U.h-h)/2,rot:0,item}]}],summary:(PH.peek?'המקור · ':'')+natW(f.img)+'×'+natH(f.img)+' · תמונה '+(PH.sel+1)+' מתוך '+PH.images.length};},
+  panel(){const f=phCur(),e=f?phEd(f):null;
+    const inp=el('input',{type:'file',accept:'image/*',multiple:'',on:{change:ev=>{phUpload(ev.target.files);ev.target.value='';}}});
+    const gal=el('div',{class:'phgal'},PH.images.map((g,i)=>{const c=thumbCanvas(g.img,64);return el('div',{class:'phth'+(i===PH.sel?' sel':'')},
+      el('button',{type:'button','aria-label':'תמונה '+(i+1),on:{click:()=>{PH.sel=i;rebuild();}}},c),
+      el('button',{type:'button',class:'x','aria-label':'הסרת התמונה',on:{click:()=>{PH.images.splice(i,1);if(PH.sel>=PH.images.length)PH.sel=Math.max(0,PH.images.length-1);rebuild();}}},'×'));}));
+    const imgSec=sec('תמונות',true,el('div',{class:'inline'},inp),PH.images.length>1?el('p',{class:'hint'},'לוחצים על תמונה כדי לערוך אותה:'):null,gal);
+    if(!f)return[imgSec];
+    const r=(k,label,min,max,step=1)=>rng(e,k,label,min,max,step),c=(k,label)=>col(e,k,label),btn=(t,fn,cls='btn ghost')=>el('button',{type:'button',class:cls,on:{click:fn}},t);
+    const set=patch=>{Object.assign(e,patch);rebuild();};
+    const peek=btn('👁️ לחצו והחזיקו — המקור',()=>{});['pointerdown','pointerup','pointerleave','pointercancel'].forEach(ev=>peek.addEventListener(ev,()=>{PH.peek=ev==='pointerdown';rerender();}));
+    const fgrid=el('div',{class:'phfl'},PH_FILTERS.map(([v,t])=>{const tc=document.createElement('canvas');tc.width=tc.height=56;
+      requestAnimationFrame(()=>{const sm=phRender({img:thumbCanvas(f.img,96)},{...e,filter:v,fstr:100,text:''},56);tc.getContext('2d').drawImage(sm,(56-sm.width)/2,(56-sm.height)/2);});
+      return el('button',{type:'button','aria-pressed':String(e.filter===v),on:{click:()=>set({filter:v})}},tc,el('span',{},t));}));
+    return[imgSec,
+      sec('✂️ חיתוך, הסרת רקע וציור קווים',true,el('div',{class:'inline'},
+        btn('✂️ חיתוך והסרת רקע',()=>openImageEditor(f,out=>phReplace(f,out))),
+        btn('✏️ ציור קווים',()=>{openImageEditor(f,out=>phReplace(f,out));openLineArt(CM.item);})),
+        el('p',{class:'hint'},'החיתוך: ריבוע, מלבן, עיגול או אליפסה, גם כמה פרצופים מתמונה אחת. הסרת רקע מהירה או מדויקת.')),
+      sec('🔄 סיבוב, היפוך ויישור',false,el('div',{class:'inline'},btn('⟲ סיבוב',()=>set({rot:(e.rot+3)%4})),btn('⟳ סיבוב',()=>set({rot:(e.rot+1)%4})),btn('⇋ היפוך',()=>set({fh:!e.fh})),btn('⇵ היפוך',()=>set({fv:!e.fv}))),
+        r('ang','יישור (מעלות)',-45,45,.5)),
+      sec('☀️ אור וצבע',true,el('div',{class:'inline'},btn('✨ שיפור אוטומטי',()=>set({filter:'auto'})),peek),
+        r('bri','בהירות',-100,100),r('con','ניגודיות',-100,100),r('sat','רוויה',-100,100),r('high','אזורים בהירים',-60,60),r('shad','צללים',-60,60),r('warm','חום / קור',-50,50),r('hue','גוון',-180,180)),
+      sec('🎨 פילטרים',true,fgrid,e.filter!=='none'?r('fstr','עוצמת הפילטר',0,100):null),
+      sec('🔍 חדות, טשטוש ואפקטים',false,r('sharp','חדות',0,100),r('blur','טשטוש',0,100),r('vig','הכהיית שוליים (וינייט)',0,100),r('grain','גרעיניות (פילם)',0,100),r('pix','פיקסלים',0,30)),
+      sec('⬭ צורה, מסגרת ורקע',false,r('round','צורה: ריבוע ← → עיגול',0,100),r('border','מסגרת (עובי)',0,30),e.border?c('bcol','צבע המסגרת'):null,
+        el('label',{class:'inline'},(()=>{const i=el('input',{type:'checkbox',on:{change:ev=>set({bg:ev.target.checked?'#FFFFFF':''})}});i.checked=!!e.bg;return i;})(),'רקע בצבע (במקום שקוף)'),e.bg?c('bg','צבע הרקע'):null,
+        el('p',{class:'hint'},'שקוף נשמר רק ב-PNG/WebP. אחרי הסרת רקע — אפשר לשים כאן רקע בצבע.')),
+      sec('🔤 כיתוב על התמונה',false,txt(e,'text','כיתוב','מזל טוב!'),e.text?[fontSel(e,'font','פונט',()=>e.text),c('tcol','צבע'),r('tsize','גודל',4,30),r('ty','מיקום (למעלה ← → למטה)',8,92),tog(e,'tout','קו מתאר')]:null),
+      sec('⬇️ הורדה',true,row('פורמט',seg(PH.out,'fmt',[['jpg','JPEG'],['png','PNG'],['webp','WebP']])),PH.out.fmt!=='png'?rng(PH.out,'q','איכות',40,100):null,
+        row('גודל',seg(PH.out,'size',PH_SIZES)),PH.out.size==='cm'?num(PH.out,'cm','רוחב/גובה מקסימלי בס"מ (300 DPI)',{min:1,max:60,step:.5}):null,
+        PH.out.fmt!=='png'?num(PH.out,'kb','משקל מקסימלי ב-KB (0 = בלי הגבלה)',{min:0,max:20000,step:50}):null,
+        el('div',{class:'inline'},btn('⬇️ הורדת התמונה',phDownload,'btn gold'),PH.images.length>1?btn('⬇️ כל התמונות (ZIP)',phDownloadAll):null)),
+      sec('🧰 עוד',false,el('div',{class:'inline'},
+        PH.images.length>1?btn('📋 להחיל את העריכה על כל התמונות',()=>{const src={...e};PH.images.forEach(g=>{if(g!==f)PH.edits[phId(g)]={...src,rot:phEd(g).rot,ang:phEd(g).ang,fh:phEd(g).fh,fv:phEd(g).fv};});_phCache.clear();toast('העריכה הוחלה על '+(PH.images.length-1)+' תמונות נוספות');rerender();}):null,
+        btn('↺ איפוס העריכה',()=>{PH.edits[phId(f)]={...PHD};rebuild();}))),
+      adminOnlySec('כלים לא-מסחריים',el('p',{class:'hint'},'כרגע אין כאן כלים. כשיתווספו כלים ברישיון לא-מסחרי (למשל AnimeGAN) — הם יופיעו רק כאן.')),
+    ];}
+};
+
 // ── מנהל ──
 const Admin={id:'admin',label:'מנהל',
   intro:'קישורים לכל מה שכבר חי, הגדרות הדפסה משותפות לכל המוצרים, ודף כיול לבדיקת המדפסת והסילואט.',
@@ -1660,10 +1821,10 @@ const Admin={id:'admin',label:'מנהל',
       num(G.reg,'inset','מרחק מהקצה',{min:5,max:30,step:.1}),num(G.reg,'length','אורך זרוע',{min:5,max:40,step:.1}),num(G.reg,'thickness','עובי',{min:.3,max:3,step:.1}),num(G.reg,'square','ריבוע',{min:2,max:10,step:.1}),
       el('p',{class:'hint'},'ברירת מחדל זהה למחולל המדבקות (15.9 / 20 / 1.3 / 5). ב-Studio: סימני רישום → Restore Defaults.')),
     printSection(),
-    sec('גרסה וקבצים משותפים',false,el('p',{class:'hint'},'v0.26 — עריכה מתקדמת ← ציור קווים (js/lineart.js משותף, Informative Drawings MIT), נשמר כנגזרת עם חזרה למקור. v0.25 — 125 אייקונים חינמיים לקלף (Phosphor/Bootstrap, MIT) בקטגוריות + העלאת תמונה כאייקון עם חיתוך והסרת רקע. v0.24 — עריכה חופשית על קלף גדול בסגנון "✏️ שלי" (גרירה וידיות), בנוסף לסליידרים. v0.23 — אייקון חופשי לכל צורה (סמל/אימוג\'י), מסגרת מהספרייה בין השפה לאייקונים, חלונות שזוכרים מצב ונסגרים לבד אחרי בחירת אייקון/תמונה. v0.22 — סגנון חפיסה "✏️ שלי": מעצבים קלף אחד (צבעים, פינה, צורות, אס, דמויות, מסגרת) וכל החפיסה נבנית לפיו. v0.21 — חיתוך תמונה: סליידר מריבוע לעיגול במקום שני כפתורים, מלבן ואליפסה, מתיחה מכל צד ופינה. v0.20 — ההזמנה שולחת גם את העיצוב המלא (design.zip); במנהל "פתח בסטודיו" ואז בוחרים גיליון לבית דפוס או A4. v0.19 — גיליון לבית דפוס כמו בדאבל (33×48.8 ס"מ, שוליים 12, רווח 6, בליד 3, גב במקומות המראה להיפוך על הצלע הארוכה) במקום עמוד לכל קלף. v0.18 — הורדת קבצי הזמנות במנהל עובדת באפליקציה; PDF לבית דפוס כברירת מחדל בקלפים/זיכרון/דומינו (עמוד לכל קלף, בליד 4 מ"מ, 300 DPI, גב בסוף — כמו בדאבל); דפי A4 כאפשרות שנייה. v0.17 — כניסת מנהל כשהאפליקציה כבר פתוחה (הקישור מגיע כשינוי # בלי טעינה). v0.16 — ג\'וקר "ליצן רוקד" מ-Wikimedia (CC0) לסטים האנגליים, ג\'וקר צרפתי בלי כיתוב; בחירת ליצן לג\'וקר; תמונה על האס. v0.15 — קלפי מלחמה: מסגרת אחידה לכל החפיסה; דמויות = תמונה בתוך המסגרת, מתיקיית תמונות (3 סטים) או של הלקוח; סט אחד לכל החפיסה. v0.14 — קלפים חזרו לגרסה 0.12 (בקשת הושעיה); שמירה ופתיחה של עיצוב בקובץ ZIP נשארה. v0.12 — כניסת מנהל מזוהה גם כשהקישור נפתח בכרום (בדיקה חוזרת בכל חזרה לאפליקציה), הודעה על קישור שכבר שומש. v0.11 — קלפי מלחמה: סגנון וינטג\' עם ציורים קלאסיים, פונט וגודל צורות, פילטרים לתמונה, תמונה כפולה כמו קלף קלאסי. v0.10 — קלפי מלחמה: 4 סגנונות חפיסה, נסיך/מלכה/מלך/אס/ג\'וקר בתמונה או אימוג\'י, עורך שכבות לגב. v0.9 — הסטודיו עבר לתיקייה משלו (/studio/) — מבנה אפליקציה סטנדרטי; studio.html מפנה לשם. v0.8 — מדבקות: עורך שכבות (טקסט בכמה שורות, אימוג\'י, סמל, תמונה — גרירה, גודל, סיבוב), התאמה לכל ילד. v0.7 — אפשר להתקין כאפליקציה מכרום (אייקון, מסך מלא, נפתח גם בלי רשת). v0.6 — תמונות נשמרות במכשיר (IndexedDB) ושורדות רענון; חיתוך והסרת רקע בכל מקום שמעלים תמונה. v0.5 — עריכת תמונות מהדאבל: חיתוך פרצופים מתמונה קבוצתית, הסרת רקע מהירה ומדויקת; בדומינו — כמה תמונות להעלות. v0.4 — דומינו: ארבע גרסאות (קלאסי, חסום, רכבת מקסיקנית, משולשים) עם הסבר; ניסוח טקסטים ללקוח. v0.3 — הזמנות: לקוח שולח הזמנה ולא מוריד קבצים; מנהל נכנס עם קישור במייל ומוריד. v0.2 — גלריית פונטים עם הטקסט של הלקוח, קבוצות מדבקות על אותו דף, פאזל. v0.1 — בנייה ראשונית: מדבקות, קלפים, זיכרון, דומינו, קוביות.'),el('p',{class:'hint'},VERSION+' · פונטים ועיצובי גב נטענים מהריפו, נעוצים לקומיט '+SHARED_COMMIT.slice(0,7)+'.'),st,
+    sec('גרסה וקבצים משותפים',false,el('p',{class:'hint'},'v0.27 — לשונית "עריכת תמונות": העלאה, עריכה (חיתוך, רקע, קווים, אור/צבע, 17 פילטרים, יישור, צורה, מסגרת, כיתוב) והורדה בפורמט/גודל/משקל. 🔒 = מנהל בלבד. v0.26 — עריכה מתקדמת ← ציור קווים (js/lineart.js משותף, Informative Drawings MIT), נשמר כנגזרת עם חזרה למקור. v0.25 — 125 אייקונים חינמיים לקלף (Phosphor/Bootstrap, MIT) בקטגוריות + העלאת תמונה כאייקון עם חיתוך והסרת רקע. v0.24 — עריכה חופשית על קלף גדול בסגנון "✏️ שלי" (גרירה וידיות), בנוסף לסליידרים. v0.23 — אייקון חופשי לכל צורה (סמל/אימוג\'י), מסגרת מהספרייה בין השפה לאייקונים, חלונות שזוכרים מצב ונסגרים לבד אחרי בחירת אייקון/תמונה. v0.22 — סגנון חפיסה "✏️ שלי": מעצבים קלף אחד (צבעים, פינה, צורות, אס, דמויות, מסגרת) וכל החפיסה נבנית לפיו. v0.21 — חיתוך תמונה: סליידר מריבוע לעיגול במקום שני כפתורים, מלבן ואליפסה, מתיחה מכל צד ופינה. v0.20 — ההזמנה שולחת גם את העיצוב המלא (design.zip); במנהל "פתח בסטודיו" ואז בוחרים גיליון לבית דפוס או A4. v0.19 — גיליון לבית דפוס כמו בדאבל (33×48.8 ס"מ, שוליים 12, רווח 6, בליד 3, גב במקומות המראה להיפוך על הצלע הארוכה) במקום עמוד לכל קלף. v0.18 — הורדת קבצי הזמנות במנהל עובדת באפליקציה; PDF לבית דפוס כברירת מחדל בקלפים/זיכרון/דומינו (עמוד לכל קלף, בליד 4 מ"מ, 300 DPI, גב בסוף — כמו בדאבל); דפי A4 כאפשרות שנייה. v0.17 — כניסת מנהל כשהאפליקציה כבר פתוחה (הקישור מגיע כשינוי # בלי טעינה). v0.16 — ג\'וקר "ליצן רוקד" מ-Wikimedia (CC0) לסטים האנגליים, ג\'וקר צרפתי בלי כיתוב; בחירת ליצן לג\'וקר; תמונה על האס. v0.15 — קלפי מלחמה: מסגרת אחידה לכל החפיסה; דמויות = תמונה בתוך המסגרת, מתיקיית תמונות (3 סטים) או של הלקוח; סט אחד לכל החפיסה. v0.14 — קלפים חזרו לגרסה 0.12 (בקשת הושעיה); שמירה ופתיחה של עיצוב בקובץ ZIP נשארה. v0.12 — כניסת מנהל מזוהה גם כשהקישור נפתח בכרום (בדיקה חוזרת בכל חזרה לאפליקציה), הודעה על קישור שכבר שומש. v0.11 — קלפי מלחמה: סגנון וינטג\' עם ציורים קלאסיים, פונט וגודל צורות, פילטרים לתמונה, תמונה כפולה כמו קלף קלאסי. v0.10 — קלפי מלחמה: 4 סגנונות חפיסה, נסיך/מלכה/מלך/אס/ג\'וקר בתמונה או אימוג\'י, עורך שכבות לגב. v0.9 — הסטודיו עבר לתיקייה משלו (/studio/) — מבנה אפליקציה סטנדרטי; studio.html מפנה לשם. v0.8 — מדבקות: עורך שכבות (טקסט בכמה שורות, אימוג\'י, סמל, תמונה — גרירה, גודל, סיבוב), התאמה לכל ילד. v0.7 — אפשר להתקין כאפליקציה מכרום (אייקון, מסך מלא, נפתח גם בלי רשת). v0.6 — תמונות נשמרות במכשיר (IndexedDB) ושורדות רענון; חיתוך והסרת רקע בכל מקום שמעלים תמונה. v0.5 — עריכת תמונות מהדאבל: חיתוך פרצופים מתמונה קבוצתית, הסרת רקע מהירה ומדויקת; בדומינו — כמה תמונות להעלות. v0.4 — דומינו: ארבע גרסאות (קלאסי, חסום, רכבת מקסיקנית, משולשים) עם הסבר; ניסוח טקסטים ללקוח. v0.3 — הזמנות: לקוח שולח הזמנה ולא מוריד קבצים; מנהל נכנס עם קישור במייל ומוריד. v0.2 — גלריית פונטים עם הטקסט של הלקוח, קבוצות מדבקות על אותו דף, פאזל. v0.1 — בנייה ראשונית: מדבקות, קלפים, זיכרון, דומינו, קוביות.'),el('p',{class:'hint'},VERSION+' · פונטים ועיצובי גב נטענים מהריפו, נעוצים לקומיט '+SHARED_COMMIT.slice(0,7)+'.'),st,
       el('button',{type:'button',class:'btn ghost',on:{click:async()=>{try{localStorage.removeItem('studio.v1');}catch(e){}await clearSavedImages();location.reload();}}},'איפוס כל ההגדרות והתמונות'))];}
 };
-const PRODUCTS=[Stickers,Cards,Memory,Domino,Dice,Puzzle,Admin];
+const PRODUCTS=[Stickers,Cards,Memory,Domino,Dice,Puzzle,Photo,Admin];
 // ═══════════ האפליקציה ═══════════
 let cur=Stickers,curPage=0,built={pages:[]};
 // ── התקנה כאפליקציה (PWA) ── כרום שולח beforeinstallprompt כשהדף עומד בתנאים; שומרים אותו לכפתור.
@@ -1692,7 +1853,7 @@ function idb(){if(_db)return _db;
 function idbTx(store,mode,fn){return idb().then(d=>withTimeout(new Promise((ok,no)=>{const tx=d.transaction(store,mode),r=fn(tx.objectStore(store));
   tx.oncomplete=()=>ok(r&&r.result);tx.onerror=()=>no(tx.error);tx.onabort=()=>no(tx.error);}),15000,'idb tx'));}
 const newImgId=()=>'i'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);
-const stateRoots=()=>({ST,CD,MM,DM,DC,PZ});
+const stateRoots=()=>({ST,CD,MM,DM,DC,PZ,PH});
 function imageSlots(){const out=[];
   const walk=(o,path)=>{if(Array.isArray(o)){o.forEach((x,i)=>{if(x&&typeof x==='object')walk(x,path+'.'+i);});return;}
     for(const k in o){const v=o[k];if(IMG_KEYS.has(k)){if(Array.isArray(v)){out.push({path:path+'.'+k,o,k});v.forEach((f,i)=>{if(f&&Array.isArray(f.lineSrc))walk(f,path+'.'+k+'.'+i);});}}else if(v&&typeof v==='object'&&!(v instanceof Node))walk(v,path+'.'+k);}}; // נכנסים לתמונה רק כדי למצוא את המקור של ציור קווים
@@ -1740,11 +1901,11 @@ function clearSavedImages(){_imgReady=false;return withTimeout(new Promise(ok=>{
 // שמירה מקומית — הגדרות ב-localStorage; התמונות בנפרד ב-IndexedDB (למעלה)
 const SKIP=IMG_KEYS;
 function snapshot(){const strip=o=>{if(Array.isArray(o))return o.map(strip);if(o&&typeof o==='object'){const r={};for(const k in o)if(!SKIP.has(k))r[k]=strip(o[k]);return r;}return o;};
-  return strip({G,ST,CD,MM,DM,DC,PZ,tab:cur.id});}
+  return strip({G,ST,CD,MM,DM,DC,PZ,PH:{...PH,peek:false},tab:cur.id});}
 function restore(){try{restoreFrom(JSON.parse(localStorage.getItem('studio.v1')||'null'));}catch(e){}}
 function restoreFrom(s){try{if(!s)return;
   const merge=(t,src)=>{for(const k in src){if(src[k]&&typeof src[k]==='object'&&!Array.isArray(src[k])&&t[k]&&typeof t[k]==='object'&&Object.keys(t[k]).length)merge(t[k],src[k]);else if(k in t)t[k]=src[k];}};
-  merge(G,s.G||{});merge(ST,s.ST||{});merge(CD,s.CD||{});merge(MM,s.MM||{});merge(DM,s.DM||{});merge(DC,s.DC||{});merge(PZ,s.PZ||{});
+  merge(G,s.G||{});merge(ST,s.ST||{});merge(CD,s.CD||{});merge(MM,s.MM||{});merge(DM,s.DM||{});merge(DC,s.DC||{});merge(PZ,s.PZ||{});merge(PH,s.PH||{});
   const p=PRODUCTS.find(x=>x.id===s.tab);if(p)cur=p;}catch(e){}}
 // ── שמירה ופתיחה של עיצוב בקובץ ZIP (כמו בדאבל): design.json (כל ההגדרות) + images/ (כל התמונות, כולל חיתוכים).
 // כך הלקוח ממשיך באמצע העבודה במכשיר אחר, או שולח לנו את הקובץ. הפתיחה מחליפה את העיצוב הנוכחי (אחרי אישור).
@@ -1852,9 +2013,10 @@ async function exportPrintShopPDF(){
   if(!nFront)return;const it=fronts[0],f=n=>+n.toFixed(1);
   download(pdf.output('blob'),`${cur.id}-sheet-${fronts.length}cards-${f(it.w)}x${f(it.h)}mm-${nFront}${nBack?'+'+nBack:''}sheets.pdf`);
   toast('גיליון לבית דפוס מוכן: '+fronts.length+' קלפים · '+nFront+' גיליונות'+(nBack?' + '+nBack+' גב':'')+' · 33×48.8 ס"מ · בליד '+B+' מ"מ');}
-function updateExportBtns(){const ps=!!cur.printShop;
+function updateExportBtns(){const ps=!!cur.printShop,isPh=cur.id==='photo'; // בעריכת תמונות: רק הורדה, בלי הזמנה/הדפסה
+  document.querySelectorAll('[data-act="order"],[data-act="pdf"],[data-act="svg"]').forEach(x=>x.hidden=isPh);document.querySelectorAll('[data-act="phdl"]').forEach(x=>x.hidden=!isPh);
   document.querySelectorAll('[data-act="pdf"]').forEach(x=>x.textContent=ps?'הורד גיליון לבית דפוס':'הורד PDF להדפסה');
-  document.querySelectorAll('[data-act="pdfa4"]').forEach(x=>x.hidden=!ps);}
+  document.querySelectorAll('[data-act="pdfa4"]').forEach(x=>x.hidden=!ps||isPh);}
 async function exportPDF(){if(cur.printShop)return exportPrintShopPDF();return exportA4PDF();}
 async function exportA4PDF(){
   if(!window.jspdf){toast('ספריית ה-PDF לא נטענה — צריך חיבור לאינטרנט');return;}
@@ -1868,7 +2030,7 @@ async function exportSVG(){
   if(cutPages.length===1){download(new Blob([cutSvg(cutPages[0])],{type:'image/svg+xml'}),`${cur.id}-cut-${stamp()}.svg`);toast('קובץ חיתוך מוכן');return;}
   if(!window.JSZip){cutPages.forEach((p,i)=>download(new Blob([cutSvg(p)],{type:'image/svg+xml'}),`${cur.id}-cut-${i+1}.svg`));return;}
   const z=new JSZip();cutPages.forEach((p,i)=>z.file(`${cur.id}-cut-${i+1}.svg`,cutSvg(p)));download(await z.generateAsync({type:'blob'}),`${cur.id}-cut-${stamp()}.zip`);toast(cutPages.length+' קבצי חיתוך בקובץ ZIP');}
-document.querySelectorAll('[data-act]').forEach(b=>b.addEventListener('click',()=>({pdf:exportPDF,pdfa4:exportA4PDF,svg:exportSVG,order:openOrder})[b.dataset.act]()));
+document.querySelectorAll('[data-act]').forEach(b=>b.addEventListener('click',()=>({pdf:exportPDF,pdfa4:exportA4PDF,svg:exportSVG,order:openOrder,phdl:phDownload})[b.dataset.act]()));
 
 // ═══════════ הזמנות ומנהל ═══════════
 // הלקוח לא מוריד קבצים — הוא שולח הזמנה. המחיר האמיתי נקבע בשרת (studio_price); כאן רק תצוגה.
@@ -1880,7 +2042,7 @@ const sb=window.supabase?supabase.createClient(SB_URL,SB_KEY):null;
 let isAdmin=false;
 function physicalSheets(b){return b.pages.filter(p=>p.kind==='front').length;}
 function priceFor(id,b){return id==='puzzle'?PRICE.puzzle:PRICE[id]*physicalSheets(b);}
-function updateOrderBtn(){if(cur.id==='admin')return;const b=built;document.querySelectorAll('[data-act="order"]').forEach(x=>{x.textContent=b.pages.length?'שלח הזמנה · '+priceFor(cur.id,b)+' ₪':'שלח הזמנה';x.disabled=!b.pages.length;});}
+function updateOrderBtn(){if(cur.id==='admin'||cur.id==='photo')return;const b=built;document.querySelectorAll('[data-act="order"]').forEach(x=>{x.textContent=b.pages.length?'שלח הזמנה · '+priceFor(cur.id,b)+' ₪':'שלח הזמנה';x.disabled=!b.pages.length;});}
 const oModal=()=>document.getElementById('orderModal'),oBody=()=>document.getElementById('orderBody');
 function closeOrder(){oModal().hidden=true;document.body.style.overflow='';}
 function productDesign(){const snap=snapshot(),map={stickers:'ST',cards:'CD',memory:'MM',domino:'DM',dice:'DC',puzzle:'PZ'};return{product:cur.id,version:VERSION,settings:snap.G,state:snap[map[cur.id]]};}
