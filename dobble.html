@@ -1175,9 +1175,16 @@ const I18N={
     'edit.cropCircleBtn':'⭕ עיגול',
     'edit.cropRoundedSquareBtn':'⬜ מרובע מעוגל',
     'edit.removeBgLabel':'✨ הסר רקע',
-    'edit.advancedTitle':'🛠️ עריכה מתקדמת',
     'edit.lineArtBtn':'✏️ ציור קווים',
-    'edit.lineArtHint':'הופך את התמונה כולה לציור קווים שחור-לבן, ונשמר כסמל חדש לצד המקור.',
+    'edit.findFacesBtn':'🙂 מצא פנים',
+    'edit.findFacesBusy':'🙂 מחפש…',
+    'edit.facesFound':'נמצאו {n} פנים — אפשר להזיז, למתוח או למחוק סימון',
+    'edit.facesFoundSkipped':'נמצאו {n} פנים ({k} כבר היו מסומנות) — אפשר להזיז, למתוח או למחוק סימון',
+    'edit.noFacesFound':'לא נמצאו פנים בתמונה — אפשר לסמן ידנית',
+    'ai.downloading':'{base} מוריד {pct}%…',
+    'ai.processing':'{base} מעבד…',
+    'ai.lowMemory':'הכלי הזה דורש מכשיר חזק יותר — נסו במחשב.',
+    'ai.loadFailed':'לא הצלחנו לטעון את הכלי — בדקו את החיבור ונסו שוב. התמונה המקורית נשארה כמו שהיא.',
     'lineart.title':'✏️ ציור קווים',
     'lineart.preparing':'מכין…',
     'lineart.downloading':'מוריד את מנוע הציור — {pct}% ({mb} מתוך {total}MB, פעם אחת בלבד)',
@@ -1196,7 +1203,6 @@ const I18N={
     'lineart.saved':'ציור הקווים נשמר כסמל חדש — המקור נשאר במאגר',
     'lineart.nameSuffix':'קווים',
     'lineart.lowMemory':'ציור קווים דורש מכשיר חזק יותר — נסו במחשב.',
-    'edit.removeBgSensitivityLabel':'רגישות:',
     'edit.cropDragHint':'לחץ/י וגרור/י על התמונה לבחירת סמלים',
     'edit.cropCancelBtn':'ביטול',
     'edit.cropAddBtn':'✅ הוסף למאגר',
@@ -1739,9 +1745,16 @@ const I18N={
     'edit.cropCircleBtn':'⭕ Circle',
     'edit.cropRoundedSquareBtn':'⬜ Rounded square',
     'edit.removeBgLabel':'✨ Remove background',
-    'edit.advancedTitle':'🛠️ Advanced editing',
     'edit.lineArtBtn':'✏️ Line drawing',
-    'edit.lineArtHint':'Turns the whole image into a black-and-white line drawing, saved as a new symbol next to the original.',
+    'edit.findFacesBtn':'🙂 Find faces',
+    'edit.findFacesBusy':'🙂 Searching…',
+    'edit.facesFound':'{n} faces found — you can move, resize or delete a selection',
+    'edit.facesFoundSkipped':'{n} faces found ({k} were already selected) — you can move, resize or delete a selection',
+    'edit.noFacesFound':'No faces found in the image — you can select manually',
+    'ai.downloading':'{base} downloading {pct}%…',
+    'ai.processing':'{base} processing…',
+    'ai.lowMemory':'This tool needs a more powerful device — try on a computer.',
+    'ai.loadFailed':'Could not load the tool — check your connection and try again. The original image is untouched.',
     'lineart.title':'✏️ Line drawing',
     'lineart.preparing':'Preparing…',
     'lineart.downloading':'Downloading the drawing engine — {pct}% ({mb} of {total}MB, one time only)',
@@ -1760,7 +1773,6 @@ const I18N={
     'lineart.saved':'The line drawing was saved as a new symbol — the original stays in the library',
     'lineart.nameSuffix':'lines',
     'lineart.lowMemory':'Line drawing needs a more powerful device — try on a computer.',
-    'edit.removeBgSensitivityLabel':'Sensitivity:',
     'edit.cropDragHint':'Click and drag on the image to select symbols',
     'edit.cropCancelBtn':'Cancel',
     'edit.cropAddBtn':'✅ Add to library',
@@ -2990,22 +3002,18 @@ window.applyI18n=applyI18n;
       <div data-i18n="edit.cropTitle" class="modal-title">✂️ הפקת סמלים מתמונה</div>
       <button class="modal-x" id="crop-modal-x">✕</button>
     </div>
-    <div class="tool-row" style="margin-bottom:.65rem">
+    <!-- שורת כלים אחת, גלויה תמיד (החלטת הושעיה): שלושת כלי ה-AI באותו גודל. כל כפתור טוען רק את הקובץ
+         שהוא צריך, ורק בלחיצה (🙂/✨ → js/ai-image.js · ✏️ → js/lineart.js). ⛔ אין תפריט מקופל. -->
+    <div class="brow" id="crop-tools" style="justify-content:center;margin:0 0 .55rem">
+      <button data-i18n="edit.findFacesBtn" type="button" class="btn btn-sec" id="btn-faces">🙂 מצא פנים</button>
+      <button data-i18n="edit.removeBgLabel" type="button" class="btn btn-sec" id="btn-aibg" aria-pressed="false">✨ הסר רקע</button>
+      <button data-i18n="edit.lineArtBtn" type="button" class="btn btn-sec" id="btn-lineart" hidden>✏️ ציור קווים</button>
+    </div>
+    <div class="tool-row" style="margin-bottom:.65rem;justify-content:center">
       <span data-i18n="edit.cropToolLabel" class="shape-lbl">כלי חיתוך:</span>
       <div class="shape-grp" id="modal-tool-grp">
         <button data-i18n="edit.cropCircleBtn" class="sbt on" data-tool="circle">⭕ עיגול</button>
         <button data-i18n="edit.cropRoundedSquareBtn" class="sbt" data-tool="rounded_square">⬜ מרובע מעוגל</button>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:.3rem;flex-shrink:0">
-        <label class="tool-row" style="gap:.45rem;cursor:pointer">
-          <input type="checkbox" id="ck-rmbg" style="width:16px;height:16px;accent-color:var(--indigo)">
-          <span data-i18n="edit.removeBgLabel" style="font-size:.85rem;font-weight:700;color:var(--indigo)">✨ הסר רקע</span>
-        </label>
-        <div id="rmbg-tol-row" hidden style="display:flex;align-items:center;gap:.4rem;padding-right:.2rem">
-          <span data-i18n="edit.removeBgSensitivityLabel" style="font-size:.75rem;color:#6b7280;white-space:nowrap">רגישות:</span>
-          <input type="range" id="rng-rmbg-tol" min="2" max="140" value="35" style="flex:1;min-width:70px;accent-color:var(--indigo)">
-          <span id="rmbg-tol-val" style="font-size:.78rem;color:var(--indigo);font-weight:700;width:2em;text-align:left">35</span>
-        </div>
       </div>
     </div>
     <div class="canvas-wrap" id="modal-canvas-wrap">
@@ -3015,14 +3023,6 @@ window.applyI18n=applyI18n;
       <span data-i18n="edit.cropDragHint" class="ext-empty">לחץ/י וגרור/י על התמונה לבחירת סמלים</span>
     </div>
     <div class="ext-info" id="modal-crop-count">0 סמלים נבחרו</div>
-    <!-- עריכה מתקדמת — מוצג רק כש-laEnabled() (דגל ?lineart=1, החלטה 72) -->
-    <details id="crop-adv" hidden style="margin:.5rem 0 0">
-      <summary data-i18n="edit.advancedTitle" style="cursor:pointer;font-size:.85rem;color:var(--muted);padding:.2rem 0">🛠️ עריכה מתקדמת</summary>
-      <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-top:.45rem">
-        <button data-i18n="edit.lineArtBtn" type="button" class="btn btn-ghost" id="btn-lineart" style="font-size:.85rem">✏️ ציור קווים</button>
-        <span data-i18n="edit.lineArtHint" style="font-size:.74rem;color:var(--muted);line-height:1.5;flex:1;min-width:12em">הופך את התמונה כולה לציור קווים שחור-לבן, ונשמר כסמל חדש לצד המקור.</span>
-      </div>
-    </details>
     <div class="brow" style="justify-content:flex-end;margin-top:.65rem">
       <button data-i18n="edit.cropCancelBtn" class="btn btn-ghost" id="btn-crop-cancel">ביטול</button>
       <button data-i18n="edit.cropAddBtn" class="btn btn-ok" id="btn-crop-add" disabled>✅ הוסף למאגר</button>
@@ -4297,6 +4297,7 @@ const S={
 
 const CM={
   srcImg:null,assetId:null,crops:[],tool:'circle',
+  aiAc:null,aiBg:false,aiBgSrc:null,   // כלי AI בחלון (ראו aiReset)
   dragging:false,drag:{sx:0,sy:0,ex:0,ey:0},
   dispW:1,dispH:1,idSeq:0,
   selId:null,editMode:null,editHandle:null,editOrig:null,
@@ -7068,7 +7069,9 @@ function openCropModal(assetId){
   CM.srcImg=asset.imgEl;
   document.getElementById('crop-modal').hidden=false;
   document.querySelectorAll('#modal-tool-grp .sbt').forEach((b,i)=>{b.classList.toggle('on',i===0);});
-  const adv=document.getElementById('crop-adv');adv.hidden=!laEnabled();adv.open=false;
+  // ✏️ מוצג רק עם הדגל ?lineart=1 (החלטה 72) — לא מושבת, לא מוצג. .btn[hidden]{display:none} קיים.
+  document.getElementById('btn-lineart').hidden=!laEnabled();
+  aiReset();   // ✨ כבוי, אין תוצאה קודמת, הכפתורים במצב מנוחה
   setupCropCanvas();
   renderModalCrops();
   updateCropAddBtn();
@@ -7245,43 +7248,12 @@ function _clipShape(ctx,SZ,shape){
   ctx.clip();
 }
 
-function removeBackground(cv,tolerance){
-  tolerance=tolerance==null?35:tolerance;
-  const ctx=cv.getContext('2d');
-  const W=cv.width,H=cv.height;
-  const id=ctx.getImageData(0,0,W,H);
-  const d=id.data;
-  // Sample background color: average opaque corner pixels
-  const corners=[[0,0],[W-1,0],[0,H-1],[W-1,H-1]];
-  let br=0,bg=0,bb=0,cnt=0;
-  corners.forEach(([x,y])=>{const i=(y*W+x)*4;if(d[i+3]>128){br+=d[i];bg+=d[i+1];bb+=d[i+2];cnt++;}});
-  if(cnt){br=Math.round(br/cnt);bg=Math.round(bg/cnt);bb=Math.round(bb/cnt);}
-  else{br=255;bg=255;bb=255;}  // all corners transparent → assume white background
-  function dist(i){const dr=d[i]-br,dg=d[i+1]-bg,db=d[i+2]-bb;return Math.sqrt(dr*dr+dg*dg+db*db);}
-  const visited=new Uint8Array(W*H);
-  const queue=[];
-  function seed(idx){if(!visited[idx]&&d[idx*4+3]>0&&dist(idx*4)<=tolerance){visited[idx]=1;queue.push(idx);}}
-  // Seed from all 4 border edges
-  for(let x=0;x<W;x++){seed(x);seed((H-1)*W+x);}
-  for(let y=1;y<H-1;y++){seed(y*W);seed(y*W+W-1);}
-  let qi=0;
-  while(qi<queue.length){
-    const idx=queue[qi++];
-    d[idx*4+3]=0;
-    const x=idx%W,y=(idx/W)|0;
-    if(x>0   &&!visited[idx-1]&&d[(idx-1)*4+3]>0&&dist((idx-1)*4)<=tolerance){visited[idx-1]=1;queue.push(idx-1);}
-    if(x<W-1 &&!visited[idx+1]&&d[(idx+1)*4+3]>0&&dist((idx+1)*4)<=tolerance){visited[idx+1]=1;queue.push(idx+1);}
-    if(y>0   &&!visited[idx-W]&&d[(idx-W)*4+3]>0&&dist((idx-W)*4)<=tolerance){visited[idx-W]=1;queue.push(idx-W);}
-    if(y<H-1 &&!visited[idx+W]&&d[(idx+W)*4+3]>0&&dist((idx+W)*4)<=tolerance){visited[idx+W]=1;queue.push(idx+W);}
-  }
-  ctx.putImageData(id,0,0);
-}
-
-function getRmbgTol(){return parseInt(document.getElementById('rng-rmbg-tol')?.value||35);}
 
 // לוגיקה משותפת לחילוץ סמל מ-crop — cropExtractThumb (72px) ו-cropExtractFull (IMG_PX) קוראים לה,
-// כדי שהתמונה הממוזערת תהיה זהה לתוצאה הסופית. useMask (חיתוך חכם) גובר על "הסר רקע" המהיר.
+// כדי שהתמונה הממוזערת תהיה זהה לתוצאה הסופית. useMask (חיתוך חכם ידני) גובר על ✨ הסר רקע (AI).
+// ✨ דלוק = חותכים מ-CM.aiBgSrc (המקור אחרי MODNet, אותן מידות) במקום מהמקור — החיתוך עצמו זהה.
 function cropRender(srcImg,crop,SZ){
+  if(CM.aiBg&&CM.aiBgSrc&&srcImg===CM.srcImg)srcImg=CM.aiBgSrc;
   const scX=imgNatW(srcImg)/CM.dispW,scY=imgNatH(srcImg)/CM.dispH;
   if(crop.useMask&&crop.mask){
     const cv=document.createElement('canvas');cv.width=cv.height=SZ;
@@ -7289,16 +7261,6 @@ function cropRender(srcImg,crop,SZ){
     ctx.drawImage(srcImg,crop.x*scX,crop.y*scY,crop.w*scX,crop.h*scY,0,0,SZ,SZ);
     cutApplyMaskFull(cv,crop.mask,crop.mw,crop.mh);
     if(typeof trimAlphaSquare==='function')return trimAlphaSquare(cv,SZ,0.02);
-    return cv;
-  }
-  const rmBg=document.getElementById('ck-rmbg').checked;
-  if(rmBg){
-    const tmp=document.createElement('canvas');tmp.width=tmp.height=SZ;
-    tmp.getContext('2d').drawImage(srcImg,crop.x*scX,crop.y*scY,crop.w*scX,crop.h*scY,0,0,SZ,SZ);
-    removeBackground(tmp,getRmbgTol());
-    const cv=document.createElement('canvas');cv.width=cv.height=SZ;
-    const ctx=cv.getContext('2d');ctx.clearRect(0,0,SZ,SZ);
-    _clipShape(ctx,SZ,crop.shape);ctx.drawImage(tmp,0,0);
     return cv;
   }
   const cv=document.createElement('canvas');cv.width=cv.height=SZ;
@@ -7347,6 +7309,11 @@ function closeCropModal(){
   CM.srcImg=null;CM.crops=[];CM.dragging=false;CM.assetId=null;
   CM.selId=null;CM.editMode=null;CM.editHandle=null;CM.editOrig=null;
   cutReleaseMemory();
+  // ⛔ שום Worker לא ממשיך לרוץ אחרי שהלקוחה סגרה: ביטול הריצה הנוכחית, סיום ה-Workers של שני
+  // הקבצים המשותפים (אם נטענו), ושחרור קנבס הרקע-המוסר. המודלים נשארים ב-Cache API, לא יורדים שוב.
+  aiReset();
+  if(window.AIImage)AIImage.cancelAll();
+  if(window.LineArt)LineArt.cancelAll();
 }
 
 // ══ ציור קווים מתמונה — ממשק בלבד. כל הלוגיקה (הורדה+מטמון, Worker, מודל, סף) ב-js/lineart.js
@@ -7907,17 +7874,93 @@ function refreshCropThumbs(){
   CM.crops.forEach(c=>{c.thumb=cropExtractThumb(CM.srcImg,c);});
   renderModalCrops();
 }
-let _rmbgTimer=0;
-document.getElementById('ck-rmbg').addEventListener('change',function(){
-  const row=document.getElementById('rmbg-tol-row');
-  row.hidden=!this.checked;
-  if(!row.hidden)row.style.display='flex';
-  refreshCropThumbs();
+
+// ══ כלי AI בחלון החיתוך — ממשק בלבד. הלוגיקה ב-js/ai-image.js המשותף עם הסטודיו (⛔ לצרוך בלבד).
+// טעינה עצלה, רק בלחיצה על כלי; ✏️ ציור קווים טוען את js/lineart.js בנפרד — כל כפתור רק את מה שהוא צריך. ══
+const AI_V=3;   // ⛔ שינוי ב-js/ai-image.js = להעלות כאן וגם AI_V בסטודיו, באותו PR (כלל cache busting)
+let _aiLoad=null;
+function loadAI(){
+  if(window.AIImage)return Promise.resolve();
+  return _aiLoad||(_aiLoad=withTimeout(new Promise((res,rej)=>{
+    const sc=document.createElement('script');sc.src='js/ai-image.js?v='+AI_V;
+    sc.onload=res;sc.onerror=()=>rej(new Error('load error'));document.head.appendChild(sc);
+  }),15000,'טעינת כלי ה-AI נתקעה').catch(e=>{_aiLoad=null;throw e;}));
+}
+// אותו שער כמו בציור הקווים (#180): deviceMemory<4GB → לא מתחילים, לא מורידים, לא פותחים Worker.
+function aiGate(){
+  if(navigator.deviceMemory&&navigator.deviceMemory<4){
+    toast(t('ai.lowMemory'),'err');
+    window.track&&window.track('ai-tools',{detail:'blocked · lowmem '+navigator.deviceMemory+'GB'});
+    return false;
+  }
+  return true;
+}
+function aiHeMsg(e){return window.AIImage?AIImage.heMessage(e):t('ai.loadFailed');}
+function aiDevice(){return window.AIImage?AIImage.device():'';}
+// מצב ה-AI של החלון: aiAc = הריצה הנוכחית (AbortController), aiBg = ✨ דלוק, aiBgSrc = המקור אחרי הסרת רקע
+// (קנבס במידות המקור, שקוף). חי רק כל עוד החלון פתוח — aiReset משחרר הכול.
+function aiReset(){
+  if(CM.aiAc){CM.aiAc.abort();CM.aiAc=null;}
+  if(CM.aiBgSrc){CM.aiBgSrc.width=CM.aiBgSrc.height=0;CM.aiBgSrc=null;}
+  CM.aiBg=false;
+  const bg=document.getElementById('btn-aibg'),fc=document.getElementById('btn-faces');
+  if(bg){bg.disabled=false;bg.setAttribute('aria-pressed','false');bg.classList.remove('btn-ok');bg.classList.add('btn-sec');bg.textContent=t('edit.removeBgLabel');}
+  if(fc){fc.disabled=false;fc.textContent=t('edit.findFacesBtn');}
+}
+// טקסט התקדמות על הכפתור עצמו — אין חלון המתנה נפרד, הלקוחה רואה את התמונה כל הזמן
+function aiProgressText(base,p){
+  if(p.phase==='download'){const pct=p.total?Math.round(p.loaded/p.total*100):0;return t('ai.downloading',{base,pct});}
+  return t('ai.processing',{base});
+}
+
+// 🙂 מצא פנים — YuNet דרך AIImage.detectFaces. לכל פנים מסגרת ריבועית בצורה הנבחרת, 1.7× גודל הפנים,
+// המרכז מעט מעל מרכז הפנים (שיער + סנטר). פנים שכבר מסומנות לא מקבלות מסגרת כפולה. (הועתק מהסטודיו, cropFaces)
+document.getElementById('btn-faces').addEventListener('click',()=>{
+  if(!CM.srcImg||CM.aiAc)return;
+  if(!aiGate())return;
+  const b=document.getElementById('btn-faces'),src=CM.srcImg,t0=performance.now(),base='🙂';
+  const ac=new AbortController();CM.aiAc=ac;b.disabled=true;b.textContent=t('edit.findFacesBusy');
+  loadAI().then(()=>AIImage.detectFaces(src,{signal:ac.signal,onProgress:p=>{if(p.phase==='download')b.textContent=aiProgressText(base,p);}})).then(F=>{
+    if(ac.signal.aborted||CM.srcImg!==src)return;
+    const kx=CM.dispW/imgNatW(src),ky=CM.dispH/imgNatH(src);let n=0;
+    F.forEach(f=>{
+      const s=Math.max(f.w,f.h)*1.7,cx=f.x+f.w/2,cy=f.y+f.h*.42;
+      const sz=Math.min(s*kx,CM.dispW,CM.dispH);   // ריבוע — כמו כל מסגרת בדאבל
+      const x=Math.max(0,Math.min(CM.dispW-sz,cx*kx-sz/2)),y=Math.max(0,Math.min(CM.dispH-sz,cy*ky-sz/2));
+      if(CM.crops.some(c=>Math.abs(c.x+c.w/2-(x+sz/2))<sz/3&&Math.abs(c.y+c.h/2-(y+sz/2))<sz/3))return;   // כבר מסומן
+      const c={id:++CM.idSeq,shape:CM.tool,x,y,w:sz,h:sz};c.thumb=cropExtractThumb(src,c);CM.crops.push(c);CM.selId=c.id;n++;
+    });
+    renderModalCrops();redrawCropCanvas();updateCropAddBtn();
+    window.track&&window.track('ai-tools',{detail:'faces ok · '+F.length+' · '+imgNatW(src)+'x'+imgNatH(src)+' · '+Math.round(performance.now()-t0)+'ms · '+aiDevice()});
+    if(!F.length)toast(t('edit.noFacesFound'),'ok');
+    else toast(n<F.length?t('edit.facesFoundSkipped',{n:F.length,k:F.length-n}):t('edit.facesFound',{n:F.length}),'ok');
+  }).catch(e=>{
+    if(e&&e.name==='AbortError')return;
+    toast('⚠️ '+aiHeMsg(e),'err');
+    window.track&&window.track('ai-tools',{detail:'faces fail · '+String(e&&e.message||e).slice(0,80)+' · '+aiDevice()});
+  }).finally(()=>{if(CM.aiAc===ac)CM.aiAc=null;b.disabled=false;b.textContent=t('edit.findFacesBtn');});
 });
-document.getElementById('rng-rmbg-tol').addEventListener('input',function(){
-  document.getElementById('rmbg-tol-val').textContent=this.value;
-  clearTimeout(_rmbgTimer);
-  _rmbgTimer=setTimeout(refreshCropThumbs,120);
+
+// ✨ הסר רקע — MODNet (mode:'person') פעם אחת על כל תמונת המקור; כל המסגרות נחתכות מהתוצאה.
+// לחיצה שנייה מכבה (התוצאה נשמרת לחלון הזה, הפעלה מחדש מיידית). ⛔ ללא סרגל "רגישות" — זה AI.
+document.getElementById('btn-aibg').addEventListener('click',()=>{
+  if(!CM.srcImg||CM.aiAc)return;
+  const b=document.getElementById('btn-aibg');
+  const setOn=on=>{CM.aiBg=on;b.setAttribute('aria-pressed',String(on));b.classList.toggle('btn-ok',on);b.classList.toggle('btn-sec',!on);b.textContent=t('edit.removeBgLabel');};
+  if(CM.aiBg){setOn(false);refreshCropThumbs();return;}
+  if(CM.aiBgSrc){setOn(true);refreshCropThumbs();return;}
+  if(!aiGate())return;
+  const src=CM.srcImg,t0=performance.now(),base='✨';
+  const ac=new AbortController();CM.aiAc=ac;b.disabled=true;b.textContent=aiProgressText(base,{phase:'process'});
+  loadAI().then(()=>AIImage.removeBg(src,{mode:'person',signal:ac.signal,onProgress:p=>{b.textContent=aiProgressText(base,p);}})).then(r=>{
+    if(ac.signal.aborted||CM.srcImg!==src){r.canvas.width=r.canvas.height=0;return;}
+    CM.aiBgSrc=r.canvas;setOn(true);refreshCropThumbs();
+    window.track&&window.track('ai-tools',{detail:'bg ok · '+r.model+' · '+r.ms+'ms · '+imgNatW(src)+'x'+imgNatH(src)+' · '+Math.round(performance.now()-t0)+'ms total · '+aiDevice()});
+  }).catch(e=>{
+    if(e&&e.name==='AbortError')return;
+    toast('⚠️ '+aiHeMsg(e),'err');
+    window.track&&window.track('ai-tools',{detail:'bg fail · '+String(e&&e.message||e).slice(0,80)+' · '+aiDevice()});
+  }).finally(()=>{if(CM.aiAc===ac)CM.aiAc=null;b.disabled=false;if(!CM.aiBg)b.textContent=t('edit.removeBgLabel');});
 });
 
 document.getElementById('crop-modal-x').addEventListener('click',closeCropModal);
