@@ -176,7 +176,7 @@ details.face>.body{padding:0 12px 12px;display:grid;gap:8px}
 .gitem .gq input{width:64px;border:1px solid var(--line);border-radius:6px;padding:4px 6px}
 .gitem .gb{display:flex;gap:4px}
 .gitem .gb button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 8px;cursor:pointer;font-size:.8rem}
-.obody{padding:14px;display:grid;gap:10px;overflow-y:auto}
+.obody{padding:14px;display:grid;gap:10px;overflow-y:auto;grid-auto-rows:max-content} /* max-content: בלי זה שורה עם flex-wrap (רצועת החיתוכים) נמעכת ל-min-height והתוכן עולה על מה שמתחתיה */
 .obody input,.obody textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;min-height:44px}
 .obody input[type=checkbox]{width:20px;height:20px;min-height:0;padding:0;accent-color:var(--navy)}
 .obody input[type=range]{min-height:0;padding:0;border:0;accent-color:var(--navy)}
@@ -700,7 +700,7 @@ function openAI(item,kind){const K=AI_KINDS[kind],src=item;let m=document.getEle
     :kind==='style'?row('עוצמת הסגנון',el('input',{type:'range',min:10,max:100,value:100,on:{input:e=>{strength=+e.target.value;cancelAnimationFrame(rt);rt=requestAnimationFrame(()=>{out=styled();before=false;draw();});}}})):null;
   // הסרת רקע: מה יהיה מאחור — שקוף / לבן / צבע / המקור מטושטש (v0.30)
   const composeBg=cut=>{if(bgFill==='none')return cut;const c=document.createElement('canvas');c.width=cut.width;c.height=cut.height;const x=c.getContext('2d');
-    if(bgFill==='blur'){const b=Math.max(4,Math.round(Math.max(c.width,c.height)/60));x.filter='blur('+b+'px)';x.drawImage(src.img,-b*2,-b*2,c.width+b*4,c.height+b*4);x.filter='none';}
+    if(bgFill==='blur'){const b=Math.max(4,Math.round(Math.max(c.width,c.height)/60));x.drawImage(src.img,0,0,c.width,c.height);x.filter='blur('+b+'px)';x.drawImage(src.img,-b*4,-b*4,c.width+b*8,c.height+b*8);x.filter='none';} // שכבה חדה מתחת: הטשטוש דוהה בקצוות — בלי זה הפינות יוצאות שקופות
     else{x.fillStyle=bgFill==='white'?'#fff':bgColor;x.fillRect(0,0,c.width,c.height);}x.drawImage(cut,0,0);return c;};
   const styled=()=>strength>=100?res.canvas:AIImage.blend(src.img,res.canvas,strength);
   const bgRow=kind==='bg'?el('div',{},el('div',{class:'seg',id:'aiBgFill'},[['none','שקוף'],['white','לבן'],['color','צבע'],['blur','🌫️ רקע מטושטש']].map(([v,t])=>el('button',{type:'button','aria-pressed':String(v===bgFill),on:{click:()=>{bgFill=v;document.querySelectorAll('#aiBgFill button').forEach((b,i)=>b.setAttribute('aria-pressed',String(['none','white','color','blur'][i]===v)));col.hidden=v!=='color';out=composeBg(res.canvas);before=false;draw();}}},t))),
