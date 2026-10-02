@@ -712,7 +712,7 @@ function openAI(item,kind){const K=AI_KINDS[kind],src=item;let m=document.getEle
     el('div',{class:'inline',style:'justify-content:space-between'},
       el('button',{type:'button',class:'btn ghost',on:{click:async()=>{const {b,ext}=await blobOf(finalOut());download(b,K.dl+stamp()+'.'+ext);toast('התמונה נשמרה בהורדות');}}},'⬇️ הורדת התמונה'),
       el('span',{style:'flex:1'}),el('button',{type:'button',class:'btn ghost',on:{click:close}},'ביטול'),
-      el('button',{type:'button',class:'btn gold',on:{click:()=>{const o=finalOut(),alpha=canvasHasAlpha(o),f={img:o,name:(src.name||'תמונה').replace(/\.[^.]+$/,'')+K.suffix,aiSrc:[src],edited:alpha};
+      el('button',{type:'button',class:'btn gold',on:{click:()=>{const o=finalOut(),alpha=canvasHasAlpha(o),f={img:o,name:(src.name||'תמונה').replace(/\.[^.]+$/,'')+(kind==='bg'&&bgFill!=='none'?(bgFill==='blur'?' — רקע מטושטש':' — רקע חדש'):K.suffix),aiSrc:[src],edited:alpha};
         const cb=CM.onDone;m.remove();closeImageEditor();cb&&cb([f]);toast(K.done+' — אפשר לבטל מעריכת התמונה');}}},'אישור')),
     el('p',{class:'hint',style:'font-size:.7rem'},K.credit+' · onnxruntime-web (MIT). הכול רץ במכשיר — התמונה לא נשלחת לשום מקום.'));
   m=el('div',{class:'fmodal',id:'aiModal',style:'z-index:70',role:'dialog','aria-modal':'true','aria-label':K.title},el('div',{class:'fsheet'},
