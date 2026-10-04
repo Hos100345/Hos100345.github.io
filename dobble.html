@@ -4668,7 +4668,7 @@ async function afRun(){
           it.cv=await afCutout(a.imgEl,it.af,ac.signal,p=>{
             arm();
             if(p.phase!=='download'||!p.total)return;
-            const pct=Math.round(p.loaded/p.total*100);
+            const pct=Math.min(99,Math.round(p.loaded/p.total*100));   // שרת שמדווח גודל דחוס (gzip) — האחוז יכול לעבור את 100
             if(pct!==lastPct&&pct%5===0){lastPct=pct;toast(t('faces.preparingBg',{pct}),'ok');}
           });
           if(it.cv){it.af.bg=1;nBg++;}else nKept++;
@@ -4710,7 +4710,7 @@ async function afToggleBg(a){
       arm();await loadAI();
       cv=await afCutout(src.imgEl,a.af,ac.signal,p=>{
         arm();
-        if(p.phase==='download'&&p.total)toast(t('faces.preparingBg',{pct:Math.round(p.loaded/p.total*100)}),'ok');
+        if(p.phase==='download'&&p.total)toast(t('faces.preparingBg',{pct:Math.min(99,Math.round(p.loaded/p.total*100))}),'ok');
       });
     }catch(e){
       afTrack('toggle fail · '+String(e&&e.message||e).slice(0,80));
