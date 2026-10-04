@@ -1175,27 +1175,6 @@ const I18N={
     'edit.cropCircleBtn':'⭕ עיגול',
     'edit.cropRoundedSquareBtn':'⬜ מרובע מעוגל',
     'edit.removeBgLabel':'✨ הסר רקע',
-    'edit.advancedTitle':'🛠️ עריכה מתקדמת',
-    'edit.lineArtBtn':'✏️ ציור קווים',
-    'edit.lineArtHint':'הופך את התמונה כולה לציור קווים שחור-לבן, ונשמר כסמל חדש לצד המקור.',
-    'lineart.title':'✏️ ציור קווים',
-    'lineart.preparing':'מכין…',
-    'lineart.downloading':'מוריד את מנוע הציור — {pct}% ({mb} מתוך {total}MB, פעם אחת בלבד)',
-    'lineart.init':'מכין את המנוע…',
-    'lineart.processing':'מעבד… (בטלפון זה יכול לקחת חצי דקה)',
-    'lineart.cancelBtn':'ביטול',
-    'lineart.beforeBtn':'לפני',
-    'lineart.afterBtn':'אחרי',
-    'lineart.darknessLabel':'כהות קו',
-    'lineart.downloadBtn':'⬇️ הורדת התמונה',
-    'lineart.okBtn':'✅ אישור',
-    'lineart.credits':'ציור קווים: Informative Drawings (Chan, Durand, Isola 2022, MIT) · onnxruntime-web (MIT)',
-    'lineart.loadFailed':'לא הצלחנו לטעון את ציור הקווים — בדקו את החיבור ונסו שוב. התמונה המקורית נשארה כמו שהיא.',
-    'lineart.cancelled':'בוטל — התמונה לא השתנתה',
-    'lineart.downloaded':'התמונה נשמרה בהורדות',
-    'lineart.saved':'ציור הקווים נשמר כסמל חדש — המקור נשאר במאגר',
-    'lineart.nameSuffix':'קווים',
-    'lineart.lowMemory':'ציור קווים דורש מכשיר חזק יותר — נסו במחשב.',
     'edit.removeBgSensitivityLabel':'רגישות:',
     'edit.cropDragHint':'לחץ/י וגרור/י על התמונה לבחירת סמלים',
     'edit.cropCancelBtn':'ביטול',
@@ -1739,27 +1718,6 @@ const I18N={
     'edit.cropCircleBtn':'⭕ Circle',
     'edit.cropRoundedSquareBtn':'⬜ Rounded square',
     'edit.removeBgLabel':'✨ Remove background',
-    'edit.advancedTitle':'🛠️ Advanced editing',
-    'edit.lineArtBtn':'✏️ Line drawing',
-    'edit.lineArtHint':'Turns the whole image into a black-and-white line drawing, saved as a new symbol next to the original.',
-    'lineart.title':'✏️ Line drawing',
-    'lineart.preparing':'Preparing…',
-    'lineart.downloading':'Downloading the drawing engine — {pct}% ({mb} of {total}MB, one time only)',
-    'lineart.init':'Starting the engine…',
-    'lineart.processing':'Processing… (on a phone this can take half a minute)',
-    'lineart.cancelBtn':'Cancel',
-    'lineart.beforeBtn':'Before',
-    'lineart.afterBtn':'After',
-    'lineart.darknessLabel':'Line darkness',
-    'lineart.downloadBtn':'⬇️ Download image',
-    'lineart.okBtn':'✅ Apply',
-    'lineart.credits':'Line drawing: Informative Drawings (Chan, Durand, Isola 2022, MIT) · onnxruntime-web (MIT)',
-    'lineart.loadFailed':'Could not load the line-drawing engine — check your connection and try again. The original image is untouched.',
-    'lineart.cancelled':'Cancelled — the image was not changed',
-    'lineart.downloaded':'The image was saved to your downloads',
-    'lineart.saved':'The line drawing was saved as a new symbol — the original stays in the library',
-    'lineart.nameSuffix':'lines',
-    'lineart.lowMemory':'Line drawing needs a more powerful device — try on a computer.',
     'edit.removeBgSensitivityLabel':'Sensitivity:',
     'edit.cropDragHint':'Click and drag on the image to select symbols',
     'edit.cropCancelBtn':'Cancel',
@@ -3015,54 +2973,9 @@ window.applyI18n=applyI18n;
       <span data-i18n="edit.cropDragHint" class="ext-empty">לחץ/י וגרור/י על התמונה לבחירת סמלים</span>
     </div>
     <div class="ext-info" id="modal-crop-count">0 סמלים נבחרו</div>
-    <!-- עריכה מתקדמת — מוצג רק כש-laEnabled() (דגל ?lineart=1, החלטה 72) -->
-    <details id="crop-adv" hidden style="margin:.5rem 0 0">
-      <summary data-i18n="edit.advancedTitle" style="cursor:pointer;font-size:.85rem;color:var(--muted);padding:.2rem 0">🛠️ עריכה מתקדמת</summary>
-      <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-top:.45rem">
-        <button data-i18n="edit.lineArtBtn" type="button" class="btn btn-ghost" id="btn-lineart" style="font-size:.85rem">✏️ ציור קווים</button>
-        <span data-i18n="edit.lineArtHint" style="font-size:.74rem;color:var(--muted);line-height:1.5;flex:1;min-width:12em">הופך את התמונה כולה לציור קווים שחור-לבן, ונשמר כסמל חדש לצד המקור.</span>
-      </div>
-    </details>
     <div class="brow" style="justify-content:flex-end;margin-top:.65rem">
       <button data-i18n="edit.cropCancelBtn" class="btn btn-ghost" id="btn-crop-cancel">ביטול</button>
       <button data-i18n="edit.cropAddBtn" class="btn btn-ok" id="btn-crop-add" disabled>✅ הוסף למאגר</button>
-    </div>
-  </div>
-</div>
-
-<!-- LINE ART MODAL — ציור קווים מתמונה. הלוגיקה ב-js/lineart.js המשותף; כאן ממשק בלבד -->
-<div class="modal-bg" id="lineart-modal" hidden style="z-index:10004">
-  <div class="modal-card" style="max-width:520px;width:95%">
-    <div class="modal-hdr">
-      <div data-i18n="lineart.title" class="modal-title">✏️ ציור קווים</div>
-      <button class="modal-x" id="la-x" type="button">✕</button>
-    </div>
-    <div id="la-wait">
-      <div id="la-msg" style="font-size:.88rem;color:var(--muted);line-height:1.6;min-height:2.6em"></div>
-      <div id="la-bar" style="height:8px;border-radius:4px;background:var(--border);overflow:hidden;margin:.5rem 0 .8rem"><div id="la-fill" style="height:100%;width:0;background:var(--indigo);transition:width .2s"></div></div>
-      <div class="brow" style="justify-content:flex-end">
-        <button data-i18n="lineart.cancelBtn" class="btn btn-ghost" id="la-cancel" type="button">ביטול</button>
-      </div>
-    </div>
-    <div id="la-result" hidden>
-      <div style="display:flex;justify-content:center;background:#fff;border:1px solid var(--border);border-radius:var(--rs);overflow:hidden">
-        <canvas id="la-cv" style="max-width:100%;height:auto;display:block"></canvas>
-      </div>
-      <div class="shape-grp" id="la-ba" style="margin:.55rem auto 0;width:max-content">
-        <button data-i18n="lineart.beforeBtn" class="sbt" data-v="before" type="button">לפני</button>
-        <button data-i18n="lineart.afterBtn" class="sbt on" data-v="after" type="button">אחרי</button>
-      </div>
-      <div class="sl-row" style="margin-top:.6rem">
-        <div class="sl-lbl"><span data-i18n="lineart.darknessLabel">כהות קו</span><strong id="la-dark-lbl">60</strong></div>
-        <input type="range" id="la-dark" min="0" max="100" value="60">
-      </div>
-      <div class="brow" style="justify-content:space-between;flex-wrap:wrap;margin-top:.3rem">
-        <button data-i18n="lineart.downloadBtn" class="btn btn-ghost" id="la-dl" type="button">⬇️ הורדת התמונה</button>
-        <span style="flex:1"></span>
-        <button data-i18n="lineart.cancelBtn" class="btn btn-ghost" id="la-cancel2" type="button">ביטול</button>
-        <button data-i18n="lineart.okBtn" class="btn btn-ok" id="la-ok" type="button">✅ אישור</button>
-      </div>
-      <div data-i18n="lineart.credits" style="font-size:.68rem;color:var(--muted);margin-top:.5rem;line-height:1.5">ציור קווים: Informative Drawings (Chan, Durand, Isola 2022, MIT) · onnxruntime-web (MIT)</div>
     </div>
   </div>
 </div>
@@ -4908,7 +4821,7 @@ function stashDeleted(assets){
   assets.forEach(a=>{a.url='';});
   _undoBuf=assets.slice();
 }
-// "חזרה למקור": מקור מסומן isCropSource רק כל עוד יש לו נגזרת (חיתוך / ציור קווים) במאגר.
+// "חזרה למקור": מקור מסומן isCropSource רק כל עוד יש לו נגזרת (חיתוך) במאגר.
 // נמחקה הנגזרת האחרונה — המקור חוזר להיות סמל רגיל במשחק; ביטול המחיקה מסמן אותו שוב.
 function syncCropSources(assets){
   const ids=new Set(assets.filter(a=>a.type==='crop'&&a.srcAssetId!=null).map(a=>a.srcAssetId));
@@ -7068,7 +6981,6 @@ function openCropModal(assetId){
   CM.srcImg=asset.imgEl;
   document.getElementById('crop-modal').hidden=false;
   document.querySelectorAll('#modal-tool-grp .sbt').forEach((b,i)=>{b.classList.toggle('on',i===0);});
-  const adv=document.getElementById('crop-adv');adv.hidden=!laEnabled();adv.open=false;
   setupCropCanvas();
   renderModalCrops();
   updateCropAddBtn();
@@ -7348,156 +7260,6 @@ function closeCropModal(){
   CM.selId=null;CM.editMode=null;CM.editHandle=null;CM.editOrig=null;
   cutReleaseMemory();
 }
-
-// ══ ציור קווים מתמונה — ממשק בלבד. כל הלוגיקה (הורדה+מטמון, Worker, מודל, סף) ב-js/lineart.js
-// המשותף עם הסטודיו (ראו CLAUDE.md "קבצי js/ משותפים"). ⛔ לא להעתיק לוגיקה לכאן. ══
-const LINEART_V=1;   // ⛔ שינוי ב-js/lineart.js = להעלות כאן וגם LINEART_V בסטודיו, באותו PR (כלל cache busting)
-let _laLoad=null;
-// טעינה עצלה — רק בלחיצה, לא בראש הדף (28MB של מודל ומנוע נטענים רק למי שבאמת לוחץ). כלל timeout: 15s.
-function loadLineArt(){
-  if(window.LineArt)return Promise.resolve();
-  return _laLoad||(_laLoad=withTimeout(new Promise((res,rej)=>{
-    const s=document.createElement('script');s.src='js/lineart.js?v='+LINEART_V;
-    s.onload=res;s.onerror=()=>rej(new Error('load error'));document.head.appendChild(s);
-  }),15000,'טעינת ציור הקווים נתקעה').catch(e=>{_laLoad=null;throw e;}));
-}
-// דגל (החלטה 72 ב-brain.notes): מתחילים אצל לקוחה אחת. ?lineart=1 בקישור נשמר במכשיר, ?lineart=0 מבטל.
-// לפתוח לכולם = להחזיר true כאן ולהסיר את הדגל.
-function laEnabled(){
-  try{
-    const q=new URLSearchParams(location.search).get('lineart');
-    if(q==='1')localStorage.setItem('dobble_lineart','1');
-    if(q==='0')localStorage.removeItem('dobble_lineart');
-    return localStorage.getItem('dobble_lineart')==='1';
-  }catch(e){return false;}
-}
-const LA={ac:null,res:null,out:null,dark:60,before:false,t0:0,done:false,srcId:null,failed:false};
-function laTrack(detail){try{window.track&&window.track('lineart',{detail:String(detail).slice(0,300)});}catch(e){}}
-function laDevice(){return window.LineArt?LineArt.device():'';}
-// ⛔ שחרור זיכרון — בנייד זה מה שמפריד בין "עובד" ל"הדף נטען מחדש". נקרא אחרי אישור וביטול כאחד:
-//  · LA.res — התוצאה של המודל: Float32Array (w·h) + מסכת alpha (aw·ah) → null
-//  · LA.out — קנבס ה-"אחרי" (עד 1200px) → width=height=0 ונ-null. keepOut=true אחרי אישור, כי אז
-//    הקנבס הזה הוא ה-imgEl של הנכס החדש ואסור לאפס אותו (רק ההפניה כאן מתנתקת).
-//  · #la-cv — קנבס התצוגה (לפני/אחרי מצוירים עליו לסירוגין) → width=height=0.
-//  · קנבס ה-"לפני" הוא imgEl של המקור — לא נוגעים בו.
-function laRelease(keepOut){
-  LA.res=null;
-  if(LA.out&&!keepOut){LA.out.width=LA.out.height=0;}
-  LA.out=null;
-  const cv=document.getElementById('la-cv');if(cv)cv.width=cv.height=0;
-}
-// סגירה: אם העיבוד עוד רץ — AbortSignal עוצר הורדה / מסיים את ה-Worker. התמונה המקורית לא נגעה בשום מסלול.
-function laClose(keepOut){
-  if(!LA.done&&LA.ac)LA.ac.abort();
-  LA.ac=null;
-  laRelease(keepOut);
-  document.getElementById('lineart-modal').hidden=true;
-}
-function laCancel(){
-  const running=!LA.done;
-  laTrack('cancel · '+Math.round(performance.now()-LA.t0)+'ms · '+laDevice());
-  laClose();
-  if(running)toast(t('lineart.cancelled'),'ok');
-}
-// הקנבס חייב להיכנס במסך הטלפון — רוחב עד 360 או רוחב החלון פחות השוליים, גובה עד 45% מהמסך
-function laDraw(){
-  const src=S.assets.find(a=>a.id===LA.srcId);
-  const img=LA.before?(src&&src.imgEl):LA.out;
-  if(!img)return;
-  const cv=document.getElementById('la-cv');
-  const W=Math.min(360,innerWidth-64),H=Math.min(innerHeight*.45,400),k=Math.min(W/imgNatW(img),H/imgNatH(img));
-  cv.width=Math.max(1,Math.round(imgNatW(img)*k));cv.height=Math.max(1,Math.round(imgNatH(img)*k));
-  const x=cv.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,cv.width,cv.height);x.drawImage(img,0,0,cv.width,cv.height);
-  document.querySelectorAll('#la-ba .sbt').forEach(b=>b.classList.toggle('on',(b.dataset.v==='before')===LA.before));
-}
-function laProgress(p){
-  if(LA.failed)return;
-  const fill=document.getElementById('la-fill'),msg=document.getElementById('la-msg');
-  if(p.phase==='download'){
-    const pct=p.total?Math.round(p.loaded/p.total*100):0;
-    fill.style.width=pct+'%';
-    msg.textContent=t('lineart.downloading',{pct,mb:Math.round(p.loaded/1048576),total:Math.round(p.total/1048576)});
-  }else if(p.phase==='init'){fill.style.width='100%';msg.textContent=t('lineart.init');}
-  else if(p.phase==='process'){fill.style.width='100%';msg.textContent=t('lineart.processing');}
-}
-function openLineArt(assetId){
-  const asset=S.assets.find(a=>a.id===assetId);
-  if(!asset||!asset.imgEl)return;
-  // ⛔ מכשיר חלש (deviceMemory<4GB, רק כרום/אנדרואיד מדווחים): לא מתחילים בכלל — לא מורידים ולא פותחים Worker.
-  // המודל + המנוע + הקנבסים דורשים כמה מאות MB, ובטלפון של 2–3GB הדף נטען מחדש באמצע.
-  if(navigator.deviceMemory&&navigator.deviceMemory<4){
-    Object.assign(LA,{ac:null,res:null,out:null,done:true,failed:true,srcId:assetId,t0:performance.now()});
-    document.getElementById('la-wait').hidden=false;document.getElementById('la-result').hidden=true;
-    document.getElementById('la-bar').hidden=true;
-    document.getElementById('la-msg').textContent='⚠️ '+t('lineart.lowMemory');
-    document.getElementById('lineart-modal').hidden=false;
-    laTrack('blocked · lowmem '+navigator.deviceMemory+'GB · '+(window.LineArt?LineArt.device():'mobile'));
-    return;
-  }
-  // עריכה חוזרת מתחילה מהכהות של הנגזרת האחרונה של אותו מקור
-  const prev=[...S.assets].reverse().find(a=>a.type==='crop'&&a.srcAssetId===assetId&&a.la&&a.la.d!=null);
-  Object.assign(LA,{ac:new AbortController(),res:null,out:null,dark:prev?prev.la.d:60,before:false,t0:performance.now(),done:false,srcId:assetId,failed:false});
-  const m=document.getElementById('lineart-modal');
-  document.getElementById('la-wait').hidden=false;document.getElementById('la-result').hidden=true;
-  document.getElementById('la-bar').hidden=false;document.getElementById('la-fill').style.width='0';
-  document.getElementById('la-msg').textContent=t('lineart.preparing');
-  document.getElementById('la-dark').value=LA.dark;document.getElementById('la-dark-lbl').textContent=LA.dark;
-  m.hidden=false;
-  const signal=LA.ac.signal;
-  loadLineArt().then(()=>LineArt.run(asset.imgEl,{onProgress:laProgress,signal})).then(r=>{
-    if(signal.aborted)return;
-    LA.res=r;LA.out=LineArt.render(r,LA.dark);LA.done=true;
-    laTrack('ok · '+r.ms+'ms · '+r.w+'x'+r.h+' · '+Math.round(performance.now()-LA.t0)+'ms total · '+laDevice());
-    document.getElementById('la-wait').hidden=true;document.getElementById('la-result').hidden=false;
-    laDraw();
-  }).catch(e=>{
-    if(e&&e.name==='AbortError')return;
-    const msg=window.LineArt?LineArt.heMessage(e):t('lineart.loadFailed');
-    laTrack('fail · '+String(e&&e.message||e).slice(0,80)+' · '+Math.round(performance.now()-LA.t0)+'ms · '+laDevice());
-    LA.failed=true;LA.done=true;   // אין מה לבטל יותר; המקור לא נגע
-    document.getElementById('la-msg').textContent='⚠️ '+msg;
-    document.getElementById('la-bar').hidden=true;
-  });
-}
-document.getElementById('btn-lineart').addEventListener('click',()=>{if(CM.assetId!=null)openLineArt(CM.assetId);});
-document.getElementById('la-x').addEventListener('click',laCancel);
-document.getElementById('la-cancel').addEventListener('click',laCancel);
-document.getElementById('la-cancel2').addEventListener('click',laCancel);
-document.getElementById('lineart-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)laCancel();});
-document.querySelectorAll('#la-ba .sbt').forEach(b=>b.addEventListener('click',()=>{LA.before=b.dataset.v==='before';laDraw();}));
-let _laRaf=0;
-document.getElementById('la-dark').addEventListener('input',function(){
-  LA.dark=+this.value;document.getElementById('la-dark-lbl').textContent=this.value;
-  if(!LA.res)return;
-  cancelAnimationFrame(_laRaf);
-  _laRaf=requestAnimationFrame(()=>{if(!LA.res)return;const prev=LA.out;LA.out=LineArt.render(LA.res,LA.dark);if(prev){prev.width=prev.height=0;}LA.before=false;laDraw();});
-});
-// הורדה דרך blob + <a download> — לא location.href, שבאנדרואיד בתוך אפליקציה לא עושה כלום. שקיפות = PNG, אחרת JPEG.
-document.getElementById('la-dl').addEventListener('click',()=>{
-  const out=LA.out;if(!out)return;
-  const png=canvasHasAlpha(out);
-  out.toBlob(b=>{
-    if(!b)return;
-    const url=URL.createObjectURL(b),a=document.createElement('a');
-    a.href=url;a.download='lineart-'+Date.now()+(png?'.png':'.jpg');
-    document.body.appendChild(a);a.click();a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),4000);
-    toast(t('lineart.downloaded'),'ok');
-  },png?'image/png':'image/jpeg',.92);
-});
-// אישור = נכס חדש מסוג crop עם srcAssetId, בדיוק כמו חיתוך: נכנס אוטומטית ל-IndexedDB, לענן ולעיצוב השמור,
-// המקור מסומן isCropSource ונשאר (חזרה למקור = מחיקת הנגזרת). type:'crop' ⇒ PNG (כלל "שקיפות = PNG").
-document.getElementById('la-ok').addEventListener('click',()=>{
-  const out=LA.out,asset=S.assets.find(a=>a.id===LA.srcId);
-  if(!out||!asset)return;
-  const srcName=asset.name.replace(/\.[^.]+$/,'');
-  S.assets.push({id:++S.idSeq,type:'crop',name:srcName+' — '+t('lineart.nameSuffix'),url:'',thumb:makeThumb(out),imgEl:out,
-                 srcAssetId:asset.id,selected:true,folder:asset.folder,la:{d:LA.dark}});
-  asset.isCropSource=true;
-  LA.done=true;laClose(true);closeCropModal();   // keepOut — out הוא עכשיו imgEl של הנכס; res וקנבס התצוגה משתחררים
-  renderGallery();updateCounter();schedIdbSave();
-  toast(t('lineart.saved'),'ok');
-});
 
 // ══════════════════════════════════════════════════════════════════
 // ══ SMART CUTOUT — FG/BG brushes → geodesic distance + color model ══
@@ -8058,8 +7820,7 @@ async function idbOpen(){
 function assetsToRows(){
   return S.assets.map(a=>({
     id:a.id,type:a.type,name:a.name,
-    srcAssetId:a.srcAssetId||null,isCropSource:a.isCropSource||false,selected:a.selected!==false,
-    la:a.la||null                            // ציור קווים: {d:כהות} — עריכה חוזרת מתחילה ממנו
+    srcAssetId:a.srcAssetId||null,isCropSource:a.isCropSource||false,selected:a.selected!==false
   }));
 }
 
@@ -8091,8 +7852,7 @@ function assetsToRowsWithImages(){
     fsize:a.fsize==null?null:a.fsize,        // נשמר כדי שזיהוי הכפילויות ישרוד רענון דף
     folder:a.folder||null,                   // בלי זה כל המאגר קורס ל"מאגר כללי" אחרי רענון,
                                              // והתמונה שהמשתמש חיפש בתיקייה שלה פשוט נעלמת משם
-    srcAssetId:a.srcAssetId||null,isCropSource:a.isCropSource||false,selected:a.selected!==false,
-    la:a.la||null                            // ציור קווים: {d:כהות}
+    srcAssetId:a.srcAssetId||null,isCropSource:a.isCropSource||false,selected:a.selected!==false
   }));
 }
 
@@ -8165,7 +7925,7 @@ async function _idbLoadInner(){
         const thumb=makeThumb(imgEl);
         S.assets.push({id:d.id,type:d.type,name:d.name,fsize:d.fsize==null?undefined:d.fsize,url:'',thumb,imgEl,
                         folder:d.folder||undefined,
-                        srcAssetId:d.srcAssetId||undefined,isCropSource:d.isCropSource||false,selected:d.selected!==false,la:d.la||undefined});
+                        srcAssetId:d.srcAssetId||undefined,isCropSource:d.isCropSource||false,selected:d.selected!==false});
         if(d.id>=S.idSeq)S.idSeq=d.id;
       }catch(e){console.warn('idbLoad item:',e);}
     }
@@ -8454,7 +8214,7 @@ async function applyDesignToState(d){
       const imgEl=await loadImg(row.dataURL);
       S.assets.push({id:row.id,type:row.type,name:row.name,url:'',thumb:makeThumb(imgEl),imgEl,
                       fsize:row.fsize==null?undefined:row.fsize,folder:row.folder||undefined,
-                      srcAssetId:row.srcAssetId||undefined,isCropSource:row.isCropSource||false,selected:row.selected!==false,la:row.la||undefined});
+                      srcAssetId:row.srcAssetId||undefined,isCropSource:row.isCropSource||false,selected:row.selected!==false});
       if(row.id>=S.idSeq)S.idSeq=row.id;
     }catch(e){console.warn('applyDesign item:',e);}
   }
@@ -9198,7 +8958,7 @@ async function loadSubscriberDesign(idx){
       try{
         const resp=await fetchWithTimeout(im.url,20000);const blob=await resp.blob();
         const dataURL=await blobToDataURL(blob);
-        rows.push({id:im.id,name:im.name,type:im.type,dataURL,srcAssetId:im.srcAssetId||undefined,isCropSource:im.isCropSource||false,selected:im.selected!==false,la:im.la||undefined});
+        rows.push({id:im.id,name:im.name,type:im.type,dataURL,srcAssetId:im.srcAssetId||undefined,isCropSource:im.isCropSource||false,selected:im.selected!==false});
       }catch(e){console.warn('sub img download',im.path,e);}
       done++;uploadProgressStep(done,imgs.length,im.name);
     }
@@ -9979,7 +9739,7 @@ async function cloudSaveDesign(design,onProgress){
     done++;
     if(onProgress){try{onProgress(done,total,row.name||'');}catch(e){}}
     if(!ok){failed++;continue;}
-    images.push({id:row.id,name:row.name,type:row.type,srcAssetId:row.srcAssetId||null,isCropSource:row.isCropSource||false,selected:row.selected!==false,la:row.la||null,path});
+    images.push({id:row.id,name:row.name,type:row.type,srcAssetId:row.srcAssetId||null,isCropSource:row.isCropSource||false,selected:row.selected!==false,path});
   }
   // 3) עדכון השורה עם נתיבי התמונות (רץ תמיד — גם אם חלק נכשלו)
   await SB.from('designs').update({game_data:{settings:design.settings||{},symbolCount:images.length,images}}).eq('id',rowId);
@@ -10028,7 +9788,7 @@ async function cloudAutosave(){
         const ok=await sbUploadRetry(path,row.dataURL,mime);
         if(!ok){failed++;continue;}
       }
-      images.push({id:row.id,name:row.name,type:row.type,srcAssetId:row.srcAssetId||null,isCropSource:row.isCropSource||false,selected:row.selected!==false,la:row.la||null,path});
+      images.push({id:row.id,name:row.name,type:row.type,srcAssetId:row.srcAssetId||null,isCropSource:row.isCropSource||false,selected:row.selected!==false,path});
     }
     // נקה תמונות של assetים שנמחקו
     const keep=new Set(images.map(im=>im.path));
@@ -10064,7 +9824,7 @@ async function cloudFetchDesign(row,onProgress){
       if(onProgress){try{onProgress(done,total,im.name||'');}catch(e){}}
       if(error||!data)continue;
       const dataURL=await blobToDataURL(data);
-      rows.push({id:im.id,name:im.name,type:im.type,dataURL,srcAssetId:im.srcAssetId||undefined,isCropSource:im.isCropSource||false,selected:im.selected!==false,la:im.la||undefined});
+      rows.push({id:im.id,name:im.name,type:im.type,dataURL,srcAssetId:im.srcAssetId||undefined,isCropSource:im.isCropSource||false,selected:im.selected!==false});
     }catch(e){
       console.warn('download',im.path,e);
       done++;
