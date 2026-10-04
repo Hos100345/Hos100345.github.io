@@ -4609,8 +4609,16 @@ async function afCutout(src,af,signal,onProgress){
   const grow=keep.slice();
   for(let k=0;k<G*G;k++)if(keep[k]){const gx=k%G,gy=(k/G)|0;
     for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const nx=gx+dx,ny=gy+dy;if(nx>=0&&ny>=0&&nx<G&&ny<G)grow[ny*G+nx]=1;}}
-  for(let py=0;py<N;py++)for(let px=0;px<N;px++){const i=(py*N+px)*4+3;
-    if(!grow[((py/C)|0)*G+((px/C)|0)])d[i]=0;else if(oth.length)d[i]=Math.round(d[i]*mine(px,py));}
+  // "שלי" מחושב רק על הרשת (G×G) ומוחלק בין נקודות הרשת (בילינארי) — חישוב לכל פיקסל עצר את הדף ~1 שנ' בטלפון ישן
+  let mg=null;
+  if(oth.length){mg=new Float32Array((G+1)*(G+1));for(let gy=0;gy<=G;gy++)for(let gx=0;gx<=G;gx++)mg[gy*(G+1)+gx]=mine(gx*C,gy*C);}
+  for(let py=0;py<N;py++){const gy=py/C,y0=gy|0,ty=gy-y0;
+    for(let px=0;px<N;px++){const i=(py*N+px)*4+3;
+      if(!grow[y0*G+((px/C)|0)]){d[i]=0;continue;}
+      if(!mg)continue;
+      const gx=px/C,x0=gx|0,tx=gx-x0,r0=y0*(G+1),r1=r0+G+1;
+      const m=(mg[r0+x0]*(1-tx)+mg[r0+x0+1]*tx)*(1-ty)+(mg[r1+x0]*(1-tx)+mg[r1+x0+1]*tx)*ty;
+      if(m<1)d[i]=Math.round(d[i]*m);}}
   // (2) הגנה על הפנים: 60% הפנימיים של תיבת הפנים
   let sum=0,cnt=0;
   for(let py=Math.max(0,Math.round(fy0+fh*.2));py<Math.min(N,Math.round(fy0+fh*.8));py++)
