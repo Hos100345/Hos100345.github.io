@@ -233,6 +233,9 @@
     .back-tabpage .sl-lock{display:flex;flex-direction:column;gap:.6rem}
     .g-bg{position:absolute;bottom:-6px;inset-inline-start:-6px;width:24px;height:24px;background:#fff;color:var(--indigo);border-radius:50%;font-size:.8rem;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid var(--indigo);line-height:1;box-shadow:0 1px 4px rgba(0,0,0,.3);padding:0}
     .g-bg:hover{transform:scale(1.15)}
+    .g-sh{position:absolute;bottom:-6px;inset-inline-end:-6px;width:24px;height:24px;background:#fff;color:var(--indigo);border-radius:50%;font-size:.75rem;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid var(--indigo);line-height:1;box-shadow:0 1px 4px rgba(0,0,0,.3);padding:0}
+    .g-sh.on{background:var(--indigo)}
+    .g-sh:hover{transform:scale(1.15)}
     .g-check{position:absolute;top:-5px;inset-inline-start:-5px;width:18px;height:18px;margin:0;cursor:pointer;accent-color:var(--indigo)}
     .g-name{font-size:.58rem;color:var(--muted);margin-top:.2rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:72px}
     .gallery-bulk{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem}
@@ -414,6 +417,7 @@
       .g-del{width:24px;height:24px;font-size:.8rem;top:-8px}
       .g-edit{width:26px;height:26px;font-size:.85rem;bottom:-8px}
       .g-bg{width:26px;height:26px;bottom:-8px}
+      .g-sh{width:26px;height:26px;bottom:-8px}
       .g-name{max-width:84px;font-size:.66rem}
       .cards-grid{grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:.65rem}
       .uz{padding:2.5rem 1.25rem}
@@ -1245,6 +1249,13 @@ const I18N={
     'bg.stopped':'נעצר — {n} סמלים כבר טופלו, השאר לא השתנו',
     'bg.notFound':'לא זוהה רקע להסרה — הסמל נשאר כמו שהוא',
     'bg.none':'אין סמלים מסומנים שאפשר להסיר להם רקע',
+    'sh.btnTitle':'חדד',
+    'sh.undoTitle':'בטל חידוד',
+    'sh.done':'🔍 הסמל חודד',
+    'sh.undone':'↺ החידוד בוטל — הסמל חזר למקור',
+    'sh.bulkBtn':'🔍 חדד את הנבחרים',
+    'sh.bulkDone':'🔍 חודדו {n} סמלי פנים',
+    'sh.bulkNone':'אין סמלי פנים מסומנים לחידוד',
     'unit.mm':'{v} מ"מ',
     'account.title':'☁️ חשבון וסנכרון',
     'account.desc':'התחברו כדי לגבות את העיצובים שלכם לחשבון האישי — כך הם לא ייעלמו אם תחליפו מכשיר או תנקו את הדפדפן. הכניסה במייל, בלי סיסמה.',
@@ -1826,6 +1837,13 @@ const I18N={
     'bg.stopped':'Stopped — {n} symbols were already done, the rest were not changed',
     'bg.notFound':'No background found to remove — the symbol stays as it is',
     'bg.none':'No selected symbols to remove a background from',
+    'sh.btnTitle':'Sharpen',
+    'sh.undoTitle':'Undo sharpening',
+    'sh.done':'🔍 Symbol sharpened',
+    'sh.undone':'↺ Sharpening undone — the symbol is back to the original',
+    'sh.bulkBtn':'🔍 Sharpen selected',
+    'sh.bulkDone':'🔍 Sharpened {n} face symbols',
+    'sh.bulkNone':'No selected face symbols to sharpen',
     'unit.mm':'{v} mm',
     'account.title':'☁️ Account & sync',
     'account.desc':'Sign in to back up your designs to your personal account — so they won’t disappear if you switch devices or clear your browser. Sign in by email, no password needed.',
@@ -2403,6 +2421,7 @@ window.applyI18n=applyI18n;
         <button data-i18n="upload.clearSelectionBtn" type="button" class="g-bulk-btn" id="btn-clear-all">◻️ נקה הכל</button>
         <button data-i18n="upload.deleteSelectedBtn" type="button" class="g-bulk-btn danger" id="btn-del-selected">🗑 מחק מסומנים</button>
         <button data-i18n="bg.bulkBtn" type="button" class="g-bulk-btn" id="btn-bg-selected" hidden>✨ הסר רקע מהנבחרים</button>
+        <button data-i18n="sh.bulkBtn" type="button" class="g-bulk-btn" id="btn-sh-selected">🔍 חדד את הנבחרים</button>
         <button data-i18n="upload.saveToCloudBtn" type="button" class="g-bulk-btn" id="btn-cloud-save">☁️ לשמור בענן?</button>
         <span class="g-sel-count" id="g-sel-count"></span>
       </div>
@@ -4830,7 +4849,7 @@ async function afRun(){
 // ⛔ delete _enc: assetEncoded שומר את הקידוד על הנכס — בלי זה גם IDB היה שומר את התמונה הקודמת.
 function afSwap(c,cv,on){
   if(c.imgEl&&c.imgEl!==cv&&c.imgEl.width)c.imgEl.width=c.imgEl.height=0;
-  c.id=++S.idSeq;c.imgEl=cv;c.thumb=makeThumb(cv);c.af=Object.assign({},c.af,{bg:on});
+  c.id=++S.idSeq;c.imgEl=cv;c.af=Object.assign({},c.af,{bg:on});c.thumb=makeThumb(symImg(c));   // 🔍 נשאר (af.sh)
   delete c._enc;
 }
 // "בטל" אחרי זיהוי: הסמלים שנוצרו יוצאים, והמקורות חוזרים למשחק (אם לא נשארה להם נגזרת אחרת).
@@ -4988,6 +5007,81 @@ async function bgBulk(){
   else toast(t('bg.done',{n})+(R.kept?t('bg.doneKept',{k:R.kept}):''),'ok');
 }
 document.getElementById('btn-bg-selected').addEventListener('click',bgBulk);
+
+// ══ 🔍 חידוד פנים — unsharp mask, בלי AI (D-61) ══
+// ⛔ התמונה שנשמרת (a.imgEl → IDB/ענן) נשארת המקור, בלי חידוד. החידוד הוא "תצוגה": af.sh=1 (af כבר נשמר ב-IDB
+// ובענן), ו-symImg() מחשב ממנו קנבס מחודד בזיכרון — לגלריה, למשחק ול-PDF. לכן: אין סמל חדש, אין עותק שני,
+// "בטל חידוד" = af.sh=0 ומחזיר בדיוק את המקור (גם אחרי רענון/ענן), ולחיצה כפולה לא מחדדת פעמיים.
+// ✨/🖼 מחליפים את imgEl (afSwap) — החידוד נשאר דגל ומוחל על התמונה החדשה; המטמון _sh קשור ל-imgEl.
+// הצהרות function/var (לא const): הגלריה יכולה להיבנות בטעינה לפני שהשורה הזו רצה
+function isFaceSym(a){return !!(a&&a.type==='crop'&&a.af&&!a.af.kind);}
+var SH_LIM=24;   // ⛔ תקרת שינוי לפיקסל (רמות בהירות) — בלי הילות סביב קצוות; הבדיקה דורשת ≤25
+// עוצמה לפי כמה הפרצוף הוגדל בדרך לסמל: ריבוע החיתוך במקור (af.s) מול IMG_PX. פרצוף קטן מקהל = הוגדל
+// הרבה ומטושטש → חזק יותר, עם תקרה. אין מקור (נמחק) → בינוני.
+function shStrength(a){
+  const src=S.assets.find(x=>x.id===a.srcAssetId);
+  const side=src&&src.imgEl&&a.af&&a.af.s?a.af.s*imgNatW(src.imgEl):0;
+  const u=side>0?IMG_PX/side:2;
+  return {amt:Math.max(.35,Math.min(1.3,.35+.25*(u-1))),rad:u<1.6?1:(u<3?2:3)};
+}
+// unsharp mask על RGB בלבד: v' = v + amt·(v − blur), השינוי חסום ב-±SH_LIM. הטשטוש משוקלל-שקיפות (premultiplied)
+// כדי שפיקסלים שקופים (רקע שהוסר) לא "ישחירו" את קצה הדמות. ערוץ השקיפות מועתק כמו שהוא.
+function sharpenCanvas(src,{amt,rad}){
+  const W=imgNatW(src),H=imgNatH(src),cv=document.createElement('canvas');cv.width=W;cv.height=H;
+  const x=cv.getContext('2d');x.drawImage(src,0,0);
+  const img=x.getImageData(0,0,W,H),d=img.data,n=W*H;
+  const P=[new Float32Array(n),new Float32Array(n),new Float32Array(n),new Float32Array(n)];
+  for(let i=0;i<n;i++){const a=d[i*4+3]/255;P[3][i]=a;P[0][i]=d[i*4]*a;P[1][i]=d[i*4+1]*a;P[2][i]=d[i*4+2]*a;}
+  const tmp=new Float32Array(n);
+  const box=(A,horiz)=>{const L=horiz?W:H,M=horiz?H:W,step=horiz?1:W,line=horiz?W:1;
+    for(let m=0;m<M;m++){const o=m*line;let acc=0;
+      for(let k=-rad;k<=rad;k++)acc+=A[o+Math.min(L-1,Math.max(0,k))*step];
+      for(let l=0;l<L;l++){tmp[o+l*step]=acc/(2*rad+1);
+        acc+=A[o+Math.min(L-1,l+rad+1)*step]-A[o+Math.max(0,l-rad)*step];}
+      for(let l=0;l<L;l++)A[o+l*step]=tmp[o+l*step];}};
+  for(const A of P){box(A,true);box(A,false);box(A,true);box(A,false);}   // 2× box ≈ גאוסיאני
+  for(let i=0;i<n;i++){
+    if(!d[i*4+3])continue;
+    const ab=P[3][i];if(ab<=1e-6)continue;
+    for(let ch=0;ch<3;ch++){const v=d[i*4+ch],b=P[ch][i]/ab;
+      let dl=amt*(v-b);if(dl>SH_LIM)dl=SH_LIM;else if(dl<-SH_LIM)dl=-SH_LIM;
+      d[i*4+ch]=Math.max(0,Math.min(255,Math.round(v+dl)));}
+  }
+  x.putImageData(img,0,0);
+  return cv;
+}
+function symImg(a){
+  if(!(a&&a.af&&a.af.sh&&isFaceSym(a)))return a.imgEl;
+  const c=a._sh;
+  if(c&&c.src===a.imgEl)return c.cv;
+  const cv=sharpenCanvas(a.imgEl,shStrength(a));
+  a._sh={src:a.imgEl,cv};
+  return cv;
+}
+// משחק שכבר נוצר: אותו מיפוי של generate, כדי שהקלפים יציגו את המצב החדש בלי ליצור מחדש
+function shRefreshGame(){
+  if(!S.order||!S.imgEls.length)return;
+  S.imgEls=S.assets.filter(a=>isSymbolAsset(a)&&a.selected!==false).slice(0,S.order.total).map(symImg);
+  prepareSymbolMeta();redrawCards();
+}
+function shSet(a,on){
+  a.af=Object.assign({},a.af,{sh:on?1:0});
+  if(!on&&a._sh){a._sh.cv.width=a._sh.cv.height=0;delete a._sh;}
+  a.thumb=makeThumb(symImg(a));
+}
+function shToggle(a){
+  if(!isFaceSym(a))return;
+  const on=!a.af.sh;shSet(a,on);
+  renderGallery();updateCounter();schedIdbSave();shRefreshGame();
+  toast(t(on?'sh.done':'sh.undone'),'ok');
+}
+document.getElementById('btn-sh-selected').addEventListener('click',()=>{
+  const sel=S.assets.filter(a=>isSymbolAsset(a)&&a.selected!==false&&isFaceSym(a)&&!a.af.sh);
+  if(!sel.length){toast(t('sh.bulkNone'),'err');return;}
+  sel.forEach(a=>shSet(a,true));
+  renderGallery();updateCounter();schedIdbSave();shRefreshGame();
+  toast(t('sh.bulkDone',{n:sel.length}),'ok');
+});
 
 // דיווח כשלים עם סיבה לכל קובץ + ניסיון חוזר על הכושלים בלבד
 async function reportFailedUploads(failed,folder,depth,opts){
@@ -5193,7 +5287,7 @@ function buildGalleryItem(a){
   const isOn=a.selected!==false;
   item.className='g-item'+(a.type==='crop'?' crop':a.isCropSource?' source':'')+(!a.isCropSource&&!isOn?' off':'');
   const thumbCv=document.createElement('canvas');thumbCv.width=thumbCv.height=72;
-  drawCover(thumbCv.getContext('2d'),a.imgEl,0,0,72);
+  drawCover(thumbCv.getContext('2d'),symImg(a),0,0,72);
   item.appendChild(thumbCv);
   if(!a.isCropSource){
     const chk=document.createElement('input');chk.type='checkbox';chk.className='g-check';
@@ -5219,6 +5313,14 @@ function buildGalleryItem(a){
     bg.addEventListener('click',()=>bgToggle(a));
     item.appendChild(bg);
    }}
+  // 🔍 חדד / בטל חידוד — רק סמלי פנים (af בלי kind). פינה תחתונה-סופית (בסמלי crop אין שם ✂). לא צריך AI.
+  if(isFaceSym(a)&&!a.isCropSource){
+    const sh=document.createElement('button');sh.type='button';sh.className='g-sh'+(a.af.sh?' on':'');
+    sh.textContent='🔍';sh.title=t(a.af.sh?'sh.undoTitle':'sh.btnTitle');sh.setAttribute('aria-label',sh.title);
+    sh.setAttribute('aria-pressed',a.af.sh?'true':'false');
+    sh.addEventListener('click',()=>shToggle(a));
+    item.appendChild(sh);
+  }
   if(a.type==='image'){
     const edit=document.createElement('button');edit.className='g-edit';edit.textContent='✂';edit.title=t('upload.galleryCropBtnTitle');
     edit.addEventListener('click',()=>openCropModal(a.id));
@@ -5735,7 +5837,7 @@ async function generate(){
   S.cardEdits={};
   S.layouts=buildLayouts(S.deck,S.seed,S.sMin,S.sMax);
   setp(15,'מכין תמונות…');
-  S.imgEls=S.assets.filter(a=>isSymbolAsset(a)&&a.selected!==false).slice(0,S.order.total).map(a=>a.imgEl);
+  S.imgEls=S.assets.filter(a=>isSymbolAsset(a)&&a.selected!==false).slice(0,S.order.total).map(symImg);   // symImg — 🔍 חידוד (D-61)
   prepareSymbolMeta();
   setp(35,'מצייר קלפים…');
   S.canvases=[];S.sel=[];
