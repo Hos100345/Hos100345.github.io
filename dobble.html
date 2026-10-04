@@ -1205,6 +1205,18 @@ const I18N={
     'faces.undoBtn':'בטל ↩',
     'faces.undone':'בוטל — התמונות חזרו כמו שהעליתם',
     'faces.failed':'לא הצלחנו לחפש פנים — התמונות נכנסו כרגיל',
+    'faces.preparingBg':'✨ מכין הורדת רקע (פעם אחת בלבד) — {pct}%',
+    'faces.addedBg':'🙂 נמצאו {n} פנים — כל פרצוף נוסף כסמל, והרקע הוסר. לא אהבתם? 🖼 על הסמל מחזיר לו את הרקע.',
+    'faces.restoreBgTitle':'החזר רקע',
+    'faces.removeBgTitle':'הסר רקע',
+    'faces.bgWorking':'✨ מסיר רקע…',
+    'faces.bgRemoved':'✨ הרקע הוסר מהסמל',
+    'faces.bgRestored':'🖼 הרקע הוחזר לסמל',
+    'faces.bgFailed':'לא הצלחנו להסיר את הרקע — הסמל נשאר כמו שהיה',
+    'faces.bgFaceCut':'הסרת הרקע הייתה חותכת חלק מהפנים — הסמל נשאר עם הרקע',
+    'faces.bgLowMem':'הסרת רקע דורשת מכשיר חזק יותר — נסו במחשב',
+    'faces.busy':'רגע — עדיין מעבדים את התמונות שהעליתם',
+    'faces.noSource':'התמונה המקורית נמחקה מהמאגר — אי אפשר לשנות את הרקע',
     'unit.mm':'{v} מ"מ',
     'account.title':'☁️ חשבון וסנכרון',
     'account.desc':'התחברו כדי לגבות את העיצובים שלכם לחשבון האישי — כך הם לא ייעלמו אם תחליפו מכשיר או תנקו את הדפדפן. הכניסה במייל, בלי סיסמה.',
@@ -1754,6 +1766,18 @@ const I18N={
     'faces.undoBtn':'Undo ↩',
     'faces.undone':'Undone — your photos are back as you uploaded them',
     'faces.failed':'Could not look for faces — your photos were added as usual',
+    'faces.preparingBg':'✨ Preparing background removal (one time only) — {pct}%',
+    'faces.addedBg':'🙂 Found {n} faces — each face was added as a symbol, with the background removed. Don\'t like it? 🖼 on the symbol brings the background back.',
+    'faces.restoreBgTitle':'Restore background',
+    'faces.removeBgTitle':'Remove background',
+    'faces.bgWorking':'✨ Removing background…',
+    'faces.bgRemoved':'✨ Background removed from the symbol',
+    'faces.bgRestored':'🖼 Background restored to the symbol',
+    'faces.bgFailed':'Could not remove the background — the symbol stays as it was',
+    'faces.bgFaceCut':'Removing the background would cut part of the face — the symbol keeps its background',
+    'faces.bgLowMem':'Background removal needs a more powerful device — try on a computer',
+    'faces.busy':'One moment — still processing the photos you uploaded',
+    'faces.noSource':'The original photo was deleted from the library — the background cannot be changed',
     'unit.mm':'{v} mm',
     'account.title':'☁️ Account & sync',
     'account.desc':'Sign in to back up your designs to your personal account — so they won’t disappear if you switch devices or clear your browser. Sign in by email, no password needed.',
@@ -4494,7 +4518,7 @@ const AF_MIN_FACE=30;      // פנים קטנות מזה (בפיקסלים של 
 const AF_MAX_FACES=20;     // תמונת המון — לא מציפים את המאגר
 const AF_MIN_SCORE=.6,AF_VERIFY_SCORE=.85;   // ראו afVerify
 const AF_STALL_MS=30000;   // כלב השמירה של afRun
-const AF={q:[],running:false,ready:false};
+const AF={q:[],running:false,ready:false,bgDead:false,toggling:false};
 // מכשיר חלש (<4GB, אותו שער כמו בסטודיו) או דפדפן בלי Worker/Wasm — מדלגים בשקט.
 function afEnabled(){
   if(navigator.deviceMemory&&navigator.deviceMemory<4)return false;
@@ -4506,7 +4530,7 @@ function afQueue(ids){
   if(!afEnabled()){afTrack('skipped · '+(navigator.deviceMemory||'?')+'GB');return;}
   // אובייקטים ולא מזהים — אם בינתיים נטען עיצוב אחר, אותו id יכול להצביע על תמונה אחרת
   ids.forEach(id=>{const a=S.assets.find(x=>x.id===id);if(a)AF.q.push(a);});
-  if(!AF.running)afRun();
+  if(!AF.running&&!AF.toggling)afRun();   // בזמן "הסר רקע" ידני — afToggleBg מפעיל את התור כשהוא מסיים
 }
 // בדיקה שנייה: חותכים סביב הממצא (פי 2.2) ומריצים שוב. פנים אמיתיות חוזרות ב-0.86+; עלים, פני אריות
 // וראש מאחור נפלו מתחת ל-0.85 (נמדד: משפחות 4/7/3 ותמונת המון — 0 אמיתיות נפסלו, 4 שגויות נפסלו).
@@ -4518,20 +4542,77 @@ async function afVerify(src,f,signal){
   z.width=z.height=0;
   return G.some(g=>g.score>=AF_VERIFY_SCORE&&Math.abs(g.x+g.w/2-Z/2)<Z*.19&&Math.abs(g.y+g.h/2-Z/2)<Z*.19);
 }
-// ריבוע 1.7× הפנים, המרכז ב-42% מגובה הפנים (שיער + סנטר), צמוד לגבולות התמונה. עיגול — כמו ברירת המחדל של החיתוך הידני.
-function afAddFaces(a,F){
+// ריבוע 1.7× הפנים, המרכז ב-42% מגובה הפנים (שיער + סנטר), צמוד לגבולות התמונה. af בשברים של המקור:
+// x,y,s = ריבוע החיתוך · f = תיבת הפנים (להגנה על הפנים בהסרת הרקע) · bg = 1 אם הרקע הוסר.
+function afRects(a,F){
   const W=imgNatW(a.imgEl),H=imgNatH(a.imgEl);
-  const faces=F.slice(0,AF_MAX_FACES);
-  if(!faces.length)return [];
-  const base=a.name.replace(/\.[^.]+$/,''),ids=[];
-  faces.forEach((f,i)=>{
+  return F.slice(0,AF_MAX_FACES).map(f=>{
     const s=Math.min(Math.max(f.w,f.h)*1.7,W,H);
     const x=Math.max(0,Math.min(W-s,f.x+f.w/2-s/2)),y=Math.max(0,Math.min(H-s,f.y+f.h*.42-s/2));
-    const cv=document.createElement('canvas');cv.width=cv.height=IMG_PX;
-    const ctx=cv.getContext('2d');_clipShape(ctx,IMG_PX,'circle');
-    ctx.drawImage(a.imgEl,x,y,s,s,0,0,IMG_PX,IMG_PX);
+    return {af:{x:x/W,y:y/H,s:s/W,f:{x:f.x/W,y:f.y/H,w:f.w/W,h:f.h/H}},cv:null};
+  });
+}
+// הסמל עם הרקע — עיגול כמו ברירת המחדל של החיתוך הידני. גם "החזר רקע" בונה ממנו מחדש, מהמקור שבמאגר.
+function afPlain(src,af){
+  const W=imgNatW(src),H=imgNatH(src);
+  const cv=document.createElement('canvas');cv.width=cv.height=IMG_PX;
+  const ctx=cv.getContext('2d');_clipShape(ctx,IMG_PX,'circle');
+  ctx.drawImage(src,af.x*W,af.y*H,af.s*W,af.s*W,0,0,IMG_PX,IMG_PX);
+  return cv;
+}
+// סמלים שנוצרו לפני שנשמרה תיבת הפנים — הערכה מתוך ריבוע החיתוך (הפוך מ-afRects)
+function afFaceBox(af,W,H){
+  if(af.f)return {x:af.f.x*W,y:af.f.y*H,w:af.f.w*W,h:af.f.h*H};
+  const s=af.s*W,fs=s/1.7;
+  return {x:af.x*W+s/2-fs/2,y:af.y*H+s*.547-fs/2,w:fs,h:fs};
+}
+// הורדת רקע לפרצוף אחד: MODNet (mode:'person') על אזור סביב החיתוך (רזולוציה טובה גם לפנים קטנות בתמונה
+// קבוצתית), ואז: (1) נשאר רק האדם שמחובר למרכז הפנים — שכנים שנכנסו בשוליים נמחקים; (2) הגנה: אם פחות
+// מ-85% שקיפות-מלאה במרכז הפנים — הסרת הרקע הייתה פוגעת בפנים, מחזירים null והסמל נשאר עם הרקע.
+async function afCutout(src,af,signal,onProgress){
+  const W=imgNatW(src),H=imgNatH(src),x=af.x*W,y=af.y*H,s=af.s*W,m=s*.25;
+  const rx=Math.max(0,x-m),ry=Math.max(0,y-m),rw=Math.min(W,x+s+m)-rx,rh=Math.min(H,y+s+m)-ry;
+  const reg=document.createElement('canvas');reg.width=Math.max(1,Math.round(rw));reg.height=Math.max(1,Math.round(rh));
+  reg.getContext('2d').drawImage(src,rx,ry,rw,rh,0,0,reg.width,reg.height);
+  const r=await AIImage.removeBg(reg,{mode:'person',signal,onProgress});
+  const kx=r.canvas.width/rw,ky=r.canvas.height/rh,N=IMG_PX;
+  const cv=document.createElement('canvas');cv.width=cv.height=N;
+  const ctx=cv.getContext('2d');
+  ctx.drawImage(r.canvas,(x-rx)*kx,(y-ry)*ky,s*kx,s*ky,0,0,N,N);
+  r.canvas.width=r.canvas.height=0;reg.width=reg.height=0;
+  const img=ctx.getImageData(0,0,N,N),d=img.data;
+  const fb=afFaceBox(af,W,H),sc=N/s;
+  const fx0=(fb.x-x)*sc,fy0=(fb.y-y)*sc,fw=fb.w*sc,fh=fb.h*sc;
+  // (1) רכיב קשיר על רשת 4px, מתחיל ממרכז הפנים, מורחב בתא אחד כדי לא לכרסם בשוליים הרכים
+  const C=4,G=Math.ceil(N/C),on=new Uint8Array(G*G),keep=new Uint8Array(G*G);
+  for(let gy=0;gy<G;gy++)for(let gx=0;gx<G;gx++){
+    const px=Math.min(N-1,gx*C+2),py=Math.min(N-1,gy*C+2);if(d[(py*N+px)*4+3]>128)on[gy*G+gx]=1;}
+  const q=[],seed=Math.min(G-1,Math.max(0,Math.floor((fy0+fh/2)/C)))*G+Math.min(G-1,Math.max(0,Math.floor((fx0+fw/2)/C)));
+  if(on[seed]){keep[seed]=1;q.push(seed);}
+  for(let i=0;i<q.length;i++){const k=q[i],gx=k%G,gy=(k/G)|0;
+    for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const nx=gx+dx,ny=gy+dy;if(nx<0||ny<0||nx>=G||ny>=G)continue;
+      const n=ny*G+nx;if(on[n]&&!keep[n]){keep[n]=1;q.push(n);}}}
+  const grow=keep.slice();
+  for(let k=0;k<G*G;k++)if(keep[k]){const gx=k%G,gy=(k/G)|0;
+    for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const nx=gx+dx,ny=gy+dy;if(nx>=0&&ny>=0&&nx<G&&ny<G)grow[ny*G+nx]=1;}}
+  for(let py=0;py<N;py++)for(let px=0;px<N;px++)if(!grow[((py/C)|0)*G+((px/C)|0)])d[(py*N+px)*4+3]=0;
+  // (2) הגנה על הפנים: 60% הפנימיים של תיבת הפנים
+  let sum=0,cnt=0;
+  for(let py=Math.max(0,Math.round(fy0+fh*.2));py<Math.min(N,Math.round(fy0+fh*.8));py++)
+    for(let px=Math.max(0,Math.round(fx0+fw*.2));px<Math.min(N,Math.round(fx0+fw*.8));px++){sum+=d[(py*N+px)*4+3];cnt++;}
+  if(!cnt||sum/cnt<255*.85){cv.width=cv.height=0;return null;}
+  ctx.putImageData(img,0,0);
+  const out=trimAlphaSquare(cv,N,0.02);
+  if(out!==cv)cv.width=cv.height=0;
+  return out;
+}
+function afAddFaces(a,list){
+  if(!list.length)return [];
+  const base=a.name.replace(/\.[^.]+$/,''),ids=[];
+  list.forEach((it,i)=>{
+    const cv=it.cv||afPlain(a.imgEl,it.af);
     S.assets.push({id:++S.idSeq,type:'crop',name:`${base} #${i+1}`,url:'',thumb:makeThumb(cv),imgEl:cv,
-                   srcAssetId:a.id,selected:true,folder:a.folder,af:{x:x/W,y:y/H,s:s/W}});
+                   srcAssetId:a.id,selected:true,folder:a.folder,af:it.af});
     ids.push(S.idSeq);
   });
   a.isCropSource=true;
@@ -4540,7 +4621,8 @@ function afAddFaces(a,F){
 async function afRun(){
   AF.running=true;
   AF.ready=false;   // ה-Worker נסגר בסוף כל ריצה (cancelAll) — כל ריצה מתחילה מ"מנוע לא עלה"
-  const added=[],t0=performance.now();let done=0,nImgs=0,lastPct=-1;
+  AF.bgDead=false;  // הסרת הרקע נכשלה פעם אחת בריצה (רשת/זיכרון) — לא מנסים שוב לכל פרצוף
+  const added=[],t0=performance.now();let done=0,nImgs=0,lastPct=-1,nBg=0,nKept=0;
   try{
     await loadAI();
     while(AF.q.length){
@@ -4576,10 +4658,28 @@ async function afRun(){
       }finally{clearTimeout(tm);}
       done++;
       if(!S.assets.includes(a)||a.isCropSource)continue;   // נמחקה או נחתכה ידנית בזמן החיפוש
-      const ids=afAddFaces(a,F);
+      // הורדת רקע לכל פרצוף, לפני שהסמלים נכנסים למאגר (כך שום שמירה לענן לא תופסת גרסת ביניים).
+      // כל תקלה כאן = הסמל נשאר עם הרקע — הפנים כבר נמצאו ולא הולכות לאיבוד.
+      const list=afRects(a,F);
+      for(const it of list){
+        if(AF.bgDead)break;
+        arm();
+        try{
+          it.cv=await afCutout(a.imgEl,it.af,ac.signal,p=>{
+            arm();
+            if(p.phase!=='download'||!p.total)return;
+            const pct=Math.round(p.loaded/p.total*100);
+            if(pct!==lastPct&&pct%5===0){lastPct=pct;toast(t('faces.preparingBg',{pct}),'ok');}
+          });
+          if(it.cv){it.af.bg=1;nBg++;}else nKept++;
+        }catch(e){AF.bgDead=true;afTrack('bg fail · '+String(e&&e.message||e).slice(0,80));}
+      }
+      clearTimeout(tm);
+      if(!S.assets.includes(a)||a.isCropSource){list.forEach(it=>{if(it.cv)it.cv.width=it.cv.height=0;});continue;}
+      const ids=afAddFaces(a,list);
       if(ids.length){added.push(...ids);nImgs++;}
     }
-    afTrack('ok · '+done+' imgs · '+added.length+' faces in '+nImgs+' · '+Math.round(performance.now()-t0)+'ms · '+(window.AIImage?AIImage.device():''));
+    afTrack('ok · '+done+' imgs · '+added.length+' faces in '+nImgs+' · bg '+nBg+' kept '+nKept+(AF.bgDead?' dead':'')+' · '+Math.round(performance.now()-t0)+'ms · '+(window.AIImage?AIImage.device():''));
   }catch(e){
     afTrack('fail · '+String(e&&e.message||e).slice(0,80)+' · '+(window.AIImage?AIImage.device():''));
     AF.q.length=0;
@@ -4590,9 +4690,44 @@ async function afRun(){
   }
   if(added.length){
     renderGallery();updateCounter();schedIdbSave();
-    toast(t('faces.added',{n:added.length}),'ok',{label:t('faces.undoBtn'),fn:()=>afUndo(added)});
+    toast(t(nBg?'faces.addedBg':'faces.added',{n:added.length}),'ok',{label:t('faces.undoBtn'),fn:()=>afUndo(added)});
   }
   if(AF.q.length&&!AF.running)afRun();   // העלאה נוספת שהגיעה בדיוק בסוף
+}
+// 🖼 החזר רקע / ✨ הסר רקע — לסמל פנים בודד, מהכפתור שבגלריה. בונה מחדש מהמקור שבמאגר (af), לא מסמל ישן.
+// ⛔ id חדש: cloudAutosave מדלג על path קיים (אותו id = אותו path), כך שבלי זה הענן היה נשאר עם הגרסה הקודמת.
+async function afToggleBg(a){
+  const src=S.assets.find(x=>x.id===a.srcAssetId);
+  if(!src||!src.imgEl){toast(t('faces.noSource'),'err');return;}
+  if(AF.running||AF.toggling){toast(t('faces.busy'),'ok');return;}   // Worker אחד — לא שתי ריצות במקביל
+  let cv,on;
+  if(a.af.bg){cv=afPlain(src.imgEl,a.af);on=0;}
+  else{
+    if(!afEnabled()){toast(t('faces.bgLowMem'),'err');return;}
+    AF.toggling=true;toast(t('faces.bgWorking'),'ok');
+    const ac=new AbortController();let tm=0;const arm=()=>{clearTimeout(tm);tm=setTimeout(()=>ac.abort(),AF_STALL_MS);};
+    try{
+      arm();await loadAI();
+      cv=await afCutout(src.imgEl,a.af,ac.signal,p=>{
+        arm();
+        if(p.phase==='download'&&p.total)toast(t('faces.preparingBg',{pct:Math.round(p.loaded/p.total*100)}),'ok');
+      });
+    }catch(e){
+      afTrack('toggle fail · '+String(e&&e.message||e).slice(0,80));
+      toast(t('faces.bgFailed'),'err');return;
+    }finally{
+      clearTimeout(tm);AF.toggling=false;
+      if(window.AIImage)AIImage.cancelAll();
+      if(AF.q.length&&!AF.running)afRun();
+    }
+    if(!cv){toast(t('faces.bgFaceCut'),'err');return;}
+    on=1;
+  }
+  if(!S.assets.includes(a))return;
+  a.id=++S.idSeq;
+  a.imgEl=cv;a.thumb=makeThumb(cv);a.af=Object.assign({},a.af,{bg:on});
+  renderGallery();updateCounter();schedIdbSave();
+  toast(t(on?'faces.bgRemoved':'faces.bgRestored'),'ok');
 }
 // "בטל" אחרי זיהוי: הסמלים שנוצרו יוצאים, והמקורות חוזרים למשחק (אם לא נשארה להם נגזרת אחרת).
 function afUndo(ids){
@@ -4823,6 +4958,14 @@ function buildGalleryItem(a){
   const del=document.createElement('button');del.className='g-del';del.textContent='×';del.title=t('upload.galleryRemoveBtnTitle');
   del.addEventListener('click',()=>removeAsset(a.id));
   item.appendChild(del);
+  if(a.type==='crop'&&a.af&&S.assets.some(x=>x.id===a.srcAssetId)){
+    // סמל פנים אוטומטי: 🖼 = החזר רקע · ✨ = הסר רקע. באותו מקום של ✂ (שקיים רק לתמונות), יעד מגע מלא.
+    const bg=document.createElement('button');bg.type='button';bg.className='g-edit';
+    bg.textContent=a.af.bg?'🖼':'✨';bg.title=t(a.af.bg?'faces.restoreBgTitle':'faces.removeBgTitle');
+    bg.setAttribute('aria-label',bg.title);
+    bg.addEventListener('click',()=>afToggleBg(a));
+    item.appendChild(bg);
+  }
   if(a.type==='image'){
     const edit=document.createElement('button');edit.className='g-edit';edit.textContent='✂';edit.title=t('upload.galleryCropBtnTitle');
     edit.addEventListener('click',()=>openCropModal(a.id));
