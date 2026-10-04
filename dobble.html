@@ -947,10 +947,17 @@ const I18N={
     'edit.layoutScattered':'🔀 מפוזר',
     'edit.layoutPerimeter':'⭕ היקפי',
     'edit.symbolSizeTitle':'גודל סמלים',
+    'edit.varietyTitle':'גיוון בגדלים',
+    'edit.varietyEqual':'כולם שווים',
+    'edit.varietyMixed':'מגוונים',
+    'edit.varietyLabelZero':'כולם שווים',
+    'edit.varietyLabelRange':'{a}%–{b}%',
+    'edit.varietyCustom':'מותאם אישית',
+    'edit.varietyMm':'הקטן ~{a} מ"מ · הגדול ~{b} מ"מ',
     'edit.symbolSizeMin':'מינימום',
     'edit.symbolSizeAutoNote':'⚙️ הותאם אוטומטית לגודל המקסימלי',
     'edit.symbolSizeMax':'מקסימום',
-    'edit.overlapTitle':'חפיפה / מרווח',
+    'edit.overlapTitle':'מרחק בין הסמלים',
     'edit.overlapShapeMode':'🧩 חפיפה לפי צורת הסמל',
     'edit.overlapFillMode':'📐 מילוי מיטבי של הקלף',
     'edit.overlapNote':'אפס = הסמלים נוגעים בדיוק · ימינה = נכנסים זה בזה · שמאלה = מתרחקים זה מזה',
@@ -1050,7 +1057,7 @@ const I18N={
     'back.tabFrame':'מסגרת',
     'back.tabSymbol':'סמל',
     'back.tabText':'כיתוב',
-    'back.tabLogo':'לוגו',
+    'back.tabLogo':'תמונה',
     'back.tabPrint':'הדפסה',
     'back.bgModeTitle':'מצב רקע',
     'back.bgModeSolid':'אחיד',
@@ -1092,8 +1099,8 @@ const I18N={
     'help.tiers.bodyHtml':'בכל שני קלפים יש <b>בדיוק סמל משותף אחד</b> — לא פחות ולא יותר. זו לא הגרלה אלא מבנה מתמטי מדויק שנקרא "מישור השלכתי".\n\nהמבנה קובע את המספרים, ולכן הם לא שרירותיים:\n<b>21 קלפים</b> · 5 סמלים בקלף\n<b>31 קלפים</b> · 6 סמלים\n<b>57 קלפים</b> · 8 סמלים\n<b>73 קלפים</b> · 9 סמלים\n<b>91 קלפים</b> · 10 סמלים\n\n<b>מספר הקלפים שווה למספר התמונות שצריך.</b> משחק של 31 קלפים דורש 31 תמונות, וכל תמונה מופיעה על 6 קלפים שונים.',
     'help.crop.title':'מתמונה אחת — כמה סמלים',
     'help.crop.bodyHtml':'לא חייבים תמונה נפרדת לכל סמל. לחצו על <b>✂</b> ליד תמונה קבוצתית וחתכו ממנה כל פרצוף, חפץ או פרט בנפרד — כל חיתוך הופך לסמל משלו במאגר, והתמונה המקורית נשארת.\n\n<b>כך חמש תמונות משפחתיות מספיקות למשחק שלם.</b> הכלי גם ממקד סמל בתוך תמונה גדולה, ומאפשר חיתוך עגול.',
-    'help.overlap.title':'חפיפה, מרווח ומילוי מיטבי',
-    'help.overlap.bodyHtml':'הסרגל קובע כמה הסמלים קרובים זה לזה: <b>אפס</b> = נוגעים בדיוק, <b>ימינה</b> = נכנסים זה בזה (מתאים לסמלים עם רקע שקוף), <b>שמאלה</b> = מתרחקים.\n\n<b>📐 מילוי מיטבי</b> מגדיל את הסמלים עד שהם ממלאים את הקלף בלי לחרוג ובלי לחפוף — זה מה שמעלים את החללים הלבנים בפריסה המפוזרת. הוא דלוק כברירת מחדל; כבו אותו אם אתם רוצים סמלים קטנים עם הרבה אוויר.',
+    'help.overlap.title':'גיוון בגדלים ומרחק בין הסמלים',
+    'help.overlap.bodyHtml':'שני סרגלים, והגודל נקבע לבד: הסמלים תמיד גדלים עד שהם ממלאים את הקלף, בלי לחרוג ובלי לחפוף.\n\n<b>גיוון בגדלים</b> — כמה הסמלים שונים זה מזה. בקצה <b>כולם שווים</b> כל הסמלים באותו גודל; בקצה <b>מגוונים</b> הקטן הוא בערך שליש מהגדול. מתחת לסרגל רואים את הגודל האמיתי במ"מ של הקטן ושל הגדול.\n\n<b>מרחק בין הסמלים</b> — <b>אפס</b> = נוגעים בדיוק, <b>שמאלה</b> = יותר אוויר ביניהם, <b>ימינה</b> = נכנסים זה בזה (מתאים לסמלים עם רקע שקוף). גם עם הרבה אוויר הסמלים ממשיכים למלא את הקלף.',
     'help.cardedit.title':'עריכת קלף בודד ✏️',
     'help.cardedit.bodyHtml':'הפריסה נוצרת אוטומטית, אבל כל קלף אפשר לכוונן ביד: העבירו את העכבר (או געו) בקלף ולחצו על <b>✏️</b> בפינה. בחלון שנפתח גוררים כל סמל למקום אחר, משנים את גודלו ומסובבים אותו.\n\nההתאמות נשמרות עם העיצוב ומופיעות בדיוק כך ב-PDF. <b>לחיצה על שני קלפים</b> ברשת מסמנת את הסמל המשותף היחיד — כך בודקים שהמשחק תקין.',
     'help.cardsize.title':'איזה קוטר לבחור?',
@@ -1107,9 +1114,9 @@ const I18N={
     'back.customColorLabel6':'צבע חופשי',
     'back.textSizeLabel':'גודל',
     'back.textOffsetLabel':'היסט אנכי',
-    'back.logoTitle':'לוגו (אופציונלי)',
-    'back.logoUploadBtn':'📤 העלה לוגו',
-    'back.logoRemoveBtn':'🗑 הסר לוגו',
+    'back.logoTitle':'📷 תמונה או לוגו',
+    'back.logoUploadBtn':'📤 העלה תמונה',
+    'back.logoRemoveBtn':'🗑 הסר תמונה',
     'back.logoSizeLabel':'גודל',
     'back.logoOffsetLabel':'היסט אנכי',
     'back.flipDirectionTitle':'כיוון הפיכת הדף',
@@ -1264,7 +1271,7 @@ const I18N={
     'back.subTextPh':'למשל: שם הילד/ה',
     'emoji.searchPh':'חפשו סמל בעברית… למשל: חנוכיה, אריה, כבאית',
     'msg.backDesignSaved':'עיצוב הגב נשמר ✓',
-    'msg.backLogoMissingFromBackup':'לוגו הגב לא נמצא בגיבוי — יש להעלות אותו מחדש בעורך הגב',
+    'msg.backLogoMissingFromBackup':'תמונת הגב לא נמצאה בגיבוי — יש להעלות אותה מחדש בעורך הגב',
     'msg.backedUpToAccount':'גובה לחשבון ☁️',
     'msg.calibrationPageReady':'דף הכיול הופק — הדפיסו, הפכו לפי כיוון ההפיכה שבחרתם ומדדו את הסטייה',
     'msg.cantReachCountWithSpacing':'לא ניתן להגיע למספר הזה עם המרווח הנוכחי — הקטן/י את המרווח',
@@ -1291,7 +1298,7 @@ const I18N={
     'msg.jszipNotLoaded':'ספריית JSZip לא נטענה — נדרש חיבור לאינטרנט',
     'msg.loadDesignFromAccountFailed':'טעינת העיצוב מהחשבון נכשלה',
     'msg.loginLinkSentShowCode':'נשלח אליכם קישור כניסה. פתחו אותו מהמייל, והקוד שלכם יוצג כאן.',
-    'msg.logoUploadFailed':'העלאת הלוגו נכשלה — נסו קובץ אחר',
+    'msg.logoUploadFailed':'העלאת התמונה נכשלה — נסו קובץ אחר',
     'msg.magicLinkSent':'📩 שלחנו קישור כניסה למייל — פִּתחו אותו מהמכשיר הזה',
     'msg.magicLinkSentCloudsave':'📩 שלחנו קישור כניסה למייל — פִּתחו אותו מהמכשיר הזה. העיצוב יישמר אוטומטית ברגע שתתחברו.',
     'msg.needCodeToSendStuck':'כדי לשלוח להושעיה צריך להיכנס עם קוד מנוי',
@@ -1521,10 +1528,17 @@ const I18N={
     'edit.layoutScattered':'🔀 Scattered',
     'edit.layoutPerimeter':'⭕ Perimeter',
     'edit.symbolSizeTitle':'Symbol size',
+    'edit.varietyTitle':'Size variety',
+    'edit.varietyEqual':'All equal',
+    'edit.varietyMixed':'Varied',
+    'edit.varietyLabelZero':'All equal',
+    'edit.varietyLabelRange':'{a}%–{b}%',
+    'edit.varietyCustom':'Custom',
+    'edit.varietyMm':'smallest ~{a} mm · largest ~{b} mm',
     'edit.symbolSizeMin':'Minimum',
     'edit.symbolSizeAutoNote':'⚙️ Auto-adjusted to the maximum size',
     'edit.symbolSizeMax':'Maximum',
-    'edit.overlapTitle':'Overlap / spacing',
+    'edit.overlapTitle':'Distance between symbols',
     'edit.overlapShapeMode':'🧩 Overlap by symbol shape',
     'edit.overlapFillMode':'📐 Optimal card fill',
     'edit.overlapNote':'Zero = symbols touch exactly · right = they overlap each other · left = they move apart',
@@ -1624,7 +1638,7 @@ const I18N={
     'back.tabFrame':'Frame',
     'back.tabSymbol':'Symbol',
     'back.tabText':'Text',
-    'back.tabLogo':'Logo',
+    'back.tabLogo':'Image',
     'back.tabPrint':'Print',
     'back.bgModeTitle':'Background mode',
     'back.bgModeSolid':'Solid',
@@ -1666,8 +1680,8 @@ const I18N={
     'help.tiers.bodyHtml':'Any two cards share <b>exactly one symbol</b> — never more, never less. That is not luck but an exact mathematical structure called a "projective plane".\n\nThe structure fixes the numbers, so they are not arbitrary:\n<b>21 cards</b> · 5 symbols per card\n<b>31 cards</b> · 6 symbols\n<b>57 cards</b> · 8 symbols\n<b>73 cards</b> · 9 symbols\n<b>91 cards</b> · 10 symbols\n\n<b>The number of cards equals the number of images you need.</b> A 31-card game needs 31 images, and each image appears on 6 different cards.',
     'help.crop.title':'One photo — several symbols',
     'help.crop.bodyHtml':'You do not need a separate image per symbol. Click <b>✂</b> next to a group photo and crop each face, object or detail separately — every crop becomes its own symbol in the library, and the original stays.\n\n<b>Five family photos are enough for a whole game.</b> The tool also focuses a symbol inside a large image and allows a round crop.',
-    'help.overlap.title':'Overlap, spacing and best fill',
-    'help.overlap.bodyHtml':'The slider sets how close symbols sit: <b>zero</b> = exactly touching, <b>right</b> = overlapping (good for transparent-background symbols), <b>left</b> = spread apart.\n\n<b>📐 Best fill</b> enlarges the symbols until they fill the card without crossing the edge or overlapping — that is what removes the white gaps in the scattered layout. It is on by default; turn it off if you want small symbols with lots of air.',
+    'help.overlap.title':'Size variety and distance between symbols',
+    'help.overlap.bodyHtml':'Two sliders, and the size is set for you: the symbols always grow until they fill the card, without crossing the edge or overlapping.\n\n<b>Size variety</b> — how different the symbols are from each other. At <b>All equal</b> every symbol is the same size; at <b>Varied</b> the smallest is about a third of the largest. Under the slider you see the real size in mm of the smallest and the largest.\n\n<b>Distance between symbols</b> — <b>zero</b> = exactly touching, <b>left</b> = more air between them, <b>right</b> = overlapping (good for transparent-background symbols). Even with lots of air the symbols keep filling the card.',
     'help.cardedit.title':'Editing a single card ✏️',
     'help.cardedit.bodyHtml':'The layout is generated automatically, but every card can be fine-tuned by hand: hover (or tap) a card and click <b>✏️</b> in its corner. In the window that opens, drag any symbol, resize it and rotate it.\n\nThe tweaks are saved with the design and appear exactly like that in the PDF. <b>Clicking two cards</b> in the grid highlights their single shared symbol — that is how you verify the game.',
     'help.cardsize.title':'Which diameter?',
@@ -1681,9 +1695,9 @@ const I18N={
     'back.customColorLabel6':'Custom color',
     'back.textSizeLabel':'Size',
     'back.textOffsetLabel':'Vertical offset',
-    'back.logoTitle':'Logo (optional)',
-    'back.logoUploadBtn':'📤 Upload logo',
-    'back.logoRemoveBtn':'🗑 Remove logo',
+    'back.logoTitle':'📷 Image or logo',
+    'back.logoUploadBtn':'📤 Upload image',
+    'back.logoRemoveBtn':'🗑 Remove image',
     'back.logoSizeLabel':'Size',
     'back.logoOffsetLabel':'Vertical offset',
     'back.flipDirectionTitle':'Page flip direction',
@@ -1838,7 +1852,7 @@ const I18N={
     'back.subTextPh':'For example: child’s name',
     'emoji.searchPh':'Search for a symbol… e.g. lion, fire truck, star',
     'msg.backDesignSaved':'Back design saved ✓',
-    'msg.backLogoMissingFromBackup':'The back logo was not found in the backup — please upload it again in the back editor',
+    'msg.backLogoMissingFromBackup':'The back image was not found in the backup — please upload it again in the back editor',
     'msg.backedUpToAccount':'Backed up to your account ☁️',
     'msg.calibrationPageReady':'Calibration page generated — print it, flip it according to your chosen flip direction, and measure the offset',
     'msg.cantReachCountWithSpacing':'Can’t reach this number with the current spacing — reduce the spacing',
@@ -1865,7 +1879,7 @@ const I18N={
     'msg.jszipNotLoaded':'The JSZip library did not load — an internet connection is required',
     'msg.loadDesignFromAccountFailed':'Failed to load the design from your account',
     'msg.loginLinkSentShowCode':'A sign-in link has been sent to you. Open it from your email, and your code will appear here.',
-    'msg.logoUploadFailed':'Logo upload failed — try a different file',
+    'msg.logoUploadFailed':'Image upload failed — try a different file',
     'msg.magicLinkSent':'📩 We’ve sent a sign-in link to your email — open it from this device',
     'msg.magicLinkSentCloudsave':'📩 We’ve sent a sign-in link to your email — open it from this device. Your design will save automatically once you sign in.',
     'msg.needCodeToSendStuck':'To send this to Hoshaya you need to sign in with a subscriber code',
@@ -2463,6 +2477,16 @@ window.applyI18n=applyI18n;
           <div data-i18n="edit.symbolSizeTitle" class="sb-t">גודל סמלים</div>
           <!-- שלושת הסרגלים נעולים (pointer-events:none) עד נגיעה מכוונת בשורה — גלילה
                בדף מעל סליידר בנייד הזיזה אותו בלי שהמשתמש שם לב. כפתורי −/+ לצעד מדויק. -->
+          <div class="sl-row" data-sl-lock="sl-var">
+            <div class="sl-lbl"><span><span data-i18n="edit.varietyTitle">גיוון בגדלים</span><button type="button" class="help-btn" data-help="overlap" data-i18n-title="help.btnTitle" title="הסבר">?</button></span><strong id="lbl-var">80%–120%</strong></div>
+            <div style="display:flex;align-items:center;gap:.4rem">
+              <button class="btn btn-ghost" type="button" data-step="sl-var" data-dir="-1" aria-label="−" style="padding:.15rem .6rem;min-width:2rem;justify-content:center">−</button>
+              <input type="range" id="sl-var" min="0" max="50" value="20" step="5" style="pointer-events:none">
+              <button class="btn btn-ghost" type="button" data-step="sl-var" data-dir="1" aria-label="+" style="padding:.15rem .6rem;min-width:2rem;justify-content:center">+</button>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:.7rem;color:var(--muted);margin-top:.15rem"><span data-i18n="edit.varietyEqual">כולם שווים</span><span data-i18n="edit.varietyMixed">מגוונים</span></div>
+            <div id="var-mm" style="font-size:.74rem;color:var(--indigo);font-weight:700;margin-top:.25rem;min-height:1em"></div>
+          </div>
           <div class="sl-row" data-sl-lock="sl-mn">
             <div class="sl-lbl"><span data-i18n="edit.symbolSizeMin">מינימום</span><strong id="lbl-mn">70%</strong></div>
             <div style="display:flex;align-items:center;gap:.4rem">
@@ -2481,10 +2505,10 @@ window.applyI18n=applyI18n;
             </div>
           </div>
           <div class="sl-row" data-sl-lock="sl-ov">
-            <div class="sl-lbl"><span><span data-i18n="edit.overlapTitle">חפיפה / מרווח</span><button type="button" class="help-btn" data-help="overlap" data-i18n-title="help.btnTitle" title="הסבר">?</button></span><strong id="lbl-ov">צמוד</strong></div>
+            <div class="sl-lbl"><span><span data-i18n="edit.overlapTitle">מרחק בין הסמלים</span><button type="button" class="help-btn" data-help="overlap" data-i18n-title="help.btnTitle" title="הסבר">?</button></span><strong id="lbl-ov">מרווח 30%</strong></div>
             <div style="display:flex;align-items:center;gap:.4rem">
               <button class="btn btn-ghost" type="button" data-step="sl-ov" data-dir="-1" aria-label="−" style="padding:.15rem .6rem;min-width:2rem;justify-content:center">−</button>
-              <input type="range" id="sl-ov" min="-100" max="100" value="0" step="5" style="pointer-events:none">
+              <input type="range" id="sl-ov" min="-100" max="100" value="-30" step="5" style="pointer-events:none">
               <button class="btn btn-ghost" type="button" data-step="sl-ov" data-dir="1" aria-label="+" style="padding:.15rem .6rem;min-width:2rem;justify-content:center">+</button>
             </div>
           </div>
@@ -2499,7 +2523,7 @@ window.applyI18n=applyI18n;
           <div data-i18n="edit.overlapNote" style="font-size:.75rem;color:var(--muted);line-height:1.5;margin-top:.3rem">
             אפס = הסמלים נוגעים בדיוק · ימינה = נכנסים זה בזה · שמאלה = מתרחקים זה מזה
           </div>
-          <button data-i18n="edit.overlapResetBtn" class="btn btn-ghost" type="button" data-reset="sl-mn,sl-mx,sl-ov"
+          <button data-i18n="edit.overlapResetBtn" class="btn btn-ghost" type="button" data-reset="sl-var,sl-ov"
                   style="width:100%;justify-content:center;margin-top:.5rem;font-size:.8rem">↺ ברירת מחדל</button>
         </div>
         <div class="sb-sec">
@@ -2742,7 +2766,7 @@ window.applyI18n=applyI18n;
       <button data-i18n="back.tabFrame" class="back-tab" data-tab="frame">מסגרת</button>
       <button data-i18n="back.tabSymbol" class="back-tab" data-tab="symbol">סמל</button>
       <button data-i18n="back.tabText" class="back-tab" data-tab="text">כיתוב</button>
-      <button data-i18n="back.tabLogo" class="back-tab" data-tab="logo">לוגו</button>
+      <button data-i18n="back.tabLogo" class="back-tab" data-tab="logo">תמונה</button>
       <button data-i18n="back.tabPrint" class="back-tab" data-tab="print">הדפסה</button>
     </div>
 
@@ -2814,12 +2838,12 @@ window.applyI18n=applyI18n;
     </div>
 
     <div class="back-tabpage" id="back-tab-logo">
-      <div data-i18n="back.logoTitle" class="og-t">לוגו (אופציונלי)</div>
+      <div data-i18n="back.logoTitle" class="og-t">📷 תמונה או לוגו</div>
       <div style="display:flex;align-items:center;gap:.8rem">
         <canvas class="back-logo-prev" id="back-logo-prev" width="80" height="80"></canvas>
         <div style="display:flex;flex-direction:column;gap:.4rem">
-          <button data-i18n="back.logoUploadBtn" class="btn btn-sec" id="back-logo-btn" type="button">📤 העלה לוגו</button>
-          <button data-i18n="back.logoRemoveBtn" class="btn btn-ghost" id="back-logo-remove" type="button" style="display:none">🗑 הסר לוגו</button>
+          <button data-i18n="back.logoUploadBtn" class="btn btn-sec" id="back-logo-btn" type="button">📤 העלה תמונה</button>
+          <button data-i18n="back.logoRemoveBtn" class="btn btn-ghost" id="back-logo-remove" type="button" style="display:none">🗑 הסר תמונה</button>
         </div>
         <input type="file" id="back-logo-file" accept="image/*" hidden>
       </div>
@@ -3536,7 +3560,7 @@ function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
   if(!n)return;
   const metas=layout.syms.map(si=>{const img=imgs[si];return (img&&img.__symMeta)||CIRCLE_META;});
   const rots=layout.tr.map(t=>t.ro);
-  const halves=pos.map((p,i)=>p.hs*layout.tr[i].sc);
+  const halves=pos.map((p,i)=>p.hs*layout.tr[i].sc);   // משתנה רק בגודל האוטומטי (D-60), במקום
   const origX=pos.map(p=>p.x),origY=pos.map(p=>p.y);
   const kT=contactFactor();          // יעד המגע האמיתי — לעולם לא יורד, גם כשההרפיה מתפשרת
   const tol=rSym*0.015;
@@ -3641,6 +3665,43 @@ function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
   }
   let g=exactShrink(best);
 
+  // D-60 גודל אוטומטי: "ניפוח" — מגדילים את כל הסמלים יחד עד המגע הראשון (g אנליטי בלי תקרת 1), מרפים שוב כדי
+  // לפנות מקום, וחוזר — עד שאין עוד לאן לגדול. עובד גם עם מרווח (kT>1): המרווח הוא יחס לגודל הסמלים ונשמר.
+  // התקרה היחידה היא הגבולות עצמם (dist+reach ≤ rSym וזוגות ≥ need). AUTO_GMAX=4 הוא רק בלם בטיחות לסמל
+  // "ריק" (פרופיל רדיאלי ≈ 0) שבלעדיו g יכול לצאת אינסופי. שלב אחרון: g המדויק — לעולם לא מעבר לחוקי.
+  if(S.sizeMode==='auto'){
+    const gU=P=>{
+      let gg=Infinity;
+      for(let i=0;i<n;i++){
+        const dx=P[i].x-cx,dy=P[i].y-cy,dist=Math.hypot(dx,dy);
+        const angOut=dist<1e-6?0:Math.atan2(dy,dx);
+        const reach=reachAt(metas[i],rots[i],angOut,halves[i]);
+        if(reach>1e-9)gg=Math.min(gg,Math.max(0,(rSym-dist)/reach));
+      }
+      for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){
+        const dx=P[j].x-P[i].x,dy=P[j].y-P[i].y,d=Math.hypot(dx,dy);
+        const ang=Math.atan2(dy,dx);
+        const need=(reachAt(metas[i],rots[i],ang+Math.PI,halves[i])+reachAt(metas[j],rots[j],ang,halves[j]))*kT;
+        if(need>1e-9)gg=Math.min(gg,d/need);
+      }
+      return Math.max(0.05,Math.min(AUTO_GMAX,gg));
+    };
+    // חיפוש בינארי על מקדם הגדילה F: לכל ניסיון מגדילים את כל הסמלים פי F, מרפים מהפריסה החוקית האחרונה
+    // (התחלה חמה), ובודקים שאין הפרה. הגדול ביותר שעבר = הקלף מלא. AUTO_STEPS צעדים, דטרמיניסטי, בלי רנדום.
+    const base=halves.slice(),setF=f=>{for(let i=0;i<n;i++)halves[i]=base[i]*f;};
+    let lo=gU(best),loP=best,hi=lo*2.5;
+    setF(lo);
+    for(let s2=0;s2<AUTO_STEPS;s2++){
+      const mid=(lo+hi)/2;setF(mid);
+      const P=runPass(kT,loP.map(p=>p.x),loP.map(p=>p.y));
+      if(violation(P,kT)<=tol){lo=mid;loP=P;}else hi=mid;
+    }
+    setF(lo);best=loP;const F=lo;
+    g=F*Math.min(1,gU(best));
+    for(let i=0;i<n;i++){pos[i].x=best[i].x;pos[i].y=best[i].y;pos[i].hs=pos[i].hs*g;}
+    return;
+  }
+
   // "מילוי מיטבי": רק כשאין שום הפרה (g===1) וכשאין מרווח שלילי — הגדלה עד הגבול החוקי.
   if(g>=1&&S.tightFill&&(S.overlap||0)>=0){
     const fits=q=>{
@@ -3665,6 +3726,7 @@ function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
   for(let i=0;i<n;i++){pos[i].x=best[i].x;pos[i].y=best[i].y;pos[i].hs=pos[i].hs*g;}
 }
 
+const AUTO_GMAX=4,AUTO_STEPS=7;   // ראו "גודל אוטומטי" ב-relaxSymbolPositions. 7 צעדים = דיוק ~1% ב-F
 // ══ גיאומטריית קלף אחידה ══
 // מקור אמת יחיד לכל חישובי המידות — drawCard, עורך הקלף הבודד וייצוא ה-PDF
 // חייבים לקבל בדיוק את אותם מספרים, אחרת התצוגה והקובץ יסטו זה מזה.
@@ -3685,7 +3747,7 @@ function cardGeom(sz){
 // יתרון כפול: (א) אותה פריסה בדיוק בכל רזולוציה — תצוגה 220px ו-PDF 1400px זהים;
 // (ב) החישוב הכבד (4 נקודות פתיחה × 4 מעברים) רץ פעם אחת לקלף, לא בכל ציור מחדש.
 function packSignature(n){
-  return [n,S.layoutMode,S.overlap,S.tightPack?1:0,S.tightFill?1:0,S.metaVer||0].join('|');
+  return [n,S.layoutMode,S.overlap,S.tightPack?1:0,S.tightFill?1:0,S.metaVer||0,S.sizeMode||'',S.sizeMode==='auto'?S.sizeK:''].join('|');
 }
 function packNormalized(layout,imgs){
   const n=layout.syms.length;
@@ -3695,6 +3757,7 @@ function packNormalized(layout,imgs){
   if(c&&c.sig===sig)return c.pos;
   const pos=symPos(n,0,0,1);
   if(S.tightPack)relaxSymbolPositions(pos,layout,imgs,0,0,1);
+  else if(S.sizeMode==='auto')relaxSymbolPositions(pos,layout,[],0,0,1);   // גודל אוטומטי בלי "לפי צורה" = מילוי לפי עיגולים
   else clampInsideCard(pos,layout,1);
   layout.__pack={sig,pos};
   return pos;
@@ -4264,7 +4327,10 @@ function markBackDirty(){
 const S={
   assets:[],
   order:null,deck:[],layouts:[],imgEls:[],canvases:[],
-  shape:'circle',symShape:'circle',sMin:.70,sMax:1.30,seed:1,layoutMode:'scatter',overlap:0,
+  shape:'circle',symShape:'circle',sMin:.80,sMax:1.20,seed:1,layoutMode:'scatter',overlap:-30,
+  // D-60: עיצוב חדש = גודל אוטומטי (sizeMode:'auto') — הסמלים ממלאים את הקלף עד הגבול החוקי, sizeK = "גיוון בגדלים"
+  // (sMin=1-k, sMax=1+k). עיצוב שנטען בלי sizeMode = legacy, מתנהג בייט-לבייט כמו לפני D-60 עד הנגיעה הראשונה.
+  sizeMode:'auto',sizeK:.20,
   tightPack:true,tightFill:true,    // חפיפה לפי צורת הסמל / מילוי מיטבי של הקלף (דלוק כברירת מחדל מאז 30/09 — ראו מרשם-מחולל D-52)
   sel:[],
   cardEdits:{},   // { [cardIdx]: { [slot]: {s,dx,dy} } } — התאמות ידניות לקלף בודד. dx/dy ביחידות rSym.
@@ -5092,7 +5158,7 @@ async function loadImgFile(f,url){
 async function setBackLogoFromFile(f){
   const url=URL.createObjectURL(f);
   try{
-    const imgEl=await withTimeout(loadImgFile(f,url),30000,'תם הזמן הקצוב לטעינת הלוגו');
+    const imgEl=await withTimeout(loadImgFile(f,url),30000,'תם הזמן הקצוב לטעינת התמונה');
     removeBackLogo();
     const thumb=makeThumb(imgEl);
     const asset={id:++S.idSeq,type:'backlogo',name:f.name,url,thumb,imgEl,selected:true};
@@ -5463,6 +5529,7 @@ function autoMinCap(sMax){
 }
 function applyAutoMin(){
   const hint=document.getElementById('mn-auto-hint');
+  if(S.sizeMode==='auto'){if(hint)hint.style.display='none';return;}   // D-60: אין מינימום/מקסימום בגודל אוטומטי
   const capPct=Math.max(20,Math.min(160,Math.floor(autoMinCap(+slMx.value/100)*20)*5));
   slMn.max=String(capPct);
   if(+slMn.value>capPct){
@@ -5493,6 +5560,7 @@ function schedSymRedraw(){
   _symSizeT=setTimeout(()=>{redrawCards();},180);   // אותו debounce כמו sl-card-size
 }
 slMn.addEventListener('input',()=>{
+  if(S.sizeMode==='auto')return;        // D-60: מוסתר; לא נוגע ב-sMin/sMax של הגודל האוטומטי
   if(+slMn.value>+slMx.value){slMx.value=slMn.value;S.sMax=+slMx.value/100;}
   S.sMin=+slMn.value/100;
   applyAutoMin();                       // גם כאן — התקרה תלויה גם במינימום
@@ -5500,6 +5568,7 @@ slMn.addEventListener('input',()=>{
   schedSymRedraw();
 });
 slMx.addEventListener('input',()=>{
+  if(S.sizeMode==='auto')return;
   const prevMn=slMn.value;
   if(+slMx.value<+slMn.value){slMn.value=slMx.value;S.sMin=+slMn.value/100;}
   S.sMax=+slMx.value/100;
@@ -5526,6 +5595,56 @@ slOv.addEventListener('input',()=>{
   redrawCards();
 });
 ckTight.addEventListener('change',()=>{S.tightPack=ckTight.checked;applyAutoMin();setSymSizeLabels();redrawCards();});
+
+// ── D-60: "גיוון בגדלים" + "מרחק", גודל אוטומטי ──
+// k ∈ [0,0.5] → sMin=1-k, sMax=1+k (ממוצע תמיד 100%). הגודל עצמו נקבע אוטומטית (relaxSymbolPositions).
+// עיצוב legacy (בלי sizeMode) מוצג עם שני הסרגלים אבל מצויר בדיוק כמו קודם — עד הנגיעה הראשונה באחד מהם.
+const slVar=document.getElementById('sl-var'),lblVar=document.getElementById('lbl-var');
+lblVar.dir='ltr';   // "80%–120%" בתוך עמוד RTL היה מוצג הפוך (120%–80%)
+function varLabel(k){const a=Math.round((1-k)*100),b=Math.round((1+k)*100);return k<=0.001?t('edit.varietyLabelZero'):t('edit.varietyLabelRange',{a,b});}
+function syncSizeUI(){
+  // מינימום/מקסימום, "מילוי מיטבי" והודעת ההתאמה האוטומטית — לא מוצגים יותר (גם ב-legacy)
+  ['sl-mn','sl-mx'].forEach(id=>{const r=document.getElementById(id).closest('[data-sl-lock]');if(r)r.hidden=true;});
+  const hint=document.getElementById('mn-auto-hint');if(hint)hint.style.display='none';
+  // ⛔ style.display ולא hidden — ל-.tool-row יש display:flex שגובר על [hidden] (אותה מלכודת של כלל ".btn[hidden]")
+  const tf=ckTightFill.closest('label');if(tf)tf.style.display='none';
+  if(S.sizeMode==='auto'){slVar.value=Math.round(S.sizeK*100);lblVar.textContent=varLabel(S.sizeK);return;}
+  const sum=S.sMin+S.sMax,k=(S.sMax-S.sMin)/2;
+  if(Math.abs(sum-2)<0.02&&k>=-0.001&&k<=0.501){slVar.value=Math.round(k*20)*5;lblVar.textContent=varLabel(Math.max(0,k));}
+  else{slVar.value=Math.max(0,Math.min(50,Math.round(k*20)*5));lblVar.textContent=t('edit.varietyCustom');}
+}
+// מעבר ל-auto — בנגיעה הראשונה בגיוון או במרחק. k לוקחים מהסרגל (ב"מותאם אישית" — הקרוב ביותר).
+function enterAutoSize(){
+  if(S.sizeMode==='auto')return false;
+  S.sizeMode='auto';S.sizeK=+slVar.value/100;S.sMin=1-S.sizeK;S.sMax=1+S.sizeK;
+  lblVar.textContent=varLabel(S.sizeK);
+  return true;
+}
+// הסמל הקטן והגדול בפועל (קוטר במ"מ), מאותה פריסה ש-drawCard מצייר — אחרי החישוב, לא הערכה.
+function updateVarMm(){
+  const el=document.getElementById('var-mm');if(!el)return;
+  if(S.sizeMode!=='auto'||!S.layouts.length||!S.imgEls.length){el.textContent='';return;}
+  const G=cardGeom(CARD_PX);let mn=Infinity,mx=0;
+  for(const L of S.layouts){
+    const np=packNormalized(L,S.imgEls);
+    np.forEach((p,i)=>{const d=2*p.hs*L.tr[i].sc*G.rSym/G.ppMm;if(d<mn)mn=d;if(d>mx)mx=d;});
+  }
+  if(!isFinite(mn)){el.textContent='';return;}
+  const f=v=>v<10?v.toFixed(1):Math.round(v);
+  el.textContent=t('edit.varietyMm',{a:f(mn),b:f(mx)});
+}
+// capture על document: רץ לפני המאזין הקיים של sl-ov, כך שהמעבר ל-auto קורה לפני הציור
+document.addEventListener('input',e=>{
+  if(e.target!==slOv&&e.target!==slVar)return;
+  const switched=enterAutoSize();
+  if(e.target===slVar){
+    S.sizeK=+slVar.value/100;S.sMin=1-S.sizeK;S.sMax=1+S.sizeK;lblVar.textContent=varLabel(S.sizeK);
+    schedSymRedraw();
+  }else if(switched){S.tightFill=true;}
+  if(switched&&S.deck.length)renderAll();   // sMin/sMax השתנו — צריך פריסה חדשה (tr), לא רק ציור מחדש
+},true);
+slVar.addEventListener('change',()=>{if(S.deck.length)renderAll();});
+syncSizeUI();   // בטעינת הדף: מינימום/מקסימום ומילוי מיטבי מוסתרים, הגיוון לפי S
 
 // ── כפתורי צעד −/+ לסרגלי הסמלים: צעד אחד מדויק, דרך אותם אירועים שהגרירה מפעילה ──
 document.addEventListener('click',e=>{
@@ -5644,6 +5763,7 @@ async function generate(){
   document.getElementById('gen-ov').style.display='none';
   document.getElementById('prev-wrap').style.display='block';
   toast(t('edit.cardsGenerated',{n:S.deck.length}),'ok');
+  updateVarMm();
   window.track&&window.track('game',{cards:S.deck.length,symbols:S.order.spc,total:S.order.total});
 }
 
@@ -5655,6 +5775,7 @@ async function renderAll(){
     drawCard(S.canvases[i],S.layouts[i],S.imgEls,S.shape);
     if(i%8===7)await tick();
   }
+  updateVarMm();
 }
 
 // ══ RESHUFFLE ══
@@ -6310,6 +6431,7 @@ async function redrawCards(){
     drawCard(S.canvases[i],S.layouts[i],S.imgEls,S.shape);
     if(i%8===7)await tick();
   }
+  updateVarMm();
 }
 function onDesignChange(){resetExport();redrawCards();updatePaperPrev();}
 
@@ -8459,6 +8581,7 @@ async function saveDesign(){
       cardSizeMm:S.cardSizeMm,spacingMm:S.spacingMm,startPos:S.startPos,
       frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),symPad:S.symPad,overlap:S.overlap,
       tightPack:S.tightPack,tightFill:S.tightFill,
+      ...(S.sizeMode==='auto'?{sizeMode:'auto',sizeK:S.sizeK}:{}),   // D-60 — legacy שלא נגעו בו נשמר בלי השדה
       back:JSON.parse(JSON.stringify(S.back)),
       cardEdits:JSON.parse(JSON.stringify(S.cardEdits||{})),
       orderTotal:S.order?S.order.total:null};
@@ -8492,6 +8615,7 @@ function buildDesignObject(name){
       cardSizeMm:S.cardSizeMm,spacingMm:S.spacingMm,startPos:S.startPos,
       frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),symPad:S.symPad,overlap:S.overlap,
       tightPack:S.tightPack,tightFill:S.tightFill,
+      ...(S.sizeMode==='auto'?{sizeMode:'auto',sizeK:S.sizeK}:{}),   // D-60
       back:JSON.parse(JSON.stringify(S.back)),
       cardEdits:JSON.parse(JSON.stringify(S.cardEdits||{})),
       orderTotal:S.order?S.order.total:null}};
@@ -8702,6 +8826,7 @@ function applySettingsToUI(st){
   // ב-main, התגלה כשהתווית התחילה לקרוא את ערך הסליידר). התקרה שייכת רק למשחק קיים.
   if(S.order)applyAutoMin();
   setSymSizeLabels();                   // אחרי applyAutoMin — הוא עלול לשנות את המינימום
+  syncSizeUI();
 }
 
 // טעינת מבנה עיצוב {name,rows,settings} לתוך מצב האפליקציה
@@ -8732,7 +8857,8 @@ async function applyDesignToState(d){
   Object.assign(S,{shape:st.shape||'circle',symShape:st.symShape||'circle',sMin:st.sMin??.7,sMax:st.sMax??1.3,
     seed:st.seed||1,layoutMode:st.layoutMode||'scatter',cardSizeMm:st.cardSizeMm||85,
     spacingMm:st.spacingMm??5,startPos:st.startPos||'center',symPad:st.symPad??2,overlap:st.overlap??0,
-    tightPack:st.tightPack!==false,tightFill:!!st.tightFill,cardEdits:st.cardEdits||{}});
+    tightPack:st.tightPack!==false,tightFill:!!st.tightFill,cardEdits:st.cardEdits||{},
+    sizeMode:st.sizeMode==='auto'?'auto':undefined,sizeK:st.sizeK??.2});   // D-60: בלי sizeMode = legacy
   if(st.frame)S.frame=Object.assign({},st.frame);
   if(st.bg)S.bg=Object.assign({},st.bg);
   S.back=mergeBack(st.back);
@@ -9489,7 +9615,7 @@ function enterSupportMode(label){
     assets:S.assets.slice(),idSeq:S.idSeq,
     settings:{shape:S.shape,symShape:S.symShape,sMin:S.sMin,sMax:S.sMax,seed:S.seed,layoutMode:S.layoutMode,
       cardSizeMm:S.cardSizeMm,spacingMm:S.spacingMm,startPos:S.startPos,symPad:S.symPad,overlap:S.overlap,
-      tightPack:S.tightPack,tightFill:S.tightFill,
+      tightPack:S.tightPack,tightFill:S.tightFill,sizeMode:S.sizeMode,sizeK:S.sizeK,
       frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),
       back:JSON.parse(JSON.stringify(S.back)),
       cardEdits:JSON.parse(JSON.stringify(S.cardEdits||{}))}
