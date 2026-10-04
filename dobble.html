@@ -4558,7 +4558,7 @@ async function afRun(){
         F=await AIImage.detectFaces(a.imgEl,{signal:ac.signal,minScore:AF_MIN_SCORE,onProgress:p=>{
           arm();
           if(p.phase!=='download'||!p.total)return;
-          const pct=Math.round(p.loaded/p.total*100);
+          const pct=Math.min(99,Math.round(p.loaded/p.total*100));   // שרת שמדווח גודל דחוס (gzip) — האחוז יכול לעבור את 100
           if(pct!==lastPct&&pct%5===0){lastPct=pct;toast(t('faces.preparing',{pct}),'ok');}
         }});
         AF.ready=true;
