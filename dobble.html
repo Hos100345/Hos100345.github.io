@@ -4493,6 +4493,7 @@ function loadAI(){
 const AF_MIN_FACE=30;      // פנים קטנות מזה (בפיקסלים של המקור, אחרי LOAD_MAX) ייצאו מטושטשות כסמל
 const AF_MAX_FACES=20;     // תמונת המון — לא מציפים את המאגר
 const AF_MIN_SCORE=.6,AF_VERIFY_SCORE=.85;   // ראו afVerify
+const AF_STALL_MS=30000;   // כלב השמירה של afRun
 const AF={q:[],running:false,ready:false};
 // מכשיר חלש (<4GB, אותו שער כמו בסטודיו) או דפדפן בלי Worker/Wasm — מדלגים בשקט.
 function afEnabled(){
@@ -4538,6 +4539,7 @@ function afAddFaces(a,F){
 }
 async function afRun(){
   AF.running=true;
+  AF.ready=false;   // ה-Worker נסגר בסוף כל ריצה (cancelAll) — כל ריצה מתחילה מ"מנוע לא עלה"
   const added=[],t0=performance.now();let done=0,nImgs=0,lastPct=-1;
   try{
     await loadAI();
@@ -4546,11 +4548,15 @@ async function afRun(){
       if(!S.assets.includes(a)||a.type!=='image'||!a.imgEl||a.isCropSource)continue;   // נמחקה / עיצוב אחר נטען / כבר נחתכה ידנית
       const total=done+1+AF.q.length;
       if(AF.ready)toast(t('faces.searching',{n:done+1,total}),'ok');
-      // כלל timeout: בהורדה הראשונה (~11MB מנוע + 0.23MB מודל) עד 3 דק', אחר כך 30 שנ' לתמונה. abort = סיום ה-Worker.
-      const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),AF.ready?30000:180000);
+      // כלל timeout — כלב שמירה: abort (= סיום ה-Worker) אם 30 שנ' לא זז כלום. כל אירוע התקדמות מאפס אותו,
+      // כך שהורדה איטית (~11MB בפעם הראשונה, 3G) מסתיימת, והורדה תקועה נעצרת אחרי 30 שנ' ולא אחרי דקות.
+      const ac=new AbortController();let tm=0;
+      const arm=()=>{clearTimeout(tm);tm=setTimeout(()=>ac.abort(),AF_STALL_MS);};
+      arm();
       let F;
       try{
         F=await AIImage.detectFaces(a.imgEl,{signal:ac.signal,minScore:AF_MIN_SCORE,onProgress:p=>{
+          arm();
           if(p.phase!=='download'||!p.total)return;
           const pct=Math.round(p.loaded/p.total*100);
           if(pct!==lastPct&&pct%5===0){lastPct=pct;toast(t('faces.preparing',{pct}),'ok');}
@@ -4559,6 +4565,7 @@ async function afRun(){
         const ok=[];
         for(const f of F.filter(f=>Math.min(f.w,f.h)>=AF_MIN_FACE)){
           if(ok.length>=AF_MAX_FACES)break;
+          arm();
           if(await afVerify(a.imgEl,f,ac.signal))ok.push(f);
         }
         F=ok;
