@@ -226,6 +226,8 @@
     .g-del{position:absolute;top:-5px;inset-inline-end:-5px;width:18px;height:18px;background:#ef4444;color:#fff;border-radius:50%;font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;line-height:1;box-shadow:0 1px 3px rgba(0,0,0,.25)}
     .g-edit{position:absolute;bottom:-6px;inset-inline-end:-6px;width:24px;height:24px;background:var(--indigo);color:#fff;border-radius:50%;font-size:.85rem;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid #fff;line-height:1;box-shadow:0 1px 4px rgba(0,0,0,.3)}
     .g-edit:hover{transform:scale(1.15)}
+    .g-bg{position:absolute;bottom:-6px;inset-inline-start:-6px;width:24px;height:24px;background:#fff;color:var(--indigo);border-radius:50%;font-size:.8rem;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid var(--indigo);line-height:1;box-shadow:0 1px 4px rgba(0,0,0,.3);padding:0}
+    .g-bg:hover{transform:scale(1.15)}
     .g-check{position:absolute;top:-5px;inset-inline-start:-5px;width:18px;height:18px;margin:0;cursor:pointer;accent-color:var(--indigo)}
     .g-name{font-size:.58rem;color:var(--muted);margin-top:.2rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:72px}
     .gallery-bulk{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem}
@@ -406,6 +408,7 @@
       .g-item canvas{width:84px;height:84px}
       .g-del{width:24px;height:24px;font-size:.8rem;top:-8px}
       .g-edit{width:26px;height:26px;font-size:.85rem;bottom:-8px}
+      .g-bg{width:26px;height:26px;bottom:-8px}
       .g-name{max-width:84px;font-size:.66rem}
       .cards-grid{grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:.65rem}
       .uz{padding:2.5rem 1.25rem}
@@ -1219,6 +1222,17 @@ const I18N={
     'faces.bgLowMem':'הסרת רקע דורשת מכשיר חזק יותר — נסו במחשב',
     'faces.busy':'רגע — עדיין מעבדים את התמונות שהעליתם',
     'faces.noSource':'התמונה המקורית נמחקה מהמאגר — אי אפשר לשנות את הרקע',
+    'bg.bulkBtn':'✨ הסר רקע מהנבחרים',
+    'bg.bulkTitle':'להסיר רקע מהסמלים המסומנים?',
+    'bg.bulkBody':'{n} סמלים. פנים יקבלו הסרת רקע לאנשים, וכל השאר הסרת רקע לחפצים. אפשר לעצור באמצע, ו-🖼 על כל סמל מחזיר לו את הרקע.',
+    'bg.bulkOk':'✨ הסר רקע מ-{n}',
+    'bg.progress':'✨ מסיר רקע… {n}/{total}',
+    'bg.stopBtn':'עצור',
+    'bg.done':'✨ הרקע הוסר מ-{n} סמלים',
+    'bg.doneKept':' · {k} נשארו כמו שהם (לא זוהה רקע ברור)',
+    'bg.stopped':'נעצר — {n} סמלים כבר טופלו, השאר לא השתנו',
+    'bg.notFound':'לא זוהה רקע להסרה — הסמל נשאר כמו שהוא',
+    'bg.none':'אין סמלים מסומנים שאפשר להסיר להם רקע',
     'unit.mm':'{v} מ"מ',
     'account.title':'☁️ חשבון וסנכרון',
     'account.desc':'התחברו כדי לגבות את העיצובים שלכם לחשבון האישי — כך הם לא ייעלמו אם תחליפו מכשיר או תנקו את הדפדפן. הכניסה במייל, בלי סיסמה.',
@@ -1782,6 +1796,17 @@ const I18N={
     'faces.bgLowMem':'Background removal needs a more powerful device — try on a computer',
     'faces.busy':'One moment — still processing the photos you uploaded',
     'faces.noSource':'The original photo was deleted from the library — the background cannot be changed',
+    'bg.bulkBtn':'✨ Remove background from selected',
+    'bg.bulkTitle':'Remove the background from the selected symbols?',
+    'bg.bulkBody':'{n} symbols. Faces get people background removal, everything else object background removal. You can stop midway, and 🖼 on any symbol brings its background back.',
+    'bg.bulkOk':'✨ Remove from {n}',
+    'bg.progress':'✨ Removing background… {n}/{total}',
+    'bg.stopBtn':'Stop',
+    'bg.done':'✨ Background removed from {n} symbols',
+    'bg.doneKept':' · {k} kept as they were (no clear background found)',
+    'bg.stopped':'Stopped — {n} symbols were already done, the rest were not changed',
+    'bg.notFound':'No background found to remove — the symbol stays as it is',
+    'bg.none':'No selected symbols to remove a background from',
     'unit.mm':'{v} mm',
     'account.title':'☁️ Account & sync',
     'account.desc':'Sign in to back up your designs to your personal account — so they won’t disappear if you switch devices or clear your browser. Sign in by email, no password needed.',
@@ -2358,6 +2383,7 @@ window.applyI18n=applyI18n;
         <button data-i18n="upload.selectAllBtn" type="button" class="g-bulk-btn" id="btn-select-all">☑️ סמן הכל</button>
         <button data-i18n="upload.clearSelectionBtn" type="button" class="g-bulk-btn" id="btn-clear-all">◻️ נקה הכל</button>
         <button data-i18n="upload.deleteSelectedBtn" type="button" class="g-bulk-btn danger" id="btn-del-selected">🗑 מחק מסומנים</button>
+        <button data-i18n="bg.bulkBtn" type="button" class="g-bulk-btn" id="btn-bg-selected" hidden>✨ הסר רקע מהנבחרים</button>
         <button data-i18n="upload.saveToCloudBtn" type="button" class="g-bulk-btn" id="btn-cloud-save">☁️ לשמור בענן?</button>
         <span class="g-sel-count" id="g-sel-count"></span>
       </div>
@@ -4780,6 +4806,118 @@ async function afToggleBg(a){
   toast(t(on?'faces.bgRemoved':'faces.bgRestored'),'ok');
 }
 
+// ══ ✨ הסרת רקע לחפצים — לפי בחירה, לא בהעלאה (D-58) ══
+// סמל רגיל (תמונה / חיתוך ידני / AI / אימוג'י) X → נגזרת חדשה Y מסוג crop עם srcAssetId=X ו-af:{kind:'obj',bg}.
+// X נשאר במאגר כמקור (isCropSource) ולא במשחק — כך 🖼 על Y בונה מחדש מ-X גם אחרי רענון/ענן, בלי שדה חדש
+// בשמירה (af כבר נשמר ב-IDB ובענן). פנים = af בלי kind (מזיהוי אוטומטי, afCutout/MODNet). חפץ = u2netp (mode:'object').
+const isObjSym=a=>!!(a&&a.af&&a.af.kind==='obj');
+const bgBusy=()=>AF.running||AF.toggling;
+// u2netp על כל הסמל (אין "פנים" לשמור עליהן, אין שוליים — החפץ הוא כל התמונה), ואז הגנת "הכול נמחק / כלום לא נמחק":
+// פחות מ-5% או יותר מ-98% פיקסלים אטומים = המודל לא מצא חפץ ברור → null, הסמל לא מוחלף.
+async function obCutout(src,signal,onProgress){
+  const r=await AIImage.removeBg(src,{mode:'object',signal,onProgress});
+  const cv=r.canvas,W=cv.width,H=cv.height,d=cv.getContext('2d').getImageData(0,0,W,H).data;
+  let op=0;for(let i=3;i<d.length;i+=4)if(d[i]>200)op++;
+  const f=op/(W*H);
+  if(f<.05||f>.98){cv.width=cv.height=0;return null;}
+  const out=trimAlphaSquare(cv,IMG_PX,0.02);
+  if(out!==cv)cv.width=cv.height=0;
+  return out;
+}
+// העתק של המקור כמו שהוא — 🖼 על נגזרת חפץ
+function obPlain(src){
+  const cv=document.createElement('canvas');cv.width=imgNatW(src);cv.height=imgNatH(src);
+  cv.getContext('2d').drawImage(src,0,0);return cv;
+}
+// סמל רגיל → נגזרת עם רקע מוסר, מיד אחרי המקור בגלריה
+function obAddDerived(x,cv){
+  const y={id:++S.idSeq,type:'crop',name:x.name.replace(/\.[^.]+$/,'')+' ✨',url:'',thumb:makeThumb(cv),imgEl:cv,
+           srcAssetId:x.id,selected:true,folder:x.folder,af:{kind:'obj',bg:1}};
+  const i=S.assets.indexOf(x);S.assets.splice(i<0?S.assets.length:i+1,0,y);
+  x.isCropSource=true;
+  return y;
+}
+// ריצה אחת של כלי רקע (סמל בודד או מרובה): נעילה, טעינת AI, כלב שמירה 30 שנ', סגירת ה-Worker בסוף.
+async function bgJob(fn){
+  AF.toggling=true;
+  const ac=new AbortController();let tm=0;
+  const arm=()=>{clearTimeout(tm);tm=setTimeout(()=>ac.abort(),AF_STALL_MS);};
+  const onP=p=>{arm();if(p.phase==='download'&&p.total)toast(t('faces.preparingBg',{pct:Math.min(99,Math.round(p.loaded/p.total*100))}),'ok');};
+  try{arm();await loadAI();return await fn(ac,arm,onP);}
+  finally{
+    clearTimeout(tm);AF.toggling=false;
+    if(window.AIImage)AIImage.cancelAll();
+    if(AF.q.length&&!AF.running)afRun();
+  }
+}
+// כפתור הגלריה: פנים → afToggleBg (חלק 3, ללא שינוי). חפץ → כאן.
+async function bgToggle(a){
+  if(a.af&&!isObjSym(a))return afToggleBg(a);
+  if(bgBusy()){toast(t('faces.busy'),'ok');return;}
+  if(isObjSym(a)){
+    const src=S.assets.find(x=>x.id===a.srcAssetId);
+    if(!src||!src.imgEl){toast(t('faces.noSource'),'err');return;}
+    if(a.af.bg){afSwap(a,obPlain(src.imgEl),0);renderGallery();updateCounter();schedIdbSave();toast(t('faces.bgRestored'),'ok');return;}
+  }
+  if(!afEnabled()){toast(t('faces.bgLowMem'),'err');return;}
+  const src=isObjSym(a)?S.assets.find(x=>x.id===a.srcAssetId):a;
+  toast(t('faces.bgWorking'),'ok');
+  let cv;
+  try{cv=await bgJob((ac,arm,onP)=>obCutout(src.imgEl,ac.signal,onP));}
+  catch(e){afTrack('obj fail · '+String(e&&e.message||e).slice(0,80));toast(t('faces.bgFailed'),'err');return;}
+  if(!cv){toast(t('bg.notFound'),'err');return;}
+  if(!S.assets.includes(a)||!S.assets.includes(src)){cv.width=cv.height=0;return;}
+  if(isObjSym(a))afSwap(a,cv,1);else obAddDerived(a,cv);
+  renderGallery();updateCounter();schedIdbSave();
+  toast(t('faces.bgRemoved'),'ok');
+}
+// "✨ הסר רקע מהנבחרים": לפי הסוג — פנים MODNet (afCutout), כל השאר u2netp (obCutout). "עצור" בהודעה מבטל באמצע;
+// מה שכבר טופל נשאר, מה שלא — לא נגע. renderGallery פעם אחת בסוף.
+async function bgBulk(){
+  if(bgBusy()){toast(t('faces.busy'),'ok');return;}
+  if(!afEnabled()){toast(t('faces.bgLowMem'),'err');return;}
+  const has=id=>S.assets.some(x=>x.id===id);
+  const sel=S.assets.filter(a=>isSymbolAsset(a)&&a.selected!==false&&(a.type==='image'||a.type==='crop')&&!(a.af&&a.af.bg)&&(!a.af||has(a.srcAssetId)));
+  if(!sel.length){toast(t('bg.none'),'err');return;}
+  const ok=await confirmDialog({icon:'✨',title:t('bg.bulkTitle'),body:t('bg.bulkBody',{n:sel.length}),okText:t('bg.bulkOk',{n:sel.length})});
+  if(!ok)return;
+  const R={face:0,obj:0,kept:0,stopped:false,failed:false};
+  try{
+    await bgJob(async(ac,arm,onP)=>{
+      const stop={label:t('bg.stopBtn'),fn:()=>{R.stopped=true;ac.abort();}};
+      for(let i=0;i<sel.length;i++){
+        if(R.stopped)break;
+        const a=sel[i];
+        if(!S.assets.includes(a))continue;
+        toast(t('bg.progress',{n:i+1,total:sel.length}),'ok',stop);
+        arm();
+        let cv;
+        try{
+          if(a.af&&!isObjSym(a)){
+            const src=S.assets.find(x=>x.id===a.srcAssetId);
+            cv=src&&await afCutout(src.imgEl,a.af,ac.signal,onP);
+            if(cv&&S.assets.includes(a)){afSwap(a,cv,1);R.face++;}else R.kept++;
+          }else{
+            const src=isObjSym(a)?S.assets.find(x=>x.id===a.srcAssetId):a;
+            cv=src&&await obCutout(src.imgEl,ac.signal,onP);
+            if(cv&&S.assets.includes(a)){if(isObjSym(a))afSwap(a,cv,1);else obAddDerived(a,cv);R.obj++;}else R.kept++;
+          }
+        }catch(e){
+          if(!R.stopped){R.failed=true;afTrack('bulk fail · '+String(e&&e.message||e).slice(0,80));}
+          break;
+        }
+      }
+    });
+  }catch(e){R.failed=true;afTrack('bulk fail · '+String(e&&e.message||e).slice(0,80));}
+  const n=R.face+R.obj;
+  if(n){renderGallery();updateCounter();schedIdbSave();}
+  afTrack('bulk · '+sel.length+' sel · face '+R.face+' obj '+R.obj+' kept '+R.kept+(R.stopped?' stopped':'')+(R.failed?' failed':''));
+  if(R.stopped)toast(t('bg.stopped',{n}),'ok');
+  else if(R.failed)toast(t('faces.bgFailed')+(n?' · '+t('bg.done',{n}):''),'err');
+  else toast(t('bg.done',{n})+(R.kept?t('bg.doneKept',{k:R.kept}):''),'ok');
+}
+document.getElementById('btn-bg-selected').addEventListener('click',bgBulk);
+
 // דיווח כשלים עם סיבה לכל קובץ + ניסיון חוזר על הכושלים בלבד
 async function reportFailedUploads(failed,folder,depth,opts){
   const lines=failed.map(x=>`• ${x.name} — ${x.reason}`).join('\n');
@@ -4999,14 +5137,17 @@ function buildGalleryItem(a){
   const del=document.createElement('button');del.className='g-del';del.textContent='×';del.title=t('upload.galleryRemoveBtnTitle');
   del.addEventListener('click',()=>removeAsset(a.id));
   item.appendChild(del);
-  if(a.type==='crop'&&a.af&&S.assets.some(x=>x.id===a.srcAssetId)){
-    // סמל פנים אוטומטי: 🖼 = החזר רקע · ✨ = הסר רקע. באותו מקום של ✂ (שקיים רק לתמונות), יעד מגע מלא.
-    const bg=document.createElement('button');bg.type='button';bg.className='g-edit';
-    bg.textContent=a.af.bg?'🖼':'✨';bg.title=t(a.af.bg?'faces.restoreBgTitle':'faces.removeBgTitle');
+  // ✨ הסר רקע / 🖼 החזר רקע — פינה תחתונה-התחלתית (✂ של תמונות יושב בתחתונה-סופית). יעד מגע מלא.
+  // נגזרת (פנים / חפץ) — רק כשהמקור עדיין במאגר. ✨ מוסתר במכשיר חסום (afEnabled); 🖼 לא צריך AI ונשאר.
+  {const der=a.type==='crop'&&a.af,on=!!(der&&a.af.bg);
+   const show=!a.isCropSource&&(a.type==='image'||a.type==='crop')&&(!der||S.assets.some(x=>x.id===a.srcAssetId))&&(on||afEnabled());
+   if(show){
+    const bg=document.createElement('button');bg.type='button';bg.className='g-bg';
+    bg.textContent=on?'🖼':'✨';bg.title=t(on?'faces.restoreBgTitle':'faces.removeBgTitle');
     bg.setAttribute('aria-label',bg.title);
-    bg.addEventListener('click',()=>afToggleBg(a));
+    bg.addEventListener('click',()=>bgToggle(a));
     item.appendChild(bg);
-  }
+   }}
   if(a.type==='image'){
     const edit=document.createElement('button');edit.className='g-edit';edit.textContent='✂';edit.title=t('upload.galleryCropBtnTitle');
     edit.addEventListener('click',()=>openCropModal(a.id));
@@ -5022,6 +5163,7 @@ function buildGalleryItem(a){
 }
 
 function renderGallery(){
+  {const b=document.getElementById('btn-bg-selected');if(b)b.hidden=!afEnabled();}   // שער מכשיר — חסום = לא מוצג
   const grid=document.getElementById('gallery-grid');
   const gallery=document.getElementById('gallery');
   grid.innerHTML='';
@@ -8807,6 +8949,8 @@ function logGame(meta){
 function analyticsUrl(){return localStorage.getItem('dobble_analytics_url')||DCFG.analyticsUrl||'';}
 function currentSub(){try{return JSON.parse(sessionStorage.getItem('dobble_sub')||'{}');}catch(e){return{};}}
 window.track=function(event,data){
+  // בדיקות אוטומטיות (Playwright/Selenium מסמנים navigator.webdriver) לא נרשמות כפעילות לקוח אמיתית
+  if(navigator.webdriver)return;
   try{
     const sub=currentSub();
     const d=data||{};
