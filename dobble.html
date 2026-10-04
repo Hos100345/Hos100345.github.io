@@ -1199,6 +1199,12 @@ const I18N={
     'edit.cardsGenerated':'נוצרו {n} קלפים 🎉',
     'edit.cropSymbolsSelectedCount':'{n} סמלים נבחרו',
     'edit.symbolsAddedToPool':'{n} סמלים נוספו למאגר ✓',
+    'faces.preparing':'🙂 מכין זיהוי פנים (פעם אחת בלבד) — {pct}%',
+    'faces.searching':'🙂 מחפש פנים בתמונות… {n}/{total}',
+    'faces.added':'🙂 נמצאו {n} פנים — כל פרצוף נוסף כסמל. התמונה המקורית נשארה במאגר, לא במשחק.',
+    'faces.undoBtn':'בטל ↩',
+    'faces.undone':'בוטל — התמונות חזרו כמו שהעליתם',
+    'faces.failed':'לא הצלחנו לחפש פנים — התמונות נכנסו כרגיל',
     'unit.mm':'{v} מ"מ',
     'account.title':'☁️ חשבון וסנכרון',
     'account.desc':'התחברו כדי לגבות את העיצובים שלכם לחשבון האישי — כך הם לא ייעלמו אם תחליפו מכשיר או תנקו את הדפדפן. הכניסה במייל, בלי סיסמה.',
@@ -1742,6 +1748,12 @@ const I18N={
     'edit.cardsGenerated':'{n} cards created 🎉',
     'edit.cropSymbolsSelectedCount':'{n} symbols selected',
     'edit.symbolsAddedToPool':'{n} symbols added to your library ✓',
+    'faces.preparing':'🙂 Preparing face detection (one time only) — {pct}%',
+    'faces.searching':'🙂 Looking for faces… {n}/{total}',
+    'faces.added':'🙂 Found {n} faces — each face was added as a symbol. The original photo stays in the library, not in the game.',
+    'faces.undoBtn':'Undo ↩',
+    'faces.undone':'Undone — your photos are back as you uploaded them',
+    'faces.failed':'Could not look for faces — your photos were added as usual',
     'unit.mm':'{v} mm',
     'account.title':'☁️ Account & sync',
     'account.desc':'Sign in to back up your designs to your personal account — so they won’t disappear if you switch devices or clear your browser. Sign in by email, no password needed.',
@@ -4378,7 +4390,7 @@ function looksLikeImage(f){
   return !NON_IMAGE_RE.test(f.name);
 }
 
-async function addFiles(files){
+async function addFiles(files,opts){
   const all=Array.from(files);
   const picked=all.filter(looksLikeImage);
   if(!picked.length){
@@ -4418,6 +4430,7 @@ async function addFiles(files){
 
   const failed=[];
   let okCount=0;
+  const newIds=[];   // לזיהוי הפנים האוטומטי — רק מה שהועלה עכשיו
   const folder=newFolder('העלאה');
   const total=imgs.length;
   uploadProgressOpen(total);
@@ -4431,6 +4444,7 @@ async function addFiles(files){
         const imgEl=await withTimeout(loadImgFile(f,url),60000,'תם הזמן הקצוב לטעינת התמונה');
         const thumb=makeThumb(imgEl);
         S.assets.push({id:++S.idSeq,type:'image',name:f.name,fsize:f.size,url,thumb,imgEl,selected:true,folder});
+        newIds.push(S.idSeq);
         okCount++;
       }catch(e){URL.revokeObjectURL(url);failed.push({file:f,name:f.name,reason:(e&&e.message)||t('upload.unknownErrorReason')});console.warn('upload failed:',f.name,e);}
       done++;
@@ -4453,15 +4467,145 @@ async function addFiles(files){
     toast(t('upload.poolExceedsUsable',{n:usableAfter,max:MAX_USABLE_SYMBOLS}),'err');
   }
   if(rejected)toast(t('upload.nonImageFilesSkipped',{n:rejected}),'err');
-  if(failed.length)await reportFailedUploads(failed,folder);
+  if(!(opts&&opts.noFaces))afQueue(newIds);   // רץ ברקע — ההעלאה כבר הסתיימה ולא מחכה לו
+  if(failed.length)await reportFailedUploads(failed,folder,0,opts);
 }
 
 // גשר ל-js/ai-symbols.js — נקודת כניסה מפורשת ויציבה לתור העלאה, בתבנית window.dobbleUnlock.
 // אין להוציא את S החוצה באותה דרך — S הוא const ולא ייחשף כך.
-window.dobbleAddFiles=function(files){ return addFiles(files); };
+// סמלי AI (js/ai-symbols.js) ואימוג'י (js/emoji-lib.js) הם איורים — לא מחפשים בהם פנים.
+window.dobbleAddFiles=function(files){ return addFiles(files,{noFaces:true}); };
+
+// ══ זיהוי פנים אוטומטי בהעלאה (D-56) ══
+// כל תמונה חדשה עוברת YuNet (js/ai-image.js המשותף עם הסטודיו — ⛔ לצרוך בלבד, לא לשנות אותו מכאן).
+// כל פרצוף → סמל crop נפרד (srcAssetId + af), והמקור מסומן isCropSource — נשאר במאגר ויוצא מהמשחק.
+// מחיקת כל הפרצופים מחזירה את המקור למשחק (syncCropSources). אין פנים / מכשיר חלש / תקלה → התמונה כמו שהיא.
+// רץ ברקע אחרי שההעלאה הסתיימה, תמונה אחרי תמונה; renderGallery פעם אחת בסוף התור (כלל renderGallery).
+const AI_V=3;   // ⛔ זהה ל-AI_V בסטודיו. שינוי ב-js/ai-image.js = להעלות בשני הדפים באותו PR (כלל cache busting)
+let _aiLoad=null;
+function loadAI(){
+  if(window.AIImage)return Promise.resolve();
+  return _aiLoad||(_aiLoad=withTimeout(new Promise((res,rej)=>{
+    const sc=document.createElement('script');sc.src='js/ai-image.js?v='+AI_V;
+    sc.onload=res;sc.onerror=()=>rej(new Error('load error'));document.head.appendChild(sc);
+  }),15000,'טעינת זיהוי הפנים נתקעה').catch(e=>{_aiLoad=null;throw e;}));
+}
+const AF_MIN_FACE=30;      // פנים קטנות מזה (בפיקסלים של המקור, אחרי LOAD_MAX) ייצאו מטושטשות כסמל
+const AF_MAX_FACES=20;     // תמונת המון — לא מציפים את המאגר
+const AF_MIN_SCORE=.6,AF_VERIFY_SCORE=.85;   // ראו afVerify
+const AF_STALL_MS=30000;   // כלב השמירה של afRun
+const AF={q:[],running:false,ready:false};
+// מכשיר חלש (<4GB, אותו שער כמו בסטודיו) או דפדפן בלי Worker/Wasm — מדלגים בשקט.
+function afEnabled(){
+  if(navigator.deviceMemory&&navigator.deviceMemory<4)return false;
+  return typeof Worker!=='undefined'&&typeof WebAssembly!=='undefined';
+}
+function afTrack(detail){try{window.track&&window.track('auto-faces',{detail:String(detail).slice(0,300)});}catch(e){}}
+function afQueue(ids){
+  if(!ids||!ids.length)return;
+  if(!afEnabled()){afTrack('skipped · '+(navigator.deviceMemory||'?')+'GB');return;}
+  // אובייקטים ולא מזהים — אם בינתיים נטען עיצוב אחר, אותו id יכול להצביע על תמונה אחרת
+  ids.forEach(id=>{const a=S.assets.find(x=>x.id===id);if(a)AF.q.push(a);});
+  if(!AF.running)afRun();
+}
+// בדיקה שנייה: חותכים סביב הממצא (פי 2.2) ומריצים שוב. פנים אמיתיות חוזרות ב-0.86+; עלים, פני אריות
+// וראש מאחור נפלו מתחת ל-0.85 (נמדד: משפחות 4/7/3 ותמונת המון — 0 אמיתיות נפסלו, 4 שגויות נפסלו).
+async function afVerify(src,f,signal){
+  const s=Math.max(f.w,f.h)*2.2,Z=320,z=document.createElement('canvas');z.width=z.height=Z;
+  const x=z.getContext('2d');x.fillStyle='#000';x.fillRect(0,0,Z,Z);
+  x.drawImage(src,f.x+f.w/2-s/2,f.y+f.h/2-s/2,s,s,0,0,Z,Z);
+  const G=await AIImage.detectFaces(z,{signal,minScore:AF_MIN_SCORE});
+  z.width=z.height=0;
+  return G.some(g=>g.score>=AF_VERIFY_SCORE&&Math.abs(g.x+g.w/2-Z/2)<Z*.19&&Math.abs(g.y+g.h/2-Z/2)<Z*.19);
+}
+// ריבוע 1.7× הפנים, המרכז ב-42% מגובה הפנים (שיער + סנטר), צמוד לגבולות התמונה. עיגול — כמו ברירת המחדל של החיתוך הידני.
+function afAddFaces(a,F){
+  const W=imgNatW(a.imgEl),H=imgNatH(a.imgEl);
+  const faces=F.slice(0,AF_MAX_FACES);
+  if(!faces.length)return [];
+  const base=a.name.replace(/\.[^.]+$/,''),ids=[];
+  faces.forEach((f,i)=>{
+    const s=Math.min(Math.max(f.w,f.h)*1.7,W,H);
+    const x=Math.max(0,Math.min(W-s,f.x+f.w/2-s/2)),y=Math.max(0,Math.min(H-s,f.y+f.h*.42-s/2));
+    const cv=document.createElement('canvas');cv.width=cv.height=IMG_PX;
+    const ctx=cv.getContext('2d');_clipShape(ctx,IMG_PX,'circle');
+    ctx.drawImage(a.imgEl,x,y,s,s,0,0,IMG_PX,IMG_PX);
+    S.assets.push({id:++S.idSeq,type:'crop',name:`${base} #${i+1}`,url:'',thumb:makeThumb(cv),imgEl:cv,
+                   srcAssetId:a.id,selected:true,folder:a.folder,af:{x:x/W,y:y/H,s:s/W}});
+    ids.push(S.idSeq);
+  });
+  a.isCropSource=true;
+  return ids;
+}
+async function afRun(){
+  AF.running=true;
+  AF.ready=false;   // ה-Worker נסגר בסוף כל ריצה (cancelAll) — כל ריצה מתחילה מ"מנוע לא עלה"
+  const added=[],t0=performance.now();let done=0,nImgs=0,lastPct=-1;
+  try{
+    await loadAI();
+    while(AF.q.length){
+      const a=AF.q.shift();
+      if(!S.assets.includes(a)||a.type!=='image'||!a.imgEl||a.isCropSource)continue;   // נמחקה / עיצוב אחר נטען / כבר נחתכה ידנית
+      const total=done+1+AF.q.length;
+      if(AF.ready)toast(t('faces.searching',{n:done+1,total}),'ok');
+      // כלל timeout — כלב שמירה: abort (= סיום ה-Worker) אם 30 שנ' לא זז כלום. כל אירוע התקדמות מאפס אותו,
+      // כך שהורדה איטית (~11MB בפעם הראשונה, 3G) מסתיימת, והורדה תקועה נעצרת אחרי 30 שנ' ולא אחרי דקות.
+      const ac=new AbortController();let tm=0;
+      const arm=()=>{clearTimeout(tm);tm=setTimeout(()=>ac.abort(),AF_STALL_MS);};
+      arm();
+      let F;
+      try{
+        F=await AIImage.detectFaces(a.imgEl,{signal:ac.signal,minScore:AF_MIN_SCORE,onProgress:p=>{
+          arm();
+          if(p.phase!=='download'||!p.total)return;
+          const pct=Math.min(99,Math.round(p.loaded/p.total*100));   // שרת שמדווח גודל דחוס (gzip) — האחוז יכול לעבור את 100
+          if(pct!==lastPct&&pct%5===0){lastPct=pct;toast(t('faces.preparing',{pct}),'ok');}
+        }});
+        AF.ready=true;
+        const ok=[];
+        for(const f of F.filter(f=>Math.min(f.w,f.h)>=AF_MIN_FACE)){
+          if(ok.length>=AF_MAX_FACES)break;
+          arm();
+          if(await afVerify(a.imgEl,f,ac.signal))ok.push(f);
+        }
+        F=ok;
+      }catch(e){
+        if(!AF.ready)throw e;   // המנוע לא עלה — שאר התור ייכשל באותה דרך
+        afTrack('img fail · '+String(e&&e.message||e).slice(0,80));
+        continue;
+      }finally{clearTimeout(tm);}
+      done++;
+      if(!S.assets.includes(a)||a.isCropSource)continue;   // נמחקה או נחתכה ידנית בזמן החיפוש
+      const ids=afAddFaces(a,F);
+      if(ids.length){added.push(...ids);nImgs++;}
+    }
+    afTrack('ok · '+done+' imgs · '+added.length+' faces in '+nImgs+' · '+Math.round(performance.now()-t0)+'ms · '+(window.AIImage?AIImage.device():''));
+  }catch(e){
+    afTrack('fail · '+String(e&&e.message||e).slice(0,80)+' · '+(window.AIImage?AIImage.device():''));
+    AF.q.length=0;
+    if(!added.length)toast(t('faces.failed'),'err');
+  }finally{
+    AF.running=false;
+    if(window.AIImage)AIImage.cancelAll();   // משחרר את ה-Worker והזיכרון; המודל נשאר במטמון ולא יורד שוב
+  }
+  if(added.length){
+    renderGallery();updateCounter();schedIdbSave();
+    toast(t('faces.added',{n:added.length}),'ok',{label:t('faces.undoBtn'),fn:()=>afUndo(added)});
+  }
+  if(AF.q.length&&!AF.running)afRun();   // העלאה נוספת שהגיעה בדיוק בסוף
+}
+// "בטל" אחרי זיהוי: הסמלים שנוצרו יוצאים, והמקורות חוזרים למשחק (אם לא נשארה להם נגזרת אחרת).
+function afUndo(ids){
+  const set=new Set(ids),gone=S.assets.filter(a=>set.has(a.id));
+  if(!gone.length)return;
+  for(let i=S.assets.length-1;i>=0;i--)if(set.has(S.assets[i].id))S.assets.splice(i,1);
+  syncCropSources(gone);
+  renderGallery();updateCounter();schedIdbSave();
+  toast(t('faces.undone'),'ok');
+}
 
 // דיווח כשלים עם סיבה לכל קובץ + ניסיון חוזר על הכושלים בלבד
-async function reportFailedUploads(failed,folder,depth){
+async function reportFailedUploads(failed,folder,depth,opts){
   const lines=failed.map(x=>`• ${x.name} — ${x.reason}`).join('\n');
   const again=await confirmDialog({
     icon:'⚠️',
@@ -4471,7 +4615,7 @@ async function reportFailedUploads(failed,folder,depth){
   });
   if(!again||(depth||0)>=1)return;
   const retryFiles=failed.map(x=>x.file);
-  const still=[];let ok=0;
+  const still=[];let ok=0;const newIds=[];
   uploadProgressOpen(retryFiles.length,{title:t('upload.retryingLabel'),hint:''});
   try{
     let done=0;
@@ -4482,13 +4626,15 @@ async function reportFailedUploads(failed,folder,depth){
       try{
         const imgEl=await withTimeout(loadImgFile(f,url),60000,'תם הזמן הקצוב לטעינת התמונה');
         S.assets.push({id:++S.idSeq,type:'image',name:f.name,fsize:f.size,url,thumb:makeThumb(imgEl),imgEl,selected:true,folder});
+        newIds.push(S.idSeq);
         ok++;
       }catch(e){URL.revokeObjectURL(url);still.push({file:f,name:f.name,reason:(e&&e.message)||t('upload.unknownErrorReason')});}
       done++;uploadProgressStep(done,retryFiles.length);
     }
   }finally{uploadProgressClose();}
   if(ok){renderGallery();updateCounter();toast(t('upload.imagesAdded',{n:ok}),'ok');schedIdbSave();}
-  if(still.length)await reportFailedUploads(still,folder,(depth||0)+1);
+  if(!(opts&&opts.noFaces))afQueue(newIds);
+  if(still.length)await reportFailedUploads(still,folder,(depth||0)+1,opts);
 }
 
 function isHeicFile(f){return /\.(heic|heif)$/i.test(f.name)||f.type==='image/heic'||f.type==='image/heif';}
@@ -7820,7 +7966,8 @@ async function idbOpen(){
 function assetsToRows(){
   return S.assets.map(a=>({
     id:a.id,type:a.type,name:a.name,
-    srcAssetId:a.srcAssetId||null,isCropSource:a.isCropSource||false,selected:a.selected!==false
+    srcAssetId:a.srcAssetId||null,isCropSource:a.isCropSource||false,selected:a.selected!==false,
+    af:a.af||null                            // זיהוי פנים אוטומטי: {x,y,s} — מיקום החיתוך במקור, בשברים (לשחזור רקע)
   }));
 }
 
@@ -7852,7 +7999,8 @@ function assetsToRowsWithImages(){
     fsize:a.fsize==null?null:a.fsize,        // נשמר כדי שזיהוי הכפילויות ישרוד רענון דף
     folder:a.folder||null,                   // בלי זה כל המאגר קורס ל"מאגר כללי" אחרי רענון,
                                              // והתמונה שהמשתמש חיפש בתיקייה שלה פשוט נעלמת משם
-    srcAssetId:a.srcAssetId||null,isCropSource:a.isCropSource||false,selected:a.selected!==false
+    srcAssetId:a.srcAssetId||null,isCropSource:a.isCropSource||false,selected:a.selected!==false,
+    af:a.af||null                            // זיהוי פנים אוטומטי: {x,y,s} — מיקום החיתוך במקור, בשברים (לשחזור רקע)
   }));
 }
 
@@ -7925,7 +8073,7 @@ async function _idbLoadInner(){
         const thumb=makeThumb(imgEl);
         S.assets.push({id:d.id,type:d.type,name:d.name,fsize:d.fsize==null?undefined:d.fsize,url:'',thumb,imgEl,
                         folder:d.folder||undefined,
-                        srcAssetId:d.srcAssetId||undefined,isCropSource:d.isCropSource||false,selected:d.selected!==false});
+                        srcAssetId:d.srcAssetId||undefined,isCropSource:d.isCropSource||false,selected:d.selected!==false,af:d.af||undefined});
         if(d.id>=S.idSeq)S.idSeq=d.id;
       }catch(e){console.warn('idbLoad item:',e);}
     }
@@ -8214,7 +8362,7 @@ async function applyDesignToState(d){
       const imgEl=await loadImg(row.dataURL);
       S.assets.push({id:row.id,type:row.type,name:row.name,url:'',thumb:makeThumb(imgEl),imgEl,
                       fsize:row.fsize==null?undefined:row.fsize,folder:row.folder||undefined,
-                      srcAssetId:row.srcAssetId||undefined,isCropSource:row.isCropSource||false,selected:row.selected!==false});
+                      srcAssetId:row.srcAssetId||undefined,isCropSource:row.isCropSource||false,selected:row.selected!==false,af:row.af||undefined});
       if(row.id>=S.idSeq)S.idSeq=row.id;
     }catch(e){console.warn('applyDesign item:',e);}
   }
@@ -8958,7 +9106,7 @@ async function loadSubscriberDesign(idx){
       try{
         const resp=await fetchWithTimeout(im.url,20000);const blob=await resp.blob();
         const dataURL=await blobToDataURL(blob);
-        rows.push({id:im.id,name:im.name,type:im.type,dataURL,srcAssetId:im.srcAssetId||undefined,isCropSource:im.isCropSource||false,selected:im.selected!==false});
+        rows.push({id:im.id,name:im.name,type:im.type,dataURL,srcAssetId:im.srcAssetId||undefined,isCropSource:im.isCropSource||false,selected:im.selected!==false,af:im.af||undefined});
       }catch(e){console.warn('sub img download',im.path,e);}
       done++;uploadProgressStep(done,imgs.length,im.name);
     }
@@ -9739,7 +9887,7 @@ async function cloudSaveDesign(design,onProgress){
     done++;
     if(onProgress){try{onProgress(done,total,row.name||'');}catch(e){}}
     if(!ok){failed++;continue;}
-    images.push({id:row.id,name:row.name,type:row.type,srcAssetId:row.srcAssetId||null,isCropSource:row.isCropSource||false,selected:row.selected!==false,path});
+    images.push({id:row.id,name:row.name,type:row.type,srcAssetId:row.srcAssetId||null,isCropSource:row.isCropSource||false,selected:row.selected!==false,af:row.af||null,path});
   }
   // 3) עדכון השורה עם נתיבי התמונות (רץ תמיד — גם אם חלק נכשלו)
   await SB.from('designs').update({game_data:{settings:design.settings||{},symbolCount:images.length,images}}).eq('id',rowId);
@@ -9788,7 +9936,7 @@ async function cloudAutosave(){
         const ok=await sbUploadRetry(path,row.dataURL,mime);
         if(!ok){failed++;continue;}
       }
-      images.push({id:row.id,name:row.name,type:row.type,srcAssetId:row.srcAssetId||null,isCropSource:row.isCropSource||false,selected:row.selected!==false,path});
+      images.push({id:row.id,name:row.name,type:row.type,srcAssetId:row.srcAssetId||null,isCropSource:row.isCropSource||false,selected:row.selected!==false,af:row.af||null,path});
     }
     // נקה תמונות של assetים שנמחקו
     const keep=new Set(images.map(im=>im.path));
@@ -9824,7 +9972,7 @@ async function cloudFetchDesign(row,onProgress){
       if(onProgress){try{onProgress(done,total,im.name||'');}catch(e){}}
       if(error||!data)continue;
       const dataURL=await blobToDataURL(data);
-      rows.push({id:im.id,name:im.name,type:im.type,dataURL,srcAssetId:im.srcAssetId||undefined,isCropSource:im.isCropSource||false,selected:im.selected!==false});
+      rows.push({id:im.id,name:im.name,type:im.type,dataURL,srcAssetId:im.srcAssetId||undefined,isCropSource:im.isCropSource||false,selected:im.selected!==false,af:im.af||undefined});
     }catch(e){
       console.warn('download',im.path,e);
       done++;
