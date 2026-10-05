@@ -264,6 +264,7 @@
        זעיר בתוכה נלחץ בטעות בנייד — לחיצה אחת מוטעית מוחקת אצווה שלמה. */
     .g-fold-del{background:rgba(153,27,27,.08);border:1px solid rgba(153,27,27,.22);border-radius:100px;cursor:pointer;font-size:.95rem;line-height:1;min-width:44px;min-height:36px;margin-inline-start:.35rem;flex-shrink:0;opacity:.8}
     .g-fold-del:hover{opacity:1;background:rgba(153,27,27,.16)}
+    .gallery-grid:not(.foldered)>.g-src-folder{flex-basis:100%}
     .g-fold-body{display:flex;gap:.6rem;flex-wrap:wrap;padding:.55rem .7rem .8rem;align-items:flex-start;border-top:1px solid rgba(255,255,255,.6)}
 
     /* ── V4: EXTRACTOR (used in crop modal) ── */
@@ -1263,6 +1264,7 @@ const I18N={
     'sh.bulkDone':'🔍 חודדו {n} סמלי פנים',
     'sh.bulkNone':'אין סמלי פנים מסומנים לחידוד',
     'faces.allBtn':'🙂 מצא פנים בכל התמונות',
+    'upload.sourcesFolder':'📷 תמונות מקוריות ({n})',
     'faces.checkDupes':'נוספו {n} פרצופים. בדקו שאין אדם שמופיע פעמיים — הורידו את הסימון ☑ מהכפולים.',
     'faces.addedOne':'🙂 נוסף פרצוף אחד כסמל',
     'faces.noneFound':'לא נמצאו פנים בתמונות',
@@ -1277,7 +1279,7 @@ const I18N={
     'aiMsg.retry':'🔄 נסה שוב',
     'aiMsg.close':'סגור',
     'aihelp.title':'ℹ️ איך עובדים 🙂 ✨ 🔍',
-    'aihelp.bodyHtml':'🙂 <b>מצא פנים</b> — כל פרצוף בתמונה הופך לסמל נפרד.<br>⚠️ <b>בדקו שאותו אדם לא מופיע פעמיים:</b> אם סבתא מופיעה בשלוש תמונות, השאירו רק סמל אחד שלה — אחרת שני קלפים יראו אותה והמשחק יתבלבל.<br>✨ <b>הסר רקע</b> — מסיר את הרקע מהסמלים שבחרתם. 🖼 מחזיר אותו.<br>🔍 <b>חדד</b> — מחדד פרצוף מטושטש. לחיצה שנייה מבטלת.',
+    'aihelp.bodyHtml':'🙂 <b>מצא פנים</b> — כל פרצוף בתמונה הופך לסמל נפרד.<br>⚠️ <b>בדקו שאותו אדם לא מופיע פעמיים:</b> אם סבתא מופיעה בשלוש תמונות, השאירו רק סמל אחד שלה — אחרת שני קלפים יראו אותה והמשחק יתבלבל.<br>✨ <b>הסר רקע</b> — מסיר את הרקע מהסמלים שבחרתם. 🖼 מחזיר אותו.<br>🔍 <b>חדד</b> — מחדד פרצוף מטושטש. לחיצה שנייה מבטלת.<br>📷 התמונות המקוריות שמורות בתיקייה הראשונה, כדי ש-🖼 יוכל להחזיר רקע.',
     'unit.mm':'{v} מ"מ',
     'account.title':'☁️ חשבון וסנכרון',
     'account.desc':'התחברו כדי לגבות את העיצובים שלכם לחשבון האישי — כך הם לא ייעלמו אם תחליפו מכשיר או תנקו את הדפדפן. הכניסה במייל, בלי סיסמה.',
@@ -1867,6 +1869,7 @@ const I18N={
     'sh.bulkDone':'🔍 Sharpened {n} face symbols',
     'sh.bulkNone':'No selected face symbols to sharpen',
     'faces.allBtn':'🙂 Find faces in all photos',
+    'upload.sourcesFolder':'📷 Original photos ({n})',
     'faces.checkDupes':'{n} faces were added. Check that no person appears twice — untick ☑ the duplicates.',
     'faces.addedOne':'🙂 One face was added as a symbol',
     'faces.noneFound':'No faces were found in the photos',
@@ -1881,7 +1884,7 @@ const I18N={
     'aiMsg.retry':'🔄 Try again',
     'aiMsg.close':'Close',
     'aihelp.title':'ℹ️ How 🙂 ✨ 🔍 work',
-    'aihelp.bodyHtml':'🙂 <b>Find faces</b> — every face in the photo becomes a separate symbol.<br>⚠️ <b>Check that the same person does not appear twice:</b> if grandma appears in three photos, keep only one symbol of her — otherwise two cards will show her and the game gets confused.<br>✨ <b>Remove background</b> — removes the background from the symbols you selected. 🖼 brings it back.<br>🔍 <b>Sharpen</b> — sharpens a blurry face. A second tap undoes it.',
+    'aihelp.bodyHtml':'🙂 <b>Find faces</b> — every face in the photo becomes a separate symbol.<br>⚠️ <b>Check that the same person does not appear twice:</b> if grandma appears in three photos, keep only one symbol of her — otherwise two cards will show her and the game gets confused.<br>✨ <b>Remove background</b> — removes the background from the symbols you selected. 🖼 brings it back.<br>🔍 <b>Sharpen</b> — sharpens a blurry face. A second tap undoes it.<br>📷 The original photos are kept in the first folder, so that 🖼 can bring the background back.',
     'unit.mm':'{v} mm',
     'account.title':'☁️ Account & sync',
     'account.desc':'Sign in to back up your designs to your personal account — so they won’t disappear if you switch devices or clear your browser. Sign in by email, no password needed.',
@@ -2467,7 +2470,7 @@ window.applyI18n=applyI18n;
       <!-- D-62: הסבר לכלים — פתוח בפעם הראשונה, מצב הקיפול נשמר במכשיר (localStorage dobble_ai_help) -->
       <details class="ai-help" id="ai-help" open>
         <summary data-i18n="aihelp.title">ℹ️ איך עובדים 🙂 ✨ 🔍</summary>
-        <div data-i18n-html="aihelp.bodyHtml">🙂 <b>מצא פנים</b> — כל פרצוף בתמונה הופך לסמל נפרד.<br>⚠️ <b>בדקו שאותו אדם לא מופיע פעמיים:</b> אם סבתא מופיעה בשלוש תמונות, השאירו רק סמל אחד שלה — אחרת שני קלפים יראו אותה והמשחק יתבלבל.<br>✨ <b>הסר רקע</b> — מסיר את הרקע מהסמלים שבחרתם. 🖼 מחזיר אותו.<br>🔍 <b>חדד</b> — מחדד פרצוף מטושטש. לחיצה שנייה מבטלת.</div>
+        <div data-i18n-html="aihelp.bodyHtml">🙂 <b>מצא פנים</b> — כל פרצוף בתמונה הופך לסמל נפרד.<br>⚠️ <b>בדקו שאותו אדם לא מופיע פעמיים:</b> אם סבתא מופיעה בשלוש תמונות, השאירו רק סמל אחד שלה — אחרת שני קלפים יראו אותה והמשחק יתבלבל.<br>✨ <b>הסר רקע</b> — מסיר את הרקע מהסמלים שבחרתם. 🖼 מחזיר אותו.<br>🔍 <b>חדד</b> — מחדד פרצוף מטושטש. לחיצה שנייה מבטלת.<br>📷 התמונות המקוריות שמורות בתיקייה הראשונה, כדי ש-🖼 יוכל להחזיר רקע.</div>
       </details>
       <div class="gallery-grid" id="gallery-grid"></div>
     </div>
@@ -4911,7 +4914,7 @@ function afUndo(objs){
   const gone=objs.filter(a=>S.assets.includes(a));
   if(!gone.length)return;
   for(let i=S.assets.length-1;i>=0;i--)if(gone.includes(S.assets[i]))S.assets.splice(i,1);
-  syncCropSources(gone);
+  syncCropSources(gone,true);
   renderGallery();updateCounter();schedIdbSave();
   toast(t('faces.undone'),'ok');
 }
@@ -5502,7 +5505,13 @@ function renderGallery(){
   // תצוגה מקובצת לפי תיקיות העלאה — למנויים מחוברים בלבד (אין לה תועלת אמיתית למשתמש מקומי
   // עם קוד גישה בודד). משתמש לא מחובר ממשיך לראות גלריה שטוחה בדיוק כמו היום.
   // הלוגו לגב הקלף מנוהל רק מתוך עורך הגב — אף פעם לא בגלריה הרגילה
-  const galleryAssets=S.assets.filter(a=>a.type!=='backlogo');
+  // D-62: מקורות (isCropSource) לא מוצגים בין הסמלים — אחרת אחרי ✨/🙂 הכול נראה כפול. הם בתיקייה וירטואלית
+  // "📷 תמונות מקוריות" ראשונה, סגורה בכל טעינה, בלי "מחק תיקייה" (מחיקה = 🖼 מושבת בכל הסמלים שלהם).
+  // ⛔ a.folder של המקור לא משתנה; התיקייה היא תצוגה בלבד.
+  const allAssets=S.assets.filter(a=>a.type!=='backlogo');
+  const srcAssets=allAssets.filter(a=>a.isCropSource);
+  const galleryAssets=allAssets.filter(a=>!a.isCropSource);
+  if(srcAssets.length)grid.appendChild(buildSourcesFolder(srcAssets));
   if(!isSignedIn()){
     grid.classList.remove('foldered');
     galleryAssets.forEach(a=>grid.appendChild(buildGalleryItem(a)));
@@ -5543,6 +5552,20 @@ function renderGallery(){
   });
 }
 
+let _srcFolderOpen=false;   // תיקיית המקורות סגורה בכל טעינת דף
+function buildSourcesFolder(items){
+  const wrap=document.createElement('div');wrap.className='g-folder g-src-folder';
+  const hdr=document.createElement('div');hdr.className='g-fold-hdr';
+  const caret=document.createElement('span');caret.className='g-fold-caret';caret.textContent=_srcFolderOpen?'▾':'▸';
+  const name=document.createElement('span');name.className='g-fold-name';name.textContent=t('upload.sourcesFolder',{n:items.length});
+  hdr.appendChild(caret);hdr.appendChild(name);
+  hdr.addEventListener('click',()=>{_srcFolderOpen=!_srcFolderOpen;renderGallery();});
+  const body=document.createElement('div');body.className='g-fold-body';body.style.display=_srcFolderOpen?'flex':'none';
+  if(_srcFolderOpen)items.forEach(a=>body.appendChild(buildGalleryItem(a)));   // סגורה = לא בונים אריחים בכלל (חוסך ציור)
+  wrap.appendChild(hdr);wrap.appendChild(body);
+  return wrap;
+}
+
 function updateCropHint(){
   const hint=document.getElementById('crop-hint');
   if(!hint)return;
@@ -5571,7 +5594,7 @@ function updateCounter(){
   const usable=S.assets.filter(isSymbolAsset);
   const n=usable.filter(a=>a.selected!==false).length;
   const nSrc=S.assets.filter(a=>a.isCropSource).length;
-  document.getElementById('gallery-count').textContent=nSrc?t('upload.galleryCountWithSources',{n,nSrc}):t('upload.galleryCountPlain',{n});
+  document.getElementById('gallery-count').textContent=t('upload.galleryCountPlain',{n});   // D-62: סמלים בלבד — המקורות בתיקייה שלהם
   const selEl=document.getElementById('g-sel-count');
   if(selEl)selEl.textContent=usable.length?t('upload.selectedCountOfTotal',{n,total:usable.length}):'';
   updateCropHint();
@@ -5622,11 +5645,14 @@ function stashDeleted(assets){
   assets.forEach(a=>{a.url='';});
   _undoBuf=assets.slice();
 }
-// "חזרה למקור": מקור מסומן isCropSource רק כל עוד יש לו נגזרת (חיתוך) במאגר.
-// נמחקה הנגזרת האחרונה — המקור חוזר להיות סמל רגיל במשחק; ביטול המחיקה מסמן אותו שוב.
-function syncCropSources(assets){
+// מקור מסומן isCropSource כל עוד יש לו נגזרת. D-62: מחיקת הנגזרת האחרונה **לא** מחזירה את המקור למשחק — הוא נשאר
+// בתיקיית "📷 תמונות מקוריות" (אחרת מחיקת סמל אחד מחזירה תמונה שלמה לקלפים בלי שהלקוחה שמה לב).
+// release=true רק ב"בטל ↩" של מציאת פנים (afUndo) — שם הכוונה היא באמת לחזור למצב שלפני.
+function syncCropSources(assets,release){
   const ids=new Set(assets.filter(a=>a.type==='crop'&&a.srcAssetId!=null).map(a=>a.srcAssetId));
-  ids.forEach(sid=>{const src=S.assets.find(x=>x.id===sid);if(src)src.isCropSource=S.assets.some(x=>x.type==='crop'&&x.srcAssetId===sid);});
+  ids.forEach(sid=>{const src=S.assets.find(x=>x.id===sid);if(!src)return;
+    const has=S.assets.some(x=>x.type==='crop'&&x.srcAssetId===sid);
+    if(has)src.isCropSource=true;else if(release)src.isCropSource=false;});
 }
 function undoDelete(){
   const back=(_undoBuf||[]).filter(a=>!S.assets.some(x=>x.id===a.id));
