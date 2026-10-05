@@ -233,6 +233,12 @@
     .back-tabpage .sl-lock{display:flex;flex-direction:column;gap:.6rem}
     .g-bg{position:absolute;bottom:-6px;inset-inline-start:-6px;width:24px;height:24px;background:#fff;color:var(--indigo);border-radius:50%;font-size:.8rem;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid var(--indigo);line-height:1;box-shadow:0 1px 4px rgba(0,0,0,.3);padding:0}
     .g-bg:hover{transform:scale(1.15)}
+    .ai-help{font-size:.78rem;color:var(--muted);line-height:1.6;background:rgba(255,255,255,.6);border:1px solid var(--border);border-radius:var(--rs);padding:.35rem .7rem;margin:.4rem 0}
+    .ai-help summary{cursor:pointer;font-weight:700;color:var(--indigo)}
+    .ai-banner{position:fixed;inset-inline:12px;bottom:calc(18px + var(--ai-bn,0px));z-index:10050;max-width:560px;margin:0 auto;background:#fff;border:2px solid var(--indigo);border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.18);padding:.6rem .8rem;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;font-size:.85rem;font-weight:700;color:#1f2937}
+    .ai-banner.err{border-color:#ef4444}
+    .ai-banner span{flex:1;min-width:12em}
+    .ai-banner .ai-x{background:none;border:none;font-size:1rem;cursor:pointer;color:var(--muted);padding:.2rem .4rem}
     .g-sh{position:absolute;bottom:-6px;inset-inline-end:-6px;width:24px;height:24px;background:#fff;color:var(--indigo);border-radius:50%;font-size:.75rem;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid var(--indigo);line-height:1;box-shadow:0 1px 4px rgba(0,0,0,.3);padding:0}
     .g-sh.on{background:var(--indigo)}
     .g-sh:hover{transform:scale(1.15)}
@@ -258,6 +264,7 @@
        זעיר בתוכה נלחץ בטעות בנייד — לחיצה אחת מוטעית מוחקת אצווה שלמה. */
     .g-fold-del{background:rgba(153,27,27,.08);border:1px solid rgba(153,27,27,.22);border-radius:100px;cursor:pointer;font-size:.95rem;line-height:1;min-width:44px;min-height:36px;margin-inline-start:.35rem;flex-shrink:0;opacity:.8}
     .g-fold-del:hover{opacity:1;background:rgba(153,27,27,.16)}
+    .gallery-grid:not(.foldered)>.g-src-folder{flex-basis:100%}
     .g-fold-body{display:flex;gap:.6rem;flex-wrap:wrap;padding:.55rem .7rem .8rem;align-items:flex-start;border-top:1px solid rgba(255,255,255,.6)}
 
     /* ── V4: EXTRACTOR (used in crop modal) ── */
@@ -1256,6 +1263,23 @@ const I18N={
     'sh.bulkBtn':'🔍 חדד את הנבחרים',
     'sh.bulkDone':'🔍 חודדו {n} סמלי פנים',
     'sh.bulkNone':'אין סמלי פנים מסומנים לחידוד',
+    'faces.allBtn':'🙂 מצא פנים בכל התמונות',
+    'upload.sourcesFolder':'📷 תמונות מקוריות ({n})',
+    'faces.checkDupes':'נוספו {n} פרצופים. בדקו שאין אדם שמופיע פעמיים — הורידו את הסימון ☑ מהכפולים.',
+    'faces.addedOne':'🙂 נוסף פרצוף אחד כסמל',
+    'faces.noneFound':'לא נמצאו פנים בתמונות',
+    'faces.allDone':'כל התמונות כבר עברו זיהוי פנים',
+    'faces.unsupported':'הדפדפן הזה לא יכול להריץ את הכלי — נסו בכרום מעודכן',
+    'edit.findFacesBtn':'🙂 מצא פנים',
+    'edit.findFacesBusy':'🙂 מחפש…',
+    'edit.facesFound':'נמצאו {n} פנים — אפשר להזיז, למתוח או למחוק סימון',
+    'edit.facesFoundSkipped':'נמצאו {n} פנים ({k} כבר היו מסומנות) — אפשר להזיז, למתוח או למחוק סימון',
+    'edit.noFacesFound':'לא נמצאו פנים בתמונה — אפשר לסמן ידנית',
+    'aiMsg.loadFail':'לא הצלחנו לטעון. בדקו את החיבור לאינטרנט.',
+    'aiMsg.retry':'🔄 נסה שוב',
+    'aiMsg.close':'סגור',
+    'aihelp.title':'ℹ️ איך עובדים 🙂 ✨ 🔍',
+    'aihelp.bodyHtml':'🙂 <b>מצא פנים</b> — כל פרצוף בתמונה הופך לסמל נפרד.<br>⚠️ <b>בדקו שאותו אדם לא מופיע פעמיים:</b> אם סבתא מופיעה בשלוש תמונות, השאירו רק סמל אחד שלה — אחרת שני קלפים יראו אותה והמשחק יתבלבל.<br>✨ <b>הסר רקע</b> — מסיר את הרקע מהסמלים שבחרתם. 🖼 מחזיר אותו.<br>🔍 <b>חדד</b> — מחדד פרצוף מטושטש. לחיצה שנייה מבטלת.<br>📷 התמונות המקוריות שמורות בתיקייה הראשונה, כדי ש-🖼 יוכל להחזיר רקע.',
     'unit.mm':'{v} מ"מ',
     'account.title':'☁️ חשבון וסנכרון',
     'account.desc':'התחברו כדי לגבות את העיצובים שלכם לחשבון האישי — כך הם לא ייעלמו אם תחליפו מכשיר או תנקו את הדפדפן. הכניסה במייל, בלי סיסמה.',
@@ -1844,6 +1868,23 @@ const I18N={
     'sh.bulkBtn':'🔍 Sharpen selected',
     'sh.bulkDone':'🔍 Sharpened {n} face symbols',
     'sh.bulkNone':'No selected face symbols to sharpen',
+    'faces.allBtn':'🙂 Find faces in all photos',
+    'upload.sourcesFolder':'📷 Original photos ({n})',
+    'faces.checkDupes':'{n} faces were added. Check that no person appears twice — untick ☑ the duplicates.',
+    'faces.addedOne':'🙂 One face was added as a symbol',
+    'faces.noneFound':'No faces were found in the photos',
+    'faces.allDone':'All photos have already been checked for faces',
+    'faces.unsupported':'This browser cannot run the tool — try an up-to-date Chrome',
+    'edit.findFacesBtn':'🙂 Find faces',
+    'edit.findFacesBusy':'🙂 Searching…',
+    'edit.facesFound':'{n} faces found — you can move, resize or delete a selection',
+    'edit.facesFoundSkipped':'{n} faces found ({k} were already selected) — you can move, resize or delete a selection',
+    'edit.noFacesFound':'No faces found in the image — you can select manually',
+    'aiMsg.loadFail':'We could not load it. Check your internet connection.',
+    'aiMsg.retry':'🔄 Try again',
+    'aiMsg.close':'Close',
+    'aihelp.title':'ℹ️ How 🙂 ✨ 🔍 work',
+    'aihelp.bodyHtml':'🙂 <b>Find faces</b> — every face in the photo becomes a separate symbol.<br>⚠️ <b>Check that the same person does not appear twice:</b> if grandma appears in three photos, keep only one symbol of her — otherwise two cards will show her and the game gets confused.<br>✨ <b>Remove background</b> — removes the background from the symbols you selected. 🖼 brings it back.<br>🔍 <b>Sharpen</b> — sharpens a blurry face. A second tap undoes it.<br>📷 The original photos are kept in the first folder, so that 🖼 can bring the background back.',
     'unit.mm':'{v} mm',
     'account.title':'☁️ Account & sync',
     'account.desc':'Sign in to back up your designs to your personal account — so they won’t disappear if you switch devices or clear your browser. Sign in by email, no password needed.',
@@ -2420,11 +2461,17 @@ window.applyI18n=applyI18n;
         <button data-i18n="upload.selectAllBtn" type="button" class="g-bulk-btn" id="btn-select-all">☑️ סמן הכל</button>
         <button data-i18n="upload.clearSelectionBtn" type="button" class="g-bulk-btn" id="btn-clear-all">◻️ נקה הכל</button>
         <button data-i18n="upload.deleteSelectedBtn" type="button" class="g-bulk-btn danger" id="btn-del-selected">🗑 מחק מסומנים</button>
+        <button data-i18n="faces.allBtn" type="button" class="g-bulk-btn" id="btn-faces-all">🙂 מצא פנים בכל התמונות</button>
         <button data-i18n="bg.bulkBtn" type="button" class="g-bulk-btn" id="btn-bg-selected" hidden>✨ הסר רקע מהנבחרים</button>
         <button data-i18n="sh.bulkBtn" type="button" class="g-bulk-btn" id="btn-sh-selected">🔍 חדד את הנבחרים</button>
         <button data-i18n="upload.saveToCloudBtn" type="button" class="g-bulk-btn" id="btn-cloud-save">☁️ לשמור בענן?</button>
         <span class="g-sel-count" id="g-sel-count"></span>
       </div>
+      <!-- D-62: הסבר לכלים — פתוח בפעם הראשונה, מצב הקיפול נשמר במכשיר (localStorage dobble_ai_help) -->
+      <details class="ai-help" id="ai-help" open>
+        <summary data-i18n="aihelp.title">ℹ️ איך עובדים 🙂 ✨ 🔍</summary>
+        <div data-i18n-html="aihelp.bodyHtml">🙂 <b>מצא פנים</b> — כל פרצוף בתמונה הופך לסמל נפרד.<br>⚠️ <b>בדקו שאותו אדם לא מופיע פעמיים:</b> אם סבתא מופיעה בשלוש תמונות, השאירו רק סמל אחד שלה — אחרת שני קלפים יראו אותה והמשחק יתבלבל.<br>✨ <b>הסר רקע</b> — מסיר את הרקע מהסמלים שבחרתם. 🖼 מחזיר אותו.<br>🔍 <b>חדד</b> — מחדד פרצוף מטושטש. לחיצה שנייה מבטלת.<br>📷 התמונות המקוריות שמורות בתיקייה הראשונה, כדי ש-🖼 יוכל להחזיר רקע.</div>
+      </details>
       <div class="gallery-grid" id="gallery-grid"></div>
     </div>
 
@@ -3073,6 +3120,7 @@ window.applyI18n=applyI18n;
           <input type="checkbox" id="ck-rmbg" style="width:16px;height:16px;accent-color:var(--indigo)">
           <span data-i18n="edit.removeBgLabel" style="font-size:.85rem;font-weight:700;color:var(--indigo)">✨ הסר רקע</span>
         </label>
+        <button data-i18n="edit.findFacesBtn" type="button" class="btn btn-sec" id="btn-faces" style="font-size:.82rem;padding:.3rem .7rem">🙂 מצא פנים</button>
         <div id="rmbg-tol-row" data-sl-lock="rng-rmbg-tol" hidden style="display:flex;align-items:center;gap:.4rem;padding-right:.2rem">
           <span data-i18n="edit.removeBgSensitivityLabel" style="font-size:.75rem;color:#6b7280;white-space:nowrap">רגישות:</span>
           <input type="range" id="rng-rmbg-tol" min="2" max="140" value="35" style="flex:1;min-width:70px;accent-color:var(--indigo)">
@@ -4369,6 +4417,7 @@ const CM={
   dragging:false,drag:{sx:0,sy:0,ex:0,ey:0},
   dispW:1,dispH:1,idSeq:0,
   selId:null,editMode:null,editHandle:null,editOrig:null,
+  aiAc:null,   // D-62: 🙂 בחלון — הריצה הנוכחית; abort בסגירת החלון
 };
 
 // מצב מודל החיתוך החכם. חי רק כל עוד המודל פתוח; המסכה הסופית נשמרת על אובייקט ה-crop.
@@ -4638,14 +4687,19 @@ const AF_MIN_FACE=30;      // פנים קטנות מזה (בפיקסלים של 
 const AF_MAX_FACES=20;     // תמונת המון — לא מציפים את המאגר
 const AF_MIN_SCORE=.6,AF_VERIFY_SCORE=.85;   // ראו afVerify
 const AF_STALL_MS=30000;   // כלב השמירה של afRun
-const AF={q:[],running:false,ready:false,bgReady:false,bgDead:false,toggling:false};
+const AF={q:[],running:false,ready:false,bgReady:false,bgDead:false,toggling:false,manual:false,lastErr:null};
 // מכשיר חלש (<4GB, אותו שער כמו בסטודיו) או דפדפן בלי Worker/Wasm — מדלגים בשקט.
 function afEnabled(){
   if(navigator.deviceMemory&&navigator.deviceMemory<4)return false;
   return typeof Worker!=='undefined'&&typeof WebAssembly!=='undefined';
 }
 function afTrack(detail){try{window.track&&window.track('auto-faces',{detail:String(detail).slice(0,300)});}catch(e){}}
+// D-62: שום דבר אוטומטי — הכול בלחיצה (🙂 / ✨). הקוד של D-56/D-57 נשאר ומשמש את הכפתורים.
+// AF_AUTO מנתק רק את הקריאה מההעלאה (afQueue נקרא רק מ-addFiles ומ-reportFailedUploads).
+// AF_BG_AFTER מנתק רק את "שלב ב" של afRun (הסרת רקע אחרי מציאת פנים) — ✨ נשאר בלחיצה בלבד.
+var AF_AUTO=false,AF_BG_AFTER=false;
 function afQueue(ids){
+  if(!AF_AUTO)return;
   if(!ids||!ids.length)return;
   if(!afEnabled()){afTrack('skipped · '+(navigator.deviceMemory||'?')+'GB');return;}
   // אובייקטים ולא מזהים — אם בינתיים נטען עיצוב אחר, אותו id יכול להצביע על תמונה אחרת
@@ -4802,18 +4856,20 @@ async function afRun(){
           continue;
         }finally{clearTimeout(tm);}
         done++;
+        a._afDone=1;   // עבר זיהוי (גם אם לא נמצאו פנים) — "נסה שוב" ולחיצה שנייה לא מריצים עליה שוב
         if(!S.assets.includes(a)||a.isCropSource)continue;   // נמחקה או נחתכה ידנית בזמן החיפוש
         const objs=afAddFaces(a,afRects(a,F));
         if(objs.length){added.push(...objs);nImgs++;}
       }
     }catch(e){
       afTrack('fail · '+String(e&&e.message||e).slice(0,80)+' · '+(window.AIImage?AIImage.device():''));
-      AF.q.length=0;
-      if(!added.length)toast(t('faces.failed'),'err');
+      AF.q.length=0;AF.lastErr=e;
+      if(!added.length&&!AF.manual)toast(t('faces.failed'),'err');   // מכפתור — afFindAll מציג הודעה קבועה + "נסה שוב"
     }
     if(!added.length)return;
     renderGallery();updateCounter();schedIdbSave();
-    toast(t('faces.addedBgSoon',{n:added.length}),'ok',{label:t('faces.undoBtn'),fn:()=>afUndo(added)});
+    if(!AF.manual)toast(t('faces.addedBgSoon',{n:added.length}),'ok',{label:t('faces.undoBtn'),fn:()=>afUndo(added)});
+    if(!AF_BG_AFTER)return;   // D-62: בלי הסרת רקע אוטומטית אחרי — finally משחרר את ה-Worker
     // ── שלב ב: הורדת רקע לכל פרצוף חדש, אחד-אחד. כל תקלה = הסמל נשאר עם הרקע; הפנים כבר במאגר ──
     let i=0;
     for(const c of added){
@@ -4858,7 +4914,7 @@ function afUndo(objs){
   const gone=objs.filter(a=>S.assets.includes(a));
   if(!gone.length)return;
   for(let i=S.assets.length-1;i>=0;i--)if(gone.includes(S.assets[i]))S.assets.splice(i,1);
-  syncCropSources(gone);
+  syncCropSources(gone,true);
   renderGallery();updateCounter();schedIdbSave();
   toast(t('faces.undone'),'ok');
 }
@@ -4881,7 +4937,7 @@ async function afToggleBg(a){
       });
     }catch(e){
       afTrack('toggle fail · '+String(e&&e.message||e).slice(0,80));
-      toast(t('faces.bgFailed'),'err');return;
+      aiFail(e,()=>afToggleBg(a));return;   // D-62: הודעה קבועה + "נסה שוב" על אותו סמל
     }finally{
       clearTimeout(tm);AF.toggling=false;
       if(window.AIImage)AIImage.cancelAll();
@@ -4954,7 +5010,7 @@ async function bgToggle(a){
   toast(t('faces.bgWorking'),'ok');
   let cv;
   try{cv=await bgJob((ac,arm,onP)=>obCutout(src.imgEl,ac.signal,onP));}
-  catch(e){afTrack('obj fail · '+String(e&&e.message||e).slice(0,80));toast(t('faces.bgFailed'),'err');return;}
+  catch(e){afTrack('obj fail · '+String(e&&e.message||e).slice(0,80));aiFail(e,()=>bgToggle(a));return;}
   if(!cv){toast(t('bg.notFound'),'err');return;}
   if(!S.assets.includes(a)||!S.assets.includes(src)){cv.width=cv.height=0;return;}
   if(isObjSym(a))afSwap(a,cv,1);else obAddDerived(a,cv);
@@ -4963,15 +5019,20 @@ async function bgToggle(a){
 }
 // "✨ הסר רקע מהנבחרים": לפי הסוג — פנים MODNet (afCutout), כל השאר u2netp (obCutout). "עצור" בהודעה מבטל באמצע;
 // מה שכבר טופל נשאר, מה שלא — לא נגע. renderGallery פעם אחת בסוף.
-async function bgBulk(){
+// only (D-62) = "🔄 נסה שוב" אחרי כשל: בדיוק הסמלים שעוד לא טופלו, בלי חלון אישור — מה שכבר עבר לא רץ שוב
+async function bgBulk(only){
   if(bgBusy()){toast(t('faces.busy'),'ok');return;}
   if(!afEnabled()){toast(t('faces.bgLowMem'),'err');return;}
   const has=id=>S.assets.some(x=>x.id===id);
-  const sel=S.assets.filter(a=>isSymbolAsset(a)&&a.selected!==false&&(a.type==='image'||a.type==='crop')&&!(a.af&&a.af.bg)&&(!a.af||has(a.srcAssetId)));
+  const elig=a=>S.assets.includes(a)&&isSymbolAsset(a)&&(a.type==='image'||a.type==='crop')&&!(a.af&&a.af.bg)&&(!a.af||has(a.srcAssetId));
+  const sel=Array.isArray(only)?only.filter(elig):S.assets.filter(a=>a.selected!==false&&elig(a));
   if(!sel.length){toast(t('bg.none'),'err');return;}
-  const ok=await confirmDialog({icon:'✨',title:t('bg.bulkTitle'),body:t('bg.bulkBody',{n:sel.length}),okText:t('bg.bulkOk',{n:sel.length})});
-  if(!ok)return;
-  const R={face:0,obj:0,kept:0,stopped:false,failed:false};
+  if(!Array.isArray(only)){
+    const ok=await confirmDialog({icon:'✨',title:t('bg.bulkTitle'),body:t('bg.bulkBody',{n:sel.length}),okText:t('bg.bulkOk',{n:sel.length})});
+    if(!ok)return;
+  }
+  aiBannerHide('ai-fail');
+  const R={face:0,obj:0,kept:0,stopped:false,failed:false,rest:null,err:null};
   try{
     await bgJob(async(ac,arm,onP)=>{
       const stop={label:t('bg.stopBtn'),fn:()=>{R.stopped=true;ac.abort();}};
@@ -4993,20 +5054,20 @@ async function bgBulk(){
             if(cv&&S.assets.includes(a)){if(isObjSym(a))afSwap(a,cv,1);else obAddDerived(a,cv);R.obj++;}else R.kept++;
           }
         }catch(e){
-          if(!R.stopped){R.failed=true;afTrack('bulk fail · '+String(e&&e.message||e).slice(0,80));}
+          if(!R.stopped){R.failed=true;R.err=e;R.rest=sel.slice(i);afTrack('bulk fail · '+String(e&&e.message||e).slice(0,80));}
           break;
         }
       }
     });
-  }catch(e){R.failed=true;afTrack('bulk fail · '+String(e&&e.message||e).slice(0,80));}
+  }catch(e){if(!R.stopped){R.failed=true;R.err=e;if(!R.rest)R.rest=sel;afTrack('bulk fail · '+String(e&&e.message||e).slice(0,80));}}
   const n=R.face+R.obj;
   if(n){renderGallery();updateCounter();schedIdbSave();}
   afTrack('bulk · '+sel.length+' sel · face '+R.face+' obj '+R.obj+' kept '+R.kept+(R.stopped?' stopped':'')+(R.failed?' failed':''));
   if(R.stopped)toast(t('bg.stopped',{n}),'ok');
-  else if(R.failed)toast(t('faces.bgFailed')+(n?' · '+t('bg.done',{n}):''),'err');
+  else if(R.failed){if(n)toast(t('bg.done',{n}),'ok');aiFail(R.err,()=>bgBulk(R.rest));}
   else toast(t('bg.done',{n})+(R.kept?t('bg.doneKept',{k:R.kept}):''),'ok');
 }
-document.getElementById('btn-bg-selected').addEventListener('click',bgBulk);
+document.getElementById('btn-bg-selected').addEventListener('click',()=>bgBulk());
 
 // ══ 🔍 חידוד פנים — unsharp mask, בלי AI (D-61) ══
 // ⛔ התמונה שנשמרת (a.imgEl → IDB/ענן) נשארת המקור, בלי חידוד. החידוד הוא "תצוגה": af.sh=1 (af כבר נשמר ב-IDB
@@ -5082,6 +5143,104 @@ document.getElementById('btn-sh-selected').addEventListener('click',()=>{
   renderGallery();updateCounter();schedIdbSave();shRefreshGame();
   toast(t('sh.bulkDone',{n:sel.length}),'ok');
 });
+
+// ══ D-62: הכול בלחיצה — 🙂 מצא פנים (ספרייה + חלון החיתוך), הודעות קבועות, "🔄 נסה שוב" ══
+// הודעה שנשארת עד סגירה (לא toast שנעלם): כשל טעינה (עם "נסה שוב") ו"בדקו כפולים" אחרי מציאת פנים.
+function aiBanner(id,text,{err,actions}={}){
+  let el=document.getElementById(id);if(el)el.remove();
+  el=document.createElement('div');el.id=id;el.className='ai-banner'+(err?' err':'');el.setAttribute('role',err?'alert':'status');
+  const sp=document.createElement('span');sp.textContent=text;el.appendChild(sp);
+  (actions||[]).forEach(a=>{const b=document.createElement('button');b.type='button';b.className='btn '+(a.primary?'btn-ok':'btn-ghost');
+    b.style.cssText='font-size:.8rem;padding:.3rem .7rem';b.textContent=a.label;b.addEventListener('click',()=>{el.remove();aiBannerStack();a.fn();});el.appendChild(b);});
+  const x=document.createElement('button');x.type='button';x.className='ai-x';x.textContent='✕';x.setAttribute('aria-label',t('aiMsg.close'));
+  x.addEventListener('click',()=>{el.remove();aiBannerStack();});el.appendChild(x);
+  document.body.appendChild(el);aiBannerStack();
+  return el;
+}
+function aiBannerStack(){   // שתי הודעות יחד — זו מעל זו
+  let off=0;['ai-fail','ai-note'].forEach(id=>{const el=document.getElementById(id);if(el){el.style.setProperty('--ai-bn',off+'px');off+=el.offsetHeight+8;}});
+}
+function aiBannerHide(id){const el=document.getElementById(id);if(el){el.remove();aiBannerStack();}}
+// כשל רשת/טעינה (סקריפט, מודל, Worker, כלב שמירה) מול כשל אחר (זיכרון) — רק לראשון "נסה שוב" עוזר
+function aiNetErr(e){const m=String(e&&(e.message||e)||'');return !/memory|allocation|RangeError|OOM/i.test(m);}
+function aiFail(e,retry){
+  if(!aiNetErr(e)){toast(t('faces.bgFailed'),'err');return;}
+  aiBanner('ai-fail',t('aiMsg.loadFail'),{err:true,actions:[{label:t('aiMsg.retry'),primary:true,fn:retry}]});
+}
+function afCanRun(){return typeof Worker!=='undefined'&&typeof WebAssembly!=='undefined';}   // 🙂 בכל מכשיר — המודל קטן (0.23MB)
+
+// 🙂 מצא פנים בכל התמונות — רק תמונות שעוד לא עברו זיהוי (לא מקור, לא _afDone), דרך afRun הקיים, בלי הסרת רקע.
+// only = "נסה שוב": בדיוק התמונות שנשארו, כך שמה שכבר עבר לא רץ שוב (אפס כפולים).
+async function afFindAll(only){
+  if(AF.running||AF.toggling){toast(t('faces.busy'),'ok');return;}
+  if(!afCanRun()){toast(t('faces.unsupported'),'err');return;}
+  const ok=a=>S.assets.includes(a)&&a.type==='image'&&!a.isCropSource&&!a._afDone;
+  const list=(only||S.assets).filter(ok);
+  if(!list.length){toast(t('faces.allDone'),'ok');return;}
+  aiBannerHide('ai-fail');
+  const before=new Set(S.assets);
+  AF.manual=true;AF.lastErr=null;AF.q.push(...list);
+  toast(t('faces.searching',{n:1,total:list.length}),'ok');
+  try{await afRun();}finally{AF.manual=false;}
+  const added=S.assets.filter(a=>!before.has(a)&&isFaceSym(a));
+  const left=list.filter(ok);
+  if(left.length){
+    window.track&&window.track('faces-btn',{detail:'fail · '+String(AF.lastErr&&(AF.lastErr.message||AF.lastErr)||'img').slice(0,80)+' · left '+left.length});
+    aiFail(AF.lastErr,()=>afFindAll(left));
+  }else window.track&&window.track('faces-btn',{detail:added.length?'ok · '+added.length:'none'});
+  if(added.length>1)aiBanner('ai-note',t('faces.checkDupes',{n:added.length}),{actions:[{label:t('faces.undoBtn'),fn:()=>afUndo(added)}]});
+  else if(added.length===1)toast(t('faces.addedOne'),'ok',{label:t('faces.undoBtn'),fn:()=>afUndo(added)});
+  else if(!left.length)toast(t('faces.noneFound'),'ok');
+}
+document.getElementById('btn-faces-all').addEventListener('click',()=>afFindAll());
+
+// 🙂 בחלון החיתוך (הועבר מ-534a9b7 / PR #186 והותאם): מסגרת ריבועית בצורה הנבחרת לכל פנים, 1.7× הפנים,
+// המרכז ב-42% מגובה הפנים. אותו סינון של afRun (גודל מינימלי + afVerify). פנים שכבר מסומנות לא מקבלות מסגרת
+// כפולה. כל מסגרת זוכרת את תיבת הפנים (c.face) → בהוספה לסמל af. Worker אחד: bgJob (נעילה + כלב שמירה).
+async function cropFindFaces(){
+  if(!CM.srcImg||CM.aiAc)return;
+  if(AF.running||AF.toggling){toast(t('faces.busy'),'ok');return;}
+  if(!afCanRun()){toast(t('faces.unsupported'),'err');return;}
+  const b=document.getElementById('btn-faces'),src=CM.srcImg;
+  aiBannerHide('ai-fail');
+  b.disabled=true;b.textContent=t('edit.findFacesBusy');
+  let F;
+  try{
+    F=await bgJob(async(ac,arm)=>{
+      CM.aiAc=ac;
+      const D=await AIImage.detectFaces(src,{signal:ac.signal,minScore:AF_MIN_SCORE,onProgress:p=>{arm();
+        if(p.phase==='download'&&p.total)b.textContent=t('edit.findFacesBusy')+' '+Math.min(99,Math.round(p.loaded/p.total*100))+'%';}});
+      const out=[];
+      for(const f of D.filter(f=>Math.min(f.w,f.h)>=AF_MIN_FACE)){if(out.length>=AF_MAX_FACES)break;arm();if(await afVerify(src,f,ac.signal))out.push(f);}
+      return out;
+    });
+  }catch(e){
+    if(CM.srcImg!==src)return;   // החלון נסגר באמצע — לא כשל
+    window.track&&window.track('crop-faces',{detail:'fail · '+String(e&&e.message||e).slice(0,80)});
+    aiFail(e,()=>{if(CM.srcImg===src)cropFindFaces();});
+    return;
+  }finally{CM.aiAc=null;b.disabled=false;b.textContent=t('edit.findFacesBtn');}
+  if(CM.srcImg!==src)return;
+  const W=imgNatW(src),H=imgNatH(src),kx=CM.dispW/W,ky=CM.dispH/H;let n=0;
+  F.forEach(f=>{
+    const s=Math.max(f.w,f.h)*1.7,cx=f.x+f.w/2,cy=f.y+f.h*.42;
+    const sz=Math.min(s*kx,CM.dispW,CM.dispH);   // ריבוע — כמו כל מסגרת בדאבל
+    const x=Math.max(0,Math.min(CM.dispW-sz,cx*kx-sz/2)),y=Math.max(0,Math.min(CM.dispH-sz,cy*ky-sz/2));
+    if(CM.crops.some(c=>Math.abs(c.x+c.w/2-(x+sz/2))<sz/3&&Math.abs(c.y+c.h/2-(y+sz/2))<sz/3))return;   // כבר מסומן
+    const c={id:++CM.idSeq,shape:CM.tool,x,y,w:sz,h:sz,face:{x:f.x/W,y:f.y/H,w:f.w/W,h:f.h/H}};
+    c.thumb=cropExtractThumb(src,c);CM.crops.push(c);CM.selId=c.id;n++;
+  });
+  renderModalCrops();redrawCropCanvas();updateCropAddBtn();
+  window.track&&window.track('crop-faces',{detail:F.length?'ok · '+n:'none'});
+  if(!F.length)toast(t('edit.noFacesFound'),'ok');
+  else toast(n<F.length?t('edit.facesFoundSkipped',{n:F.length,k:F.length-n}):t('edit.facesFound',{n:F.length}),'ok');
+}
+document.getElementById('btn-faces').addEventListener('click',cropFindFaces);
+
+// ℹ️ ההסבר: פתוח בפעם הראשונה, מצב הקיפול נשמר במכשיר
+(function(){const d=document.getElementById('ai-help');if(!d)return;
+  try{if(localStorage.getItem('dobble_ai_help')==='closed')d.open=false;}catch(e){}
+  d.addEventListener('toggle',()=>{try{localStorage.setItem('dobble_ai_help',d.open?'open':'closed');}catch(e){}});})();
 
 // דיווח כשלים עם סיבה לכל קובץ + ניסיון חוזר על הכושלים בלבד
 async function reportFailedUploads(failed,folder,depth,opts){
@@ -5346,7 +5505,13 @@ function renderGallery(){
   // תצוגה מקובצת לפי תיקיות העלאה — למנויים מחוברים בלבד (אין לה תועלת אמיתית למשתמש מקומי
   // עם קוד גישה בודד). משתמש לא מחובר ממשיך לראות גלריה שטוחה בדיוק כמו היום.
   // הלוגו לגב הקלף מנוהל רק מתוך עורך הגב — אף פעם לא בגלריה הרגילה
-  const galleryAssets=S.assets.filter(a=>a.type!=='backlogo');
+  // D-62: מקורות (isCropSource) לא מוצגים בין הסמלים — אחרת אחרי ✨/🙂 הכול נראה כפול. הם בתיקייה וירטואלית
+  // "📷 תמונות מקוריות" ראשונה, סגורה בכל טעינה, בלי "מחק תיקייה" (מחיקה = 🖼 מושבת בכל הסמלים שלהם).
+  // ⛔ a.folder של המקור לא משתנה; התיקייה היא תצוגה בלבד.
+  const allAssets=S.assets.filter(a=>a.type!=='backlogo');
+  const srcAssets=allAssets.filter(a=>a.isCropSource);
+  const galleryAssets=allAssets.filter(a=>!a.isCropSource);
+  if(srcAssets.length)grid.appendChild(buildSourcesFolder(srcAssets));
   if(!isSignedIn()){
     grid.classList.remove('foldered');
     galleryAssets.forEach(a=>grid.appendChild(buildGalleryItem(a)));
@@ -5387,6 +5552,20 @@ function renderGallery(){
   });
 }
 
+let _srcFolderOpen=false;   // תיקיית המקורות סגורה בכל טעינת דף
+function buildSourcesFolder(items){
+  const wrap=document.createElement('div');wrap.className='g-folder g-src-folder';
+  const hdr=document.createElement('div');hdr.className='g-fold-hdr';
+  const caret=document.createElement('span');caret.className='g-fold-caret';caret.textContent=_srcFolderOpen?'▾':'▸';
+  const name=document.createElement('span');name.className='g-fold-name';name.textContent=t('upload.sourcesFolder',{n:items.length});
+  hdr.appendChild(caret);hdr.appendChild(name);
+  hdr.addEventListener('click',()=>{_srcFolderOpen=!_srcFolderOpen;renderGallery();});
+  const body=document.createElement('div');body.className='g-fold-body';body.style.display=_srcFolderOpen?'flex':'none';
+  if(_srcFolderOpen)items.forEach(a=>body.appendChild(buildGalleryItem(a)));   // סגורה = לא בונים אריחים בכלל (חוסך ציור)
+  wrap.appendChild(hdr);wrap.appendChild(body);
+  return wrap;
+}
+
 function updateCropHint(){
   const hint=document.getElementById('crop-hint');
   if(!hint)return;
@@ -5415,7 +5594,7 @@ function updateCounter(){
   const usable=S.assets.filter(isSymbolAsset);
   const n=usable.filter(a=>a.selected!==false).length;
   const nSrc=S.assets.filter(a=>a.isCropSource).length;
-  document.getElementById('gallery-count').textContent=nSrc?t('upload.galleryCountWithSources',{n,nSrc}):t('upload.galleryCountPlain',{n});
+  document.getElementById('gallery-count').textContent=t('upload.galleryCountPlain',{n});   // D-62: סמלים בלבד — המקורות בתיקייה שלהם
   const selEl=document.getElementById('g-sel-count');
   if(selEl)selEl.textContent=usable.length?t('upload.selectedCountOfTotal',{n,total:usable.length}):'';
   updateCropHint();
@@ -5466,11 +5645,14 @@ function stashDeleted(assets){
   assets.forEach(a=>{a.url='';});
   _undoBuf=assets.slice();
 }
-// "חזרה למקור": מקור מסומן isCropSource רק כל עוד יש לו נגזרת (חיתוך) במאגר.
-// נמחקה הנגזרת האחרונה — המקור חוזר להיות סמל רגיל במשחק; ביטול המחיקה מסמן אותו שוב.
-function syncCropSources(assets){
+// מקור מסומן isCropSource כל עוד יש לו נגזרת. D-62: מחיקת הנגזרת האחרונה **לא** מחזירה את המקור למשחק — הוא נשאר
+// בתיקיית "📷 תמונות מקוריות" (אחרת מחיקת סמל אחד מחזירה תמונה שלמה לקלפים בלי שהלקוחה שמה לב).
+// release=true רק ב"בטל ↩" של מציאת פנים (afUndo) — שם הכוונה היא באמת לחזור למצב שלפני.
+function syncCropSources(assets,release){
   const ids=new Set(assets.filter(a=>a.type==='crop'&&a.srcAssetId!=null).map(a=>a.srcAssetId));
-  ids.forEach(sid=>{const src=S.assets.find(x=>x.id===sid);if(src)src.isCropSource=S.assets.some(x=>x.type==='crop'&&x.srcAssetId===sid);});
+  ids.forEach(sid=>{const src=S.assets.find(x=>x.id===sid);if(!src)return;
+    const has=S.assets.some(x=>x.type==='crop'&&x.srcAssetId===sid);
+    if(has)src.isCropSource=true;else if(release)src.isCropSource=false;});
 }
 function undoDelete(){
   const back=(_undoBuf||[]).filter(a=>!S.assets.some(x=>x.id===a.id));
@@ -7984,6 +8166,7 @@ function updateCropAddBtn(){
 }
 
 function closeCropModal(){
+  if(CM.aiAc){CM.aiAc.abort();CM.aiAc=null;}   // D-62: 🙂 באמצע — עוצר (abort = סיום ה-Worker)
   document.getElementById('crop-modal').hidden=true;
   CM.srcImg=null;CM.crops=[];CM.dragging=false;CM.assetId=null;
   CM.selId=null;CM.editMode=null;CM.editHandle=null;CM.editOrig=null;
@@ -8423,7 +8606,11 @@ document.getElementById('btn-crop-add').addEventListener('click',()=>{
   CM.crops.forEach((c,i)=>{
     const fullEl=cropExtractFull(CM.srcImg,c);
     const thumb=cropExtractThumb(CM.srcImg,c);
-    S.assets.push({id:++S.idSeq,type:'crop',name:`${srcName} #${i+1}`,url:'',thumb,imgEl:fullEl,srcAssetId:srcId,selected:true,folder:asset&&asset.folder});
+    const o={id:++S.idSeq,type:'crop',name:`${srcName} #${i+1}`,url:'',thumb,imgEl:fullEl,srcAssetId:srcId,selected:true,folder:asset&&asset.folder};
+    // D-62: מסגרת מ-🙂 → af כמו פנים מזוהות (✨/🖼/🔍 עובדים). שכנים = שאר מסגרות הפנים בחלון (להסרת רקע).
+    if(c.face){const others=CM.crops.filter(q=>q!==c&&q.face).map(q=>q.face);
+      o.af={x:c.x/CM.dispW,y:c.y/CM.dispH,s:c.w/CM.dispW,f:c.face,o:others};}
+    S.assets.push(o);
   });
   if(asset) asset.isCropSource=true;
   const nAdded=CM.crops.length;
