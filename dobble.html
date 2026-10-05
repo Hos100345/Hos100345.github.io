@@ -2542,14 +2542,14 @@ window.applyI18n=applyI18n;
           <div data-i18n="edit.overlapNote" style="font-size:.75rem;color:var(--muted);line-height:1.5;margin-top:.3rem">
             אפס = הסמלים נוגעים בדיוק · ימינה = נכנסים זה בזה · שמאלה = מתרחקים זה מזה
           </div>
-          <button data-i18n="edit.overlapResetBtn" class="btn btn-ghost" type="button" data-reset="sl-var,sl-ov"
+          <button data-i18n="edit.overlapResetBtn" class="btn btn-ghost" type="button" data-reset="sl-var,sl-ov,sl-sympad"
                   style="width:100%;justify-content:center;margin-top:.5rem;font-size:.8rem">↺ ברירת מחדל</button>
         </div>
         <div class="sb-sec">
           <div data-i18n="edit.paddingTitle" class="sb-t">מרווח מהמסגרת</div>
           <div class="sl-row" data-sl-lock="sl-sympad">
-            <div class="sl-lbl"><span data-i18n="edit.paddingLabel">מרווח סמלים ← מסגרת</span><strong id="lbl-sympad">0 מ"מ</strong></div>
-            <input type="range" id="sl-sympad" min="0" max="30" step="0.5" value="0">
+            <div class="sl-lbl"><span data-i18n="edit.paddingLabel">מרווח סמלים ← מסגרת</span><strong id="lbl-sympad">2 מ"מ</strong></div>
+            <input type="range" id="sl-sympad" min="0" max="30" step="0.5" value="2">
           </div>
           <div data-i18n="edit.paddingNote" style="font-size:.75rem;color:var(--muted);line-height:1.5;margin-top:.3rem">
             מרחק הסמלים מהמסגרת, במ"מ אמיתיים. הטווח מותאם אוטומטית לקוטר הקלף ולרוחב המסגרת.
@@ -4358,7 +4358,7 @@ const S={
   crop:true,isSilhouette:false,
   cutLines:true,   // קו חיתוך עדין על שפת כל קלף ב-A4 ביתי בלבד (expPDF). לא בבית דפוס — שם הדייקה חותכת.
   frame:{w:0,color:'#4338CA',op:100},
-  symPad:0,
+  symPad:2,   // D-60b: בגודל האוטומטי הסמלים מגיעים עד rSym — 0 היה מצמיד אותם לקו החיתוך. legacy נטען עם הערך השמור
   bg:{color:'#FFFEF5',op:100},
   idSeq:0,
   back:backDefaults(),backCanvas:null,   // backCanvas לעולם לא נשמר — נגזר תמיד מ-back דרך markBackDirty()
