@@ -237,6 +237,11 @@
     .ai-help summary{cursor:pointer;font-weight:700;color:var(--indigo)}
     .ai-banner{position:fixed;inset-inline:12px;bottom:calc(18px + var(--ai-bn,0px));z-index:10050;max-width:560px;margin:0 auto;background:#fff;border:2px solid var(--indigo);border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.18);padding:.6rem .8rem;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;font-size:.85rem;font-weight:700;color:#1f2937}
     .ai-banner.err{border-color:#ef4444}
+    .ai-meter-bar{flex-basis:100%;height:8px;border-radius:4px;background:#e5e7eb;overflow:hidden}
+    .ai-meter-bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#6366f1,#8b5cf6);transition:width .25s linear}
+    .bgq-opt{display:block;width:100%;text-align:start;padding:.7rem .9rem;margin:.45rem 0;border:2px solid var(--indigo);border-radius:12px;background:#fff;cursor:pointer;font:inherit;color:#1f2937}
+    .bgq-opt b{display:block;font-size:1rem}.bgq-opt small{display:block;color:var(--muted);margin-top:.15rem}
+    .bgq-opt:hover,.bgq-opt:focus-visible{background:#eef2ff}
     .ai-banner span{flex:1;min-width:12em}
     .ai-banner .ai-x{background:none;border:none;font-size:1rem;cursor:pointer;color:var(--muted);padding:.2rem .4rem}
     .g-sh{position:absolute;bottom:-6px;inset-inline-end:-6px;width:24px;height:24px;background:#fff;color:var(--indigo);border-radius:50%;font-size:.75rem;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid var(--indigo);line-height:1;box-shadow:0 1px 4px rgba(0,0,0,.3);padding:0}
@@ -1246,6 +1251,26 @@ const I18N={
     'faces.busy':'רגע — עדיין מעבדים את התמונות שהעליתם',
     'faces.noSource':'התמונה המקורית נמחקה מהמאגר — אי אפשר לשנות את הרקע',
     'bg.bulkBtn':'✨ הסר רקע מהנבחרים',
+    'bgq.title':'איכות הסרת הרקע',
+    'bgq.fast':'⚡ מהיר',
+    'bgq.fastSub':'מה שיש היום — קל גם בטלפון',
+    'bgq.precise':'💎 מדויק',
+    'bgq.preciseSub':'הורדה חד-פעמית 88MB, איטי יותר',
+    'bgq.remember':'זכור את הבחירה',
+    'bgq.setting':'⚙️ איכות: {q}',
+    'bgq.settingNone':'⚙️ איכות הסרת רקע',
+    'bgq.settingTitle':'שינוי איכות הסרת הרקע (מהיר / מדויק)',
+    'bgq.qFast':'⚡ מהיר',
+    'bgq.qPrecise':'💎 מדויק',
+    'bgq.download':'💎 מוריד מודל מדויק (פעם אחת בלבד) — {pct}% · {mb} מתוך {tot}MB',
+    'bgq.init':'💎 מכין…',
+    'bgq.item':'💎 סמל {n} מתוך {total} · מכין…',
+    'bgq.process':'💎 מסיר רקע… {pct}%',
+    'bgq.processN':'💎 סמל {n} מתוך {total} · {pct}% · {rem}',
+    'bgq.remMin':'נותרו בערך {m} דקות',
+    'bgq.remOne':'נותרה בערך דקה',
+    'bgq.remLess':'נותרה פחות מדקה',
+    'bgq.stoppedOne':'נעצר — הסמל לא השתנה',
     'bg.bulkTitle':'להסיר רקע מהסמלים המסומנים?',
     'bg.bulkBody':'{n} סמלים. פנים יקבלו הסרת רקע לאנשים, וכל השאר הסרת רקע לחפצים. אפשר לעצור באמצע, ו-🖼 על כל סמל מחזיר לו את הרקע.',
     'bg.bulkOk':'✨ הסר רקע מ-{n}',
@@ -1851,6 +1876,26 @@ const I18N={
     'faces.busy':'One moment — still processing the photos you uploaded',
     'faces.noSource':'The original photo was deleted from the library — the background cannot be changed',
     'bg.bulkBtn':'✨ Remove background from selected',
+    'bgq.title':'Background removal quality',
+    'bgq.fast':'⚡ Fast',
+    'bgq.fastSub':'What we have today — light, works on phones',
+    'bgq.precise':'💎 Precise',
+    'bgq.preciseSub':'One-time 88MB download, slower',
+    'bgq.remember':'Remember my choice',
+    'bgq.setting':'⚙️ Quality: {q}',
+    'bgq.settingNone':'⚙️ Background quality',
+    'bgq.settingTitle':'Change background removal quality (fast / precise)',
+    'bgq.qFast':'⚡ Fast',
+    'bgq.qPrecise':'💎 Precise',
+    'bgq.download':'💎 Downloading the precise model (one time only) — {pct}% · {mb} of {tot}MB',
+    'bgq.init':'💎 Getting ready…',
+    'bgq.item':'💎 Symbol {n} of {total} · getting ready…',
+    'bgq.process':'💎 Removing background… {pct}%',
+    'bgq.processN':'💎 Symbol {n} of {total} · {pct}% · {rem}',
+    'bgq.remMin':'about {m} minutes left',
+    'bgq.remOne':'about a minute left',
+    'bgq.remLess':'less than a minute left',
+    'bgq.stoppedOne':'Stopped — the symbol was not changed',
     'bg.bulkTitle':'Remove the background from the selected symbols?',
     'bg.bulkBody':'{n} symbols. Faces get people background removal, everything else object background removal. You can stop midway, and 🖼 on any symbol brings its background back.',
     'bg.bulkOk':'✨ Remove from {n}',
@@ -2463,6 +2508,7 @@ window.applyI18n=applyI18n;
         <button data-i18n="upload.deleteSelectedBtn" type="button" class="g-bulk-btn danger" id="btn-del-selected">🗑 מחק מסומנים</button>
         <button data-i18n="faces.allBtn" type="button" class="g-bulk-btn" id="btn-faces-all">🙂 מצא פנים בכל התמונות</button>
         <button data-i18n="bg.bulkBtn" type="button" class="g-bulk-btn" id="btn-bg-selected" hidden>✨ הסר רקע מהנבחרים</button>
+        <button type="button" class="g-bulk-btn" id="btn-bg-q" hidden></button>
         <button data-i18n="sh.bulkBtn" type="button" class="g-bulk-btn" id="btn-sh-selected">🔍 חדד את הנבחרים</button>
         <button data-i18n="upload.saveToCloudBtn" type="button" class="g-bulk-btn" id="btn-cloud-save">☁️ לשמור בענן?</button>
         <span class="g-sel-count" id="g-sel-count"></span>
@@ -3039,6 +3085,17 @@ window.applyI18n=applyI18n;
       <button data-i18n="msg.confirmCancel" type="button" class="btn btn-ghost" id="cfm-no">ביטול</button>
       <button type="button" class="btn" id="cfm-yes" style="background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff">מחק</button>
     </div>
+  </div>
+</div>
+
+<!-- ✨ בחירת איכות הסרת רקע (D-63) -->
+<div class="modal-bg" id="bgq-modal" hidden style="z-index:10002">
+  <div class="modal-card" style="max-width:420px">
+    <div id="bgq-title" style="font-size:1.05rem;font-weight:800;color:var(--indigo);text-align:center" data-i18n="bgq.title">איכות הסרת הרקע</div>
+    <button type="button" class="bgq-opt" id="bgq-fast"><b data-i18n="bgq.fast">⚡ מהיר</b><small data-i18n="bgq.fastSub">מה שיש היום — קל גם בטלפון</small></button>
+    <button type="button" class="bgq-opt" id="bgq-precise"><b data-i18n="bgq.precise">💎 מדויק</b><small data-i18n="bgq.preciseSub">הורדה חד-פעמית 88MB, איטי יותר</small></button>
+    <label id="bgq-rem-row" style="display:flex;gap:.4rem;align-items:center;font-size:.85rem;margin:.4rem 0 .6rem"><input type="checkbox" id="bgq-rem" checked><span data-i18n="bgq.remember">זכור את הבחירה</span></label>
+    <div style="text-align:center"><button data-i18n="msg.confirmCancel" type="button" class="btn btn-ghost" id="bgq-no">ביטול</button></div>
   </div>
 </div>
 
@@ -4694,6 +4751,106 @@ function afEnabled(){
   return typeof Worker!=='undefined'&&typeof WebAssembly!=='undefined';
 }
 function afTrack(detail){try{window.track&&window.track('auto-faces',{detail:String(detail).slice(0,300)});}catch(e){}}
+
+// ══ 💎 איכות הסרת רקע — "מהיר" / "מדויק" (D-63) ══
+// מהיר = MODNet לפנים + u2netp לחפצים (כמו שהיה). מדויק = IS-Net fp16 (88MB, mode:'precise' ב-AIImage) לכל סוג סמל.
+// preciseAllowed נפרדת מ-afEnabled: שם רק deviceMemory, ו-Safari לא חושף אותו → אייפון עובר. המודל המדויק
+// ענק, והדף עלול לקרוס (לא רק להאט) באייפון ובמכשיר חלש, לכן שם "מדויק" מוסתר לגמרי והכול "מהיר" בלי הודעה.
+function preciseAllowed(){
+  const ua=navigator.userAgent||'';
+  if(/iPhone|iPad|iPod/.test(ua))return false;
+  if(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1)return false;   // iPad שמזדהה כ-Mac
+  if(navigator.deviceMemory&&navigator.deviceMemory<4)return false;
+  return afEnabled();
+}
+const BGQ_KEY='dobble_bg_q';
+function bgQGet(){try{const v=localStorage.getItem(BGQ_KEY);return v==='fast'||v==='precise'?v:null;}catch(e){return null;}}
+function bgQSet(v){try{localStorage.setItem(BGQ_KEY,v);}catch(e){}}
+// מחזיר 'fast' | 'precise' | null (ביטול). בלי בחירה שמורה — חלון בחירה.
+async function bgQuality(){
+  if(!preciseAllowed())return 'fast';
+  const m=bgQGet();
+  return m||bgQAsk(false);
+}
+// setting=true: מהכפתור "איכות" — תמיד נשמר, בלי תיבת "זכור"
+function bgQAsk(setting){
+  const modal=document.getElementById('bgq-modal');
+  document.getElementById('bgq-rem-row').style.display=setting?'none':'';
+  document.getElementById('bgq-rem').checked=true;
+  modal.hidden=false;
+  return new Promise(res=>{
+    const done=v=>{
+      modal.hidden=true;
+      ['bgq-fast','bgq-precise','bgq-no'].forEach(id=>document.getElementById(id).onclick=null);
+      modal.onclick=null;document.removeEventListener('keydown',esc);
+      if(v&&(setting||document.getElementById('bgq-rem').checked))bgQSet(v);
+      if(v)bgQRefreshBtn();
+      res(v);
+    };
+    const esc=e=>{if(e.key==='Escape')done(null);};
+    document.getElementById('bgq-fast').onclick=()=>done('fast');
+    document.getElementById('bgq-precise').onclick=()=>done('precise');
+    document.getElementById('bgq-no').onclick=()=>done(null);
+    modal.onclick=e=>{if(e.target===modal)done(null);};
+    document.addEventListener('keydown',esc);
+  });
+}
+function bgQRefreshBtn(){
+  const b=document.getElementById('btn-bg-q');if(!b)return;
+  b.hidden=!preciseAllowed();
+  const m=bgQGet();
+  b.textContent=m?t('bgq.setting',{q:t(m==='precise'?'bgq.qPrecise':'bgq.qFast')}):t('bgq.settingNone');
+  b.title=t('bgq.settingTitle');
+}
+document.getElementById('btn-bg-q').addEventListener('click',()=>bgQAsk(true));
+
+// מד התקדמות ל"מדויק". הורדה = אמיתית (loaded/total, עולה בלבד, עד 100%). עיבוד = קריאה אחת למודל ב-Worker, בלי
+// אירועי ביניים, לכן הפס הוא הערכת זמן: מדידת הסמל הקודם במכשיר הזה (localStorage), ועד המדידה הראשונה ברירת מחדל
+// שמרנית. ⛔ הפס עוצר ב-95% ומחכה — 100% רק כשהסמל באמת גמור (ואז המד נסגר).
+const BG_PRE_KEY='dobble_bg_pre_ms',BG_PRE_DEF=60000;
+const AF_STALL_PRE_INIT=90000,AF_STALL_PRE_RUN=240000;   // כלב השמירה (30 שנ') הורג עיבוד תקין: אירוע process יחיד, ובטלפון חלש זה לוקח יותר
+function bgPreEst(){try{const v=+localStorage.getItem(BG_PRE_KEY);return v>500&&v<900000?v:0;}catch(e){return 0;}}
+function bgPreSave(ms){try{const o=bgPreEst();localStorage.setItem(BG_PRE_KEY,String(Math.round(o?(o+ms)/2:ms)));}catch(e){}}
+function bgRemText(ms){
+  const m=Math.ceil(ms/60000);
+  return ms<45000?t('bgq.remLess'):m<=1?t('bgq.remOne'):t('bgq.remMin',{m});
+}
+function bgMeter({total=1,stop}){
+  const st={n:1,total,dl:0,pct:0,t0:0,est:0,tm:0};
+  const el=aiBanner('ai-meter','',{actions:stop?[{label:t('bg.stopBtn'),fn:stop}]:[]});
+  const bar=document.createElement('div');bar.className='ai-meter-bar';bar.setAttribute('role','progressbar');
+  const fill=document.createElement('i');bar.appendChild(fill);el.appendChild(bar);aiBannerStack();
+  const set=(text,pct)=>{el.firstChild.textContent=text;fill.style.width=pct+'%';bar.setAttribute('aria-valuenow',String(Math.round(pct)));};
+  const paint=()=>{
+    const el_=performance.now()-st.t0,pct=Math.min(95,Math.round(el_/st.est*100));
+    if(pct>st.pct)st.pct=pct;   // לא יורד
+    if(st.total>1){
+      const rem=(st.total-st.n)*st.est+Math.max(st.est*.1,st.est-el_);
+      set(t('bgq.processN',{n:st.n,total:st.total,pct:st.pct,rem:bgRemText(rem)}),st.pct);
+    }else set(t('bgq.process',{pct:st.pct}),st.pct);
+  };
+  const stopTimer=()=>{clearInterval(st.tm);st.tm=0;};
+  set(t(total>1?'bgq.item':'bgq.init',{n:1,total}),0);
+  return{
+    item(n){stopTimer();st.n=n;st.t0=0;st.pct=0;set(t(st.total>1?'bgq.item':'bgq.init',{n,total:st.total}),0);},
+    onP(p){
+      if(p.phase==='download'){
+        const tot=p.total||0;st.dl=Math.max(st.dl,Math.min(p.loaded||0,tot||p.loaded||0));
+        const pct=tot?Math.min(100,Math.floor(st.dl/tot*100)):0;
+        set(t('bgq.download',{pct,mb:Math.round(st.dl/1e6),tot:Math.round(tot/1e6)}),pct);
+      }else if(p.phase==='init'){
+        set(t('bgq.init'),100);
+      }else if(p.phase==='process'&&!st.t0){
+        st.t0=performance.now();st.est=bgPreEst()||BG_PRE_DEF;st.pct=0;
+        paint();st.tm=setInterval(paint,250);
+      }
+    },
+    // הסמל גמור — מודדים (רק הצלחה) ומעדכנים את ההערכה למכשיר הזה
+    done(){stopTimer();if(st.t0)bgPreSave(performance.now()-st.t0);st.t0=0;},
+    fail(){stopTimer();st.t0=0;},
+    hide(){stopTimer();aiBannerHide('ai-meter');}
+  };
+}
 // D-62: שום דבר אוטומטי — הכול בלחיצה (🙂 / ✨). הקוד של D-56/D-57 נשאר ומשמש את הכפתורים.
 // AF_AUTO מנתק רק את הקריאה מההעלאה (afQueue נקרא רק מ-addFiles ומ-reportFailedUploads).
 // AF_BG_AFTER מנתק רק את "שלב ב" של afRun (הסרת רקע אחרי מציאת פנים) — ✨ נשאר בלחיצה בלבד.
@@ -4746,12 +4903,12 @@ function afFaceBox(af,W,H){
 // הורדת רקע לפרצוף אחד: MODNet (mode:'person') על אזור סביב החיתוך (רזולוציה טובה גם לפנים קטנות בתמונה
 // קבוצתית), ואז: (1) נשאר רק האדם שמחובר למרכז הפנים — שכנים שנכנסו בשוליים נמחקים; (2) הגנה: אם פחות
 // מ-85% שקיפות-מלאה במרכז הפנים — הסרת הרקע הייתה פוגעת בפנים, מחזירים null והסמל נשאר עם הרקע.
-async function afCutout(src,af,signal,onProgress){
+async function afCutout(src,af,signal,onProgress,mode){   // mode: 'precise' (D-63) או ברירת מחדל 'person' (מהיר)
   const W=imgNatW(src),H=imgNatH(src),x=af.x*W,y=af.y*H,s=af.s*W,m=s*.25;
   const rx=Math.max(0,x-m),ry=Math.max(0,y-m),rw=Math.min(W,x+s+m)-rx,rh=Math.min(H,y+s+m)-ry;
   const reg=document.createElement('canvas');reg.width=Math.max(1,Math.round(rw));reg.height=Math.max(1,Math.round(rh));
   reg.getContext('2d').drawImage(src,rx,ry,rw,rh,0,0,reg.width,reg.height);
-  const r=await AIImage.removeBg(reg,{mode:'person',signal,onProgress});
+  const r=await AIImage.removeBg(reg,{mode:mode||'person',signal,onProgress});
   const kx=r.canvas.width/rw,ky=r.canvas.height/rh,N=IMG_PX;
   const cv=document.createElement('canvas');cv.width=cv.height=N;
   const ctx=cv.getContext('2d');
@@ -4903,9 +5060,9 @@ async function afRun(){
 // החלפת התמונה של סמל פנים (הסרת רקע / החזרתו).
 // ⛔ id חדש: cloudAutosave מדלג על path קיים (אותו id = אותו path), כך שבלי זה הענן היה נשאר עם הגרסה הקודמת.
 // ⛔ delete _enc: assetEncoded שומר את הקידוד על הנכס — בלי זה גם IDB היה שומר את התמונה הקודמת.
-function afSwap(c,cv,on){
+function afSwap(c,cv,on,q){   // q (D-63): 'fast'|'precise' — איך הרקע הוסר; ב-🖼 לא מועבר ונשאר כמו שהיה
   if(c.imgEl&&c.imgEl!==cv&&c.imgEl.width)c.imgEl.width=c.imgEl.height=0;
-  c.id=++S.idSeq;c.imgEl=cv;c.af=Object.assign({},c.af,{bg:on});c.thumb=makeThumb(symImg(c));   // 🔍 נשאר (af.sh)
+  c.id=++S.idSeq;c.imgEl=cv;c.af=Object.assign({},c.af,{bg:on},q?{q}:null);c.thumb=makeThumb(symImg(c));   // 🔍 נשאר (af.sh)
   delete c._enc;
 }
 // "בטל" אחרי זיהוי: הסמלים שנוצרו יוצאים, והמקורות חוזרים למשחק (אם לא נשארה להם נגזרת אחרת).
@@ -4919,7 +5076,7 @@ function afUndo(objs){
   toast(t('faces.undone'),'ok');
 }
 // 🖼 החזר רקע / ✨ הסר רקע — לסמל פנים בודד, מהכפתור שבגלריה. בונה מחדש מהמקור שבמאגר (af), לא מסמל ישן.
-async function afToggleBg(a){
+async function afToggleBg(a,q){
   const src=S.assets.find(x=>x.id===a.srcAssetId);
   if(!src||!src.imgEl){toast(t('faces.noSource'),'err');return;}
   if(AF.running||AF.toggling){toast(t('faces.busy'),'ok');return;}   // Worker אחד — לא שתי ריצות במקביל
@@ -4927,27 +5084,21 @@ async function afToggleBg(a){
   if(a.af.bg){cv=afPlain(src.imgEl,a.af);on=0;}
   else{
     if(!afEnabled()){toast(t('faces.bgLowMem'),'err');return;}
-    AF.toggling=true;toast(t('faces.bgWorking'),'ok');
-    const ac=new AbortController();let tm=0;const arm=()=>{clearTimeout(tm);tm=setTimeout(()=>ac.abort(),AF_STALL_MS);};
+    if(!q)q=await bgQuality();
+    if(!q)return;   // ביטל את חלון האיכות
+    if(q==='fast')toast(t('faces.bgWorking'),'ok');
     try{
-      arm();await loadAI();
-      cv=await afCutout(src.imgEl,a.af,ac.signal,p=>{
-        arm();
-        if(p.phase==='download'&&p.total)toast(t('faces.preparingBg',{pct:Math.min(99,Math.round(p.loaded/p.total*100))}),'ok');
-      });
+      cv=await bgJob((ac,arm,onP)=>afCutout(src.imgEl,a.af,ac.signal,onP,q==='precise'?'precise':undefined),{q});
     }catch(e){
-      afTrack('toggle fail · '+String(e&&e.message||e).slice(0,80));
-      aiFail(e,()=>afToggleBg(a));return;   // D-62: הודעה קבועה + "נסה שוב" על אותו סמל
-    }finally{
-      clearTimeout(tm);AF.toggling=false;
-      if(window.AIImage)AIImage.cancelAll();
-      if(AF.q.length&&!AF.running)afRun();
+      if(e&&e.userStopped){toast(t('bgq.stoppedOne'),'ok');return;}
+      afTrack('toggle fail · '+q+' · '+String(e&&e.message||e).slice(0,80));
+      aiFail(e,()=>afToggleBg(a,q));return;   // D-62: הודעה קבועה + "נסה שוב" על אותו סמל
     }
     if(!cv){toast(t('faces.bgFaceCut'),'err');return;}
     on=1;
   }
   if(!S.assets.includes(a))return;
-  afSwap(a,cv,on);
+  afSwap(a,cv,on,on?q:undefined);
   renderGallery();updateCounter();schedIdbSave();
   toast(t(on?'faces.bgRemoved':'faces.bgRestored'),'ok');
 }
@@ -4960,8 +5111,8 @@ const isObjSym=a=>!!(a&&a.af&&a.af.kind==='obj');
 const bgBusy=()=>AF.running||AF.toggling;
 // u2netp על כל הסמל (אין "פנים" לשמור עליהן, אין שוליים — החפץ הוא כל התמונה), ואז הגנת "הכול נמחק / כלום לא נמחק":
 // פחות מ-5% או יותר מ-98% פיקסלים אטומים = המודל לא מצא חפץ ברור → null, הסמל לא מוחלף.
-async function obCutout(src,signal,onProgress){
-  const r=await AIImage.removeBg(src,{mode:'object',signal,onProgress});
+async function obCutout(src,signal,onProgress,mode){
+  const r=await AIImage.removeBg(src,{mode:mode||'object',signal,onProgress});
   const cv=r.canvas,W=cv.width,H=cv.height,d=cv.getContext('2d').getImageData(0,0,W,H).data;
   let op=0;for(let i=3;i<d.length;i+=4)if(d[i]>200)op++;
   const f=op/(W*H);
@@ -4976,29 +5127,39 @@ function obPlain(src){
   cv.getContext('2d').drawImage(src,0,0);return cv;
 }
 // סמל רגיל → נגזרת עם רקע מוסר, מיד אחרי המקור בגלריה
-function obAddDerived(x,cv){
+function obAddDerived(x,cv,q){
   const y={id:++S.idSeq,type:'crop',name:x.name.replace(/\.[^.]+$/,'')+' ✨',url:'',thumb:makeThumb(cv),imgEl:cv,
-           srcAssetId:x.id,selected:true,folder:x.folder,af:{kind:'obj',bg:1}};
+           srcAssetId:x.id,selected:true,folder:x.folder,af:q?{kind:'obj',bg:1,q}:{kind:'obj',bg:1}};
   const i=S.assets.indexOf(x);S.assets.splice(i<0?S.assets.length:i+1,0,y);
   x.isCropSource=true;
   return y;
 }
 // ריצה אחת של כלי רקע (סמל בודד או מרובה): נעילה, טעינת AI, כלב שמירה 30 שנ', סגירת ה-Worker בסוף.
-async function bgJob(fn){
+// opt.q==='precise' (D-63): מד התקדמות + כלבי שמירה ארוכים יותר (אירוע process יחיד, ובטלפון חלש זה לוקח זמן);
+// opt.total = כמה סמלים בריצה (למד). "עצור" במד → e.userStopped על השגיאה.
+async function bgJob(fn,opt){
+  const pre=!!(opt&&opt.q==='precise');
   AF.toggling=true;
   const ac=new AbortController();let tm=0;
-  const arm=()=>{clearTimeout(tm);tm=setTimeout(()=>ac.abort(),AF_STALL_MS);};
-  const onP=p=>{arm();if(p.phase==='download'&&p.total)toast(t('faces.preparingBg',{pct:Math.min(99,Math.round(p.loaded/p.total*100))}),'ok');};
-  try{arm();await loadAI();return await fn(ac,arm,onP);}
+  const arm=(ms)=>{clearTimeout(tm);tm=setTimeout(()=>ac.abort(),ms||AF_STALL_MS);};
+  const meter=pre?bgMeter({total:(opt&&opt.total)||1,stop:()=>{ac.userStopped=true;ac.abort();}}):null;
+  const onP=p=>{
+    arm(pre&&p.phase==='process'?AF_STALL_PRE_RUN:pre&&p.phase==='init'?AF_STALL_PRE_INIT:AF_STALL_MS);
+    if(meter)meter.onP(p);
+    else if(p.phase==='download'&&p.total)toast(t('faces.preparingBg',{pct:Math.min(99,Math.round(p.loaded/p.total*100))}),'ok');
+  };
+  try{arm();await loadAI();return await fn(ac,arm,onP,meter);}
+  catch(e){if(ac.userStopped&&e&&typeof e==='object')e.userStopped=true;throw e;}
   finally{
     clearTimeout(tm);AF.toggling=false;
+    if(meter)meter.hide();
     if(window.AIImage)AIImage.cancelAll();
     if(AF.q.length&&!AF.running)afRun();
   }
 }
 // כפתור הגלריה: פנים → afToggleBg (חלק 3, ללא שינוי). חפץ → כאן.
-async function bgToggle(a){
-  if(a.af&&!isObjSym(a))return afToggleBg(a);
+async function bgToggle(a,q){
+  if(a.af&&!isObjSym(a))return afToggleBg(a,q);
   if(bgBusy()){toast(t('faces.busy'),'ok');return;}
   if(isObjSym(a)){
     const src=S.assets.find(x=>x.id===a.srcAssetId);
@@ -5007,26 +5168,32 @@ async function bgToggle(a){
   }
   if(!afEnabled()){toast(t('faces.bgLowMem'),'err');return;}
   const src=isObjSym(a)?S.assets.find(x=>x.id===a.srcAssetId):a;
-  toast(t('faces.bgWorking'),'ok');
+  if(!q)q=await bgQuality();
+  if(!q)return;   // ביטל את חלון האיכות
+  if(q==='fast')toast(t('faces.bgWorking'),'ok');
   let cv;
-  try{cv=await bgJob((ac,arm,onP)=>obCutout(src.imgEl,ac.signal,onP));}
-  catch(e){afTrack('obj fail · '+String(e&&e.message||e).slice(0,80));aiFail(e,()=>bgToggle(a));return;}
+  try{cv=await bgJob((ac,arm,onP)=>obCutout(src.imgEl,ac.signal,onP,q==='precise'?'precise':undefined),{q});}
+  catch(e){
+    if(e&&e.userStopped){toast(t('bgq.stoppedOne'),'ok');return;}
+    afTrack('obj fail · '+q+' · '+String(e&&e.message||e).slice(0,80));aiFail(e,()=>bgToggle(a,q));return;}
   if(!cv){toast(t('bg.notFound'),'err');return;}
   if(!S.assets.includes(a)||!S.assets.includes(src)){cv.width=cv.height=0;return;}
-  if(isObjSym(a))afSwap(a,cv,1);else obAddDerived(a,cv);
+  if(isObjSym(a))afSwap(a,cv,1,q);else obAddDerived(a,cv,q);
   renderGallery();updateCounter();schedIdbSave();
   toast(t('faces.bgRemoved'),'ok');
 }
 // "✨ הסר רקע מהנבחרים": לפי הסוג — פנים MODNet (afCutout), כל השאר u2netp (obCutout). "עצור" בהודעה מבטל באמצע;
 // מה שכבר טופל נשאר, מה שלא — לא נגע. renderGallery פעם אחת בסוף.
 // only (D-62) = "🔄 נסה שוב" אחרי כשל: בדיוק הסמלים שעוד לא טופלו, בלי חלון אישור — מה שכבר עבר לא רץ שוב
-async function bgBulk(only){
+async function bgBulk(only,q){
   if(bgBusy()){toast(t('faces.busy'),'ok');return;}
   if(!afEnabled()){toast(t('faces.bgLowMem'),'err');return;}
   const has=id=>S.assets.some(x=>x.id===id);
   const elig=a=>S.assets.includes(a)&&isSymbolAsset(a)&&(a.type==='image'||a.type==='crop')&&!(a.af&&a.af.bg)&&(!a.af||has(a.srcAssetId));
   const sel=Array.isArray(only)?only.filter(elig):S.assets.filter(a=>a.selected!==false&&elig(a));
   if(!sel.length){toast(t('bg.none'),'err');return;}
+  if(!q)q=await bgQuality();
+  if(!q)return;   // ביטל את חלון האיכות
   if(!Array.isArray(only)){
     const ok=await confirmDialog({icon:'✨',title:t('bg.bulkTitle'),body:t('bg.bulkBody',{n:sel.length}),okText:t('bg.bulkOk',{n:sel.length})});
     if(!ok)return;
@@ -5034,37 +5201,41 @@ async function bgBulk(only){
   aiBannerHide('ai-fail');
   const R={face:0,obj:0,kept:0,stopped:false,failed:false,rest:null,err:null};
   try{
-    await bgJob(async(ac,arm,onP)=>{
+    const pm=q==='precise'?'precise':undefined;
+    await bgJob(async(ac,arm,onP,meter)=>{
       const stop={label:t('bg.stopBtn'),fn:()=>{R.stopped=true;ac.abort();}};
       for(let i=0;i<sel.length;i++){
-        if(R.stopped)break;
+        if(R.stopped||ac.userStopped)break;
         const a=sel[i];
         if(!S.assets.includes(a))continue;
-        toast(t('bg.progress',{n:i+1,total:sel.length}),'ok',stop);
+        if(meter)meter.item(i+1);else toast(t('bg.progress',{n:i+1,total:sel.length}),'ok',stop);
         arm();
         let cv;
         try{
           if(a.af&&!isObjSym(a)){
             const src=S.assets.find(x=>x.id===a.srcAssetId);
-            cv=src&&await afCutout(src.imgEl,a.af,ac.signal,onP);
-            if(cv&&S.assets.includes(a)){afSwap(a,cv,1);R.face++;}else R.kept++;
+            cv=src&&await afCutout(src.imgEl,a.af,ac.signal,onP,pm);
+            if(cv&&S.assets.includes(a)){afSwap(a,cv,1,q);R.face++;}else R.kept++;
           }else{
             const src=isObjSym(a)?S.assets.find(x=>x.id===a.srcAssetId):a;
-            cv=src&&await obCutout(src.imgEl,ac.signal,onP);
-            if(cv&&S.assets.includes(a)){if(isObjSym(a))afSwap(a,cv,1);else obAddDerived(a,cv);R.obj++;}else R.kept++;
+            cv=src&&await obCutout(src.imgEl,ac.signal,onP,pm);
+            if(cv&&S.assets.includes(a)){if(isObjSym(a))afSwap(a,cv,1,q);else obAddDerived(a,cv,q);R.obj++;}else R.kept++;
           }
+          if(meter)meter.done();
         }catch(e){
-          if(!R.stopped){R.failed=true;R.err=e;R.rest=sel.slice(i);afTrack('bulk fail · '+String(e&&e.message||e).slice(0,80));}
+          if(meter)meter.fail();
+          if(ac.userStopped)R.stopped=true;
+          if(!R.stopped){R.failed=true;R.err=e;R.rest=sel.slice(i);afTrack('bulk fail · '+q+' · '+String(e&&e.message||e).slice(0,80));}
           break;
         }
       }
-    });
-  }catch(e){if(!R.stopped){R.failed=true;R.err=e;if(!R.rest)R.rest=sel;afTrack('bulk fail · '+String(e&&e.message||e).slice(0,80));}}
+    },{q,total:sel.length});
+  }catch(e){if(e&&e.userStopped)R.stopped=true;if(!R.stopped){R.failed=true;R.err=e;if(!R.rest)R.rest=sel;afTrack('bulk fail · '+q+' · '+String(e&&e.message||e).slice(0,80));}}
   const n=R.face+R.obj;
   if(n){renderGallery();updateCounter();schedIdbSave();}
-  afTrack('bulk · '+sel.length+' sel · face '+R.face+' obj '+R.obj+' kept '+R.kept+(R.stopped?' stopped':'')+(R.failed?' failed':''));
+  afTrack('bulk · '+q+' · '+sel.length+' sel · face '+R.face+' obj '+R.obj+' kept '+R.kept+(R.stopped?' stopped':'')+(R.failed?' failed':''));
   if(R.stopped)toast(t('bg.stopped',{n}),'ok');
-  else if(R.failed){if(n)toast(t('bg.done',{n}),'ok');aiFail(R.err,()=>bgBulk(R.rest));}
+  else if(R.failed){if(n)toast(t('bg.done',{n}),'ok');aiFail(R.err,()=>bgBulk(R.rest,q));}
   else toast(t('bg.done',{n})+(R.kept?t('bg.doneKept',{k:R.kept}):''),'ok');
 }
 document.getElementById('btn-bg-selected').addEventListener('click',()=>bgBulk());
@@ -5158,7 +5329,7 @@ function aiBanner(id,text,{err,actions}={}){
   return el;
 }
 function aiBannerStack(){   // שתי הודעות יחד — זו מעל זו
-  let off=0;['ai-fail','ai-note'].forEach(id=>{const el=document.getElementById(id);if(el){el.style.setProperty('--ai-bn',off+'px');off+=el.offsetHeight+8;}});
+  let off=0;['ai-fail','ai-note','ai-meter'].forEach(id=>{const el=document.getElementById(id);if(el){el.style.setProperty('--ai-bn',off+'px');off+=el.offsetHeight+8;}});
 }
 function aiBannerHide(id){const el=document.getElementById(id);if(el){el.remove();aiBannerStack();}}
 // כשל רשת/טעינה (סקריפט, מודל, Worker, כלב שמירה) מול כשל אחר (זיכרון) — רק לראשון "נסה שוב" עוזר
@@ -5495,7 +5666,7 @@ function buildGalleryItem(a){
 }
 
 function renderGallery(){
-  {const b=document.getElementById('btn-bg-selected');if(b)b.hidden=!afEnabled();}   // שער מכשיר — חסום = לא מוצג
+  {const b=document.getElementById('btn-bg-selected');if(b)b.hidden=!afEnabled();bgQRefreshBtn();}   // שער מכשיר — חסום = לא מוצג
   const grid=document.getElementById('gallery-grid');
   const gallery=document.getElementById('gallery');
   grid.innerHTML='';
