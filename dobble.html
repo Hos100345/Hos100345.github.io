@@ -239,6 +239,20 @@
     .ai-banner.err{border-color:#ef4444}
     .ai-meter-bar{flex-basis:100%;height:8px;border-radius:4px;background:#e5e7eb;overflow:hidden}
     .ai-meter-bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#6366f1,#8b5cf6);transition:width .25s linear}
+    .cnt-card{border:2px solid var(--indigo);border-radius:12px;padding:.7rem .85rem;margin:.55rem 0;background:#fff}
+    .cnt-card h4{margin:0 0 .25rem;font-size:.95rem;color:var(--indigo)}
+    .cnt-sub{font-size:.82rem;color:var(--muted);line-height:1.6}
+    .cnt-strip{display:flex;flex-wrap:wrap;gap:4px;margin:.35rem 0}
+    .cnt-strip canvas,.cnt-sug canvas{border-radius:50%;border:2px solid #e5e7eb;background:#fff}
+    .cnt-sug{display:flex;align-items:center;gap:.6rem;padding:.35rem 0;border-top:1px solid #f1f5f9}
+    .cnt-sug span{flex:1;font-size:.82rem}
+    .cnt-sug .btn{flex:none;min-height:auto;width:auto;padding:.4rem 1.1rem;font-size:.85rem}
+    .cnt-sug canvas{flex:none}
+    .cnt-tile{position:relative;cursor:pointer;padding:2px;border-radius:50%;border:3px solid transparent;line-height:0}
+    .cnt-tile.pick{border-color:var(--indigo);background:var(--purple-light)}
+    .cnt-tile.outs canvas{opacity:.55}
+    .cnt-err{color:#b91c1c;font-size:.8rem;margin:.3rem 0}
+    #exp-excess{font-size:.8rem;color:var(--muted);margin:.5rem 0 0;line-height:1.5}
     .bgq-opt{display:block;width:100%;text-align:start;padding:.7rem .9rem;margin:.45rem 0;border:2px solid var(--indigo);border-radius:12px;background:#fff;cursor:pointer;font:inherit;color:#1f2937}
     .bgq-opt b{display:block;font-size:1rem}.bgq-opt small{display:block;color:var(--muted);margin-top:.15rem}
     .bgq-opt:hover,.bgq-opt:focus-visible{background:#eef2ff}
@@ -1252,6 +1266,43 @@ const I18N={
     'faces.noSource':'התמונה המקורית נמחקה מהמאגר — אי אפשר לשנות את הרקע',
     'bg.bulkBtn':'✨ הסר רקע מהנבחרים',
     'bgq.title':'איכות הסרת הרקע',
+    'cnt.title':'יש לכם יותר סמלים ממה שנכנס למשחק',
+    'cnt.titleOk':'הכול נכנס למשחק',
+    'cnt.status':'יש לכם {n} סמלים. במשחק של {total} קלפים נכנסים בדיוק {total} סמלים, ולכן {out} לא ייכנסו.',
+    'cnt.kept':'הסמלים שלא נכנסים לא נמחקו — הם נשארים שמורים במאגר.',
+    'cnt.outTitle':'הסמלים שלא ייכנסו (האחרונים בגלריה):',
+    'cnt.moreOut':'ועוד {k}',
+    'cnt.opt1':'1. לאחד שני סמלים לסמל אחד',
+    'cnt.opt1Sub':'כל איחוד מוריד סמל אחד. חסרים עוד {m} איחודים כדי שכל הסמלים ייכנסו.',
+    'cnt.opt1SubOne':'כל איחוד מוריד סמל אחד. חסר עוד איחוד אחד כדי שכל הסמלים ייכנסו.',
+    'cnt.sugTitle':'זוגות שאפשר לאחד (אותה תמונה, קרובים זה לזה):',
+    'cnt.sugNone':'לא מצאנו זוגות מתאימים אוטומטית. אפשר לבחור שני סמלים ידנית.',
+    'cnt.sugText':'שני פרצופים מאותה תמונה',
+    'cnt.mergeBtn':'אחד',
+    'cnt.manualBtn':'🖐 בחירה ידנית של שני סמלים',
+    'cnt.manualHint':'לחצו על שני סמלים כדי לאחד אותם. אפשר לאחד רק שני פרצופים מאותה תמונה. סמל עמום = לא ייכנס למשחק.',
+    'cnt.manualGo':'אחד את שני הסמלים',
+    'cnt.errKind':'אפשר לאחד רק פרצופים שזוהו בתמונה.',
+    'cnt.errSrc':'אפשר לאחד רק שני פרצופים מאותה תמונה.',
+    'cnt.errFar':'הפרצופים רחוקים זה מזה — החיתוך המשותף היה תופס גם אנשים אחרים.',
+    'cnt.errPair':'הסמל הזה כבר מאוחד.',
+    'cnt.errNoSrc':'התמונה המקורית לא נמצאת.',
+    'cnt.pairName':'(זוג)',
+    'cnt.undoMerge':'↩ בטל את האיחוד האחרון',
+    'cnt.opt2':'2. להוסיף אימוג׳י',
+    'cnt.opt2Sub':'חסרים {m} אימוג׳י כדי להגיע למשחק של {next} קלפים.',
+    'cnt.opt2SubOne':'חסר אימוג׳י אחד כדי להגיע למשחק של {next} קלפים.',
+    'cnt.opt2Tier':'שימו לב: משחק של {next} קלפים גדול מהמסלול שלכם — אפשר לבנות ולראות, אבל ההורדה דורשת מסלול גדול יותר.',
+    'cnt.emojiBtn':'🔎 פתח את ספריית הסמלים',
+    'cnt.opt3':'3. להמשיך כמו שזה',
+    'cnt.opt3Sub':'{out} הסמלים האחרונים לא ייכנסו למשחק. הם נשארים במאגר.',
+    'cnt.continueBtn':'המשך ויצירת המשחק',
+    'cnt.pickBtn':'או: בטלו סימון לסמלים שלא צריך, בגלריה',
+    'cnt.perfect':'מצוין! יש בדיוק {total} סמלים — כולם נכנסים למשחק.',
+    'cnt.createBtn':'🎲 צור את המשחק',
+    'cnt.pickToast':'בטלו סימון ל-{m} סמלים כדי שכולם ייכנסו',
+    'cnt.merged':'שני הסמלים אוחדו לסמל אחד',
+    'exp.excessLine':'ℹ️ {out} מהסמלים לא נכנסו למשחק הזה — הם שמורים במאגר.',
     'bgq.fast':'⚡ מהיר',
     'bgq.fastSub':'מה שיש היום — קל גם בטלפון',
     'bgq.precise':'💎 מדויק',
@@ -1877,6 +1928,43 @@ const I18N={
     'faces.noSource':'The original photo was deleted from the library — the background cannot be changed',
     'bg.bulkBtn':'✨ Remove background from selected',
     'bgq.title':'Background removal quality',
+    'cnt.title':'You have more symbols than fit in the game',
+    'cnt.titleOk':'Everything fits in the game',
+    'cnt.status':'You have {n} symbols. A game of {total} cards fits exactly {total} symbols, so {out} will not get in.',
+    'cnt.kept':'The symbols that do not fit are not deleted — they stay saved in your library.',
+    'cnt.outTitle':'Symbols that will not get in (the last ones in the gallery):',
+    'cnt.moreOut':'and {k} more',
+    'cnt.opt1':'1. Merge two symbols into one',
+    'cnt.opt1Sub':'Each merge removes one symbol. You need {m} more merges for everything to fit.',
+    'cnt.opt1SubOne':'Each merge removes one symbol. You need one more merge for everything to fit.',
+    'cnt.sugTitle':'Pairs you can merge (same photo, close together):',
+    'cnt.sugNone':'We could not find matching pairs automatically. You can pick two symbols by hand.',
+    'cnt.sugText':'Two faces from the same photo',
+    'cnt.mergeBtn':'Merge',
+    'cnt.manualBtn':'🖐 Pick two symbols by hand',
+    'cnt.manualHint':'Tap two symbols to merge them. Only two faces from the same photo can be merged. A faded symbol will not get into the game.',
+    'cnt.manualGo':'Merge the two symbols',
+    'cnt.errKind':'Only faces found in a photo can be merged.',
+    'cnt.errSrc':'Only two faces from the same photo can be merged.',
+    'cnt.errFar':'The faces are far apart — a shared crop would include other people.',
+    'cnt.errPair':'This symbol is already merged.',
+    'cnt.errNoSrc':'The original photo is missing.',
+    'cnt.pairName':'(pair)',
+    'cnt.undoMerge':'↩ Undo the last merge',
+    'cnt.opt2':'2. Add emoji',
+    'cnt.opt2Sub':'You need {m} more emoji to reach a game of {next} cards.',
+    'cnt.opt2SubOne':'You need one more emoji to reach a game of {next} cards.',
+    'cnt.opt2Tier':'Note: a game of {next} cards is above your plan — you can build and preview it, but downloading needs a larger plan.',
+    'cnt.emojiBtn':'🔎 Open the symbol library',
+    'cnt.opt3':'3. Continue as it is',
+    'cnt.opt3Sub':'The last {out} symbols will not get into the game. They stay in your library.',
+    'cnt.continueBtn':'Continue and create the game',
+    'cnt.pickBtn':'Or: untick the symbols you do not need, in the gallery',
+    'cnt.perfect':'Great! You have exactly {total} symbols — they all fit in the game.',
+    'cnt.createBtn':'🎲 Create the game',
+    'cnt.pickToast':'Untick {m} symbols so that everything fits',
+    'cnt.merged':'The two symbols were merged into one',
+    'exp.excessLine':'ℹ️ {out} of your symbols did not fit in this game — they are saved in your library.',
     'bgq.fast':'⚡ Fast',
     'bgq.fastSub':'What we have today — light, works on phones',
     'bgq.precise':'💎 Precise',
@@ -2771,6 +2859,7 @@ window.applyI18n=applyI18n;
       <span data-i18n="export.cutLinesLabel" style="font-size:.83rem;font-weight:700;color:var(--indigo)">✂️ הצג קווי חיתוך (A4 ביתי)</span>
     </label>
 
+    <div id="exp-excess" hidden></div>
     <div class="brow">
       <button data-i18n="export.previewBtn" class="btn btn-sec" id="btn-prevprint">👁 תצוגה מקדימה</button>
       <button data-i18n="export.createPdfBtn" class="btn btn-pri" id="btn-doexp">⚙️ צור PDF</button>
@@ -3097,6 +3186,11 @@ window.applyI18n=applyI18n;
     <label id="bgq-rem-row" style="display:flex;gap:.4rem;align-items:center;font-size:.85rem;margin:.4rem 0 .6rem"><input type="checkbox" id="bgq-rem" checked><span data-i18n="bgq.remember">זכור את הבחירה</span></label>
     <div style="text-align:center"><button data-i18n="msg.confirmCancel" type="button" class="btn btn-ghost" id="bgq-no">ביטול</button></div>
   </div>
+</div>
+
+<!-- 🔢 עודף סמלים — חלון לפני "ייצר משחק" (D-64) -->
+<div class="modal-bg" id="cnt-modal" hidden style="z-index:10002">
+  <div class="modal-card" style="max-width:560px;max-height:90vh;overflow:auto" id="cnt-body"></div>
 </div>
 
 <!-- AI SYMBOLS MODAL — שלב 0, מנהל בלבד (js/ai-symbols.js) -->
@@ -4500,6 +4594,7 @@ function goScr(n){
     si.classList.toggle('done',i<n);
   });
   window.scrollTo({top:0,behavior:'smooth'});
+  if(typeof updateExcessLine==='function')updateExcessLine();
 }
 
 // ══ UPLOAD (Append Mode) ══
@@ -6174,7 +6269,178 @@ document.addEventListener('click',e=>{
 ckTightFill.addEventListener('change',()=>{S.tightFill=ckTightFill.checked;redrawCards();});
 
 // ══ GENERATE ══
-document.getElementById('btn-create').addEventListener('click',generate);
+// ══ 🔢 עודף סמלים — חלון לפני "ייצר משחק" (D-64) ══
+// המשחק בנוי על מספרים קבועים (7/13/21/31/57/73/91). כשיש יותר סמלים מסומנים מהגודל שנכנס, generate לוקח את
+// הראשונים בגלריה והשאר נשארים בחוץ בשקט — לקוחות חשבו שתמונות נעלמו. החלון מסביר, מראה מי בחוץ, ומציע: לאחד שני
+// פרצופים מאותה תמונה, להוסיף אימוג׳י, או להמשיך. ⛔ אין כאן מחיקה: הסמלים העודפים נשארים במאגר.
+// לפני הורדה אין חלון — רק שורה ליד הכפתורים (updateExcessLine).
+var _lastMerge=null,_cntManual=false,_cntPick=[];
+function excessInfo(){
+  const sel=S.assets.filter(a=>isSymbolAsset(a)&&a.selected!==false),n=sel.length,best=bestOrder(n);
+  if(!best||n<=best.total)return null;
+  return{sel,n,order:best,excess:n-best.total,out:sel.slice(best.total),next:nextOrder(n)};
+}
+// איחוד = חיתוך חדש מהתמונה המקורית (שנשמרת תמיד בתיקיית "תמונות מקוריות") — ריבוע אחד שמכיל את שני הפרצופים, באותו עיגול
+function cntMergePlan(a,b){
+  if(!isFaceSym(a)||!isFaceSym(b)||a===b)return{err:'cnt.errKind'};
+  if(a.af.pr||b.af.pr)return{err:'cnt.errPair'};
+  if(a.srcAssetId==null||a.srcAssetId!==b.srcAssetId)return{err:'cnt.errSrc'};
+  const src=S.assets.find(x=>x.id===a.srcAssetId);
+  if(!src||!src.imgEl)return{err:'cnt.errNoSrc'};
+  const W=imgNatW(src.imgEl),H=imgNatH(src.imgEl),fa=afFaceBox(a.af,W,H),fb=afFaceBox(b.af,W,H);
+  const x0=Math.min(fa.x,fb.x),y0=Math.min(fa.y,fb.y),x1=Math.max(fa.x+fa.w,fb.x+fb.w),y1=Math.max(fa.y+fa.h,fb.y+fb.h);
+  const big=Math.max(fa.w,fa.h,fb.w,fb.h),small=Math.min(Math.max(fa.w,fa.h),Math.max(fb.w,fb.h));
+  const s=Math.min(Math.max((x1-x0)*1.3,(y1-y0)*1.7,big*1.7),W,H);
+  const cx=(x0+x1)/2,cy=y0+(y1-y0)*.42;   // אותו כלל כמו afRects: המרכז 42% מגובה הפנים
+  const x=Math.max(0,Math.min(W-s,cx-s/2)),y=Math.max(0,Math.min(H-s,cy-s/2));
+  const inside=f=>f.x>=x-1&&f.y>=y-1&&f.x+f.w<=x+s+1&&f.y+f.h<=y+s+1;
+  if(!inside(fa)||!inside(fb)||small/s<.2)return{err:'cnt.errFar'};
+  const fr=f=>({x:f.x/W,y:f.y/H,w:f.w/W,h:f.h/H}),main=fa.w*fa.h>=fb.w*fb.h?fa:fb,o=[];
+  // f = הפנים הגדולות (afCutout מתחיל משם), o = פנים אחרות מאותו מקור שנכנסות לריבוע — ✨ ישאיר רק את הזוג
+  S.assets.forEach(g=>{
+    if(g===a||g===b||!isFaceSym(g)||g.srcAssetId!==a.srcAssetId)return;
+    const f=afFaceBox(g.af,W,H);
+    if(f.x<x+s*1.25&&f.x+f.w>x-s*.25&&f.y<y+s*1.25&&f.y+f.h>y-s*.25)o.push(fr(f));
+  });
+  return{src,af:{x:x/W,y:y/H,s:s/W,f:fr(main),o,pr:1},ratio:s/big};
+}
+function cntDoMerge(a,b,plan){
+  const ia=S.assets.indexOf(a),ib=S.assets.indexOf(b);
+  if(ia<0||ib<0)return;
+  const cv=afPlain(plan.src.imgEl,plan.af),base=plan.src.name.replace(/\.[^.]+$/,'');
+  const m={id:++S.idSeq,type:'crop',name:base+' '+t('cnt.pairName'),url:'',thumb:makeThumb(cv),imgEl:cv,
+           srcAssetId:plan.src.id,selected:true,folder:a.folder,af:plan.af};
+  S.assets.splice(Math.max(ia,ib),1);S.assets.splice(Math.min(ia,ib),1);S.assets.splice(Math.min(ia,ib),0,m);
+  plan.src.isCropSource=true;
+  _lastMerge={a,b,m,ia,ib};
+  renderGallery();updateCounter();schedIdbSave();
+}
+function cntUndoMerge(){
+  const L=_lastMerge;if(!L||!S.assets.includes(L.m))return;
+  _lastMerge=null;
+  S.assets.splice(S.assets.indexOf(L.m),1);
+  const lo=Math.min(L.ia,L.ib),hi=Math.max(L.ia,L.ib);
+  S.assets.splice(lo,0,L.ia<L.ib?L.a:L.b);S.assets.splice(hi,0,L.ia<L.ib?L.b:L.a);
+  if(L.m.imgEl&&L.m.imgEl.width)L.m.imgEl.width=L.m.imgEl.height=0;
+  renderGallery();updateCounter();schedIdbSave();
+}
+function cntSuggest(sel){
+  const faces=sel.filter(a=>isFaceSym(a)&&!a.af.pr),all=[];
+  for(let i=0;i<faces.length;i++)for(let j=i+1;j<faces.length;j++){
+    if(faces[i].srcAssetId!==faces[j].srcAssetId)continue;
+    const p=cntMergePlan(faces[i],faces[j]);if(!p.err)all.push({a:faces[i],b:faces[j],p});
+  }
+  all.sort((x,y)=>x.p.ratio-y.p.ratio);
+  const used=new Set(),out=[];   // כל סמל מוצע פעם אחת בלבד
+  for(const r of all){if(used.has(r.a)||used.has(r.b))continue;used.add(r.a);used.add(r.b);out.push(r);}
+  return out;
+}
+function cntCanvas(src,size){
+  const c=document.createElement('canvas');c.width=c.height=size;
+  if(src)c.getContext('2d').drawImage(src,0,0,size,size);
+  return c;
+}
+function cntEl(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e;}
+function cntBtn(label,cls,fn){const b=cntEl('button','btn '+cls,label);b.type='button';b.addEventListener('click',fn);return b;}
+function cntClose(){document.getElementById('cnt-modal').hidden=true;_cntManual=false;_cntPick=[];}
+function cntRender(){
+  const box=document.getElementById('cnt-body');box.textContent='';
+  const I=excessInfo();
+  box.appendChild(cntEl('div','','')).style.cssText='font-size:1.05rem;font-weight:800;color:var(--indigo);text-align:center';
+  box.lastChild.textContent=t(I?'cnt.title':'cnt.titleOk');
+  if(!I){   // כל הסמלים נכנסים (אחרי איחוד/הוספה)
+    const n=S.assets.filter(a=>isSymbolAsset(a)&&a.selected!==false).length,best=bestOrder(n);
+    const ok=cntEl('div','cnt-card',best?t('cnt.perfect',{total:best.total}):'');
+    box.appendChild(ok);
+    const row=cntEl('div','');row.style.cssText='display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;margin-top:.5rem';
+    if(_lastMerge)row.appendChild(cntBtn(t('cnt.undoMerge'),'btn-ghost',()=>{cntUndoMerge();cntRender();}));
+    if(best)row.appendChild(cntBtn(t('cnt.createBtn'),'btn-cta',()=>{cntClose();generate();}));
+    box.appendChild(row);return;
+  }
+  const info=cntEl('div','cnt-sub',t('cnt.status',{n:I.n,total:I.order.total,out:I.excess}));
+  info.style.margin='.5rem 0 .2rem';box.appendChild(info);
+  box.appendChild(cntEl('div','cnt-sub',t('cnt.kept'))).style.fontWeight='700';
+  box.appendChild(cntEl('div','cnt-sub',t('cnt.outTitle'))).style.marginTop='.4rem';
+  const strip=cntEl('div','cnt-strip');
+  I.out.slice(0,14).forEach(a=>strip.appendChild(cntCanvas(a.thumb||a.imgEl,44)));
+  if(I.out.length>14)strip.appendChild(cntEl('span','cnt-sub',t('cnt.moreOut',{k:I.out.length-14})));
+  box.appendChild(strip);
+  // 1. איחוד
+  const c1=cntEl('div','cnt-card');c1.appendChild(cntEl('h4','',t('cnt.opt1')));
+  c1.appendChild(cntEl('div','cnt-sub',I.excess===1?t('cnt.opt1SubOne'):t('cnt.opt1Sub',{m:I.excess})));
+  const sug=cntSuggest(I.sel);
+  if(sug.length){
+    c1.appendChild(cntEl('div','cnt-sub',t('cnt.sugTitle'))).style.marginTop='.4rem';
+    sug.slice(0,8).forEach(r=>{
+      const row=cntEl('div','cnt-sug');
+      row.appendChild(cntCanvas(afPlain(r.p.src.imgEl,r.p.af),64));
+      row.appendChild(cntEl('span','',t('cnt.sugText')));
+      row.appendChild(cntBtn(t('cnt.mergeBtn'),'btn-cta',()=>{
+        if(!S.assets.includes(r.a)||!S.assets.includes(r.b))return;
+        cntDoMerge(r.a,r.b,r.p);toast(t('cnt.merged'),'ok');cntRender();}));
+      c1.appendChild(row);
+    });
+  }else c1.appendChild(cntEl('div','cnt-sub',t('cnt.sugNone'))).style.marginTop='.4rem';
+  const mb=cntBtn(t('cnt.manualBtn'),'btn-ghost',()=>{_cntManual=!_cntManual;_cntPick=[];cntRender();});mb.style.marginTop='.4rem';
+  c1.appendChild(mb);
+  if(_cntManual){
+    c1.appendChild(cntEl('div','cnt-sub',t('cnt.manualHint'))).style.margin='.4rem 0';
+    const grid=cntEl('div','cnt-strip'),outSet=new Set(I.out);
+    I.sel.forEach(a=>{
+      const tile=cntEl('div','cnt-tile'+(outSet.has(a)?' outs':'')+(_cntPick.includes(a)?' pick':''));
+      tile.appendChild(cntCanvas(a.thumb||a.imgEl,44));
+      tile.addEventListener('click',()=>{
+        const k=_cntPick.indexOf(a);
+        if(k>=0)_cntPick.splice(k,1);else{_cntPick.push(a);if(_cntPick.length>2)_cntPick.shift();}
+        cntRender();
+      });
+      grid.appendChild(tile);
+    });
+    c1.appendChild(grid);
+    if(_cntPick.length===2){
+      const p=cntMergePlan(_cntPick[0],_cntPick[1]);
+      if(p.err)c1.appendChild(cntEl('div','cnt-err',t(p.err)));
+      else{
+        const row=cntEl('div','cnt-sug');row.appendChild(cntCanvas(afPlain(p.src.imgEl,p.af),64));
+        row.appendChild(cntEl('span','',t('cnt.sugText')));
+        row.appendChild(cntBtn(t('cnt.manualGo'),'btn-cta',()=>{const [a,b]=_cntPick;_cntPick=[];cntDoMerge(a,b,p);toast(t('cnt.merged'),'ok');cntRender();}));
+        c1.appendChild(row);
+      }
+    }
+  }
+  if(_lastMerge){const u=cntBtn(t('cnt.undoMerge'),'btn-ghost',()=>{cntUndoMerge();cntRender();});u.style.marginTop='.4rem';c1.appendChild(u);}
+  box.appendChild(c1);
+  // 2. אימוג׳י
+  if(I.next){
+    const m=I.next.total-I.n,c2=cntEl('div','cnt-card');c2.appendChild(cntEl('h4','',t('cnt.opt2')));
+    c2.appendChild(cntEl('div','cnt-sub',m===1?t('cnt.opt2SubOne',{next:I.next.total}):t('cnt.opt2Sub',{m,next:I.next.total})));
+    if(!isWithinTier(I.next))c2.appendChild(cntEl('div','cnt-sub',t('cnt.opt2Tier',{next:I.next.total}))).style.cssText='margin-top:.3rem;color:#92400e';
+    const eb=cntBtn(t('cnt.emojiBtn'),'btn-sec',()=>{cntClose();const b=document.getElementById('emoji-lib-btn');if(b)b.click();});eb.style.marginTop='.4rem';
+    c2.appendChild(eb);box.appendChild(c2);
+  }
+  // 3. להמשיך
+  const c3=cntEl('div','cnt-card');c3.appendChild(cntEl('h4','',t('cnt.opt3')));
+  c3.appendChild(cntEl('div','cnt-sub',t('cnt.opt3Sub',{out:I.excess})));
+  const cb=cntBtn(t('cnt.continueBtn'),'btn-pri',()=>{cntClose();generate();});cb.style.marginTop='.4rem';c3.appendChild(cb);
+  box.appendChild(c3);
+  const pk=cntBtn(t('cnt.pickBtn'),'btn-ghost',()=>{cntClose();toast(t('cnt.pickToast',{m:I.excess}),'ok');
+    const g=document.getElementById('gallery');if(g)g.scrollIntoView({behavior:'smooth',block:'start'});});
+  pk.style.cssText='width:100%;justify-content:center;margin-top:.2rem';box.appendChild(pk);
+}
+// "ייצר משחק": עודף = חלון; אחרת ישר generate (כמו תמיד). רק מהכפתור — לא מנתיבים אחרים שקוראים ל-generate.
+function onCreateClick(){
+  if(excessInfo()){_cntManual=false;_cntPick=[];_lastMerge=null;cntRender();document.getElementById('cnt-modal').hidden=false;return;}
+  generate();
+}
+document.getElementById('cnt-modal').addEventListener('click',e=>{if(e.target.id==='cnt-modal')cntClose();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('cnt-modal').hidden)cntClose();});
+// לפני הורדה — בלי חלון, רק שורה קצרה ליד הכפתורים
+function updateExcessLine(){
+  const el=document.getElementById('exp-excess');if(!el)return;
+  const n=S.assets.filter(a=>isSymbolAsset(a)&&a.selected!==false).length,out=S.order?n-S.order.total:0;
+  if(out>0){el.textContent=t('exp.excessLine',{out});el.hidden=false;}else el.hidden=true;
+}
+document.getElementById('btn-create').addEventListener('click',onCreateClick);
 
 async function generate(){
   if(!S.order)return;
