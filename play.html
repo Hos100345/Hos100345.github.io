@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>משחקים בטלפון | מחולל דאבל</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#4338CA">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <!-- ⛔ js/play-engine.js נוצר ע"י tools/build-play-engine.py מתוך dobble.html — לא לערוך ידנית.
+       שינוי בו = להעלות את ?v= כאן. -->
+  <script src="js/play-engine.js?v=1"></script>
+  <style>
+    :root{
+      --indigo:#4338CA;--purple:#7C3AED;--purple-light:#EDE9FE;
+      --gold:#F59E0B;--gold-light:#FEF3C7;--green:#059669;--red:#DC2626;
+      --text:#0F172A;--muted:#5B6472;--card:#fff;--line:rgba(15,23,42,.1);
+      --r:1.1rem;--sh:0 8px 28px rgba(30,27,75,.12),0 1.5px 4px rgba(30,27,75,.06);
+      --cs:200px;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{
+      font-family:'Heebo',system-ui,sans-serif;color:var(--text);direction:rtl;
+      background:
+        radial-gradient(ellipse 65% 50% at 12% 5%,rgba(37,99,235,.18) 0%,transparent 55%),
+        radial-gradient(ellipse 55% 55% at 90% 12%,rgba(124,58,237,.16) 0%,transparent 55%),
+        radial-gradient(ellipse 70% 45% at 50% 100%,rgba(245,158,11,.12) 0%,transparent 55%),
+        #EEF1FB;
+      background-attachment:fixed;
+      -webkit-tap-highlight-color:transparent;
+      overscroll-behavior-y:none;
+    }
+    button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+    [hidden]{display:none!important}
+
+    .scr{min-height:100%;padding:max(14px,env(safe-area-inset-top)) 16px max(18px,env(safe-area-inset-bottom));max-width:760px;margin:0 auto}
+    h1{font-size:1.6rem;font-weight:900;line-height:1.2}
+    h2{font-size:1.1rem;font-weight:800;margin:1.2rem 0 .6rem}
+    .muted{color:var(--muted)}
+    .panel{background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.7);border-radius:var(--r);box-shadow:var(--sh);padding:1rem}
+
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;min-height:48px;padding:.6rem 1.1rem;
+      border-radius:999px;font-weight:800;font-size:1rem;transition:transform .15s,box-shadow .15s}
+    .btn:active{transform:scale(.97)}
+    .btn-main{background:linear-gradient(135deg,var(--indigo),var(--purple));color:#fff;box-shadow:0 6px 18px rgba(67,56,202,.35)}
+    .btn-sec{background:#fff;border:1.5px solid var(--line)}
+    .btn-sm{min-height:40px;padding:.35rem .9rem;font-size:.92rem}
+    .btn-block{width:100%}
+
+    /* ── מסך טעינה ── */
+    .hero{text-align:center;padding:1.4rem 0 1rem}
+    .hero .big{font-size:3.2rem;line-height:1}
+    .hero p{margin-top:.5rem;font-size:1.02rem;line-height:1.55}
+    .drop{border:2.5px dashed rgba(67,56,202,.35);border-radius:var(--r);padding:1.4rem 1rem;text-align:center;background:rgba(255,255,255,.6)}
+    .drop.over{border-color:var(--purple);background:var(--purple-light)}
+    .steps{margin-top:1rem;line-height:1.7;font-size:.95rem;padding-inline-start:1.2rem}
+    .steps b{color:var(--indigo)}
+    .err{margin-top:.8rem;background:#FEE2E2;color:#991B1B;border-radius:.8rem;padding:.7rem .9rem;font-weight:600;line-height:1.5}
+    .prog{margin-top:.9rem}
+    .bar{height:10px;border-radius:99px;background:rgba(67,56,202,.12);overflow:hidden}
+    .bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--indigo),var(--purple));transition:width .2s}
+    .prog .lbl{margin-top:.35rem;font-size:.9rem;color:var(--muted);text-align:center}
+
+    /* ── תפריט ── */
+    .top{display:flex;align-items:center;gap:.6rem}
+    .top .grow{flex:1;min-width:0}
+    .top h1{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .deckinfo{font-size:.9rem;color:var(--muted);margin-top:.15rem}
+    .players{display:flex;flex-wrap:wrap;gap:.5rem}
+    .pl{display:flex;align-items:center;gap:.35rem;background:#fff;border-radius:999px;padding:.25rem .35rem .25rem .7rem;border:2px solid var(--pc);box-shadow:0 2px 6px rgba(0,0,0,.05)}
+    .pl .dot{width:14px;height:14px;border-radius:50%;background:var(--pc);flex:none}
+    .pl input{border:0;outline:0;font:inherit;font-weight:700;width:6.2em;background:transparent;min-height:34px;font-size:16px}
+    .pl .x{width:32px;height:32px;border-radius:50%;font-size:1rem;color:var(--muted)}
+    .pl .x:active{background:#F1F5F9}
+    .addpl{border:2px dashed var(--line);border-radius:999px;padding:.25rem .9rem;min-height:44px;font-weight:700;color:var(--indigo)}
+    .games{display:grid;grid-template-columns:1fr;gap:.7rem}
+    @media(min-width:560px){.games{grid-template-columns:1fr 1fr}}
+    .game{background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:.9rem 1rem;display:flex;flex-direction:column;gap:.35rem;border-top:5px solid var(--gc)}
+    .game .gh{display:flex;align-items:center;gap:.55rem}
+    .game .ge{font-size:1.8rem}
+    .game .gt{font-weight:900;font-size:1.15rem}
+    .game .gd{color:var(--muted);font-size:.93rem;line-height:1.45}
+    .game .gr{display:flex;gap:.5rem;margin-top:.35rem;align-items:center}
+    .game .gr .btn-main{flex:1}
+    .game details{font-size:.9rem;line-height:1.55}
+    .game summary{cursor:pointer;color:var(--indigo);font-weight:700;list-style:none;padding:.2rem 0}
+    .game summary::-webkit-details-marker{display:none}
+    .game ol{padding-inline-start:1.2rem;margin-top:.3rem}
+    .game .warn{font-size:.85rem;color:#92400E;background:var(--gold-light);border-radius:.6rem;padding:.35rem .6rem}
+
+    /* ── מסך משחק ── */
+    #scr-game{display:flex;flex-direction:column;height:100%;min-height:100dvh;padding-bottom:max(10px,env(safe-area-inset-bottom))}
+    .gbar{display:flex;align-items:center;gap:.5rem;flex:none}
+    .gbar .t{flex:1;font-weight:900;font-size:1.05rem;text-align:center}
+    .ibtn{width:44px;height:44px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.08);font-size:1.25rem;flex:none}
+    .hintbtn{border-radius:999px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.08);min-height:44px;padding:0 .9rem;font-weight:800;flex:none}
+    .scores{display:flex;gap:.35rem;flex-wrap:wrap;justify-content:center;margin:.5rem 0 .2rem;flex:none}
+    .sc{display:flex;align-items:center;gap:.3rem;background:#fff;border-radius:999px;padding:.15rem .6rem;font-weight:800;font-size:.9rem;border:2px solid var(--pc)}
+    .sc b{background:var(--pc);color:#fff;border-radius:999px;min-width:1.6em;text-align:center;padding:0 .35em}
+    .status{text-align:center;font-weight:700;color:var(--muted);min-height:1.5em;font-size:.95rem;flex:none}
+    .board{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;position:relative}
+
+    .card{width:var(--cs);height:var(--cs);border-radius:50%;background:transparent;position:relative;flex:none;
+      box-shadow:0 6px 20px rgba(30,27,75,.16);transition:transform .2s,box-shadow .2s;touch-action:manipulation}
+    .card.sq{border-radius:9%}
+    .card canvas{width:100%;height:100%;display:block}
+    .card.tap{cursor:pointer}
+    .card.sel{box-shadow:0 0 0 5px var(--gold),0 8px 24px rgba(245,158,11,.4);transform:scale(1.03)}
+    .card.ok{box-shadow:0 0 0 5px var(--green),0 8px 24px rgba(5,150,105,.35)}
+    .card.shake{animation:shake .4s}
+    @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
+    .card.pop{animation:pop .35s}
+    @keyframes pop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
+    @media(prefers-reduced-motion:reduce){.card.shake,.card.pop{animation:none}}
+
+    .pair{display:flex;gap:14px;align-items:center;justify-content:center}
+    .pair.v{flex-direction:column}
+    .slotlbl{position:absolute;bottom:-8px;inset-inline:0;text-align:center;pointer-events:none}
+    .slotlbl span{background:#fff;border-radius:999px;padding:.05rem .55rem;font-weight:800;font-size:.82rem;box-shadow:0 2px 6px rgba(0,0,0,.12);border:2px solid var(--pc,#CBD5E1);white-space:nowrap}
+
+    .ring{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%}
+    .pgrid{display:grid;gap:14px 10px;justify-content:center}
+    .pslot{display:flex;flex-direction:column;align-items:center;gap:4px;position:relative}
+    .pslot .nm{font-weight:800;font-size:.9rem;display:flex;align-items:center;gap:.3rem;max-width:calc(var(--cs) + 20px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .pslot .nm i{font-style:normal;background:var(--pc);color:#fff;border-radius:999px;padding:0 .45em;font-size:.8rem}
+    .pslot .card{border:4px solid var(--pc)}
+    .pslot.out .card{opacity:.25}
+    .center .card{border:4px solid var(--indigo)}
+    .center .cap{font-weight:800;font-size:.85rem;color:var(--indigo);text-align:center;margin-bottom:4px}
+
+    .tgrid{display:grid;grid-template-columns:repeat(3,var(--cs));gap:10px;justify-content:center}
+    .tgrid .empty{width:var(--cs);height:var(--cs);border-radius:50%;border:2px dashed var(--line)}
+
+    /* ── מי מצא? ── */
+    .who{position:fixed;inset-inline:0;bottom:0;z-index:40;text-align:center;background:rgba(255,255,255,.96);
+      border-radius:1.3rem 1.3rem 0 0;box-shadow:0 -8px 30px rgba(30,27,75,.18);padding:.7rem 16px max(14px,env(safe-area-inset-bottom))}
+    .who .q{font-weight:900;margin-bottom:.35rem}
+    .who .row{display:flex;flex-wrap:wrap;gap:.45rem;justify-content:center}
+    .who .pb{min-height:50px;padding:.35rem 1.1rem;border-radius:999px;font-weight:900;font-size:1.05rem;background:var(--pc);color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.12)}
+    .who .pb.none{background:#fff;color:var(--muted);border:1.5px solid var(--line)}
+    .found{display:flex;align-items:center;justify-content:center;gap:.6rem;margin:.2rem 0 .35rem}
+    .found canvas{width:58px;height:58px}
+    .found .fn{font-weight:900;font-size:1.25rem}
+
+    /* ── כל הקלפים ── */
+    .allgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--cs),1fr));gap:10px;justify-items:center;margin-top:.6rem}
+    .allgrid .card{position:relative}
+    .allgrid .num{position:absolute;top:-4px;inset-inline-start:-4px;background:#fff;border-radius:999px;font-size:.72rem;font-weight:800;padding:0 .4em;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+
+    .modal{position:fixed;inset:0;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+    .modal .box{background:#fff;border-radius:1.3rem;padding:1rem;max-width:560px;width:100%;max-height:100%;overflow:auto;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+    .modal .box h3{font-size:1.3rem;font-weight:900;margin-bottom:.3rem}
+    .modal .rows{display:flex;flex-direction:column;gap:.35rem;margin:.8rem 0}
+    .modal .rk{display:flex;align-items:center;gap:.5rem;background:#F8FAFC;border-radius:.8rem;padding:.45rem .7rem;font-weight:800;border-inline-start:6px solid var(--pc)}
+    .modal .rk .n{flex:1;text-align:start}
+    .modal .btns{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap}
+
+    .toast{position:fixed;top:max(64px,calc(env(safe-area-inset-top) + 56px));left:50%;transform:translateX(-50%) translateY(-16px);opacity:0;pointer-events:none;background:#0F172A;color:#fff;border-radius:999px;padding:.6rem 1.1rem;font-weight:700;z-index:60;transition:transform .25s,opacity .25s;max-width:calc(100% - 32px);text-align:center}
+    .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+  </style>
+</head>
+<body>
+
+<!-- ══ מסך 1: טעינת קובץ ══ -->
+<section class="scr" id="scr-load">
+  <div class="hero">
+    <div class="big">🎴</div>
+    <h1>משחקים בטלפון</h1>
+    <p class="muted">טוענים את קובץ המשחק שלכם, ומשחקים יחד על מסך אחד — בלי להדפיס.</p>
+  </div>
+
+  <div class="drop" id="drop">
+    <button class="btn btn-main btn-block" id="btn-pick">📂 בחרו את קובץ המשחק</button>
+    <input type="file" id="file" accept=".zip,application/zip" hidden>
+    <button class="btn btn-sec btn-block" id="btn-last" style="margin-top:.6rem" hidden></button>
+    <div class="prog" id="prog" hidden><div class="bar"><i id="bar"></i></div><div class="lbl" id="lbl"></div></div>
+    <div class="err" id="err" hidden></div>
+  </div>
+
+  <div class="panel" style="margin-top:1rem">
+    <b>איפה מוצאים את הקובץ?</b>
+    <ol class="steps">
+      <li>נכנסים ל<b>מחולל הדאבל</b> ופותחים את המשחק שלכם.</li>
+      <li>במסך התמונות, באזור <b>"📦 גיבוי לקובץ"</b>, לוחצים <b>"⬇️ שמור לקובץ"</b>.</li>
+      <li>נשמר קובץ שנגמר ב-<b>.dobble.zip</b> — בוחרים אותו כאן.</li>
+    </ol>
+    <p class="muted" style="font-size:.88rem;margin-top:.5rem">💡 כדי שהקלפים כאן יהיו בדיוק כמו המודפסים — שמרו את הקובץ <b>אחרי</b> שיצרתם את הקלפים. הקובץ נשאר אצלכם בטלפון, שום דבר לא נשלח.</p>
+  </div>
+</section>
+
+<!-- ══ מסך 2: תפריט ══ -->
+<section class="scr" id="scr-home" hidden>
+  <div class="top">
+    <div class="grow">
+      <h1 id="deck-name">המשחק שלי</h1>
+      <div class="deckinfo" id="deck-info"></div>
+    </div>
+    <button class="btn btn-sec btn-sm" id="btn-other">📂 קובץ אחר</button>
+  </div>
+
+  <h2>👨‍👩‍👧 מי משחק?</h2>
+  <div class="players" id="players"></div>
+
+  <h2>🕹️ בחרו משחק</h2>
+  <div class="games" id="games"></div>
+
+  <button class="btn btn-sec btn-block" id="btn-all" style="margin-top:1rem">🔍 כל הקלפים — לחצו על שני קלפים ותראו מה משותף</button>
+</section>
+
+<!-- ══ מסך 3: משחק ══ -->
+<section class="scr" id="scr-game" hidden>
+  <div class="gbar">
+    <button class="ibtn" id="g-back" aria-label="חזרה">→</button>
+    <div class="t" id="g-title"></div>
+    <button class="hintbtn" id="g-hint">💡 תשובה</button>
+  </div>
+  <div class="scores" id="g-scores"></div>
+  <div class="status" id="g-status"></div>
+  <div class="board" id="g-board"></div>
+  <div class="who" id="g-who" hidden></div>
+</section>
+
+<!-- ══ מסך 4: כל הקלפים ══ -->
+<section class="scr" id="scr-all" hidden>
+  <div class="top">
+    <button class="ibtn" id="a-back" aria-label="חזרה">→</button>
+    <div class="grow"><h1 style="font-size:1.2rem">🔍 כל הקלפים</h1><div class="deckinfo">לחצו על שני קלפים — הסמל המשותף יסומן</div></div>
+  </div>
+  <div class="allgrid" id="allgrid"></div>
+</section>
+
+<div class="modal" id="modal" hidden><div class="box" id="modal-box"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+// ════════════════════════════════════════════════════════════════════════
+// נגן משחק דאבל — play.html
+// טוען קובץ עיצוב (.dobble.zip מ"⬇️ שמור לקובץ" במחולל) ומשחק על מסך אחד.
+// ⛔ לא נוגע ב-dobble.html. מנוע הקלפים (genDeck/buildLayouts/drawCard…) הוא עותק
+//    אוטומטי ב-js/play-engine.js (tools/build-play-engine.py), כך שהקלפים זהים למחולל.
+// ════════════════════════════════════════════════════════════════════════
+
+// ── מצב שהמנוע המועתק קורא (שמות השדות כמו ב-dobble.html) ──
+// ברירות מחדל כמו applyDesignToState במחולל — שם נקבע מה קורה לשדה חסר בקובץ.
+const S={
+  assets:[],order:null,deck:[],layouts:[],imgEls:[],
+  shape:'circle',symShape:'circle',sMin:.7,sMax:1.3,seed:1,layoutMode:'scatter',overlap:0,
+  sizeMode:undefined,sizeK:.2,tightPack:true,tightFill:false,cardEdits:{},metaVer:0,
+  cardSizeMm:85,symPad:2,frame:{w:0,color:'#4338CA',op:100},bg:{color:'#FFFEF5',op:100},
+};
+// הנגן לא מוסיף סימן-מים. (החלטה פתוחה: האם לחסום משחק גדול מהמנוי — ראו מרשם-מחולל.md)
+function needsWatermark(){return false;}
+
+const $=id=>document.getElementById(id);
+const tick=()=>new Promise(r=>setTimeout(r,0));
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+let _tt;
+function toast(msg,ms){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),ms||1800);}
+function show(id){['scr-load','scr-home','scr-game','scr-all'].forEach(s=>$(s).hidden=s!==id);window.scrollTo(0,0);}
+
+// ── נתוני החפיסה שנטענה ──
+const D={name:'',symNames:[]};
+
+// ════════════════ טעינת הקובץ ════════════════
+function setProg(p,txt){$('prog').hidden=false;$('bar').style.width=Math.round(p)+'%';$('lbl').textContent=txt||'';}
+function showErr(msg){$('err').textContent=msg;$('err').hidden=false;$('prog').hidden=true;}
+function loadImgBlob(blob){
+  return new Promise((res,rej)=>{
+    const url=URL.createObjectURL(blob),im=new Image();
+    const to=setTimeout(()=>rej(new Error('timeout')),20000);
+    // כמו loadImg במחולל: מעתיקים לקנבס בגודל עד LOAD_MAX — כך הפיקסלים זהים למחולל
+    im.onload=()=>{clearTimeout(to);
+      try{
+        const{w,h}=fitLongSide(im.naturalWidth||im.width,im.naturalHeight||im.height,LOAD_MAX);
+        const c=document.createElement('canvas');c.width=w;c.height=h;
+        c.getContext('2d').drawImage(im,0,0,w,h);URL.revokeObjectURL(url);res(c);
+      }catch(e){URL.revokeObjectURL(url);rej(e);}
+    };
+    im.onerror=()=>{clearTimeout(to);URL.revokeObjectURL(url);rej(new Error('bad image'));};
+    im.src=url;
+  });
+}
+
+async function loadGameFile(file,fromCache){
+  $('err').hidden=true;
+  if(typeof JSZip==='undefined'){showErr('ספריית הקבצים לא נטענה — בדקו חיבור לאינטרנט ורעננו את הדף.');return;}
+  try{
+    setProg(3,'פותח את הקובץ…');
+    let zip;
+    try{zip=await JSZip.loadAsync(file);}
+    catch(e){throw new Error('זה לא קובץ משחק. צריך את הקובץ שנגמר ב-.dobble.zip.');}
+    const jf=zip.file('design.json');
+    if(!jf){
+      if(zip.file(/^dobble-cards\//).length)
+        throw new Error('זה קובץ התמונות של הקלפים. צריך את קובץ הגיבוי: במחולל ← "📦 גיבוי לקובץ" ← "⬇️ שמור לקובץ".');
+      throw new Error('זה לא קובץ משחק. צריך את הקובץ שנגמר ב-.dobble.zip.');
+    }
+    const meta=JSON.parse(await jf.async('string'));
+    if(meta.app!=='dobble'||!Array.isArray(meta.rows))throw new Error('זה לא קובץ משחק דאבל.');
+
+    // תמונות — כמו importDesignFile במחולל: שורה בלי קובץ מדלגים
+    const assets=[];let n=0;
+    for(const r of meta.rows){
+      n++;
+      const f=r.file&&zip.file(r.file);
+      if(!f)continue;
+      try{
+        const im=await loadImgBlob(await f.async('blob'));
+        assets.push({id:r.id,type:r.type,name:r.name||'',imgEl:im,srcAssetId:r.srcAssetId||undefined,
+          isCropSource:r.isCropSource||false,selected:r.selected!==false,af:r.af||undefined});
+      }catch(e){console.warn('play: image',r.file,e);}
+      if(n%4===0)setProg(5+60*n/meta.rows.length,`טוען תמונות… ${n}/${meta.rows.length}`);
+      if(n%8===0)await tick();
+    }
+
+    // הגדרות — אותן ברירות מחדל כמו applyDesignToState במחולל
+    const st=meta.settings||{};
+    Object.assign(S,{shape:st.shape||'circle',symShape:st.symShape||'circle',sMin:st.sMin??.7,sMax:st.sMax??1.3,
+      seed:st.seed||1,layoutMode:st.layoutMode||'scatter',cardSizeMm:st.cardSizeMm||85,
+      symPad:st.symPad??2,overlap:st.overlap??0,
+      tightPack:st.tightPack!==false,tightFill:!!st.tightFill,cardEdits:st.cardEdits||{},
+      sizeMode:st.sizeMode==='auto'?'auto':undefined,sizeK:st.sizeK??.2});
+    if(st.frame)S.frame=Object.assign({},st.frame);
+    if(st.bg)S.bg=Object.assign({},st.bg);
+    S.assets=assets;
+
+    // סמלים — כמו generate במחולל: מסומנים, בלי תמונות מקור, לפי הסדר, עד גודל המשחק
+    const syms=assets.filter(a=>isSymbolAsset(a)&&a.selected!==false);
+    let order=ORDERS.find(o=>o.total===st.orderTotal)||null;
+    if(!order||syms.length<order.total)order=bestOrder(syms.length);
+    if(!order)throw new Error(`בקובץ יש רק ${syms.length} תמונות מסומנות. משחק צריך לפחות 7.`);
+    S.order=order;
+    S.deck=genDeck(order.q);
+    S.layouts=buildLayouts(S.deck,S.seed,S.sMin,S.sMax);
+    const used=syms.slice(0,order.total);
+    S.imgEls=used.map(symImg);
+    prepareSymbolMeta();
+    D.symNames=used.map(a=>a.name||'');
+    D.name=meta.name||'המשחק שלי';
+
+    // חישוב הפריסה של כל הקלפים מראש — זה החלק הכבד, אחר כך המשחק מגיב מיד
+    for(let i=0;i<S.layouts.length;i++){
+      computeCardPositions(S.layouts[i],S.imgEls,CARD_PX);
+      if(i%3===2){setProg(65+35*(i+1)/S.layouts.length,`מסדר קלפים… ${i+1}/${S.layouts.length}`);await tick();}
+    }
+    $('prog').hidden=true;
+    if(!fromCache)saveLast(file,D.name);
+    openHome();
+    if(syms.length>order.total)toast(`במשחק ${order.total} תמונות (${syms.length-order.total} נשארו בחוץ, כמו במחולל)`,3500);
+  }catch(e){
+    console.error(e);
+    showErr('לא הצלחתי לפתוח: '+(e.message||e));
+  }
+}
+
+$('btn-pick').addEventListener('click',()=>$('file').click());
+$('file').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(f)loadGameFile(f);});
+const drop=$('drop');
+['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('over');}));
+['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('over');}));
+drop.addEventListener('drop',e=>{const f=e.dataTransfer.files&&e.dataTransfer.files[0];if(f)loadGameFile(f);});
+$('btn-other').addEventListener('click',()=>{show('scr-load');});
+
+// ── המשחק האחרון נשמר בטלפון (IndexedDB), כדי לא לחפש את הקובץ בכל פעם ──
+function idb(){
+  return new Promise((res,rej)=>{
+    const rq=indexedDB.open('dobble-play',1);
+    rq.onupgradeneeded=()=>rq.result.createObjectStore('kv');
+    rq.onsuccess=()=>res(rq.result);rq.onerror=()=>rej(rq.error);
+  });
+}
+async function saveLast(file,name){
+  try{const db=await idb();db.transaction('kv','readwrite').objectStore('kv').put({blob:file,name,date:Date.now()},'last');}catch(e){}
+}
+async function getLast(){
+  try{const db=await idb();return await new Promise(r=>{const q=db.transaction('kv').objectStore('kv').get('last');q.onsuccess=()=>r(q.result||null);q.onerror=()=>r(null);});}catch(e){return null;}
+}
+getLast().then(l=>{
+  if(!l||!l.blob)return;
+  const b=$('btn-last');b.hidden=false;b.textContent='▶ להמשיך עם: '+l.name;
+  b.onclick=()=>loadGameFile(l.blob,true);
+});
+
+// ════════════════ שחקנים ════════════════
+const COLORS=['#7C3AED','#2563EB','#059669','#EA580C','#DB2777','#0891B2'];
+let players=[];
+try{players=JSON.parse(localStorage.getItem('dobble_play_players')||'null')||[];}catch(e){}
+if(!Array.isArray(players)||!players.length)players=[{name:'שחקן 1'},{name:'שחקן 2'}];
+players=players.slice(0,6).map(p=>({name:String(p.name||'').slice(0,14)}));
+function savePlayers(){try{localStorage.setItem('dobble_play_players',JSON.stringify(players));}catch(e){}}
+const pc=i=>COLORS[i%COLORS.length];
+const pname=i=>(players[i]&&players[i].name.trim())||('שחקן '+(i+1));
+
+function renderPlayers(){
+  const w=$('players');w.innerHTML='';
+  players.forEach((p,i)=>{
+    const d=document.createElement('div');d.className='pl';d.style.setProperty('--pc',pc(i));
+    d.innerHTML=`<span class="dot"></span><input maxlength="14" aria-label="שם שחקן" value="${esc(p.name)}" placeholder="שחקן ${i+1}">`+
+      (players.length>1?'<button class="x" aria-label="הסר">✕</button>':'');
+    d.querySelector('input').addEventListener('input',e=>{p.name=e.target.value;savePlayers();});
+    const x=d.querySelector('.x');if(x)x.addEventListener('click',()=>{players.splice(i,1);savePlayers();renderPlayers();});
+    w.appendChild(d);
+  });
+  if(players.length<6){
+    const a=document.createElement('button');a.className='addpl';a.textContent='+ שחקן';
+    a.addEventListener('click',()=>{players.push({name:'שחקן '+(players.length+1)});savePlayers();renderPlayers();
+      const ins=w.querySelectorAll('input');ins[ins.length-1].select();});
+    w.appendChild(a);
+  }
+}
+
+// ════════════════ תפריט ════════════════
+const GAMES=[
+  {id:'classic',e:'🔵',c:'#2563EB',t:'דאבל קלאסי',d:'שני קלפים על המסך. מי ראשון מוצא את הציור שמופיע בשניהם?',
+   how:['שני קלפים פתוחים על המסך, כולם מסתכלים יחד.','מצאתם את הציור שמופיע בשני הקלפים? צועקים את השם שלו!','נוגעים בציור על המסך — אם צדקתם הוא מסומן, ובוחרים מי מצא.','קלף חדש עולה, וממשיכים עד שהחפיסה נגמרת.'],min:1},
+  {id:'tower',e:'🟢',c:'#059669',t:'המגדל',d:'אוספים כמה שיותר קלפים מהמגדל שבאמצע.',
+   how:['במרכז — המגדל. לכל שחקן קלף משלו.','מצאתם ציור זהה בין הקלף שלכם לקלף של המגדל? צועקים את השם!','נוגעים בקלף שלכם — הציור המשותף מסומן, והקלף מהמגדל עובר אליכם.','מי שאסף הכי הרבה קלפים כשהמגדל נגמר — מנצח.'],min:2},
+  {id:'well',e:'🟠',c:'#EA580C',t:'הבאר',d:'נפטרים מהקלפים שלכם ראשונים — זורקים אותם לבאר.',
+   how:['קלף אחד בבאר, וכל השאר מחולקים בין השחקנים.','מצאתם ציור זהה בין הקלף העליון שלכם לקלף שבבאר? צועקים את השם!','נוגעים בקלף שלכם — הוא נזרק לבאר והופך לקלף החדש באמצע.','מי שנגמרו לו הקלפים ראשון — מנצח.'],min:2},
+  {id:'triplet',e:'🔴',c:'#DC2626',t:'השלישייה',d:'תשעה קלפים פתוחים. מוצאים ציור אחד שמופיע בשלושה קלפים!',
+   how:['9 קלפים פתוחים כמו לוח משבצות.','מחפשים ציור שמופיע בשלושה קלפים שונים.','מצאתם? נוגעים בשלושת הקלפים — אם צדקתם, בוחרים מי מצא והוא לוקח אותם.','3 קלפים חדשים עולים במקומם. מי שאסף הכי הרבה — מנצח.'],min:1},
+];
+function openHome(){
+  $('deck-name').textContent=D.name;
+  $('deck-info').textContent=`${S.deck.length} קלפים · ${S.order.spc} ציורים בכל קלף`;
+  renderPlayers();
+  const g=$('games');g.innerHTML='';
+  GAMES.forEach(G=>{
+    const el=document.createElement('div');el.className='game';el.style.setProperty('--gc',G.c);
+    el.innerHTML=`<div class="gh"><span class="ge">${G.e}</span><span class="gt">${G.t}</span></div>
+      <div class="gd">${G.d}</div>
+      <details><summary>📖 איך משחקים?</summary><ol>${G.how.map(h=>`<li>${h}</li>`).join('')}</ol></details>
+      <div class="gr"><button class="btn btn-main">▶ שחקו</button></div>`;
+    el.querySelector('.btn-main').addEventListener('click',()=>{
+      if(players.length<G.min){toast(`במשחק הזה צריך לפחות ${G.min} שחקנים — הוסיפו שחקן למעלה`,2800);return;}
+      startGame(G);
+    });
+    g.appendChild(el);
+  });
+  show('scr-home');
+}
+$('btn-all').addEventListener('click',openAll);
+
+// ════════════════ ציור קלף + זיהוי מגע ════════════════
+const DPR=()=>Math.min(window.devicePixelRatio||1,2.5);
+// קלף = עטיפה + קנבס. הציור עצמו — drawCard של המחולל, בגודל הפיקסלים האמיתי של המסך.
+function makeCard(ci){
+  const w=document.createElement('div');w.className='card'+(S.shape==='square'?' sq':'');
+  const cv=document.createElement('canvas');w.appendChild(cv);w._ci=ci;w._hit=-1;
+  return w;
+}
+function paintCard(w,ci,hit){
+  if(ci!=null)w._ci=ci;
+  if(hit!==undefined)w._hit=hit;
+  const cv=w.firstChild;
+  const css=w.getBoundingClientRect().width||parseFloat(getComputedStyle(w).width)||200;
+  const px=Math.max(120,Math.min(1000,Math.round(css*DPR())));
+  if(cv.width!==px||cv.height!==px){cv.width=cv.height=px;}   // ⚠️ גם הגובה: קנבס חדש הוא 300×150, ו-px=300 לא היה משנה כלום
+  if(w._ci==null||w._ci<0){cv.getContext('2d').clearRect(0,0,px,px);return;}
+  drawCard(cv,S.layouts[w._ci],S.imgEls,S.shape,w._hit);
+}
+const common=(a,b)=>{const B=S.deck[b];for(const s of S.deck[a])if(B.includes(s))return s;return -1;};
+// איזה ציור נמצא מתחת לאצבע? אותם מיקומים בדיוק כמו בציור (computeCardPositions)
+function symAt(w,ev){
+  const cv=w.firstChild,r=cv.getBoundingClientRect();
+  const x=(ev.clientX-r.left)/r.width*cv.width,y=(ev.clientY-r.top)/r.height*cv.height;
+  const lay=S.layouts[w._ci];
+  const pos=computeCardPositions(lay,S.imgEls,cv.width).pos;
+  let best=-1,bd=1e9;
+  for(let i=0;i<pos.length;i++){
+    const rad=pos[i].hs*lay.tr[i].sc;
+    const d=Math.hypot(x-pos[i].x,y-pos[i].y);
+    if(d<rad*1.15&&d/rad<bd){bd=d/rad;best=lay.syms[i];}
+  }
+  return best;
+}
+function shake(w){w.classList.remove('shake');void w.offsetWidth;w.classList.add('shake');}
+function pop(w){w.classList.remove('pop');void w.offsetWidth;w.classList.add('pop');}
+function symThumb(si,sz){
+  const c=document.createElement('canvas');sz=sz||58;const p=Math.round(sz*DPR());c.width=c.height=p;
+  const x=c.getContext('2d');
+  x.beginPath();x.arc(p/2,p/2,p/2-2,0,Math.PI*2);x.fillStyle='#FEF9C3';x.fill();x.lineWidth=3;x.strokeStyle='#F59E0B';x.stroke();
+  const im=S.imgEls[si];
+  if(im){x.save();x.beginPath();x.arc(p/2,p/2,p*.4,0,Math.PI*2);x.clip();drawCover(x,im,p*.1,p*.1,p*.8);x.restore();}
+  return c;
+}
+function foundHTML(si){
+  const d=document.createElement('div');d.className='found';
+  d.appendChild(symThumb(si));
+  const n=document.createElement('span');n.className='fn';n.textContent=D.symNames[si]||'זה הציור!';
+  d.appendChild(n);return d;
+}
+
+// ════════════════ מסגרת משחק משותפת ════════════════
+let G=null;   // המשחק הפעיל
+function startGame(def){
+  G={def,score:players.map(()=>0),busy:false,over:false};
+  $('g-title').textContent=def.e+' '+def.t;
+  $('g-who').hidden=true;$('g-scores').hidden=false;setStatus('');
+  show('scr-game');
+  ({classic:classicStart,tower:towerStart,well:wellStart,triplet:tripletStart})[def.id]();
+}
+$('g-back').addEventListener('click',()=>{
+  if(G&&!G.over){
+    modal(`<h3>לצאת מהמשחק?</h3><p class="muted">הניקוד של הסיבוב הזה לא יישמר.</p>
+      <div class="btns" style="margin-top:1rem"><button class="btn btn-main" data-a="out">כן, לתפריט</button><button class="btn btn-sec" data-a="close">להמשיך לשחק</button></div>`,
+      a=>{if(a==='out'){G=null;openHome();}});
+    return;
+  }
+  G=null;openHome();
+});
+$('g-hint').addEventListener('click',()=>{if(G&&!G.busy&&!G.over&&G.hint)G.hint();});
+function setStatus(t){$('g-status').textContent=t||'';}
+function renderScores(extra){
+  const w=$('g-scores');w.innerHTML='';
+  players.forEach((p,i)=>{
+    const s=document.createElement('div');s.className='sc';s.style.setProperty('--pc',pc(i));
+    s.innerHTML=`${esc(pname(i))} <b>${extra?extra(i):G.score[i]}</b>`;w.appendChild(s);
+  });
+}
+// "מי מצא?" — כפתור לכל שחקן (+ "אף אחד" כשמבקשים תשובה). שחקן יחיד = בלי לשאול.
+function askWho(si,{allowNone,only}={}){
+  return new Promise(res=>{
+    const cand=only||players.map((_,i)=>i);
+    if(cand.length===1&&!allowNone){
+      const w=$('g-who');w.innerHTML='';if(si>=0)w.appendChild(foundHTML(si));w.hidden=false;
+      setTimeout(()=>{w.hidden=true;res(cand[0]);},900);return;
+    }
+    const w=$('g-who');w.innerHTML='';
+    if(si>=0)w.appendChild(foundHTML(si));
+    const q=document.createElement('div');q.className='q';q.textContent=allowNone?'מישהו מצא?':'מי מצא? 👇';w.appendChild(q);
+    const row=document.createElement('div');row.className='row';
+    cand.forEach(i=>{const b=document.createElement('button');b.className='pb';b.style.setProperty('--pc',pc(i));
+      b.textContent=pname(i);b.addEventListener('click',()=>{w.hidden=true;res(i);});row.appendChild(b);});
+    if(allowNone){const b=document.createElement('button');b.className='pb none';b.textContent='אף אחד ➜';
+      b.addEventListener('click',()=>{w.hidden=true;res(-1);});row.appendChild(b);}
+    w.appendChild(row);w.hidden=false;
+  });
+}
+function endGame(rank,title){
+  G.over=true;
+  const rows=rank.map((r,k)=>`<div class="rk" style="--pc:${pc(r.i)}"><span>${k===0?'🏆':k===1?'🥈':k===2?'🥉':'·'}</span><span class="n">${esc(pname(r.i))}</span><span>${esc(r.label)}</span></div>`).join('');
+  modal(`<div style="font-size:2.6rem">🎉</div><h3>${esc(title)}</h3><div class="rows">${rows}</div>
+    <div class="btns"><button class="btn btn-main" data-a="again">🔄 עוד סיבוב</button><button class="btn btn-sec" data-a="menu">לתפריט</button></div>`,
+    a=>{if(a==='again')startGame(G.def);else{G=null;openHome();}},true);
+}
+function rankByScore(unit){
+  const r=players.map((_,i)=>({i,v:G.score[i]})).sort((a,b)=>b.v-a.v);
+  return r.map(x=>({i:x.i,label:x.v+' '+unit}));
+}
+function modal(html,onAction,noBgClose){
+  const m=$('modal'),b=$('modal-box');b.innerHTML=html;m.hidden=false;
+  const close=()=>{m.hidden=true;b.innerHTML='';};
+  b.querySelectorAll('[data-a]').forEach(el=>el.addEventListener('click',()=>{const a=el.dataset.a;close();if(a!=='close'&&onAction)onAction(a);}));
+  m.onclick=e=>{if(e.target===m&&!noBgClose){close();}};
+}
+
+// גדלי קלפים לפי המקום הפנוי בלוח
+function boardBox(){const r=$('g-board').getBoundingClientRect();return{w:Math.max(200,r.width),h:Math.max(200,r.height)};}
+let _resizeT;
+window.addEventListener('resize',()=>{clearTimeout(_resizeT);_resizeT=setTimeout(()=>{if(G&&G.layout)G.layout();if(!$('scr-all').hidden)layoutAll();},120);});
+
+// ════════════════ 1. דאבל קלאסי ════════════════
+function classicStart(){
+  const pile=shuffle(S.deck.map((_,i)=>i));
+  G.a=pile.pop();G.b=pile.pop();G.pile=pile;G.rounds=0;
+  const board=$('g-board');board.innerHTML='';
+  const pair=document.createElement('div');pair.className='pair';board.appendChild(pair);
+  G.ca=makeCard(G.a);G.cb=makeCard(G.b);pair.append(G.ca,G.cb);
+  [G.ca,G.cb].forEach(w=>{w.classList.add('tap');w.addEventListener('click',ev=>classicTap(w,ev));});
+  G.layout=()=>{
+    const {w,h}=boardBox(),gap=14;
+    const vert=h>=w;pair.className='pair'+(vert?' v':'');
+    const cs=Math.floor(vert?Math.min(w-8,(h-gap)/2):Math.min(h-8,(w-gap)/2));
+    document.documentElement.style.setProperty('--cs',Math.max(120,cs)+'px');
+    paintCard(G.ca);paintCard(G.cb);
+  };
+  G.hint=async()=>{G.busy=true;const s=common(G.a,G.b);classicReveal(s);
+    const who=await askWho(s,{allowNone:true});classicNext(who);};
+  renderScores();setStatus(classicLeft());
+  requestAnimationFrame(G.layout);
+}
+function classicLeft(){return `נשארו ${G.pile.length} קלפים בחפיסה`;}
+function classicReveal(s){paintCard(G.ca,null,s);paintCard(G.cb,null,s);G.ca.classList.add('ok');G.cb.classList.add('ok');}
+async function classicTap(w,ev){
+  if(G.busy||G.over)return;
+  const si=symAt(w,ev);if(si<0)return;
+  const s=common(G.a,G.b);
+  if(si!==s){shake(w);toast('לא זה 😉 נסו שוב');return;}
+  G.busy=true;classicReveal(s);
+  const who=await askWho(s);classicNext(who);
+}
+function classicNext(who){
+  if(who>=0)G.score[who]++;
+  G.rounds++;renderScores();
+  G.ca.classList.remove('ok');G.cb.classList.remove('ok');
+  if(!G.pile.length){G.busy=false;endGame(rankByScore('נקודות'),'החפיסה נגמרה!');return;}
+  G.a=G.b;G.b=G.pile.pop();
+  paintCard(G.ca,G.a,-1);paintCard(G.cb,G.b,-1);pop(G.cb);
+  setStatus(classicLeft());G.busy=false;
+}
+
+// ════════════════ 2+3. המגדל / הבאר — מרכז + קלף לכל שחקן ════════════════
+// mode 'tower': נוגעים בקלף שלכם → קלף המגדל עובר אליכם ונהיה הקלף שלכם.
+// mode 'well' : נוגעים בקלף שלכם → הוא נזרק לבאר ונהיה הקלף שבאמצע.
+function centerBoard(){
+  const board=$('g-board');board.innerHTML='';
+  const ring=document.createElement('div');ring.className='ring';board.appendChild(ring);
+  const cen=document.createElement('div');cen.className='center';
+  const cap=document.createElement('div');cap.className='cap';cen.appendChild(cap);
+  G.cc=makeCard(G.center);cen.appendChild(G.cc);ring.appendChild(cen);
+  const grid=document.createElement('div');grid.className='pgrid';ring.appendChild(grid);
+  G.slots=players.map((_,i)=>{
+    const sl=document.createElement('div');sl.className='pslot';sl.style.setProperty('--pc',pc(i));
+    const nm=document.createElement('div');nm.className='nm';sl.appendChild(nm);
+    const c=makeCard(G.hand[i]);c.classList.add('tap');sl.appendChild(c);
+    c.addEventListener('click',()=>centerTap(i));
+    grid.appendChild(sl);return{sl,nm,c};
+  });
+  G.cap=cap;G.grid=grid;
+  G.layout=()=>{
+    const {w,h}=boardBox(),n=players.length;
+    const cols=n<=2?n:(n<=4?2:3),rows=Math.ceil(n/cols);
+    // מרכז ≈ 40% מהגובה, שחקנים בשאר; גודל אחד לשחקנים, המרכז גדול יותר
+    let best=0;
+    for(let pc_=60;pc_<=Math.min(w,h);pc_+=4){
+      const cen_=Math.min(w-8,pc_*1.35);
+      const need=cen_+26+rows*(pc_+30)+12;
+      const wide=cols*pc_+(cols-1)*10;
+      if(need<=h&&wide<=w)best=pc_;
+    }
+    best=Math.max(best,80);
+    const cenS=Math.floor(Math.min(w-8,best*1.35));
+    grid.style.gridTemplateColumns=`repeat(${cols},${best}px)`;
+    G.slots.forEach(s=>{s.c.style.width=s.c.style.height=best+'px';});
+    G.cc.style.width=G.cc.style.height=cenS+'px';
+    paintCard(G.cc);G.slots.forEach(s=>paintCard(s.c));
+  };
+  G.hint=async()=>{
+    G.busy=true;
+    const live=players.map((_,i)=>i).filter(i=>G.hand[i]>=0);
+    const s=common(G.hand[live[0]],G.center);
+    paintCard(G.cc,null,s);live.forEach(i=>paintCard(G.slots[i].c,null,common(G.hand[i],G.center)));
+    setStatus('💡 הציור המשותף מסומן אצל כולם');
+    await sleep(2200);
+    paintCard(G.cc,null,-1);live.forEach(i=>paintCard(G.slots[i].c,null,-1));
+    centerStatus();G.busy=false;
+  };
+}
+function centerLabels(){
+  G.slots.forEach((s,i)=>{
+    const cnt=G.mode==='tower'?G.score[i]:G.piles[i].length+(G.hand[i]>=0?1:0);
+    s.nm.innerHTML=`${esc(pname(i))} <i>${cnt}</i>`;
+    s.sl.classList.toggle('out',G.hand[i]<0);
+  });
+  if(G.mode==='tower')G.cap.textContent=`🗼 המגדל · עוד ${G.pile.length+(G.center>=0?1:0)}`;
+  else G.cap.textContent='🪣 הבאר';
+}
+function centerStatus(){setStatus(G.mode==='tower'?'מצאתם ציור שמופיע בקלף שלכם ובמגדל? געו בקלף שלכם!':'מצאתם ציור שמופיע בקלף שלכם ובבאר? געו בקלף שלכם!');}
+async function centerTap(i){
+  if(G.busy||G.over||G.hand[i]<0||G.center<0)return;
+  G.busy=true;
+  const s=common(G.hand[i],G.center),slot=G.slots[i];
+  paintCard(G.cc,null,s);paintCard(slot.c,null,s);slot.c.classList.add('ok');G.cc.classList.add('ok');
+  setStatus('✓ '+pname(i)+' — '+(D.symNames[s]||'מצא!'));
+  await sleep(1100);
+  slot.c.classList.remove('ok');G.cc.classList.remove('ok');
+  if(G.mode==='tower'){
+    G.score[i]++;
+    G.hand[i]=G.center;                         // הקלף מהמגדל הוא עכשיו הקלף שלכם
+    G.center=G.pile.length?G.pile.pop():-1;
+  }else{
+    G.center=G.hand[i];                         // הקלף שלכם נזרק לבאר
+    G.hand[i]=G.piles[i].length?G.piles[i].pop():-1;
+  }
+  paintCard(slot.c,G.hand[i],-1);paintCard(G.cc,G.center,-1);pop(G.cc);
+  centerLabels();
+  if(G.mode==='tower'&&G.center<0){G.busy=false;return endGame(rankByScore('קלפים'),'המגדל נגמר!');}
+  if(G.mode==='well'&&G.hand[i]<0){
+    G.busy=false;
+    const left=i2=>G.piles[i2].length+(G.hand[i2]>=0?1:0);
+    const rank=players.map((_,k)=>({i:k,v:left(k)})).sort((a,b)=>a.v-b.v).map(x=>({i:x.i,label:x.v?`נשארו ${x.v}`:'סיים! 🎯'}));
+    return endGame(rank,pname(i)+' נפטר/ה מכל הקלפים!');
+  }
+  centerStatus();G.busy=false;
+}
+function towerStart(){
+  G.mode='tower';
+  const pile=shuffle(S.deck.map((_,i)=>i));
+  G.hand=players.map(()=>pile.pop());
+  G.center=pile.pop();G.pile=pile;
+  centerBoard();renderScores();centerLabels();centerStatus();
+  $('g-scores').hidden=true;
+  requestAnimationFrame(G.layout);
+}
+function wellStart(){
+  G.mode='well';
+  const pile=shuffle(S.deck.map((_,i)=>i));
+  G.center=pile.pop();
+  G.piles=players.map(()=>[]);
+  pile.forEach((c,k)=>G.piles[k%players.length].push(c));   // מחלקים שווה בשווה
+  G.hand=G.piles.map(p=>p.pop());
+  centerBoard();centerLabels();centerStatus();
+  $('g-scores').hidden=true;
+  requestAnimationFrame(G.layout);
+}
+
+// ════════════════ 4. השלישייה ════════════════
+// 9 קלפים. נוגעים בשלושה קלפים — אם יש ציור שמופיע בשלושתם, מי שמצא לוקח אותם.
+// בחפיסה כזו ציור מופיע בכמה קלפים, אבל לא בטוח שבין 9 קלפים אקראיים יש שלישייה —
+// לכן אחרי כל חלוקה מוודאים שיש לפחות אחת (מחליפים קלף מהחפיסה עד שיש).
+function tripletFind(){
+  const cnt=new Map();
+  G.grid.forEach(ci=>{if(ci<0)return;S.deck[ci].forEach(s=>cnt.set(s,(cnt.get(s)||0)+1));});
+  let best=-1,bv=0;for(const [s,v] of cnt)if(v>=3&&v>bv){best=s;bv=v;}
+  return best;
+}
+function tripletEnsure(){
+  for(let k=0;k<400&&tripletFind()<0;k++){
+    if(!G.pile.length)return false;
+    const slots=G.grid.map((c,i)=>c>=0?i:-1).filter(i=>i>=0);
+    const pos=slots[Math.floor(Math.random()*slots.length)];
+    G.pile.unshift(G.grid[pos]);G.grid[pos]=G.pile.pop();
+  }
+  return tripletFind()>=0;
+}
+function tripletStart(){
+  const pile=shuffle(S.deck.map((_,i)=>i));
+  const n=Math.min(9,pile.length);
+  G.grid=[];for(let i=0;i<9;i++)G.grid.push(i<n?pile.pop():-1);
+  G.pile=pile;G.sel=[];
+  tripletEnsure();
+  const board=$('g-board');board.innerHTML='';
+  const tg=document.createElement('div');tg.className='tgrid';board.appendChild(tg);
+  G.cells=G.grid.map((ci,i)=>{
+    const c=makeCard(ci);c.classList.add('tap');c.addEventListener('click',()=>tripletTap(i));tg.appendChild(c);return c;
+  });
+  G.layout=()=>{
+    const {w,h}=boardBox();
+    const cs=Math.floor(Math.min((w-20)/3,(h-20)/3));
+    document.documentElement.style.setProperty('--cs',Math.max(80,cs)+'px');
+    G.cells.forEach(c=>paintCard(c));
+  };
+  G.hint=async()=>{
+    G.busy=true;const s=tripletFind();
+    G.cells.forEach((c,i)=>{if(G.grid[i]>=0&&S.deck[G.grid[i]].includes(s))paintCard(c,null,s);});
+    setStatus('💡 הציור הזה מופיע בשלושה קלפים (או יותר)');
+    await sleep(2400);
+    G.sel=[];G.cells.forEach(c=>{c.classList.remove('sel');paintCard(c,null,-1);});
+    tripletStatus();G.busy=false;
+  };
+  renderScores();tripletStatus();
+  requestAnimationFrame(G.layout);
+}
+function tripletStatus(){setStatus(`געו בשלושה קלפים עם אותו ציור · בחפיסה עוד ${G.pile.length}`);}
+async function tripletTap(i){
+  if(G.busy||G.over||G.grid[i]<0)return;
+  const c=G.cells[i];
+  if(G.sel.includes(i)){G.sel=G.sel.filter(x=>x!==i);c.classList.remove('sel');return;}
+  G.sel.push(i);c.classList.add('sel');
+  if(G.sel.length<3)return;
+  G.busy=true;
+  const [a,b,d]=G.sel.map(k=>G.grid[k]);
+  const s=common(a,b);
+  const cells=G.sel.map(k=>G.cells[k]);
+  if(s<0||!S.deck[d].includes(s)){
+    cells.forEach(shake);toast('אין ציור שמופיע בשלושתם 😉');
+    await sleep(450);
+    G.sel=[];cells.forEach(x=>x.classList.remove('sel'));G.busy=false;return;
+  }
+  cells.forEach(x=>{x.classList.remove('sel');x.classList.add('ok');paintCard(x,null,s);});
+  const who=await askWho(s);
+  G.score[who]+=3;renderScores();
+  cells.forEach(x=>x.classList.remove('ok'));
+  G.sel.forEach(k=>{G.grid[k]=G.pile.length?G.pile.pop():-1;});
+  G.sel=[];
+  const ok=tripletEnsure();
+  G.cells.forEach((x,k)=>{paintCard(x,G.grid[k],-1);x.style.visibility=G.grid[k]<0?'hidden':'';});
+  if(!ok){G.busy=false;return endGame(rankByScore('קלפים'),'אין עוד שלישיות — המשחק נגמר!');}
+  tripletStatus();G.busy=false;
+}
+
+// ════════════════ כל הקלפים — לחיצה על שניים מסמנת את המשותף ════════════════
+let AL={cards:[],sel:[]};
+function layoutAll(){
+  const w=Math.min(window.innerWidth,760)-32;
+  const cols=w<420?3:(w<620?4:5);
+  const cs=Math.floor((w-(cols-1)*10)/cols);
+  document.documentElement.style.setProperty('--cs',cs+'px');
+  AL.cards.forEach(c=>{c._painted=false;});
+  paintVisible();
+}
+let _io=null;
+function paintVisible(){
+  if(!_io){
+    _io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting&&!e.target._painted){e.target._painted=true;paintCard(e.target);}}),{rootMargin:'200px'});
+  }
+  AL.cards.forEach(c=>{_io.unobserve(c);_io.observe(c);});
+}
+function openAll(){
+  show('scr-all');
+  const g=$('allgrid');g.innerHTML='';AL={cards:[],sel:[]};
+  S.deck.forEach((_,ci)=>{
+    const c=makeCard(ci);c.classList.add('tap');
+    const n=document.createElement('span');n.className='num';n.textContent=ci+1;c.appendChild(n);
+    c.addEventListener('click',()=>allTap(ci));
+    g.appendChild(c);AL.cards.push(c);
+  });
+  requestAnimationFrame(layoutAll);
+}
+function allTap(ci){
+  const c=AL.cards[ci];
+  if(AL.sel.includes(ci)){AL.sel=AL.sel.filter(x=>x!==ci);c.classList.remove('sel');return;}
+  AL.sel.push(ci);c.classList.add('sel');
+  if(AL.sel.length<2)return;
+  const [a,b]=AL.sel;
+  const s=common(a,b);
+  modal(`<h3>קלף ${a+1} + קלף ${b+1}</h3><div class="pair" id="vpair" style="margin:.6rem 0"></div><div id="vfound"></div>
+    <div class="btns"><button class="btn btn-main" data-a="close">סגור</button></div>`);
+  const vp=$('vpair');
+  const sz=Math.min(230,Math.floor((Math.min(window.innerWidth,560)-80)/2));
+  [a,b].forEach(ci2=>{const w=makeCard(ci2);w.style.width=w.style.height=sz+'px';vp.appendChild(w);paintCard(w,ci2,s);});
+  $('vfound').appendChild(foundHTML(s));
+  const clear=()=>{AL.sel.forEach(x=>AL.cards[x].classList.remove('sel'));AL.sel=[];};
+  // סגירה בכל דרך — מנקה את הבחירה
+  const m=$('modal');
+  m.onclick=e=>{if(e.target===m){m.hidden=true;clear();}};
+  m.querySelector('[data-a="close"]').addEventListener('click',clear);
+}
+$('a-back').addEventListener('click',openHome);
+</script>
+</body>
+</html>
