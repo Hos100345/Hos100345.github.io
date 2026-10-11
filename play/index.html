@@ -847,17 +847,22 @@ if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostnam
   addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(e=>console.warn('service worker',e)));
 let _installEv=null;
 const isStandalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
-addEventListener('beforeinstallprompt',e=>{e.preventDefault();_installEv=e;if(!isStandalone())$('btn-install').hidden=false;});
+// הכפתור מוצג תמיד (חוץ מבתוך האפליקציה המותקנת). כרום באנדרואיד שולח beforeinstallprompt רק אחרי
+// שימוש מסוים בדף, ולפעמים לא בכלל — בלי האירוע הכפתור מסביר איפה ההתקנה בתפריט.
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();_installEv=e;});
+if(!isStandalone())$('btn-install').hidden=false;
 addEventListener('appinstalled',()=>{_installEv=null;$('btn-install').hidden=true;toast('✓ הותקן — האפליקציה במסך הבית',3000);});
 // באייפון אין חלון התקנה — מסבירים איך מוסיפים למסך הבית
 const isIOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-if(isIOS&&!isStandalone())$('btn-install').hidden=false;
 $('btn-install').addEventListener('click',async()=>{
   if(_installEv){_installEv.prompt();const r=await _installEv.userChoice.catch(()=>null);_installEv=null;
-    if(!r||r.outcome!=='accepted')$('btn-install').hidden=true;return;}
+    if(r&&r.outcome==='accepted')$('btn-install').hidden=true;return;}
+  const isAndroid=/Android/i.test(navigator.userAgent);
   modal(isIOS
     ?`<h3>📲 הוספה למסך הבית</h3><ol class="steps" style="text-align:start"><li>לוחצים על כפתור השיתוף <b>⬆️</b> בתחתית ספארי.</li><li>בוחרים <b>"הוספה למסך הבית"</b>.</li><li>לוחצים <b>"הוסף"</b>.</li></ol><div class="btns"><button class="btn btn-main" data-a="close">הבנתי</button></div>`
-    :`<h3>📲 התקנה כאפליקציה</h3><ol class="steps" style="text-align:start"><li>בכרום לוחצים על <b>⋮</b> (שלוש נקודות) למעלה.</li><li>בוחרים <b>"התקנת אפליקציה"</b> או <b>"הוספה למסך הבית"</b>.</li><li>מאשרים.</li></ol><div class="btns"><button class="btn btn-main" data-a="close">הבנתי</button></div>`);
+    :isAndroid
+    ?`<h3>📲 התקנה כאפליקציה</h3><ol class="steps" style="text-align:start"><li>פותחים את הדף ב<b>כרום</b> (לא בדפדפן של סמסונג ולא מתוך וואטסאפ).</li><li>לוחצים על <b>⋮</b> (שלוש נקודות) למעלה.</li><li>בוחרים <b>"הוספה למסך הבית"</b> ואז <b>"התקנה"</b> (או ישר <b>"התקנת אפליקציה"</b>).</li><li>האייקון 🎴 מופיע במסך הבית.</li></ol><p class="muted" style="font-size:.88rem">אם כתוב רק "יצירת קיצור דרך" — רעננו את הדף, חכו כמה שניות ונסו שוב.</p><div class="btns"><button class="btn btn-main" data-a="close">הבנתי</button></div>`
+    :`<h3>📲 התקנה כאפליקציה</h3><ol class="steps" style="text-align:start"><li>בכרום במחשב — בשורת הכתובת, בצד, יש סמל <b>התקנה</b> (מסך עם חץ). לוחצים עליו.</li><li>אם אין: <b>⋮</b> ← <b>"העברה, שיתוף ושמירה"</b> ← <b>"התקנת הדף כאפליקציה"</b>.</li><li>מאשרים.</li></ol><div class="btns"><button class="btn btn-main" data-a="close">הבנתי</button></div>`);
 });
 </script>
 </body>
