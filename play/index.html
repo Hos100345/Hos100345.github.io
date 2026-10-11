@@ -125,16 +125,26 @@
     .slotlbl{position:absolute;bottom:-8px;inset-inline:0;text-align:center;pointer-events:none}
     .slotlbl span{background:#fff;border-radius:999px;padding:.05rem .55rem;font-weight:800;font-size:.82rem;box-shadow:0 2px 6px rgba(0,0,0,.12);border:2px solid var(--pc,#CBD5E1);white-space:nowrap}
 
-    .ring{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%}
-    .pgrid{display:grid;gap:14px 10px;justify-content:center}
-    .pslot{display:flex;flex-direction:column;align-items:center;gap:4px;position:relative}
-    .pslot .nm{font-weight:800;font-size:.9rem;display:flex;align-items:center;gap:.3rem;max-width:calc(var(--cs) + 20px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .pslot .nm i{font-style:normal;background:var(--pc);color:#fff;border-radius:999px;padding:0 .45em;font-size:.8rem}
-    .pslot .card{border:4px solid var(--pc)}
-    .pslot.out .card{opacity:.25}
-    .center .card{border:4px solid var(--indigo)}
-    .center .cap{font-weight:800;font-size:.85rem;color:var(--indigo);text-align:center;margin-bottom:4px}
-
+    /* ── שולחן (מגדל / באר): הקופה באמצע, השחקנים מסביב ── */
+    .table{position:absolute;inset:0;border-radius:1.4rem}
+    .table.tower{background:radial-gradient(circle at 50% 50%,rgba(5,150,105,.14),transparent 62%)}
+    .table.well{background:radial-gradient(circle at 50% 50%,rgba(14,165,233,.16),transparent 62%)}
+    .seat{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transform-origin:50% 50%}
+    .seat .card{border:4px solid var(--pc);transition:box-shadow .3s}
+    .seat .nm{position:relative;z-index:1;font-weight:800;font-size:.9rem;display:flex;align-items:center;gap:.3rem;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+      background:#fff;border-radius:999px;padding:0 .55rem;border:2px solid var(--pc);line-height:1.5}
+    .seat .nm i{font-style:normal;background:var(--pc);color:#fff;border-radius:999px;padding:0 .45em;font-size:.8rem}
+    .seat.out .card{opacity:.25}
+    .center{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center}
+    .center .cap{position:absolute;top:0;left:50%;transform:translate(-50%,-60%);z-index:2;white-space:nowrap;
+      font-weight:900;font-size:.85rem;color:#fff;border-radius:999px;padding:.1rem .7rem;box-shadow:0 3px 10px rgba(0,0,0,.18)}
+    .table.tower .cap{background:#059669}
+    .table.well .cap{background:#0284C7}
+    .cring{border-radius:50%}
+    .cring.sq{border-radius:12%}
+    .table.tower .center .card{border:4px solid #059669}
+    .table.well .cring{background:radial-gradient(circle,#E0F2FE 55%,#7DD3FC 68%,#0284C7 86%,#075985 100%);box-shadow:inset 0 0 0 3px #0C4A6E,0 10px 30px rgba(3,105,161,.3)}
+    .table.well .center .card{border:4px solid #0369A1}
     .tgrid{display:grid;grid-template-columns:repeat(3,var(--cs));gap:10px;justify-content:center}
     .tgrid .empty{width:var(--cs);height:var(--cs);border-radius:50%;border:2px dashed var(--line)}
 
@@ -611,41 +621,99 @@ function classicNext(who){
   setStatus(classicLeft());G.busy=false;
 }
 
-// ════════════════ 2+3. המגדל / הבאר — מרכז + קלף לכל שחקן ════════════════
-// mode 'tower': נוגעים בקלף שלכם → קלף המגדל עובר אליכם ונהיה הקלף שלכם.
-// mode 'well' : נוגעים בקלף שלכם → הוא נזרק לבאר ונהיה הקלף שבאמצע.
+// ════════════════ 2+3. המגדל / הבאר — שולחן: הקופה באמצע, השחקנים מסביב ════════════════
+// mode 'tower': נוגעים בקלף שלכם → קלף המגדל עף אליכם ונהיה הקלף שלכם.
+// mode 'well' : נוגעים בקלף שלכם → הקלף שלכם עף לבאר ונהיה הקלף שבאמצע.
+// מקומות ישיבה כמו סביב שולחן: [x,y,סיבוב] — x/y: 0=שמאל/למעלה, .5=אמצע, 1=ימין/למטה.
+// מי שיושב למעלה רואה את השם והקלף הפוכים אליו (180°), מי שבצד — 90°.
+// לאורך (טלפון): 5–6 שחקנים בשתי שורות של 3 — לצדדים אין מקום. לרוחב: גם בצדדים.
+function seatsFor(n,portrait){
+  const S1={
+    1:[[.5,1,0]],
+    2:[[.5,1,0],[.5,0,180]],
+    3:[[0,1,0],[1,1,0],[.5,0,180]],
+    4:[[0,1,0],[1,1,0],[1,0,180],[0,0,180]],
+  };
+  if(n<=4)return S1[n];
+  if(portrait)return n===5
+    ?[[0,1,0],[.5,1,0],[1,1,0],[1,0,180],[0,0,180]]
+    :[[0,1,0],[.5,1,0],[1,1,0],[1,0,180],[.5,0,180],[0,0,180]];
+  return n===5
+    ?[[0,1,0],[1,1,0],[1,0,180],[0,0,180],[0,.5,90]]
+    :[[0,1,0],[1,1,0],[1,.5,-90],[1,0,180],[0,0,180],[0,.5,90]];
+}
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+// ערימה: שכבות צל מתחת לקלף — כמה קלפים יש בערימה (עד 7 שכבות)
+function stackShadow(n,col){
+  const k=n<=0?0:Math.min(7,Math.ceil(n/4)),out=[];
+  for(let i=1;i<=k;i++)out.push(`0 ${i*3}px 0 ${-i*.4}px ${i%2?col:'#fff'}`);
+  out.push('0 8px 22px rgba(30,27,75,.22)');
+  return out.join(',');
+}
+// קלף עף ממקום למקום — עותק של הקנבס שעובר מעל הכול, עם הסיבוב של המושב
+function flyCard(fromEl,toEl,fromRot,toRot,ms){
+  if(REDUCED)return Promise.resolve();
+  const r1=fromEl.getBoundingClientRect(),r2=toEl.getBoundingClientRect();
+  const g=document.createElement('canvas');
+  g.width=g.height=fromEl.firstChild.width;
+  g.getContext('2d').drawImage(fromEl.firstChild,0,0);
+  Object.assign(g.style,{position:'fixed',left:r1.left+'px',top:r1.top+'px',width:r1.width+'px',height:r1.height+'px',
+    borderRadius:S.shape==='square'?'9%':'50%',zIndex:45,pointerEvents:'none',boxShadow:'0 18px 40px rgba(30,27,75,.35)'});
+  document.body.appendChild(g);
+  const dx=(r2.left+r2.width/2)-(r1.left+r1.width/2),dy=(r2.top+r2.height/2)-(r1.top+r1.height/2);
+  let d=((toRot-fromRot)%360+540)%360-180;               // הדרך הקצרה בסיבוב
+  const sc=r2.width/r1.width;
+  const an=g.animate([
+    {transform:`translate(0,0) rotate(${fromRot}deg) scale(1)`},
+    {transform:`translate(${dx*.5}px,${dy*.5}px) rotate(${fromRot+d*.5}deg) scale(${(1+sc)/2*1.18})`,offset:.5},
+    {transform:`translate(${dx}px,${dy}px) rotate(${fromRot+d}deg) scale(${sc})`},
+  ],{duration:ms||560,easing:'cubic-bezier(.45,.05,.3,1)'});
+  return an.finished.catch(()=>{}).then(()=>g.remove());
+}
 function centerBoard(){
   const board=$('g-board');board.innerHTML='';
-  const ring=document.createElement('div');ring.className='ring';board.appendChild(ring);
+  const tbl=document.createElement('div');tbl.className='table '+G.mode;board.appendChild(tbl);
   const cen=document.createElement('div');cen.className='center';
-  const cap=document.createElement('div');cap.className='cap';cen.appendChild(cap);
-  G.cc=makeCard(G.center);cen.appendChild(G.cc);ring.appendChild(cen);
-  const grid=document.createElement('div');grid.className='pgrid';ring.appendChild(grid);
+  const cap=document.createElement('div');cap.className='cap';
+  const ring=document.createElement('div');ring.className='cring'+(S.shape==='square'?' sq':'');
+  G.cc=makeCard(G.center);ring.appendChild(G.cc);cen.append(ring,cap);tbl.appendChild(cen);
   G.slots=players.map((_,i)=>{
-    const sl=document.createElement('div');sl.className='pslot';sl.style.setProperty('--pc',pc(i));
-    const nm=document.createElement('div');nm.className='nm';sl.appendChild(nm);
-    const c=makeCard(G.hand[i]);c.classList.add('tap');sl.appendChild(c);
+    const sl=document.createElement('div');sl.className='seat';sl.style.setProperty('--pc',pc(i));
+    const c=makeCard(G.hand[i]);c.classList.add('tap');
+    const nm=document.createElement('div');nm.className='nm';
+    sl.append(c,nm);
     c.addEventListener('click',()=>centerTap(i));
-    grid.appendChild(sl);return{sl,nm,c};
+    tbl.appendChild(sl);return{sl,nm,c,sx:0,sy:0,rot:0};
   });
-  G.cap=cap;G.grid=grid;
+  G.cap=cap;G.cen=cen;G.ring=ring;
   G.layout=()=>{
-    const {w,h}=boardBox(),n=players.length;
-    const cols=n<=2?n:(n<=4?2:3),rows=Math.ceil(n/cols);
-    // מרכז ≈ 40% מהגובה, שחקנים בשאר; גודל אחד לשחקנים, המרכז גדול יותר
-    let best=0;
-    for(let pc_=60;pc_<=Math.min(w,h);pc_+=4){
-      const cen_=Math.min(w-8,pc_*1.35);
-      const need=cen_+26+rows*(pc_+30)+12;
-      const wide=cols*pc_+(cols-1)*10;
-      if(need<=h&&wide<=w)best=pc_;
+    const {w,h}=boardBox(),n=players.length,L=26,gp=8;
+    seatsFor(n,h>=w).forEach(([sx,sy,rot],i)=>Object.assign(G.slots[i],{sx,sy,rot}));
+    const mid=G.slots.some(s=>s.sy===.5);
+    const perRow=Math.max(...[0,1].map(y=>G.slots.filter(s=>s.sy===y).length));   // הכי הרבה שחקנים בשורה
+    // הגודל הכי גדול לשחקן (S = קלף + שם) שעדיין משאיר קופה גדולה לפחות כמו קלף שחקן
+    let Sz=0,C=0;
+    for(let t=Math.floor(Math.min(w,h));t>=70;t-=2){
+      if(perRow*t+(perRow-1)*gp>w)continue;
+      if(perRow===1&&t>w-2*gp)continue;
+      if(mid&&3*t+2*gp>h)continue;
+      let c=Math.min(w-2*gp,h-2*(t+gp));
+      if(mid)c=Math.min(c,w-2*(t+gp));
+      if(c>=(t-L)*(n>=5?1.0:1.3)){Sz=t;C=c;break;}   // הקופה גדולה מקלף שחקן (ב-5–6 אין מקום — שווה)
     }
-    best=Math.max(best,80);
-    const cenS=Math.floor(Math.min(w-8,best*1.35));
-    grid.style.gridTemplateColumns=`repeat(${cols},${best}px)`;
-    G.slots.forEach(s=>{s.c.style.width=s.c.style.height=best+'px';});
-    G.cc.style.width=G.cc.style.height=cenS+'px';
+    if(!Sz){Sz=90;C=Math.min(w,h)*.4;}
+    const P=Sz-L;
+    G.slots.forEach(s=>{
+      Object.assign(s.sl.style,{width:Sz+'px',height:Sz+'px',left:(s.sx*(w-Sz))+'px',top:(s.sy*(h-Sz))+'px',transform:`rotate(${s.rot}deg)`});
+      s.c.style.width=s.c.style.height=P+'px';
+    });
+    const pad=G.mode==='well'?Math.round(C*.07):0;
+    const cs=Math.floor(Math.min(C*.92,C-2*pad));
+    G.cc.style.width=G.cc.style.height=cs+'px';
+    G.ring.style.padding=pad+'px';
+    Object.assign(G.cen.style,{left:(w/2)+'px',top:(h/2)+'px'});
     paintCard(G.cc);G.slots.forEach(s=>paintCard(s.c));
+    centerLabels();
   };
   G.hint=async()=>{
     G.busy=true;
@@ -659,32 +727,51 @@ function centerBoard(){
   };
 }
 function centerLabels(){
+  const tower=G.mode==='tower';
   G.slots.forEach((s,i)=>{
-    const cnt=G.mode==='tower'?G.score[i]:G.piles[i].length+(G.hand[i]>=0?1:0);
-    s.nm.innerHTML=`${esc(pname(i))} <i>${cnt}</i>`;
+    const cnt=tower?G.score[i]:G.piles[i].length+(G.hand[i]>=0?1:0);
+    s.nm.innerHTML=`${esc(pname(i))} <i>${tower?'🃏 ':''}${cnt}</i>`;
     s.sl.classList.toggle('out',G.hand[i]<0);
+    // מגדל: הערימה שאספתם · באר: הקלפים שנשארו לכם
+    s.c.style.boxShadow=stackShadow(tower?G.score[i]:G.piles[i].length,pc(i));
   });
-  if(G.mode==='tower')G.cap.textContent=`🗼 המגדל · עוד ${G.pile.length+(G.center>=0?1:0)}`;
-  else G.cap.textContent='🪣 הבאר';
+  if(tower){
+    const left=G.pile.length+(G.center>=0?1:0);
+    G.cap.textContent=`🗼 המגדל · ${left}`;
+    G.cc.style.boxShadow=stackShadow(G.pile.length,'#059669');
+  }else{
+    G.cap.textContent='🪣 הבאר';
+    G.cc.style.boxShadow='0 4px 14px rgba(3,105,161,.35)';
+  }
 }
-function centerStatus(){setStatus(G.mode==='tower'?'מצאתם ציור שמופיע בקלף שלכם ובמגדל? געו בקלף שלכם!':'מצאתם ציור שמופיע בקלף שלכם ובבאר? געו בקלף שלכם!');}
+function centerStatus(){setStatus(G.mode==='tower'?'מצאתם ציור משותף לקלף שלכם ולמגדל? געו בקלף שלכם!':'מצאתם ציור משותף לקלף שלכם ולבאר? געו בקלף שלכם!');}
 async function centerTap(i){
   if(G.busy||G.over||G.hand[i]<0||G.center<0)return;
   G.busy=true;
   const s=common(G.hand[i],G.center),slot=G.slots[i];
   paintCard(G.cc,null,s);paintCard(slot.c,null,s);slot.c.classList.add('ok');G.cc.classList.add('ok');
   setStatus('✓ '+pname(i)+' — '+(D.symNames[s]||'מצא!'));
-  await sleep(1100);
+  await sleep(850);
   slot.c.classList.remove('ok');G.cc.classList.remove('ok');
   if(G.mode==='tower'){
-    G.score[i]++;
-    G.hand[i]=G.center;                         // הקלף מהמגדל הוא עכשיו הקלף שלכם
+    // הקלף מהמגדל עף לשחקן; מתחתיו נחשף הקלף הבא במגדל
+    const taken=G.center;
     G.center=G.pile.length?G.pile.pop():-1;
+    const fly=flyCard(G.cc,slot.c,0,slot.rot);
+    paintCard(G.cc,G.center,-1);if(G.center<0)G.cc.style.visibility='hidden';
+    G.score[i]++;centerLabels();
+    await fly;
+    G.hand[i]=taken;paintCard(slot.c,taken,-1);pop(slot.c);
   }else{
-    G.center=G.hand[i];                         // הקלף שלכם נזרק לבאר
+    // הקלף של השחקן עף לבאר; אצלו נחשף הקלף הבא בערימה
+    const thrown=G.hand[i];
+    const fly=flyCard(slot.c,G.cc,slot.rot,0);
     G.hand[i]=G.piles[i].length?G.piles[i].pop():-1;
+    paintCard(slot.c,G.hand[i],-1);
+    centerLabels();
+    await fly;
+    G.center=thrown;paintCard(G.cc,thrown,-1);pop(G.cc);
   }
-  paintCard(slot.c,G.hand[i],-1);paintCard(G.cc,G.center,-1);pop(G.cc);
   centerLabels();
   if(G.mode==='tower'&&G.center<0){G.busy=false;return endGame(rankByScore('קלפים'),'המגדל נגמר!');}
   if(G.mode==='well'&&G.hand[i]<0){
@@ -700,7 +787,7 @@ function towerStart(){
   const pile=shuffle(S.deck.map((_,i)=>i));
   G.hand=players.map(()=>pile.pop());
   G.center=pile.pop();G.pile=pile;
-  centerBoard();renderScores();centerLabels();centerStatus();
+  centerBoard();centerStatus();
   $('g-scores').hidden=true;
   requestAnimationFrame(G.layout);
 }
@@ -711,7 +798,7 @@ function wellStart(){
   G.piles=players.map(()=>[]);
   pile.forEach((c,k)=>G.piles[k%players.length].push(c));   // מחלקים שווה בשווה
   G.hand=G.piles.map(p=>p.pop());
-  centerBoard();centerLabels();centerStatus();
+  centerBoard();centerStatus();
   $('g-scores').hidden=true;
   requestAnimationFrame(G.layout);
 }
