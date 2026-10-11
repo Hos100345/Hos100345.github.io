@@ -1,0 +1,19 @@
+{
+  "id": "/play/",
+  "name": "משחקי דאבל — משחקים בטלפון",
+  "short_name": "משחקי דאבל",
+  "description": "טוענים את קובץ המשחק שיצרתם במחולל הדאבל ומשחקים יחד על מסך אחד — 4 משחקים.",
+  "lang": "he",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#EEF1FB",
+  "theme_color": "#4338CA",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
