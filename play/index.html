@@ -135,6 +135,15 @@
       background:#fff;border-radius:999px;padding:0 .55rem;border:2px solid var(--pc);line-height:1.5}
     .seat .nm i{font-style:normal;background:var(--pc);color:#fff;border-radius:999px;padding:0 .45em;font-size:.8rem}
     .seat.out .card{opacity:.25}
+    .table.classic,.table.triplet{background:radial-gradient(circle at 50% 50%,rgba(124,58,237,.10),transparent 65%)}
+    .seat.claim .pile{width:var(--ps);height:var(--ps);border-radius:50%;border:3px solid #fff;cursor:pointer;
+      background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.55),var(--pc) 62%);color:#fff;font-weight:900;
+      font-size:calc(var(--ps)*.38);display:flex;align-items:center;justify-content:center;text-shadow:0 1px 3px rgba(0,0,0,.35);touch-action:manipulation}
+    .seat.claim .pile:active{transform:scale(.94)}
+    .seat.ask .pile{animation:askp .9s ease-in-out infinite}
+    .seat.ask .nm{animation:askp .9s ease-in-out infinite}
+    @keyframes askp{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+    @media(prefers-reduced-motion:reduce){.seat.ask .pile,.seat.ask .nm{animation:none;outline:3px solid var(--gold)}}
     .center{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center}
     .center .cap{position:absolute;top:0;left:50%;transform:translate(-50%,-60%);z-index:2;white-space:nowrap;
       font-weight:900;font-size:.85rem;color:#fff;border-radius:999px;padding:.1rem .7rem;box-shadow:0 3px 10px rgba(0,0,0,.18)}
@@ -515,7 +524,9 @@ function foundHTML(si){
 // ════════════════ מסגרת משחק משותפת ════════════════
 let G=null;   // המשחק הפעיל
 function startGame(def){
-  G={def,score:players.map(()=>0),busy:false,over:false};
+  G={def,score:players.map(()=>0),busy:false,over:false,asking:null};
+  $('g-hint').onclick=null;$('g-hint').textContent='💡 תשובה';
+  clearTimeout(_tt);$('toast').classList.remove('show');   // הודעה מהטעינה לא תסתיר את השחקנים שלמעלה
   $('g-title').textContent=def.e+' '+def.t;
   $('g-who').hidden=true;$('g-scores').hidden=false;setStatus('');
   show('scr-game');
@@ -530,7 +541,7 @@ $('g-back').addEventListener('click',()=>{
   }
   G=null;openHome();
 });
-$('g-hint').addEventListener('click',()=>{if(G&&!G.busy&&!G.over&&G.hint)G.hint();});
+$('g-hint').addEventListener('click',()=>{if(G&&!G.busy&&!G.asking&&!G.over&&G.hint)G.hint();});
 function setStatus(t){$('g-status').textContent=t||'';}
 function renderScores(extra){
   const w=$('g-scores');w.innerHTML='';
@@ -539,27 +550,8 @@ function renderScores(extra){
     s.innerHTML=`${esc(pname(i))} <b>${extra?extra(i):G.score[i]}</b>`;w.appendChild(s);
   });
 }
-// "מי מצא?" — כפתור לכל שחקן (+ "אף אחד" כשמבקשים תשובה). שחקן יחיד = בלי לשאול.
-function askWho(si,{allowNone,only}={}){
-  return new Promise(res=>{
-    const cand=only||players.map((_,i)=>i);
-    if(cand.length===1&&!allowNone){
-      const w=$('g-who');w.innerHTML='';if(si>=0)w.appendChild(foundHTML(si));w.hidden=false;
-      setTimeout(()=>{w.hidden=true;res(cand[0]);},900);return;
-    }
-    const w=$('g-who');w.innerHTML='';
-    if(si>=0)w.appendChild(foundHTML(si));
-    const q=document.createElement('div');q.className='q';q.textContent=allowNone?'מישהו מצא?':'מי מצא? 👇';w.appendChild(q);
-    const row=document.createElement('div');row.className='row';
-    cand.forEach(i=>{const b=document.createElement('button');b.className='pb';b.style.setProperty('--pc',pc(i));
-      b.textContent=pname(i);b.addEventListener('click',()=>{w.hidden=true;res(i);});row.appendChild(b);});
-    if(allowNone){const b=document.createElement('button');b.className='pb none';b.textContent='אף אחד ➜';
-      b.addEventListener('click',()=>{w.hidden=true;res(-1);});row.appendChild(b);}
-    w.appendChild(row);w.hidden=false;
-  });
-}
 function endGame(rank,title){
-  G.over=true;
+  G.over=true;confetti();
   const rows=rank.map((r,k)=>`<div class="rk" style="--pc:${pc(r.i)}"><span>${k===0?'🏆':k===1?'🥈':k===2?'🥉':'·'}</span><span class="n">${esc(pname(r.i))}</span><span>${esc(r.label)}</span></div>`).join('');
   modal(`<div style="font-size:2.6rem">🎉</div><h3>${esc(title)}</h3><div class="rows">${rows}</div>
     <div class="btns"><button class="btn btn-main" data-a="again">🔄 עוד סיבוב</button><button class="btn btn-sec" data-a="menu">לתפריט</button></div>`,
@@ -581,43 +573,155 @@ function boardBox(){const r=$('g-board').getBoundingClientRect();return{w:Math.m
 let _resizeT;
 window.addEventListener('resize',()=>{clearTimeout(_resizeT);_resizeT=setTimeout(()=>{if(G&&G.layout)G.layout();if(!$('scr-all').hidden)layoutAll();},120);});
 
+// ════════════════ מושבים סביב המכשיר (קלאסי + שלישייה) ════════════════
+// בכל המשחקים השחקנים יושבים סביב הטלפון. בקלאסי ובשלישייה לכל שחקן "מושב" — ערימת הקלפים שזכה בהם + שם.
+// נוגעים במושב = "אני מצאתי!". המושבים מסודרים כמו במגדל/באר (seatsFor), מי שלמעלה מסובב אליו.
+function makeTable(mode){
+  const board=$('g-board');board.innerHTML='';
+  const tbl=document.createElement('div');tbl.className='table '+mode;board.appendChild(tbl);
+  return tbl;
+}
+function buildClaimSeats(tbl){
+  G.slots=players.map((_,i)=>{
+    const sl=document.createElement('div');sl.className='seat claim';sl.style.setProperty('--pc',pc(i));
+    const pile=document.createElement('button');pile.className='pile';pile.setAttribute('aria-label',pname(i)+' — מצאתי');
+    const nm=document.createElement('div');nm.className='nm';nm.textContent=pname(i);
+    sl.append(pile,nm);tbl.appendChild(sl);
+    pile.addEventListener('click',()=>seatTap(i));
+    return{sl,pile,nm,sx:0,sy:0,rot:0};
+  });
+  claimLabels();
+}
+function claimLabels(){
+  G.slots.forEach((s,i)=>{s.pile.textContent=G.score[i];s.pile.style.boxShadow=stackShadow(G.score[i],pc(i));});
+}
+// מסדר את המושבים ומחזיר את המלבן שנשאר באמצע לקלפים
+function layoutClaimSeats(){
+  const {w,h}=boardBox(),n=players.length,gp=8,L=24;
+  seatsFor(n,h>=w).forEach(([sx,sy,rot],i)=>Object.assign(G.slots[i],{sx,sy,rot}));
+  const perRow=Math.max(1,...[0,1].map(y=>G.slots.filter(s=>s.sy===y).length));
+  const mid=G.slots.some(s=>s.sy===.5);
+  const Sz=Math.round(Math.min(110,Math.max(66,Math.min(w,h)*.2),(w-(perRow-1)*gp)/perRow));
+  G.slots.forEach(s=>{
+    Object.assign(s.sl.style,{width:Sz+'px',height:Sz+'px',left:(s.sx*(w-Sz))+'px',top:(s.sy*(h-Sz))+'px',transform:`rotate(${s.rot}deg)`});
+    s.pile.style.setProperty('--ps',(Sz-L-6)+'px');
+  });
+  const top=G.slots.some(s=>s.sy===0)?Sz+gp:gp,bot=G.slots.some(s=>s.sy===1)?Sz+gp:gp,side=mid?Sz+gp:gp;
+  return{x:side,y:top,w:w-2*side,h:h-top-bot};
+}
+function seatTap(i){
+  if(G.asking){const r=G.asking;G.asking=null;r(i);return;}
+  if(G.busy||G.over)return;
+  if(G.def.id==='classic')classicClaim(i);
+  else toast('קודם געו בשלושה קלפים עם אותו ציור 👆');
+}
+// "מי מצא?" — המושבים מהבהבים ומחכים לנגיעה. בעזרה (💡) אפשר גם "אף אחד".
+function askSeat(si,{allowNone}={}){
+  return new Promise(res=>{
+    statusFound(si,allowNone?'מישהו מצא? געו בשם שלכם':'מי מצא? געו בשם שלכם');
+    if(players.length===1&&!allowNone){setTimeout(()=>res(0),700);return;}
+    G.slots.forEach(s=>s.sl.classList.add('ask'));
+    const hb=$('g-hint'),old=hb.textContent;
+    const done=v=>{G.slots.forEach(s=>s.sl.classList.remove('ask'));hb.textContent=old;hb.onclick=null;G.noneBtn=false;res(v);};
+    G.asking=v=>done(v);
+    if(allowNone){G.noneBtn=true;hb.textContent='אף אחד ➜';hb.onclick=e=>{e.stopImmediatePropagation();const r=G.asking;G.asking=null;if(r)r(-1);};}
+  });
+}
+function statusFound(si,txt){
+  const st=$('g-status');st.innerHTML='';
+  if(si>=0){const c=symThumb(si,34);c.style.cssText='width:34px;height:34px;vertical-align:middle;margin-inline-end:.35rem';st.appendChild(c);}
+  st.appendChild(document.createTextNode(txt));
+}
+// ── אנימציות ──
+function boardCenter(){const r=$('g-board').getBoundingClientRect();return{x:r.left+r.width/2,y:r.top+r.height/2};}
+// קלף שנכנס מהחפיסה (מרכז הלוח) למקום שלו
+function flyIn(el,delay,from){
+  if(REDUCED)return Promise.resolve();
+  const r=el.getBoundingClientRect(),c=from||boardCenter();
+  const dx=c.x-(r.left+r.width/2),dy=c.y-(r.top+r.height/2);
+  return el.animate([{transform:`translate(${dx}px,${dy}px) scale(.2) rotate(-35deg)`,opacity:0},{transform:'none',opacity:1}],
+    {duration:480,delay:delay||0,easing:'cubic-bezier(.2,.8,.25,1.15)',fill:'backwards'}).finished.catch(()=>{});
+}
+// קלף שזז ממקום של קלף אחר למקום שלו (החלקה)
+function slideFrom(el,fromEl){
+  if(REDUCED)return Promise.resolve();
+  const a=fromEl.getBoundingClientRect(),b=el.getBoundingClientRect();
+  return el.animate([{transform:`translate(${a.left-b.left}px,${a.top-b.top}px)`},{transform:'none'}],
+    {duration:380,easing:'cubic-bezier(.4,0,.2,1)'}).finished.catch(()=>{});
+}
+function bump(el){if(!REDUCED)el.animate([{transform:'scale(1)'},{transform:'scale(1.35)'},{transform:'scale(1)'}],{duration:420,easing:'ease-out'});}
+function fadeAway(el){
+  if(REDUCED)return Promise.resolve();
+  return el.animate([{transform:'none',opacity:1},{transform:'scale(.5) rotate(25deg)',opacity:0}],{duration:350,easing:'ease-in'}).finished.catch(()=>{});
+}
+function confetti(){
+  if(REDUCED)return;
+  const cols=[...COLORS,'#F59E0B','#FDE047'];
+  for(let i=0;i<90;i++){
+    const d=document.createElement('i');
+    const sz=6+Math.random()*8;
+    d.style.cssText=`position:fixed;top:-20px;left:${Math.random()*100}vw;width:${sz}px;height:${sz*.6}px;background:${cols[i%cols.length]};z-index:70;pointer-events:none;border-radius:2px`;
+    document.body.appendChild(d);
+    d.animate([{transform:`translate(0,0) rotate(0)`},{transform:`translate(${(Math.random()-.5)*160}px,${innerHeight+60}px) rotate(${(Math.random()-.5)*1080}deg)`}],
+      {duration:1600+Math.random()*1400,delay:Math.random()*400,easing:'cubic-bezier(.25,.6,.4,1)'}).finished.then(()=>d.remove(),()=>d.remove());
+  }
+}
+
 // ════════════════ 1. דאבל קלאסי ════════════════
+// שני קלפים באמצע. מי שמוצא — נוגע בציור (ואז בשם שלו) או ישר בשם שלו: הציור מסומן,
+// הקלף עף לערימה שלו, הקלף השני מחליק למקומו וקלף חדש נכנס מהחפיסה.
 function classicStart(){
   const pile=shuffle(S.deck.map((_,i)=>i));
   G.a=pile.pop();G.b=pile.pop();G.pile=pile;G.rounds=0;
-  const board=$('g-board');board.innerHTML='';
-  const pair=document.createElement('div');pair.className='pair';board.appendChild(pair);
+  const tbl=makeTable('classic');
+  const pair=document.createElement('div');pair.className='pair';pair.style.position='absolute';tbl.appendChild(pair);
   G.ca=makeCard(G.a);G.cb=makeCard(G.b);pair.append(G.ca,G.cb);
   [G.ca,G.cb].forEach(w=>{w.classList.add('tap');w.addEventListener('click',ev=>classicTap(w,ev));});
+  buildClaimSeats(tbl);
   G.layout=()=>{
-    const {w,h}=boardBox(),gap=14;
-    const vert=h>=w;pair.className='pair'+(vert?' v':'');
-    const cs=Math.floor(vert?Math.min(w-8,(h-gap)/2):Math.min(h-8,(w-gap)/2));
-    document.documentElement.style.setProperty('--cs',Math.max(120,cs)+'px');
+    const R=layoutClaimSeats(),gap=14;
+    Object.assign(pair.style,{left:R.x+'px',top:R.y+'px',width:R.w+'px',height:R.h+'px'});
+    const vert=R.h>=R.w;pair.className='pair'+(vert?' v':'');
+    const cs=Math.floor(vert?Math.min(R.w-8,(R.h-gap)/2):Math.min(R.h-8,(R.w-gap)/2));
+    document.documentElement.style.setProperty('--cs',Math.max(110,cs)+'px');
     paintCard(G.ca);paintCard(G.cb);
   };
   G.hint=async()=>{G.busy=true;const s=common(G.a,G.b);classicReveal(s);
-    const who=await askWho(s,{allowNone:true});classicNext(who);};
-  renderScores();setStatus(classicLeft());
-  requestAnimationFrame(G.layout);
+    const who=await askSeat(s,{allowNone:true});classicAward(who);};
+  $('g-scores').hidden=true;setStatus(classicLeft());
+  requestAnimationFrame(()=>{G.layout();flyIn(G.ca,0);flyIn(G.cb,140);});
 }
-function classicLeft(){return `נשארו ${G.pile.length} קלפים בחפיסה`;}
+function classicLeft(){return `מי שמוצא — נוגע בציור או בשם שלו · בחפיסה עוד ${G.pile.length}`;}
 function classicReveal(s){paintCard(G.ca,null,s);paintCard(G.cb,null,s);G.ca.classList.add('ok');G.cb.classList.add('ok');}
 async function classicTap(w,ev){
-  if(G.busy||G.over)return;
+  if(G.asking||G.busy||G.over)return;
   const si=symAt(w,ev);if(si<0)return;
   const s=common(G.a,G.b);
   if(si!==s){shake(w);toast('לא זה 😉 נסו שוב');return;}
   G.busy=true;classicReveal(s);
-  const who=await askWho(s);classicNext(who);
+  const who=await askSeat(s);classicAward(who);
 }
-function classicNext(who){
-  if(who>=0)G.score[who]++;
-  G.rounds++;renderScores();
+async function classicClaim(i){
+  G.busy=true;const s=common(G.a,G.b);classicReveal(s);
+  statusFound(s,'✓ '+pname(i)+' — '+(D.symNames[s]||'מצא!'));
+  await sleep(900);classicAward(i);
+}
+async function classicAward(who){
   G.ca.classList.remove('ok');G.cb.classList.remove('ok');
-  if(!G.pile.length){G.busy=false;endGame(rankByScore('נקודות'),'החפיסה נגמרה!');return;}
+  if(who>=0){
+    const slot=G.slots[who];
+    const fly=flyCard(G.ca,slot.pile,0,slot.rot);
+    G.ca.style.visibility='hidden';
+    await fly;
+    G.score[who]++;claimLabels();bump(slot.pile);
+  }else{await fadeAway(G.ca);G.ca.style.visibility='hidden';}
+  G.rounds++;
+  if(!G.pile.length){G.busy=false;endGame(rankByScore('קלפים'),'החפיסה נגמרה!');return;}
   G.a=G.b;G.b=G.pile.pop();
-  paintCard(G.ca,G.a,-1);paintCard(G.cb,G.b,-1);pop(G.cb);
+  paintCard(G.ca,G.a,-1);G.ca.style.visibility='';
+  const sl=slideFrom(G.ca,G.cb);
+  paintCard(G.cb,G.b,-1);
+  await Promise.all([sl,flyIn(G.cb,60)]);
   setStatus(classicLeft());G.busy=false;
 }
 
@@ -761,7 +865,7 @@ async function centerTap(i){
     paintCard(G.cc,G.center,-1);if(G.center<0)G.cc.style.visibility='hidden';
     G.score[i]++;centerLabels();
     await fly;
-    G.hand[i]=taken;paintCard(slot.c,taken,-1);pop(slot.c);
+    G.hand[i]=taken;paintCard(slot.c,taken,-1);pop(slot.c);bump(slot.nm);
   }else{
     // הקלף של השחקן עף לבאר; אצלו נחשף הקלף הבא בערימה
     const thrown=G.hand[i];
@@ -770,7 +874,7 @@ async function centerTap(i){
     paintCard(slot.c,G.hand[i],-1);
     centerLabels();
     await fly;
-    G.center=thrown;paintCard(G.cc,thrown,-1);pop(G.cc);
+    G.center=thrown;paintCard(G.cc,thrown,-1);pop(G.cc);bump(slot.nm);
   }
   centerLabels();
   if(G.mode==='tower'&&G.center<0){G.busy=false;return endGame(rankByScore('קלפים'),'המגדל נגמר!');}
@@ -789,7 +893,7 @@ function towerStart(){
   G.center=pile.pop();G.pile=pile;
   centerBoard();centerStatus();
   $('g-scores').hidden=true;
-  requestAnimationFrame(G.layout);
+  requestAnimationFrame(()=>{G.layout();flyIn(G.cc,0);G.slots.forEach((sl,k)=>flyIn(sl.c,150+k*110));});
 }
 function wellStart(){
   G.mode='well';
@@ -800,13 +904,13 @@ function wellStart(){
   G.hand=G.piles.map(p=>p.pop());
   centerBoard();centerStatus();
   $('g-scores').hidden=true;
-  requestAnimationFrame(G.layout);
+  requestAnimationFrame(()=>{G.layout();flyIn(G.cc,0);G.slots.forEach((sl,k)=>flyIn(sl.c,150+k*110));});
 }
 
 // ════════════════ 4. השלישייה ════════════════
-// 9 קלפים. נוגעים בשלושה קלפים — אם יש ציור שמופיע בשלושתם, מי שמצא לוקח אותם.
-// בחפיסה כזו ציור מופיע בכמה קלפים, אבל לא בטוח שבין 9 קלפים אקראיים יש שלישייה —
-// לכן אחרי כל חלוקה מוודאים שיש לפחות אחת (מחליפים קלף מהחפיסה עד שיש).
+// 9 קלפים באמצע, השחקנים מסביב. נוגעים בשלושה קלפים — אם יש ציור שמופיע בשלושתם, נוגעים בשם
+// ושלושת הקלפים עפים לערימה של מי שמצא; 3 חדשים נכנסים מהחפיסה.
+// בחפיסה כזו לא בטוח שבין 9 קלפים אקראיים יש שלישייה — אחרי כל חלוקה מוודאים שיש לפחות אחת.
 function tripletFind(){
   const cnt=new Map();
   G.grid.forEach(ci=>{if(ci<0)return;S.deck[ci].forEach(s=>cnt.set(s,(cnt.get(s)||0)+1));});
@@ -828,31 +932,34 @@ function tripletStart(){
   G.grid=[];for(let i=0;i<9;i++)G.grid.push(i<n?pile.pop():-1);
   G.pile=pile;G.sel=[];
   tripletEnsure();
-  const board=$('g-board');board.innerHTML='';
-  const tg=document.createElement('div');tg.className='tgrid';board.appendChild(tg);
+  const tbl=makeTable('triplet');
+  const tg=document.createElement('div');tg.className='tgrid';tg.style.position='absolute';tbl.appendChild(tg);
   G.cells=G.grid.map((ci,i)=>{
     const c=makeCard(ci);c.classList.add('tap');c.addEventListener('click',()=>tripletTap(i));tg.appendChild(c);return c;
   });
+  buildClaimSeats(tbl);
   G.layout=()=>{
-    const {w,h}=boardBox();
-    const cs=Math.floor(Math.min((w-20)/3,(h-20)/3));
-    document.documentElement.style.setProperty('--cs',Math.max(80,cs)+'px');
+    const R=layoutClaimSeats();
+    const cs=Math.floor(Math.min((R.w-20)/3,(R.h-20)/3));
+    document.documentElement.style.setProperty('--cs',Math.max(70,cs)+'px');
+    const gw=3*Math.max(70,cs)+20;
+    Object.assign(tg.style,{left:(R.x+(R.w-gw)/2)+'px',top:(R.y+(R.h-gw)/2)+'px'});
     G.cells.forEach(c=>paintCard(c));
   };
   G.hint=async()=>{
     G.busy=true;const s=tripletFind();
     G.cells.forEach((c,i)=>{if(G.grid[i]>=0&&S.deck[G.grid[i]].includes(s))paintCard(c,null,s);});
-    setStatus('💡 הציור הזה מופיע בשלושה קלפים (או יותר)');
+    statusFound(s,'💡 הציור הזה מופיע בשלושה קלפים (או יותר)');
     await sleep(2400);
     G.sel=[];G.cells.forEach(c=>{c.classList.remove('sel');paintCard(c,null,-1);});
     tripletStatus();G.busy=false;
   };
-  renderScores();tripletStatus();
-  requestAnimationFrame(G.layout);
+  $('g-scores').hidden=true;tripletStatus();
+  requestAnimationFrame(()=>{G.layout();G.cells.forEach((c,k)=>{if(G.grid[k]>=0)flyIn(c,k*70);});});
 }
 function tripletStatus(){setStatus(`געו בשלושה קלפים עם אותו ציור · בחפיסה עוד ${G.pile.length}`);}
 async function tripletTap(i){
-  if(G.busy||G.over||G.grid[i]<0)return;
+  if(G.asking||G.busy||G.over||G.grid[i]<0)return;
   const c=G.cells[i];
   if(G.sel.includes(i)){G.sel=G.sel.filter(x=>x!==i);c.classList.remove('sel');return;}
   G.sel.push(i);c.classList.add('sel');
@@ -867,13 +974,18 @@ async function tripletTap(i){
     G.sel=[];cells.forEach(x=>x.classList.remove('sel'));G.busy=false;return;
   }
   cells.forEach(x=>{x.classList.remove('sel');x.classList.add('ok');paintCard(x,null,s);});
-  const who=await askWho(s);
-  G.score[who]+=3;renderScores();
+  const who=await askSeat(s);
+  const slot=G.slots[who];
   cells.forEach(x=>x.classList.remove('ok'));
-  G.sel.forEach(k=>{G.grid[k]=G.pile.length?G.pile.pop():-1;});
+  // שלושת הקלפים עפים אחד אחרי השני לערימה של מי שמצא
+  await Promise.all(cells.map((x,k)=>sleep(k*110).then(()=>{const f=flyCard(x,slot.pile,0,slot.rot,520);x.style.visibility='hidden';return f;})));
+  G.score[who]+=3;claimLabels();bump(slot.pile);
+  const took=G.sel.slice();
+  took.forEach(k=>{G.grid[k]=G.pile.length?G.pile.pop():-1;});
   G.sel=[];
   const ok=tripletEnsure();
   G.cells.forEach((x,k)=>{paintCard(x,G.grid[k],-1);x.style.visibility=G.grid[k]<0?'hidden':'';});
+  await Promise.all(G.cells.map((x,k)=>took.includes(k)&&G.grid[k]>=0?flyIn(x,took.indexOf(k)*90):null));
   if(!ok){G.busy=false;return endGame(rankByScore('קלפים'),'אין עוד שלישיות — המשחק נגמר!');}
   tripletStatus();G.busy=false;
 }
