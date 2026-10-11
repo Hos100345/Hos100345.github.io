@@ -180,6 +180,12 @@
 ## נתוני build — `js/emoji-he.json`
 `js/emoji-he.json` (אינדקס עברי לספריית הסמלים — סמל, קוד הקסדצימלי, שם עברי, מילות חיפוש) **נוצר מ-CLDR** (`unicode-org/cldr` → `common/annotations/he.xml`) ע"י `tools/build-emoji-index.py`. **אין לערוך אותו ידנית — להריץ מחדש את הסקריפט.** `python3 tools/build-emoji-index.py`. נכון ל-18.8.2026: 1,536 רשומות, `main` של CLDR הוא ענף חי כך שמספר שונה בעתיד תקין (סטייה גדולה מ-1,400–1,700 מצביעה על שינוי במבנה ה-XML, לא לסמוך על הסקריפט בלי בדיקה).
 
+## נתוני build — `js/play-engine.js` (הנגן `play.html`)
+`js/play-engine.js` הוא **עותק אוטומטי** של מנוע הקלפים מ-`dobble.html` (GF/`genDeck`, `buildLayouts`, `computeCardPositions`, `drawCard`, `symImg`…) שנוצר ע"י `tools/build-play-engine.py` — **אין לערוך אותו ידנית.** כך הקלף בנגן זהה בפיקסלים לקלף במחולל, בלי ש-`play.html` נוגע ב-`dobble.html`.
+- ⛔ **כל שינוי בציור/פריסה/מתמטיקה ב-`dobble.html` (אחת הפונקציות ברשימת `NAMES` בסקריפט) → להריץ `python3 tools/build-play-engine.py` ולהעלות `?v=` של `play-engine.js` ב-`play.html`, באותו PR.** בלי זה הנגן מצייר אחרת מהמחולל.
+- פונקציה חדשה שהציור תלוי בה → להוסיף ל-`NAMES`. הסקריפט מזהה לפי שם ונכשל בקול אם שם חסר או כפול.
+- `play.html` מגדיר בעצמו את `S` (אותן ברירות מחדל כמו `applyDesignToState`) ואת `needsWatermark`.
+
 ## Workflow (git)
 - ברנץ' ייעודי `claude/<שם-מתאר>`. לפני commit: `git diff --stat` + `node --check` על כל בלוק סקריפט.
 - commit → push → פתיחת PR. **אין למזג ל-`main` בלי אישור מפורש של הושעיה.**
