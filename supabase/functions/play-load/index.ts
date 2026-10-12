@@ -5,6 +5,8 @@
 //
 // אבטחה — הקוד הוא מפתח לתמונות של ילדים:
 //  • קוד + אימייל חייבים להתאים (created_for). רק קוד עם code_only=true — מספיק הקוד (הושעיה מסמן).
+//  • מנוי ישן בלי אימייל (לא בטבלת הקודים): הקוד נבדק כסיסמה ל-{code}@sub.hoshaya.co.il + תוקף/סטטוס
+//    ב-profiles — אותם כללים בדיוק כמו הכניסה במחולל (D-71).
 //  • כל ניסיון נרשם ב-play_login_attempts. יותר מ-8 כשלונות מאותה כתובת, או 5 על אותו קוד,
 //    ב-15 דקות → חסימה זמנית (429).
 //  • תשובת כשל אחידה — לא מגלים אם הקוד או האימייל שגוי.
@@ -46,17 +48,35 @@ Deno.serve(async (req) => {
     // ── בדיקת הקוד — אותם כללים כמו redeem_access_code (התאמה מדויקת, פעיל, לא פג) ──
     const { data: rec } = await admin.from('dobble_access_codes')
       .select('code,created_for,is_active,expires_at,max_order,code_only').eq('code', code).maybeSingle();
-    const owner = String(rec?.created_for || '').trim().toLowerCase();
-    const valid = !!rec && rec.is_active !== false
-      && (!rec.expires_at || new Date(rec.expires_at) > new Date())
-      && (rec.code_only === true || (!!email && email === owner));
-    if (!valid) { await log(false); return json({ ok: false, error: 'bad_login' }, 401); }
+    let ids: string[] = [], maxOrder = 7;
+    if (rec) {
+      const owner = String(rec.created_for || '').trim().toLowerCase();
+      const valid = rec.is_active !== false
+        && (!rec.expires_at || new Date(rec.expires_at) > new Date())
+        && (rec.code_only === true || (!!email && email === owner));
+      if (!valid) { await log(false); return json({ ok: false, error: 'bad_login' }, 401); }
+      // העיצוב האחרון: חשבון האימייל של הקוד, או חשבון legacy של הקוד עצמו
+      const wanted = new Set([owner, `${code.toLowerCase()}@${SUB_DOMAIN}`].filter(Boolean));
+      const { data: list } = await admin.auth.admin.listUsers({ perPage: 1000 });
+      ids = (list?.users || []).filter((u) => wanted.has((u.email || '').toLowerCase())).map((u) => u.id);
+      maxOrder = rec.max_order ?? 7;
+    } else {
+      // ── מנוי ישן (legacy, בלי אימייל): הקוד = סיסמה לחשבון {code}@sub.hoshaya.co.il ──
+      // בדיוק כמו subscriberLogin במחולל: signInWithPassword, ואז subscriptionGate (סטטוס + תוקף).
+      const anon = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, { auth: { persistSession: false } });
+      const { data: si, error: siErr } = await anon.auth.signInWithPassword({ email: `${code.toLowerCase()}@${SUB_DOMAIN}`, password: code });
+      if (siErr || !si?.user) { await log(false); return json({ ok: false, error: 'bad_login' }, 401); }
+      const { data: prof } = await admin.from('profiles').select('subscription_expires,subscriber_status,max_order').eq('id', si.user.id).maybeSingle();
+      // הקוד נכון — מכאן מותר להגיד למה לא נכנסים (כמו חלון החידוש במחולל)
+      if (prof?.subscriber_status && prof.subscriber_status !== 'active') { await log(true); return json({ ok: false, error: 'disabled' }, 403); }
+      if (prof?.subscription_expires && String(prof.subscription_expires).slice(0, 10) < new Date().toISOString().slice(0, 10)) {
+        await log(true); return json({ ok: false, error: 'expired' }, 403);
+      }
+      ids = [si.user.id];
+      maxOrder = prof?.max_order ?? 57;
+    }
     await log(true);
 
-    // ── העיצוב האחרון: חשבון האימייל של הקוד, או חשבון legacy של הקוד עצמו ──
-    const wanted = new Set([owner, `${code.toLowerCase()}@${SUB_DOMAIN}`].filter(Boolean));
-    const { data: list } = await admin.auth.admin.listUsers({ perPage: 1000 });
-    const ids = (list?.users || []).filter((u) => wanted.has((u.email || '').toLowerCase())).map((u) => u.id);
     let design: unknown = null;
     if (ids.length) {
       const { data: rows } = await admin.from('designs').select('id,name,game_data,updated_at')
@@ -78,7 +98,7 @@ Deno.serve(async (req) => {
         };
       }
     }
-    return json({ ok: true, max_order: rec!.max_order ?? 7, design });
+    return json({ ok: true, max_order: maxOrder, design });
   } catch (e) {
     return json({ ok: false, error: String((e as Error)?.message || e) }, 500);
   }
