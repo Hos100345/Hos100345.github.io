@@ -380,8 +380,9 @@ async function buildGame({name,settings,assets}){
       symPad:st.symPad??2,overlap:st.overlap??0,
       tightPack:st.tightPack!==false,tightFill:!!st.tightFill,cardEdits:st.cardEdits||{},
       sizeMode:st.sizeMode==='auto'?'auto':undefined,sizeK:st.sizeK??.2});
-    if(st.frame)S.frame=Object.assign({},st.frame);
-    if(st.bg)S.bg=Object.assign({},st.bg);
+    // מסגרת/רקע תמיד מאופסים — אחרת עיצוב בלי השדות האלה יורש אותם מהעיצוב הקודם (D-74)
+    S.frame=Object.assign({w:0,color:'#4338CA',op:100},st.frame||{});
+    S.bg=Object.assign({color:'#FFFEF5',op:100},st.bg||{});
     S.assets=assets;
 
     // סמלים — כמו generate במחולל: מסומנים, בלי תמונות מקור, לפי הסדר, עד גודל המשחק
@@ -583,7 +584,10 @@ const common=(a,b)=>{const B=S.deck[b];for(const s of S.deck[a])if(B.includes(s)
 function symAt(w,ev){
   const cv=w.firstChild,r=cv.getBoundingClientRect();
   let x=(ev.clientX-r.left)/r.width*cv.width,y=(ev.clientY-r.top)/r.height*cv.height;
-  if(w._flip){x=cv.width-x;y=cv.height-y;}   // קלף שמסובב 180° (הקלף של השחקן שלמעלה בדו-קרב)
+  if(w._rot){   // קלף מסובב לשחקן שלו בדו-קרב (180° למעלה, ±90° בצדדים) — מחזירים את הנגיעה לקואורדינטות הקלף
+    const cx=cv.width/2,cy=cv.height/2,a=-w._rot*Math.PI/180,dx=x-cx,dy=y-cy;
+    x=cx+dx*Math.cos(a)-dy*Math.sin(a);y=cy+dx*Math.sin(a)+dy*Math.cos(a);
+  }
   const lay=S.layouts[w._ci];
   const pos=computeCardPositions(lay,S.imgEls,cv.width).pos;
   let best=-1,bd=1e9;
@@ -613,6 +617,10 @@ function foundHTML(si){
 
 // ════════════════ מסגרת משחק משותפת ════════════════
 let G=null;   // המשחק הפעיל
+// ⛔ המתנה בתוך משחק שעזבו באמצעה לא ממשיכה (D-74): בלי זה צעד מהמשחק הקודם (sleep/אנימציה) נוחת
+//    על המשחק החדש — ניקוד וחפיסה משתנים — או קורס על G=null. כל המתנה במשחק עוברת דרך live/gsleep.
+function live(p){const g=G;return Promise.resolve(p).then(v=>G===g?v:new Promise(()=>{}));}
+const gsleep=ms=>live(sleep(ms));
 function startGame(def){
   G={def,score:players.map(()=>0),busy:false,over:false,asking:null};
   $('g-hint').onclick=null;$('g-hint').textContent='💡 תשובה';
@@ -686,17 +694,21 @@ function claimLabels(){
   G.slots.forEach((s,i)=>{s.pile.textContent=G.score[i];s.pile.style.boxShadow=stackShadow(G.score[i],pc(i));});
 }
 // מסדר את המושבים ומחזיר את המלבן שנשאר באמצע לקלפים
+// לרוחב (עד 4 שחקנים) המושבים בצדדים, לא למעלה/למטה — אחרת לא נשאר גובה לקלפים (D-74)
+const CLAIM_SIDE={1:[[1,.5,-90]],2:[[1,.5,-90],[0,.5,90]],3:[[1,1,-90],[1,0,-90],[0,.5,90]],4:[[1,1,-90],[1,0,-90],[0,0,90],[0,1,90]]};
 function layoutClaimSeats(){
   const {w,h}=boardBox(),n=players.length,gp=8,L=24;
-  seatsFor(n,h>=w).forEach(([sx,sy,rot],i)=>Object.assign(G.slots[i],{sx,sy,rot}));
-  const perRow=Math.max(1,...[0,1].map(y=>G.slots.filter(s=>s.sy===y).length));
-  const mid=G.slots.some(s=>s.sy===.5);
-  const Sz=Math.round(Math.min(110,Math.max(66,Math.min(w,h)*.2),(w-(perRow-1)*gp)/perRow));
+  (h<w&&n<=4?CLAIM_SIDE[n]:seatsFor(n,h>=w)).forEach(([sx,sy,rot],i)=>Object.assign(G.slots[i],{sx,sy,rot}));
+  const side90=s=>Math.abs(s.rot)===90;
+  const perRow=Math.max(1,...[0,1].map(y=>G.slots.filter(s=>s.sy===y&&!side90(s)).length));
+  const perCol=Math.max(1,...[0,1].map(x=>G.slots.filter(s=>s.sx===x&&side90(s)).length));
+  const mid=G.slots.some(side90);
+  const Sz=Math.round(Math.min(110,Math.max(66,Math.min(w,h)*.2),(w-(perRow-1)*gp)/perRow,(h-(perCol-1)*gp)/perCol));
   G.slots.forEach(s=>{
     Object.assign(s.sl.style,{width:Sz+'px',height:Sz+'px',left:(s.sx*(w-Sz))+'px',top:(s.sy*(h-Sz))+'px',transform:`rotate(${s.rot}deg)`});
     s.pile.style.setProperty('--ps',(Sz-L-6)+'px');
   });
-  const top=G.slots.some(s=>s.sy===0)?Sz+gp:gp,bot=G.slots.some(s=>s.sy===1)?Sz+gp:gp,side=mid?Sz+gp:gp;
+  const top=G.slots.some(s=>s.sy===0&&!side90(s))?Sz+gp:gp,bot=G.slots.some(s=>s.sy===1&&!side90(s))?Sz+gp:gp,side=mid?Sz+gp:gp;
   return{x:side,y:top,w:w-2*side,h:h-top-bot};
 }
 function seatTap(i){
@@ -709,7 +721,7 @@ function seatTap(i){
 }
 // "מי מצא?" — המושבים מהבהבים ומחכים לנגיעה. בעזרה (💡) אפשר גם "אף אחד".
 function askSeat(si,{allowNone}={}){
-  return new Promise(res=>{
+  return live(new Promise(res=>{
     statusFound(si,allowNone?'מישהו מצא? געו בשם שלכם':'מי מצא? געו בשם שלכם');
     if(players.length===1&&!allowNone){setTimeout(()=>res(0),700);return;}
     G.slots.forEach(s=>s.sl.classList.add('ask'));
@@ -717,7 +729,7 @@ function askSeat(si,{allowNone}={}){
     const done=v=>{G.slots.forEach(s=>s.sl.classList.remove('ask'));hb.textContent=old;hb.onclick=null;G.noneBtn=false;res(v);};
     G.asking=v=>done(v);
     if(allowNone){G.noneBtn=true;hb.textContent='אף אחד ➜';hb.onclick=e=>{e.stopImmediatePropagation();const r=G.asking;G.asking=null;if(r)r(-1);};}
-  });
+  }));
 }
 function statusFound(si,txt){
   const st=$('g-status');st.innerHTML='';
@@ -727,7 +739,8 @@ function statusFound(si,txt){
 // ── אנימציות ──
 function boardCenter(){const r=$('g-board').getBoundingClientRect();return{x:r.left+r.width/2,y:r.top+r.height/2};}
 // קלף שנכנס מהחפיסה (מרכז הלוח) למקום שלו
-function flyIn(el,delay,from){
+function flyIn(el,delay,from){return live(flyIn0(el,delay,from));}
+function flyIn0(el,delay,from){
   if(REDUCED)return Promise.resolve();
   const r=el.getBoundingClientRect(),c=from||boardCenter();
   const dx=c.x-(r.left+r.width/2),dy=c.y-(r.top+r.height/2);
@@ -735,14 +748,16 @@ function flyIn(el,delay,from){
     {duration:480,delay:delay||0,easing:'cubic-bezier(.2,.8,.25,1.15)',fill:'backwards'}).finished.catch(()=>{});
 }
 // קלף שזז ממקום של קלף אחר למקום שלו (החלקה)
-function slideFrom(el,fromEl){
+function slideFrom(el,fromEl){return live(slideFrom0(el,fromEl));}
+function slideFrom0(el,fromEl){
   if(REDUCED)return Promise.resolve();
   const a=fromEl.getBoundingClientRect(),b=el.getBoundingClientRect();
   return el.animate([{transform:`translate(${a.left-b.left}px,${a.top-b.top}px)`},{transform:'none'}],
     {duration:380,easing:'cubic-bezier(.4,0,.2,1)'}).finished.catch(()=>{});
 }
 function bump(el){if(!REDUCED)el.animate([{transform:'scale(1)'},{transform:'scale(1.35)'},{transform:'scale(1)'}],{duration:420,easing:'ease-out'});}
-function fadeAway(el){
+function fadeAway(el){return live(fadeAway0(el));}
+function fadeAway0(el){
   if(REDUCED)return Promise.resolve();
   return el.animate([{transform:'none',opacity:1},{transform:'scale(.5) rotate(25deg)',opacity:0}],{duration:350,easing:'ease-in'}).finished.catch(()=>{});
 }
@@ -773,13 +788,20 @@ function classicStart(){
   // דו-קרב (2 שחקנים, D-72): לכל שחקן קלף משלו — הקלף למעלה של מי שיושב למעלה (מסובב אליו),
   // הקלף למטה של מי שלמטה. מוצאים את הציור בקלף שלך ונוגעים בו — וזכית, בלי לשאול "מי מצא?".
   G.duel=players.length===2;
-  if(G.duel){G.ca._flip=true;G.ca.firstChild.style.transform='rotate(180deg)';G.owner=w=>w===G.ca?1:0;}
+  if(G.duel)G.owner=w=>w===G.ca?1:0;
   G.layout=()=>{
     const R=layoutClaimSeats(),gap=14;
     Object.assign(pair.style,{left:R.x+'px',top:R.y+'px',width:R.w+'px',height:R.h+'px'});
-    const vert=G.duel||R.h>=R.w;pair.className='pair'+(vert?' v':'');   // בדו-קרב תמיד אחד מעל השני — מול השחקנים
+    const vert=R.h>=R.w;pair.className='pair'+(vert?' v':'');
+    if(G.duel){
+      // כל קלף מסובב אל השחקן שלו: לאורך — למעלה/למטה (180°/0°), לרוחב — שמאל/ימין (90°/‎-90°, D-74)
+      pair.style.direction='ltr';
+      const ra=vert?180:90,rb=vert?0:-90;
+      G.ca._rot=ra;G.cb._rot=rb;
+      G.ca.firstChild.style.transform=ra?`rotate(${ra}deg)`:'';G.cb.firstChild.style.transform=rb?`rotate(${rb}deg)`:'';
+    }
     const cs=Math.floor(vert?Math.min(R.w-8,(R.h-gap)/2):Math.min(R.h-8,(R.w-gap)/2));
-    document.documentElement.style.setProperty('--cs',Math.max(110,cs)+'px');
+    document.documentElement.style.setProperty('--cs',Math.max(40,cs)+'px');   // בלי רצפה גדולה — רצפה דחפה קלפים מתחת לערימות
     paintCard(G.ca);paintCard(G.cb);
   };
   G.hint=async()=>{G.busy=true;const s=common(G.a,G.b);classicReveal(s);
@@ -796,7 +818,7 @@ async function classicTap(w,ev){
   const s=common(G.a,G.b);
   if(si!==s){shake(w);toast('לא זה 😉 נסו שוב');return;}
   G.busy=true;classicReveal(s);
-  if(G.duel){const who=G.owner(w);statusFound(s,'✓ '+pname(who)+' — '+(D.symNames[s]||'מצא!'));await sleep(800);return classicAward(who);}
+  if(G.duel){const who=G.owner(w);statusFound(s,'✓ '+pname(who)+' — '+(D.symNames[s]||'מצא!'));await gsleep(800);return classicAward(who);}
   const who=await askSeat(s);classicAward(who);
 }
 async function classicAward(who){
@@ -822,10 +844,11 @@ async function classicAward(who){
 // דו-קרב: הקלף של המנצח עף לערימה שלו, ובמקומו נכנס קלף חדש מהחפיסה. הקלף של היריב נשאר.
 // "אף אחד" (💡): הקלף העליון מתחלף.
 async function duelAward(who){
-  const card=who===0?G.cb:G.ca, key=who===0?'b':'a';
+  const card=who===0?G.cb:G.ca, key=who===0?'b':'a', other=card===G.ca?G.cb:G.ca;
+  paintCard(other,null,-1);   // הסימון של הסיבוב שעבר יורד גם מהקלף שנשאר (D-74)
   if(who>=0){
     const slot=G.slots[who];
-    const fly=flyCard(card,slot.pile,card._flip?180:0,slot.rot);
+    const fly=flyCard(card,slot.pile,card._rot||0,slot.rot);
     card.style.visibility='hidden';
     await fly;
     G.score[who]++;claimLabels();bump(slot.pile);
@@ -868,7 +891,8 @@ function stackShadow(n,col){
   return out.join(',');
 }
 // קלף עף ממקום למקום — עותק של הקנבס שעובר מעל הכול, עם הסיבוב של המושב
-function flyCard(fromEl,toEl,fromRot,toRot,ms){
+function flyCard(...a){return live(flyCard0(...a));}
+function flyCard0(fromEl,toEl,fromRot,toRot,ms){
   if(REDUCED)return Promise.resolve();
   const r1=fromEl.getBoundingClientRect(),r2=toEl.getBoundingClientRect();
   const g=document.createElement('canvas');
@@ -938,7 +962,7 @@ function centerBoard(){
     const s=common(G.hand[live[0]],G.center);
     paintCard(G.cc,null,s);live.forEach(i=>paintCard(G.slots[i].c,null,common(G.hand[i],G.center)));
     setStatus('💡 הציור המשותף מסומן אצל כולם');
-    await sleep(2200);
+    await gsleep(2200);
     paintCard(G.cc,null,-1);live.forEach(i=>paintCard(G.slots[i].c,null,-1));
     centerStatus();G.busy=false;
   };
@@ -968,7 +992,7 @@ async function centerTap(i){
   const s=common(G.hand[i],G.center),slot=G.slots[i];
   paintCard(G.cc,null,s);paintCard(slot.c,null,s);slot.c.classList.add('ok');G.cc.classList.add('ok');
   setStatus('✓ '+pname(i)+' — '+(D.symNames[s]||'מצא!'));
-  await sleep(850);
+  await gsleep(850);
   slot.c.classList.remove('ok');G.cc.classList.remove('ok');
   if(G.mode==='tower'){
     // הקלף מהמגדל עף לשחקן; מתחתיו נחשף הקלף הבא במגדל
@@ -1013,7 +1037,9 @@ function wellStart(){
   const pile=shuffle(S.deck.map((_,i)=>i));
   G.center=pile.pop();
   G.piles=players.map(()=>[]);
-  pile.forEach((c,k)=>G.piles[k%players.length].push(c));   // מחלקים שווה בשווה
+  // מחלקים שווה בשווה; מה שלא מתחלק שווה נשאר בצד (D-74) — אחרת לחלק מהשחקנים יש קלף יותר
+  const each=Math.floor(pile.length/players.length);
+  pile.slice(0,each*players.length).forEach((c,k)=>G.piles[k%players.length].push(c));
   G.hand=G.piles.map(p=>p.pop());
   centerBoard();centerStatus();
   $('g-scores').hidden=true;
@@ -1054,8 +1080,9 @@ function tripletStart(){
   G.layout=()=>{
     const R=layoutClaimSeats();
     const cs=Math.floor(Math.min((R.w-20)/3,(R.h-20)/3));
-    document.documentElement.style.setProperty('--cs',Math.max(70,cs)+'px');
-    const gw=3*Math.max(70,cs)+20;
+    const c2=Math.max(40,cs);
+    document.documentElement.style.setProperty('--cs',c2+'px');
+    const gw=3*c2+20;
     Object.assign(tg.style,{left:(R.x+(R.w-gw)/2)+'px',top:(R.y+(R.h-gw)/2)+'px'});
     G.cells.forEach(c=>paintCard(c));
   };
@@ -1063,7 +1090,7 @@ function tripletStart(){
     G.busy=true;const s=tripletFind();
     G.cells.forEach((c,i)=>{if(G.grid[i]>=0&&S.deck[G.grid[i]].includes(s))paintCard(c,null,s);});
     statusFound(s,'💡 הציור הזה מופיע בשלושה קלפים (או יותר)');
-    await sleep(2400);
+    await gsleep(2400);
     G.sel=[];G.cells.forEach(c=>{c.classList.remove('sel');paintCard(c,null,-1);});
     tripletStatus();G.busy=false;
   };
@@ -1083,7 +1110,7 @@ async function tripletTap(i){
   const cells=G.sel.map(k=>G.cells[k]);
   if(s<0||!S.deck[d].includes(s)){
     cells.forEach(shake);toast('אין ציור שמופיע בשלושתם 😉');
-    await sleep(450);
+    await gsleep(450);
     G.sel=[];cells.forEach(x=>x.classList.remove('sel'));G.busy=false;return;
   }
   cells.forEach(x=>{x.classList.remove('sel');x.classList.add('ok');paintCard(x,null,s);});
@@ -1091,7 +1118,7 @@ async function tripletTap(i){
   const slot=G.slots[who];
   cells.forEach(x=>x.classList.remove('ok'));
   // שלושת הקלפים עפים אחד אחרי השני לערימה של מי שמצא
-  await Promise.all(cells.map((x,k)=>sleep(k*110).then(()=>{const f=flyCard(x,slot.pile,0,slot.rot,520);x.style.visibility='hidden';return f;})));
+  await Promise.all(cells.map((x,k)=>gsleep(k*110).then(()=>{const f=flyCard(x,slot.pile,0,slot.rot,520);x.style.visibility='hidden';return f;})));
   G.score[who]+=3;claimLabels();bump(slot.pile);
   const took=G.sel.slice();
   took.forEach(k=>{G.grid[k]=G.pile.length?G.pile.pop():-1;});
