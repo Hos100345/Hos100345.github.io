@@ -140,7 +140,7 @@
 - **Storage bucket `symbols`:** תמונות פרטיות לכל משתמש (`public=false`). **Storage bucket `ai-symbols`** (חדש): פלט מחולל ה-AI, פרטי, נכתב רק דרך service_role מ-`image-gateway`.
 - **RPC:** `redeem_access_code` · `register_free_code` · `claim_access_code` · `consume_print_quota` (מכסת הדפסות, ראו למעלה).
 
-### Edge Functions — 6 בשימוש
+### Edge Functions — 7 בשימוש
 | פונקציה | תפקיד |
 |---|---|
 | `validate-code` | בודק קוד מול `dobble_access_codes` (RPC `redeem_access_code`), מחזיר `max_order` |
@@ -148,6 +148,7 @@
 | `claim-code` | אחרי תשלום — RPC `claim_access_code`, מאתר עסקה `paid` לפי אימייל, מחזיר `max_order` |
 | `manage-subscriber` | ניהול מנויים, **מנהל בלבד** (service_role). 11 פעולות: `create`/`delete`/`list`/`set_tier`/`extend`/`set_expiry`/`set_print_limit`/`reset_print_count`/`block`/`unblock`/`subscriber-designs`. כל פעולה נרשמת ל-audit |
 | `morning-webhook` | `payment/received` מ-Morning. `verify_jwt=false` (חובה — Morning לא שולח JWT). allowlist של productId |
+| `play-load` | **נגן `/play/` (D-70)**, `verify_jwt=false`. קוד + אימייל (=`created_for`) → העיצוב האחרון של הלקוחה מ-`designs` + קישורים חתומים ל-`symbols` (שעה). `dobble_access_codes.code_only=true` = מספיק קוד (הושעיה מסמן ידנית). כל ניסיון ב-`play_login_attempts`; 8 כשלונות לכתובת / 5 לקוד ב-15 דק' → 429. תשובת כשל אחידה. **לא** נוגע ב-`current_usage`. אומת דרך `pg_net`: אימייל שגוי/חסר → 401, נכון → 49 תמונות, 5 כשלונות → 429 גם לנכון, `code_only` בלי אימייל → 200 |
 | `image-gateway` | יצירת סמלי AI דרך Pollinations (`?token=`, מאומת עובד — לא לגעת), **מנהל בלבד** לפי `ADMIN_EMAILS`. קאש+מדידה ב-`ai_image_log`, פלט ב-bucket `ai-symbols`. תרגום עברית→אנגלית + `action:'theme'` דרך Anthropic (`ANTHROPIC_API_KEY`), קאש תרגום ב-`ai_translation_cache`. `text.pollinations.ai` **לא בשימוש עוד** — הוצא משימוש ע"י הספק (402) |
 
 הפרונט קורא **רק** לחמש הראשונות (`morning-webhook` נקרא מ-Morning בלבד); `image-gateway` נקרא רק מ-`js/ai-symbols.js` שגלוי למנהל בלבד.
