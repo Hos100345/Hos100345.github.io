@@ -702,7 +702,9 @@ function layoutClaimSeats(){
 function seatTap(i){
   if(G.asking){const r=G.asking;G.asking=null;r(i);return;}
   if(G.busy||G.over)return;
-  if(G.def.id==='classic')classicClaim(i);
+  // ⛔ נגיעה בערימה לבד לא מזכה (D-73): בלי זה ילד יכול לזכות בלי למצוא כלום. הערימה נספרת רק כשהמשחק
+  //    שואל "מי מצא?" — אחרי נגיעה בציור הנכון (או 💡). בדו-קרב הנגיעה בציור בקלף שלך כבר מזכה לבד.
+  if(G.def.id==='classic')toast(G.duel?'מצאתם? געו בציור בקלף שלכם 👆':'מצאתם? קודם געו בציור בקלף 👆');
   else toast('קודם געו בשלושה קלפים עם אותו ציור 👆');
 }
 // "מי מצא?" — המושבים מהבהבים ומחכים לנגיעה. בעזרה (💡) אפשר גם "אף אחד".
@@ -758,7 +760,7 @@ function confetti(){
 }
 
 // ════════════════ 1. דאבל קלאסי ════════════════
-// שני קלפים באמצע. מי שמוצא — נוגע בציור (ואז בשם שלו) או ישר בשם שלו: הציור מסומן,
+// שני קלפים באמצע. מי שמוצא — נוגע בציור ואז בשם שלו (נגיעה בשם לבד לא מזכה, D-73): הציור מסומן,
 // הקלף עף לערימה שלו, הקלף השני מחליק למקומו וקלף חדש נכנס מהחפיסה.
 function classicStart(){
   const pile=shuffle(S.deck.map((_,i)=>i));
@@ -786,7 +788,7 @@ function classicStart(){
   requestAnimationFrame(()=>{G.layout();flyIn(G.ca,0);flyIn(G.cb,140);});
 }
 function classicLeft(){return G.duel?`מצאתם את הציור המשותף? געו בו בקלף שלכם! · בחפיסה עוד ${G.pile.length}`
-  :`מי שמוצא — נוגע בציור או בשם שלו · בחפיסה עוד ${G.pile.length}`;}
+  :`מצאתם? געו בציור, ואז בשם שלכם · בחפיסה עוד ${G.pile.length}`;}
 function classicReveal(s){paintCard(G.ca,null,s);paintCard(G.cb,null,s);G.ca.classList.add('ok');G.cb.classList.add('ok');}
 async function classicTap(w,ev){
   if(G.asking||G.busy||G.over)return;
@@ -796,11 +798,6 @@ async function classicTap(w,ev){
   G.busy=true;classicReveal(s);
   if(G.duel){const who=G.owner(w);statusFound(s,'✓ '+pname(who)+' — '+(D.symNames[s]||'מצא!'));await sleep(800);return classicAward(who);}
   const who=await askSeat(s);classicAward(who);
-}
-async function classicClaim(i){
-  G.busy=true;const s=common(G.a,G.b);classicReveal(s);
-  statusFound(s,'✓ '+pname(i)+' — '+(D.symNames[s]||'מצא!'));
-  await sleep(900);classicAward(i);
 }
 async function classicAward(who){
   G.ca.classList.remove('ok');G.cb.classList.remove('ok');
