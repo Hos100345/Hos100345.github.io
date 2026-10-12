@@ -60,6 +60,13 @@
     .hero p{margin-top:.5rem;font-size:1.02rem;line-height:1.55}
     .drop{border:2.5px dashed rgba(67,56,202,.35);border-radius:var(--r);padding:1.4rem 1rem;text-align:center;background:rgba(255,255,255,.6)}
     .drop.over{border-color:var(--purple);background:var(--purple-light)}
+    .login .lrow{display:flex;flex-direction:column;gap:.5rem;margin:.6rem 0 .4rem}
+    .login input:not([type=checkbox]){font:inherit;font-size:16px;min-height:48px;border-radius:.8rem;border:1.5px solid var(--line);padding:.5rem .8rem;background:#fff;width:100%}
+    .login input:focus{outline:2px solid var(--purple);outline-offset:1px}
+    .login #login-email{direction:ltr;text-align:right}
+    .lrem{display:flex;align-items:center;gap:.4rem;font-size:.9rem;margin:.2rem 0 .6rem;color:var(--muted)}
+    .lrem input{width:20px;height:20px}
+    .linkbtn{display:block;margin:.6rem auto 0;color:var(--muted);text-decoration:underline;font-size:.82rem;min-height:36px}
     .steps{margin-top:1rem;line-height:1.7;font-size:.95rem;padding-inline-start:1.2rem}
     .steps b{color:var(--indigo)}
     .err{margin-top:.8rem;background:#FEE2E2;color:#991B1B;border-radius:.8rem;padding:.7rem .9rem;font-weight:600;line-height:1.5}
@@ -204,6 +211,18 @@
     <div class="err" id="err" hidden></div>
   </div>
 
+  <div class="panel login" style="margin-top:1rem">
+    <b>🔑 יש לכם קוד מנוי?</b>
+    <p class="muted" style="font-size:.9rem;margin:.25rem 0 .6rem">נכנסים עם הקוד והאימייל שאיתם נרשמתם — והמשחק האחרון ששמרתם במחולל נפתח מיד, בלי קובץ.</p>
+    <button class="btn btn-main btn-block" id="login-quick" hidden></button>
+    <div class="lrow"><input id="login-code" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="קוד מנוי" aria-label="קוד מנוי">
+      <input id="login-email" type="email" autocomplete="email" inputmode="email" placeholder="האימייל שנרשמתם איתו" aria-label="אימייל"></div>
+    <label class="lrem"><input type="checkbox" id="login-remember" checked> לזכור אותי בטלפון הזה</label>
+    <button class="btn btn-sec btn-block" id="login-go">כניסה</button>
+    <div class="err" id="login-err" hidden></div>
+    <button class="linkbtn" id="login-forget">שכחו את הפרטים שלי בטלפון הזה</button>
+  </div>
+
   <div class="panel" style="margin-top:1rem">
     <b>איפה מוצאים את הקובץ?</b>
     <ol class="steps">
@@ -343,8 +362,18 @@ async function loadGameFile(file,fromCache){
       if(n%8===0)await tick();
     }
 
+    await buildGame({name:meta.name,settings:meta.settings,assets});
+    if(!fromCache)saveLast(file,D.name);
+  }catch(e){
+    console.error(e);
+    showErr('לא הצלחתי לפתוח: '+(e.message||e));
+  }
+}
+
+// בונה משחק מתמונות + הגדרות — משותף לקובץ ולשמירה בענן, כדי ששניהם יתנהגו בדיוק אותו דבר
+async function buildGame({name,settings,assets}){
     // הגדרות — אותן ברירות מחדל כמו applyDesignToState במחולל
-    const st=meta.settings||{};
+    const st=settings||{};
     Object.assign(S,{shape:st.shape||'circle',symShape:st.symShape||'circle',sMin:st.sMin??.7,sMax:st.sMax??1.3,
       seed:st.seed||1,layoutMode:st.layoutMode||'scatter',cardSizeMm:st.cardSizeMm||85,
       symPad:st.symPad??2,overlap:st.overlap??0,
@@ -358,7 +387,7 @@ async function loadGameFile(file,fromCache){
     const syms=assets.filter(a=>isSymbolAsset(a)&&a.selected!==false);
     let order=ORDERS.find(o=>o.total===st.orderTotal)||null;
     if(!order||syms.length<order.total)order=bestOrder(syms.length);
-    if(!order)throw new Error(`בקובץ יש רק ${syms.length} תמונות מסומנות. משחק צריך לפחות 7.`);
+    if(!order)throw new Error(`יש רק ${syms.length} תמונות מסומנות. משחק צריך לפחות 7.`);
     S.order=order;
     S.deck=genDeck(order.q);
     S.layouts=buildLayouts(S.deck,S.seed,S.sMin,S.sMax);
@@ -366,7 +395,7 @@ async function loadGameFile(file,fromCache){
     S.imgEls=used.map(symImg);
     prepareSymbolMeta();
     D.symNames=used.map(a=>a.name||'');
-    D.name=meta.name||'המשחק שלי';
+    D.name=name||'המשחק שלי';
 
     // חישוב הפריסה של כל הקלפים מראש — זה החלק הכבד, אחר כך המשחק מגיב מיד
     for(let i=0;i<S.layouts.length;i++){
@@ -374,14 +403,71 @@ async function loadGameFile(file,fromCache){
       if(i%3===2){setProg(65+35*(i+1)/S.layouts.length,`מסדר קלפים… ${i+1}/${S.layouts.length}`);await tick();}
     }
     $('prog').hidden=true;
-    if(!fromCache)saveLast(file,D.name);
     openHome();
     if(syms.length>order.total)toast(`במשחק ${order.total} תמונות (${syms.length-order.total} נשארו בחוץ, כמו במחולל)`,3500);
-  }catch(e){
-    console.error(e);
-    showErr('לא הצלחתי לפתוח: '+(e.message||e));
-  }
 }
+
+// ════════════════ כניסה עם קוד מנוי → המשחק האחרון מהענן (D-70) ════════════════
+// play-load (Edge Function): קוד + אימייל (או קוד בלבד ללקוחות שהושעיה סימן) → העיצוב האחרון
+// שנשמר בענן מהמחולל, עם קישורים חתומים לתמונות (שעה). הנגן עצמו פתוח גם בלי כניסה — דרך קובץ.
+const PLAY_LOAD_URL='https://sccivxenkyzxolpraexf.supabase.co/functions/v1/play-load';
+function withTimeout(pr,ms,msg){return Promise.race([pr,new Promise((_,rej)=>setTimeout(()=>rej(new Error(msg||'timeout')),ms))]);}
+function loginErr(t){const e=$('login-err');e.textContent=t;e.hidden=!t;}
+function savedLogin(){try{return JSON.parse(localStorage.getItem('dobble_play_login')||'null');}catch(e){return null;}}
+async function cloudLogin(code,email,remember){
+  loginErr('');$('err').hidden=true;
+  code=String(code||'').trim();email=String(email||'').trim();
+  if(!code){loginErr('צריך להקליד את קוד המנוי');return;}
+  const btn=$('login-go');btn.disabled=true;
+  try{
+    setProg(3,'בודק את הקוד…');
+    let res,body;
+    try{
+      res=await withTimeout(fetch(PLAY_LOAD_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,email})}),20000);
+      body=await res.json().catch(()=>({}));
+    }catch(e){$('prog').hidden=true;loginErr('אין חיבור לשרת. בדקו את האינטרנט ונסו שוב — או טענו את קובץ המשחק למעלה.');return;}
+    if(res.status===429){$('prog').hidden=true;loginErr('יותר מדי ניסיונות. נסו שוב בעוד רבע שעה.');return;}
+    if(!body.ok){$('prog').hidden=true;loginErr('הקוד או האימייל לא נכונים. האימייל צריך להיות זה שאיתו נרשמתם.');return;}
+    try{
+      if(remember)localStorage.setItem('dobble_play_login',JSON.stringify({code,email}));
+      else localStorage.removeItem('dobble_play_login');
+    }catch(e){}
+    refreshLoginUI();
+    const d=body.design;
+    if(!d||!Array.isArray(d.images)||!d.images.length){
+      $('prog').hidden=true;
+      loginErr('נכנסתם ✓ אבל לא מצאנו משחק שמור בענן. במחולל: היכנסו עם האימייל ושמרו — או טענו את קובץ המשחק למעלה.');
+      return;
+    }
+    // תמונות מהענן — אחת-אחת עם הגבלת זמן (כלל ה-timeout), תמונה שנכשלה מדלגים
+    const assets=[];let n=0,bad=0;
+    for(const r of d.images){
+      n++;
+      if(!r.url){bad++;continue;}
+      try{
+        const blob=await withTimeout(fetch(r.url).then(x=>{if(!x.ok)throw new Error(x.status);return x.blob();}),20000);
+        const im=await loadImgBlob(blob);
+        assets.push({id:r.id,type:r.type,name:r.name||'',imgEl:im,srcAssetId:r.srcAssetId||undefined,
+          isCropSource:!!r.isCropSource,selected:r.selected!==false,af:r.af||undefined});
+      }catch(e){bad++;console.warn('play: cloud image',e);}
+      if(n%3===0)setProg(5+60*n/d.images.length,`טוען תמונות מהענן… ${n}/${d.images.length}`);
+    }
+    if(!assets.length){$('prog').hidden=true;loginErr('לא הצלחתי להוריד את התמונות. נסו שוב בעוד רגע.');return;}
+    await buildGame({name:d.name,settings:d.settings,assets});
+    if(bad)toast(`${bad} תמונות לא נטענו — נסו להיכנס שוב`,3500);
+  }catch(e){
+    console.error(e);$('prog').hidden=true;loginErr('לא הצלחתי לפתוח: '+(e.message||e));
+  }finally{btn.disabled=false;}
+}
+function refreshLoginUI(){
+  const l=savedLogin();
+  $('login-quick').hidden=!l;
+  if(l){$('login-quick').textContent='▶ המשחק השמור שלי ('+(l.email||'קוד '+l.code.slice(0,2)+'…')+')';}
+}
+$('login-go').addEventListener('click',()=>cloudLogin($('login-code').value,$('login-email').value,$('login-remember').checked));
+$('login-quick').addEventListener('click',()=>{const l=savedLogin();if(l)cloudLogin(l.code,l.email,true);});
+$('login-forget').addEventListener('click',()=>{try{localStorage.removeItem('dobble_play_login');}catch(e){}refreshLoginUI();toast('הפרטים נמחקו מהטלפון');});
+refreshLoginUI();
 
 $('btn-pick').addEventListener('click',()=>$('file').click());
 $('file').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(f)loadGameFile(f);});
