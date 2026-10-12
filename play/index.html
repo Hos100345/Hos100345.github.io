@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>משחקים בטלפון | מחולל דאבל</title>
   <meta name="robots" content="noindex">
   <meta name="theme-color" content="#4338CA">
@@ -27,6 +27,7 @@
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     html,body{height:100%}
     body{
+      touch-action:manipulation;
       font-family:'Heebo',system-ui,sans-serif;color:var(--text);direction:rtl;
       background:
         radial-gradient(ellipse 65% 50% at 12% 5%,rgba(37,99,235,.18) 0%,transparent 55%),
@@ -213,10 +214,10 @@
 
   <div class="panel login" style="margin-top:1rem">
     <b>🔑 יש לכם קוד מנוי?</b>
-    <p class="muted" style="font-size:.9rem;margin:.25rem 0 .6rem">נכנסים עם הקוד והאימייל שאיתם נרשמתם — והמשחק האחרון ששמרתם במחולל נפתח מיד, בלי קובץ.</p>
+    <p class="muted" style="font-size:.9rem;margin:.25rem 0 .6rem">נכנסים עם הקוד והאימייל שאיתם נרשמתם — והמשחק האחרון ששמרתם במחולל נפתח מיד, בלי קובץ. נרשמתם רק עם קוד? השאירו את האימייל ריק.</p>
     <button class="btn btn-main btn-block" id="login-quick" hidden></button>
     <div class="lrow"><input id="login-code" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="קוד מנוי" aria-label="קוד מנוי">
-      <input id="login-email" type="email" autocomplete="email" inputmode="email" placeholder="האימייל שנרשמתם איתו" aria-label="אימייל"></div>
+      <input id="login-email" type="email" autocomplete="email" inputmode="email" placeholder="האימייל שנרשמתם איתו (אם יש)" aria-label="אימייל"></div>
     <label class="lrem"><input type="checkbox" id="login-remember" checked> לזכור אותי בטלפון הזה</label>
     <button class="btn btn-sec btn-block" id="login-go">כניסה</button>
     <div class="err" id="login-err" hidden></div>
@@ -427,7 +428,9 @@ async function cloudLogin(code,email,remember){
       body=await res.json().catch(()=>({}));
     }catch(e){$('prog').hidden=true;loginErr('אין חיבור לשרת. בדקו את האינטרנט ונסו שוב — או טענו את קובץ המשחק למעלה.');return;}
     if(res.status===429){$('prog').hidden=true;loginErr('יותר מדי ניסיונות. נסו שוב בעוד רבע שעה.');return;}
-    if(!body.ok){$('prog').hidden=true;loginErr('הקוד או האימייל לא נכונים. האימייל צריך להיות זה שאיתו נרשמתם.');return;}
+    if(!body.ok&&(body.error==='expired'||body.error==='disabled')){$('prog').hidden=true;
+      loginErr(body.error==='expired'?'המנוי שלכם הסתיים. לחידוש — שלחו הודעה בוואטסאפ 050-5918734.':'המנוי לא פעיל כרגע. שלחו הודעה בוואטסאפ 050-5918734.');return;}
+    if(!body.ok){$('prog').hidden=true;loginErr('הקוד או האימייל לא נכונים. האימייל צריך להיות זה שאיתו נרשמתם (ואם נרשמתם רק עם קוד — השאירו אותו ריק).');return;}
     try{
       if(remember)localStorage.setItem('dobble_play_login',JSON.stringify({code,email}));
       else localStorage.removeItem('dobble_play_login');
@@ -579,7 +582,8 @@ const common=(a,b)=>{const B=S.deck[b];for(const s of S.deck[a])if(B.includes(s)
 // איזה ציור נמצא מתחת לאצבע? אותם מיקומים בדיוק כמו בציור (computeCardPositions)
 function symAt(w,ev){
   const cv=w.firstChild,r=cv.getBoundingClientRect();
-  const x=(ev.clientX-r.left)/r.width*cv.width,y=(ev.clientY-r.top)/r.height*cv.height;
+  let x=(ev.clientX-r.left)/r.width*cv.width,y=(ev.clientY-r.top)/r.height*cv.height;
+  if(w._flip){x=cv.width-x;y=cv.height-y;}   // קלף שמסובב 180° (הקלף של השחקן שלמעלה בדו-קרב)
   const lay=S.layouts[w._ci];
   const pos=computeCardPositions(lay,S.imgEls,cv.width).pos;
   let best=-1,bd=1e9;
@@ -764,10 +768,14 @@ function classicStart(){
   G.ca=makeCard(G.a);G.cb=makeCard(G.b);pair.append(G.ca,G.cb);
   [G.ca,G.cb].forEach(w=>{w.classList.add('tap');w.addEventListener('click',ev=>classicTap(w,ev));});
   buildClaimSeats(tbl);
+  // דו-קרב (2 שחקנים, D-72): לכל שחקן קלף משלו — הקלף למעלה של מי שיושב למעלה (מסובב אליו),
+  // הקלף למטה של מי שלמטה. מוצאים את הציור בקלף שלך ונוגעים בו — וזכית, בלי לשאול "מי מצא?".
+  G.duel=players.length===2;
+  if(G.duel){G.ca._flip=true;G.ca.firstChild.style.transform='rotate(180deg)';G.owner=w=>w===G.ca?1:0;}
   G.layout=()=>{
     const R=layoutClaimSeats(),gap=14;
     Object.assign(pair.style,{left:R.x+'px',top:R.y+'px',width:R.w+'px',height:R.h+'px'});
-    const vert=R.h>=R.w;pair.className='pair'+(vert?' v':'');
+    const vert=G.duel||R.h>=R.w;pair.className='pair'+(vert?' v':'');   // בדו-קרב תמיד אחד מעל השני — מול השחקנים
     const cs=Math.floor(vert?Math.min(R.w-8,(R.h-gap)/2):Math.min(R.h-8,(R.w-gap)/2));
     document.documentElement.style.setProperty('--cs',Math.max(110,cs)+'px');
     paintCard(G.ca);paintCard(G.cb);
@@ -777,7 +785,8 @@ function classicStart(){
   $('g-scores').hidden=true;setStatus(classicLeft());
   requestAnimationFrame(()=>{G.layout();flyIn(G.ca,0);flyIn(G.cb,140);});
 }
-function classicLeft(){return `מי שמוצא — נוגע בציור או בשם שלו · בחפיסה עוד ${G.pile.length}`;}
+function classicLeft(){return G.duel?`מצאתם את הציור המשותף? געו בו בקלף שלכם! · בחפיסה עוד ${G.pile.length}`
+  :`מי שמוצא — נוגע בציור או בשם שלו · בחפיסה עוד ${G.pile.length}`;}
 function classicReveal(s){paintCard(G.ca,null,s);paintCard(G.cb,null,s);G.ca.classList.add('ok');G.cb.classList.add('ok');}
 async function classicTap(w,ev){
   if(G.asking||G.busy||G.over)return;
@@ -785,6 +794,7 @@ async function classicTap(w,ev){
   const s=common(G.a,G.b);
   if(si!==s){shake(w);toast('לא זה 😉 נסו שוב');return;}
   G.busy=true;classicReveal(s);
+  if(G.duel){const who=G.owner(w);statusFound(s,'✓ '+pname(who)+' — '+(D.symNames[s]||'מצא!'));await sleep(800);return classicAward(who);}
   const who=await askSeat(s);classicAward(who);
 }
 async function classicClaim(i){
@@ -794,6 +804,7 @@ async function classicClaim(i){
 }
 async function classicAward(who){
   G.ca.classList.remove('ok');G.cb.classList.remove('ok');
+  if(G.duel)return duelAward(who);
   if(who>=0){
     const slot=G.slots[who];
     const fly=flyCard(G.ca,slot.pile,0,slot.rot);
@@ -808,6 +819,25 @@ async function classicAward(who){
   const sl=slideFrom(G.ca,G.cb);
   paintCard(G.cb,G.b,-1);
   await Promise.all([sl,flyIn(G.cb,60)]);
+  setStatus(classicLeft());G.busy=false;
+}
+
+// דו-קרב: הקלף של המנצח עף לערימה שלו, ובמקומו נכנס קלף חדש מהחפיסה. הקלף של היריב נשאר.
+// "אף אחד" (💡): הקלף העליון מתחלף.
+async function duelAward(who){
+  const card=who===0?G.cb:G.ca, key=who===0?'b':'a';
+  if(who>=0){
+    const slot=G.slots[who];
+    const fly=flyCard(card,slot.pile,card._flip?180:0,slot.rot);
+    card.style.visibility='hidden';
+    await fly;
+    G.score[who]++;claimLabels();bump(slot.pile);
+  }else{await fadeAway(card);card.style.visibility='hidden';}
+  G.rounds++;
+  if(!G.pile.length){G.busy=false;endGame(rankByScore('קלפים'),'החפיסה נגמרה!');return;}
+  G[key]=G.pile.pop();
+  paintCard(card,G[key],-1);card.style.visibility='';
+  await flyIn(card,40);
   setStatus(classicLeft());G.busy=false;
 }
 
@@ -1124,6 +1154,12 @@ function allTap(ci){
   m.querySelector('[data-a="close"]').addEventListener('click',clear);
 }
 $('a-back').addEventListener('click',openHome);
+
+// ── בלי הגדלה בשתי אצבעות (D-72): ילדים נוגעים בכמה אצבעות והמסך "בורח". אייפון מתעלם מ-user-scalable=no,
+//    לכן גם חוסמים את מחוות הצביטה עצמה (gesturestart בספארי, ומגע של 2+ אצבעות בשאר).
+//    הגדלה בלחיצה כפולה — נחסמת ע"י touch-action:manipulation על body (בלי לבלוע נגיעות מהירות של ילדים).
+['gesturestart','gesturechange','gestureend'].forEach(t=>document.addEventListener(t,e=>e.preventDefault(),{passive:false}));
+document.addEventListener('touchmove',e=>{if(e.touches.length>1)e.preventDefault();},{passive:false});
 
 // ════════════════ אפליקציה (PWA) ════════════════
 // sw.js יושב בתיקייה /play/ ולכן שולט רק בה — לא בדאבל ולא בשאר האתר (אותו דפוס כמו /studio/).
