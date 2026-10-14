@@ -203,7 +203,14 @@
     <p class="muted">טוענים את קובץ המשחק שלכם, ומשחקים יחד על מסך אחד — בלי להדפיס.</p>
   </div>
 
-  <div class="drop" id="drop">
+  <!-- משחק לדוגמה פתוח לכולם — בלי קוד ובלי קובץ (D-76). גם בקישור ישיר: play/?demo=hanukkah -->
+  <div class="panel demo">
+    <b>🕎 רוצים לנסות? משחק חנוכה מוכן</b>
+    <p class="muted" style="font-size:.9rem;margin:.25rem 0 .6rem">31 ציורי חנוכה — חנוכייה, סביבונים, סופגניות ועוד. בלי קוד ובלי הרשמה.</p>
+    <button class="btn btn-main btn-block" id="btn-demo">🎮 לשחק במשחק של חנוכה</button>
+  </div>
+
+  <div class="drop" id="drop" style="margin-top:1rem">
     <button class="btn btn-main btn-block" id="btn-pick">📂 בחרו את קובץ המשחק</button>
     <input type="file" id="file" accept=".zip,application/zip" hidden>
     <button class="btn btn-sec btn-block" id="btn-last" style="margin-top:.6rem" hidden></button>
@@ -480,6 +487,22 @@ const drop=$('drop');
 ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('over');}));
 drop.addEventListener('drop',e=>{const f=e.dataTransfer.files&&e.dataTransfer.files[0];if(f)loadGameFile(f);});
 $('btn-other').addEventListener('click',()=>{show('scr-load');});
+
+// ── משחקים לדוגמה (D-76): קובץ רגיל בתיקייה demo/, נטען באותו נתיב כמו קובץ של לקוחה.
+// fromCache=true — לא דורס את "המשחק האחרון" שלה. המטמון של sw.js שומר אותו אחרי הטעינה הראשונה.
+const DEMOS={hanukkah:'demo/hanukkah.matchito.zip'};
+async function loadDemo(id){
+  const url=DEMOS[id];if(!url)return;
+  $('err').hidden=true;setProg(2,'מוריד את המשחק…');
+  try{
+    const r=await withTimeout(fetch(url),30000,'timeout');
+    if(!r.ok)throw new Error('http '+r.status);
+    await loadGameFile(await withTimeout(r.blob(),30000,'timeout'),true);
+  }catch(e){console.error(e);showErr('לא הצלחתי להוריד את המשחק — בדקו חיבור לאינטרנט ונסו שוב.');}
+}
+$('btn-demo').addEventListener('click',()=>loadDemo('hanukkah'));
+// קישור ישיר למשחק לדוגמה: play/?demo=hanukkah — נפתח מיד (למודעות ולרכזת /games/)
+try{const dm=new URLSearchParams(location.search).get('demo');if(dm&&DEMOS[dm])setTimeout(()=>loadDemo(dm),0);}catch(e){}
 
 // ── המשחק האחרון נשמר בטלפון (IndexedDB), כדי לא לחפש את הקובץ בכל פעם ──
 function idb(){
