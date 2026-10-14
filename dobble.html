@@ -7410,16 +7410,18 @@ document.getElementById('back-tabs').addEventListener('click',e=>{
   document.querySelectorAll('.back-tabpage').forEach(p=>p.classList.toggle('on',p.id==='back-tab-'+b.dataset.tab));
 });
 
+// D-75: סגנון משנה רק רקע, דוגמה ומסגרת — וסמל רק כשאין תמונת גב. נשמרים תמיד: כל הטקסט (פונט, צבע, גודל, dy), הלוגו,
+// duplex ו-enabled. הטקסט של הסגנון ("מזל טוב") נכנס רק אם text.main ריק, ואז רק main. עם תמונת גב — symbol.id='none'.
+// (בעבר S.back נבנה מחדש: פונט/צבע/גודל חזרו לברירת מחדל, "יום הולדת" דרס את הטקסט, והסמל חזר גם עם תמונה.)
 function applyBackPreset(p){
-  const patch=p.apply();
-  const keepMain=S.back.text.main,keepSub=S.back.text.sub;
-  const keepDuplex=Object.assign({},S.back.duplex);
-  const keepLogo={logoAssetId:S.back.logoAssetId,logoSize:S.back.logoSize,logoDy:S.back.logoDy};
-  S.back=mergeBack(Object.assign({preset:p.id},patch));
-  S.back.duplex=keepDuplex;
-  Object.assign(S.back,keepLogo);
-  if(!(patch.text&&patch.text.main))S.back.text.main=keepMain;
-  if(!(patch.text&&patch.text.sub))S.back.text.sub=keepSub;
+  const patch=p.apply(),d=backDefaults(),B=S.back;
+  B.preset=p.id;
+  B.bg=Object.assign({},d.bg,patch.bg||{});
+  B.pattern=Object.assign({},d.pattern,patch.pattern||{});
+  B.frame=Object.assign({},d.frame,patch.frame||{});
+  if(B.logoAssetId)B.symbol=Object.assign({},B.symbol,{id:'none'});
+  else B.symbol=Object.assign({},d.symbol,patch.symbol||{});
+  if(!B.text.main&&patch.text&&patch.text.main)B.text.main=patch.text.main;
   syncBackUIFromState();
   markBackDirty();
 }
