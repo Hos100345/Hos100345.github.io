@@ -9303,14 +9303,7 @@ async function saveDesign(){
   const name=(prompt(t('edit.saveDesignNamePrompt'),defName)||'').trim();
   if(!name)return;
   try{
-    const settings={shape:S.shape,symShape:S.symShape,sMin:S.sMin,sMax:S.sMax,seed:S.seed,layoutMode:S.layoutMode,
-      cardSizeMm:S.cardSizeMm,spacingMm:S.spacingMm,startPos:S.startPos,
-      frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),symPad:S.symPad,overlap:S.overlap,
-      tightPack:S.tightPack,tightFill:S.tightFill,
-      ...(S.sizeMode==='auto'?{sizeMode:'auto',sizeK:S.sizeK}:{}),   // D-60 — legacy שלא נגעו בו נשמר בלי השדה
-      back:JSON.parse(JSON.stringify(S.back)),
-      cardEdits:JSON.parse(JSON.stringify(S.cardEdits||{})),
-      orderTotal:S.order?S.order.total:null};
+    const settings=buildSettingsObject();
     // שמירה מקומית — metadata בלבד (בלי dataURL), כדי לא לחרוג ממכסת האחסון של IndexedDB
     const date=new Date().toLocaleString('he-IL');
     const design={name,date,rows:assetsToRows(),settings};
@@ -9336,15 +9329,19 @@ async function saveDesign(){
 // בונה אובייקט עיצוב מהמצב הנוכחי (שם + תמונות + הגדרות) — כולל dataURL מלא, לשימוש
 // בנתיבי ענן בלבד (cloudAutosave / sendStuckToAdmin), שמעלים את התמונות בפועל ל-Supabase Storage
 function buildDesignObject(name){
-  return {name,date:new Date().toLocaleString('he-IL'),rows:assetsToRowsWithImages(),
-    settings:{shape:S.shape,symShape:S.symShape,sMin:S.sMin,sMax:S.sMax,seed:S.seed,layoutMode:S.layoutMode,
-      cardSizeMm:S.cardSizeMm,spacingMm:S.spacingMm,startPos:S.startPos,
-      frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),symPad:S.symPad,overlap:S.overlap,
-      tightPack:S.tightPack,tightFill:S.tightFill,
-      ...(S.sizeMode==='auto'?{sizeMode:'auto',sizeK:S.sizeK}:{}),   // D-60
-      back:JSON.parse(JSON.stringify(S.back)),
-      cardEdits:JSON.parse(JSON.stringify(S.cardEdits||{})),
-      orderTotal:S.order?S.order.total:null}};
+  return {name,date:new Date().toLocaleString('he-IL'),rows:assetsToRowsWithImages(),settings:buildSettingsObject()};
+}
+// אובייקט ההגדרות של העיצוב (D-75) — מקור יחיד ל-saveDesign, buildDesignObject ושמירת ההגדרות במכשיר.
+// ⛔ הפלט חייב להישאר זהה בייט-לבייט למה שנבנה כאן קודם בשני המקומות (עיצובים שמורים וענן תלויים בו).
+function buildSettingsObject(){
+  return {shape:S.shape,symShape:S.symShape,sMin:S.sMin,sMax:S.sMax,seed:S.seed,layoutMode:S.layoutMode,
+    cardSizeMm:S.cardSizeMm,spacingMm:S.spacingMm,startPos:S.startPos,
+    frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),symPad:S.symPad,overlap:S.overlap,
+    tightPack:S.tightPack,tightFill:S.tightFill,
+    ...(S.sizeMode==='auto'?{sizeMode:'auto',sizeK:S.sizeK}:{}),   // D-60 — legacy שלא נגעו בו נשמר בלי השדה
+    back:JSON.parse(JSON.stringify(S.back)),
+    cardEdits:JSON.parse(JSON.stringify(S.cardEdits||{})),
+    orderTotal:S.order?S.order.total:null};
 }
 
 // ── קובץ עיצוב נייד ──────────────────────────────────────────────────────
@@ -9555,6 +9552,28 @@ function applySettingsToUI(st){
   syncSizeUI();
 }
 
+// החלת אובייקט הגדרות על המצב ועל ה-UI (D-75) — החלק של applyDesignToState שאחרי הטעינה של התמונות.
+// resetGenerated ו-goScr נשארים ב-applyDesignToState בלבד.
+function applySettingsObject(st){
+  st=st||{};
+  Object.assign(S,{shape:st.shape||'circle',symShape:st.symShape||'circle',sMin:st.sMin??.7,sMax:st.sMax??1.3,
+    seed:st.seed||1,layoutMode:st.layoutMode||'scatter',cardSizeMm:st.cardSizeMm||85,
+    spacingMm:st.spacingMm??5,startPos:st.startPos||'center',symPad:st.symPad??2,overlap:st.overlap??0,
+    tightPack:st.tightPack!==false,tightFill:!!st.tightFill,cardEdits:st.cardEdits||{},
+    sizeMode:st.sizeMode==='auto'?'auto':undefined,sizeK:st.sizeK??.2});   // D-60: בלי sizeMode = legacy
+  if(st.frame)S.frame=Object.assign({},st.frame);
+  if(st.bg)S.bg=Object.assign({},st.bg);
+  S.back=mergeBack(st.back);
+  // אם ה-asset של הלוגו לא שרד (למשל עיצוב ישן/גיבוי חלקי) — מנתקים את ההפניה בלי לשבור את הטעינה
+  if(S.back.logoAssetId&&!S.assets.some(a=>a.id===S.back.logoAssetId&&a.type==='backlogo')){
+    S.back.logoAssetId=null;
+    toast(t('msg.backLogoMissingFromBackup'),'err');
+  }
+  document.getElementById('chk-back-enabled').checked=!!S.back.enabled;
+  markBackDirty();
+  applySettingsToUI(S);
+}
+
 // טעינת מבנה עיצוב {name,rows,settings} לתוך מצב האפליקציה
 async function applyDesignToState(d){
   S.assets.forEach(a=>{if(a.type==='image'&&a.url)URL.revokeObjectURL(a.url);});
@@ -9579,23 +9598,7 @@ async function applyDesignToState(d){
   if(missingImages>0){
     toast(t('upload.imagesMissingFromLocalBackup',{n:missingImages}),'err');
   }
-  const st=d.settings||{};
-  Object.assign(S,{shape:st.shape||'circle',symShape:st.symShape||'circle',sMin:st.sMin??.7,sMax:st.sMax??1.3,
-    seed:st.seed||1,layoutMode:st.layoutMode||'scatter',cardSizeMm:st.cardSizeMm||85,
-    spacingMm:st.spacingMm??5,startPos:st.startPos||'center',symPad:st.symPad??2,overlap:st.overlap??0,
-    tightPack:st.tightPack!==false,tightFill:!!st.tightFill,cardEdits:st.cardEdits||{},
-    sizeMode:st.sizeMode==='auto'?'auto':undefined,sizeK:st.sizeK??.2});   // D-60: בלי sizeMode = legacy
-  if(st.frame)S.frame=Object.assign({},st.frame);
-  if(st.bg)S.bg=Object.assign({},st.bg);
-  S.back=mergeBack(st.back);
-  // אם ה-asset של הלוגו לא שרד (למשל עיצוב ישן/גיבוי חלקי) — מנתקים את ההפניה בלי לשבור את הטעינה
-  if(S.back.logoAssetId&&!S.assets.some(a=>a.id===S.back.logoAssetId&&a.type==='backlogo')){
-    S.back.logoAssetId=null;
-    toast(t('msg.backLogoMissingFromBackup'),'err');
-  }
-  document.getElementById('chk-back-enabled').checked=!!S.back.enabled;
-  markBackDirty();
-  applySettingsToUI(S);
+  applySettingsObject(d.settings||{});
   resetGenerated();
   goScr(1);
   // אין לדרוס את גיבוי מאגר-העבודה במאגר ריק. אם לא שוחזר אף נכס, הכתיבה הזו
