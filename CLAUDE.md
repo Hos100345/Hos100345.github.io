@@ -186,6 +186,7 @@
 - ⛔ **כל שינוי בציור/פריסה/מתמטיקה ב-`dobble.html` (אחת הפונקציות ברשימת `NAMES` בסקריפט) → להריץ `python3 tools/build-play-engine.py` ולהעלות `?v=` של `play-engine.js` ב-`play/index.html` **וגם** ב-`SHELL` של `play/sw.js` (+ להעלות `V` שם), באותו PR.** בלי זה הנגן מצייר אחרת מהמחולל.
 - פונקציה חדשה שהציור תלוי בה → להוסיף ל-`NAMES`. הסקריפט מזהה לפי שם ונכשל בקול אם שם חסר או כפול.
 - הנגן הוא אפליקציה להתקנה (PWA) בתיקייה `/play/` — `manifest.webmanifest` + `sw.js` ששולט **רק** ב-`/play/` (אותו דפוס כמו `/studio/`: התקנה מהשורש לא נפתחה בסמסונג). `play.html` בשורש = הפניה בלבד.
+- **גם `games/index.html` (מחולל המשחקים, G-1) טוען את `play-engine.js`** — שינוי בו = להעלות `?v=` גם שם וגם ב-`SHELL` של `games/sw.js` (+`V`).
 - `play/index.html` מגדיר בעצמו את `S` (אותן ברירות מחדל כמו `applyDesignToState`) ואת `needsWatermark`.
 
 ## Workflow (git)
