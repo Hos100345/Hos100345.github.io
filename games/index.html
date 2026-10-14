@@ -187,6 +187,33 @@
     .choices .ph.no{opacity:.35}
     .center{text-align:center;margin-top:1rem}
 
+    /* דומינו */
+    .dt{display:inline-flex;flex:none;background:#fff;border:2px solid #1E293B;border-radius:.45rem;padding:2px;gap:2px;box-shadow:0 2px 5px rgba(0,0,0,.15)}
+    .dt img{width:34px;height:34px;border-radius:.3rem;display:block}
+    .dt img+img{border-inline-start:2px solid #CBD5E1;padding-inline-start:2px}
+    .dt.dbl{border-color:var(--purple)}
+    .dt.no{opacity:.35}
+    .dt.sel{outline:4px solid var(--gold);outline-offset:1px}
+    .dm-board{background:rgba(255,255,255,.7);border-radius:var(--r);padding:.7rem;box-shadow:var(--sh)}
+    .dm-chain{display:flex;gap:3px;overflow-x:auto;padding:.4rem .2rem;min-height:52px;align-items:center;scrollbar-width:thin}
+    .dm-ends{display:flex;justify-content:space-between;gap:.5rem;margin-top:.5rem}
+    .dm-end{display:flex;align-items:center;gap:.4rem;background:#fff;border:2.5px dashed #CBD5E1;border-radius:.8rem;padding:.3rem .6rem;min-height:52px;font-weight:800;font-size:.85rem}
+    .dm-end img{width:40px;height:40px;border-radius:.4rem}
+    .dm-end.go{border:3px solid var(--green);background:#ECFDF5;animation:pop .3s}
+    .dm-engine{text-align:center;font-weight:800;margin-bottom:.4rem}
+    .dm-train{display:grid;grid-template-columns:1fr auto;gap:.2rem .5rem;align-items:center;padding:.45rem 0;border-top:1px solid var(--line)}
+    .dm-train.pend{background:#FEF3C7;border-radius:.6rem;padding-inline:.4rem}
+    .dm-tl{font-weight:800;font-size:.92rem}.dm-tl small{display:block;font-weight:500;color:var(--muted);font-size:.78rem}
+    .dm-tr{grid-column:1;display:flex;gap:3px;align-items:center;overflow:hidden}
+    .dm-train .dm-end{grid-row:1/span 2;grid-column:2}
+    .dm-msg{text-align:center;font-weight:800;margin:.8rem 0 .5rem;min-height:1.4em}
+    .dm-hand{background:#fff;border-radius:var(--r);padding:.7rem;box-shadow:var(--sh)}
+    .dm-hl{font-weight:800;font-size:.9rem;margin-bottom:.4rem}
+    .dm-tiles{display:flex;flex-wrap:wrap;gap:.45rem}
+    .dm-pick{padding:0;border-radius:.5rem}
+    .dm-acts{margin-top:.7rem}
+    .dm-rules{font-size:.85rem;margin-top:.8rem;text-align:center;line-height:1.5}
+
     /* סיום */
     .fin{position:fixed;inset:0;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;z-index:40;padding:16px}
     .fin .panel{max-width:380px;width:100%;text-align:center;animation:pop .3s}
@@ -816,6 +843,214 @@ function goneStart(o,st){
   });
 }
 
+// ════════════════ משחק 5: דומינו (G-11) ════════════════
+// התמונות במקום נקודות: n תמונות = n ערכים → n(n+1)/2 אבנים. שלוש גרסאות, אותם חוקים כמו בסטודיו (DOM_RULES):
+//   classic — אין אבן מתאימה? לוקחים מהקופה עד שיש.   block — בלי קופה, מדלגים.
+//   train — רכבת מקסיקנית: תחנה = הכפולה הגבוהה, מסילה לכל שחקן + רכבת משותפת; אבן כפולה מחייבת "לסגור" אותה.
+// ניקוד: מי שנשאר בלי אבנים מנצח; משחק תקוע — מי שנשארו לו הכי מעט אבנים.
+const DM_VARIANTS={
+  classic:{t:'קלאסי',how:'מניחים אבן כך ששתי התמונות שנוגעות זו בזו זהות. אין אבן מתאימה? לוקחים מהקופה.'},
+  block:{t:'חסום',how:'כמו קלאסי, אבל בלי קופה: אין אבן מתאימה — מדלגים על התור.'},
+  train:{t:'רכבת מקסיקנית',how:'כל שחקן בונה מסילה משלו מהתחנה, ויש רכבת משותפת. מי שנתקע — המסילה שלו נפתחת לכולם. אבן כפולה צריך לסגור לפני שממשיכים.'},
+};
+const DM_WHO=[{h:1,c:1,t:'אני נגד המחשב'},{h:1,c:2,t:'אני נגד 2 מחשבים'},{h:1,c:3,t:'אני נגד 3 מחשבים'},
+  {h:2,c:0,t:'2 שחקנים בטלפון'},{h:3,c:0,t:'3 שחקנים'},{h:4,c:0,t:'4 שחקנים'}];
+function dmSetup(){
+  const G=GAMES.find(g=>g.id==='domino');
+  setupScreen(G,[
+    {key:'v',label:'איזו גרסה?',def:'classic',values:Object.entries(DM_VARIANTS).map(([v,x])=>({v,t:x.t}))},
+    {key:'n',label:'כמה תמונות (ככה נקבע מספר האבנים)',def:Math.min(7,P.length),
+      values:[5,6,7,9,10,13].map(n=>({v:n,t:`${n} · ${n*(n+1)/2} אבנים`,dis:n>P.length}))},
+    {key:'who',label:'מי משחק?',def:0,values:DM_WHO.map((w,i)=>({v:i,t:w.t}))},
+  ],dmStart);
+}
+function dmStart(o){
+  const run=++RUN;closeOverlays();
+  const V=o.v,n=o.n,who=DM_WHO[o.who];
+  // תמונה לכל ערך — dataURL פעם אחת, כך שכל ציור של הלוח זול
+  const pics=pickPhotos(n).map(p=>{const c=thumb(p.cv,64);return c.toDataURL('image/png');});
+  let tiles=[];let id=0;
+  for(let a=0;a<n;a++)for(let b=a;b<n;b++)tiles.push({id:id++,a,b});
+  tiles=shuffle(tiles);
+  const players=[];
+  for(let i=0;i<who.h;i++)players.push({name:who.h===1?'אני':`שחקן ${i+1}`,human:true,hand:[],train:[],open:false});
+  for(let i=0;i<who.c;i++)players.push({name:who.c===1?'המחשב':`מחשב ${i+1}`,human:false,hand:[],train:[],open:false});
+  const st={chain:[],mex:[],engine:-1,pend:null,cur:0,passes:0,drew:false,sel:null,over:false,lastHuman:-1,msg:''};
+  if(V==='train'){   // התחנה: הכפולה הגבוהה יוצאת מהחפיסה
+    const k=tiles.findIndex(t=>t.a===n-1&&t.b===n-1);st.engine=n-1;tiles.splice(k,1);
+  }
+  const std=V==='train'?(players.length<=2?11:players.length===3?10:9):(players.length===2?7:5);
+  const hand=Math.max(3,Math.min(std,Math.floor(tiles.length*(V==='block'?1:.7)/players.length)));
+  players.forEach(p=>{p.hand=tiles.splice(0,hand);});
+  const bone=V==='block'?[]:tiles;   // בחסום — מה שנשאר בצד לא משחק
+  // קלאסי/חסום: מתחיל מי שיש לו את הכפולה הגבוהה
+  if(V!=='train'){let best=-1;players.forEach((p,i)=>p.hand.forEach(t=>{if(t.a===t.b&&t.a>best){best=t.a;st.cur=i;}}));}
+
+  const b=body();b.innerHTML='';
+  const bar=document.createElement('div');bar.className='status';
+  const board=document.createElement('div');board.className='dm-board';
+  const msg=document.createElement('div');msg.className='dm-msg';
+  const handEl=document.createElement('div');handEl.className='dm-hand';
+  const acts=document.createElement('div');acts.className='center dm-acts';
+  const rules=document.createElement('p');rules.className='muted dm-rules';rules.textContent='📖 '+DM_VARIANTS[V].how;
+  b.append(bar,board,msg,handEl,acts,rules);
+
+  const half=v=>`<img src="${pics[v]}" alt="">`;
+  function tileHTML(t,cls){return `<span class="dt${t.a===t.b?' dbl':''}${cls?' '+cls:''}">${half(t.a)}${half(t.b)}</span>`;}
+  const fits=(t,v)=>t.a===v||t.b===v;
+  const orient=(t,v)=>t.a===v?{id:t.id,a:t.a,b:t.b}:{id:t.id,a:t.b,b:t.a};   // a = הצד שנוגע ב-v
+  const ownKey=i=>'p'+i;
+  const me=q=>q.human&&who.h===1;   // שחקן יחיד מול המחשב — מדברים בגוף ראשון
+  function trainEnd(key){const tr=key==='mex'?st.mex:players[+key.slice(1)].train;return tr.length?tr[tr.length-1].b:st.engine;}
+  // יעדים חוקיים לשחקן i עבור אבן t: [{k, label}]
+  function targets(i,t){
+    if(V!=='train'){
+      if(!st.chain.length)return[{k:'R'}];
+      const L=st.chain[0].a,R=st.chain[st.chain.length-1].b,out=[];
+      if(fits(t,L))out.push({k:'L'});if(fits(t,R)&&!(L===R&&out.length))out.push({k:'R'});
+      return out;
+    }
+    if(st.pend)return fits(t,trainEnd(st.pend))?[{k:st.pend}]:[];
+    const keys=[ownKey(i),'mex'];players.forEach((p,j)=>{if(j!==i&&p.open)keys.push(ownKey(j));});
+    return keys.filter(k=>fits(t,trainEnd(k))).map(k=>({k}));
+  }
+  const legal=i=>players[i].hand.flatMap(t=>targets(i,t).map(x=>({t,k:x.k})));
+  function place(i,t,k){
+    const p=players[i];p.hand=p.hand.filter(x=>x.id!==t.id);
+    st.passes=0;st.sel=null;st.drew=false;
+    if(V!=='train'){
+      if(!st.chain.length)st.chain.push({id:t.id,a:t.a,b:t.b});
+      else if(k==='L'){const o2=orient(t,st.chain[0].a);st.chain.unshift({id:t.id,a:o2.b,b:o2.a});}
+      else st.chain.push(orient(t,st.chain[st.chain.length-1].b));
+    }else{
+      const tr=k==='mex'?st.mex:players[+k.slice(1)].train;
+      tr.push(orient(t,trainEnd(k)));
+      if(k===ownKey(i))p.open=false;
+      // כפולה: חייבים לסגור אותה — אותו שחקן ממשיך
+      if(t.a===t.b){st.pend=k;st.msg=me(p)?'הנחתי כפולה — עכשיו צריך לסגור אותה':`${p.name} הניח כפולה — צריך לסגור אותה`;return 'again';}
+      if(st.pend===k)st.pend=null;
+    }
+    return 'next';
+  }
+  function finished(){
+    const w=players.findIndex(p=>!p.hand.length);
+    if(w>=0)return{w:[w],why:'נגמרו האבנים'};
+    if(st.passes>=players.length&&!bone.length){
+      const m=Math.min(...players.map(p=>p.hand.length));
+      return{w:players.map((p,i)=>p.hand.length===m?i:-1).filter(i=>i>=0),why:'המשחק נתקע — הכי מעט אבנים ביד'};
+    }
+    return null;
+  }
+  function advance(res){
+    const f=finished();
+    if(f){st.over=true;render();
+      const names=f.w.map(i=>players[i].name).join(' ו-');
+      setTimeout(()=>{if(live(run))doneScreen(f.w.length===1&&!players[f.w[0]].human?'🤖':'🏆',f.w.length>1?`תיקו: ${names}`:me(players[f.w[0]])?'ניצחתי! 🎉':`${names} ניצח!`,
+        f.why+' · '+players.map(p=>`${p.name}: ${p.hand.length}`).join(' · '),()=>dmStart(o));},700);
+      return;}
+    if(res!=='again'){st.cur=(st.cur+1)%players.length;st.drew=false;}
+    turn();
+  }
+  function draw(i){const t=bone.pop();if(t){players[i].hand.push(t);}return t;}
+  // אין מהלך: קלאסי — לוקחים עד שיש; רכבת — לוקחים אחת; חסום/קופה ריקה — מדלגים
+  function stuck(i){
+    const p=players[i];
+    if(V==='classic'&&bone.length){draw(i);st.msg=me(p)?'לקחתי אבן מהקופה':`${p.name} לקח אבן מהקופה`;return 'drew';}
+    if(V==='train'&&bone.length&&!st.drew){draw(i);st.drew=true;st.msg=me(p)?'לקחתי אבן מהקופה':`${p.name} לקח אבן מהקופה`;return 'drew';}
+    st.passes++;
+    if(V==='train'){p.open=true;st.msg=me(p)?'דילגתי — המסילה שלי פתוחה לכולם 🚩':`${p.name} מדלג — המסילה שלו פתוחה לכולם 🚩`;}
+    else st.msg=me(p)?'דילגתי':`${p.name} מדלג`;
+    st.drew=false;return 'pass';
+  }
+  function aiMove(i){
+    const L=legal(i);
+    if(!L.length)return null;
+    const p=players[i],cnt={};p.hand.forEach(t=>{cnt[t.a]=(cnt[t.a]||0)+1;cnt[t.b]=(cnt[t.b]||0)+1;});
+    const score=m=>(m.t.a===m.t.b?6:0)+(m.k===ownKey(i)?(p.open?5:2):0)+(cnt[m.t.a]+cnt[m.t.b])+Math.random();
+    return L.sort((x,y)=>score(y)-score(x))[0];
+  }
+  function turn(){
+    if(!live(run)||st.over)return;
+    const i=st.cur,p=players[i];
+    render();
+    if(!p.human){
+      setTimeout(function step(){
+        if(!live(run)||st.over)return;
+        const m=aiMove(i);
+        if(m){st.msg=`${p.name} הניח אבן`;advance(place(i,m.t,m.k));return;}
+        const r=stuck(i);render();
+        if(r==='drew'){setTimeout(step,450);return;}
+        advance('next');
+      },750);
+      return;
+    }
+    // כמה אנשים על אותו טלפון — מסתירים את היד עד שהשחקן הבא מוכן
+    if(who.h>1&&st.lastHuman!==i){
+      st.lastHuman=i;
+      const d=document.createElement('div');d.className='fin';d.style.background='#0F172A';   // אטום — שלא יציצו ביד
+      d.innerHTML=`<div class="panel"><div class="big">📱</div><h2>התור של ${esc(p.name)}</h2><p class="muted">${esc(st.msg||'')}</p><p class="muted">העבירו את הטלפון ל${esc(p.name)} — בלי להציץ 🙈</p><div class="row"><button class="btn btn-main">אני מוכן/ה</button></div></div>`;
+      d.querySelector('button').addEventListener('click',()=>{d.remove();render();});
+      document.body.appendChild(d);
+    }
+  }
+  function humanPlay(t,k){
+    const i=st.cur;
+    st.msg='';advance(place(i,t,k));
+  }
+  function render(){
+    if(!live(run))return;
+    const i=st.cur,p=players[i];
+    bar.innerHTML=players.map((q,j)=>`<span class="pill${j===i&&!st.over?' turn':''}">${q.human?'🙂':'🤖'} ${esc(q.name)}: ${q.hand.length}${V==='train'&&q.open?' 🚩':''}</span>`).join('')+
+      (V!=='block'?`<span class="pill">🂠 קופה: ${bone.length}</span>`:'');
+    const myTurn=p.human&&!st.over,sel=st.sel!=null?p.hand.find(t=>t.id===st.sel):null;
+    const tg=sel?targets(i,sel).map(x=>x.k):[];
+    // לוח
+    if(V!=='train'){
+      const end=(k,v,lbl)=>`<button class="dm-end${tg.includes(k)?' go':''}" data-k="${k}">${v>=0?`<img src="${pics[v]}" alt="">`:'⬜'}<span>${lbl}</span></button>`;
+      const L=st.chain.length?st.chain[0].a:-1,R=st.chain.length?st.chain[st.chain.length-1].b:-1;
+      board.innerHTML=`<div class="dm-chain" dir="ltr">${st.chain.map(t=>tileHTML(t)).join('')||'<span class="muted" dir="rtl">הלוח ריק — מניחים אבן ראשונה</span>'}</div>`+
+        `<div class="dm-ends" dir="ltr">${st.chain.length?end('L',L,'⬅ צד שמאל'):''}${end('R',R,st.chain.length?'צד ימין ➡':'להניח כאן')}</div>`;
+      const ch=board.querySelector('.dm-chain');ch.scrollLeft=st._lastL?0:ch.scrollWidth;
+    }else{
+      const rows=[['mex','🚂 הרכבת המשותפת',st.mex,true]].concat(players.map((q,j)=>[ownKey(j),`${q.human?'🙂':'🤖'} ${q.name}`,q.train,q.open]));
+      board.innerHTML=`<div class="dm-engine">תחנה: ${tileHTML({a:st.engine,b:st.engine})}</div>`+rows.map(([k,lbl,tr,op])=>{
+        const e=trainEnd(k),last=tr.slice(-2);
+        return `<div class="dm-train${st.pend===k?' pend':''}"><div class="dm-tl">${esc(lbl)}${op&&k!=='mex'?' 🚩':''}${st.pend===k?' · ⚠️ לסגור כפולה':''}<small>${tr.length} אבנים</small></div>`+
+          `<div class="dm-tr" dir="ltr">${tr.length>2?'<span class="muted">…</span>':''}${last.map(t=>tileHTML(t)).join('')}</div>`+
+          `<button class="dm-end${tg.includes(k)?' go':''}" data-k="${k}"><img src="${pics[e]}" alt=""><span>לכאן</span></button></div>`;
+      }).join('');
+    }
+    board.querySelectorAll('.dm-end').forEach(btn=>btn.addEventListener('click',()=>{
+      if(!myTurn||!sel)return;const k=btn.dataset.k;if(!tg.includes(k)){toast('לא מתאים לכאן');return;}
+      st._lastL=k==='L';humanPlay(sel,k);
+    }));
+    // הודעה
+    msg.textContent=st.over?'':myTurn?(st.msg?st.msg+' · ':'')+(sel?(tg.length>1?'לאן להניח? לחצו על אחד המקומות המסומנים':''):'התור שלך — בחרו אבן מתאימה'):(st.msg||`${p.name} חושב…`);
+    // יד — רואים רק את היד של השחקן שתורו (או של האדם היחיד)
+    const shown=who.h===1?players[0]:(p.human?p:null);
+    if(!shown){handEl.innerHTML='<p class="muted center">🙈 היד מוסתרת</p>';acts.innerHTML='';return;}
+    const L=myTurn?legal(i):[],okIds=new Set(L.map(m=>m.t.id));
+    handEl.innerHTML=`<div class="dm-hl">${shown===p||!myTurn?'':''}${who.h===1?'האבנים שלי':'האבנים של '+esc(shown.name)}</div>`+
+      `<div class="dm-tiles">${shown.hand.map(t=>`<button class="dm-pick" data-id="${t.id}">${tileHTML(t,(myTurn&&!okIds.has(t.id)?'no':'')+(st.sel===t.id?' sel':''))}</button>`).join('')}</div>`;
+    handEl.querySelectorAll('.dm-pick').forEach(btn=>btn.addEventListener('click',()=>{
+      if(!myTurn)return;const t=p.hand.find(x=>x.id===+btn.dataset.id);if(!t)return;
+      const T=targets(i,t);
+      if(!T.length){toast('האבן הזאת לא מתאימה לשום מקום עכשיו');return;}
+      if(T.length===1){st._lastL=T[0].k==='L';humanPlay(t,T[0].k);return;}
+      st.sel=t.id;render();
+    }));
+    acts.innerHTML='';
+    if(myTurn&&!L.length){
+      const canDraw=(V==='classic'&&bone.length)||(V==='train'&&bone.length&&!st.drew);
+      const btn=document.createElement('button');btn.className='btn btn-main';
+      btn.textContent=canDraw?'🂠 אין לי אבן מתאימה — לוקחים מהקופה':'⏭ אין לי אבן מתאימה — מדלגים';
+      btn.addEventListener('click',()=>{const r=stuck(i);if(r==='drew'){render();return;}advance('next');});
+      acts.appendChild(btn);
+    }
+  }
+  turn();
+}
+
 // ════════════════ קטלוג המשחקים ════════════════
 // משחק חדש = רשומה כאן + פונקציות setup/start. min = כמה תמונות לפחות.
 const GAMES=[
@@ -823,6 +1058,7 @@ const GAMES=[
   {id:'puzzle',icon:'🧩',name:'פאזל',min:1,desc:'בוחרים תמונה וגודל, ומחזירים כל חלק למקומו.',setup:pzSetup},
   {id:'dobble',icon:'👀',name:'מצא את הזהה',min:7,desc:'כמו מאצ׳טו: בין כל שני קלפים יש תמונה אחת משותפת — מי מוצא?',setup:dbSetup},
   {id:'gone',icon:'🙈',name:'מה נעלם?',min:5,desc:'זוכרים את הלוח, מכסים עיניים — ומגלים איזו תמונה חסרה.',setup:goneSetup},
+  {id:'domino',icon:'🁫',name:'דומינו',min:5,desc:'קלאסי, חסום או רכבת מקסיקנית — נגד המחשב או עם חברים על אותו טלפון.',setup:dmSetup},
 ];
 
 // ════════════════ הפעלה ════════════════
