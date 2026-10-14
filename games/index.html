@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>משחקים אישיים | הושעיה</title>
+  <meta name="description" content="משחקים אישיים מהתמונות שלכם: זיכרון, פאזל, מצא את הזהה ועוד — לשחק בטלפון או להזמין מודפס.">
+  <meta name="theme-color" content="#0E7490">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="מחולל משחקים">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <!-- ⛔ js/play-engine.js נוצר ע"י tools/build-play-engine.py מתוך dobble.html — לא לערוך ידנית.
+       משמש כאן רק את "מצא את הזהה" (genDeck/drawCard…), כך שהקלף זהה למחולל. שינוי בו = להעלות ?v= כאן וב-sw.js. -->
+  <script src="../js/play-engine.js?v=1"></script>
+  <style>
+    :root{
+      --teal:#0E7490;--teal2:#0891B2;--sky:#E0F2FE;--purple:#7C3AED;
+      --gold:#F59E0B;--gold-light:#FEF3C7;--green:#059669;--red:#DC2626;
+      --text:#0F172A;--muted:#5B6472;--line:rgba(15,23,42,.1);
+      --r:1.1rem;--sh:0 8px 28px rgba(8,51,68,.12),0 1.5px 4px rgba(8,51,68,.06);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html,body{min-height:100%}
+    body{
+      touch-action:manipulation;
+      font-family:'Heebo',system-ui,sans-serif;color:var(--text);direction:rtl;
+      background:
+        radial-gradient(ellipse 65% 50% at 12% 5%,rgba(8,145,178,.18) 0%,transparent 55%),
+        radial-gradient(ellipse 55% 55% at 90% 12%,rgba(124,58,237,.13) 0%,transparent 55%),
+        radial-gradient(ellipse 70% 45% at 50% 100%,rgba(245,158,11,.12) 0%,transparent 55%),
+        #EEF6FA;
+      background-attachment:fixed;
+      -webkit-tap-highlight-color:transparent;
+      overscroll-behavior-y:none;
+    }
+    button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+    [hidden]{display:none!important}
+
+    .scr{padding:max(14px,env(safe-area-inset-top)) 16px max(18px,env(safe-area-inset-bottom));max-width:820px;margin:0 auto}
+    h1{font-size:1.6rem;font-weight:900;line-height:1.2}
+    h2{font-size:1.15rem;font-weight:800;margin:1.3rem 0 .6rem}
+    .muted{color:var(--muted)}
+    .panel{background:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.7);border-radius:var(--r);box-shadow:var(--sh);padding:1rem}
+
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;min-height:48px;padding:.6rem 1.1rem;
+      border-radius:999px;font-weight:800;font-size:1rem;transition:transform .15s,box-shadow .15s}
+    .btn:active{transform:scale(.97)}
+    .btn[disabled]{opacity:.45;pointer-events:none}
+    .btn-main{background:linear-gradient(135deg,var(--teal),var(--purple));color:#fff;box-shadow:0 6px 18px rgba(14,116,144,.35)}
+    .btn-sec{background:#fff;border:1.5px solid var(--line)}
+    .btn-sm{min-height:40px;padding:.35rem .9rem;font-size:.92rem}
+    .btn-block{width:100%}
+
+    .hero{text-align:center;padding:1rem 0 .4rem}
+    .hero .big{font-size:3rem;line-height:1}
+    .hero p{margin-top:.4rem;font-size:1.02rem;line-height:1.55}
+
+    /* ── מאגר תמונות ── */
+    .drop{border:2.5px dashed rgba(14,116,144,.38);border-radius:var(--r);padding:1.1rem 1rem;text-align:center;background:rgba(255,255,255,.6)}
+    .drop.over{border-color:var(--purple);background:#EDE9FE}
+    .drop .hint{font-size:.88rem;margin-top:.5rem}
+    .phead{display:flex;align-items:center;gap:.5rem;justify-content:space-between;flex-wrap:wrap}
+    .cnt{font-weight:800;color:var(--teal)}
+    .gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:.5rem;margin-top:.8rem}
+    .ph{position:relative;aspect-ratio:1;border-radius:.8rem;overflow:hidden;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+    .ph canvas{width:100%;height:100%;display:block}
+    .ph .del{position:absolute;top:3px;left:3px;width:30px;height:30px;border-radius:50%;background:rgba(15,23,42,.72);color:#fff;font-size:.95rem;font-weight:900;line-height:30px;text-align:center}
+    .prog{margin-top:.8rem}
+    .bar{height:10px;border-radius:99px;background:rgba(14,116,144,.12);overflow:hidden}
+    .bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--teal),var(--purple));transition:width .2s}
+    .prog .lbl{margin-top:.35rem;font-size:.9rem;color:var(--muted);text-align:center}
+    .fails{margin-top:.6rem;background:#FEF3C7;color:#92400E;border-radius:.8rem;padding:.6rem .8rem;font-size:.9rem;line-height:1.5}
+
+    /* ── רכזת לינקים ── */
+    .hub{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.6rem;margin-top:.8rem}
+    .hub a{display:block;text-decoration:none;color:inherit;background:#fff;border-radius:var(--r);padding:.8rem .9rem;box-shadow:var(--sh);border:2px solid transparent;transition:transform .15s}
+    .hub a:active{transform:scale(.97)}
+    .hub i{font-style:normal;font-size:1.8rem;line-height:1;display:block}
+    .hub b{display:block;font-weight:900;margin-top:.35rem;font-size:1rem}
+    .hub span{display:block;font-size:.84rem;color:var(--muted);line-height:1.4;margin-top:.15rem}
+    .hub a.wa{background:#DCFCE7;border-color:#22C55E}
+    html{scroll-behavior:smooth}
+    /* ── קטלוג משחקים ── */
+    .games{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:.8rem}
+    .game{display:flex;gap:.8rem;align-items:flex-start;text-align:right;background:#fff;border-radius:var(--r);padding:1rem;box-shadow:var(--sh);border:2px solid transparent;transition:transform .15s,border-color .15s}
+    .game:active{transform:scale(.98)}
+    .game .ic{font-size:2.3rem;line-height:1;flex:none}
+    .game b{display:block;font-size:1.08rem;font-weight:900}
+    .game span{display:block;font-size:.9rem;color:var(--muted);line-height:1.45;margin-top:.2rem}
+    .game .need{color:var(--red);font-weight:700}
+    .game.off{opacity:.55}
+    .print{margin-top:1rem;font-size:.92rem;line-height:1.6}
+    .print a{color:var(--teal);font-weight:800}
+
+    /* ── מסך משחק ── */
+    .top{display:flex;align-items:center;gap:.6rem;margin-bottom:.8rem}
+    .top h1{font-size:1.3rem;flex:1}
+    .back{width:44px;height:44px;border-radius:50%;background:#fff;box-shadow:var(--sh);font-size:1.3rem;font-weight:900;flex:none}
+    .opts{display:flex;flex-direction:column;gap:1rem}
+    .opt b{display:block;margin-bottom:.45rem}
+    .seg{display:flex;flex-wrap:wrap;gap:.4rem}
+    .seg button{min-height:44px;min-width:56px;padding:.3rem .9rem;border-radius:999px;background:#fff;border:1.5px solid var(--line);font-weight:800}
+    .seg button.on{background:var(--teal);border-color:var(--teal);color:#fff}
+    .seg button[disabled]{opacity:.35;pointer-events:none}
+    .status{display:flex;justify-content:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.8rem}
+    .pill{background:#fff;border-radius:999px;padding:.35rem .9rem;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.07);border:2.5px solid transparent}
+    .pill.turn{border-color:var(--gold);background:var(--gold-light)}
+
+    /* זיכרון */
+    .mem{display:grid;gap:.45rem;margin:0 auto;max-width:640px}
+    .mc{aspect-ratio:1;perspective:600px;border-radius:.8rem}
+    .mc .in{position:relative;width:100%;height:100%;transition:transform .35s;transform-style:preserve-3d}
+    .mc.up .in,.mc.done .in{transform:rotateY(180deg)}
+    .mc .f,.mc .b{pointer-events:none;position:absolute;inset:0;border-radius:.8rem;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden}
+    .mc .b{background:linear-gradient(135deg,var(--teal),var(--purple));display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:rgba(255,255,255,.85);box-shadow:0 3px 8px rgba(0,0,0,.12)}
+    .mc .f{transform:rotateY(180deg);background:#fff;box-shadow:0 3px 8px rgba(0,0,0,.12)}
+    .mc .f canvas{width:100%;height:100%;display:block}
+    .mc.done .f{box-shadow:0 0 0 4px var(--green)}
+    .mc.done{animation:pop .35s}
+
+    /* פאזל */
+    .pz{display:grid;gap:3px;margin:0 auto;width:min(100%,520px);aspect-ratio:1;background:#0F172A;border-radius:.6rem;padding:3px;touch-action:none}
+    .pz canvas{width:100%;height:100%;display:block;border-radius:.25rem;transition:box-shadow .15s,transform .15s}
+    .pz canvas.sel{box-shadow:0 0 0 4px var(--gold);transform:scale(.94)}
+    .pz.solved{gap:0;padding:0;background:transparent}
+    .pz.solved canvas{border-radius:0}
+    .pickg{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:.45rem}
+    .pickg .ph{border:3px solid transparent}
+    .pickg .ph.on{border-color:var(--teal)}
+    .peek{position:fixed;inset:0;background:rgba(15,23,42,.8);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+    .peek canvas{width:min(90vw,520px);height:auto;border-radius:.8rem;background:#fff}
+
+    /* מצא את הזהה */
+    .duo{display:flex;flex-direction:column;align-items:center;gap:.9rem}
+    .card{width:var(--cs,260px);height:var(--cs,260px);border-radius:50%;flex:none;cursor:pointer}
+    .card canvas{width:100%;height:100%;display:block}
+    .card.shake{animation:shake .4s}
+    .card.pop{animation:pop .35s}
+    .clbl{font-weight:800;color:var(--muted);font-size:.9rem}
+
+    /* מה נעלם */
+    .board{display:grid;gap:.6rem;margin:0 auto;max-width:560px}
+    .board .ph{border-radius:1rem}
+    .board .ph.gone{background:repeating-linear-gradient(45deg,#E2E8F0,#E2E8F0 10px,#F1F5F9 10px,#F1F5F9 20px);box-shadow:inset 0 0 0 3px #CBD5E1}
+    .cover{aspect-ratio:1;border-radius:1rem;background:linear-gradient(135deg,var(--teal),var(--purple));display:flex;align-items:center;justify-content:center;font-size:2rem}
+    .ask{text-align:center;font-weight:900;font-size:1.2rem;margin:1rem 0 .6rem}
+    .choices{display:flex;justify-content:center;gap:.7rem;flex-wrap:wrap}
+    .choices .ph{width:min(28vw,130px);cursor:pointer;border:4px solid transparent}
+    .choices .ph.ok{border-color:var(--green)}
+    .choices .ph.no{opacity:.35}
+    .center{text-align:center;margin-top:1rem}
+
+    /* סיום */
+    .fin{position:fixed;inset:0;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;z-index:40;padding:16px}
+    .fin .panel{max-width:380px;width:100%;text-align:center;animation:pop .3s}
+    .fin .big{font-size:3.4rem}
+    .fin h2{margin:.4rem 0}
+    .fin .row{display:flex;gap:.5rem;justify-content:center;margin-top:1rem;flex-wrap:wrap}
+
+    .toast{position:fixed;top:max(16px,env(safe-area-inset-top));left:50%;transform:translateX(-50%) translateY(-16px);opacity:0;pointer-events:none;background:#0F172A;color:#fff;border-radius:999px;padding:.6rem 1.1rem;font-weight:700;z-index:60;transition:transform .25s,opacity .25s;max-width:calc(100% - 32px);text-align:center}
+    .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+    @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
+    @keyframes pop{0%{transform:scale(.7);opacity:0}100%{transform:scale(1);opacity:1}}
+    @media(prefers-reduced-motion:reduce){.card.shake,.card.pop,.mc.done,.fin .panel{animation:none}.mc .in{transition:none}}
+  </style>
+</head>
+<body>
+
+<!-- ══════════ בית: תמונות + בחירת משחק ══════════ -->
+<div class="scr" id="scr-home">
+  <div class="hero">
+    <div class="big">🎲</div>
+    <h1>משחקים אישיים מהתמונות שלכם</h1>
+    <p class="muted">מעלים תמונות פעם אחת — ובוחרים משחק. או מזמינים משחק מעוצב ומודפס.</p>
+  </div>
+
+  <!-- רכזת: לינק לכל הכלים + האתר. זו הכתובת שמופיעה במודעה (G-2) -->
+  <nav class="hub" aria-label="כל הכלים">
+    <a href="#photos"><i>🎲</i><b>משחקים מהתמונות שלי</b><span>מעלים תמונות ומשחקים עכשיו</span></a>
+    <a href="../dobble.html"><i>🃏</i><b>מחולל הדאבל</b><span>קלפי "מצא את הזהה" להדפסה</span></a>
+    <a href="../studio/"><i>✂️</i><b>הסטודיו</b><span>פאזלים, דומינו, קלפים וזיכרון — מודפסים</span></a>
+    <a href="../play/"><i>📱</i><b>משחקי דאבל בטלפון</b><span>משחקים במשחק שיצרתם במחולל</span></a>
+    <a href="../"><i>🏠</i><b>האתר של הושעיה</b><span>סדנאות, אירועים ועוד</span></a>
+    <a href="https://wa.me/972505918734?text=%D7%A9%D7%9C%D7%95%D7%9D%20%D7%94%D7%95%D7%A9%D7%A2%D7%99%D7%94%2C%20%D7%94%D7%92%D7%A2%D7%AA%D7%99%20%D7%9E%D7%9E%D7%97%D7%95%D7%9C%D7%9C%20%D7%94%D7%9E%D7%A9%D7%97%D7%A7%D7%99%D7%9D" target="_blank" rel="noopener noreferrer" class="wa"><i>💬</i><b>וואטסאפ להושעיה</b><span>050-591-8734 · הזמנת משחק מעוצב</span></a>
+  </nav>
+
+  <h2 id="photos">1. התמונות שלי</h2>
+  <div class="panel">
+    <div class="drop" id="drop">
+      <button class="btn btn-main" id="btn-add">📷 הוספת תמונות</button>
+      <div class="hint muted">אפשר לבחור הרבה תמונות בבת אחת. התמונות נשמרות רק במכשיר הזה.</div>
+      <input type="file" id="file" accept="image/*,.heic,.heif" multiple hidden>
+    </div>
+    <div class="prog" id="prog" hidden><div class="bar"><i id="bar"></i></div><div class="lbl" id="lbl"></div></div>
+    <div class="fails" id="fails" hidden></div>
+    <div class="phead" style="margin-top:.8rem">
+      <span>יש <span class="cnt" id="cnt">0</span> תמונות</span>
+      <button class="btn btn-sec btn-sm" id="btn-clear" hidden>🗑 מחיקת הכול</button>
+    </div>
+    <div class="gal" id="gal"></div>
+  </div>
+
+  <h2>2. בוחרים משחק</h2>
+  <div class="games" id="games"></div>
+
+  <div class="panel print">
+    🖨️ <b>רוצים את המשחק מודפס?</b> קלפי דאבל אמיתיים —
+    <a href="../dobble.html">מחולל הדאבל</a> · זיכרון, דומינו, פאזל וקוביות להדפסה וחיתוך —
+    <a href="../studio/">הסטודיו</a>.
+  </div>
+</div>
+
+<!-- ══════════ מסך משחק (משותף לכל המשחקים) ══════════ -->
+<div class="scr" id="scr-game" hidden>
+  <div class="top">
+    <button class="back" id="btn-back" aria-label="חזרה">→</button>
+    <h1 id="g-title"></h1>
+  </div>
+  <div id="g-body"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+// ════════════════════════════════════════════════════════════════════════
+// מחולל משחקים — games/index.html (G-1)
+// הלקוחה מעלה תמונות פעם אחת למאגר (IndexedDB, רק במכשיר) ובוחרת משחק לשחק איתן על המסך.
+// ⛔ לא נוגע ב-dobble.html ולא ב-studio/. "מצא את הזהה" משתמש במנוע המועתק js/play-engine.js
+//    (genDeck/buildLayouts/drawCard) — מתמטיקת ה-GF לא משוכפלת כאן.
+// משחק חדש = רשומה ב-GAMES (id, שם, מינימום תמונות, setup, start). המאגר והמסגרת משותפים.
+// ════════════════════════════════════════════════════════════════════════
+
+// ── מצב שהמנוע המועתק קורא (כמו play/index.html) ──
+const S={
+  assets:[],order:null,deck:[],layouts:[],imgEls:[],
+  shape:'circle',symShape:'circle',sMin:.7,sMax:1.3,seed:1,layoutMode:'scatter',overlap:0,
+  sizeMode:undefined,sizeK:.2,tightPack:true,tightFill:false,cardEdits:{},metaVer:0,
+  cardSizeMm:85,symPad:2,frame:{w:0,color:'#0E7490',op:100},bg:{color:'#FFFEF5',op:100},
+};
+function needsWatermark(){return false;}
+
+const $=id=>document.getElementById(id);
+const tick=()=>new Promise(r=>setTimeout(r,0));
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function withTimeout(pr,ms,msg){let to;return Promise.race([pr,new Promise((_,rej)=>{to=setTimeout(()=>rej(new Error(msg||'timeout')),ms);})]).finally(()=>clearTimeout(to));}
+let _tt;
+function toast(msg,ms){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),ms||1800);}
+const DPR=()=>Math.min(window.devicePixelRatio||1,2.5);
+
+// ════════════════ מאגר התמונות (IndexedDB) ════════════════
+// כל תמונה נשמרת מוקטנת (צד ארוך עד PHOTO_MAX) — מספיק לכל משחק על מסך, וחוסך מקום במכשיר.
+const PHOTO_MAX=900;
+const DB_NAME='hoshaya-games',DB_STORE='photos';
+let P=[];   // [{id, cv, added}] — לפי סדר ההעלאה
+let _db=null;
+function db(){
+  if(_db)return _db;
+  _db=new Promise((res,rej)=>{
+    const rq=indexedDB.open(DB_NAME,1);
+    rq.onupgradeneeded=()=>rq.result.createObjectStore(DB_STORE,{keyPath:'id'});
+    rq.onsuccess=()=>res(rq.result);
+    rq.onerror=()=>rej(rq.error);
+  });
+  return _db;
+}
+async function dbTx(mode,fn){
+  const d=await db();
+  return new Promise((res,rej)=>{
+    const tx=d.transaction(DB_STORE,mode),st=tx.objectStore(DB_STORE);
+    const out=fn(st);
+    tx.oncomplete=()=>res(out&&out.result!==undefined?out.result:out);
+    tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error);
+  });
+}
+const dbAll=()=>dbTx('readonly',st=>st.getAll());
+const dbPut=rec=>dbTx('readwrite',st=>{st.put(rec);});
+const dbDel=id=>dbTx('readwrite',st=>{st.delete(id);});
+const dbClear=()=>dbTx('readwrite',st=>{st.clear();});
+
+// ── פענוח תמונה ──
+// לא מסננים לפי f.type: בוררי קבצים בנייד מחזירים MIME ריק (כלל מהמחולל). מזהים לפי magic bytes.
+async function sniff(file){
+  const b=new Uint8Array(await file.slice(0,16).arrayBuffer());
+  const s=String.fromCharCode(...b.slice(4,12));
+  if(s.startsWith('ftyp')&&/heic|heix|hevc|heim|heis|mif1|msf1/.test(s.slice(4)))return 'heic';
+  return '';
+}
+// heic2any מ-vendor/ (כמו במחולל — HEIC הוא הפורמט של כל תמונה מאייפון), נטען רק כשצריך
+let _heicLib=null;
+function loadHeicLib(){
+  if(window.heic2any)return Promise.resolve();
+  if(_heicLib)return _heicLib;
+  _heicLib=withTimeout(new Promise((res,rej)=>{
+    const s=document.createElement('script');s.src='../vendor/heic2any.min.js';
+    s.onload=()=>res();s.onerror=()=>rej(new Error('heic lib'));document.head.appendChild(s);
+  }),15000,'heic lib timeout').catch(e=>{_heicLib=null;throw e;});
+  return _heicLib;
+}
+function blobToCanvas(blob,max){
+  return withTimeout(new Promise((res,rej)=>{
+    const url=URL.createObjectURL(blob),im=new Image();
+    im.onload=()=>{
+      try{
+        const{w,h}=fitLongSide(im.naturalWidth||im.width,im.naturalHeight||im.height,max);
+        const c=document.createElement('canvas');c.width=w;c.height=h;
+        c.getContext('2d').drawImage(im,0,0,w,h);URL.revokeObjectURL(url);res(c);
+      }catch(e){URL.revokeObjectURL(url);rej(e);}
+    };
+    im.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('bad image'));};
+    im.src=url;
+  }),30000,'image timeout');
+}
+async function fileToCanvas(f){
+  try{return await blobToCanvas(f,PHOTO_MAX);}
+  catch(e){
+    if(await sniff(f)!=='heic')throw e;
+    await loadHeicLib();
+    const out=await withTimeout(window.heic2any({blob:f,toType:'image/jpeg',quality:.88}),30000,'heic timeout');
+    return blobToCanvas(Array.isArray(out)?out[0]:out,PHOTO_MAX);
+  }
+}
+function hasAlpha(cv){
+  const w=Math.min(cv.width,64),h=Math.min(cv.height,64);
+  const c=document.createElement('canvas');c.width=w;c.height=h;
+  const x=c.getContext('2d');x.drawImage(cv,0,0,w,h);
+  const d=x.getImageData(0,0,w,h).data;
+  for(let i=3;i<d.length;i+=4)if(d[i]<250)return true;
+  return false;
+}
+// שקיפות = PNG (כלל מהמחולל: JPEG הופך רקע שקוף לשחור)
+const canvasBlob=cv=>new Promise((res,rej)=>{
+  const png=hasAlpha(cv);
+  cv.toBlob(b=>b?res(b):rej(new Error('toBlob')),png?'image/png':'image/jpeg',png?undefined:.86);
+});
+
+async function addFiles(files){
+  files=[...files];if(!files.length)return;
+  const fails=[];$('fails').hidden=true;
+  setProg(0,`מוסיף תמונות… 0/${files.length}`);
+  let ok=0;
+  for(let i=0;i<files.length;i++){
+    const f=files[i];
+    try{
+      const cv=await fileToCanvas(f);
+      const rec={id:Date.now().toString(36)+Math.random().toString(36).slice(2,7),blob:await canvasBlob(cv),added:Date.now()};
+      await withTimeout(dbPut(rec),20000,'save timeout');
+      P.push({id:rec.id,cv,added:rec.added});ok++;
+    }catch(e){console.warn('games: add',f.name,e);fails.push(f.name||'תמונה');}
+    setProg(100*(i+1)/files.length,`מוסיף תמונות… ${i+1}/${files.length}`);
+    if(i%3===2)await tick();
+  }
+  $('prog').hidden=true;
+  // ⛔ ציור הגלריה פעם אחת אחרי כל האצווה, לא בתוך הלולאה (כלל renderGallery מהמחולל)
+  renderHome();
+  if(ok)toast(`נוספו ${ok} תמונות ✓`);
+  if(fails.length){
+    $('fails').textContent=`⚠️ ${fails.length} קבצים לא נפתחו (אולי לא תמונה): ${fails.slice(0,5).join(', ')}${fails.length>5?'…':''}`;
+    $('fails').hidden=false;
+  }
+}
+async function loadPhotos(){
+  let recs=[];
+  try{recs=await withTimeout(dbAll(),20000,'db timeout');}
+  catch(e){console.warn('games: load',e);toast('לא הצלחתי לפתוח את התמונות השמורות',3000);}
+  recs.sort((a,b)=>a.added-b.added);
+  const out=[];
+  for(const r of recs){
+    try{out.push({id:r.id,cv:await blobToCanvas(r.blob,PHOTO_MAX),added:r.added});}
+    catch(e){console.warn('games: decode',r.id,e);}
+  }
+  P=out;
+}
+async function removePhoto(id){
+  P=P.filter(p=>p.id!==id);
+  try{await dbDel(id);}catch(e){console.warn(e);}
+  renderHome();
+}
+function setProg(p,txt){$('prog').hidden=false;$('bar').style.width=Math.round(p)+'%';$('lbl').textContent=txt||'';}
+
+// תמונה ריבועית (חיתוך מרכזי — drawCover, לא מתיחה)
+function thumb(cv,css){
+  const c=document.createElement('canvas'),p=Math.round((css||80)*DPR());c.width=c.height=p;
+  drawCover(c.getContext('2d'),cv,0,0,p);return c;
+}
+function phEl(cv,css){const d=document.createElement('div');d.className='ph';d.appendChild(thumb(cv,css));return d;}
+
+// ════════════════ מסך הבית ════════════════
+function renderHome(){
+  $('cnt').textContent=P.length;
+  $('btn-clear').hidden=P.length<2;
+  const g=$('gal');g.innerHTML='';
+  P.forEach(p=>{
+    const d=phEl(p.cv,90);
+    const x=document.createElement('button');x.className='del';x.textContent='✕';x.setAttribute('aria-label','מחיקת התמונה');
+    x.addEventListener('click',()=>removePhoto(p.id));
+    d.appendChild(x);g.appendChild(d);
+  });
+  const gs=$('games');gs.innerHTML='';
+  GAMES.forEach(G=>{
+    const b=document.createElement('button');
+    const short=P.length<G.min;
+    b.className='game'+(short?' off':'');
+    b.innerHTML=`<div class="ic">${G.icon}</div><div><b>${esc(G.name)}</b><span>${esc(G.desc)}</span>`+
+      (short?`<span class="need">צריך לפחות ${G.min} תמונות (חסרות ${G.min-P.length})</span>`:'')+`</div>`;
+    b.addEventListener('click',()=>{
+      if(P.length<G.min){toast(`למשחק הזה צריך לפחות ${G.min} תמונות`,2500);return;}
+      openGame(G);
+    });
+    gs.appendChild(b);
+  });
+}
+$('btn-add').addEventListener('click',()=>$('file').click());
+$('file').addEventListener('change',e=>{const f=e.target.files;addFiles(f).finally(()=>{e.target.value='';});});
+const drop=$('drop');
+['dragenter','dragover'].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.add('over');}));
+['dragleave','drop'].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.remove('over');}));
+drop.addEventListener('drop',e=>addFiles(e.dataTransfer.files));
+// מחיקת הכול — עם אישור, כי זה סופי (התמונות רק במכשיר)
+$('btn-clear').addEventListener('click',async()=>{
+  if(!confirm(`למחוק את כל ${P.length} התמונות מהמכשיר?`))return;
+  P=[];try{await dbClear();}catch(e){console.warn(e);}
+  renderHome();
+});
+
+// ════════════════ מסגרת משחק משותפת ════════════════
+let RUN=0;   // מזהה ריצה — המתנה (setTimeout) ממשחק שעזבו לא נוחתת במשחק הבא
+const live=r=>r===RUN;
+function show(id){['scr-home','scr-game'].forEach(s=>$(s).hidden=s!==id);window.scrollTo(0,0);}
+function closeOverlays(){document.querySelectorAll('.fin,.peek').forEach(e=>e.remove());}
+function goHome(){RUN++;closeOverlays();renderHome();show('scr-home');}
+$('btn-back').addEventListener('click',goHome);
+const body=()=>$('g-body');
+
+// מסך הגדרות: [{key,label,values:[{v,t,dis?}],def}] → כפתור "מתחילים"
+function setupScreen(G,fields,onStart){
+  RUN++;closeOverlays();
+  $('g-title').textContent=G.icon+' '+G.name;
+  const b=body();b.innerHTML='';
+  const wrap=document.createElement('div');wrap.className='panel opts';
+  const val={};
+  fields.forEach(f=>{
+    const o=document.createElement('div');o.className='opt';
+    o.innerHTML=`<b>${esc(f.label)}</b>`;
+    if(f.custom){o.appendChild(f.custom(val));wrap.appendChild(o);return;}
+    const seg=document.createElement('div');seg.className='seg';
+    const ok=f.values.filter(x=>!x.dis);
+    val[f.key]=(ok.find(x=>x.v===f.def)||ok[ok.length-1]||f.values[0]).v;
+    f.values.forEach(x=>{
+      const btn=document.createElement('button');btn.textContent=x.t;btn.disabled=!!x.dis;
+      if(x.v===val[f.key])btn.classList.add('on');
+      btn.addEventListener('click',()=>{val[f.key]=x.v;seg.querySelectorAll('button').forEach(z=>z.classList.remove('on'));btn.classList.add('on');});
+      seg.appendChild(btn);
+    });
+    o.appendChild(seg);wrap.appendChild(o);
+  });
+  const go=document.createElement('button');go.className='btn btn-main btn-block';go.textContent='▶ מתחילים';
+  go.addEventListener('click',()=>onStart(val));
+  wrap.appendChild(go);b.appendChild(wrap);
+  show('scr-game');
+}
+function openGame(G){G.setup();}
+
+function doneScreen(icon,title,sub,again){
+  closeOverlays();
+  const d=document.createElement('div');d.className='fin';
+  d.innerHTML=`<div class="panel"><div class="big">${icon}</div><h2>${esc(title)}</h2><p class="muted">${esc(sub||'')}</p>
+    <div class="row"><button class="btn btn-main" data-a="again">🔁 עוד פעם</button><button class="btn btn-sec" data-a="home">🎲 משחק אחר</button></div></div>`;
+  d.querySelector('[data-a=again]').addEventListener('click',()=>{d.remove();again();});
+  d.querySelector('[data-a=home]').addEventListener('click',goHome);
+  document.body.appendChild(d);
+}
+// בוחר n תמונות אקראיות מהמאגר
+const pickPhotos=n=>shuffle(P).slice(0,n);
+
+// ════════════════ משחק 1: זיכרון ════════════════
+function memSetup(){
+  const sizes=[3,4,6,8,10,12,15,18];
+  setupScreen(GAMES[0],[
+    {key:'pairs',label:'כמה זוגות?',def:6,values:sizes.map(n=>({v:n,t:String(n),dis:n>P.length}))},
+    {key:'players',label:'כמה משחקים?',def:1,values:[{v:1,t:'לבד'},{v:2,t:'2'},{v:3,t:'3'},{v:4,t:'4'}]},
+  ],memStart);
+}
+function memStart(o){
+  const run=++RUN;closeOverlays();
+  const pics=pickPhotos(o.pairs);
+  const deck=shuffle(pics.flatMap((p,i)=>[{i,cv:p.cv},{i,cv:p.cv}]));
+  const n=deck.length;
+  // מספר עמודות שמשאיר את הלוח קרוב לריבוע ולא צר מדי בטלפון
+  const cols=n<=6?3:n<=12?4:n<=20?5:6;
+  const st={open:[],lock:false,moves:0,found:0,turn:0,score:Array(o.players).fill(0)};
+  const b=body();b.innerHTML='';
+  const bar=document.createElement('div');bar.className='status';b.appendChild(bar);
+  const grid=document.createElement('div');grid.className='mem';grid.style.gridTemplateColumns=`repeat(${cols},1fr)`;
+  b.appendChild(grid);
+  function paintBar(){
+    if(o.players===1){bar.innerHTML=`<span class="pill">🔄 ${st.moves} נסיונות</span><span class="pill">✅ ${st.found}/${o.pairs}</span>`;return;}
+    bar.innerHTML=st.score.map((s,i)=>`<span class="pill${i===st.turn?' turn':''}">שחקן ${i+1}: ${s}</span>`).join('');
+  }
+  const els=deck.map((c,k)=>{
+    const el=document.createElement('button');el.className='mc';el.setAttribute('aria-label','קלף');
+    el.innerHTML='<div class="in"><div class="b">?</div><div class="f"></div></div>';
+    el.querySelector('.f').appendChild(thumb(c.cv,Math.min(140,560/cols)));
+    el.addEventListener('click',()=>flip(k));
+    grid.appendChild(el);return el;
+  });
+  function flip(k){
+    if(!live(run)||st.lock)return;
+    const el=els[k];
+    if(el.classList.contains('up')||el.classList.contains('done'))return;
+    el.classList.add('up');st.open.push(k);
+    if(st.open.length<2)return;
+    st.moves++;
+    const [a,c]=st.open;st.open=[];
+    if(deck[a].i===deck[c].i){
+      setTimeout(()=>{if(!live(run))return;
+        els[a].classList.replace('up','done');els[c].classList.replace('up','done');
+        st.found++;st.score[st.turn]++;paintBar();
+        if(st.found===o.pairs)setTimeout(()=>{if(live(run))memEnd(o,st);},500);
+      },350);
+    }else{
+      st.lock=true;
+      setTimeout(()=>{if(!live(run))return;
+        els[a].classList.remove('up');els[c].classList.remove('up');
+        st.lock=false;st.turn=(st.turn+1)%o.players;paintBar();
+      },1000);
+    }
+    paintBar();
+  }
+  paintBar();
+}
+function memEnd(o,st){
+  if(o.players===1){doneScreen('🏆','כל הכבוד!',`מצאת את כל ${o.pairs} הזוגות ב-${st.moves} נסיונות`,()=>memStart(o));return;}
+  const top=Math.max(...st.score),win=st.score.map((s,i)=>s===top?i+1:0).filter(Boolean);
+  doneScreen('🏆',win.length>1?`תיקו! שחקנים ${win.join(' ו-')}`:`שחקן ${win[0]} ניצח!`,
+    st.score.map((s,i)=>`שחקן ${i+1}: ${s}`).join(' · '),()=>memStart(o));
+}
+
+// ════════════════ משחק 2: פאזל ════════════════
+// נוגעים בשני חלקים כדי להחליף ביניהם — עובד טוב באצבע, בלי גרירה.
+let pzPick=null;
+function pzSetup(){
+  if(!pzPick||!P.find(p=>p.id===pzPick))pzPick=P[P.length-1].id;
+  setupScreen(GAMES[1],[
+    {key:'photo',label:'איזו תמונה?',custom:val=>{
+      val.photo=pzPick;
+      const g=document.createElement('div');g.className='pickg';
+      P.forEach(p=>{
+        const d=phEl(p.cv,80);d.style.cursor='pointer';if(p.id===val.photo)d.classList.add('on');
+        d.addEventListener('click',()=>{val.photo=pzPick=p.id;g.querySelectorAll('.ph').forEach(z=>z.classList.remove('on'));d.classList.add('on');});
+        g.appendChild(d);
+      });
+      return g;
+    }},
+    {key:'n',label:'כמה חלקים?',def:3,values:[{v:2,t:'4'},{v:3,t:'9'},{v:4,t:'16'},{v:5,t:'25'},{v:6,t:'36'}]},
+  ],pzStart);
+}
+function pzStart(o){
+  const run=++RUN;closeOverlays();
+  const p=P.find(x=>x.id===o.photo)||P[0];
+  const n=o.n,N=n*n;
+  const SZ=Math.round(Math.min(520,window.innerWidth-32)*DPR());
+  const full=document.createElement('canvas');full.width=full.height=SZ;
+  drawCover(full.getContext('2d'),p.cv,0,0,SZ);
+  // ערבוב שלא משאיר אף חלק במקומו (בשני חלקים — פשוט הופכים)
+  let order;
+  do{order=shuffle([...Array(N).keys()]);}while(order.some((v,i)=>v===i)&&N>2);
+  if(N<=2)order=[1,0];
+  let sel=-1,moves=0;
+  const b=body();b.innerHTML='';
+  const bar=document.createElement('div');bar.className='status';b.appendChild(bar);
+  const grid=document.createElement('div');grid.className='pz';grid.style.gridTemplateColumns=`repeat(${n},1fr)`;
+  b.appendChild(grid);
+  const tools=document.createElement('div');tools.className='center';
+  tools.innerHTML='<button class="btn btn-sec btn-sm" id="pz-peek">👁 להציץ בתמונה</button>';
+  b.appendChild(tools);
+  tools.querySelector('#pz-peek').addEventListener('click',()=>{
+    const d=document.createElement('div');d.className='peek';
+    const c=document.createElement('canvas');c.width=c.height=SZ;c.getContext('2d').drawImage(full,0,0);
+    d.appendChild(c);d.addEventListener('click',()=>d.remove());document.body.appendChild(d);
+  });
+  const ts=SZ/n;
+  const cells=[...Array(N)].map((_,i)=>{
+    const c=document.createElement('canvas');c.width=c.height=Math.round(ts);
+    c.addEventListener('click',()=>tap(i));grid.appendChild(c);return c;
+  });
+  function paint(i){
+    const v=order[i],sx=(v%n)*ts,sy=Math.floor(v/n)*ts;
+    const x=cells[i].getContext('2d');x.clearRect(0,0,ts,ts);x.drawImage(full,sx,sy,ts,ts,0,0,cells[i].width,cells[i].height);
+  }
+  const placed=()=>order.filter((v,i)=>v===i).length;
+  const paintBar=()=>{bar.innerHTML=`<span class="pill">🔄 ${moves} החלפות</span><span class="pill">✅ ${placed()}/${N} במקום</span>`;};
+  function tap(i){
+    if(!live(run)||grid.classList.contains('solved'))return;
+    if(sel<0){sel=i;cells[i].classList.add('sel');return;}
+    cells[sel].classList.remove('sel');
+    if(sel!==i){
+      [order[sel],order[i]]=[order[i],order[sel]];paint(sel);paint(i);moves++;paintBar();
+      if(placed()===N){
+        grid.classList.add('solved');
+        setTimeout(()=>{if(live(run))doneScreen('🧩','הפאזל הושלם!',`ב-${moves} החלפות`,()=>pzStart(o));},700);
+      }
+    }
+    sel=-1;
+  }
+  cells.forEach((_,i)=>paint(i));paintBar();
+}
+
+// ════════════════ משחק 3: מצא את הזהה (דאבל על המסך) ════════════════
+// בין כל שני קלפים יש בדיוק ציור אחד משותף. הקלף שלך למטה, הערימה למעלה — מוצאים ונוגעים.
+function dbSetup(){
+  const vals=ORDERS.filter(o=>o.total<=57).map(o=>({v:o.total,t:`${o.total} קלפים · ${o.spc} בכל קלף`,dis:o.total>P.length}));
+  setupScreen(GAMES[2],[
+    {key:'total',label:'גודל המשחק (כמה תמונות בשימוש)',def:(bestOrder(Math.min(P.length,57))||ORDERS[0]).total,values:vals},
+  ],dbStart);
+}
+async function dbStart(o){
+  const run=++RUN;closeOverlays();
+  const order=ORDERS.find(x=>x.total===o.total);
+  const used=pickPhotos(order.total);
+  S.assets=used.map(p=>({id:p.id,type:'image',imgEl:p.cv,selected:true}));
+  S.order=order;S.seed=1+Math.floor(Math.random()*9999);
+  S.deck=genDeck(order.q);
+  S.layouts=buildLayouts(S.deck,S.seed,S.sMin,S.sMax);
+  S.imgEls=S.assets.map(symImg);
+  prepareSymbolMeta();
+  const b=body();b.innerHTML='<p class="center muted">מסדר קלפים…</p>';
+  for(let i=0;i<S.layouts.length;i++){
+    computeCardPositions(S.layouts[i],S.imgEls,CARD_PX);
+    if(i%3===2){await tick();if(!live(run))return;}
+  }
+  // ערימה מעורבבת: הקלף הראשון — שלך, השאר — הערימה
+  const pile=shuffle([...Array(S.deck.length).keys()]);
+  let mine=pile.pop(),miss=0,got=0;
+  b.innerHTML='';
+  const bar=document.createElement('div');bar.className='status';b.appendChild(bar);
+  const duo=document.createElement('div');duo.className='duo';b.appendChild(duo);
+  const cs=Math.max(170,Math.min(380,Math.floor(Math.min(window.innerWidth-32,(window.innerHeight-210)/2))));
+  duo.style.setProperty('--cs',cs+'px');
+  const mk=lbl=>{const w=document.createElement('div');w.className='card';const cv=document.createElement('canvas');w.appendChild(cv);
+    const l=document.createElement('div');l.className='clbl';l.textContent=lbl;return{w,cv,l};};
+  const top=mk('הערימה'),bot=mk('הקלף שלך');
+  duo.append(top.l,top.w,bot.w,bot.l);
+  const px=Math.round(cs*DPR());top.cv.width=top.cv.height=bot.cv.width=bot.cv.height=px;
+  const cur=()=>pile[pile.length-1];
+  const common=(a,c)=>{const B=S.deck[c];for(const s of S.deck[a])if(B.includes(s))return s;return -1;};
+  const paint=(hit)=>{drawCard(top.cv,S.layouts[cur()],S.imgEls,S.shape,hit);drawCard(bot.cv,S.layouts[mine],S.imgEls,S.shape,hit);};
+  const paintBar=()=>{bar.innerHTML=`<span class="pill">🃏 נשארו ${pile.length}</span><span class="pill">✅ ${got}</span>`+(miss?`<span class="pill">✋ ${miss}</span>`:'');};
+  let busy=false;
+  function symAt(card,ci,ev){
+    const r=card.cv.getBoundingClientRect();
+    const x=(ev.clientX-r.left)/r.width*card.cv.width,y=(ev.clientY-r.top)/r.height*card.cv.height;
+    const lay=S.layouts[ci],pos=computeCardPositions(lay,S.imgEls,card.cv.width).pos;
+    let best=-1,bd=1e9;
+    for(let i=0;i<pos.length;i++){
+      const rad=pos[i].hs*lay.tr[i].sc,d=Math.hypot(x-pos[i].x,y-pos[i].y);
+      if(d<rad*1.15&&d/rad<bd){bd=d/rad;best=lay.syms[i];}
+    }
+    return best;
+  }
+  function onTap(card,ci,ev){
+    if(!live(run)||busy)return;
+    const s=symAt(card,ci(),ev);if(s<0)return;
+    const want=common(mine,cur());
+    if(s!==want){miss++;paintBar();card.w.classList.remove('shake');void card.w.offsetWidth;card.w.classList.add('shake');return;}
+    busy=true;got++;paint(s);
+    setTimeout(()=>{
+      if(!live(run))return;
+      mine=pile.pop();busy=false;paintBar();
+      if(!pile.length){doneScreen('🎉','סיימת את כל הערימה!',`${got} התאמות`+(miss?` · ${miss} נגיעות לא נכונות`:' בלי אף טעות'),()=>dbStart(o));return;}
+      paint(-1);bot.w.classList.remove('pop');void bot.w.offsetWidth;bot.w.classList.add('pop');
+    },650);
+  }
+  top.w.addEventListener('pointerdown',ev=>onTap(top,cur,ev));
+  bot.w.addEventListener('pointerdown',ev=>onTap(bot,()=>mine,ev));
+  paint(-1);paintBar();
+  if(P.length>order.total)toast(`במשחק ${order.total} תמונות אקראיות מתוך ${P.length}`,2500);
+}
+
+// ════════════════ משחק 4: מה נעלם? ════════════════
+// רואים כמה תמונות, מכסים עיניים, אחת נעלמת — מי חסר? הבחירה מבין התמונה שנעלמה ושתיים שלא היו על הלוח.
+function goneSetup(){
+  const max=P.length-2;
+  setupScreen(GAMES[3],[
+    {key:'k',label:'כמה תמונות על הלוח?',def:4,values:[3,4,5,6,8].map(k=>({v:k,t:String(k),dis:k>max}))},
+    {key:'rounds',label:'כמה סבבים?',def:5,values:[3,5,8,10].map(k=>({v:k,t:String(k)}))},
+  ],o=>goneStart(o));
+}
+function goneStart(o,st){
+  const run=++RUN;closeOverlays();
+  st=st||{round:0,score:0};
+  const pool=shuffle(P);
+  const shown=pool.slice(0,o.k),others=pool.slice(o.k);
+  const gone=Math.floor(Math.random()*o.k);
+  const cols=o.k<=4?o.k===3?3:2:o.k<=6?3:4;
+  const b=body();b.innerHTML='';
+  const bar=document.createElement('div');bar.className='status';
+  bar.innerHTML=`<span class="pill">סבב ${st.round+1}/${o.rounds}</span><span class="pill">⭐ ${st.score}</span>`;
+  b.appendChild(bar);
+  const ask=document.createElement('div');ask.className='ask';ask.textContent='👀 תסתכלו טוב וזכרו!';b.appendChild(ask);
+  const board=document.createElement('div');board.className='board';board.style.gridTemplateColumns=`repeat(${cols},1fr)`;
+  b.appendChild(board);
+  const css=Math.min(170,560/cols);
+  const cells=shown.map(p=>{const d=phEl(p.cv,css);board.appendChild(d);return d;});
+  const foot=document.createElement('div');foot.className='center';b.appendChild(foot);
+  const ready=document.createElement('button');ready.className='btn btn-main';ready.textContent='🙈 זכרתי! לעצום עיניים';
+  foot.appendChild(ready);
+  ready.addEventListener('click',()=>{
+    if(!live(run))return;
+    foot.innerHTML='';ask.textContent='🙈 עיניים עצומות…';
+    cells.forEach(c=>{c.hidden=true;});
+    const covers=cells.map(c=>{const cv=document.createElement('div');cv.className='cover';cv.textContent='🙈';c.after(cv);return cv;});
+    setTimeout(()=>{
+      if(!live(run))return;
+      covers.forEach(c=>c.remove());
+      cells.forEach((c,i)=>{c.hidden=false;if(i===gone){c.innerHTML='';c.classList.add('gone');}});
+      ask.textContent='🤔 איזו תמונה נעלמה?';
+      const ch=document.createElement('div');ch.className='choices';foot.appendChild(ch);
+      const opts=shuffle([{p:shown[gone],ok:true},...others.slice(0,2).map(p=>({p,ok:false}))]);
+      let answered=false;
+      opts.forEach(x=>{
+        const d=phEl(x.p.cv,130);
+        d.addEventListener('click',()=>{
+          if(answered||!live(run))return;
+          if(!x.ok){d.classList.add('no');toast('לא זאת — נסו שוב 🙂');opts._miss=true;return;}
+          answered=true;d.classList.add('ok');
+          cells[gone].classList.remove('gone');cells[gone].appendChild(thumb(shown[gone].cv,css));
+          if(!opts._miss)st.score++;
+          ask.textContent=opts._miss?'✅ נכון!':'🌟 בדיוק! מהניסיון הראשון';
+          setTimeout(()=>{
+            if(!live(run))return;
+            st.round++;
+            if(st.round>=o.rounds){doneScreen('🌟','סיימתם!',`${st.score} מתוך ${o.rounds} מהניסיון הראשון`,()=>goneStart(o));return;}
+            goneStart(o,st);
+          },1300);
+        });
+        ch.appendChild(d);
+      });
+    },1200);
+  });
+}
+
+// ════════════════ קטלוג המשחקים ════════════════
+// משחק חדש = רשומה כאן + פונקציות setup/start. min = כמה תמונות לפחות.
+const GAMES=[
+  {id:'memory',icon:'🧠',name:'זיכרון',min:3,desc:'הופכים קלפים ומוצאים זוגות. לבד או עד 4 משחקים.',setup:memSetup},
+  {id:'puzzle',icon:'🧩',name:'פאזל',min:1,desc:'בוחרים תמונה וגודל, ומחזירים כל חלק למקומו.',setup:pzSetup},
+  {id:'dobble',icon:'👀',name:'מצא את הזהה',min:7,desc:'כמו דאבל: בין כל שני קלפים יש תמונה אחת משותפת — מי מוצא?',setup:dbSetup},
+  {id:'gone',icon:'🙈',name:'מה נעלם?',min:5,desc:'זוכרים את הלוח, מכסים עיניים — ומגלים איזו תמונה חסרה.',setup:goneSetup},
+];
+
+// ════════════════ הפעלה ════════════════
+(async()=>{
+  renderHome();
+  await loadPhotos();
+  renderHome();
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(e=>console.warn('sw',e));
+})();
+</script>
+</body>
+</html>
