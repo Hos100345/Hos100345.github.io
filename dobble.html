@@ -7454,6 +7454,7 @@ function closeBackModal(save){
   document.getElementById('chk-back-enabled').checked=!!S.back.enabled;
   markBackDirty();
   if(save){schedIdbSave();toast(t('msg.backDesignSaved'),'ok');}
+  if(typeof flushSettingsIfChanged==='function')flushSettingsIfChanged();   // D-75: ההגדרות במכשיר (מקומי בלבד)
 }
 document.getElementById('btn-back-design').addEventListener('click',openBackModal);
 document.getElementById('btn-back-design-2').addEventListener('click',openBackModal);
@@ -9267,7 +9268,7 @@ async function _idbLoadInner(){
     const tx=db.transaction(IDB_STORE,'readonly');
     const req=tx.objectStore(IDB_STORE).get('all');
     const rows=await new Promise(r=>{req.onsuccess=e=>r(e.target.result);req.onerror=()=>r(null);});
-    if(!rows||!rows.length)return;
+    if(!rows||!rows.length){await _idbRestoreSettings();return;}
     // ריפוי עצמי למאגרים שכבר הוכפלו ע"י הבאג: שורות עם id שכבר קיים מדולגות, והשמירה
     // הבאה (schedIdbSave למטה) כותבת ל-IDB את הגרסה הנקייה במקום הכפולה.
     const seen=new Set(S.assets.map(a=>a.id));
@@ -9284,10 +9285,61 @@ async function _idbLoadInner(){
         if(d.id>=S.idSeq)S.idSeq=d.id;
       }catch(e){console.warn('idbLoad item:',e);}
     }
+    await _idbRestoreSettings();   // D-75: אחרי שהתמונות (כולל backlogo) במאגר — applySettingsObject בודק שהלוגו קיים
     if(S.assets.length){renderGallery();updateCounter();toast(t('upload.poolRestored',{n:S.assets.filter(isSymbolAsset).length}),'ok');}
     if(dupSkipped){console.warn('idbLoad: skipped',dupSkipped,'duplicate rows');schedIdbSave();}
   }catch(e){console.warn('idbLoad:',e);}
 }
+// ── שמירת ההגדרות במכשיר (D-75) ──
+// idbSave שומר רק את התמונות; ההגדרות (S.back, צורה, גודל קלף, מסגרת, רקע, גדלי סמלים…) לא נשמרו בשום מקום, ולכן רענון
+// (או הרג הלשונית בטלפון כשיוצאים לגלריה) איפס אותן. כאן: אותו אובייקט שנכנס ל-saveDesign/cloudAutosave/ZIP
+// (buildSettingsObject) נכתב ל-IDB_STORE במפתח 'settings'.
+// ⛔ מקומי בלבד: לא קורא ל-schedCloudAutosave ולא נוגע בקצב הגיבוי לענן. ⛔ שחזור אחרי רענון אינו "שינוי" —
+// לא מסמן _cloudAutoDirty ולא מפעיל שמירה (applySettingsObject לא קורא ל-schedIdbSave).
+var _settingsReady=false,_settingsLast='',_settingsTimer=0;
+async function idbSaveSettings(){
+  if(!_settingsReady||window.__supportMode)return;   // לפני שחזור — לא דורסים את מה ששמור בברירות מחדל; מצב תמיכה — session-only
+  try{
+    const st=buildSettingsObject(),db=await idbOpen();
+    const tx=db.transaction(IDB_STORE,'readwrite');
+    tx.objectStore(IDB_STORE).put(st,'settings');
+    await new Promise(r=>{tx.oncomplete=r;tx.onerror=()=>r();});
+    _settingsLast=JSON.stringify(st);
+  }catch(e){console.warn('idbSaveSettings:',e);}
+}
+// כותב רק אם ההגדרות באמת השתנו מאז השמירה/השחזור האחרונים
+function flushSettingsIfChanged(){
+  if(!_settingsReady||window.__supportMode)return;
+  clearTimeout(_settingsTimer);_settingsTimer=0;
+  let js;try{js=JSON.stringify(buildSettingsObject());}catch(e){return;}
+  if(js!==_settingsLast)idbSaveSettings();
+}
+function schedSettingsSave(){
+  if(!_settingsReady)return;
+  clearTimeout(_settingsTimer);_settingsTimer=setTimeout(flushSettingsIfChanged,800);
+}
+async function _idbRestoreSettings(){
+  try{
+    const db=await idbOpen();
+    const req=db.transaction(IDB_STORE,'readonly').objectStore(IDB_STORE).get('settings');
+    const st=await new Promise(r=>{req.onsuccess=e=>r(e.target.result);req.onerror=()=>r(null);});
+    if(st&&typeof st==='object'&&!(S.canvases&&S.canvases.length)){
+      // לוגו שהתמונה שלו לא במאגר (נוקה/נמחק) — מנתקים בשקט, בלי הודעת "הלוגו חסר" ברענון
+      const lost=st.back&&st.back.logoAssetId&&!S.assets.some(a=>a.id===st.back.logoAssetId&&a.type==='backlogo');
+      applySettingsObject(lost?Object.assign({},st,{back:Object.assign({},st.back,{logoAssetId:null})}):st);
+    }
+  }catch(e){console.warn('idbRestoreSettings:',e);}
+  finally{
+    _settingsLast=JSON.stringify(buildSettingsObject());   // נקודת ייחוס: מה שמוצג עכשיו. רק שינוי של הלקוחה נכתב
+    _settingsReady=true;
+  }
+}
+// טריגרים: כל אינטראקציה בדף (debounce), בדיקה תקופית (שינויים בלי אירוע — סמל/לוגו נטענים אסינכרונית, applyAutoMin),
+// והסתרת/סגירת הדף (בטלפון: הדפדפן הורג את הלשונית ביציאה לגלריה)
+['input','change','click'].forEach(ev=>document.addEventListener(ev,schedSettingsSave,true));
+setInterval(()=>{if(document.visibilityState!=='hidden')flushSettingsIfChanged();},4000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushSettingsIfChanged();});
+window.addEventListener('pagehide',flushSettingsIfChanged);
 async function idbClear(){
   try{
     const db=await idbOpen();
@@ -9601,6 +9653,7 @@ async function applyDesignToState(d){
   applySettingsObject(d.settings||{});
   resetGenerated();
   goScr(1);
+  schedSettingsSave();   // D-75: ההגדרות של העיצוב שנטען נשמרות במכשיר (מקומי בלבד)
   // אין לדרוס את גיבוי מאגר-העבודה במאגר ריק. אם לא שוחזר אף נכס, הכתיבה הזו
   // הייתה מוחקת לצמיתות את התמונות ששרדו רענון דף — נזק חמור בהרבה מטעינה שנכשלה.
   if(S.assets.length)schedIdbSave();
