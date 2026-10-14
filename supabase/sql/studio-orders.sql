@@ -7,7 +7,7 @@ create table if not exists public.studio_orders (
   id uuid primary key default gen_random_uuid(),
   code text not null unique default ('ST-' || lpad(nextval('public.studio_order_seq')::text, 4, '0')),
   created_at timestamptz not null default now(),
-  product text not null check (product in ('stickers','cards','memory','domino','dice','puzzle')),
+  product text not null check (product in ('stickers','cards','memory','quartets','domino','dice','puzzle')),
   customer_name text,
   customer_phone text not null,
   customer_note text,
@@ -32,6 +32,7 @@ create or replace function public.studio_price(p_product text, p_sheets int) ret
 language sql immutable as $$
   select case p_product
     when 'stickers' then 15 * p_sheets
+    when 'quartets' then 30 * p_sheets
     when 'puzzle'   then 50 * p_sheets
     when 'cards'    then 30 * p_sheets
     when 'memory'   then 30 * p_sheets
@@ -61,3 +62,9 @@ values ('studio-orders','studio-orders', false, 26214400, array['application/pdf
 on conflict (id) do nothing;
 create policy "admin read studio order files" on storage.objects for select using (bucket_id = 'studio-orders' and lower(coalesce(auth.jwt()->>'email','')) = 'hoshaya@gmail.com');
 create policy "admin delete studio order files" on storage.objects for delete using (bucket_id = 'studio-orders' and lower(coalesce(auth.jwt()->>'email','')) = 'hoshaya@gmail.com');
+
+-- S-31 (14/10/2026): רביעיות — דף עבה כמו קלפים/זיכרון (30 ₪ לדף). הוחל על ה-DB דרך MCP:
+-- alter table public.studio_orders drop constraint studio_orders_product_check;
+-- alter table public.studio_orders add constraint studio_orders_product_check
+--   check (product in ('stickers','cards','memory','quartets','domino','dice','puzzle'));
+-- create or replace function public.studio_price(...) — שורת 'quartets' נוספה (למעלה).
