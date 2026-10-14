@@ -1266,6 +1266,7 @@ const I18N={
     'faces.noSource':'התמונה המקורית נמחקה מהמאגר — אי אפשר לשנות את הרקע',
     'bg.bulkBtn':'✨ הסר רקע מהנבחרים',
     'bgq.title':'איכות הסרת הרקע',
+    'back.contrastToast':'צבע הטקסט התחלף כדי שיראו אותו על הרקע',
     'back.confirmSaveTitle':'לשמור את השינויים בגב?',
     'back.confirmSaveBody':'עשיתם שינויים בעיצוב הגב שעדיין לא נשמרו.',
     'back.confirmSave':'שמור',
@@ -1935,6 +1936,7 @@ const I18N={
     'faces.noSource':'The original photo was deleted from the library — the background cannot be changed',
     'bg.bulkBtn':'✨ Remove background from selected',
     'bgq.title':'Background removal quality',
+    'back.contrastToast':'The text color was changed so it can be seen on the background',
     'back.confirmSaveTitle':'Save your changes to the back?',
     'back.confirmSaveBody':'You made changes to the card back that are not saved yet.',
     'back.confirmSave':'Save',
@@ -7290,15 +7292,15 @@ buildIconGrid(document.getElementById('back-pattern-grid'),BACK_PATTERNS,
   });
 })();
 
-buildSwatchesGeneric('back-bg-sw1',BACK_COLORS,'back-bg-pick1',c=>{S.back.bg.c1=c;markBackDirty();});
-buildSwatchesGeneric('back-bg-sw2',BACK_COLORS,'back-bg-pick2',c=>{S.back.bg.c2=c;markBackDirty();});
+buildSwatchesGeneric('back-bg-sw1',BACK_COLORS,'back-bg-pick1',c=>{S.back.bg.c1=c;backBgChanged();});
+buildSwatchesGeneric('back-bg-sw2',BACK_COLORS,'back-bg-pick2',c=>{S.back.bg.c2=c;backBgChanged();});
 buildSwatchesGeneric('back-pattern-sw',BACK_COLORS,'back-pattern-pick',c=>{S.back.pattern.color=c;markBackDirty();});
 buildSwatchesGeneric('back-frame-sw',BACK_COLORS,'back-frame-pick',c=>{S.back.frame.color=c;markBackDirty();});
 buildSwatchesGeneric('back-sym-sw',BACK_COLORS,'back-sym-pick',c=>{S.back.symbol.color=c;markBackDirty();});
 buildSwatchesGeneric('back-text-sw',BACK_COLORS,'back-text-pick',c=>{S.back.text.color=c;markBackDirty();});
 
-document.getElementById('back-bg-pick1').addEventListener('input',e=>{S.back.bg.c1=e.target.value;syncSwatchRow('back-bg-sw1',null);markBackDirty();});
-document.getElementById('back-bg-pick2').addEventListener('input',e=>{S.back.bg.c2=e.target.value;syncSwatchRow('back-bg-sw2',null);markBackDirty();});
+document.getElementById('back-bg-pick1').addEventListener('input',e=>{S.back.bg.c1=e.target.value;syncSwatchRow('back-bg-sw1',null);backBgChanged();});
+document.getElementById('back-bg-pick2').addEventListener('input',e=>{S.back.bg.c2=e.target.value;syncSwatchRow('back-bg-sw2',null);backBgChanged();});
 document.getElementById('back-pattern-pick').addEventListener('input',e=>{S.back.pattern.color=e.target.value;syncSwatchRow('back-pattern-sw',null);markBackDirty();});
 document.getElementById('back-frame-pick').addEventListener('input',e=>{S.back.frame.color=e.target.value;syncSwatchRow('back-frame-sw',null);markBackDirty();});
 document.getElementById('back-sym-pick').addEventListener('input',e=>{S.back.symbol.color=e.target.value;syncSwatchRow('back-sym-sw',null);markBackDirty();});
@@ -7307,7 +7309,7 @@ document.getElementById('back-text-pick').addEventListener('input',e=>{S.back.te
 document.getElementById('back-bg-mode-grp').addEventListener('click',e=>{
   const b=e.target.closest('.sbt');if(!b)return;
   document.querySelectorAll('#back-bg-mode-grp .sbt').forEach(x=>x.classList.remove('on'));
-  b.classList.add('on');S.back.bg.mode=b.dataset.mode;markBackDirty();
+  b.classList.add('on');S.back.bg.mode=b.dataset.mode;backBgChanged();
 });
 document.getElementById('back-pattern-op').addEventListener('input',e=>{
   S.back.pattern.op=parseInt(e.target.value);document.getElementById('lbl-back-pattern-op').textContent=S.back.pattern.op+'%';markBackDirty();
@@ -7410,6 +7412,39 @@ document.getElementById('back-tabs').addEventListener('click',e=>{
   document.querySelectorAll('.back-tabpage').forEach(p=>p.classList.toggle('on',p.id==='back-tab-'+b.dataset.tab));
 });
 
+// ── ניגודיות צבעים בגב (D-75) ──
+// צבע טקסט/מסגרת/סמל שנעלם על הרקע (לבן על לבן) מתחלף — אבל רק ברגע שינוי הרקע. צבע שהלקוחה בוחרת בעצמה אחרי זה לא נוגעים בו.
+function backLum(h){
+  const c=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(v=>v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4));
+  return .2126*c[0]+.7152*c[1]+.0722*c[2];
+}
+// יחס ניגודיות WCAG בין שני צבעי hex (#RRGGBB): 1 = זהים, 21 = שחור/לבן
+function backContrast(a,b){const x=backLum(a),y=backLum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05);}
+// צבע הרקע לחישוב: solid = c1; radial/diag = הממוצע של c1 ו-c2
+function backBgRef(){
+  const bg=S.back.bg;if(bg.mode==='solid')return bg.c1;
+  return '#'+[1,3,5].map(i=>Math.round((parseInt(bg.c1.slice(i,i+2),16)+parseInt(bg.c2.slice(i,i+2),16))/2).toString(16).padStart(2,'0')).join('');
+}
+const BACK_CONTRAST_MIN=1.8,BACK_LIGHT='#FFFFFF',BACK_DARK='#1E1B4B';
+var _backContrastToasted=false;
+// onlyText=true (אחרי סגנון): מסגרת וסמל באו מהסגנון עצמו (מעוצבים), רק צבע הטקסט לא — אותו בודקים
+function backAutoContrast(onlyText){
+  const B=S.back,ref=backBgRef(),slots=onlyText?[B.text]:[B.text,B.frame,B.symbol];let changed=false;
+  slots.forEach(o=>{
+    if(!/^#[0-9a-f]{6}$/i.test(o.color||''))return;
+    if(backContrast(o.color,ref)>=BACK_CONTRAST_MIN)return;
+    const best=backContrast(BACK_LIGHT,ref)>=backContrast(BACK_DARK,ref)?BACK_LIGHT:BACK_DARK;
+    if(best.toLowerCase()!==o.color.toLowerCase()){o.color=best;changed=true;}
+  });
+  if(changed){
+    syncBackUIFromState();
+    if(!_backContrastToasted){_backContrastToasted=true;toast(t('back.contrastToast'),'ok');}
+  }
+  return changed;
+}
+// נקרא אחרי כל שינוי רקע (דוגמית, צבע חופשי, מצב רקע, סגנון)
+function backBgChanged(onlyText){backAutoContrast(onlyText);markBackDirty();}
+
 // D-75: סגנון משנה רק רקע, דוגמה ומסגרת — וסמל רק כשאין תמונת גב. נשמרים תמיד: כל הטקסט (פונט, צבע, גודל, dy), הלוגו,
 // duplex ו-enabled. הטקסט של הסגנון ("מזל טוב") נכנס רק אם text.main ריק, ואז רק main. עם תמונת גב — symbol.id='none'.
 // (בעבר S.back נבנה מחדש: פונט/צבע/גודל חזרו לברירת מחדל, "יום הולדת" דרס את הטקסט, והסמל חזר גם עם תמונה.)
@@ -7423,7 +7458,7 @@ function applyBackPreset(p){
   else B.symbol=Object.assign({},d.symbol,patch.symbol||{});
   if(!B.text.main&&patch.text&&patch.text.main)B.text.main=patch.text.main;
   syncBackUIFromState();
-  markBackDirty();
+  backBgChanged(true);
 }
 
 function syncBackUIFromState(){
@@ -7463,6 +7498,7 @@ function syncBackUIFromState(){
 function openBackModal(){
   if(!backEditorAllowed()){window.showUpgradeModal&&window.showUpgradeModal();return;}
   _backSnapshot=JSON.parse(JSON.stringify(S.back));
+  _backContrastToasted=false;
   syncBackUIFromState();
   // markBackDirty() מעדכן את תצוגת התצוגה-החיה רק אם המודל כבר גלוי — לכן חייב לבוא אחרי ה-unhide,
   // אחרת בפתיחה הראשונה בכל סשן רואים עיגול לבן ריק במקום העיצוב האמיתי (ומזה גם לא צורת הריבוע).
