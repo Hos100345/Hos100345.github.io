@@ -1266,6 +1266,13 @@ const I18N={
     'faces.noSource':'התמונה המקורית נמחקה מהמאגר — אי אפשר לשנות את הרקע',
     'bg.bulkBtn':'✨ הסר רקע מהנבחרים',
     'bgq.title':'איכות הסרת הרקע',
+    'back.confirmSaveTitle':'לשמור את השינויים בגב?',
+    'back.confirmSaveBody':'עשיתם שינויים בעיצוב הגב שעדיין לא נשמרו.',
+    'back.confirmSave':'שמור',
+    'back.confirmDiscard':'בטל שינויים',
+    'back.confirmKeep':'המשך לערוך',
+    'back.confirmCancelTitle':'לבטל את השינויים בגב?',
+    'back.confirmCancelBody':'השינויים שעשיתם בגב לא יישמרו.',
     'cnt.title':'יש לכם יותר סמלים ממה שנכנס למשחק',
     'cnt.titleOk':'הכול נכנס למשחק',
     'cnt.status':'יש לכם {n} סמלים. במשחק של {total} קלפים נכנסים בדיוק {total} סמלים, ולכן {out} לא ייכנסו.',
@@ -1928,6 +1935,13 @@ const I18N={
     'faces.noSource':'The original photo was deleted from the library — the background cannot be changed',
     'bg.bulkBtn':'✨ Remove background from selected',
     'bgq.title':'Background removal quality',
+    'back.confirmSaveTitle':'Save your changes to the back?',
+    'back.confirmSaveBody':'You made changes to the card back that are not saved yet.',
+    'back.confirmSave':'Save',
+    'back.confirmDiscard':'Discard changes',
+    'back.confirmKeep':'Keep editing',
+    'back.confirmCancelTitle':'Discard your changes to the back?',
+    'back.confirmCancelBody':'The changes you made to the back will not be saved.',
     'cnt.title':'You have more symbols than fit in the game',
     'cnt.titleOk':'Everything fits in the game',
     'cnt.status':'You have {n} symbols. A game of {total} cards fits exactly {total} symbols, so {out} will not get in.',
@@ -3172,6 +3186,7 @@ window.applyI18n=applyI18n;
     <div id="cfm-warn" style="display:none;font-size:.82rem;color:#b91c1c;background:#fef2f2;border:1px solid #fca5a5;border-radius:var(--rs);padding:.55rem .7rem;margin-bottom:.75rem;line-height:1.6"></div>
     <div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap">
       <button data-i18n="msg.confirmCancel" type="button" class="btn btn-ghost" id="cfm-no">ביטול</button>
+      <button type="button" class="btn btn-sec" id="cfm-alt" style="display:none"></button>
       <button type="button" class="btn" id="cfm-yes" style="background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff">מחק</button>
     </div>
   </div>
@@ -4633,7 +4648,10 @@ function confirmDialog(opt){
   const o=opt||{};
   // helpDialog מסתירה את "כן" ומחליפה את הטקסט של "ביטול" — כאן מחזירים למצב מחיקה
   document.getElementById('cfm-yes').style.display='';
-  document.getElementById('cfm-no').textContent=t('msg.confirmCancel');
+  // D-75: noText = תווית "לא"; altText = כפתור שלישי שמחזיר 'alt'; okStyle:'primary' = כפתור אישור לא-הרסני. ברירות המחדל כמו תמיד.
+  document.getElementById('cfm-no').textContent=o.noText||t('msg.confirmCancel');
+  const alt=document.getElementById('cfm-alt');alt.style.display=o.altText?'':'none';alt.textContent=o.altText||'';
+  document.getElementById('cfm-yes').style.background=o.okStyle==='primary'?'linear-gradient(135deg,#6366f1,#4338ca)':'linear-gradient(135deg,#ef4444,#b91c1c)';
   document.getElementById('cfm-ico').textContent=o.icon||'🗑';
   document.getElementById('cfm-title').textContent=o.title||t('confirm.defaultTitle');
   document.getElementById('cfm-body').textContent=o.body||'';
@@ -4645,10 +4663,12 @@ function confirmDialog(opt){
 }
 function _cfmClose(v){
   document.getElementById('confirm-modal').hidden=true;
+  document.getElementById('cfm-alt').style.display='none';
   if(_cfmResolve){const r=_cfmResolve;_cfmResolve=null;r(v);}
 }
 document.getElementById('cfm-no').addEventListener('click',()=>_cfmClose(false));
 document.getElementById('cfm-yes').addEventListener('click',()=>_cfmClose(true));
+document.getElementById('cfm-alt').addEventListener('click',()=>_cfmClose('alt'));
 document.getElementById('confirm-modal').addEventListener('click',e=>{if(e.target.id==='confirm-modal')_cfmClose(false);});
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'&&!document.getElementById('confirm-modal').hidden)_cfmClose(false);
@@ -7458,10 +7478,24 @@ function closeBackModal(save){
 }
 document.getElementById('btn-back-design').addEventListener('click',openBackModal);
 document.getElementById('btn-back-design-2').addEventListener('click',openBackModal);
-document.getElementById('back-modal-x').addEventListener('click',()=>closeBackModal(false));
-document.getElementById('back-cancel').addEventListener('click',()=>closeBackModal(false));
+// D-75: החלון לא נסגר בטעות. לחיצה על הרקע לא סוגרת (אצבע שגוללת בטלפון נוחתת שם); X/ביטול עם שינויים שואלים.
+function backStable(o){return JSON.stringify(o,(k,v)=>v&&typeof v==='object'&&!Array.isArray(v)?Object.keys(v).sort().reduce((a,x)=>(a[x]=v[x],a),{}):v);}
+function backChangedSinceOpen(){return !!_backSnapshot&&backStable(S.back)!==backStable(_backSnapshot);}
+async function backRequestClose(){
+  if(!backChangedSinceOpen()){closeBackModal(false);return;}
+  const r=await confirmDialog({icon:'🎴',title:t('back.confirmSaveTitle'),body:t('back.confirmSaveBody'),
+    okText:t('back.confirmSave'),okStyle:'primary',altText:t('back.confirmDiscard'),noText:t('back.confirmKeep')});
+  if(r===true)closeBackModal(true);else if(r==='alt')closeBackModal(false);   // false = המשך לערוך
+}
+async function backRequestCancel(){
+  if(!backChangedSinceOpen()){closeBackModal(false);return;}
+  const r=await confirmDialog({icon:'🎴',title:t('back.confirmCancelTitle'),body:t('back.confirmCancelBody'),
+    okText:t('back.confirmDiscard'),noText:t('back.confirmKeep')});
+  if(r===true)closeBackModal(false);
+}
+document.getElementById('back-modal-x').addEventListener('click',backRequestClose);
+document.getElementById('back-cancel').addEventListener('click',backRequestCancel);
 document.getElementById('back-save').addEventListener('click',()=>closeBackModal(true));
-document.getElementById('back-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeBackModal(false);});
 
 document.getElementById('chk-back-enabled').addEventListener('change',e=>{
   S.back.enabled=e.target.checked;
