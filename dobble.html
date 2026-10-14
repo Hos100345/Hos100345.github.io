@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>מחולל משחק דאבל | Dobble Card Generator</title>
+  <title>מחולל משחק מאצ׳טו | One Match</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -470,7 +470,7 @@ window.DCFG=(function(){
   const def={accessCodes:[],adminCode:'8734',whatsapp:'972505918734',phoneDisplay:'050-591-8734',
              // הנוסח הקודם ביקש קוד גישה, והזמין בדיוק את הפנייה שהמחולל
              // נועד לחסוך: הלקוח יכול לרכוש או לשחזר קוד לבד בשתי לחיצות.
-             contactMessage:'שלום הושעיה, אני במחולל הדאבל ויש לי שאלה 🎯',analyticsUrl:'',packs:[]};
+             contactMessage:'שלום הושעיה, אני במחולל מאצ׳טו ויש לי שאלה 🎯',analyticsUrl:'',packs:[]};
   let ov={};try{ov=JSON.parse(localStorage.getItem('dobble_config_override')||'{}')}catch(e){}
   return Object.assign({},def,window.DOBBLE_CONFIG||{},ov);
 })();
@@ -486,7 +486,7 @@ function dcfgSave(patch){
 <div id="lock-screen" style="position:fixed;inset:0;background:linear-gradient(150deg,#1e1b4b,#312e81 55%,#4c1d95);z-index:9999;display:flex;flex-direction:column;align-items:center;overflow-y:auto;overscroll-behavior:contain;padding:2rem 1rem;text-align:center">
   <div style="max-width:400px;width:100%;margin:auto;display:flex;flex-direction:column;align-items:center;gap:.85rem">
     <div style="font-size:3rem">🎯</div>
-    <div data-i18n="lock.title" style="font-size:1.6rem;font-weight:900;color:#fff;letter-spacing:.05em">מחולל דאבל</div>
+    <div data-i18n="lock.title" style="font-size:1.6rem;font-weight:900;color:#fff;letter-spacing:.05em">מחולל מאצ׳טו</div>
 
     <div style="display:flex;gap:.35rem;background:rgba(255,255,255,.1);border-radius:100px;padding:.3rem;width:100%">
       <button data-i18n="lock.tabHaveCode" type="button" id="lock-tab-code" style="flex:1;padding:.55rem .3rem;border:none;border-radius:100px;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer;background:#fff;color:#1e1b4b">יש לי קוד</button>
@@ -823,7 +823,7 @@ function dcfgSave(patch){
 // למצוא אותם בקוד: screen.action, לא t17.
 const I18N={
   he:{
-    'lock.title':'מחולל דאבל',
+    'lock.title':'מחולל מאצ׳טו',
     'lock.tabHaveCode':'יש לי קוד',
     'lock.tabFreeSignup':'הרשמה חינם',
     'lock.tabBuy':'רכישת מנוי',
@@ -851,8 +851,8 @@ const I18N={
     'lock.tierUpToCards':'עד {tier} קלפים · {price} ₪',
     'lock.tierIncludesSmaller':'כולל חפיסות של {included} קלפים',
     'lock.tierOneTimePayment':'תשלום חד-פעמי · חודש גישה',
-    'onboard.title':'ברוכים הבאים למחולל דאבל!',
-    'onboard.subtitle':'צור/י משחק Spot-It מותאם אישית בשלושה שלבים פשוטים',
+    'onboard.title':'ברוכים הבאים למחולל מאצ׳טו!',
+    'onboard.subtitle':'צור/י משחק מאצ׳טו מותאם אישית בשלושה שלבים פשוטים',
     'onboard.step1Title':'שלב 1 — העלאת סמלים',
     'onboard.step1Desc':'גרור/י תמונות (PNG, JPG, SVG, HEIC) או בחרו חבילה מוכנה. ניתן לחתוך סמלים מתמונות גדולות עם כלי ✂️ וגם לבצע הסרת רקע אוטומטית',
     'onboard.step2Title':'שלב 2 — יצירה ועיצוב',
@@ -863,7 +863,7 @@ const I18N={
     'onboard.contactBtn':'📱 פנה/י אלינו בוואטסאפ',
     'onboard.startBtn':'🚀 בואו נתחיל!',
     'header.homeLink':'→ האתר',
-    'header.title':'🎯 מחולל משחק דאבל',
+    'header.title':'🎯 מחולל משחק מאצ׳טו',
     'header.accountBtnTitle':'חשבון וסנכרון',
     'header.adminBtnTitle':'פאנל ניהול',
     'confirm.defaultTitle':'אישור מחיקה',
@@ -916,11 +916,11 @@ const I18N={
     'upload.suitableKids6':'ילדים 6+',
     'upload.suitableFamily':'משפחה',
     'upload.suitableMediumHard':'בינוני–קשה',
-    'upload.suitableStandard':'⭐ דאבל סטנדרטי',
+    'upload.suitableStandard':'⭐ גודל סטנדרטי',
     'upload.suitableAdvanced':'מתקדמים',
     'upload.suitableMax':'המקסימום',
     'upload.allAlreadyInPool':'כל {n} התמונות כבר קיימות במאגר — לא נוסף כלום',
-    'upload.tooManyImagesBody':'אחרי ההעלאה יהיו במאגר {total} סמלים, אבל משחק דאבל משתמש לכל היותר ב-{max}. התמונות שמעבר לכך לא יופיעו באף משחק — הן רק יאטו את השמירה ואת הגלריה.\n\nאפשר להמשיך ולבחור אחר כך אילו סמלים ייכנסו, או לבטל ולהעלות פחות תמונות.',
+    'upload.tooManyImagesBody':'אחרי ההעלאה יהיו במאגר {total} סמלים, אבל משחק מאצ׳טו משתמש לכל היותר ב-{max}. התמונות שמעבר לכך לא יופיעו באף משחק — הן רק יאטו את השמירה ואת הגלריה.\n\nאפשר להמשיך ולבחור אחר כך אילו סמלים ייכנסו, או לבטל ולהעלות פחות תמונות.',
     'upload.tooManyImagesWarn':'שים לב: {n} תמונות בהעלאה אחת — זה עלול לקחת זמן רב מאוד.',
     'upload.imagesAdded':'נוספו {n} תמונות למאגר ✓',
     'upload.skippedAlreadyHadSuffix':' · דילגנו על {n} שכבר היו',
@@ -1455,7 +1455,7 @@ const I18N={
     'lock.waHelpBtn':'עזרה בוואטסאפ',
     'lock.upgradeCurrentTierInfo':'הקוד שלך פותח <b>להורדה</b> עד <b id="upg-current"></b> קלפים. המשחק עצמו נשאר שלכם בכל גודל — אפשר להמשיך לערוך ולצפות בתצוגה מקדימה, והתשלום הוא על ההורדה להדפסה:',
     'lock.upgradeOfferBodyHtml':'<b>רוצים רק משחק אחד? זה בדיוק זה.</b><br>\n      משלמים פעם אחת, ובמשך חודש יוצרים ומדפיסים כמה משחקים שרוצים.\n      <b>אין חיוב חוזר</b> — אחרי חודש פשוט נגמר, אלא אם תבחרו לחדש.',
-    'onboard.packageInfoHtml':'🕹️ <strong>חבילה אחת = 4 משחקים שונים</strong> (דאבל קלאסי, המגדל, הבאר, השלישייה) · מתאים לימי הולדת, חתונות, בר/בת מצווה, בתי ספר, תנועות נוער ועוד —\n      <a href="dobble-info.html" target="_blank" rel="noopener noreferrer" style="color:var(--purple);font-weight:700;text-decoration:underline">לכל הרעיונות וההשראה ←</a>',
+    'onboard.packageInfoHtml':'🕹️ <strong>חבילה אחת = 4 משחקים שונים</strong> (מאצ׳טו קלאסי, המגדל, הבאר, השלישייה) · מתאים לימי הולדת, חתונות, בר/בת מצווה, בתי ספר, תנועות נוער ועוד —\n      <a href="dobble-info.html" target="_blank" rel="noopener noreferrer" style="color:var(--purple);font-weight:700;text-decoration:underline">לכל הרעיונות וההשראה ←</a>',
     'header.stepUploadHtml':'<span class="n">1</span>העלאה',
     'header.stepEditHtml':'<span class="n">2</span>עריכה',
     'header.stepExportHtml':'<span class="n">3</span>ייצוא',
@@ -2473,8 +2473,8 @@ window.applyI18n=applyI18n;
   <div class="modal-card" style="max-width:490px;width:96%">
     <div style="text-align:center;padding:.3rem 0 1rem">
       <div style="font-size:2.6rem;margin-bottom:.4rem">🎯</div>
-      <h2 data-i18n="onboard.title" style="font-size:1.2rem;font-weight:900;color:var(--indigo);margin-bottom:.25rem">ברוכים הבאים למחולל דאבל!</h2>
-      <p data-i18n="onboard.subtitle" style="color:var(--muted);font-size:.84rem;line-height:1.55">צור/י משחק Spot-It מותאם אישית בשלושה שלבים פשוטים</p>
+      <h2 data-i18n="onboard.title" style="font-size:1.2rem;font-weight:900;color:var(--indigo);margin-bottom:.25rem">ברוכים הבאים למחולל מאצ׳טו!</h2>
+      <p data-i18n="onboard.subtitle" style="color:var(--muted);font-size:.84rem;line-height:1.55">צור/י משחק מאצ׳טו מותאם אישית בשלושה שלבים פשוטים</p>
     </div>
     <div style="display:flex;flex-direction:column;gap:.55rem;margin-bottom:1rem">
       <div class="ob-step">
@@ -2491,7 +2491,7 @@ window.applyI18n=applyI18n;
       </div>
     </div>
     <div data-i18n-html="onboard.packageInfoHtml" style="background:rgba(238,236,251,.7);border:1.5px solid #c7d2fe;border-radius:10px;padding:.7rem 1rem;text-align:center;margin-bottom:.7rem;font-size:.78rem;color:var(--indigo);line-height:1.6">
-      🕹️ <strong>חבילה אחת = 4 משחקים שונים</strong> (דאבל קלאסי, המגדל, הבאר, השלישייה) · מתאים לימי הולדת, חתונות, בר/בת מצווה, בתי ספר, תנועות נוער ועוד —
+      🕹️ <strong>חבילה אחת = 4 משחקים שונים</strong> (מאצ׳טו קלאסי, המגדל, הבאר, השלישייה) · מתאים לימי הולדת, חתונות, בר/בת מצווה, בתי ספר, תנועות נוער ועוד —
       <a href="dobble-info.html" target="_blank" rel="noopener noreferrer" style="color:var(--purple);font-weight:700;text-decoration:underline">לכל הרעיונות וההשראה ←</a>
     </div>
     <div style="background:rgba(240,253,244,.85);border:1.5px solid #bbf7d0;border-radius:10px;padding:.75rem 1rem;text-align:center;margin-bottom:.9rem">
@@ -2510,8 +2510,8 @@ window.applyI18n=applyI18n;
   <!-- מתג שפה: התווית תמיד מראה לאן הלחיצה תוביל (בעברית "EN", באנגלית "עב") -->
   <button type="button" id="btn-lang" class="hdr-back" data-i18n="header.langToggle" style="border:none;background:none;font:inherit;cursor:pointer">EN</button>
   <div class="hdr-title">
-    <h1 data-i18n="header.title">🎯 מחולל משחק דאבל</h1>
-    <div class="sub">Dobble / Spot It! · Finite Projective Plane</div>
+    <h1 data-i18n="header.title">🎯 מחולל משחק מאצ׳טו</h1>
+    <div class="sub">One Match · Finite Projective Plane</div>
   </div>
   <nav class="step-ind">
     <div class="si active" id="si1" data-i18n-html="header.stepUploadHtml"><span class="n">1</span>העלאה</div>
@@ -2643,7 +2643,7 @@ window.applyI18n=applyI18n;
         <tr><td>13</td><td>4</td><td>13</td><td data-i18n="upload.suitableKids6">ילדים 6+</td></tr>
         <tr><td>21</td><td>5</td><td>21</td><td data-i18n="upload.suitableFamily">משפחה</td></tr>
         <tr><td>31</td><td>6</td><td>31</td><td data-i18n="upload.suitableMediumHard">בינוני–קשה</td></tr>
-        <tr><td>57</td><td>8</td><td>57</td><td data-i18n="upload.suitableStandard">⭐ דאבל סטנדרטי</td></tr>
+        <tr><td>57</td><td>8</td><td>57</td><td data-i18n="upload.suitableStandard">⭐ גודל סטנדרטי</td></tr>
         <tr><td>73</td><td>9</td><td>73</td><td data-i18n="upload.suitableAdvanced">מתקדמים</td></tr>
         <tr><td>91</td><td>10</td><td>91</td><td data-i18n="upload.suitableMax">המקסימום</td></tr>
       </tbody>
@@ -3417,7 +3417,7 @@ window.applyI18n=applyI18n;
 <div id="admin-panel" class="adm-ov">
   <div style="max-width:820px;margin:0 auto">
     <div class="adm-hdr">
-      🔐 לוח בקרה — מחולל דאבל
+      🔐 לוח בקרה — מחולל מאצ׳טו
       <button onclick="closeAdminPanel()" style="margin-right:auto;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.15);color:#a5b4fc;border-radius:8px;padding:.35rem .85rem;cursor:pointer;font-family:inherit;font-size:.85rem">✕ סגור</button>
     </div>
 
@@ -7782,7 +7782,7 @@ async function expPDF(setp){
   // קריאה אחרי await מאבדת את ה-user gesture ו-iOS דוחה אותה.
   S._lastBlob=blob;
   const lnk=document.getElementById('dl-link');
-  const fn=`dobble-${S.order.total}cards-${S.cardSizeMm}mm${backOn?'-2sided':''}.pdf`;
+  const fn=`matchito-${S.order.total}cards-${S.cardSizeMm}mm${backOn?'-2sided':''}.pdf`;
   lnk.href=_exportUrl;lnk.download=fn;
   document.getElementById('dl-area').classList.add('on');
   logGame({total:S.order.total,cards:S.deck.length,sizeMm:S.cardSizeMm,filename:fn,type:'pdf'});
@@ -7925,7 +7925,7 @@ async function expPrintPDF(setp){
   }
   setp(98,'שומר…');
   const shapeLabel=S.shape==='circle'?'circle':'square';
-  const fn=`dobble-print-${S.deck.length}cards-${trimMm}mm-${shapeLabel}-bleed${bleedMm}.pdf`;
+  const fn=`matchito-print-${S.deck.length}cards-${trimMm}mm-${shapeLabel}-bleed${bleedMm}.pdf`;
   const blob=pdf.output('blob');
   if(_exportUrl)URL.revokeObjectURL(_exportUrl);
   _exportUrl=URL.createObjectURL(blob);
@@ -8056,7 +8056,7 @@ async function expSheetPDF(setp){
 
     setp(98,'שומר…');
     const totalSheets=Math.ceil(globalIdx/L.perSheet);
-    const fn=`dobble-sheet-${globalIdx}cards-${trimMm}mm-${totalSheets}x2.pdf`;
+    const fn=`matchito-sheet-${globalIdx}cards-${trimMm}mm-${totalSheets}x2.pdf`;
     const blob=pdf.output('blob');
     if(_exportUrl)URL.revokeObjectURL(_exportUrl);
     _exportUrl=URL.createObjectURL(blob);
@@ -8078,7 +8078,7 @@ async function expSheetPDF(setp){
 
 async function expZIP(setp){
   if(typeof JSZip==='undefined')throw new Error('ספריית JSZip לא נטענה — נדרש חיבור לאינטרנט');
-  const zip=new JSZip(),folder=zip.folder('dobble-cards');
+  const zip=new JSZip(),folder=zip.folder('matchito-cards');
   const px=EXPORT_PX[S.exportQuality]||CARD_PX;
   const tmp=document.createElement('canvas');tmp.width=tmp.height=px;
   const backOn=S.back.enabled;
@@ -8105,7 +8105,7 @@ async function expZIP(setp){
   // קריאה אחרי await מאבדת את ה-user gesture ו-iOS דוחה אותה.
   S._lastBlob=blob;
   const lnk=document.getElementById('dl-link');
-  const fnz=`dobble-${S.order.total}cards${backOn?'-2sided':''}.zip`;
+  const fnz=`matchito-${S.order.total}cards${backOn?'-2sided':''}.zip`;
   lnk.href=_exportUrl;lnk.download=fnz;
   document.getElementById('dl-area').classList.add('on');
   logGame({total:S.order.total,cards:S.deck.length,sizeMm:S.cardSizeMm,filename:fnz,type:'zip'});
@@ -8154,7 +8154,7 @@ function generateCalibrationPDF(){
 
   const blob=pdf.output('blob');
   const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download='dobble-calibration.pdf';
+  const a=document.createElement('a');a.href=url;a.download='matchito-calibration.pdf';
   document.body.appendChild(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),4000);
   toast(t('msg.calibrationPageReady'),'ok');
@@ -8208,7 +8208,7 @@ async function expDXF(setp){
   // קריאה אחרי await מאבדת את ה-user gesture ו-iOS דוחה אותה.
   S._lastBlob=blob;
   const lnk=document.getElementById('dl-link');
-  const fnd=`dobble-${S.order.total}cards-cutlines.dxf`;
+  const fnd=`matchito-${S.order.total}cards-cutlines.dxf`;
   lnk.href=_exportUrl;lnk.download=fnd;
   document.getElementById('dl-area').classList.add('on');
   S._lastFile=fnd;
@@ -9380,7 +9380,7 @@ async function exportDesignFile(){
     const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
-    a.href=url;a.download=name.replace(/[\\/:*?"<>|]/g,'-')+'.dobble.zip';
+    a.href=url;a.download=name.replace(/[\\/:*?"<>|]/g,'-')+'.matchito.zip';
     document.body.appendChild(a);a.click();a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),60000);
     S._lastFile=a.download;S._lastSize=blob.size;
@@ -9809,7 +9809,7 @@ function adminExportConfig(){
       packs
     };
     const file='// =====================================================\n'+
-      '// הגדרות מחולל הדאבל — יוצא מלוח הבקרה\n'+
+      '// הגדרות מחולל מאצ׳טו — יוצא מלוח הבקרה\n'+
       '// העלו קובץ זה במקום js/dobble-config.js בגיטהאב\n'+
       '// =====================================================\n\n'+
       'window.DOBBLE_CONFIG = '+JSON.stringify(cfg,null,2)+';\n';
@@ -10674,7 +10674,7 @@ function orderPrint(){
   const specs=S.order&&S.deck.length
     ?`\nפרטי המשחק: ${S.deck.length} קלפים · ${S.order.spc} סמלים בקלף · קוטר ${S.cardSizeMm} מ"מ · קלף ${shape}`
     :'';
-  const msg=`שלום! סיימתי לעצב משחק דאבל במחולל ואשמח להזמין הדפסה ומשלוח עד הבית 🖨️📦${specs}\nשם: \nיישוב וכתובת למשלוח: \nכמות עותקים: `;
+  const msg=`שלום! סיימתי לעצב משחק מאצ׳טו במחולל ואשמח להזמין הדפסה ומשלוח עד הבית 🖨️📦${specs}\nשם: \nיישוב וכתובת למשלוח: \nכמות עותקים: `;
   logGame({total:S.order?S.order.total:'',cards:S.deck.length||'',sizeMm:S.cardSizeMm,filename:'🚚 בקשת הדפסה ומשלוח',type:'print-order'});
   window.track&&window.track('print-order',{cards:S.deck.length||'',symbols:S.order?S.order.spc:'',detail:`קוטר ${S.cardSizeMm}מ"מ · ${shape}`});
   window.open('https://wa.me/'+waNum+'?text='+encodeURIComponent(msg),'_blank','noopener');
