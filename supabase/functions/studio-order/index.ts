@@ -11,7 +11,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const BUCKET = 'studio-orders';
-const PRODUCTS = ['stickers', 'cards', 'memory', 'domino', 'dice', 'puzzle'];
+const PRODUCTS = ['stickers', 'cards', 'memory', 'quartets', 'domino', 'dice', 'puzzle']; // quartets = S-31 (v3)
 const MAX_DESIGN_BYTES = 256 * 1024;
 const CORS = {
   'Access-Control-Allow-Origin': '*',
