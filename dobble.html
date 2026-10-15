@@ -4659,7 +4659,7 @@ function confirmDialog(opt){
   const o=opt||{};
   // helpDialog מסתירה את "כן" ומחליפה את הטקסט של "ביטול" — כאן מחזירים למצב מחיקה
   document.getElementById('cfm-yes').style.display='';
-  // D-75: noText = תווית "לא"; altText = כפתור שלישי שמחזיר 'alt'; okStyle:'primary' = כפתור אישור לא-הרסני. ברירות המחדל כמו תמיד.
+  // D-80: noText = תווית "לא"; altText = כפתור שלישי שמחזיר 'alt'; okStyle:'primary' = כפתור אישור לא-הרסני. ברירות המחדל כמו תמיד.
   document.getElementById('cfm-no').textContent=o.noText||t('msg.confirmCancel');
   const alt=document.getElementById('cfm-alt');alt.style.display=o.altText?'':'none';alt.textContent=o.altText||'';
   document.getElementById('cfm-yes').style.background=o.okStyle==='primary'?'linear-gradient(135deg,#6366f1,#4338ca)':'linear-gradient(135deg,#ef4444,#b91c1c)';
@@ -7421,7 +7421,7 @@ document.getElementById('back-tabs').addEventListener('click',e=>{
   document.querySelectorAll('.back-tabpage').forEach(p=>p.classList.toggle('on',p.id==='back-tab-'+b.dataset.tab));
 });
 
-// ── ניגודיות צבעים בגב (D-75) ──
+// ── ניגודיות צבעים בגב (D-80) ──
 // צבע טקסט/מסגרת/סמל שנעלם על הרקע (לבן על לבן) מתחלף — אבל רק ברגע שינוי הרקע. צבע שהלקוחה בוחרת בעצמה אחרי זה לא נוגעים בו.
 function backLum(h){
   const c=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(v=>v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4));
@@ -7454,7 +7454,7 @@ function backAutoContrast(onlyText){
 // נקרא אחרי כל שינוי רקע (דוגמית, צבע חופשי, מצב רקע, סגנון)
 function backBgChanged(onlyText){backAutoContrast(onlyText);markBackDirty();}
 
-// D-75: סגנון משנה רק רקע, דוגמה ומסגרת — וסמל רק כשאין תמונת גב. נשמרים תמיד: כל הטקסט (פונט, צבע, גודל, dy), הלוגו,
+// D-80: סגנון משנה רק רקע, דוגמה ומסגרת — וסמל רק כשאין תמונת גב. נשמרים תמיד: כל הטקסט (פונט, צבע, גודל, dy), הלוגו,
 // duplex ו-enabled. הטקסט של הסגנון ("מזל טוב") נכנס רק אם text.main ריק, ואז רק main. עם תמונת גב — symbol.id='none'.
 // (בעבר S.back נבנה מחדש: פונט/צבע/גודל חזרו לברירת מחדל, "יום הולדת" דרס את הטקסט, והסמל חזר גם עם תמונה.)
 function applyBackPreset(p){
@@ -7521,11 +7521,11 @@ function closeBackModal(save){
   document.getElementById('chk-back-enabled').checked=!!S.back.enabled;
   markBackDirty();
   if(save){schedIdbSave();toast(t('msg.backDesignSaved'),'ok');}
-  if(typeof flushSettingsIfChanged==='function')flushSettingsIfChanged();   // D-75: ההגדרות במכשיר (מקומי בלבד)
+  if(typeof flushSettingsIfChanged==='function')flushSettingsIfChanged();   // D-80: ההגדרות במכשיר (מקומי בלבד)
 }
 document.getElementById('btn-back-design').addEventListener('click',openBackModal);
 document.getElementById('btn-back-design-2').addEventListener('click',openBackModal);
-// D-75: החלון לא נסגר בטעות. לחיצה על הרקע לא סוגרת (אצבע שגוללת בטלפון נוחתת שם); X/ביטול עם שינויים שואלים.
+// D-80: החלון לא נסגר בטעות. לחיצה על הרקע לא סוגרת (אצבע שגוללת בטלפון נוחתת שם); X/ביטול עם שינויים שואלים.
 function backStable(o){return JSON.stringify(o,(k,v)=>v&&typeof v==='object'&&!Array.isArray(v)?Object.keys(v).sort().reduce((a,x)=>(a[x]=v[x],a),{}):v);}
 function backChangedSinceOpen(){return !!_backSnapshot&&backStable(S.back)!==backStable(_backSnapshot);}
 async function backRequestClose(){
@@ -9510,12 +9510,12 @@ async function _idbLoadInner(){
         if(d.id>=S.idSeq)S.idSeq=d.id;
       }catch(e){console.warn('idbLoad item:',e);}
     }
-    await _idbRestoreSettings();   // D-75: אחרי שהתמונות (כולל backlogo) במאגר — applySettingsObject בודק שהלוגו קיים
+    await _idbRestoreSettings();   // D-80: אחרי שהתמונות (כולל backlogo) במאגר — applySettingsObject בודק שהלוגו קיים
     if(S.assets.length){renderGallery();updateCounter();toast(t('upload.poolRestored',{n:S.assets.filter(isSymbolAsset).length}),'ok');}
     if(dupSkipped){console.warn('idbLoad: skipped',dupSkipped,'duplicate rows');schedIdbSave();}
   }catch(e){console.warn('idbLoad:',e);}
 }
-// ── שמירת ההגדרות במכשיר (D-75) ──
+// ── שמירת ההגדרות במכשיר (D-80) ──
 // idbSave שומר רק את התמונות; ההגדרות (S.back, צורה, גודל קלף, מסגרת, רקע, גדלי סמלים…) לא נשמרו בשום מקום, ולכן רענון
 // (או הרג הלשונית בטלפון כשיוצאים לגלריה) איפס אותן. כאן: אותו אובייקט שנכנס ל-saveDesign/cloudAutosave/ZIP
 // (buildSettingsObject) נכתב ל-IDB_STORE במפתח 'settings'.
@@ -9608,7 +9608,7 @@ async function saveDesign(){
 function buildDesignObject(name){
   return {name,date:new Date().toLocaleString('he-IL'),rows:assetsToRowsWithImages(),settings:buildSettingsObject()};
 }
-// אובייקט ההגדרות של העיצוב (D-75) — מקור יחיד ל-saveDesign, buildDesignObject ושמירת ההגדרות במכשיר.
+// אובייקט ההגדרות של העיצוב (D-80) — מקור יחיד ל-saveDesign, buildDesignObject ושמירת ההגדרות במכשיר.
 // ⛔ הפלט חייב להישאר זהה בייט-לבייט למה שנבנה כאן קודם בשני המקומות (עיצובים שמורים וענן תלויים בו).
 function buildSettingsObject(){
   return {shape:S.shape,symShape:S.symShape,sMin:S.sMin,sMax:S.sMax,seed:S.seed,layoutMode:S.layoutMode,
@@ -9829,7 +9829,7 @@ function applySettingsToUI(st){
   syncSizeUI();
 }
 
-// החלת אובייקט הגדרות על המצב ועל ה-UI (D-75) — החלק של applyDesignToState שאחרי הטעינה של התמונות.
+// החלת אובייקט הגדרות על המצב ועל ה-UI (D-80) — החלק של applyDesignToState שאחרי הטעינה של התמונות.
 // resetGenerated ו-goScr נשארים ב-applyDesignToState בלבד.
 function applySettingsObject(st){
   st=st||{};
@@ -9878,7 +9878,7 @@ async function applyDesignToState(d){
   applySettingsObject(d.settings||{});
   resetGenerated();
   goScr(1);
-  schedSettingsSave();   // D-75: ההגדרות של העיצוב שנטען נשמרות במכשיר (מקומי בלבד)
+  schedSettingsSave();   // D-80: ההגדרות של העיצוב שנטען נשמרות במכשיר (מקומי בלבד)
   // אין לדרוס את גיבוי מאגר-העבודה במאגר ריק. אם לא שוחזר אף נכס, הכתיבה הזו
   // הייתה מוחקת לצמיתות את התמונות ששרדו רענון דף — נזק חמור בהרבה מטעינה שנכשלה.
   if(S.assets.length)schedIdbSave();
