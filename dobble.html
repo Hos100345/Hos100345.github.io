@@ -1270,6 +1270,14 @@ const I18N={
     'faces.noSource':'התמונה המקורית נמחקה מהמאגר — אי אפשר לשנות את הרקע',
     'bg.bulkBtn':'✨ הסר רקע מהנבחרים',
     'bgq.title':'איכות הסרת הרקע',
+    'back.contrastToast':'צבע הטקסט התחלף כדי שיראו אותו על הרקע',
+    'back.confirmSaveTitle':'לשמור את השינויים בגב?',
+    'back.confirmSaveBody':'עשיתם שינויים בעיצוב הגב שעדיין לא נשמרו.',
+    'back.confirmSave':'שמור',
+    'back.confirmDiscard':'בטל שינויים',
+    'back.confirmKeep':'המשך לערוך',
+    'back.confirmCancelTitle':'לבטל את השינויים בגב?',
+    'back.confirmCancelBody':'השינויים שעשיתם בגב לא יישמרו.',
     'cnt.title':'יש לכם יותר סמלים ממה שנכנס למשחק',
     'cnt.titleOk':'הכול נכנס למשחק',
     'cnt.status':'יש לכם {n} סמלים. במשחק של {total} קלפים נכנסים בדיוק {total} סמלים, ולכן {out} לא ייכנסו.',
@@ -1935,6 +1943,14 @@ const I18N={
     'faces.noSource':'The original photo was deleted from the library — the background cannot be changed',
     'bg.bulkBtn':'✨ Remove background from selected',
     'bgq.title':'Background removal quality',
+    'back.contrastToast':'The text color was changed so it can be seen on the background',
+    'back.confirmSaveTitle':'Save your changes to the back?',
+    'back.confirmSaveBody':'You made changes to the card back that are not saved yet.',
+    'back.confirmSave':'Save',
+    'back.confirmDiscard':'Discard changes',
+    'back.confirmKeep':'Keep editing',
+    'back.confirmCancelTitle':'Discard your changes to the back?',
+    'back.confirmCancelBody':'The changes you made to the back will not be saved.',
     'cnt.title':'You have more symbols than fit in the game',
     'cnt.titleOk':'Everything fits in the game',
     'cnt.status':'You have {n} symbols. A game of {total} cards fits exactly {total} symbols, so {out} will not get in.',
@@ -3181,6 +3197,7 @@ window.applyI18n=applyI18n;
     <div id="cfm-warn" style="display:none;font-size:.82rem;color:#b91c1c;background:#fef2f2;border:1px solid #fca5a5;border-radius:var(--rs);padding:.55rem .7rem;margin-bottom:.75rem;line-height:1.6"></div>
     <div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap">
       <button data-i18n="msg.confirmCancel" type="button" class="btn btn-ghost" id="cfm-no">ביטול</button>
+      <button type="button" class="btn btn-sec" id="cfm-alt" style="display:none"></button>
       <button type="button" class="btn" id="cfm-yes" style="background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff">מחק</button>
     </div>
   </div>
@@ -4642,7 +4659,10 @@ function confirmDialog(opt){
   const o=opt||{};
   // helpDialog מסתירה את "כן" ומחליפה את הטקסט של "ביטול" — כאן מחזירים למצב מחיקה
   document.getElementById('cfm-yes').style.display='';
-  document.getElementById('cfm-no').textContent=t('msg.confirmCancel');
+  // D-80: noText = תווית "לא"; altText = כפתור שלישי שמחזיר 'alt'; okStyle:'primary' = כפתור אישור לא-הרסני. ברירות המחדל כמו תמיד.
+  document.getElementById('cfm-no').textContent=o.noText||t('msg.confirmCancel');
+  const alt=document.getElementById('cfm-alt');alt.style.display=o.altText?'':'none';alt.textContent=o.altText||'';
+  document.getElementById('cfm-yes').style.background=o.okStyle==='primary'?'linear-gradient(135deg,#6366f1,#4338ca)':'linear-gradient(135deg,#ef4444,#b91c1c)';
   document.getElementById('cfm-ico').textContent=o.icon||'🗑';
   document.getElementById('cfm-title').textContent=o.title||t('confirm.defaultTitle');
   document.getElementById('cfm-body').textContent=o.body||'';
@@ -4654,10 +4674,12 @@ function confirmDialog(opt){
 }
 function _cfmClose(v){
   document.getElementById('confirm-modal').hidden=true;
+  document.getElementById('cfm-alt').style.display='none';
   if(_cfmResolve){const r=_cfmResolve;_cfmResolve=null;r(v);}
 }
 document.getElementById('cfm-no').addEventListener('click',()=>_cfmClose(false));
 document.getElementById('cfm-yes').addEventListener('click',()=>_cfmClose(true));
+document.getElementById('cfm-alt').addEventListener('click',()=>_cfmClose('alt'));
 document.getElementById('confirm-modal').addEventListener('click',e=>{if(e.target.id==='confirm-modal')_cfmClose(false);});
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'&&!document.getElementById('confirm-modal').hidden)_cfmClose(false);
@@ -7279,15 +7301,15 @@ buildIconGrid(document.getElementById('back-pattern-grid'),BACK_PATTERNS,
   });
 })();
 
-buildSwatchesGeneric('back-bg-sw1',BACK_COLORS,'back-bg-pick1',c=>{S.back.bg.c1=c;markBackDirty();});
-buildSwatchesGeneric('back-bg-sw2',BACK_COLORS,'back-bg-pick2',c=>{S.back.bg.c2=c;markBackDirty();});
+buildSwatchesGeneric('back-bg-sw1',BACK_COLORS,'back-bg-pick1',c=>{S.back.bg.c1=c;backBgChanged();});
+buildSwatchesGeneric('back-bg-sw2',BACK_COLORS,'back-bg-pick2',c=>{S.back.bg.c2=c;backBgChanged();});
 buildSwatchesGeneric('back-pattern-sw',BACK_COLORS,'back-pattern-pick',c=>{S.back.pattern.color=c;markBackDirty();});
 buildSwatchesGeneric('back-frame-sw',BACK_COLORS,'back-frame-pick',c=>{S.back.frame.color=c;markBackDirty();});
 buildSwatchesGeneric('back-sym-sw',BACK_COLORS,'back-sym-pick',c=>{S.back.symbol.color=c;markBackDirty();});
 buildSwatchesGeneric('back-text-sw',BACK_COLORS,'back-text-pick',c=>{S.back.text.color=c;markBackDirty();});
 
-document.getElementById('back-bg-pick1').addEventListener('input',e=>{S.back.bg.c1=e.target.value;syncSwatchRow('back-bg-sw1',null);markBackDirty();});
-document.getElementById('back-bg-pick2').addEventListener('input',e=>{S.back.bg.c2=e.target.value;syncSwatchRow('back-bg-sw2',null);markBackDirty();});
+document.getElementById('back-bg-pick1').addEventListener('input',e=>{S.back.bg.c1=e.target.value;syncSwatchRow('back-bg-sw1',null);backBgChanged();});
+document.getElementById('back-bg-pick2').addEventListener('input',e=>{S.back.bg.c2=e.target.value;syncSwatchRow('back-bg-sw2',null);backBgChanged();});
 document.getElementById('back-pattern-pick').addEventListener('input',e=>{S.back.pattern.color=e.target.value;syncSwatchRow('back-pattern-sw',null);markBackDirty();});
 document.getElementById('back-frame-pick').addEventListener('input',e=>{S.back.frame.color=e.target.value;syncSwatchRow('back-frame-sw',null);markBackDirty();});
 document.getElementById('back-sym-pick').addEventListener('input',e=>{S.back.symbol.color=e.target.value;syncSwatchRow('back-sym-sw',null);markBackDirty();});
@@ -7296,7 +7318,7 @@ document.getElementById('back-text-pick').addEventListener('input',e=>{S.back.te
 document.getElementById('back-bg-mode-grp').addEventListener('click',e=>{
   const b=e.target.closest('.sbt');if(!b)return;
   document.querySelectorAll('#back-bg-mode-grp .sbt').forEach(x=>x.classList.remove('on'));
-  b.classList.add('on');S.back.bg.mode=b.dataset.mode;markBackDirty();
+  b.classList.add('on');S.back.bg.mode=b.dataset.mode;backBgChanged();
 });
 document.getElementById('back-pattern-op').addEventListener('input',e=>{
   S.back.pattern.op=parseInt(e.target.value);document.getElementById('lbl-back-pattern-op').textContent=S.back.pattern.op+'%';markBackDirty();
@@ -7399,18 +7421,53 @@ document.getElementById('back-tabs').addEventListener('click',e=>{
   document.querySelectorAll('.back-tabpage').forEach(p=>p.classList.toggle('on',p.id==='back-tab-'+b.dataset.tab));
 });
 
+// ── ניגודיות צבעים בגב (D-80) ──
+// צבע טקסט/מסגרת/סמל שנעלם על הרקע (לבן על לבן) מתחלף — אבל רק ברגע שינוי הרקע. צבע שהלקוחה בוחרת בעצמה אחרי זה לא נוגעים בו.
+function backLum(h){
+  const c=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(v=>v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4));
+  return .2126*c[0]+.7152*c[1]+.0722*c[2];
+}
+// יחס ניגודיות WCAG בין שני צבעי hex (#RRGGBB): 1 = זהים, 21 = שחור/לבן
+function backContrast(a,b){const x=backLum(a),y=backLum(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05);}
+// צבע הרקע לחישוב: solid = c1; radial/diag = הממוצע של c1 ו-c2
+function backBgRef(){
+  const bg=S.back.bg;if(bg.mode==='solid')return bg.c1;
+  return '#'+[1,3,5].map(i=>Math.round((parseInt(bg.c1.slice(i,i+2),16)+parseInt(bg.c2.slice(i,i+2),16))/2).toString(16).padStart(2,'0')).join('');
+}
+const BACK_CONTRAST_MIN=1.8,BACK_LIGHT='#FFFFFF',BACK_DARK='#1E1B4B';
+var _backContrastToasted=false;
+// onlyText=true (אחרי סגנון): מסגרת וסמל באו מהסגנון עצמו (מעוצבים), רק צבע הטקסט לא — אותו בודקים
+function backAutoContrast(onlyText){
+  const B=S.back,ref=backBgRef(),slots=onlyText?[B.text]:[B.text,B.frame,B.symbol];let changed=false;
+  slots.forEach(o=>{
+    if(!/^#[0-9a-f]{6}$/i.test(o.color||''))return;
+    if(backContrast(o.color,ref)>=BACK_CONTRAST_MIN)return;
+    const best=backContrast(BACK_LIGHT,ref)>=backContrast(BACK_DARK,ref)?BACK_LIGHT:BACK_DARK;
+    if(best.toLowerCase()!==o.color.toLowerCase()){o.color=best;changed=true;}
+  });
+  if(changed){
+    syncBackUIFromState();
+    if(!_backContrastToasted){_backContrastToasted=true;toast(t('back.contrastToast'),'ok');}
+  }
+  return changed;
+}
+// נקרא אחרי כל שינוי רקע (דוגמית, צבע חופשי, מצב רקע, סגנון)
+function backBgChanged(onlyText){backAutoContrast(onlyText);markBackDirty();}
+
+// D-80: סגנון משנה רק רקע, דוגמה ומסגרת — וסמל רק כשאין תמונת גב. נשמרים תמיד: כל הטקסט (פונט, צבע, גודל, dy), הלוגו,
+// duplex ו-enabled. הטקסט של הסגנון ("מזל טוב") נכנס רק אם text.main ריק, ואז רק main. עם תמונת גב — symbol.id='none'.
+// (בעבר S.back נבנה מחדש: פונט/צבע/גודל חזרו לברירת מחדל, "יום הולדת" דרס את הטקסט, והסמל חזר גם עם תמונה.)
 function applyBackPreset(p){
-  const patch=p.apply();
-  const keepMain=S.back.text.main,keepSub=S.back.text.sub;
-  const keepDuplex=Object.assign({},S.back.duplex);
-  const keepLogo={logoAssetId:S.back.logoAssetId,logoSize:S.back.logoSize,logoDy:S.back.logoDy};
-  S.back=mergeBack(Object.assign({preset:p.id},patch));
-  S.back.duplex=keepDuplex;
-  Object.assign(S.back,keepLogo);
-  if(!(patch.text&&patch.text.main))S.back.text.main=keepMain;
-  if(!(patch.text&&patch.text.sub))S.back.text.sub=keepSub;
+  const patch=p.apply(),d=backDefaults(),B=S.back;
+  B.preset=p.id;
+  B.bg=Object.assign({},d.bg,patch.bg||{});
+  B.pattern=Object.assign({},d.pattern,patch.pattern||{});
+  B.frame=Object.assign({},d.frame,patch.frame||{});
+  if(B.logoAssetId)B.symbol=Object.assign({},B.symbol,{id:'none'});
+  else B.symbol=Object.assign({},d.symbol,patch.symbol||{});
+  if(!B.text.main&&patch.text&&patch.text.main)B.text.main=patch.text.main;
   syncBackUIFromState();
-  markBackDirty();
+  backBgChanged(true);
 }
 
 function syncBackUIFromState(){
@@ -7450,6 +7507,7 @@ function syncBackUIFromState(){
 function openBackModal(){
   if(!backEditorAllowed()){window.showUpgradeModal&&window.showUpgradeModal();return;}
   _backSnapshot=JSON.parse(JSON.stringify(S.back));
+  _backContrastToasted=false;
   syncBackUIFromState();
   // markBackDirty() מעדכן את תצוגת התצוגה-החיה רק אם המודל כבר גלוי — לכן חייב לבוא אחרי ה-unhide,
   // אחרת בפתיחה הראשונה בכל סשן רואים עיגול לבן ריק במקום העיצוב האמיתי (ומזה גם לא צורת הריבוע).
@@ -7463,13 +7521,28 @@ function closeBackModal(save){
   document.getElementById('chk-back-enabled').checked=!!S.back.enabled;
   markBackDirty();
   if(save){schedIdbSave();toast(t('msg.backDesignSaved'),'ok');}
+  if(typeof flushSettingsIfChanged==='function')flushSettingsIfChanged();   // D-80: ההגדרות במכשיר (מקומי בלבד)
 }
 document.getElementById('btn-back-design').addEventListener('click',openBackModal);
 document.getElementById('btn-back-design-2').addEventListener('click',openBackModal);
-document.getElementById('back-modal-x').addEventListener('click',()=>closeBackModal(false));
-document.getElementById('back-cancel').addEventListener('click',()=>closeBackModal(false));
+// D-80: החלון לא נסגר בטעות. לחיצה על הרקע לא סוגרת (אצבע שגוללת בטלפון נוחתת שם); X/ביטול עם שינויים שואלים.
+function backStable(o){return JSON.stringify(o,(k,v)=>v&&typeof v==='object'&&!Array.isArray(v)?Object.keys(v).sort().reduce((a,x)=>(a[x]=v[x],a),{}):v);}
+function backChangedSinceOpen(){return !!_backSnapshot&&backStable(S.back)!==backStable(_backSnapshot);}
+async function backRequestClose(){
+  if(!backChangedSinceOpen()){closeBackModal(false);return;}
+  const r=await confirmDialog({icon:'🎴',title:t('back.confirmSaveTitle'),body:t('back.confirmSaveBody'),
+    okText:t('back.confirmSave'),okStyle:'primary',altText:t('back.confirmDiscard'),noText:t('back.confirmKeep')});
+  if(r===true)closeBackModal(true);else if(r==='alt')closeBackModal(false);   // false = המשך לערוך
+}
+async function backRequestCancel(){
+  if(!backChangedSinceOpen()){closeBackModal(false);return;}
+  const r=await confirmDialog({icon:'🎴',title:t('back.confirmCancelTitle'),body:t('back.confirmCancelBody'),
+    okText:t('back.confirmDiscard'),noText:t('back.confirmKeep')});
+  if(r===true)closeBackModal(false);
+}
+document.getElementById('back-modal-x').addEventListener('click',backRequestClose);
+document.getElementById('back-cancel').addEventListener('click',backRequestCancel);
 document.getElementById('back-save').addEventListener('click',()=>closeBackModal(true));
-document.getElementById('back-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeBackModal(false);});
 
 document.getElementById('chk-back-enabled').addEventListener('change',e=>{
   S.back.enabled=e.target.checked;
@@ -9420,7 +9493,7 @@ async function _idbLoadInner(){
     const tx=db.transaction(IDB_STORE,'readonly');
     const req=tx.objectStore(IDB_STORE).get('all');
     const rows=await new Promise(r=>{req.onsuccess=e=>r(e.target.result);req.onerror=()=>r(null);});
-    if(!rows||!rows.length)return;
+    if(!rows||!rows.length){await _idbRestoreSettings();return;}
     // ריפוי עצמי למאגרים שכבר הוכפלו ע"י הבאג: שורות עם id שכבר קיים מדולגות, והשמירה
     // הבאה (schedIdbSave למטה) כותבת ל-IDB את הגרסה הנקייה במקום הכפולה.
     const seen=new Set(S.assets.map(a=>a.id));
@@ -9437,10 +9510,61 @@ async function _idbLoadInner(){
         if(d.id>=S.idSeq)S.idSeq=d.id;
       }catch(e){console.warn('idbLoad item:',e);}
     }
+    await _idbRestoreSettings();   // D-80: אחרי שהתמונות (כולל backlogo) במאגר — applySettingsObject בודק שהלוגו קיים
     if(S.assets.length){renderGallery();updateCounter();toast(t('upload.poolRestored',{n:S.assets.filter(isSymbolAsset).length}),'ok');}
     if(dupSkipped){console.warn('idbLoad: skipped',dupSkipped,'duplicate rows');schedIdbSave();}
   }catch(e){console.warn('idbLoad:',e);}
 }
+// ── שמירת ההגדרות במכשיר (D-80) ──
+// idbSave שומר רק את התמונות; ההגדרות (S.back, צורה, גודל קלף, מסגרת, רקע, גדלי סמלים…) לא נשמרו בשום מקום, ולכן רענון
+// (או הרג הלשונית בטלפון כשיוצאים לגלריה) איפס אותן. כאן: אותו אובייקט שנכנס ל-saveDesign/cloudAutosave/ZIP
+// (buildSettingsObject) נכתב ל-IDB_STORE במפתח 'settings'.
+// ⛔ מקומי בלבד: לא קורא ל-schedCloudAutosave ולא נוגע בקצב הגיבוי לענן. ⛔ שחזור אחרי רענון אינו "שינוי" —
+// לא מסמן _cloudAutoDirty ולא מפעיל שמירה (applySettingsObject לא קורא ל-schedIdbSave).
+var _settingsReady=false,_settingsLast='',_settingsTimer=0;
+async function idbSaveSettings(){
+  if(!_settingsReady||window.__supportMode)return;   // לפני שחזור — לא דורסים את מה ששמור בברירות מחדל; מצב תמיכה — session-only
+  try{
+    const st=buildSettingsObject(),db=await idbOpen();
+    const tx=db.transaction(IDB_STORE,'readwrite');
+    tx.objectStore(IDB_STORE).put(st,'settings');
+    await new Promise(r=>{tx.oncomplete=r;tx.onerror=()=>r();});
+    _settingsLast=JSON.stringify(st);
+  }catch(e){console.warn('idbSaveSettings:',e);}
+}
+// כותב רק אם ההגדרות באמת השתנו מאז השמירה/השחזור האחרונים
+function flushSettingsIfChanged(){
+  if(!_settingsReady||window.__supportMode)return;
+  clearTimeout(_settingsTimer);_settingsTimer=0;
+  let js;try{js=JSON.stringify(buildSettingsObject());}catch(e){return;}
+  if(js!==_settingsLast)idbSaveSettings();
+}
+function schedSettingsSave(){
+  if(!_settingsReady)return;
+  clearTimeout(_settingsTimer);_settingsTimer=setTimeout(flushSettingsIfChanged,800);
+}
+async function _idbRestoreSettings(){
+  try{
+    const db=await idbOpen();
+    const req=db.transaction(IDB_STORE,'readonly').objectStore(IDB_STORE).get('settings');
+    const st=await new Promise(r=>{req.onsuccess=e=>r(e.target.result);req.onerror=()=>r(null);});
+    if(st&&typeof st==='object'&&!(S.canvases&&S.canvases.length)){
+      // לוגו שהתמונה שלו לא במאגר (נוקה/נמחק) — מנתקים בשקט, בלי הודעת "הלוגו חסר" ברענון
+      const lost=st.back&&st.back.logoAssetId&&!S.assets.some(a=>a.id===st.back.logoAssetId&&a.type==='backlogo');
+      applySettingsObject(lost?Object.assign({},st,{back:Object.assign({},st.back,{logoAssetId:null})}):st);
+    }
+  }catch(e){console.warn('idbRestoreSettings:',e);}
+  finally{
+    _settingsLast=JSON.stringify(buildSettingsObject());   // נקודת ייחוס: מה שמוצג עכשיו. רק שינוי של הלקוחה נכתב
+    _settingsReady=true;
+  }
+}
+// טריגרים: כל אינטראקציה בדף (debounce), בדיקה תקופית (שינויים בלי אירוע — סמל/לוגו נטענים אסינכרונית, applyAutoMin),
+// והסתרת/סגירת הדף (בטלפון: הדפדפן הורג את הלשונית ביציאה לגלריה)
+['input','change','click'].forEach(ev=>document.addEventListener(ev,schedSettingsSave,true));
+setInterval(()=>{if(document.visibilityState!=='hidden')flushSettingsIfChanged();},4000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushSettingsIfChanged();});
+window.addEventListener('pagehide',flushSettingsIfChanged);
 async function idbClear(){
   try{
     const db=await idbOpen();
@@ -9456,14 +9580,7 @@ async function saveDesign(){
   const name=(prompt(t('edit.saveDesignNamePrompt'),defName)||'').trim();
   if(!name)return;
   try{
-    const settings={shape:S.shape,symShape:S.symShape,sMin:S.sMin,sMax:S.sMax,seed:S.seed,layoutMode:S.layoutMode,
-      cardSizeMm:S.cardSizeMm,spacingMm:S.spacingMm,startPos:S.startPos,
-      frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),symPad:S.symPad,overlap:S.overlap,
-      tightPack:S.tightPack,tightFill:S.tightFill,
-      ...(S.sizeMode==='auto'?{sizeMode:'auto',sizeK:S.sizeK}:{}),   // D-60 — legacy שלא נגעו בו נשמר בלי השדה
-      back:JSON.parse(JSON.stringify(S.back)),
-      cardEdits:JSON.parse(JSON.stringify(S.cardEdits||{})),
-      orderTotal:S.order?S.order.total:null};
+    const settings=buildSettingsObject();
     // שמירה מקומית — metadata בלבד (בלי dataURL), כדי לא לחרוג ממכסת האחסון של IndexedDB
     const date=new Date().toLocaleString('he-IL');
     const design={name,date,rows:assetsToRows(),settings};
@@ -9489,15 +9606,19 @@ async function saveDesign(){
 // בונה אובייקט עיצוב מהמצב הנוכחי (שם + תמונות + הגדרות) — כולל dataURL מלא, לשימוש
 // בנתיבי ענן בלבד (cloudAutosave / sendStuckToAdmin), שמעלים את התמונות בפועל ל-Supabase Storage
 function buildDesignObject(name){
-  return {name,date:new Date().toLocaleString('he-IL'),rows:assetsToRowsWithImages(),
-    settings:{shape:S.shape,symShape:S.symShape,sMin:S.sMin,sMax:S.sMax,seed:S.seed,layoutMode:S.layoutMode,
-      cardSizeMm:S.cardSizeMm,spacingMm:S.spacingMm,startPos:S.startPos,
-      frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),symPad:S.symPad,overlap:S.overlap,
-      tightPack:S.tightPack,tightFill:S.tightFill,
-      ...(S.sizeMode==='auto'?{sizeMode:'auto',sizeK:S.sizeK}:{}),   // D-60
-      back:JSON.parse(JSON.stringify(S.back)),
-      cardEdits:JSON.parse(JSON.stringify(S.cardEdits||{})),
-      orderTotal:S.order?S.order.total:null}};
+  return {name,date:new Date().toLocaleString('he-IL'),rows:assetsToRowsWithImages(),settings:buildSettingsObject()};
+}
+// אובייקט ההגדרות של העיצוב (D-80) — מקור יחיד ל-saveDesign, buildDesignObject ושמירת ההגדרות במכשיר.
+// ⛔ הפלט חייב להישאר זהה בייט-לבייט למה שנבנה כאן קודם בשני המקומות (עיצובים שמורים וענן תלויים בו).
+function buildSettingsObject(){
+  return {shape:S.shape,symShape:S.symShape,sMin:S.sMin,sMax:S.sMax,seed:S.seed,layoutMode:S.layoutMode,
+    cardSizeMm:S.cardSizeMm,spacingMm:S.spacingMm,startPos:S.startPos,
+    frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),symPad:S.symPad,overlap:S.overlap,
+    tightPack:S.tightPack,tightFill:S.tightFill,
+    ...(S.sizeMode==='auto'?{sizeMode:'auto',sizeK:S.sizeK}:{}),   // D-60 — legacy שלא נגעו בו נשמר בלי השדה
+    back:JSON.parse(JSON.stringify(S.back)),
+    cardEdits:JSON.parse(JSON.stringify(S.cardEdits||{})),
+    orderTotal:S.order?S.order.total:null};
 }
 
 // ── קובץ עיצוב נייד ──────────────────────────────────────────────────────
@@ -9708,6 +9829,28 @@ function applySettingsToUI(st){
   syncSizeUI();
 }
 
+// החלת אובייקט הגדרות על המצב ועל ה-UI (D-80) — החלק של applyDesignToState שאחרי הטעינה של התמונות.
+// resetGenerated ו-goScr נשארים ב-applyDesignToState בלבד.
+function applySettingsObject(st){
+  st=st||{};
+  Object.assign(S,{shape:st.shape||'circle',symShape:st.symShape||'circle',sMin:st.sMin??.7,sMax:st.sMax??1.3,
+    seed:st.seed||1,layoutMode:st.layoutMode||'scatter',cardSizeMm:st.cardSizeMm||85,
+    spacingMm:st.spacingMm??5,startPos:st.startPos||'center',symPad:st.symPad??2,overlap:st.overlap??0,
+    tightPack:st.tightPack!==false,tightFill:!!st.tightFill,cardEdits:st.cardEdits||{},
+    sizeMode:st.sizeMode==='auto'?'auto':undefined,sizeK:st.sizeK??.2});   // D-60: בלי sizeMode = legacy
+  if(st.frame)S.frame=Object.assign({},st.frame);
+  if(st.bg)S.bg=Object.assign({},st.bg);
+  S.back=mergeBack(st.back);
+  // אם ה-asset של הלוגו לא שרד (למשל עיצוב ישן/גיבוי חלקי) — מנתקים את ההפניה בלי לשבור את הטעינה
+  if(S.back.logoAssetId&&!S.assets.some(a=>a.id===S.back.logoAssetId&&a.type==='backlogo')){
+    S.back.logoAssetId=null;
+    toast(t('msg.backLogoMissingFromBackup'),'err');
+  }
+  document.getElementById('chk-back-enabled').checked=!!S.back.enabled;
+  markBackDirty();
+  applySettingsToUI(S);
+}
+
 // טעינת מבנה עיצוב {name,rows,settings} לתוך מצב האפליקציה
 async function applyDesignToState(d){
   S.assets.forEach(a=>{if(a.type==='image'&&a.url)URL.revokeObjectURL(a.url);});
@@ -9732,25 +9875,10 @@ async function applyDesignToState(d){
   if(missingImages>0){
     toast(t('upload.imagesMissingFromLocalBackup',{n:missingImages}),'err');
   }
-  const st=d.settings||{};
-  Object.assign(S,{shape:st.shape||'circle',symShape:st.symShape||'circle',sMin:st.sMin??.7,sMax:st.sMax??1.3,
-    seed:st.seed||1,layoutMode:st.layoutMode||'scatter',cardSizeMm:st.cardSizeMm||85,
-    spacingMm:st.spacingMm??5,startPos:st.startPos||'center',symPad:st.symPad??2,overlap:st.overlap??0,
-    tightPack:st.tightPack!==false,tightFill:!!st.tightFill,cardEdits:st.cardEdits||{},
-    sizeMode:st.sizeMode==='auto'?'auto':undefined,sizeK:st.sizeK??.2});   // D-60: בלי sizeMode = legacy
-  if(st.frame)S.frame=Object.assign({},st.frame);
-  if(st.bg)S.bg=Object.assign({},st.bg);
-  S.back=mergeBack(st.back);
-  // אם ה-asset של הלוגו לא שרד (למשל עיצוב ישן/גיבוי חלקי) — מנתקים את ההפניה בלי לשבור את הטעינה
-  if(S.back.logoAssetId&&!S.assets.some(a=>a.id===S.back.logoAssetId&&a.type==='backlogo')){
-    S.back.logoAssetId=null;
-    toast(t('msg.backLogoMissingFromBackup'),'err');
-  }
-  document.getElementById('chk-back-enabled').checked=!!S.back.enabled;
-  markBackDirty();
-  applySettingsToUI(S);
+  applySettingsObject(d.settings||{});
   resetGenerated();
   goScr(1);
+  schedSettingsSave();   // D-80: ההגדרות של העיצוב שנטען נשמרות במכשיר (מקומי בלבד)
   // אין לדרוס את גיבוי מאגר-העבודה במאגר ריק. אם לא שוחזר אף נכס, הכתיבה הזו
   // הייתה מוחקת לצמיתות את התמונות ששרדו רענון דף — נזק חמור בהרבה מטעינה שנכשלה.
   if(S.assets.length)schedIdbSave();
