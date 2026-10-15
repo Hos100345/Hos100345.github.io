@@ -464,6 +464,7 @@
 <script src="js/hebrew-fonts.js?v=1"></script>
 <script src="js/latin-fonts.js?v=1"></script>
 <script src="js/back-assets.js?v=1"></script>
+<script src="js/cmyk-jpeg.js?v=1"></script>
 <script>
 // קונפיג בזמן ריצה: ברירות מחדל ← קובץ הקונפיג ← עריכות מקומיות מפאנל הניהול
 window.DCFG=(function(){
@@ -1041,6 +1042,9 @@ const I18N={
     'export.printShopFold':'🖨️ לבית דפוס',
     'export.printPageBtn':'📦 PDF — עמוד לכל קלף',
     'export.sheetBtn':'🗞️ גיליון 33×48.8',
+    'export.dieCutBtn':'✂️ קובץ לחיתוך צורני',
+    'export.dieCutPadWarn':'שימו לב: הסמלים רחוקים רק {mm} מ"מ מקו החיתוך, ובית הדפוס מבקש לפחות {min}. אפשר להגדיל את "מרווח מהמסגרת" ולייצא שוב.',
+    'export.dieCutCmykLoadFail':'רכיב צבעי הדפוס (CMYK) לא נטען — רעננו את הדף ונסו שוב',
     'export.sheetDiameterTitle':'קוטר הקלף בגיליון',
     'export.sheetDiameterNormalBtn':'רגיל · 71 מ"מ',
     'export.sheetDiameterLargeBtn':'גדול · 85 מ"מ',
@@ -1461,7 +1465,7 @@ const I18N={
     'header.stepExportHtml':'<span class="n">3</span>ייצוא',
     'upload.cropHintTextHtml':'✂️ <strong>מתמונה אחת אפשר להפיק כמה סמלים</strong> — לחצו על ✂ ליד תמונה קבוצתית וחתכו כל פרצוף בנפרד. <strong>כך חמש תמונות מספיקות למשחק שלם.</strong>',
     'edit.algoCheckBannerHtml':'🔍 <strong>בדיקת אלגוריתם:</strong> לחץ/י על שני קלפים — הסמל המשותף היחיד יסומן אוטומטית',
-    'export.printShopNotesHtml':'📦 עמוד לכל קלף · בליד 4 מ"מ · 300 DPI · העמוד האחרון הוא הגב.<br>\n          🗞️ גיליון גדול לבית דפוס — דורש חיתוך עצמי.',
+    'export.printShopNotesHtml':'📦 עמוד לכל קלף · בליד 4 מ"מ · 300 DPI · העמוד האחרון הוא הגב.<br>\n          🗞️ גיליון גדול לבית דפוס — דורש חיתוך עצמי.<br>\n          ✂️ חיתוך צורני (מגנטים, מדבקות): לכל קלף 3 עמודים — עיצוב עם גלישה · עיצוב + קו חיתוך · קו חיתוך בלבד. קו אדום 0.15 מ"מ, צבעי CMYK. בלי גב.',
     'edit.cardEditModalTitleHtml':'✏️ עריכת קלף <span id="ce-idx"></span>',
     'edit.cardEditInstructionsHtml':'לחצו על סמל כדי לבחור אותו · גררו כדי להזיז · הסרגל משנה גודל<br>\n        השינויים חלים על הקלף הזה בלבד',
     'edit.cutoutInstructionsHtml':'צבעו בירוק על מה שרוצים <b>לשמור</b>, ובאדום על ה<b>רקע</b>. מספיקים קווים גסים — אפשר לתקן שוב ושוב.',
@@ -1703,6 +1707,9 @@ const I18N={
     'export.printShopFold':'🖨️ For a print shop',
     'export.printPageBtn':'📦 PDF — one page per card',
     'export.sheetBtn':'🗞️ Sheet 33×48.8',
+    'export.dieCutBtn':'✂️ Die-cut file',
+    'export.dieCutPadWarn':'Note: the symbols are only {mm} mm from the cut line, and the print shop asks for at least {min}. You can increase the frame padding and export again.',
+    'export.dieCutCmykLoadFail':'The print-colour (CMYK) component did not load — refresh the page and try again',
     'export.sheetDiameterTitle':'Card diameter on the sheet',
     'export.sheetDiameterNormalBtn':'Regular · 71 mm',
     'export.sheetDiameterLargeBtn':'Large · 85 mm',
@@ -2121,7 +2128,7 @@ const I18N={
     'header.stepExportHtml':'<span class="n">3</span>Export',
     'upload.cropHintTextHtml':'✂️ <strong>One photo can yield several symbols</strong> — click ✂ next to a group photo and crop each face separately. <strong>Five photos are enough for a whole game.</strong>',
     'edit.algoCheckBannerHtml':'🔍 <strong>Algorithm check:</strong> click two cards — the one shared symbol will be highlighted automatically',
-    'export.printShopNotesHtml':'📦 One page per card · 4 mm bleed · 300 DPI · the last page is the back.<br>\n          🗞️ Large sheet for a print shop — requires self-cutting.',
+    'export.printShopNotesHtml':'📦 One page per card · 4 mm bleed · 300 DPI · the last page is the back.<br>\n          🗞️ Large sheet for a print shop — requires self-cutting.<br>\n          ✂️ Die-cut (magnets, stickers): 3 pages per card — design with bleed · design + cut line · cut line only. Red 0.15 mm line, CMYK colours. No back.',
     'edit.cardEditModalTitleHtml':'✏️ Edit card <span id="ce-idx"></span>',
     'edit.cardEditInstructionsHtml':'Click a symbol to select it · drag to move it · the slider changes its size<br>\n        Changes apply to this card only',
     'edit.cutoutInstructionsHtml':'Paint green over what you want to <b>keep</b>, and red over the <b>background</b>. Rough strokes are enough — you can always fix it again.',
@@ -2875,10 +2882,12 @@ window.applyI18n=applyI18n;
         <div class="brow">
           <button data-i18n="export.printPageBtn" class="btn btn-out" id="btn-doprint">📦 PDF — עמוד לכל קלף</button>
           <button data-i18n="export.sheetBtn" class="btn btn-out" id="btn-dosheet">🗞️ גיליון 33×48.8</button>
+          <button data-i18n="export.dieCutBtn" class="btn btn-out" id="btn-dodiecut">✂️ קובץ לחיתוך צורני</button>
         </div>
         <div data-i18n-html="export.printShopNotesHtml" style="font-size:.72rem;color:var(--muted);margin-top:.3rem;line-height:1.5">
           📦 עמוד לכל קלף · בליד 4 מ"מ · 300 DPI · העמוד האחרון הוא הגב.<br>
-          🗞️ גיליון גדול לבית דפוס — דורש חיתוך עצמי.
+          🗞️ גיליון גדול לבית דפוס — דורש חיתוך עצמי.<br>
+          ✂️ חיתוך צורני (מגנטים, מדבקות): לכל קלף 3 עמודים — עיצוב עם גלישה · עיצוב + קו חיתוך · קו חיתוך בלבד. קו אדום 0.15 מ"מ, צבעי CMYK. בלי גב.
         </div>
         <div id="sheet-diam-row" style="margin-top:.5rem" hidden>
           <div data-i18n="export.sheetDiameterTitle" class="og-t">קוטר הקלף בגיליון</div>
@@ -7579,6 +7588,7 @@ document.getElementById('btn-dozip').addEventListener('click',()=>doExport('zip'
 document.getElementById('btn-dodxf').addEventListener('click',()=>doExport('dxf'));
 document.getElementById('btn-doprint').addEventListener('click',()=>doExport('print'));
 document.getElementById('btn-dosheet').addEventListener('click',()=>doExport('sheet'));
+document.getElementById('btn-dodiecut').addEventListener('click',()=>doExport('diecut'));
 
 // ההודעה הירוקה מופיעה רק אחרי לחיצה אמיתית על ההורדה, ולא בסיום הייצוא.
 // כאן גם נרשם לראשונה אירוע download — עד היום נמדדו ייצואים בלבד, ולכן
@@ -7628,6 +7638,7 @@ async function doExport(type){
     else if(type==='zip')await expZIP(setp);
     else if(type==='print')await expPrintPDF(setp);
     else if(type==='sheet')await expSheetPDF(setp);
+    else if(type==='diecut')await expDieCutPDF(setp);
     else await expDXF(setp);
     // ⛔ לא להכריז "ירד" כאן — הקובץ יורד רק בלחיצה על #dl-link.
     // ההודעה המוקדמת גרמה ללקוחות לייצא שוב ושוב (4 ייצואים ב-15 שניות, 02/09).
@@ -7939,6 +7950,91 @@ async function expPrintPDF(setp){
   refreshShareBtn();
   window.track&&window.track('export',{cards:S.deck.length,symbols:S.order?S.order.spc:'',
     detail:`print-pdf · ${dpi}dpi · ${fmtSize(blob.size)} · ${S.assets.length} תמונות`});
+  setp(100,'✅ מוכן!');
+}
+
+// ══ D-77: קובץ לחיתוך צורני (מגנטים, מדבקות בחיתוך צורה) ══
+// נבנה לפי הנחיות בית דפוס (15/10/2026): לכל קלף 3 עמודים —
+//   (1) עיצוב עם גלישה · (2) עיצוב + קו חיתוך · (3) קו חיתוך בלבד.
+// קו החיתוך וקטורי, 0.15 מ"מ, RGB 255/0/0, **על שפת הקלף המצוירת** (cardGeom, כמו cutLines),
+// ולא על גבול התמונה: drawCard מצייר את הקלף עם שוליים M בתוך התמונה.
+// הגלישה: צבע השפה (מסגרת אם יש, אחרת רקע) ממלא את כל העמוד, והקלף המדויק מונח מעליו
+// עם השקיפות שלו. ⛔ לא renderBleedPair: שם הקלף המוגדל מתחת מכניס חלקי סמלים לטבעת
+// הגלישה, וה-trim המשוטח ללבן משאיר טבעת לבנה ממש מחוץ לקו — חיתוך שזז מ"מ אחד מראה לבן.
+// צבע: JPEG CMYK (js/cmyk-jpeg.js) — בית הדפוס מבקש CMYK. אותה תמונה משמשת בעמודים 1-2
+// דרך alias של jsPDF, כך שהקובץ לא מוכפל. בלי גב — מגנט/מדבקה הם חד-צדדיים.
+const DIECUT={lineMm:0.15,rgb:[255,0,0],minSafeMm:3,quality:92};
+function dieCutPage(i,pxTrim,pxBleed){
+  const pxPage=pxTrim+2*pxBleed;
+  const trim=document.createElement('canvas');trim.width=trim.height=pxTrim;
+  drawCard(trim,S.layouts[i],S.imgEls,S.shape);          // שקיפות מחוץ לקלף נשמרת
+  const page=document.createElement('canvas');page.width=page.height=pxPage;
+  const ctx=page.getContext('2d');
+  ctx.fillStyle='#ffffff';ctx.fillRect(0,0,pxPage,pxPage);
+  ctx.globalAlpha=(S.bg.op??100)/100;ctx.fillStyle=S.bg.color;ctx.fillRect(0,0,pxPage,pxPage);
+  if(S.frame.w>0&&S.frame.op>0){ctx.globalAlpha=S.frame.op/100;ctx.fillStyle=S.frame.color;ctx.fillRect(0,0,pxPage,pxPage);}
+  ctx.globalAlpha=1;
+  ctx.drawImage(trim,pxBleed,pxBleed);
+  trim.width=trim.height=0;
+  return page;
+}
+function dieCutLine(pdf,pxTrim,pxBleed,k){
+  const G=cardGeom(pxTrim);
+  pdf.setDrawColor(DIECUT.rgb[0],DIECUT.rgb[1],DIECUT.rgb[2]);
+  pdf.setLineWidth(DIECUT.lineMm);
+  if(S.shape==='circle')pdf.circle((pxBleed+G.cx)*k,(pxBleed+G.cy)*k,G.r*k,'S');
+  else pdf.roundedRect((pxBleed+G.sqx)*k,(pxBleed+G.sqy)*k,G.sq*k,G.sq*k,G.sqcr*k,G.sqcr*k,'S');
+}
+async function expDieCutPDF(setp){
+  if(!window.jspdf?.jsPDF)throw new Error(t('msg.jspdfNotLoaded'));
+  if(!window.cmykJpeg?.fromCanvas)throw new Error(t('export.dieCutCmykLoadFail'));
+  if(!S.deck?.length)throw new Error('אין משחק לייצוא — לחצו "ייצר משחק" קודם');
+  if(S.isSilhouette)throw new Error('מצב Silhouette לא מיועד לבית דפוס — כבו אותו ונסו שוב');
+  const safeMm=(S.frame.w||0)+(S.symPad||0);
+  if(safeMm<DIECUT.minSafeMm)toast(t('export.dieCutPadWarn',{mm:+safeMm.toFixed(1),min:DIECUT.minSafeMm}),'err');
+  const{jsPDF}=window.jspdf;
+  const trimMm=S.cardSizeMm,bleedMm=PRINT_SHOP.bleedMm;
+  const pxTrimIdeal=Math.ceil(trimMm/25.4*PRINT_SHOP.minDpi);
+  const pxTrim=Math.min(PRINT_SHOP.maxPx,Math.max(EXPORT_PX.print,pxTrimIdeal));
+  // ⛔ קנה המידה נגזר משפת הקלף המצוירת (2·G.r = cardSizeMm, בדיוק כמו ppMm ב-cardGeom),
+  // לא מגבול התמונה. אחרת קו החיתוך יוצא 2.8% קטן מהגודל שהלקוחה בחרה (85→82.6 מ"מ).
+  const G0=cardGeom(pxTrim);
+  const k=trimMm/(2*G0.r);                    // מ"מ לפיקסל
+  const pxBleed=Math.max(0,Math.round(bleedMm/k-(pxTrim/2-G0.r)));   // גלישה נמדדת משפת הקלף
+  const pxPage=pxTrim+2*pxBleed;
+  const pageMm=pxPage*k;
+  const dpi=Math.round(25.4/k);
+  const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:[pageMm,pageMm],compress:true});
+  const n=S.deck.length;
+  for(let i=0;i<n;i++){
+    const page=dieCutPage(i,pxTrim,pxBleed);
+    const jpg=window.cmykJpeg.fromCanvas(page,DIECUT.quality);
+    page.width=page.height=0;                                      // ⛔ שחרור זיכרון
+    const alias='diecut-'+i;
+    if(i>0)pdf.addPage([pageMm,pageMm]);
+    pdf.addImage(jpg,'JPEG',0,0,pageMm,pageMm,alias,'NONE');       // 1 — עיצוב עם גלישה
+    pdf.addPage([pageMm,pageMm]);
+    pdf.addImage(jpg,'JPEG',0,0,pageMm,pageMm,alias,'NONE');       // 2 — עיצוב + קו
+    dieCutLine(pdf,pxTrim,pxBleed,k);
+    pdf.addPage([pageMm,pageMm]);
+    dieCutLine(pdf,pxTrim,pxBleed,k);                              // 3 — קו בלבד
+    setp(3+Math.round(92*(i+1)/n),t('export.cardProgress',{i:i+1,total:n}));
+    await tick();
+  }
+  setp(98,'שומר…');
+  const shapeLabel=S.shape==='circle'?'circle':'square';
+  const fn=`matchito-diecut-${n}cards-${trimMm}mm-${shapeLabel}-cmyk.pdf`;
+  const blob=pdf.output('blob');
+  if(_exportUrl)URL.revokeObjectURL(_exportUrl);
+  _exportUrl=URL.createObjectURL(blob);
+  const lnk=document.getElementById('dl-link');
+  lnk.href=_exportUrl;lnk.download=fn;
+  document.getElementById('dl-area').classList.add('on');
+  logGame({total:S.order.total,cards:n,sizeMm:trimMm,filename:fn,type:'diecut-pdf'});
+  S._lastFile=fn;S._lastSize=blob.size;S._lastBlob=blob;
+  refreshShareBtn();
+  window.track&&window.track('export',{cards:n,symbols:S.order?S.order.spc:'',
+    detail:`diecut-pdf · ${dpi}dpi · cmyk · ${fmtSize(blob.size)} · safe ${safeMm}mm · ${S.assets.length} תמונות`});
   setp(100,'✅ מוכן!');
 }
 
