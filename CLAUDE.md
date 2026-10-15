@@ -8,7 +8,10 @@
 מחולל קלפי Dobble/Spot-It אישי — אפליקציית ווב חד-קובצית ב-GitHub Pages.
 - **Repo:** `github.com/Hos100345/Hos100345.github.io` (**ציבורי** — ראה כללי אבטחה)
 - **Deploy:** GitHub Pages מ-`main` בלבד. push ל-`main` = לייב מיידי.
-- **URLs:** `hos100345.github.io/dobble.html` == `www.hoshaya.co.il/dobble.html`. בנוסף `dobble-info.html` — עמוד שיווקי/הסבר ללקוחות (מקושר מ-`index.html` ומחלון הפתיחה של המחולל).
+- **URLs:** `hos100345.github.io/dobble.html` == `www.hoshaya.co.il/dobble.html`. בנוסף `matchito-info.html` (לשעבר `dobble-info.html`, שנשאר הפניה) — עמוד שיווקי/הסבר ללקוחות (מקושר מ-`index.html` ומחלון הפתיחה של המחולל).
+
+## ⛔ שם המוצר — "מאצ׳טו", לא "דאבל" (14/10/2026, D-75)
+"Dobble" ו-"Spot It" הם סימני מסחר רשומים של Asmodee. **אסור שיופיעו בשום טקסט שהלקוח רואה** — עברית ("דאבל") ואנגלית כאחד: כותרות, כפתורים, הודעות, וואטסאפ, שמות קבצים להורדה, meta/og. בעברית: **מאצ׳טו** (גרש עברי ׳ ולא ' — כך לא נשבר בתוך מחרוזות JS). באנגלית: **One Match**. מותר: שמות קבצים קיימים ב-URL (`dobble.html`), מזהים פנימיים והערות קוד.
 
 ## Stack
 - Vanilla JS + Canvas, קובץ יחיד (6880 שורות). ללא framework, ללא build step.
@@ -186,6 +189,7 @@
 - ⛔ **כל שינוי בציור/פריסה/מתמטיקה ב-`dobble.html` (אחת הפונקציות ברשימת `NAMES` בסקריפט) → להריץ `python3 tools/build-play-engine.py` ולהעלות `?v=` של `play-engine.js` ב-`play/index.html` **וגם** ב-`SHELL` של `play/sw.js` (+ להעלות `V` שם), באותו PR.** בלי זה הנגן מצייר אחרת מהמחולל.
 - פונקציה חדשה שהציור תלוי בה → להוסיף ל-`NAMES`. הסקריפט מזהה לפי שם ונכשל בקול אם שם חסר או כפול.
 - הנגן הוא אפליקציה להתקנה (PWA) בתיקייה `/play/` — `manifest.webmanifest` + `sw.js` ששולט **רק** ב-`/play/` (אותו דפוס כמו `/studio/`: התקנה מהשורש לא נפתחה בסמסונג). `play.html` בשורש = הפניה בלבד.
+- **גם `games/index.html` (מחולל המשחקים, G-1) טוען את `play-engine.js`** — שינוי בו = להעלות `?v=` גם שם וגם ב-`SHELL` של `games/sw.js` (+`V`).
 - `play/index.html` מגדיר בעצמו את `S` (אותן ברירות מחדל כמו `applyDesignToState`) ואת `needsWatermark`.
 
 ## Workflow (git)

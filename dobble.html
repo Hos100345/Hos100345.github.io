@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>מחולל משחק דאבל | Dobble Card Generator</title>
+  <title>מחולל משחק מאצ׳טו | One Match</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -464,13 +464,14 @@
 <script src="js/hebrew-fonts.js?v=1"></script>
 <script src="js/latin-fonts.js?v=1"></script>
 <script src="js/back-assets.js?v=1"></script>
+<script src="js/cmyk-jpeg.js?v=1"></script>
 <script>
 // קונפיג בזמן ריצה: ברירות מחדל ← קובץ הקונפיג ← עריכות מקומיות מפאנל הניהול
 window.DCFG=(function(){
   const def={accessCodes:[],adminCode:'8734',whatsapp:'972505918734',phoneDisplay:'050-591-8734',
              // הנוסח הקודם ביקש קוד גישה, והזמין בדיוק את הפנייה שהמחולל
              // נועד לחסוך: הלקוח יכול לרכוש או לשחזר קוד לבד בשתי לחיצות.
-             contactMessage:'שלום הושעיה, אני במחולל הדאבל ויש לי שאלה 🎯',analyticsUrl:'',packs:[]};
+             contactMessage:'שלום הושעיה, אני במחולל מאצ׳טו ויש לי שאלה 🎯',analyticsUrl:'',packs:[]};
   let ov={};try{ov=JSON.parse(localStorage.getItem('dobble_config_override')||'{}')}catch(e){}
   return Object.assign({},def,window.DOBBLE_CONFIG||{},ov);
 })();
@@ -486,7 +487,7 @@ function dcfgSave(patch){
 <div id="lock-screen" style="position:fixed;inset:0;background:linear-gradient(150deg,#1e1b4b,#312e81 55%,#4c1d95);z-index:9999;display:flex;flex-direction:column;align-items:center;overflow-y:auto;overscroll-behavior:contain;padding:2rem 1rem;text-align:center">
   <div style="max-width:400px;width:100%;margin:auto;display:flex;flex-direction:column;align-items:center;gap:.85rem">
     <div style="font-size:3rem">🎯</div>
-    <div data-i18n="lock.title" style="font-size:1.6rem;font-weight:900;color:#fff;letter-spacing:.05em">מחולל דאבל</div>
+    <div data-i18n="lock.title" style="font-size:1.6rem;font-weight:900;color:#fff;letter-spacing:.05em">מחולל מאצ׳טו</div>
 
     <div style="display:flex;gap:.35rem;background:rgba(255,255,255,.1);border-radius:100px;padding:.3rem;width:100%">
       <button data-i18n="lock.tabHaveCode" type="button" id="lock-tab-code" style="flex:1;padding:.55rem .3rem;border:none;border-radius:100px;font-family:inherit;font-size:.82rem;font-weight:700;cursor:pointer;background:#fff;color:#1e1b4b">יש לי קוד</button>
@@ -823,7 +824,7 @@ function dcfgSave(patch){
 // למצוא אותם בקוד: screen.action, לא t17.
 const I18N={
   he:{
-    'lock.title':'מחולל דאבל',
+    'lock.title':'מחולל מאצ׳טו',
     'lock.tabHaveCode':'יש לי קוד',
     'lock.tabFreeSignup':'הרשמה חינם',
     'lock.tabBuy':'רכישת מנוי',
@@ -851,8 +852,8 @@ const I18N={
     'lock.tierUpToCards':'עד {tier} קלפים · {price} ₪',
     'lock.tierIncludesSmaller':'כולל חפיסות של {included} קלפים',
     'lock.tierOneTimePayment':'תשלום חד-פעמי · חודש גישה',
-    'onboard.title':'ברוכים הבאים למחולל דאבל!',
-    'onboard.subtitle':'צור/י משחק Spot-It מותאם אישית בשלושה שלבים פשוטים',
+    'onboard.title':'ברוכים הבאים למחולל מאצ׳טו!',
+    'onboard.subtitle':'צור/י משחק מאצ׳טו מותאם אישית בשלושה שלבים פשוטים',
     'onboard.step1Title':'שלב 1 — העלאת סמלים',
     'onboard.step1Desc':'גרור/י תמונות (PNG, JPG, SVG, HEIC) או בחרו חבילה מוכנה. ניתן לחתוך סמלים מתמונות גדולות עם כלי ✂️ וגם לבצע הסרת רקע אוטומטית',
     'onboard.step2Title':'שלב 2 — יצירה ועיצוב',
@@ -863,7 +864,7 @@ const I18N={
     'onboard.contactBtn':'📱 פנה/י אלינו בוואטסאפ',
     'onboard.startBtn':'🚀 בואו נתחיל!',
     'header.homeLink':'→ האתר',
-    'header.title':'🎯 מחולל משחק דאבל',
+    'header.title':'🎯 מחולל משחק מאצ׳טו',
     'header.accountBtnTitle':'חשבון וסנכרון',
     'header.adminBtnTitle':'פאנל ניהול',
     'confirm.defaultTitle':'אישור מחיקה',
@@ -916,11 +917,11 @@ const I18N={
     'upload.suitableKids6':'ילדים 6+',
     'upload.suitableFamily':'משפחה',
     'upload.suitableMediumHard':'בינוני–קשה',
-    'upload.suitableStandard':'⭐ דאבל סטנדרטי',
+    'upload.suitableStandard':'⭐ גודל סטנדרטי',
     'upload.suitableAdvanced':'מתקדמים',
     'upload.suitableMax':'המקסימום',
     'upload.allAlreadyInPool':'כל {n} התמונות כבר קיימות במאגר — לא נוסף כלום',
-    'upload.tooManyImagesBody':'אחרי ההעלאה יהיו במאגר {total} סמלים, אבל משחק דאבל משתמש לכל היותר ב-{max}. התמונות שמעבר לכך לא יופיעו באף משחק — הן רק יאטו את השמירה ואת הגלריה.\n\nאפשר להמשיך ולבחור אחר כך אילו סמלים ייכנסו, או לבטל ולהעלות פחות תמונות.',
+    'upload.tooManyImagesBody':'אחרי ההעלאה יהיו במאגר {total} סמלים, אבל משחק מאצ׳טו משתמש לכל היותר ב-{max}. התמונות שמעבר לכך לא יופיעו באף משחק — הן רק יאטו את השמירה ואת הגלריה.\n\nאפשר להמשיך ולבחור אחר כך אילו סמלים ייכנסו, או לבטל ולהעלות פחות תמונות.',
     'upload.tooManyImagesWarn':'שים לב: {n} תמונות בהעלאה אחת — זה עלול לקחת זמן רב מאוד.',
     'upload.imagesAdded':'נוספו {n} תמונות למאגר ✓',
     'upload.skippedAlreadyHadSuffix':' · דילגנו על {n} שכבר היו',
@@ -1041,6 +1042,9 @@ const I18N={
     'export.printShopFold':'🖨️ לבית דפוס',
     'export.printPageBtn':'📦 PDF — עמוד לכל קלף',
     'export.sheetBtn':'🗞️ גיליון 33×48.8',
+    'export.dieCutBtn':'✂️ קובץ לחיתוך צורני',
+    'export.dieCutPadWarn':'שימו לב: הסמלים רחוקים רק {mm} מ"מ מקו החיתוך, ובית הדפוס מבקש לפחות {min}. אפשר להגדיל את "מרווח מהמסגרת" ולייצא שוב.',
+    'export.dieCutCmykLoadFail':'רכיב צבעי הדפוס (CMYK) לא נטען — רעננו את הדף ונסו שוב',
     'export.sheetDiameterTitle':'קוטר הקלף בגיליון',
     'export.sheetDiameterNormalBtn':'רגיל · 71 מ"מ',
     'export.sheetDiameterLargeBtn':'גדול · 85 מ"מ',
@@ -1463,13 +1467,13 @@ const I18N={
     'lock.waHelpBtn':'עזרה בוואטסאפ',
     'lock.upgradeCurrentTierInfo':'הקוד שלך פותח <b>להורדה</b> עד <b id="upg-current"></b> קלפים. המשחק עצמו נשאר שלכם בכל גודל — אפשר להמשיך לערוך ולצפות בתצוגה מקדימה, והתשלום הוא על ההורדה להדפסה:',
     'lock.upgradeOfferBodyHtml':'<b>רוצים רק משחק אחד? זה בדיוק זה.</b><br>\n      משלמים פעם אחת, ובמשך חודש יוצרים ומדפיסים כמה משחקים שרוצים.\n      <b>אין חיוב חוזר</b> — אחרי חודש פשוט נגמר, אלא אם תבחרו לחדש.',
-    'onboard.packageInfoHtml':'🕹️ <strong>חבילה אחת = 4 משחקים שונים</strong> (דאבל קלאסי, המגדל, הבאר, השלישייה) · מתאים לימי הולדת, חתונות, בר/בת מצווה, בתי ספר, תנועות נוער ועוד —\n      <a href="dobble-info.html" target="_blank" rel="noopener noreferrer" style="color:var(--purple);font-weight:700;text-decoration:underline">לכל הרעיונות וההשראה ←</a>',
+    'onboard.packageInfoHtml':'🕹️ <strong>חבילה אחת = 4 משחקים שונים</strong> (מאצ׳טו קלאסי, המגדל, הבאר, השלישייה) · מתאים לימי הולדת, חתונות, בר/בת מצווה, בתי ספר, תנועות נוער ועוד —\n      <a href="matchito-info.html" target="_blank" rel="noopener noreferrer" style="color:var(--purple);font-weight:700;text-decoration:underline">לכל הרעיונות וההשראה ←</a>',
     'header.stepUploadHtml':'<span class="n">1</span>העלאה',
     'header.stepEditHtml':'<span class="n">2</span>עריכה',
     'header.stepExportHtml':'<span class="n">3</span>ייצוא',
     'upload.cropHintTextHtml':'✂️ <strong>מתמונה אחת אפשר להפיק כמה סמלים</strong> — לחצו על ✂ ליד תמונה קבוצתית וחתכו כל פרצוף בנפרד. <strong>כך חמש תמונות מספיקות למשחק שלם.</strong>',
     'edit.algoCheckBannerHtml':'🔍 <strong>בדיקת אלגוריתם:</strong> לחץ/י על שני קלפים — הסמל המשותף היחיד יסומן אוטומטית',
-    'export.printShopNotesHtml':'📦 עמוד לכל קלף · בליד 4 מ"מ · 300 DPI · העמוד האחרון הוא הגב.<br>\n          🗞️ גיליון גדול לבית דפוס — דורש חיתוך עצמי.',
+    'export.printShopNotesHtml':'📦 עמוד לכל קלף · בליד 4 מ"מ · 300 DPI · העמוד האחרון הוא הגב.<br>\n          🗞️ גיליון גדול לבית דפוס — דורש חיתוך עצמי.<br>\n          ✂️ חיתוך צורני (מגנטים, מדבקות): לכל קלף 3 עמודים — עיצוב עם גלישה · עיצוב + קו חיתוך · קו חיתוך בלבד. קו אדום 0.15 מ"מ, סימני חיתוך בפינות, צבעי CMYK. אם הגב מופעל — עוד 3 עמודים לגב בסוף.',
     'edit.cardEditModalTitleHtml':'✏️ עריכת קלף <span id="ce-idx"></span>',
     'edit.cardEditInstructionsHtml':'לחצו על סמל כדי לבחור אותו · גררו כדי להזיז · הסרגל משנה גודל<br>\n        השינויים חלים על הקלף הזה בלבד',
     'edit.cutoutInstructionsHtml':'צבעו בירוק על מה שרוצים <b>לשמור</b>, ובאדום על ה<b>רקע</b>. מספיקים קווים גסים — אפשר לתקן שוב ושוב.',
@@ -1711,6 +1715,9 @@ const I18N={
     'export.printShopFold':'🖨️ For a print shop',
     'export.printPageBtn':'📦 PDF — one page per card',
     'export.sheetBtn':'🗞️ Sheet 33×48.8',
+    'export.dieCutBtn':'✂️ Die-cut file',
+    'export.dieCutPadWarn':'Note: the symbols are only {mm} mm from the cut line, and the print shop asks for at least {min}. You can increase the frame padding and export again.',
+    'export.dieCutCmykLoadFail':'The print-colour (CMYK) component did not load — refresh the page and try again',
     'export.sheetDiameterTitle':'Card diameter on the sheet',
     'export.sheetDiameterNormalBtn':'Regular · 71 mm',
     'export.sheetDiameterLargeBtn':'Large · 85 mm',
@@ -2131,13 +2138,13 @@ const I18N={
     'lock.waHelpBtn':'Help on WhatsApp',
     'lock.upgradeCurrentTierInfo':'Your code unlocks <b>downloading</b> up to <b id="upg-current"></b> cards. The game itself stays yours at any size — keep editing and previewing; payment is only for the print download:',
     'lock.upgradeOfferBodyHtml':'<b>Just want one game? This is exactly that.</b><br>\n      Pay once, and for a month create and print as many games as you like.\n      <b>No recurring charges</b> — after a month it simply ends, unless you choose to renew.',
-    'onboard.packageInfoHtml':'🕹️ <strong>One pack = 4 different games</strong> (Classic Match, The Tower, The Well, The Trio) · great for birthdays, weddings, bar/bat mitzvahs, schools, youth groups and more —\n      <a href="dobble-info.html" target="_blank" rel="noopener noreferrer" style="color:var(--purple);font-weight:700;text-decoration:underline">For all the ideas and inspiration ←</a>',
+    'onboard.packageInfoHtml':'🕹️ <strong>One pack = 4 different games</strong> (Classic Match, The Tower, The Well, The Trio) · great for birthdays, weddings, bar/bat mitzvahs, schools, youth groups and more —\n      <a href="matchito-info.html" target="_blank" rel="noopener noreferrer" style="color:var(--purple);font-weight:700;text-decoration:underline">For all the ideas and inspiration ←</a>',
     'header.stepUploadHtml':'<span class="n">1</span>Upload',
     'header.stepEditHtml':'<span class="n">2</span>Edit',
     'header.stepExportHtml':'<span class="n">3</span>Export',
     'upload.cropHintTextHtml':'✂️ <strong>One photo can yield several symbols</strong> — click ✂ next to a group photo and crop each face separately. <strong>Five photos are enough for a whole game.</strong>',
     'edit.algoCheckBannerHtml':'🔍 <strong>Algorithm check:</strong> click two cards — the one shared symbol will be highlighted automatically',
-    'export.printShopNotesHtml':'📦 One page per card · 4 mm bleed · 300 DPI · the last page is the back.<br>\n          🗞️ Large sheet for a print shop — requires self-cutting.',
+    'export.printShopNotesHtml':'📦 One page per card · 4 mm bleed · 300 DPI · the last page is the back.<br>\n          🗞️ Large sheet for a print shop — requires self-cutting.<br>\n          ✂️ Die-cut (magnets, stickers): 3 pages per card — design with bleed · design + cut line · cut line only. Red 0.15 mm line, corner crop marks, CMYK colours. If the back is on — 3 more pages for it at the end.',
     'edit.cardEditModalTitleHtml':'✏️ Edit card <span id="ce-idx"></span>',
     'edit.cardEditInstructionsHtml':'Click a symbol to select it · drag to move it · the slider changes its size<br>\n        Changes apply to this card only',
     'edit.cutoutInstructionsHtml':'Paint green over what you want to <b>keep</b>, and red over the <b>background</b>. Rough strokes are enough — you can always fix it again.',
@@ -2489,8 +2496,8 @@ window.applyI18n=applyI18n;
   <div class="modal-card" style="max-width:490px;width:96%">
     <div style="text-align:center;padding:.3rem 0 1rem">
       <div style="font-size:2.6rem;margin-bottom:.4rem">🎯</div>
-      <h2 data-i18n="onboard.title" style="font-size:1.2rem;font-weight:900;color:var(--indigo);margin-bottom:.25rem">ברוכים הבאים למחולל דאבל!</h2>
-      <p data-i18n="onboard.subtitle" style="color:var(--muted);font-size:.84rem;line-height:1.55">צור/י משחק Spot-It מותאם אישית בשלושה שלבים פשוטים</p>
+      <h2 data-i18n="onboard.title" style="font-size:1.2rem;font-weight:900;color:var(--indigo);margin-bottom:.25rem">ברוכים הבאים למחולל מאצ׳טו!</h2>
+      <p data-i18n="onboard.subtitle" style="color:var(--muted);font-size:.84rem;line-height:1.55">צור/י משחק מאצ׳טו מותאם אישית בשלושה שלבים פשוטים</p>
     </div>
     <div style="display:flex;flex-direction:column;gap:.55rem;margin-bottom:1rem">
       <div class="ob-step">
@@ -2507,8 +2514,8 @@ window.applyI18n=applyI18n;
       </div>
     </div>
     <div data-i18n-html="onboard.packageInfoHtml" style="background:rgba(238,236,251,.7);border:1.5px solid #c7d2fe;border-radius:10px;padding:.7rem 1rem;text-align:center;margin-bottom:.7rem;font-size:.78rem;color:var(--indigo);line-height:1.6">
-      🕹️ <strong>חבילה אחת = 4 משחקים שונים</strong> (דאבל קלאסי, המגדל, הבאר, השלישייה) · מתאים לימי הולדת, חתונות, בר/בת מצווה, בתי ספר, תנועות נוער ועוד —
-      <a href="dobble-info.html" target="_blank" rel="noopener noreferrer" style="color:var(--purple);font-weight:700;text-decoration:underline">לכל הרעיונות וההשראה ←</a>
+      🕹️ <strong>חבילה אחת = 4 משחקים שונים</strong> (מאצ׳טו קלאסי, המגדל, הבאר, השלישייה) · מתאים לימי הולדת, חתונות, בר/בת מצווה, בתי ספר, תנועות נוער ועוד —
+      <a href="matchito-info.html" target="_blank" rel="noopener noreferrer" style="color:var(--purple);font-weight:700;text-decoration:underline">לכל הרעיונות וההשראה ←</a>
     </div>
     <div style="background:rgba(240,253,244,.85);border:1.5px solid #bbf7d0;border-radius:10px;padding:.75rem 1rem;text-align:center;margin-bottom:.9rem">
       <div data-i18n="onboard.contactLabel" style="font-size:.8rem;color:#166534;font-weight:600;margin-bottom:.35rem">💬 לרכישת קוד גישה — צרו קשר</div>
@@ -2526,8 +2533,8 @@ window.applyI18n=applyI18n;
   <!-- מתג שפה: התווית תמיד מראה לאן הלחיצה תוביל (בעברית "EN", באנגלית "עב") -->
   <button type="button" id="btn-lang" class="hdr-back" data-i18n="header.langToggle" style="border:none;background:none;font:inherit;cursor:pointer">EN</button>
   <div class="hdr-title">
-    <h1 data-i18n="header.title">🎯 מחולל משחק דאבל</h1>
-    <div class="sub">Dobble / Spot It! · Finite Projective Plane</div>
+    <h1 data-i18n="header.title">🎯 מחולל משחק מאצ׳טו</h1>
+    <div class="sub">One Match · Finite Projective Plane</div>
   </div>
   <nav class="step-ind">
     <div class="si active" id="si1" data-i18n-html="header.stepUploadHtml"><span class="n">1</span>העלאה</div>
@@ -2659,7 +2666,7 @@ window.applyI18n=applyI18n;
         <tr><td>13</td><td>4</td><td>13</td><td data-i18n="upload.suitableKids6">ילדים 6+</td></tr>
         <tr><td>21</td><td>5</td><td>21</td><td data-i18n="upload.suitableFamily">משפחה</td></tr>
         <tr><td>31</td><td>6</td><td>31</td><td data-i18n="upload.suitableMediumHard">בינוני–קשה</td></tr>
-        <tr><td>57</td><td>8</td><td>57</td><td data-i18n="upload.suitableStandard">⭐ דאבל סטנדרטי</td></tr>
+        <tr><td>57</td><td>8</td><td>57</td><td data-i18n="upload.suitableStandard">⭐ גודל סטנדרטי</td></tr>
         <tr><td>73</td><td>9</td><td>73</td><td data-i18n="upload.suitableAdvanced">מתקדמים</td></tr>
         <tr><td>91</td><td>10</td><td>91</td><td data-i18n="upload.suitableMax">המקסימום</td></tr>
       </tbody>
@@ -2891,10 +2898,12 @@ window.applyI18n=applyI18n;
         <div class="brow">
           <button data-i18n="export.printPageBtn" class="btn btn-out" id="btn-doprint">📦 PDF — עמוד לכל קלף</button>
           <button data-i18n="export.sheetBtn" class="btn btn-out" id="btn-dosheet">🗞️ גיליון 33×48.8</button>
+          <button data-i18n="export.dieCutBtn" class="btn btn-out" id="btn-dodiecut">✂️ קובץ לחיתוך צורני</button>
         </div>
         <div data-i18n-html="export.printShopNotesHtml" style="font-size:.72rem;color:var(--muted);margin-top:.3rem;line-height:1.5">
           📦 עמוד לכל קלף · בליד 4 מ"מ · 300 DPI · העמוד האחרון הוא הגב.<br>
-          🗞️ גיליון גדול לבית דפוס — דורש חיתוך עצמי.
+          🗞️ גיליון גדול לבית דפוס — דורש חיתוך עצמי.<br>
+          ✂️ חיתוך צורני (מגנטים, מדבקות): לכל קלף 3 עמודים — עיצוב עם גלישה · עיצוב + קו חיתוך · קו חיתוך בלבד. קו אדום 0.15 מ"מ, סימני חיתוך בפינות, צבעי CMYK. אם הגב מופעל — עוד 3 עמודים לגב בסוף.
         </div>
         <div id="sheet-diam-row" style="margin-top:.5rem" hidden>
           <div data-i18n="export.sheetDiameterTitle" class="og-t">קוטר הקלף בגיליון</div>
@@ -3434,7 +3443,7 @@ window.applyI18n=applyI18n;
 <div id="admin-panel" class="adm-ov">
   <div style="max-width:820px;margin:0 auto">
     <div class="adm-hdr">
-      🔐 לוח בקרה — מחולל דאבל
+      🔐 לוח בקרה — מחולל מאצ׳טו
       <button onclick="closeAdminPanel()" style="margin-right:auto;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.15);color:#a5b4fc;border-radius:8px;padding:.35rem .85rem;cursor:pointer;font-family:inherit;font-size:.85rem">✕ סגור</button>
     </div>
 
@@ -7652,6 +7661,7 @@ document.getElementById('btn-dozip').addEventListener('click',()=>doExport('zip'
 document.getElementById('btn-dodxf').addEventListener('click',()=>doExport('dxf'));
 document.getElementById('btn-doprint').addEventListener('click',()=>doExport('print'));
 document.getElementById('btn-dosheet').addEventListener('click',()=>doExport('sheet'));
+document.getElementById('btn-dodiecut').addEventListener('click',()=>doExport('diecut'));
 
 // ההודעה הירוקה מופיעה רק אחרי לחיצה אמיתית על ההורדה, ולא בסיום הייצוא.
 // כאן גם נרשם לראשונה אירוע download — עד היום נמדדו ייצואים בלבד, ולכן
@@ -7701,6 +7711,7 @@ async function doExport(type){
     else if(type==='zip')await expZIP(setp);
     else if(type==='print')await expPrintPDF(setp);
     else if(type==='sheet')await expSheetPDF(setp);
+    else if(type==='diecut')await expDieCutPDF(setp);
     else await expDXF(setp);
     // ⛔ לא להכריז "ירד" כאן — הקובץ יורד רק בלחיצה על #dl-link.
     // ההודעה המוקדמת גרמה ללקוחות לייצא שוב ושוב (4 ייצואים ב-15 שניות, 02/09).
@@ -7855,7 +7866,7 @@ async function expPDF(setp){
   // קריאה אחרי await מאבדת את ה-user gesture ו-iOS דוחה אותה.
   S._lastBlob=blob;
   const lnk=document.getElementById('dl-link');
-  const fn=`dobble-${S.order.total}cards-${S.cardSizeMm}mm${backOn?'-2sided':''}.pdf`;
+  const fn=`matchito-${S.order.total}cards-${S.cardSizeMm}mm${backOn?'-2sided':''}.pdf`;
   lnk.href=_exportUrl;lnk.download=fn;
   document.getElementById('dl-area').classList.add('on');
   logGame({total:S.order.total,cards:S.deck.length,sizeMm:S.cardSizeMm,filename:fn,type:'pdf'});
@@ -7998,7 +8009,7 @@ async function expPrintPDF(setp){
   }
   setp(98,'שומר…');
   const shapeLabel=S.shape==='circle'?'circle':'square';
-  const fn=`dobble-print-${S.deck.length}cards-${trimMm}mm-${shapeLabel}-bleed${bleedMm}.pdf`;
+  const fn=`matchito-print-${S.deck.length}cards-${trimMm}mm-${shapeLabel}-bleed${bleedMm}.pdf`;
   const blob=pdf.output('blob');
   if(_exportUrl)URL.revokeObjectURL(_exportUrl);
   _exportUrl=URL.createObjectURL(blob);
@@ -8012,6 +8023,148 @@ async function expPrintPDF(setp){
   refreshShareBtn();
   window.track&&window.track('export',{cards:S.deck.length,symbols:S.order?S.order.spc:'',
     detail:`print-pdf · ${dpi}dpi · ${fmtSize(blob.size)} · ${S.assets.length} תמונות`});
+  setp(100,'✅ מוכן!');
+}
+
+// ══ D-77: קובץ לחיתוך צורני (מגנטים, מדבקות בחיתוך צורה) ══
+// נבנה לפי הנחיות בית דפוס (15/10/2026): לכל קלף 3 עמודים —
+//   (1) עיצוב עם גלישה · (2) עיצוב + קו חיתוך · (3) קו חיתוך בלבד.
+// קו החיתוך וקטורי, 0.15 מ"מ, RGB 255/0/0, **על שפת הקלף המצוירת** (cardGeom, כמו cutLines),
+// ולא על גבול התמונה: drawCard מצייר את הקלף עם שוליים M בתוך התמונה.
+// הגלישה: צבע השפה (מסגרת אם יש, אחרת רקע) ממלא את כל העמוד, והקלף המדויק מונח מעליו
+// עם השקיפות שלו. ⛔ לא renderBleedPair: שם הקלף המוגדל מתחת מכניס חלקי סמלים לטבעת
+// הגלישה, וה-trim המשוטח ללבן משאיר טבעת לבנה ממש מחוץ לקו — חיתוך שזז מ"מ אחד מראה לבן.
+// צבע: JPEG CMYK (js/cmyk-jpeg.js) — בית הדפוס מבקש CMYK. אותה תמונה משמשת בעמודים 1-2
+// דרך alias של jsPDF, כך שהקובץ לא מוכפל. גב: אם מופעל — עוד 3 עמודים בסוף, באותו מבנה
+// (drawCardBack חולק עם cardGeom את אותה גאומטריה, ולכן אותו קו חיתוך). מגנט בלי גב = לכבות את הגב.
+const DIECUT={lineMm:0.15,rgb:[255,0,0],minSafeMm:3,quality:92,
+  // D-79 סימני חיתוך: שוליים לבנים סביב תמונת הגלישה, ובהם סימני L בפינות תיבת החיתוך.
+  // הסימן מתחיל 1 מ"מ מחוץ לגלישה (לא נוגע בתמונה) ובאורך 5 מ"מ. צבע רישום = CMYK 100/100/100/100.
+  slugMm:8,markGapMm:1,markLenMm:5,markLineMm:0.1};
+// סימני חיתוך בפינות תיבת החיתוך (לעיגול — הריבוע החוסם את קו החיתוך). o = היסט ראשית התמונה בעמוד.
+function dieCutMarks(pdf,pxTrim,pxBleed,k,o){
+  const G=cardGeom(pxTrim);
+  const cx=o+(pxBleed+G.cx)*k,cy=o+(pxBleed+G.cy)*k;
+  const h=(S.shape==='circle'?G.r:G.sq/2)*k;                    // חצי צלע תיבת החיתוך
+  const imgHalf=(pxTrim/2+pxBleed)*k;                             // חצי צלע תמונת הגלישה
+  const a=imgHalf-h+DIECUT.markGapMm,L=DIECUT.markLenMm;          // מרחק תחילת הסימן משפת החיתוך
+  pdf.setDrawColor(1,1,1,1);                                      // registration
+  pdf.setLineWidth(DIECUT.markLineMm);
+  for(const sx of[-1,1])for(const sy of[-1,1]){
+    const x=cx+sx*h,y=cy+sy*h;
+    pdf.line(x+sx*a,y,x+sx*(a+L),y);                              // אופקי — בהמשך קו החיתוך העליון/תחתון
+    pdf.line(x,y+sy*a,x,y+sy*(a+L));                              // אנכי
+  }
+}
+function dieCutPage(i,pxTrim,pxBleed){
+  const pxPage=pxTrim+2*pxBleed;
+  const trim=document.createElement('canvas');trim.width=trim.height=pxTrim;
+  drawCard(trim,S.layouts[i],S.imgEls,S.shape);          // שקיפות מחוץ לקלף נשמרת
+  const page=document.createElement('canvas');page.width=page.height=pxPage;
+  const ctx=page.getContext('2d');
+  ctx.fillStyle='#ffffff';ctx.fillRect(0,0,pxPage,pxPage);
+  ctx.globalAlpha=(S.bg.op??100)/100;ctx.fillStyle=S.bg.color;ctx.fillRect(0,0,pxPage,pxPage);
+  if(S.frame.w>0&&S.frame.op>0){ctx.globalAlpha=S.frame.op/100;ctx.fillStyle=S.frame.color;ctx.fillRect(0,0,pxPage,pxPage);}
+  ctx.globalAlpha=1;
+  ctx.drawImage(trim,pxBleed,pxBleed);
+  trim.width=trim.height=0;
+  return page;
+}
+// גב: הרקע יכול להיות מעבר צבע/דוגמה ולגב יש מסגרת משלו, אז אין "צבע שפה" אחד. ⛔ לא גב מוגדל
+// (renderBleedPair): המסגרת המוגדלת יושבת בתוך הגלישה ומשאירה טבעת לבנה ליד הקו. במקום זה —
+// הארכת שפה: הגב מצויר שוב ושוב בהגדלות של פיקסל אחד, הגדול ראשון, כך שבכל נקודה בגלישה
+// נשאר הצבע שעל שפת הגב באותו כיוון. מעל הכול — הגב המדויק.
+function dieCutBackPage(pxTrim,pxBleed){
+  const pxPage=pxTrim+2*pxBleed,c=pxPage/2;
+  const trim=document.createElement('canvas');trim.width=trim.height=pxTrim;
+  drawCardBack(trim);
+  const page=document.createElement('canvas');page.width=page.height=pxPage;
+  const ctx=page.getContext('2d');
+  ctx.fillStyle='#ffffff';ctx.fillRect(0,0,pxPage,pxPage);
+  const G=cardGeom(pxTrim),isC=S.shape==='circle',h=isC?G.r:G.sq/2;
+  // מקור ההארכה = הגב חתוך 3px פנימה: הפיקסלים שעל השפה עצמה חצי-שקופים (החלקה), והם
+  // יצרו פסים חיוורים בגלישה. 3px פנימה = צבע הגב האמיתי ליד השפה.
+  const ins=3,src=document.createElement('canvas');src.width=src.height=pxTrim;
+  const sx=src.getContext('2d');sx.beginPath();
+  if(isC)sx.arc(G.cx,G.cy,G.r-ins,0,Math.PI*2);else rrect(sx,G.sqx+ins,G.sqy+ins,G.sq-2*ins,G.sq-2*ins,Math.max(0,G.sqcr-ins));
+  sx.clip();sx.drawImage(trim,0,0);
+  const hi=h-ins,reach=Math.ceil(pxBleed+(pxTrim/2-hi))+2;          // עד פינות העמוד גם בריבוע
+  for(let j=reach;j>=1;j--){const d=pxTrim*(hi+j)/hi;ctx.drawImage(src,c-d/2,c-d/2,d,d);}
+  ctx.drawImage(trim,pxBleed,pxBleed);
+  trim.width=trim.height=src.width=src.height=0;
+  return page;
+}
+function dieCutLine(pdf,pxTrim,pxBleed,k,o=0){
+  const G=cardGeom(pxTrim);
+  pdf.setDrawColor(DIECUT.rgb[0],DIECUT.rgb[1],DIECUT.rgb[2]);
+  pdf.setLineWidth(DIECUT.lineMm);
+  if(S.shape==='circle')pdf.circle(o+(pxBleed+G.cx)*k,o+(pxBleed+G.cy)*k,G.r*k,'S');
+  else pdf.roundedRect(o+(pxBleed+G.sqx)*k,o+(pxBleed+G.sqy)*k,G.sq*k,G.sq*k,G.sqcr*k,G.sqcr*k,'S');
+}
+async function expDieCutPDF(setp){
+  if(!window.jspdf?.jsPDF)throw new Error(t('msg.jspdfNotLoaded'));
+  if(!window.cmykJpeg?.fromCanvas)throw new Error(t('export.dieCutCmykLoadFail'));
+  if(!S.deck?.length)throw new Error('אין משחק לייצוא — לחצו "ייצר משחק" קודם');
+  if(S.isSilhouette)throw new Error('מצב Silhouette לא מיועד לבית דפוס — כבו אותו ונסו שוב');
+  const safeMm=(S.frame.w||0)+(S.symPad||0);
+  if(safeMm<DIECUT.minSafeMm)toast(t('export.dieCutPadWarn',{mm:+safeMm.toFixed(1),min:DIECUT.minSafeMm}),'err');
+  const{jsPDF}=window.jspdf;
+  const trimMm=S.cardSizeMm,bleedMm=PRINT_SHOP.bleedMm;
+  const pxTrimIdeal=Math.ceil(trimMm/25.4*PRINT_SHOP.minDpi);
+  const pxTrim=Math.min(PRINT_SHOP.maxPx,Math.max(EXPORT_PX.print,pxTrimIdeal));
+  // ⛔ קנה המידה נגזר משפת הקלף המצוירת (2·G.r = cardSizeMm, בדיוק כמו ppMm ב-cardGeom),
+  // לא מגבול התמונה. אחרת קו החיתוך יוצא 2.8% קטן מהגודל שהלקוחה בחרה (85→82.6 מ"מ).
+  const G0=cardGeom(pxTrim);
+  const k=trimMm/(2*G0.r);                    // מ"מ לפיקסל
+  const pxBleed=Math.max(0,Math.round(bleedMm/k-(pxTrim/2-G0.r)));   // גלישה נמדדת משפת הקלף
+  const pxPage=pxTrim+2*pxBleed;
+  const pageMm=pxPage*k;
+  const dpi=Math.round(25.4/k);
+  const o=DIECUT.slugMm,fullMm=pageMm+2*o;                         // D-79: שוליים לסימני חיתוך
+  const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:[fullMm,fullMm],compress:true});
+  // שלושת העמודים של כל צד — אותו מיקום בדיוק, סימני חיתוך בכולם כדי שבית הדפוס יוכל ליישר שכבות.
+  const put3=(jpg,alias,first)=>{
+    if(!first)pdf.addPage([fullMm,fullMm]);
+    pdf.addImage(jpg,'JPEG',o,o,pageMm,pageMm,alias,'NONE');       // 1 — עיצוב עם גלישה
+    dieCutMarks(pdf,pxTrim,pxBleed,k,o);
+    pdf.addPage([fullMm,fullMm]);
+    pdf.addImage(jpg,'JPEG',o,o,pageMm,pageMm,alias,'NONE');       // 2 — עיצוב + קו
+    dieCutLine(pdf,pxTrim,pxBleed,k,o);
+    dieCutMarks(pdf,pxTrim,pxBleed,k,o);
+    pdf.addPage([fullMm,fullMm]);
+    dieCutLine(pdf,pxTrim,pxBleed,k,o);                            // 3 — קו בלבד
+    dieCutMarks(pdf,pxTrim,pxBleed,k,o);
+  };
+  const n=S.deck.length,backOn=!!S.back.enabled;
+  for(let i=0;i<n;i++){
+    const page=dieCutPage(i,pxTrim,pxBleed);
+    const jpg=window.cmykJpeg.fromCanvas(page,DIECUT.quality);
+    page.width=page.height=0;                                      // ⛔ שחרור זיכרון
+    put3(jpg,'diecut-'+i,i===0);
+    setp(3+Math.round(92*(i+1)/(n+(backOn?1:0))),t('export.cardProgress',{i:i+1,total:n}));
+    await tick();
+  }
+  if(backOn){
+    const page=dieCutBackPage(pxTrim,pxBleed);
+    const jpg=window.cmykJpeg.fromCanvas(page,DIECUT.quality);
+    page.width=page.height=0;
+    put3(jpg,'diecut-back',false);
+    await tick();
+  }
+  setp(98,'שומר…');
+  const shapeLabel=S.shape==='circle'?'circle':'square';
+  const fn=`matchito-diecut-${n}cards-${trimMm}mm-${shapeLabel}${backOn?'-2sided':''}-cmyk.pdf`;
+  const blob=pdf.output('blob');
+  if(_exportUrl)URL.revokeObjectURL(_exportUrl);
+  _exportUrl=URL.createObjectURL(blob);
+  const lnk=document.getElementById('dl-link');
+  lnk.href=_exportUrl;lnk.download=fn;
+  document.getElementById('dl-area').classList.add('on');
+  logGame({total:S.order.total,cards:n,sizeMm:trimMm,filename:fn,type:'diecut-pdf'});
+  S._lastFile=fn;S._lastSize=blob.size;S._lastBlob=blob;
+  refreshShareBtn();
+  window.track&&window.track('export',{cards:n,symbols:S.order?S.order.spc:'',
+    detail:`diecut-pdf · ${dpi}dpi · cmyk · ${fmtSize(blob.size)} · safe ${safeMm}mm · ${S.assets.length} תמונות`});
   setp(100,'✅ מוכן!');
 }
 
@@ -8129,7 +8282,7 @@ async function expSheetPDF(setp){
 
     setp(98,'שומר…');
     const totalSheets=Math.ceil(globalIdx/L.perSheet);
-    const fn=`dobble-sheet-${globalIdx}cards-${trimMm}mm-${totalSheets}x2.pdf`;
+    const fn=`matchito-sheet-${globalIdx}cards-${trimMm}mm-${totalSheets}x2.pdf`;
     const blob=pdf.output('blob');
     if(_exportUrl)URL.revokeObjectURL(_exportUrl);
     _exportUrl=URL.createObjectURL(blob);
@@ -8151,7 +8304,7 @@ async function expSheetPDF(setp){
 
 async function expZIP(setp){
   if(typeof JSZip==='undefined')throw new Error('ספריית JSZip לא נטענה — נדרש חיבור לאינטרנט');
-  const zip=new JSZip(),folder=zip.folder('dobble-cards');
+  const zip=new JSZip(),folder=zip.folder('matchito-cards');
   const px=EXPORT_PX[S.exportQuality]||CARD_PX;
   const tmp=document.createElement('canvas');tmp.width=tmp.height=px;
   const backOn=S.back.enabled;
@@ -8178,7 +8331,7 @@ async function expZIP(setp){
   // קריאה אחרי await מאבדת את ה-user gesture ו-iOS דוחה אותה.
   S._lastBlob=blob;
   const lnk=document.getElementById('dl-link');
-  const fnz=`dobble-${S.order.total}cards${backOn?'-2sided':''}.zip`;
+  const fnz=`matchito-${S.order.total}cards${backOn?'-2sided':''}.zip`;
   lnk.href=_exportUrl;lnk.download=fnz;
   document.getElementById('dl-area').classList.add('on');
   logGame({total:S.order.total,cards:S.deck.length,sizeMm:S.cardSizeMm,filename:fnz,type:'zip'});
@@ -8227,7 +8380,7 @@ function generateCalibrationPDF(){
 
   const blob=pdf.output('blob');
   const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download='dobble-calibration.pdf';
+  const a=document.createElement('a');a.href=url;a.download='matchito-calibration.pdf';
   document.body.appendChild(a);a.click();a.remove();
   setTimeout(()=>URL.revokeObjectURL(url),4000);
   toast(t('msg.calibrationPageReady'),'ok');
@@ -8281,7 +8434,7 @@ async function expDXF(setp){
   // קריאה אחרי await מאבדת את ה-user gesture ו-iOS דוחה אותה.
   S._lastBlob=blob;
   const lnk=document.getElementById('dl-link');
-  const fnd=`dobble-${S.order.total}cards-cutlines.dxf`;
+  const fnd=`matchito-${S.order.total}cards-cutlines.dxf`;
   lnk.href=_exportUrl;lnk.download=fnd;
   document.getElementById('dl-area').classList.add('on');
   S._lastFile=fnd;
@@ -9501,7 +9654,7 @@ async function exportDesignFile(){
     const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
-    a.href=url;a.download=name.replace(/[\\/:*?"<>|]/g,'-')+'.dobble.zip';
+    a.href=url;a.download=name.replace(/[\\/:*?"<>|]/g,'-')+'.matchito.zip';
     document.body.appendChild(a);a.click();a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),60000);
     S._lastFile=a.download;S._lastSize=blob.size;
@@ -9937,7 +10090,7 @@ function adminExportConfig(){
       packs
     };
     const file='// =====================================================\n'+
-      '// הגדרות מחולל הדאבל — יוצא מלוח הבקרה\n'+
+      '// הגדרות מחולל מאצ׳טו — יוצא מלוח הבקרה\n'+
       '// העלו קובץ זה במקום js/dobble-config.js בגיטהאב\n'+
       '// =====================================================\n\n'+
       'window.DOBBLE_CONFIG = '+JSON.stringify(cfg,null,2)+';\n';
@@ -10802,7 +10955,7 @@ function orderPrint(){
   const specs=S.order&&S.deck.length
     ?`\nפרטי המשחק: ${S.deck.length} קלפים · ${S.order.spc} סמלים בקלף · קוטר ${S.cardSizeMm} מ"מ · קלף ${shape}`
     :'';
-  const msg=`שלום! סיימתי לעצב משחק דאבל במחולל ואשמח להזמין הדפסה ומשלוח עד הבית 🖨️📦${specs}\nשם: \nיישוב וכתובת למשלוח: \nכמות עותקים: `;
+  const msg=`שלום! סיימתי לעצב משחק מאצ׳טו במחולל ואשמח להזמין הדפסה ומשלוח עד הבית 🖨️📦${specs}\nשם: \nיישוב וכתובת למשלוח: \nכמות עותקים: `;
   logGame({total:S.order?S.order.total:'',cards:S.deck.length||'',sizeMm:S.cardSizeMm,filename:'🚚 בקשת הדפסה ומשלוח',type:'print-order'});
   window.track&&window.track('print-order',{cards:S.deck.length||'',symbols:S.order?S.order.spc:'',detail:`קוטר ${S.cardSizeMm}מ"מ · ${shape}`});
   window.open('https://wa.me/'+waNum+'?text='+encodeURIComponent(msg),'_blank','noopener');

@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>משחקים בטלפון | מחולל דאבל</title>
+  <title>משחקים בטלפון | מחולל מאצ׳טו</title>
   <meta name="robots" content="noindex">
   <meta name="theme-color" content="#4338CA">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="משחקי דאבל">
+  <meta name="apple-mobile-web-app-title" content="משחקי מאצ׳טו">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -203,7 +203,14 @@
     <p class="muted">טוענים את קובץ המשחק שלכם, ומשחקים יחד על מסך אחד — בלי להדפיס.</p>
   </div>
 
-  <div class="drop" id="drop">
+  <!-- משחק לדוגמה פתוח לכולם — בלי קוד ובלי קובץ (D-76). גם בקישור ישיר: play/?demo=hanukkah -->
+  <div class="panel demo">
+    <b>🕎 רוצים לנסות? משחק חנוכה מוכן</b>
+    <p class="muted" style="font-size:.9rem;margin:.25rem 0 .6rem">31 ציורי חנוכה — חנוכייה, סביבונים, סופגניות ועוד. בלי קוד ובלי הרשמה.</p>
+    <button class="btn btn-main btn-block" id="btn-demo">🎮 לשחק במשחק של חנוכה</button>
+  </div>
+
+  <div class="drop" id="drop" style="margin-top:1rem">
     <button class="btn btn-main btn-block" id="btn-pick">📂 בחרו את קובץ המשחק</button>
     <input type="file" id="file" accept=".zip,application/zip" hidden>
     <button class="btn btn-sec btn-block" id="btn-last" style="margin-top:.6rem" hidden></button>
@@ -227,9 +234,9 @@
   <div class="panel" style="margin-top:1rem">
     <b>איפה מוצאים את הקובץ?</b>
     <ol class="steps">
-      <li>נכנסים ל<b>מחולל הדאבל</b> ופותחים את המשחק שלכם.</li>
+      <li>נכנסים ל<b>מחולל מאצ׳טו</b> ופותחים את המשחק שלכם.</li>
       <li>במסך התמונות, באזור <b>"📦 גיבוי לקובץ"</b>, לוחצים <b>"⬇️ שמור לקובץ"</b>.</li>
-      <li>נשמר קובץ שנגמר ב-<b>.dobble.zip</b> — בוחרים אותו כאן.</li>
+      <li>נשמר קובץ שנגמר ב-<b>.matchito.zip</b> (בקבצים ישנים: <b>.dobble.zip</b>) — בוחרים אותו כאן.</li>
     </ol>
     <p class="muted" style="font-size:.88rem;margin-top:.5rem">💡 כדי שהקלפים כאן יהיו בדיוק כמו המודפסים — שמרו את הקובץ <b>אחרי</b> שיצרתם את הקלפים. הקובץ נשאר אצלכם בטלפון, שום דבר לא נשלח.</p>
   </div>
@@ -338,15 +345,15 @@ async function loadGameFile(file,fromCache){
     setProg(3,'פותח את הקובץ…');
     let zip;
     try{zip=await JSZip.loadAsync(file);}
-    catch(e){throw new Error('זה לא קובץ משחק. צריך את הקובץ שנגמר ב-.dobble.zip.');}
+    catch(e){throw new Error('זה לא קובץ משחק. צריך את קובץ הגיבוי מהמחולל (נגמר ב-.matchito.zip או .dobble.zip).');}
     const jf=zip.file('design.json');
     if(!jf){
-      if(zip.file(/^dobble-cards\//).length)
+      if(zip.file(/^(dobble|matchito)-cards\//).length)
         throw new Error('זה קובץ התמונות של הקלפים. צריך את קובץ הגיבוי: במחולל ← "📦 גיבוי לקובץ" ← "⬇️ שמור לקובץ".');
-      throw new Error('זה לא קובץ משחק. צריך את הקובץ שנגמר ב-.dobble.zip.');
+      throw new Error('זה לא קובץ משחק. צריך את קובץ הגיבוי מהמחולל (נגמר ב-.matchito.zip או .dobble.zip).');
     }
     const meta=JSON.parse(await jf.async('string'));
-    if(meta.app!=='dobble'||!Array.isArray(meta.rows))throw new Error('זה לא קובץ משחק דאבל.');
+    if(meta.app!=='dobble'||!Array.isArray(meta.rows))throw new Error('זה לא קובץ משחק מאצ׳טו.');
 
     // תמונות — כמו importDesignFile במחולל: שורה בלי קובץ מדלגים
     const assets=[];let n=0;
@@ -481,6 +488,22 @@ const drop=$('drop');
 drop.addEventListener('drop',e=>{const f=e.dataTransfer.files&&e.dataTransfer.files[0];if(f)loadGameFile(f);});
 $('btn-other').addEventListener('click',()=>{show('scr-load');});
 
+// ── משחקים לדוגמה (D-76): קובץ רגיל בתיקייה demo/, נטען באותו נתיב כמו קובץ של לקוחה.
+// fromCache=true — לא דורס את "המשחק האחרון" שלה. המטמון של sw.js שומר אותו אחרי הטעינה הראשונה.
+const DEMOS={hanukkah:'demo/hanukkah.matchito.zip'};
+async function loadDemo(id){
+  const url=DEMOS[id];if(!url)return;
+  $('err').hidden=true;setProg(2,'מוריד את המשחק…');
+  try{
+    const r=await withTimeout(fetch(url),30000,'timeout');
+    if(!r.ok)throw new Error('http '+r.status);
+    await loadGameFile(await withTimeout(r.blob(),30000,'timeout'),true);
+  }catch(e){console.error(e);showErr('לא הצלחתי להוריד את המשחק — בדקו חיבור לאינטרנט ונסו שוב.');}
+}
+$('btn-demo').addEventListener('click',()=>loadDemo('hanukkah'));
+// קישור ישיר למשחק לדוגמה: play/?demo=hanukkah — נפתח מיד (למודעות ולרכזת /games/)
+try{const dm=new URLSearchParams(location.search).get('demo');if(dm&&DEMOS[dm])setTimeout(()=>loadDemo(dm),0);}catch(e){}
+
 // ── המשחק האחרון נשמר בטלפון (IndexedDB), כדי לא לחפש את הקובץ בכל פעם ──
 function idb(){
   return new Promise((res,rej)=>{
@@ -531,7 +554,7 @@ function renderPlayers(){
 
 // ════════════════ תפריט ════════════════
 const GAMES=[
-  {id:'classic',e:'🔵',c:'#2563EB',t:'דאבל קלאסי',d:'שני קלפים על המסך. מי ראשון מוצא את הציור שמופיע בשניהם?',
+  {id:'classic',e:'🔵',c:'#2563EB',t:'מאצ׳טו קלאסי',d:'שני קלפים על המסך. מי ראשון מוצא את הציור שמופיע בשניהם?',
    how:['שני קלפים פתוחים על המסך, כולם מסתכלים יחד.','מצאתם את הציור שמופיע בשני הקלפים? צועקים את השם שלו!','נוגעים בציור על המסך — אם צדקתם הוא מסומן, ובוחרים מי מצא.','קלף חדש עולה, וממשיכים עד שהחפיסה נגמרת.'],min:1},
   {id:'tower',e:'🟢',c:'#059669',t:'המגדל',d:'אוספים כמה שיותר קלפים מהמגדל שבאמצע.',
    how:['במרכז — המגדל. לכל שחקן קלף משלו.','מצאתם ציור זהה בין הקלף שלכם לקלף של המגדל? צועקים את השם!','נוגעים בקלף שלכם — הציור המשותף מסומן, והקלף מהמגדל עובר אליכם.','מי שאסף הכי הרבה קלפים כשהמגדל נגמר — מנצח.'],min:2},
