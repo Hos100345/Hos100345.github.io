@@ -3074,7 +3074,7 @@ window.applyI18n=applyI18n;
         <input type="file" id="back-logo-file" accept="image/*" hidden>
       </div>
       <div class="sl-lock" data-sl-lock="back-logo-size"><div class="sl-lbl" style="margin-top:.6rem"><span data-i18n="back.logoSizeLabel">גודל</span><strong id="lbl-back-logo-size">40%</strong></div>
-      <input type="range" id="back-logo-size" min="0" max="90" step="1" value="40"></div>
+      <input type="range" id="back-logo-size" min="0" max="100" step="1" value="40"></div>
       <div class="sl-lock" data-sl-lock="back-logo-dy"><div class="sl-lbl"><span data-i18n="back.logoOffsetLabel">היסט אנכי</span><strong id="lbl-back-logo-dy">0%</strong></div>
       <input type="range" id="back-logo-dy" min="-60" max="60" step="1" value="0"></div>
     </div>
@@ -4537,6 +4537,8 @@ function drawCardBack(canvas){
       const lSize=r*B.logoSize/100*2,lDy=r*B.logoDy/100;
       if(lSize>1){
         ctx.save();
+        // D-81: עד 100% — התמונה לא יוצאת מגבולות הקלף (בריבוע עיגול בקוטר 2r חורג מהצלעות)
+        ctx.beginPath();if(isC)ctx.arc(cx,cy,r,0,Math.PI*2);else rrect(ctx,sqx,sqy,sq,sq,sqcr);ctx.clip();
         ctx.beginPath();ctx.arc(cx,cy+lDy,lSize/2,0,Math.PI*2);ctx.clip();
         drawCover(ctx,logoAsset.imgEl,cx-lSize/2,cy+lDy-lSize/2,lSize);
         ctx.restore();
