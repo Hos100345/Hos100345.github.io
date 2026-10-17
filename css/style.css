@@ -16,8 +16,9 @@
   --purple-light: #EDE9FE;
   --gold:         #F59E0B;
   --wa:           #25D366;
-  --wa-dark:      #1DA851;
-  --fb:           #1877F2;
+  --wa-dark:      #0A6430;   /* W-35: hover — כהה יותר מ-wa-deep */
+  --wa-deep:      #0E7C3A;   /* W-35: רקע לטקסט לבן וטקסט על לבן — ניגודיות 5.2:1 (#25D366 היה 1.98) */
+  --fb:           #0C63D4;   /* W-35: היה #1877F2 (4.2:1) — עכשיו 5.4:1 */
   --ig-start:     #E1306C;
   --ig-end:       #833AB4;
 
@@ -108,7 +109,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 }
 
 .btn-wa {
-  background: var(--wa);
+  background: var(--wa-deep);
   color: var(--white);
   box-shadow: 0 4px 20px rgba(37,211,102,.35);
 }
@@ -284,7 +285,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .nav-link:hover { color: var(--blue); }
 .nav-cta {
   margin-top: 1rem;
-  color: var(--wa);
+  color: var(--wa-deep);
   border-bottom: none;
 }
 
@@ -315,7 +316,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   .nav-link:hover { color: var(--white); background: rgba(255,255,255,.15); }
   .site-header.scrolled .nav-link:hover { color: var(--blue); background: var(--blue-light); }
   .nav-cta { color: var(--wa); margin-top: 0; }
-  .site-header.scrolled .nav-cta { color: var(--wa); }
+  .site-header.scrolled .nav-cta { color: var(--wa-deep); }
 }
 
 /* =====================================================
@@ -1030,7 +1031,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   padding: 3px;
 }
 .footer-text p { font-size: 0.9rem; }
-.footer-sub { font-size: 0.8rem; opacity: .6; margin-top: 0.2rem; }
+.footer-sub { font-size: 0.8rem; opacity: .82; margin-top: 0.2rem; }
 
 .footer-links {
   display: flex;
@@ -1062,7 +1063,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.25rem 0.75rem 1rem;
-  background: var(--wa);
+  background: var(--wa-deep);
   color: var(--white);
   border-radius: var(--radius-pill);
   box-shadow: 0 4px 24px rgba(37,211,102,.5);
@@ -1470,7 +1471,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 
 /* ---- כפתור וואטסאפ ראשי בהירו ---- */
 .btn-hero-wa {
-  background: var(--wa);
+  background: var(--wa-deep);
   color: var(--white);
   font-weight: 800;
   font-size: 1.15rem;
