@@ -242,7 +242,7 @@ function setGalleryFilter(cat) {
   const moreBtn = document.getElementById('gallery-more-btn');
   if (moreBtn) moreBtn.remove();
   if (!(SD.gallery || []).length) {
-    galleryGrid.innerHTML = '<p style="text-align:center;color:#6B7280;padding:2rem;">הגלריה ריקה — הוסף תמונות דרך admin.html</p>';
+    galleryGrid.innerHTML = '<p style="text-align:center;color:#6B7280;padding:2rem;">תמונות מהאירועים שלנו — בפייסבוק ובאינסטגרם</p>';
     return;
   }
   loadGalleryPage();
