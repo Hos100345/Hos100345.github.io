@@ -308,7 +308,7 @@ function totalSlides() {
   return Math.ceil(tList.length / cardsPerView);
 }
 
-const avatarColors = ['#2563EB','#7C3AED','#0891B2','#059669','#D97706','#DC2626','#DB2777','#4338CA'];
+const avatarColors = ['#2563EB','#7C3AED','#0E7490','#047857','#B45309','#DC2626','#BE185D','#4338CA'];   // W-35: ניגודיות ≥4.5 לטקסט לבן
 function avatarColor(name) {
   let h = 0;
   for (const c of name) h = (h * 31 + c.charCodeAt(0)) & 0xFFFFFF;
