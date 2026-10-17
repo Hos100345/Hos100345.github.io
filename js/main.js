@@ -500,3 +500,28 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   });
 });
+
+
+/* =====================================================
+   W-32: טופס פנייה מהירה → הודעת וואטסאפ מוכנה
+   שדות האירוע (תאריך/יישוב/משתתפים) מוצגים רק לשירותים שזקוקים להם.
+   ===================================================== */
+document.querySelectorAll('[data-wa-form]').forEach(form => {
+  const sel = form.querySelector('[name=service]');
+  const NO_EVENT = ['משחק מהתמונות שלי', 'מדבקות שם / הדפסה', 'אחר'];
+  const sync = () => form.querySelectorAll('[data-for=event]').forEach(el => { el.hidden = NO_EVENT.includes(sel.value); });
+  sel.addEventListener('change', sync); sync();
+  form.querySelector('.wa-send').addEventListener('click', () => {
+    const v = n => (form.querySelector(`[name=${n}]`) || {}).value?.trim() || '';
+    const lines = ['שלום הושעיה, אשמח לפרטים על: ' + v('service')];
+    if (!NO_EVENT.includes(v('service'))) {
+      if (v('date')) lines.push('תאריך: ' + v('date').split('-').reverse().join('/'));
+      if (v('place')) lines.push('יישוב: ' + v('place'));
+      if (v('count')) lines.push('משתתפים: ' + v('count'));
+    }
+    if (v('notes')) lines.push(v('notes'));
+    if (v('name')) lines.push('שם: ' + v('name'));
+    lines.push('(מקור: ' + (form.dataset.source || 'האתר') + ' · טופס)');
+    window.open('https://wa.me/972505918734?text=' + encodeURIComponent(lines.join('\n')), '_blank', 'noopener');
+  });
+});

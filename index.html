@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=202607080728">
+  <link rel="stylesheet" href="css/style.css?v=202610182">
 </head>
 <body>
   <script type="application/ld+json">
@@ -53,8 +53,9 @@
         <li><a href="events.html" class="nav-link">אירועים ובלונים</a></li>
         <li><a href="communities.html" class="nav-link">קהילות ומוסדות</a></li>
         <li><a href="workshops.html" class="nav-link">חוגים וסדנאות</a></li>
+        <li><a href="card-games.html" class="nav-link">🃏 משחקים</a></li>
         <li><a href="about.html" class="nav-link">אודות וצור קשר</a></li>
-        <li><a href="https://hballoons.netlify.app/" class="nav-link nav-balloon" target="_blank" rel="noopener noreferrer">🎈 הרשמה</a></li>
+        <li><a href="https://hballoons.netlify.app/" class="nav-link nav-balloon" target="_blank" rel="noopener noreferrer">🎈 הרשמה לשירות הבלונים</a></li>
         <li><a href="https://wa.me/972505918734?text=%D7%A9%D7%9C%D7%95%D7%9D%20%D7%94%D7%95%D7%A9%D7%A2%D7%99%D7%94%2C%20%D7%A8%D7%90%D7%99%D7%AA%D7%99%20%D7%90%D7%AA%20%D7%94%D7%90%D7%AA%D7%A8%20%D7%95%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%A9%D7%9E%D7%95%D7%A2%20%D7%A4%D7%A8%D7%98%D7%99%D7%9D%0A%28%D7%9E%D7%A7%D7%95%D7%A8%3A%20%D7%A2%D7%9E%D7%95%D7%93%20%D7%94%D7%91%D7%99%D7%AA%29" class="nav-link nav-cta" target="_blank" rel="noopener noreferrer">וואטסאפ</a></li>
       </ul>
     </div>
@@ -73,7 +74,7 @@
         <div class="bubble b6"></div>
       </div>
       <div class="hero-content">
-        <p class="hero-eyebrow reveal">בלונים · הפעלות · סדנאות</p>
+        <p class="hero-eyebrow reveal">בלונים · הפעלות · סדנאות · משחקים מהתמונות שלכם</p>
         <h1 class="hero-title reveal">עיצוב, יצירה והפעלות לכל אירוע</h1>
         <p class="hero-subtitle reveal">הושעיה וולמן — אמן בלונים ויוצר · מבקעת הירדן ועד מעלה אדומים</p>
         <div class="hero-actions reveal">
@@ -100,7 +101,7 @@
           <div class="section-line reveal"></div>
           <p class="section-sub reveal">בחרו את המסלול שלכם</p>
         </header>
-        <div class="audience-grid">
+        <div class="audience-grid cols-4">
           <a href="events.html" class="audience-card reveal">
             <img class="audience-card-img" src="https://sccivxenkyzxolpraexf.supabase.co/storage/v1/object/public/site-gallery/drive/1v4hKj5YWct_CobyA8Nqv-jqLg88gD_O2-600.jpg" alt="עיצוב בלונים לאירוע משפחתי" loading="lazy">
             <div class="audience-card-body">
@@ -126,6 +127,15 @@
               <span class="audience-card-title">רוצים ללמוד וליצור?</span>
               <p class="audience-card-desc">חוג אוריגמי למחוננים וסדנאות יצירה חד-פעמיות — לילדים, לבתי ספר ולקבוצות.</p>
               <span class="audience-card-cta">לחוגים וסדנאות ←</span>
+            </div>
+          </a>
+          <a href="card-games.html" class="audience-card reveal">
+            <img class="audience-card-img" src="images/games/matchito.webp" alt="משחק קלפים מהתמונות שלכם — קלפים עגולים עם פרצופי המשפחה" loading="lazy">
+            <div class="audience-card-body">
+              <span class="audience-card-kicker">משחקים אישיים</span>
+              <span class="audience-card-title">מחפשים מתנה אישית?</span>
+              <p class="audience-card-desc">משחק קלפים, זיכרון, רביעיות, דומינו ופאזל מהתמונות שלכם — להדפסה או לשחק בטלפון.</p>
+              <span class="audience-card-cta">למשחקים ←</span>
             </div>
           </a>
         </div>
@@ -210,6 +220,34 @@
     </section>
 
     <!-- ===== CTA ===== -->
+    <section class="section section-alt" aria-label="פנייה מהירה">
+      <div class="container">
+        <div class="wa-form reveal" data-wa-form data-source="עמוד הבית">
+          <h3 style="margin:0 0 .3rem;color:var(--indigo)">📝 פנייה מהירה</h3>
+          <p style="color:var(--muted);margin:0 0 1rem;font-size:.95rem">ממלאים כמה פרטים, ונפתח וואטסאפ עם הודעה מוכנה — רק ללחוץ "שלח".</p>
+          <div class="wa-grid">
+            <div class="wa-wide"><label for="wa-service-h">מה צריך?</label>
+              <select id="wa-service-h" name="service">
+                <option value="עיצוב בלונים לאירוע">עיצוב בלונים לאירוע</option>
+                <option value="בר בלונים / מפעיל בלונים">בר בלונים / מפעיל בלונים</option>
+                <option value="סדנה חד-פעמית">סדנה חד-פעמית</option>
+                <option value="חוג">חוג</option>
+                <option value="אירוע קהילתי / מוסד">אירוע קהילתי / מוסד</option>
+                <option value="משחק מהתמונות שלי">משחק מהתמונות שלי</option>
+                <option value="מדבקות שם / הדפסה">מדבקות שם / הדפסה</option>
+                <option value="אחר">אחר</option>
+              </select></div>
+            <div data-for="event"><label for="wa-date-h">תאריך</label><input id="wa-date-h" name="date" type="date"></div>
+            <div data-for="event"><label for="wa-place-h">יישוב</label><input id="wa-place-h" name="place" type="text" placeholder="למשל: מעלה אדומים"></div>
+            <div data-for="event"><label for="wa-count-h">כמה משתתפים / ילדים</label><input id="wa-count-h" name="count" type="number" min="1" inputmode="numeric"></div>
+            <div><label for="wa-name-h">שם</label><input id="wa-name-h" name="name" type="text" autocomplete="name"></div>
+            <div class="wa-wide"><label for="wa-notes-h">עוד משהו שכדאי לדעת?</label><textarea id="wa-notes-h" name="notes" placeholder="גיל החוגג, צבעים, רעיונות…"></textarea></div>
+          </div>
+          <button type="button" class="btn btn-hero-wa wa-send">📲 פתיחת וואטסאפ עם ההודעה</button>
+        </div>
+      </div>
+    </section>
+
     <section class="section" aria-label="יצירת קשר מהירה">
       <div class="container">
         <div class="cta-band reveal">
@@ -268,6 +306,6 @@
   </a>
 
   <script src="js/site-data.js?v=202610181"></script>
-  <script src="js/main.js?v=202610181"></script>
+  <script src="js/main.js?v=202610182"></script>
 </body>
 </html>
