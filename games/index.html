@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>משחק עיצובישי | הושעיה</title>
   <meta name="description" content="משחקים אישיים מהתמונות שלכם: זיכרון, פאזל, מצא את הזהה ועוד — לשחק בטלפון או להזמין מודפס.">
+  <meta property="og:image" content="https://www.hoshaya.co.il/images/games/og-card-games.jpg">
   <meta name="theme-color" content="#0F172A">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -113,6 +114,9 @@
     .hub a{display:block;text-decoration:none;color:inherit;background:#fff;border-radius:var(--r);padding:.8rem .9rem;box-shadow:var(--sh);border:2px solid transparent;transition:transform .15s}
     .hub a:active{transform:scale(.97)}
     .hub i{font-style:normal;font-size:1.8rem;line-height:1;display:block}
+    .hub img{display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;border-radius:calc(var(--r) - 4px);margin-bottom:.45rem;background:#EEF0FF}
+    .hub img+i{display:none}
+    .hero-pic{display:block;width:100%;max-width:640px;height:auto;margin:1.2rem auto 0;border-radius:1rem;box-shadow:0 14px 34px rgba(0,0,0,.25)}
     .hub b{display:block;font-weight:900;margin-top:.35rem;font-size:1rem}
     .hub span{display:block;font-size:.84rem;color:var(--muted);line-height:1.4;margin-top:.15rem}
     .hub a.wa{background:#DCFCE7;border-color:#22C55E}
@@ -248,6 +252,7 @@
       <a class="btn btn-wa" href="https://wa.me/972505918734?text=%D7%A9%D7%9C%D7%95%D7%9D%20%D7%94%D7%95%D7%A9%D7%A2%D7%99%D7%94%2C%20%D7%94%D7%92%D7%A2%D7%AA%D7%99%20%D7%9E%D7%9E%D7%97%D7%95%D7%9C%D7%9C%20%D7%94%D7%9E%D7%A9%D7%97%D7%A7%D7%99%D7%9D" target="_blank" rel="noopener noreferrer"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.26-.46-2.39-1.47-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.67-1.61-.92-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.06 2.88 1.21 3.07c.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.7.63.71.22 1.36.19 1.87.12.57-.09 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35M12.05 21.79h-.01a9.87 9.87 0 01-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 01-1.51-5.26c0-5.45 4.44-9.88 9.89-9.88 2.64 0 5.12 1.03 6.99 2.9a9.83 9.83 0 012.89 6.99c0 5.45-4.44 9.88-9.88 9.88m8.41-18.3A11.82 11.82 0 0012.05 0C5.5 0 .16 5.34.16 11.89c0 2.1.55 4.14 1.59 5.95L.06 24l6.3-1.65a11.88 11.88 0 005.68 1.45h.01c6.55 0 11.89-5.34 11.89-11.89 0-3.18-1.24-6.16-3.48-8.41"/></svg> הזמנת משחק בוואטסאפ</a>
       <a class="btn btn-ghost" href="#photos">📷 מתחילים לשחק</a>
     </div>
+    <a href="../card-games.html"><img class="hero-pic" src="../images/games/og-card-games.jpg" alt="משחקי קלפים אישיים מהתמונות שלכם — מצא את הזהה עם פרצופי המשפחה, משחק זיכרון ורביעיות" width="1200" height="630"></a>
   </div>
 </section>
 <div class="scr">
@@ -255,6 +260,7 @@
   <!-- רכזת: לינק לכל הכלים + האתר. זו הכתובת שמופיעה במודעה (G-2) -->
   <nav class="hub" aria-label="כל הכלים">
     <a href="#photos"><i>🎲</i><b>משחקים מהתמונות שלי</b><span>מעלים תמונות ומשחקים עכשיו</span></a>
+    <a href="../card-games.html"><i>🃏</i><b>כל משחקי הקלפים</b><span>הסבר, תמונות ודוגמאות לכל משחק</span></a>
     <a href="../play/"><i>📱</i><b>משחקי מאצ׳טו בטלפון</b><span>משחקים במשחק שיצרתם במחולל</span></a>
     <a href="../projection-drawing.html"><i>🎨</i><b>ציור באוויר</b><span>מכוונים את המצלמה ומציירים לפי תמונה</span></a>
     <a href="../"><i>🏠</i><b>האתר של הושעיה</b><span>סדנאות, אירועים ועוד</span></a>
@@ -264,13 +270,13 @@
   <!-- כל משחק בסטודיו = לינק נפרד (studio/?p=<id>, S-33). מוצר חדש בסטודיו → שורה כאן -->
   <h2>🖨️ משחקים מודפסים — מעצבים ומזמינים</h2>
   <nav class="hub" aria-label="משחקים מהסטודיו">
-    <a href="../studio/?p=cards"><i>🃏</i><b>קלפים</b><span>חפיסת מלחמה ו-52 קלפים בעיצוב אישי</span></a>
-    <a href="../studio/?p=memory"><i>🧠</i><b>משחק זיכרון</b><span>זוגות מהתמונות שלכם</span></a>
-    <a href="../studio/?p=quartets"><i>👨‍👩‍👧‍👦</i><b>רביעיות</b><span>סדרות של 4 — משפחה, כיתה, חגים</span></a>
-    <a href="../studio/?p=domino"><i>🁫</i><b>דומינו</b><span>קלאסי, רכבת מקסיקנית ומשולשים</span></a>
-    <a href="../studio/?p=dice"><i>🎲</i><b>קוביות</b><span>4 עד 20 פאות עם תמונות או מילים</span></a>
-    <a href="../studio/?p=puzzle"><i>🧩</i><b>פאזל</b><span>6 עד 200 חלקים מתמונה שלכם</span></a>
-    <a href="../dobble.html"><i>👀</i><b>מאצ׳טו — מצא את הזהה</b><span>קלפי "מי מוצא ראשון?" להדפסה</span></a>
+    <a href="../studio/?p=cards"><img src="../images/games/cards.webp" alt="קלפים בעיצוב אישי עם תמונה ושם" width="800" height="600" loading="lazy"><i>🃏</i><b>קלפים</b><span>חפיסת מלחמה ו-52 קלפים בעיצוב אישי</span></a>
+    <a href="../studio/?p=memory"><img src="../images/games/memory.webp" alt="משחק זיכרון מתמונות" width="800" height="600" loading="lazy"><i>🧠</i><b>משחק זיכרון</b><span>זוגות מהתמונות שלכם</span></a>
+    <a href="../studio/?p=quartets"><img src="../images/games/quartets.webp" alt="משחק רביעיות אישי" width="800" height="600" loading="lazy"><i>👨‍👩‍👧‍👦</i><b>רביעיות</b><span>סדרות של 4 — משפחה, כיתה, חגים</span></a>
+    <a href="../studio/?p=domino"><img src="../images/games/domino.webp" alt="דומינו עם תמונות" width="800" height="600" loading="lazy"><i>🁫</i><b>דומינו</b><span>קלאסי, רכבת מקסיקנית ומשולשים</span></a>
+    <a href="../studio/?p=dice"><img src="../images/games/dice.webp" alt="קובייה עם תמונות" width="800" height="600" loading="lazy"><i>🎲</i><b>קוביות</b><span>4 עד 20 פאות עם תמונות או מילים</span></a>
+    <a href="../studio/?p=puzzle"><img src="../images/games/puzzle.webp" alt="פאזל מתמונה" width="800" height="600" loading="lazy"><i>🧩</i><b>פאזל</b><span>6 עד 200 חלקים מתמונה שלכם</span></a>
+    <a href="../dobble.html"><img src="../images/games/matchito.webp" alt="קלפי מאצ׳טו עם פרצופי המשפחה" width="800" height="600" loading="lazy"><i>👀</i><b>מאצ׳טו — מצא את הזהה</b><span>קלפי "מי מוצא ראשון?" להדפסה</span></a>
     <a href="../studio/"><i>✂️</i><b>כל הסטודיו</b><span>כולל מדבקות שם ועריכת תמונות</span></a>
   </nav>
 
