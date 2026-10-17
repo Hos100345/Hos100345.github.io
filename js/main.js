@@ -168,8 +168,9 @@ function makeGalleryItem(item) {
     <img src="${item.src}" alt="${item.alt}" loading="lazy">
     <div class="gallery-overlay" aria-hidden="true"><span>${catLabels[item.cat] || item.alt}</span></div>`;
   const img = div.querySelector('img');
-  div.addEventListener('click',   () => openLightbox(img.src, img.alt));
-  div.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') openLightbox(img.src, img.alt); });
+  const big = item.full || item.src;   // W-30: תמונה גדולה (1600) בהגדלה, קטנה (600) ברשת
+  div.addEventListener('click',   () => openLightbox(big, img.alt));
+  div.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') openLightbox(big, img.alt); });
   return div;
 }
 
@@ -201,6 +202,28 @@ function loadGalleryPage() {
 
 // קטגוריית ברירת מחדל לגלריה — נקבעת לפי data-default-cat על #gallery-grid
 if (galleryGrid) setGalleryFilter(galleryGrid.dataset.defaultCat || 'all');
+
+/* W-30: תמונות שהועלו מדף הניהול חיות בטבלה site_gallery בסופאבייס (לא ב-site-data.js).
+   הגלריה מוצגת מיד מהרשימה הקבועה, ואז מצטרפות אליה התמונות החדשות. כשל/חסימה → נשארת הרשימה הקבועה. */
+(function loadUploadedGallery() {
+  if (!window.fetch) return;
+  const SB = 'https://sccivxenkyzxolpraexf.supabase.co';
+  const KEY = 'sb_publishable_Ctloh48bIY2Lxm_YmTiSGA_1ADr5FDz';
+  const PUB = SB + '/storage/v1/object/public/site-gallery/';
+  const ctl = window.AbortController ? new AbortController() : null;
+  const t = setTimeout(() => ctl && ctl.abort(), 6000);
+  fetch(SB + '/rest/v1/site_gallery?select=cat,alt,thumb_path,full_path,sort&thumb_path=like.up/*&order=sort.asc',
+        { headers: { apikey: KEY, Authorization: 'Bearer ' + KEY }, signal: ctl ? ctl.signal : undefined })
+    .then(r => r.ok ? r.json() : [])
+    .then(rows => {
+      clearTimeout(t);
+      if (!Array.isArray(rows) || !rows.length) return;
+      const fresh = rows.map(r => ({ src: PUB + r.thumb_path, full: PUB + r.full_path, cat: r.cat, alt: r.alt || '' }));
+      SD.gallery = fresh.concat(SD.gallery || []);   // חדשות קודם
+      if (galleryGrid && galCat) setGalleryFilter(galCat);
+    })
+    .catch(() => clearTimeout(t));
+})();
 
 /* GALLERY CATEGORY CARDS */
 const catConfig = {
