@@ -1776,3 +1776,11 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   }
   html { scroll-behavior: auto; }
 }
+
+/* W-33: שלושה צעדים */
+.steps3{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr;gap:.8rem;max-width:960px;margin-inline:auto}
+@media (min-width:700px){.steps3{grid-template-columns:repeat(3,1fr)}}
+.steps3 li{background:var(--white);border-radius:var(--radius);box-shadow:0 4px 18px rgba(20,20,60,.07);padding:1rem 1.1rem;display:grid;grid-template-columns:auto 1fr;column-gap:.8rem;align-items:center}
+.steps3 b{grid-row:span 2;width:2.4rem;height:2.4rem;border-radius:50%;background:var(--indigo);color:#fff;display:grid;place-items:center;font-size:1.15rem}
+.steps3 span{font-weight:800}
+.steps3 small{color:var(--muted);font-size:.86rem}
