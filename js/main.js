@@ -525,3 +525,34 @@ document.querySelectorAll('[data-wa-form]').forEach(form => {
     window.open('https://wa.me/972505918734?text=' + encodeURIComponent(lines.join('\n')), '_blank', 'noopener');
   });
 });
+
+
+/* =====================================================
+   W-36: מדידה פשוטה — כניסות ולחיצות וואטסאפ, לטבלת events בסופאבייס.
+   בלי עוגיות, בלי מזהה משתמש ובלי שירות חיצוני. נשמר: הדף, מאיפה הגיעו (שם אתר בלבד), סוג המכשיר.
+   ===================================================== */
+(function siteStats() {
+  if (!window.fetch || /^(localhost|127\.)/.test(location.hostname) || navigator.webdriver) return;
+  const SB = 'https://sccivxenkyzxolpraexf.supabase.co', KEY = 'sb_publishable_Ctloh48bIY2Lxm_YmTiSGA_1ADr5FDz';
+  const page = (location.pathname.split('/').pop() || 'index.html').replace(/\.html$/, '') || 'index';
+  const send = (event, detail) => {
+    try {
+      fetch(SB + '/rest/v1/events', { method: 'POST', keepalive: true,
+        headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+        body: JSON.stringify({ event, label: page, detail: (detail || '').slice(0, 120), ua: /Mobi|Android|iPhone/i.test(navigator.userAgent) ? 'mobile' : 'desktop' }) }).catch(() => {});
+    } catch (e) {}
+  };
+  let ref = '';
+  try {
+    const q = new URLSearchParams(location.search);
+    ref = q.get('utm_source') || (document.referrer ? new URL(document.referrer).hostname : '');
+    if (ref === location.hostname) ref = 'internal';
+  } catch (e) {}
+  send('site_view', ref || 'direct');
+  document.addEventListener('click', e => {
+    const a = e.target.closest && e.target.closest('a[href*="wa.me"],a[href^="tel:"],.wa-send');
+    if (!a) return;
+    const kind = a.classList.contains('wa-send') ? 'form' : (a.href || '').startsWith('tel:') ? 'phone' : (a.classList.contains('wa-float') ? 'float' : 'button');
+    send(kind === 'phone' ? 'site_phone' : 'site_wa', kind);
+  }, true);
+})();
