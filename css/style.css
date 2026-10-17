@@ -1506,6 +1506,17 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   gap: 1.5rem;
 }
 @media (min-width: 760px) { .audience-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 760px) { .audience-grid.cols-4 { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1100px) { .audience-grid.cols-4 { grid-template-columns: repeat(4, 1fr); } }
+/* W-32: טופס פנייה לוואטסאפ */
+.wa-form{background:var(--white);border-radius:var(--radius);box-shadow:0 6px 24px rgba(20,20,60,.08);padding:1.4rem;max-width:680px;margin:0 auto}
+.wa-form .wa-grid{display:grid;grid-template-columns:1fr;gap:.8rem}
+@media (min-width:640px){.wa-form .wa-grid{grid-template-columns:1fr 1fr}.wa-form .wa-wide{grid-column:1/-1}}
+.wa-form label{display:block;font-weight:700;font-size:.92rem;margin-bottom:.3rem}
+.wa-form input,.wa-form select,.wa-form textarea{width:100%;font:inherit;padding:.65rem .8rem;border:1px solid var(--border,#E5E7EB);border-radius:.7rem;background:#fff;box-sizing:border-box}
+.wa-form textarea{min-height:84px;resize:vertical}
+.wa-form .wa-send{margin-top:1rem;width:100%;justify-content:center}
+.wa-form [hidden]{display:none!important}
 
 .audience-card {
   display: flex;

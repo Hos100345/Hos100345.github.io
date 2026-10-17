@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=202607080728">
+  <link rel="stylesheet" href="css/style.css?v=202610182">
 </head>
 <body>
 
@@ -41,8 +41,9 @@
         <li><a href="events.html" class="nav-link">אירועים ובלונים</a></li>
         <li><a href="communities.html" class="nav-link">קהילות ומוסדות</a></li>
         <li><a href="workshops.html" class="nav-link">חוגים וסדנאות</a></li>
+        <li><a href="card-games.html" class="nav-link">🃏 משחקים</a></li>
         <li><a href="about.html" class="nav-link" aria-current="page">אודות וצור קשר</a></li>
-        <li><a href="https://hballoons.netlify.app/" class="nav-link nav-balloon" target="_blank" rel="noopener noreferrer">🎈 הרשמה</a></li>
+        <li><a href="https://hballoons.netlify.app/" class="nav-link nav-balloon" target="_blank" rel="noopener noreferrer">🎈 הרשמה לשירות הבלונים</a></li>
         <li><a href="https://wa.me/972505918734?text=%D7%A9%D7%9C%D7%95%D7%9D%20%D7%94%D7%95%D7%A9%D7%A2%D7%99%D7%94%2C%20%D7%A8%D7%90%D7%99%D7%AA%D7%99%20%D7%90%D7%AA%20%D7%94%D7%90%D7%AA%D7%A8%20%D7%95%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%A9%D7%9E%D7%95%D7%A2%20%D7%A4%D7%A8%D7%98%D7%99%D7%9D%0A%28%D7%9E%D7%A7%D7%95%D7%A8%3A%20%D7%A2%D7%9E%D7%95%D7%93%20%D7%90%D7%95%D7%93%D7%95%D7%AA%29" class="nav-link nav-cta" target="_blank" rel="noopener noreferrer">וואטסאפ</a></li>
       </ul>
     </div>
@@ -149,7 +150,31 @@
           <p class="section-sub reveal">זמינים לשאלות, פרטים והצעות מחיר</p>
         </header>
 
-        <div class="contact-grid">
+        <div class="wa-form reveal" data-wa-form data-source="עמוד אודות">
+          <h3 style="margin:0 0 .3rem;color:var(--indigo)">📝 פנייה מהירה</h3>
+          <p style="color:var(--muted);margin:0 0 1rem;font-size:.95rem">ממלאים כמה פרטים, ונפתח וואטסאפ עם הודעה מוכנה — רק ללחוץ "שלח".</p>
+          <div class="wa-grid">
+            <div class="wa-wide"><label for="wa-service-a">מה צריך?</label>
+              <select id="wa-service-a" name="service">
+                <option value="עיצוב בלונים לאירוע">עיצוב בלונים לאירוע</option>
+                <option value="בר בלונים / מפעיל בלונים">בר בלונים / מפעיל בלונים</option>
+                <option value="סדנה חד-פעמית">סדנה חד-פעמית</option>
+                <option value="חוג">חוג</option>
+                <option value="אירוע קהילתי / מוסד">אירוע קהילתי / מוסד</option>
+                <option value="משחק מהתמונות שלי">משחק מהתמונות שלי</option>
+                <option value="מדבקות שם / הדפסה">מדבקות שם / הדפסה</option>
+                <option value="אחר">אחר</option>
+              </select></div>
+            <div data-for="event"><label for="wa-date-a">תאריך</label><input id="wa-date-a" name="date" type="date"></div>
+            <div data-for="event"><label for="wa-place-a">יישוב</label><input id="wa-place-a" name="place" type="text" placeholder="למשל: מעלה אדומים"></div>
+            <div data-for="event"><label for="wa-count-a">כמה משתתפים / ילדים</label><input id="wa-count-a" name="count" type="number" min="1" inputmode="numeric"></div>
+            <div><label for="wa-name-a">שם</label><input id="wa-name-a" name="name" type="text" autocomplete="name"></div>
+            <div class="wa-wide"><label for="wa-notes-a">עוד משהו שכדאי לדעת?</label><textarea id="wa-notes-a" name="notes" placeholder="גיל החוגג, צבעים, רעיונות…"></textarea></div>
+          </div>
+          <button type="button" class="btn btn-hero-wa wa-send">📲 פתיחת וואטסאפ עם ההודעה</button>
+        </div>
+
+        <div class="contact-grid" style="margin-top:1.5rem">
           <a href="https://wa.me/972505918734?text=%D7%A9%D7%9C%D7%95%D7%9D%20%D7%94%D7%95%D7%A9%D7%A2%D7%99%D7%94%2C%20%D7%A8%D7%90%D7%99%D7%AA%D7%99%20%D7%90%D7%AA%20%D7%94%D7%90%D7%AA%D7%A8%20%D7%95%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%A9%D7%9E%D7%95%D7%A2%20%D7%A4%D7%A8%D7%98%D7%99%D7%9D%0A%28%D7%9E%D7%A7%D7%95%D7%A8%3A%20%D7%A2%D7%9E%D7%95%D7%93%20%D7%90%D7%95%D7%93%D7%95%D7%AA%29"
              class="contact-card contact-card-wa reveal"
              target="_blank" rel="noopener noreferrer">
@@ -290,6 +315,6 @@
   </a>
 
   <script src="js/site-data.js?v=202610181"></script>
-  <script src="js/main.js?v=202610181"></script>
+  <script src="js/main.js?v=202610182"></script>
 </body>
 </html>
