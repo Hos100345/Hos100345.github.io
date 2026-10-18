@@ -38,6 +38,8 @@
   .list figure .acts{position:absolute;top:6px;inset-inline-end:6px;display:flex;gap:4px}
   .list figure .acts button{font:inherit;font-size:.75rem;border:0;border-radius:999px;padding:3px 8px;cursor:pointer;background:#fff}
   .list figure.hid img{opacity:.35}
+  .list figure .star{position:absolute;bottom:26px;inset-inline-end:6px;font-size:1.3rem;line-height:1;border:0;border-radius:999px;background:#fff;padding:4px 7px;cursor:pointer}
+  .list figure.on{outline:3px solid #F59E0B;outline-offset:-3px}
   .hint{color:var(--muted);font-size:.86rem;margin:6px 0 0}
   [hidden]{display:none!important}
 </style>
@@ -68,6 +70,15 @@
     <p class="msg" id="up-msg"></p>
   </section>
 
+  <section class="card" id="feat" hidden>
+    <h2>⭐ תמונות נבחרות לראש עמוד האירועים</h2>
+    <p class="hint">בוחרים 6–8 תמונות חזקות. הן יופיעו בראש עמוד האירועים, לפני המחירון. לחיצה על ☆ בוחרת, לחיצה שוב מבטלת.</p>
+    <p class="msg" id="feat-count"></p>
+    <div class="prev list" id="feat-on"></div>
+    <label for="feat-cat">לבחור מתוך:</label>
+    <select id="feat-cat"></select>
+    <div class="prev list" id="feat-list"></div>
+  </section>
   <section class="card" id="mine" hidden>
     <h2>תמונות שהעלית</h2>
     <p class="hint">"הסתר" מוריד מהאתר ושומר, "מחק" מוחק לגמרי. התמונות הישנות מהדרייב מנוהלות בנפרד.</p>
@@ -83,6 +94,8 @@ const FN=window.SUPABASE_CONFIG.url+'/functions/v1/site-gallery';
 const PUB=window.SUPABASE_CONFIG.url+'/storage/v1/object/public/site-gallery/';
 let session=null,picked=[];
 $('cat').innerHTML=CATS.map(([v,t])=>`<option value="${v}">${t}</option>`).join('');
+$('feat-cat').innerHTML=CATS.map(([v,t])=>`<option value="${v}">${t}</option>`).join('');
+$('feat-cat').addEventListener('change',()=>drawFeat());
 try{const last=localStorage.getItem('ga_cat');if(last&&CAT_HE[last])$('cat').value=last;}catch(e){}
 $('cat').addEventListener('change',()=>{try{localStorage.setItem('ga_cat',$('cat').value);}catch(e){}});
 
@@ -92,7 +105,7 @@ async function api(body){
   if(!r.ok||j.error)throw new Error(j.error||('HTTP '+r.status));
   return j;
 }
-function showApp(on){$('login').hidden=on;$('up').hidden=!on;$('mine').hidden=!on;if(on)loadList();}
+function showApp(on){$('login').hidden=on;$('up').hidden=!on;$('mine').hidden=!on;$('feat').hidden=!on;if(on)loadList();}
 sb.auth.getSession().then(({data})=>{session=data.session;showApp(!!session);});
 sb.auth.onAuthStateChange((ev,s)=>{session=s;showApp(!!s);});
 
@@ -162,9 +175,28 @@ $('go').addEventListener('click',async()=>{
   $('go').disabled=false;$('pick').disabled=false;
 });
 
+// W-39: ⭐ נבחרות — כל התמונות (גם מהדרייב), לפי קטגוריה
+let allRows=[];
+function featFig(r){
+  const fg=document.createElement('figure');if(r.featured)fg.className='on';
+  fg.innerHTML=`<img src="${PUB+r.thumb_path}" alt="" loading="lazy"><figcaption>${CAT_HE[r.cat]||r.cat}</figcaption><button class="star" aria-label="${r.featured?'הסר מהנבחרות':'הוסף לנבחרות'}">${r.featured?'⭐':'☆'}</button>`;
+  fg.querySelector('.star').onclick=async()=>{const b=fg.querySelector('.star');b.disabled=true;
+    try{await api({action:'update',id:r.id,featured:!r.featured});r.featured=!r.featured;drawFeat();}
+    catch(err){b.disabled=false;$('feat-count').style.color='var(--err)';$('feat-count').textContent='לא נשמר: '+err.message;}};
+  return fg;
+}
+function drawFeat(){
+  const on=allRows.filter(r=>r.featured&&!r.hidden);
+  $('feat-count').style.color=on.length>8?'var(--err)':'var(--ok)';
+  $('feat-count').textContent=on.length?`נבחרו ${on.length}${on.length>8?' — מומלץ עד 8':''}`:'עוד לא נבחרו תמונות — עמוד האירועים מציג בינתיים את הגלריה הרגילה בלבד.';
+  $('feat-on').innerHTML='';on.forEach(r=>$('feat-on').append(featFig(r)));
+  $('feat-list').innerHTML='';
+  allRows.filter(r=>r.cat===$('feat-cat').value&&!r.hidden).forEach(r=>$('feat-list').append(featFig(r)));
+}
 async function loadList(){
   try{
     const {rows}=await api({action:'list'});
+    allRows=rows;drawFeat();
     const mine=rows.filter(r=>String(r.thumb_path).startsWith('up/')).sort((a,b)=>a.sort-b.sort);
     $('list').innerHTML=mine.length?'':'<p class="hint">עוד לא העלית תמונות מכאן.</p>';
     mine.forEach(r=>{

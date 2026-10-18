@@ -226,6 +226,29 @@ if (galleryGrid) setGalleryFilter(galleryGrid.dataset.defaultCat || 'all');
     .catch(() => clearTimeout(t));
 })();
 
+/* W-39: עבודות נבחרות — שורות site_gallery עם featured=true (נבחרות ב-gallery-admin.html).
+   אין נבחרות / אין חיבור → הקטע נשאר מוסתר. */
+(function loadFeatured() {
+  const sec = document.querySelector('[data-featured]');
+  if (!sec || !window.fetch) return;
+  const SB = 'https://sccivxenkyzxolpraexf.supabase.co';
+  const KEY = 'sb_publishable_Ctloh48bIY2Lxm_YmTiSGA_1ADr5FDz';
+  const PUB = SB + '/storage/v1/object/public/site-gallery/';
+  const ctl = window.AbortController ? new AbortController() : null;
+  const t = setTimeout(() => ctl && ctl.abort(), 6000);
+  fetch(SB + '/rest/v1/site_gallery?select=cat,alt,thumb_path,full_path&featured=is.true&order=sort.asc&limit=12',
+        { headers: { apikey: KEY, Authorization: 'Bearer ' + KEY }, signal: ctl ? ctl.signal : undefined })
+    .then(r => r.ok ? r.json() : [])
+    .then(rows => {
+      clearTimeout(t);
+      if (!Array.isArray(rows) || !rows.length) return;
+      const grid = sec.querySelector('.featured-grid');
+      rows.forEach(r => grid.appendChild(makeGalleryItem({ src: PUB + r.thumb_path, full: PUB + r.full_path, cat: r.cat, alt: r.alt || catLabels[r.cat] || '' })));
+      sec.hidden = false;
+    })
+    .catch(() => clearTimeout(t));
+})();
+
 /* GALLERY CATEGORY CARDS */
 const catConfig = {
   // ── תיקיות ראשיות ──

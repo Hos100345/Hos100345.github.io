@@ -113,6 +113,7 @@ Deno.serve(async (req) => {
     if (!UUID_RE.test(String(body.id))) return json({ error: 'bad_id' }, 400);
     const patch: Record<string, unknown> = {};
     if (typeof body.hidden === 'boolean') patch.hidden = body.hidden;
+    if (typeof body.featured === 'boolean') patch.featured = body.featured;   // W-39: ⭐ נבחרות לראש עמוד האירועים
     if (CATS.includes(body.cat)) patch.cat = body.cat;
     if (typeof body.alt === 'string') patch.alt = body.alt.slice(0, 200);
     if (Number.isFinite(body.sort)) patch.sort = body.sort;
