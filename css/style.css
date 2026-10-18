@@ -1785,3 +1785,35 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .steps3 b{grid-row:span 2;width:2.4rem;height:2.4rem;border-radius:50%;background:var(--indigo);color:#fff;display:grid;place-items:center;font-size:1.15rem}
 .steps3 span{font-weight:800}
 .steps3 small{color:var(--muted);font-size:.86rem}
+
+/* ===== W-38: לשוניות גלריה — קפיצה מראש העמוד + שורת לשוניות דביקה ===== */
+.gal-jump { margin-top: 1.6rem; }
+.gal-jump[hidden] { display: none; }
+.gal-jump-title { font-size: .95rem; font-weight: 700; color: rgba(255,255,255,.92); margin-bottom: .6rem; }
+.gal-jump-list { display: flex; flex-wrap: wrap; gap: .45rem; justify-content: center; }
+.gal-jump-chip {
+  display: inline-flex; align-items: center; gap: .3rem;
+  padding: .45rem .9rem; border-radius: var(--radius-pill);
+  background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.35);
+  color: #fff; font-size: .9rem; font-weight: 600; text-decoration: none;
+}
+.gal-jump-chip:hover, .gal-jump-chip:focus-visible { background: rgba(255,255,255,.3); }
+#gallery-browse { scroll-margin-top: calc(var(--nav-h) + 8px); }
+.gfilter[hidden] { display: none; }
+.gallery-browse-nav {
+  position: sticky; top: var(--nav-h); z-index: 20;
+  background: rgba(240,244,255,.92);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  padding: .6rem 0; margin-bottom: 1.5rem;
+}
+.gallery-browse-nav .gallery-filters { margin-bottom: 0; }
+@media (max-width: 760px) {
+  .gallery-browse-nav { margin-inline: -16px; padding-inline: 16px; }
+  .gallery-browse-nav .gallery-filters {
+    flex-wrap: nowrap; justify-content: flex-start;
+    overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
+  }
+  .gallery-browse-nav .gallery-filters::-webkit-scrollbar { display: none; }
+  .gallery-browse-nav .gfilter { flex: 0 0 auto; white-space: nowrap; }
+}

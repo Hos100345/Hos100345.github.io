@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=202610184">
+  <link rel="stylesheet" href="css/style.css?v=202610186">
 </head>
 <body>
 
@@ -66,6 +66,10 @@
           </a>
           <a href="#pricing" class="btn btn-ghost-hero">למחירון ↓</a>
         </div>
+        <nav class="gal-jump reveal" aria-label="קפיצה לתמונות לפי סוג" data-gal-jump hidden>
+          <p class="gal-jump-title">מה מחפשים? לחצו ותגיעו ישר לתמונות</p>
+          <div class="gal-jump-list"></div>
+        </nav>
       </div>
     </section>
 
@@ -190,6 +194,9 @@
               <button class="gfilter" data-cat="characters">דמויות</button>
               <button class="gfilter" data-cat="hats">כתרים וכובעים</button>
               <button class="gfilter" data-cat="rooms">עיצוב חדרים</button>
+              <button class="gfilter" data-cat="bar-chars">דמויות של בר בלונים</button>
+              <button class="gfilter" data-cat="event-chars">דמויות לאירועים</button>
+              <button class="gfilter" data-cat="printing">הדפסה על בלונים</button>
             </div>
           </div>
           <div class="gallery-grid" id="gallery-grid" data-default-cat="events" aria-label="גלריית תמונות"></div>
@@ -301,6 +308,6 @@
   </a>
 
   <script src="js/site-data.js?v=202610181"></script>
-  <script src="js/main.js?v=202610185"></script>
+  <script src="js/main.js?v=202610186"></script>
 </body>
 </html>
