@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=202610187">
+  <link rel="stylesheet" href="css/style.css?v=202610188">
 </head>
 <body>
 
@@ -69,6 +69,9 @@
         </div>
       </div>
     </section>
+
+    <!-- W-41: שורה עונתית — מתחלפת לבד לפי הלוח העברי (js/main.js → SEASONS). ריקה מחוץ לעונה. -->
+    <div class="container season-slot" data-season-slot="schools" hidden></div>
 
     <!-- ===== החבילה ===== -->
     <section class="section" id="school-package" aria-labelledby="school-package-title">
@@ -158,7 +161,7 @@
         class="footer-logo"
         width="48" height="48" loading="lazy">
       <div class="footer-text">
-        <p>© 2026 הושעיה וולמן — עיצוב, יצירה והפעלות · בקעת הירדן וצפון ים המלח</p>
+        <p>© <span data-year>2026</span> הושעיה וולמן — עיצוב, יצירה והפעלות · בקעת הירדן וצפון ים המלח</p>
         <p class="footer-sub">כל הזכויות שמורות · <a href="dobble.html" style="text-decoration:underline">🎯 מחולל מאצ׳טו</a> · <a href="accessibility.html" style="text-decoration:underline">הצהרת נגישות</a></p>
       </div>
       <div class="footer-links">
@@ -186,6 +189,6 @@
   </a>
 
   <script src="js/site-data.js?v=202610182"></script>
-  <script src="js/main.js?v=202610187"></script>
+  <script src="js/main.js?v=202610188"></script>
 </body>
 </html>
