@@ -289,7 +289,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   border-bottom: none;
 }
 
-@media (min-width: 860px) {
+@media (min-width: 1280px) {
   .nav-toggle { display: none; }
   .nav-links {
     display: flex !important;
@@ -300,14 +300,18 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
     transition: none !important;
     flex-direction: row;
     position: static;
+    height: auto;          /* W-38: בלי זה נשאר גובה תפריט הנייד (100vh) והקישורים יצאו מחוץ למסך במחשב */
+    bottom: auto;
+    overflow: visible;
     background: none;
     backdrop-filter: none;
     padding: 0;
     gap: 0.25rem;
   }
   .nav-link {
-    font-size: 0.95rem;
-    padding: 0.4rem 0.8rem;
+    font-size: 0.88rem;
+    padding: 0.4rem 0.5rem;
+    white-space: nowrap;
     border-bottom: none;
     color: rgba(255,255,255,.9);
     border-radius: var(--radius-sm);
@@ -1453,7 +1457,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 
 /* ---- קישור עמוד פעיל בניווט ---- */
 .nav-link[aria-current="page"] { color: var(--blue); }
-@media (min-width: 860px) {
+@media (min-width: 1280px) {
   .nav-link[aria-current="page"] {
     color: var(--white);
     background: rgba(255,255,255,.18);
@@ -1462,11 +1466,11 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
     color: var(--blue);
     background: var(--blue-light);
   }
-  /* יש יותר פריטים בתפריט — צפוף מעט יותר עד רוחב 1080 */
-  .nav-link { padding: 0.4rem 0.55rem; font-size: 0.9rem; }
+  /* W-38: 10 פריטים בתפריט — צפוף, בשורה אחת. מתחת ל-1280 יש כפתור תפריט (☰) */
+  .nav-link { padding: 0.4rem 0.45rem; font-size: 0.86rem; }
 }
-@media (min-width: 1080px) {
-  .nav-link { padding: 0.4rem 0.8rem; font-size: 0.95rem; }
+@media (min-width: 1440px) {
+  .nav-link { padding: 0.4rem 0.65rem; font-size: 0.92rem; }
 }
 
 /* ---- כפתור וואטסאפ ראשי בהירו ---- */
@@ -1754,7 +1758,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   border-bottom: 1px solid rgba(255,255,255,.65);
 }
 /* במובייל התפריט נשאר אטום ובלי blur — יציבות ציור באנדרואיד */
-@media (max-width: 859px) {
+@media (max-width: 1279px) {
   .nav-links, .nav-links.open {
     background: rgba(255,255,255,.98);
     backdrop-filter: none !important;
@@ -1787,7 +1791,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .steps3 small{color:var(--muted);font-size:.86rem}
 
 /* ===== W-38: לשוניות גלריה — קפיצה מראש העמוד + שורת לשוניות דביקה ===== */
-.gal-jump { margin-top: 1.6rem; }
+.gal-jump { margin-top: 1.4rem; }
 .gal-jump[hidden] { display: none; }
 .gal-jump-title { font-size: .95rem; font-weight: 700; color: rgba(255,255,255,.92); margin-bottom: .6rem; }
 .gal-jump-list { display: flex; flex-wrap: wrap; gap: .45rem; justify-content: center; }
@@ -1798,22 +1802,22 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   color: #fff; font-size: .9rem; font-weight: 600; text-decoration: none;
 }
 .gal-jump-chip:hover, .gal-jump-chip:focus-visible { background: rgba(255,255,255,.3); }
-#gallery-browse { scroll-margin-top: calc(var(--nav-h) + 8px); }
-.gfilter[hidden] { display: none; }
-.gallery-browse-nav {
+.gallery-page #gallery-browse { scroll-margin-top: calc(var(--nav-h) + 8px); }
+.gallery-page .gfilter[hidden] { display: none; }
+.gallery-page .gallery-browse-nav {
   position: sticky; top: var(--nav-h); z-index: 20;
   background: rgba(240,244,255,.92);
   -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
   padding: .6rem 0; margin-bottom: 1.5rem;
 }
-.gallery-browse-nav .gallery-filters { margin-bottom: 0; }
+.gallery-page .gallery-browse-nav .gallery-filters { margin-bottom: 0; }
 @media (max-width: 760px) {
-  .gallery-browse-nav { margin-inline: -16px; padding-inline: 16px; }
-  .gallery-browse-nav .gallery-filters {
+  .gallery-page .gallery-browse-nav { margin-inline: -16px; padding-inline: 16px; }
+  .gallery-page .gallery-browse-nav .gallery-filters {
     flex-wrap: nowrap; justify-content: flex-start;
     overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
     padding-bottom: 2px;
   }
-  .gallery-browse-nav .gallery-filters::-webkit-scrollbar { display: none; }
-  .gallery-browse-nav .gfilter { flex: 0 0 auto; white-space: nowrap; }
+  .gallery-page .gallery-browse-nav .gallery-filters::-webkit-scrollbar { display: none; }
+  .gallery-page .gallery-browse-nav .gfilter { flex: 0 0 auto; white-space: nowrap; }
 }

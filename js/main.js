@@ -57,7 +57,7 @@ if (header) window.addEventListener('scroll', () => {
 
 // מעבר לדסקטופ בזמן שהתפריט פתוח — משחררים את נעילת הגלילה ואת מצב התפריט
 if (navToggle && navLinks) window.addEventListener('resize', () => {
-  if (window.innerWidth >= 860 && navLinks.classList.contains('open')) {
+  if (window.innerWidth >= 1280 && navLinks.classList.contains('open')) {
     navLinks.classList.remove('open');
     navToggle.setAttribute('aria-expanded', 'false');
     document.body.style.overflow = '';
@@ -230,7 +230,7 @@ if (galleryGrid) setGalleryFilter(galleryGrid.dataset.defaultCat || 'all');
 const catConfig = {
   // ── תיקיות ראשיות ──
   events:       { label: 'עיצוב אירועים',           icon: '🎈' },
-  workshops:    { label: 'סדנאות',                  icon: '🎪' },
+  workshops:    { label: 'סדנאות',                  icon: '🎓' },
   bar:          { label: 'בר בלונים ודמויות',        icon: '🎪' },
   characters:   { label: 'דמויות',                  icon: '🤡' },
   rooms:        { label: 'עיצוב חדרים',              icon: '🏠' },
@@ -272,8 +272,9 @@ function setGalleryFilter(cat) {
   loadGalleryPage();
 }
 
-/* W-38: לשוניות לגלריה — מספר תמונות על כל לשונית, לשונית ריקה מוסתרת,
-   קפיצה ישירה מראש העמוד (data-gal-jump) ומקישור #gallery-<קטגוריה>. */
+/* W-38: עמוד הגלריה (gallery.html, body.gallery-page) — מספר תמונות על כל לשונית, לשונית ריקה מוסתרת,
+   קפיצה ישירה מראש העמוד (data-gal-jump) ומקישור #gallery-<קטגוריה>. בשאר הדפים הלשוניות מתנהגות כמו קודם. */
+const GAL_PAGE = document.body.classList.contains('gallery-page');
 function galCount(cat) {
   const all = SD.gallery || [];
   return cat === 'all' ? all.length : all.filter(i => i.cat === cat).length;
@@ -283,6 +284,7 @@ function galScrollTo() {
   if (box) box.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 function galRefreshTabs() {
+  if (!GAL_PAGE) return;
   const btns = [...document.querySelectorAll('.gfilter')];
   btns.forEach(b => {
     if (!b.dataset.label) b.dataset.label = b.textContent.trim();
@@ -300,7 +302,7 @@ function galRefreshTabs() {
 }
 function galFromHash() {
   const m = /^#gallery-([a-z-]+)$/.exec(location.hash);
-  if (!m || !galleryGrid) return;
+  if (!m || !galleryGrid || !GAL_PAGE) return;
   const btn = document.querySelector(`.gfilter[data-cat="${m[1]}"]`);
   if (!btn || btn.hidden) return;
   setGalleryFilter(m[1]);
@@ -309,6 +311,7 @@ function galFromHash() {
 document.querySelectorAll('.gfilter').forEach(btn => {
   btn.addEventListener('click', () => {
     setGalleryFilter(btn.dataset.cat);
+    if (!GAL_PAGE) return;
     if (history.replaceState) history.replaceState(null, '', '#gallery-' + btn.dataset.cat);
     const box = document.getElementById('gallery-browse');
     if (box && box.getBoundingClientRect().top < 0) galScrollTo();   // גללו למטה — חוזרים לראש התמונות
