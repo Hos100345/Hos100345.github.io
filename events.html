@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=202610186">
+  <link rel="stylesheet" href="css/style.css?v=202610187">
 </head>
 <body>
 
@@ -70,6 +70,18 @@
       </div>
     </section>
 
+    <!-- ===== W-39: עבודות נבחרות (נבחרות ב-gallery-admin ⭐; כשאין — הקטע מוסתר) ===== -->
+    <section class="section" id="featured" aria-labelledby="featured-title" data-featured hidden>
+      <div class="container">
+        <header class="section-header">
+          <h2 class="section-title" id="featured-title">⭐ עבודות נבחרות</h2>
+          <div class="section-line"></div>
+        </header>
+        <div class="gallery-grid featured-grid"></div>
+        <p class="gallery-all-link"><a href="gallery.html">📷 לכל התמונות בגלריה ←</a></p>
+      </div>
+    </section>
+
     <!-- ===== השירותים ===== -->
     <section class="section" id="services" aria-labelledby="services-title">
       <div class="container">
@@ -114,6 +126,40 @@
     </section>
 
     <!-- ===== מחירון ===== -->
+    <!-- ===== W-39: חבילות מוכנות (בלי מחיר כולל עד שהושעיה יחליט) ===== -->
+    <section class="section section-alt" id="packages" aria-labelledby="packages-title">
+      <div class="container">
+        <header class="section-header">
+          <h2 class="section-title reveal" id="packages-title">חבילות מוכנות</h2>
+          <div class="section-line reveal"></div>
+          <p class="section-sub reveal">לא בטוחים מה לבחור? התחילו מחבילה, ונתאים אותה יחד לאירוע שלכם.</p>
+        </header>
+        <div class="offer-grid packages-grid">
+          <div class="offer-card package-card reveal">
+            <img class="package-img" src="https://sccivxenkyzxolpraexf.supabase.co/storage/v1/object/public/site-gallery/drive/1-W7riwx1VR8VPJbsanwyWr_0ac1wbdr9-600.jpg" alt="עיצוב בלונים לברית" loading="lazy" width="600" height="400">
+            <h3 class="offer-card-title">👶 חבילת ברית</h3>
+            <ul class="check-list"><li>זוג עמודי בלונים בכניסה</li><li>עמוד נושא — מוצץ או תינוק</li><li>מרכזי שולחן בעיצוב "מוצץ"</li><li>אפשר להוסיף: בר בלונים לילדים</li></ul>
+            <p class="package-price">המחיר לפי הפריטים שבמחירון — בלי הפתעות</p>
+            <a href="https://wa.me/972505918734?text=%D7%A9%D7%9C%D7%95%D7%9D%20%D7%94%D7%95%D7%A9%D7%A2%D7%99%D7%94%2C%20%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%94%D7%A6%D7%A2%D7%AA%20%D7%9E%D7%97%D7%99%D7%A8%20%D7%9C%D7%97%D7%91%D7%99%D7%9C%D7%AA%20%D7%91%D7%A8%D7%99%D7%AA%20%F0%9F%8E%88%0A%D7%AA%D7%90%D7%A8%D7%99%D7%9A%3A%20%0A%D7%99%D7%99%D7%A9%D7%95%D7%91%3A%20%0A%28%D7%9E%D7%A7%D7%95%D7%A8%3A%20%D7%97%D7%91%D7%99%D7%9C%D7%95%D7%AA%20%D7%91%D7%A2%D7%9E%D7%95%D7%93%20%D7%90%D7%99%D7%A8%D7%95%D7%A2%D7%99%D7%9D%29" class="btn btn-hero-wa package-btn" target="_blank" rel="noopener noreferrer">💬 הצעת מחיר לחבילת ברית</a>
+          </div>
+          <div class="offer-card package-card reveal">
+            <img class="package-img" src="https://sccivxenkyzxolpraexf.supabase.co/storage/v1/object/public/site-gallery/drive/1Z4V7xbY6a-clnH-FMN_KoQ8OEFdc-9Wv-600.jpg" alt="מספר מבלונים ליום הולדת" loading="lazy" width="600" height="400">
+            <h3 class="offer-card-title">🎂 חבילת יום הולדת</h3>
+            <ul class="check-list"><li>חישוק בלונים לפינת צילום</li><li>מספר הגיל מבלונים</li><li>סדנת יום הולדת או בר בלונים לילדים</li><li>אפשר להוסיף: כתרים וכובעים לכל ילד</li></ul>
+            <p class="package-price">המחיר לפי הפריטים שבמחירון — בלי הפתעות</p>
+            <a href="https://wa.me/972505918734?text=%D7%A9%D7%9C%D7%95%D7%9D%20%D7%94%D7%95%D7%A9%D7%A2%D7%99%D7%94%2C%20%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%94%D7%A6%D7%A2%D7%AA%20%D7%9E%D7%97%D7%99%D7%A8%20%D7%9C%D7%97%D7%91%D7%99%D7%9C%D7%AA%20%D7%99%D7%95%D7%9D%20%D7%94%D7%95%D7%9C%D7%93%D7%AA%20%F0%9F%8E%88%0A%D7%AA%D7%90%D7%A8%D7%99%D7%9A%3A%20%0A%D7%99%D7%99%D7%A9%D7%95%D7%91%3A%20%0A%28%D7%9E%D7%A7%D7%95%D7%A8%3A%20%D7%97%D7%91%D7%99%D7%9C%D7%95%D7%AA%20%D7%91%D7%A2%D7%9E%D7%95%D7%93%20%D7%90%D7%99%D7%A8%D7%95%D7%A2%D7%99%D7%9D%29" class="btn btn-hero-wa package-btn" target="_blank" rel="noopener noreferrer">💬 הצעת מחיר לחבילת יום הולדת</a>
+          </div>
+          <div class="offer-card package-card reveal">
+            <img class="package-img" src="https://sccivxenkyzxolpraexf.supabase.co/storage/v1/object/public/site-gallery/drive/1xgjjQOtUwdRu9qGeWkqyXN_eeRgF5MRO-600.jpg" alt="קשת בלונים לאירוע" loading="lazy" width="600" height="400">
+            <h3 class="offer-card-title">🏘️ חבילת אירוע קהילתי</h3>
+            <ul class="check-list"><li>קשת בלונים בכניסה</li><li>בר בלונים פעיל — שעתיים ומעלה</li><li>אמן בלונים שני לקהל גדול</li><li>אפשר להוסיף: קרנבל כובעים ל-60 או 100 ילדים</li></ul>
+            <p class="package-price">המחיר לפי הפריטים שבמחירון — בלי הפתעות</p>
+            <a href="https://wa.me/972505918734?text=%D7%A9%D7%9C%D7%95%D7%9D%20%D7%94%D7%95%D7%A9%D7%A2%D7%99%D7%94%2C%20%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%94%D7%A6%D7%A2%D7%AA%20%D7%9E%D7%97%D7%99%D7%A8%20%D7%9C%D7%97%D7%91%D7%99%D7%9C%D7%AA%20%D7%90%D7%99%D7%A8%D7%95%D7%A2%20%D7%A7%D7%94%D7%99%D7%9C%D7%AA%D7%99%20%F0%9F%8E%88%0A%D7%AA%D7%90%D7%A8%D7%99%D7%9A%3A%20%0A%D7%99%D7%99%D7%A9%D7%95%D7%91%3A%20%0A%28%D7%9E%D7%A7%D7%95%D7%A8%3A%20%D7%97%D7%91%D7%99%D7%9C%D7%95%D7%AA%20%D7%91%D7%A2%D7%9E%D7%95%D7%93%20%D7%90%D7%99%D7%A8%D7%95%D7%A2%D7%99%D7%9D%29" class="btn btn-hero-wa package-btn" target="_blank" rel="noopener noreferrer">💬 הצעת מחיר לחבילת אירוע קהילתי</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="section section-alt" id="pricing" aria-labelledby="pricing-title">
       <div class="container">
         <header class="section-header">
@@ -194,6 +240,7 @@
             </div>
           </div>
           <div class="gallery-grid" id="gallery-grid" data-default-cat="events" aria-label="גלריית תמונות"></div>
+          <p class="gallery-all-link"><a href="gallery.html">📷 לכל התמונות בגלריה, לפי סוג ←</a></p>
         </div>
       </div>
     </section>
@@ -301,7 +348,7 @@
     <span class="wa-float-label">שלחו הודעה</span>
   </a>
 
-  <script src="js/site-data.js?v=202610181"></script>
-  <script src="js/main.js?v=202610186"></script>
+  <script src="js/site-data.js?v=202610182"></script>
+  <script src="js/main.js?v=202610187"></script>
 </body>
 </html>

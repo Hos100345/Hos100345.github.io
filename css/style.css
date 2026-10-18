@@ -1821,3 +1821,20 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   .gallery-page .gallery-browse-nav .gallery-filters::-webkit-scrollbar { display: none; }
   .gallery-page .gallery-browse-nav .gfilter { flex: 0 0 auto; white-space: nowrap; }
 }
+
+/* W-39: קישור "לכל התמונות" לעמוד הגלריה */
+.gallery-all-link { text-align: center; margin-top: 1.6rem; }
+.gallery-all-link a {
+  display: inline-block; padding: .7rem 1.6rem; border-radius: var(--radius-pill);
+  font-weight: 700; color: var(--blue); background: var(--white); border: 2px solid var(--blue);
+  text-decoration: none;
+}
+.gallery-all-link a:hover, .gallery-all-link a:focus-visible { background: var(--blue); color: var(--white); }
+
+/* W-39: חבילות מוכנות */
+.packages-grid { display: grid; gap: 1.2rem; grid-template-columns: 1fr; }
+@media (min-width: 860px) { .packages-grid { grid-template-columns: repeat(3, 1fr); } }
+.package-card { display: flex; flex-direction: column; }
+.package-img { width: 100%; height: 190px; object-fit: cover; border-radius: var(--radius-sm, 12px); margin-bottom: .9rem; background: #EEF0FF; }
+.package-price { color: var(--muted); font-size: .9rem; margin: .8rem 0; }
+.package-btn { margin-top: auto; font-size: 1rem; padding: .8rem 1.2rem; text-align: center; justify-content: center; }
