@@ -10,7 +10,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const BUCKET = 'site-gallery';
 const ADMIN_EMAILS = (Deno.env.get('ADMIN_EMAILS') || 'hoshaya@gmail.com').split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
-const CATS = ['bar','bar-chars','event-chars','characters','centerpieces','arch','column','hoop','garlands','hats','numbers','frame','rooms','events','workshops','printing','satisfied'];
+const CATS = ['bar','bar-chars','event-chars','characters','centerpieces','arch','column','hoop','garlands','hats','numbers','frame','rooms','events','workshops','printing','satisfied','photocorner'];
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -123,8 +123,12 @@ Deno.serve(async (req) => {
   if (action === 'delete') {
     if (!UUID_RE.test(String(body.id))) return json({ error: 'bad_id' }, 400);
     const { data: row } = await admin.from('site_gallery').select('thumb_path,full_path').eq('id', body.id).maybeSingle();
-    if (row) await admin.storage.from(BUCKET).remove([row.thumb_path, row.full_path].filter(Boolean));
     const { error } = await admin.from('site_gallery').delete().eq('id', body.id);
+    // אותה תמונה מהדרייב יכולה לשבת בשתי קטגוריות עם אותם קבצים — מוחקים קבצים רק אם אף שורה אחרת לא משתמשת בהם
+    if (!error && row) {
+      const { count } = await admin.from('site_gallery').select('id', { count: 'exact', head: true }).eq('thumb_path', row.thumb_path);
+      if (!count) await admin.storage.from(BUCKET).remove([row.thumb_path, row.full_path].filter(Boolean));
+    }
     return error ? json({ error: error.message }, 500) : json({ ok: true });
   }
   return json({ error: 'invalid_action' }, 400);

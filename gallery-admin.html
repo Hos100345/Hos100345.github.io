@@ -45,7 +45,7 @@
 </style>
 </head>
 <body>
-<header><h1>📷 תמונות האתר</h1><a href="admin.html">ניהול האתר</a><a href="index.html">לאתר</a></header>
+<header><h1>📷 תמונות האתר</h1><a href="https://hos100345.github.io/hoshaya-quotes/">🎈 המחירון</a><a href="admin.html">ניהול האתר</a><a href="index.html">לאתר</a></header>
 <main>
   <section class="card" id="login">
     <h2>כניסה</h2>
@@ -81,12 +81,12 @@
   </section>
   <section class="card" id="mine" hidden>
     <h2>תמונות שהעלית</h2>
-    <p class="hint">"הסתר" מוריד מהאתר ושומר, "מחק" מוחק לגמרי. התמונות הישנות מהדרייב מנוהלות בנפרד.</p>
+    <p class="hint">"הסתר" מוריד מהאתר ושומר, "מחק" מוחק לגמרי. את כל התמונות (גם הישנות) אפשר לראות, להסתיר ולשלוח ללקוחות גם מקטלוג המחירון.</p>
     <div class="prev list" id="list"></div>
   </section>
 </main>
 <script>
-const CATS=[['events','עיצוב אירועים'],['bar','בר בלונים ודמויות'],['characters','דמויות'],['bar-chars','דמויות של בר בלונים'],['event-chars','דמויות של עיצוב אירועים'],['arch','קשת'],['column','עמוד'],['hoop','חישוק'],['frame','מסגרת'],['numbers','מספרים'],['centerpieces','מרכזי שולחן'],['garlands','גירלנדות'],['hats','כתרים וכובעים'],['rooms','עיצוב חדרים'],['printing','הדפסה על בלונים'],['workshops','סדנאות'],['satisfied','לקוחות מרוצים']];
+const CATS=[['events','עיצוב אירועים'],['bar','בר בלונים ודמויות'],['characters','דמויות'],['bar-chars','דמויות של בר בלונים'],['event-chars','דמויות של עיצוב אירועים'],['arch','קשת'],['column','עמוד'],['hoop','חישוק'],['frame','מסגרת'],['numbers','מספרים'],['centerpieces','מרכזי שולחן'],['garlands','גירלנדות'],['hats','כתרים וכובעים'],['rooms','עיצוב חדרים'],['printing','הדפסה על בלונים'],['photocorner','פינת צילום'],['workshops','סדנאות'],['satisfied','לקוחות מרוצים']];
 const CAT_HE=Object.fromEntries(CATS);
 const $=id=>document.getElementById(id);
 const sb=supabase.createClient(window.SUPABASE_CONFIG.url,window.SUPABASE_CONFIG.anonKey);
