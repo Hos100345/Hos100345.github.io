@@ -57,7 +57,7 @@ if (header) window.addEventListener('scroll', () => {
 
 // מעבר לדסקטופ בזמן שהתפריט פתוח — משחררים את נעילת הגלילה ואת מצב התפריט
 if (navToggle && navLinks) window.addEventListener('resize', () => {
-  if (window.innerWidth >= 860 && navLinks.classList.contains('open')) {
+  if (window.innerWidth >= 1280 && navLinks.classList.contains('open')) {
     navLinks.classList.remove('open');
     navToggle.setAttribute('aria-expanded', 'false');
     document.body.style.overflow = '';
@@ -221,6 +221,7 @@ if (galleryGrid) setGalleryFilter(galleryGrid.dataset.defaultCat || 'all');
       const fresh = rows.map(r => ({ src: PUB + r.thumb_path, full: PUB + r.full_path, cat: r.cat, alt: r.alt || '' }));
       SD.gallery = fresh.concat(SD.gallery || []);   // חדשות קודם
       if (galleryGrid && galCat) setGalleryFilter(galCat);
+      if (galleryGrid) galRefreshTabs();
     })
     .catch(() => clearTimeout(t));
 })();
@@ -229,7 +230,7 @@ if (galleryGrid) setGalleryFilter(galleryGrid.dataset.defaultCat || 'all');
 const catConfig = {
   // ── תיקיות ראשיות ──
   events:       { label: 'עיצוב אירועים',           icon: '🎈' },
-  workshops:    { label: 'סדנאות',                  icon: '🎪' },
+  workshops:    { label: 'סדנאות',                  icon: '🎓' },
   bar:          { label: 'בר בלונים ודמויות',        icon: '🎪' },
   characters:   { label: 'דמויות',                  icon: '🤡' },
   rooms:        { label: 'עיצוב חדרים',              icon: '🏠' },
@@ -271,9 +272,60 @@ function setGalleryFilter(cat) {
   loadGalleryPage();
 }
 
+/* W-38: עמוד הגלריה (gallery.html, body.gallery-page) — מספר תמונות על כל לשונית, לשונית ריקה מוסתרת,
+   קפיצה ישירה מראש העמוד (data-gal-jump) ומקישור #gallery-<קטגוריה>. בשאר הדפים הלשוניות מתנהגות כמו קודם. */
+const GAL_PAGE = document.body.classList.contains('gallery-page');
+function galCount(cat) {
+  const all = SD.gallery || [];
+  return cat === 'all' ? all.length : all.filter(i => i.cat === cat).length;
+}
+function galScrollTo() {
+  const box = document.getElementById('gallery-browse') || galleryGrid;
+  if (box) box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function galRefreshTabs() {
+  if (!GAL_PAGE) return;
+  const btns = [...document.querySelectorAll('.gfilter')];
+  btns.forEach(b => {
+    if (!b.dataset.label) b.dataset.label = b.textContent.trim();
+    const n = galCount(b.dataset.cat);
+    b.textContent = `${b.dataset.label} (${n})`;
+    b.hidden = n === 0 && b.dataset.cat !== 'all';
+  });
+  const jump = document.querySelector('[data-gal-jump]');
+  if (!jump) return;
+  const list = jump.querySelector('.gal-jump-list');
+  const items = btns.filter(b => b.dataset.cat !== 'all' && !b.hidden);
+  list.innerHTML = items.map(b =>
+    `<a class="gal-jump-chip" href="#gallery-${b.dataset.cat}"><span aria-hidden="true">${catConfig[b.dataset.cat]?.icon || '📷'}</span> ${b.dataset.label}</a>`).join('');
+  jump.hidden = !items.length;
+}
+function galFromHash() {
+  const m = /^#gallery-([a-z-]+)$/.exec(location.hash);
+  if (!m || !galleryGrid || !GAL_PAGE) return;
+  const btn = document.querySelector(`.gfilter[data-cat="${m[1]}"]`);
+  if (!btn || btn.hidden) return;
+  setGalleryFilter(m[1]);
+  galScrollTo();
+}
 document.querySelectorAll('.gfilter').forEach(btn => {
-  btn.addEventListener('click', () => setGalleryFilter(btn.dataset.cat));
+  btn.addEventListener('click', () => {
+    setGalleryFilter(btn.dataset.cat);
+    if (!GAL_PAGE) return;
+    if (history.replaceState) history.replaceState(null, '', '#gallery-' + btn.dataset.cat);
+    const box = document.getElementById('gallery-browse');
+    if (box && box.getBoundingClientRect().top < 0) galScrollTo();   // גללו למטה — חוזרים לראש התמונות
+  });
 });
+document.addEventListener('click', e => {
+  const a = e.target.closest && e.target.closest('.gal-jump-chip');
+  if (!a) return;
+  e.preventDefault();
+  if (history.replaceState) history.replaceState(null, '', a.getAttribute('href'));
+  galFromHash();
+});
+window.addEventListener('hashchange', galFromHash);
+if (galleryGrid) { galRefreshTabs(); galFromHash(); }
 
 /* =====================================================
    TESTIMONIALS
