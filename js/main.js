@@ -631,3 +631,82 @@ document.querySelectorAll('[data-wa-form]').forEach(form => {
     send(kind === 'phone' ? 'site_phone' : 'site_wa', kind);
   }, true);
 })();
+
+/* =====================================================
+   W-41: עונות — שורה עונתית ושנה בתחתית, מתחלפות לבד
+   החג מחושב מהלוח העברי של הדפדפן (Intl, he-u-ca-hebrew) — עובד כל שנה בלי לעדכן תאריכים.
+   כל עונה: עוגן (תאריך עברי או לועזי), כמה ימים לפני להתחיל להציג, כמה ימים אחרי להפסיק.
+   בדיקה בלי לחכות לחג: ?season-date=2026-11-20 בכתובת.
+   ===================================================== */
+(function seasons() {
+  document.querySelectorAll('[data-year]').forEach(el => { el.textContent = String(new Date().getFullYear()); });
+  const slots = document.querySelectorAll('[data-season-slot]');
+  if (!slots.length) return;
+  let fmt;
+  try { fmt = new Intl.DateTimeFormat('en-u-ca-hebrew', { day: 'numeric', month: 'long' }); } catch (e) { return; }
+  const q = /[?&]season-date=(\d{4}-\d{2}-\d{2})/.exec(location.search);
+  const today = q ? new Date(q[1] + 'T12:00:00') : new Date();
+  today.setHours(12, 0, 0, 0);
+  const DAY = 864e5;
+  const WA = t => 'https://wa.me/972505918734?text=' + encodeURIComponent(t);
+
+  // heb: ['יום', 'חודש'] כמו ש-Intl כותב באנגלית; פורים בשנה מעוברת נופל באדר ב'.
+  // greg: [חודש 1-12, יום] — עונות שלא קשורות לחג.
+  const SEASONS = [
+    { id: 'hanukkah', heb: [[25, 'Kislev']], before: 42, after: 7, msg: {
+      schools:     ['🕎', 'סדנאות לחנוכה — בלונים או אוריגמי לכיתה וליום שיא. התאריכים של החג מתמלאים, כדאי לשריין עכשיו.', 'שריון סדנה'],
+      workshops:   ['🕎', 'סדנאות לחנוכה — לכיתות, לגנים ולמסיבות חנוכה. כדאי לשריין תאריך עכשיו.', 'שריון סדנה'],
+      communities: ['🕎', 'אירוע חנוכה ביישוב? בר בלונים והפעלה לכל המשפחה.', 'לפרטים'],
+      games:       ['🕎', 'מתנה לחנוכה — משחק קלפים מהתמונות של המשפחה.', 'לבחירת משחק', '#games'] } },
+    { id: 'purim', heb: [[14, 'Adar'], [14, 'Adar II']], before: 42, after: 1, msg: {
+      schools:     ['🎭', 'פורים בדרך — קרנבל כובעים מבלונים לכיתה או לכל בית הספר.', 'לפרטים'],
+      workshops:   ['🎭', 'פורים בדרך — קרנבל כובעים מבלונים וסדנאות לכיתות.', 'לפרטים'],
+      communities: ['🎭', 'מסיבת פורים ביישוב — קרנבל כובעים ובר בלונים.', 'לפרטים'],
+      games:       ['🎭', 'משלוח מנות אחר — משחק מהתמונות של החברים.', 'לבחירת משחק', '#games'] } },
+    { id: 'pesach', heb: [[15, 'Nisan']], before: 35, after: 0, msg: {
+      games:       ['🍷', 'לליל הסדר — משחק עם התמונות של כל המשפחה, שהילדים ישחקו ליד השולחן.', 'לבחירת משחק', '#games'] } },
+    { id: 'atzmaut', heb: [[5, 'Iyar']], before: 35, after: 1, msg: {
+      communities: ['🇮🇱', 'יום העצמאות — עיצוב כחול-לבן והפעלת בלונים לחגיגת היישוב.', 'לפרטים'] } },
+    { id: 'endyear', greg: [6, 20], before: 40, after: 10, msg: {
+      schools:     ['🎓', 'מסיבת סיום? סדנה, בר בלונים, או משחק עם התמונות של כל הילדים — מתנה לגננת ולמורה.', 'לפרטים'],
+      workshops:   ['🎓', 'מסיבות סיום — סדנה או בר בלונים לכיתה ולגן.', 'לפרטים'],
+      games:       ['🎓', 'מתנת סוף שנה לגננת — משחק עם התמונות של כל הילדים בגן.', 'לבחירת משחק', '#games'] } },
+    { id: 'backtoschool', greg: [9, 1], before: 35, after: 10, msg: {
+      schools:     ['🏷️', 'מדבקות שם לשנה החדשה — לכל תלמידי הכיתה, ממוינות ומוכנות לחלוקה.', 'להזמנה'],
+      workshops:   ['🏷️', 'מדבקות שם לשנה החדשה — לספרים, למחברות ולקלמר.', 'להזמנה'] } },
+    { id: 'tishrei', heb: [[1, 'Tishri']], before: 30, after: 21, msg: {
+      communities: ['🍎', 'חגי תשרי — עיצוב בלונים לאירוע היישוב ולסוכה.', 'לפרטים'],
+      games:       ['🍎', 'מתנה לראש השנה — משחק מהתמונות של המשפחה.', 'לבחירת משחק', '#games'] } },
+  ];
+
+  // תאריך העוגן הקרוב ביותר שהיום נופל בחלון שלו
+  function anchorNear(s) {
+    if (s.greg) {
+      for (const y of [today.getFullYear() - 1, today.getFullYear(), today.getFullYear() + 1]) {
+        const a = new Date(y, s.greg[0] - 1, s.greg[1], 12);
+        if (today >= a - s.before * DAY && today <= +a + s.after * DAY) return a;
+      }
+      return null;
+    }
+    for (let k = -s.after; k <= s.before; k++) {          // מחפשים את העוגן בטווח החלון בלבד
+      const d = new Date(+today + k * DAY);
+      const p = fmt.formatToParts(d);
+      const day = +(p.find(x => x.type === 'day') || {}).value;
+      const mon = (p.find(x => x.type === 'month') || {}).value;
+      if (s.heb.some(([hd, hm]) => hd === day && hm === mon)) return d;
+    }
+    return null;
+  }
+  const actives = SEASONS.filter(s => anchorNear(s));   // יכולות לחפוף (יום העצמאות וסוף שנה) — כל דף לוקח את הראשונה שיש לה שורה בשבילו
+  if (!actives.length) return;
+  slots.forEach(slot => {
+    const active = actives.find(s => s.msg[slot.dataset.seasonSlot]);
+    if (!active) return;
+    const m = active.msg[slot.dataset.seasonSlot];
+    const [icon, text, cta, href] = m;
+    const link = href || WA(`שלום הושעיה, ראיתי באתר: ${text}\nאשמח לפרטים 🎈\n(מקור: ${document.title.split('|')[0].trim()} · ${active.id})`);
+    slot.innerHTML = `<a class="season-banner" href="${link}"${href ? '' : ' target="_blank" rel="noopener noreferrer"'}>`
+      + `<span class="season-icon" aria-hidden="true">${icon}</span><span class="season-text">${text}</span><span class="season-cta">${cta} ←</span></a>`;
+    slot.hidden = false;
+  });
+})();

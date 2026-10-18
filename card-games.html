@@ -20,7 +20,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=202610187">
+  <link rel="stylesheet" href="css/style.css?v=202610188">
   <style>
     .game-details summary{cursor:pointer;font-weight:700;color:var(--indigo);list-style:none;display:flex;align-items:center;gap:.4rem}
     .game-details summary::-webkit-details-marker{display:none}
@@ -210,6 +210,9 @@
         <img src="images/games/og-card-games.jpg" alt="משחקי קלפים אישיים מהתמונות שלכם — קלפי מצא את הזהה עם פרצופי המשפחה, משחק זיכרון ורביעיות" width="1200" height="630" class="reveal" style="width:100%;max-width:760px;height:auto;border-radius:1rem;margin:1.6rem auto 0;display:block;box-shadow:0 18px 40px rgba(0,0,0,.25)">
       </div>
     </section>
+
+    <!-- W-41: שורה עונתית — מתחלפת לבד לפי הלוח העברי (js/main.js → SEASONS). ריקה מחוץ לעונה. -->
+    <div class="container season-slot" data-season-slot="games" hidden></div>
 
 
     <section class="section" aria-label="איך זה עובד" style="padding-top:1.6rem;padding-bottom:1.6rem">
@@ -401,7 +404,7 @@
         class="footer-logo"
         width="48" height="48" loading="lazy">
       <div class="footer-text">
-        <p>© 2026 הושעיה וולמן — עיצוב, יצירה והפעלות · בקעת הירדן וצפון ים המלח</p>
+        <p>© <span data-year>2026</span> הושעיה וולמן — עיצוב, יצירה והפעלות · בקעת הירדן וצפון ים המלח</p>
         <p class="footer-sub">כל הזכויות שמורות · <a href="card-games.html" style="text-decoration:underline">🃏 מחולל משחקי קלפים</a> · <a href="accessibility.html" style="text-decoration:underline">הצהרת נגישות</a></p>
       </div>
       <div class="footer-links">
@@ -429,6 +432,6 @@
   </a>
 
   <script src="js/site-data.js?v=202610182"></script>
-  <script src="js/main.js?v=202610187"></script>
+  <script src="js/main.js?v=202610188"></script>
 </body>
 </html>
