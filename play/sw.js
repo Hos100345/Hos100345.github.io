@@ -2,8 +2,8 @@
 // הדף והמנוע: רשת קודם (כל עדכון מגיע מיד), ומהמטמון רק כשאין רשת — כדי שלא ייתקע אצל אף אחד גרסה ישנה.
 // JSZip ופונטים מ-CDN: מהמטמון מיד, ומתעדכנים ברקע.
 // שינוי בקובץ הזה = להעלות את V, כדי לנקות מטמון ישן.
-const V = 'play-sw-3';
-const SHELL = ['./', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', '../js/play-engine.js?v=2'];
+const V = 'play-sw-4';
+const SHELL = ['./', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', '../js/play-engine.js?v=3'];
 const CDN = ['cdnjs.cloudflare.com', 'fonts.googleapis.com', 'fonts.gstatic.com'];
 
 self.addEventListener('install', e => {

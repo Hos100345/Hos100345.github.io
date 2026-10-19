@@ -3963,6 +3963,47 @@ function symPosPeriph(n,cx,cy,r){
 // ══ SHAPE-AWARE PACKING (tightPack) ══
 const CIRCLE_META={hasAlpha:false,radial:CIRCLE_RADIAL()};
 
+// ══ D-87: גבול הסמלים לפי צורת הקלף ══
+// עיגול: רדיוס rSym (כמו תמיד). ריבוע: ריבוע עם פינות מעוגלות שנכנס פנימה fw+symPad מ"מ מכל צלע (הפינות מכווצות באותו מרחק).
+// הכול ביחידות rSym (הפריסה המנורמלת: rSym=1), כלומר ללא תלות ברזולוציה. null = עיגול.
+function symBoundNorm(){
+  if(S.shape!=='square')return null;
+  const G=cardGeom(500),pad=G.fw+S.symPad*G.ppMm;
+  return{H:(G.sq/2-pad)/G.rSym,cr:Math.max(0,G.sqcr-pad)/G.rSym};
+}
+// כמה הסמל חורג מהגבול (>0 = חורג, ביחידות הקלט). בודק **כל נקודה בפרופיל הצורה** (64 זוויות), לא רק את הכיוון הרדיאלי —
+// סמל מוארך שקצהו רחוק מהציר נראה "בפנים" לפי dist+reach אבל חורג בפועל. B = ריבוע מעוגל {H,cr} (SDF, כלומר מול כל
+// הצלעות וקשתות הפינות); בלי B — עיגול ברדיוס R סביב (0,0).
+function symOverSq(meta,rot,half,x,y,B,R){
+  const rad=meta.fine||meta.radial,n=rad.length,st=Math.PI*2/n,cu=meta.fine?1:1.012;   // עיגול אטום: פוליגון 64 צלעות — קצת מרווח לקשת
+  let mx=-Infinity;
+  if(B){
+    const a0=B.H-B.cr;
+    for(let i=0;i<n;i++){
+      const a=rot+i*st,rr=rad[i]*half*cu;
+      const qx=Math.abs(x+rr*Math.cos(a))-a0,qy=Math.abs(y+rr*Math.sin(a))-a0;
+      const d=Math.hypot(Math.max(qx,0),Math.max(qy,0))+Math.min(Math.max(qx,qy),0)-B.cr;
+      if(d>mx)mx=d;
+    }
+  }else{
+    for(let i=0;i<n;i++){
+      const a=rot+i*st,rr=rad[i]*half*cu;
+      const d=Math.hypot(x+rr*Math.cos(a),y+rr*Math.sin(a))-R;
+      if(d>mx)mx=d;
+    }
+  }
+  return mx;
+}
+// מקדם הגדילה/כיווץ הגדול ביותר g של הסמל (ממורכז ב-x,y) שעדיין בתוך הגבול. המרכז עצמו מחוץ → 0.
+function symGmaxSq(meta,rot,half,x,y,B,cap,R){
+  if(!(half>1e-9))return cap;
+  if(symOverSq(meta,rot,0,x,y,B,R)>0)return 0;
+  if(symOverSq(meta,rot,half*cap,x,y,B,R)<=0)return cap;
+  let lo=0,hi=cap;
+  for(let k=0;k<16;k++){const m=(lo+hi)/2;if(symOverSq(meta,rot,half*m,x,y,B,R)<=0)lo=m;else hi=m;}
+  return lo;
+}
+
 // מרחק המגע הנדרש בין שני סמלים בזווית נתונה, לפי הפרופיל הרדיאלי שלהם.
 function reachAt(meta,rotation,angle,half){
   const bins=64;
@@ -3984,6 +4025,10 @@ function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
   const origX=pos.map(p=>p.x),origY=pos.map(p=>p.y);
   const kT=contactFactor();          // יעד המגע האמיתי — לעולם לא יורד, גם כשההרפיה מתפשרת
   const tol=rSym*0.015;
+  const SQ=(rSym===1&&cx===0&&cy===0)?symBoundNorm():null;   // D-87: בריבוע הגבול הוא ריבוע מעוגל, לא רדיוס
+  // סמל "דגום" = בדיקת גבול מול כל פרופיל הצורה: תמיד בריבוע, ובעיגול רק לסמל עם שקיפות. עיגול אטום = הנוסחה הישנה (פלט זהה לפיקסל)
+  const smp=i=>!!SQ||metas[i].hasAlpha;
+  const ovr=(i,x,y,h)=>symOverSq(metas[i],rots[i],h,x-cx,y-cy,SQ,rSym);
 
   // ההפרה הגרועה ביותר של פריסה נתונה מול יעד k (זוגות + גבול הקלף)
   function violation(P,k){
@@ -3997,7 +4042,7 @@ function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
     for(let i=0;i<n;i++){
       const dx=P[i].x-cx,dy=P[i].y-cy,dist=Math.hypot(dx,dy);
       const angOut=dist<1e-6?0:Math.atan2(dy,dx);
-      const over=dist+reachAt(metas[i],rots[i],angOut,halves[i])-rSym;
+      const over=smp(i)?ovr(i,P[i].x,P[i].y,halves[i]):dist+reachAt(metas[i],rots[i],angOut,halves[i])-rSym;
       if(over>mv)mv=over;
     }
     return mv;
@@ -4023,6 +4068,11 @@ function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
       for(let i=0;i<n;i++){
         const dx=P[i].x-cx,dy=P[i].y-cy,dist=Math.hypot(dx,dy);
         if(dist<1e-6)continue;
+        if(smp(i)){   // מושכים לכיוון המרכז בגובה החריגה
+          const o=ovr(i,P[i].x,P[i].y,halves[i]);
+          if(o>0){const m=Math.min(o,dist);P[i].x-=dx/dist*m;P[i].y-=dy/dist*m;moved++;}
+          continue;
+        }
         const angOut=Math.atan2(dy,dx);
         const reach=reachAt(metas[i],rots[i],angOut,halves[i]);
         if(dist+reach>rSym){
@@ -4063,6 +4113,24 @@ function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
     if(bestViol<=tol)break;
   }
 
+  // D-87: גבול קשיח בסוף — אם אחרי הכול סמל עדיין חורג (למשל כשהכיווץ הגלובלי נעצר בתקרת 0.20), מקטינים אותו עד שאין חריגה.
+  // בריבוע ובעיגול עם סמלים חתוכים בלבד: עיגול אטום כבר מובטח, ושם הפלט חייב להישאר זהה לפיקסל.
+  const needHard=!!SQ||metas.some(m=>m.hasAlpha);   // (עיגול אטום מובטח כבר, ושם הפלט חייב להישאר זהה)
+  function hardBound(){
+    if(!needHard)return;
+    for(let i=0;i<n;i++){
+      const half=pos[i].hs*layout.tr[i].sc;if(!(half>1e-9))continue;
+      let gi;
+      if(smp(i))gi=symGmaxSq(metas[i],rots[i],half,pos[i].x-cx,pos[i].y-cy,SQ,1,rSym);
+      else{
+        const dx=pos[i].x-cx,dy=pos[i].y-cy,dist=Math.hypot(dx,dy),ang=dist<1e-6?0:Math.atan2(dy,dx);
+        const reach=reachAt(metas[i],rots[i],ang,half);
+        gi=reach>1e-9&&dist+reach>rSym?Math.max(0,(rSym-dist)/reach):1;
+      }
+      if(gi<1)pos[i].hs*=Math.max(gi,0.02);
+    }
+  }
+
   // ── סגירה אנליטית: הערובה ל-0% חפיפה ו-0 חריגה, בצעד יחיד ──
   // need_ij ו-reach_i לינאריים במקדם g, ולכן
   //   g = min( d_ij / need_ij ,  (rSym − dist_i) / reach_i )
@@ -4070,6 +4138,7 @@ function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
   function exactShrink(P){
     let g=1;
     for(let i=0;i<n;i++){
+      if(smp(i)){g=Math.min(g,symGmaxSq(metas[i],rots[i],halves[i],P[i].x-cx,P[i].y-cy,SQ,1,rSym));continue;}
       const dx=P[i].x-cx,dy=P[i].y-cy,dist=Math.hypot(dx,dy);
       const angOut=dist<1e-6?0:Math.atan2(dy,dx);
       const reach=reachAt(metas[i],rots[i],angOut,halves[i]);
@@ -4093,6 +4162,7 @@ function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
     const gU=P=>{
       let gg=Infinity;
       for(let i=0;i<n;i++){
+        if(smp(i)){gg=Math.min(gg,symGmaxSq(metas[i],rots[i],halves[i],P[i].x-cx,P[i].y-cy,SQ,AUTO_GMAX,rSym));continue;}
         const dx=P[i].x-cx,dy=P[i].y-cy,dist=Math.hypot(dx,dy);
         const angOut=dist<1e-6?0:Math.atan2(dy,dx);
         const reach=reachAt(metas[i],rots[i],angOut,halves[i]);
@@ -4119,6 +4189,7 @@ function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
     setF(lo);best=loP;const F=lo;
     g=F*Math.min(1,gU(best));
     for(let i=0;i<n;i++){pos[i].x=best[i].x;pos[i].y=best[i].y;pos[i].hs=pos[i].hs*g;}
+    hardBound();
     return;
   }
 
@@ -4126,6 +4197,7 @@ function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
   if(g>=1&&S.tightFill&&(S.overlap||0)>=0){
     const fits=q=>{
       for(let i=0;i<n;i++){
+        if(smp(i)){if(ovr(i,best[i].x,best[i].y,halves[i]*q)>0.001*rSym)return false;continue;}
         const dx=best[i].x-cx,dy=best[i].y-cy,dist=Math.hypot(dx,dy);
         const angOut=dist<1e-6?0:Math.atan2(dy,dx);
         if(dist+reachAt(metas[i],rots[i],angOut,halves[i])*q>rSym*1.001)return false;
@@ -4144,6 +4216,7 @@ function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
   }
 
   for(let i=0;i<n;i++){pos[i].x=best[i].x;pos[i].y=best[i].y;pos[i].hs=pos[i].hs*g;}
+  hardBound();
 }
 
 const AUTO_GMAX=4,AUTO_STEPS=7;   // ראו "גודל אוטומטי" ב-relaxSymbolPositions. 7 צעדים = דיוק ~1% ב-F
@@ -4167,7 +4240,9 @@ function cardGeom(sz){
 // יתרון כפול: (א) אותה פריסה בדיוק בכל רזולוציה — תצוגה 220px ו-PDF 1400px זהים;
 // (ב) החישוב הכבד (4 נקודות פתיחה × 4 מעברים) רץ פעם אחת לקלף, לא בכל ציור מחדש.
 function packSignature(n){
-  return [n,S.layoutMode,S.overlap,S.tightPack?1:0,S.tightFill?1:0,S.metaVer||0,S.sizeMode||'',S.sizeMode==='auto'?S.sizeK:''].join('|');
+  // D-87: בריבוע הגבול תלוי במידת הקלף, במסגרת ובמרחק מהשפה (ביחידות rSym) — לכן הם חלק מהחתימה. בעיגול החתימה זהה למה שהיה.
+  const sqSig=S.shape==='square'?'sq:'+[S.cardSizeMm,S.frame.w,S.symPad].join(','):'';
+  return [n,S.layoutMode,S.overlap,S.tightPack?1:0,S.tightFill?1:0,S.metaVer||0,S.sizeMode||'',S.sizeMode==='auto'?S.sizeK:'',sqSig].join('|');
 }
 function packNormalized(layout,imgs){
   const n=layout.syms.length;
@@ -4176,23 +4251,32 @@ function packNormalized(layout,imgs){
   const c=layout.__pack;
   if(c&&c.sig===sig)return c.pos;
   const pos=symPos(n,0,0,1);
+  // D-87: בריבוע נקודות הפתיחה מורחקות מעט מהמרכז — יש מקום בפינות (הפריסה הבסיסית מתוכננת לעיגול). ההרפיה מחזירה פנימה מה שחורג
+  if(S.shape==='square')for(const q of pos){q.x*=1.12;q.y*=1.12;}
   if(S.tightPack)relaxSymbolPositions(pos,layout,imgs,0,0,1);
-  else if(S.sizeMode==='auto')relaxSymbolPositions(pos,layout,[],0,0,1);   // גודל אוטומטי בלי "לפי צורה" = מילוי לפי עיגולים
-  else clampInsideCard(pos,layout,1);
+  else if(S.sizeMode==='auto'){
+    relaxSymbolPositions(pos,layout,[],0,0,1);   // גודל אוטומטי בלי "לפי צורה" = מילוי לפי עיגולים (המרווח בין סמלים)
+    // D-87: אבל גבול הקלף נאכף לפי הצורה האמיתית של כל סמל חתוך / לפי ריבוע. עיגול אטום — בלי נגיעה (פלט זהה לפיקסל)
+    if(S.shape==='square'||layout.syms.some(si=>imgs[si]&&imgs[si].__symMeta&&imgs[si].__symMeta.hasAlpha))clampInsideCard(pos,layout,1,imgs);
+  }
+  else clampInsideCard(pos,layout,1,imgs);
   layout.__pack={sig,pos};
   return pos;
 }
 
 // הגנת גבול למצב הישן (tightPack כבוי): כיווץ אחיד כך שאף סמל לא יחרוג מהקלף.
-function clampInsideCard(pos,layout,rSym){
-  let g=1;
+function clampInsideCard(pos,layout,rSym,imgs){
+  let g=1,smpUsed=false;
+  const SQ=(rSym===1)?symBoundNorm():null;   // D-87: ריבוע מעוגל במקום רדיוס; ובעיגול — סמל עם שקיפות נבדק מול כל הפרופיל שלו
   for(let i=0;i<pos.length;i++){
     const half=pos[i].hs*layout.tr[i].sc;
     if(half<=1e-9)continue;
+    const mt=(imgs&&imgs[layout.syms[i]]&&imgs[layout.syms[i]].__symMeta)||CIRCLE_META;
+    if(SQ||mt.hasAlpha){smpUsed=true;g=Math.min(g,symGmaxSq(mt,layout.tr[i].ro,half,pos[i].x,pos[i].y,SQ,1,rSym));continue;}
     const d=Math.hypot(pos[i].x,pos[i].y);
     if(d+half>rSym)g=Math.min(g,Math.max(0,(rSym-d)/half));
   }
-  if(g<1){g=Math.max(g,0.20);for(const p of pos)p.hs*=g;}
+  if(g<1){g=smpUsed?Math.max(g,0.02):Math.max(g,0.20);for(const p of pos)p.hs*=g;}
 }
 
 // מיקומים אבסולוטיים לקנבס בגודל sz — כולל התאמות ידניות ברמת קלף בודד.
@@ -4225,9 +4309,13 @@ function cardViolations(layout,imgs,pos,G){
   const metas=layout.syms.map(si=>{const im=imgs[si];return (im&&im.__symMeta)||CIRCLE_META;});
   const rots=layout.tr.map(t=>t.ro);
   const halves=pos.map((p,i)=>p.hs*layout.tr[i].sc);
-  const kT=contactFactor();
+  const kT=contactFactor(),SQ=symBoundNorm();
   for(let i=0;i<n;i++){
     const dx=pos[i].x-G.cx,dy=pos[i].y-G.cy,dist=Math.hypot(dx,dy);
+    if(SQ||metas[i].hasAlpha){   // D-87: ריבוע — מול הצלעות והפינות; סמל חתוך — מול כל הפרופיל (ביחידות rSym)
+      if(symOverSq(metas[i],rots[i],halves[i]/G.rSym,dx/G.rSym,dy/G.rSym,SQ,1)>0.01)bad.add(i);
+      continue;
+    }
     const angOut=dist<1e-6?0:Math.atan2(dy,dx);
     if(dist+reachAt(metas[i],rots[i],angOut,halves[i])>G.rSym*1.01)bad.add(i);
   }
@@ -6894,7 +6982,12 @@ function ceClampSlot(slot){
   const r=computeCardPositions(layout,S.imgEls,cv.width);
   const rr=r.pos[slot].hs*layout.tr[slot].sc;
   const dx=r.pos[slot].x-r.G.cx,dy=r.pos[slot].y-r.G.cy,dist=Math.hypot(dx,dy);
-  const over=dist+rr-r.G.rSym;
+  const SQ=symBoundNorm();
+  let over=dist+rr-r.G.rSym;
+  const m=(S.imgEls[layout.syms[slot]]||{}).__symMeta||CIRCLE_META;
+  if(SQ||m.hasAlpha){   // D-87: נעצר בצלעות/פינות (ריבוע) או לפי כל פרופיל הצורה (סמל חתוך)
+    over=symOverSq(m,layout.tr[slot].ro,rr/r.G.rSym,dx/r.G.rSym,dy/r.G.rSym,SQ,1)*r.G.rSym;
+  }
   if(over>0&&dist>1e-6){
     const o=ceSlotObj(slot);
     o.dx=(o.dx||0)-(dx/dist)*over/r.G.rSym;
@@ -9209,12 +9302,14 @@ function trimAlphaSquare(cv,SZ,padPct){
 // נשמר cache על אלמנט הקנבס עצמו (cv.__symMeta) — נגזר, לא נכנס ל-S ולא נשמר לדיסק.
 function symbolShapeMeta(cv){
   if(cv.__symMeta)return cv.__symMeta;
-  const N=64,bins=64;
+  // D-87: שני פרופילים. radial (64 זוויות, דגימה 64px) — מרחקי מגע בין סמלים, כמו תמיד (אבל שיא-שכנים במקום ממוצע, וללא תקרה 1).
+  // fine (128 זוויות, דגימה 128px) — בדיקת הגבול מול הקלף: הערכה תמיד קצת גדולה, כדי שאף פיקסל אטום לא ייצא.
+  const N=128,bins=64,fb=128;
   let data;
   try{
     const tmp=document.createElement('canvas');tmp.width=tmp.height=N;
     const tctx=tmp.getContext('2d');
-    tctx.drawImage(cv,0,0,N,N);
+    tctx.drawImage(cv,0,0,N,N);       // כמו ב-drawCard: סמל חתוך מצויר מתוח לריבוע ds×ds, לכן גם המדידה על ריבוע
     data=tctx.getImageData(0,0,N,N).data;
   }catch(e){
     const meta={hasAlpha:false,radial:CIRCLE_RADIAL()};
@@ -9222,11 +9317,11 @@ function symbolShapeMeta(cv){
   }
   let hasAlpha=false;
   for(let i=3;i<data.length;i+=4){if(data[i]<250){hasAlpha=true;break;}}
-  let radial;
+  let radial,fine=null;
   if(!hasAlpha){
     radial=CIRCLE_RADIAL();
   }else{
-    const raw=new Float32Array(bins);
+    const raw=new Float32Array(bins),rawF=new Float32Array(fb);
     const cx=N/2,cy=N/2,half=N/2;
     for(let y=0;y<N;y++)for(let x=0;x<N;x++){
       const idx=(y*N+x)*4;
@@ -9236,14 +9331,23 @@ function symbolShapeMeta(cv){
       let ang=Math.atan2(ddy,ddx);if(ang<0)ang+=Math.PI*2;
       const bin=Math.round(ang/(Math.PI*2)*bins)%bins;
       if(dist>raw[bin])raw[bin]=dist;
+      const bf=Math.round(ang/(Math.PI*2)*fb)%fb;
+      if(dist>rawF[bf])rawF[bf]=dist;
     }
+    // (1) בלי תקרה של 1 — פינות של צורה חתוכה מגיעות עד √2; (2) החלקה לפי המקסימום של השכנים, לא ממוצע — שיא חד (אוזן, כנף)
+    // לא נעלם; (3) מרווח: חצי פיקסל של הדגימה (נמדד מרכז הפיקסל, לא הקצה) + שגיאת כימות הזווית. ההערכה תמיד קצת גדולה.
     radial=new Float32Array(bins);
     for(let i=0;i<bins;i++){
-      const a=raw[(i-1+bins)%bins],b=raw[i],c=raw[(i+1)%bins];
-      radial[i]=Math.min(1,Math.max((a+b+c)/3,0.15));
+      const m=Math.max(raw[(i-1+bins)%bins],raw[i],raw[(i+1)%bins]);
+      radial[i]=m>0?Math.min(1.5,Math.max(m+0.03,0.15)):0.15;
+    }
+    fine=new Float32Array(fb);
+    for(let i=0;i<fb;i++){
+      const m=Math.max(rawF[(i-1+fb)%fb],rawF[i],rawF[(i+1)%fb]);
+      fine[i]=m>0?Math.min(1.5,Math.max(m+0.04,0.15)):0.15;
     }
   }
-  const meta={hasAlpha,radial};
+  const meta={hasAlpha,radial,fine};
   cv.__symMeta=meta;
   return meta;
 }
