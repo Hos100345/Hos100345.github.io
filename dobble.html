@@ -360,6 +360,7 @@
     .back-quick-btn{background:rgba(255,255,255,.55);border:1.5px solid rgba(67,56,202,.25);border-radius:100px;padding:.3rem .8rem;font-family:inherit;font-size:.75rem;font-weight:700;color:var(--indigo);cursor:pointer}
     .back-quick-btn:hover{background:rgba(67,56,202,.15)}
     .back-logo-prev{width:80px;height:80px;border-radius:50%;border:1.5px dashed var(--border);object-fit:cover;background:rgba(255,255,255,.5)}
+    .back-logo-prev.sq{border-radius:10px}   /* D-84: בקלף ריבוע התצוגה ריבוע, לא עיגול */
 
     /* ── SPINNER ── */
     .spin{display:inline-block;width:15px;height:15px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .6s linear infinite}
@@ -4603,7 +4604,11 @@ function drawCardBack(canvas){
         ctx.save();
         // D-81: עד 100% — התמונה לא יוצאת מגבולות הקלף (בריבוע עיגול בקוטר 2r חורג מהצלעות)
         ctx.beginPath();if(isC)ctx.arc(cx,cy,r,0,Math.PI*2);else rrect(ctx,sqx,sqy,sq,sq,sqcr);ctx.clip();
-        ctx.beginPath();ctx.arc(cx,cy+lDy,lSize/2,0,Math.PI*2);ctx.clip();
+        // D-84: החיתוך של התמונה הולך לפי צורת הקלף — בקלף ריבוע תמונה מרובעת נשארת ריבוע (בעבר: תמיד עיגול)
+        ctx.beginPath();
+        if(isC)ctx.arc(cx,cy+lDy,lSize/2,0,Math.PI*2);
+        else rrect(ctx,cx-lSize/2,cy+lDy-lSize/2,lSize,lSize,lSize*.09);   // אותו יחס פינה כמו sqcr=sq*.09
+        ctx.clip();
         drawCover(ctx,logoAsset.imgEl,cx-lSize/2,cy+lDy-lSize/2,lSize);
         ctx.restore();
       }
@@ -4626,6 +4631,7 @@ function markBackDirty(){
   const live=document.getElementById('back-live-canvas');
   if(live&&modal&&!modal.hidden){
     live.classList.toggle('sq',S.shape!=='circle');
+    const lp=document.getElementById('back-logo-prev');if(lp)lp.classList.toggle('sq',S.shape!=='circle');
     const lctx=live.getContext('2d');
     lctx.clearRect(0,0,live.width,live.height);
     lctx.drawImage(S.backCanvas,0,0,live.width,live.height);
