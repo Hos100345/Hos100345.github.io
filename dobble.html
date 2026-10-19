@@ -1043,6 +1043,7 @@ const I18N={
     'export.printPageBtn':'📦 PDF — עמוד לכל קלף',
     'export.sheetBtn':'🗞️ גיליון 33×48.8',
     'export.dieCutBtn':'✂️ קובץ לחיתוך צורני',
+    'export.dieCutHint':'מקבלים ZIP עם 3 קבצים: גרפיקה, הדמיה וקו חיתוך',
     'export.dieCutPadWarn':'שימו לב: הסמלים רחוקים רק {mm} מ"מ מקו החיתוך, ובית הדפוס מבקש לפחות {min}. אפשר להגדיל את "מרווח מהמסגרת" ולייצא שוב.',
     'export.dieCutCmykLoadFail':'רכיב צבעי הדפוס (CMYK) לא נטען — רעננו את הדף ונסו שוב',
     'export.sheetDiameterTitle':'קוטר הקלף בגיליון',
@@ -1505,7 +1506,7 @@ const I18N={
     'header.stepExportHtml':'<span class="n">3</span>ייצוא',
     'upload.cropHintTextHtml':'✂️ <strong>מתמונה אחת אפשר להפיק כמה סמלים</strong> — לחצו על ✂ ליד תמונה קבוצתית וחתכו כל פרצוף בנפרד. <strong>כך חמש תמונות מספיקות למשחק שלם.</strong>',
     'edit.algoCheckBannerHtml':'🔍 <strong>בדיקת אלגוריתם:</strong> לחץ/י על שני קלפים — הסמל המשותף היחיד יסומן אוטומטית',
-    'export.printShopNotesHtml':'📦 עמוד לכל קלף · בליד 4 מ"מ · 300 DPI · העמוד האחרון הוא הגב.<br>\n          🗞️ גיליון גדול לבית דפוס — דורש חיתוך עצמי.<br>\n          ✂️ חיתוך צורני (מגנטים, מדבקות): לכל קלף 3 עמודים — עיצוב עם גלישה · עיצוב + קו חיתוך · קו חיתוך בלבד. קו אדום 0.15 מ"מ, סימני חיתוך בפינות, צבעי CMYK. אם הגב מופעל — עוד 3 עמודים לגב בסוף.',
+    'export.printShopNotesHtml':'📦 עמוד לכל קלף · בליד 4 מ"מ · 300 DPI · העמוד האחרון הוא הגב.<br>\n          🗞️ גיליון גדול לבית דפוס — דורש חיתוך עצמי.<br>\n          ✂️ חיתוך צורני (מגנטים, מדבקות): ZIP עם 3 קבצים — גרפיקה לבד · הדמיה (עם קו חיתוך) · חיתוך לבד. בכל קובץ עמוד לכל קלף, באותו גודל ומיקום. קו אדום 0.15 מ"מ, סימני חיתוך בפינות, צבעי CMYK. אם הגב מופעל — הוא העמוד האחרון בכל קובץ.',
     'edit.cardEditModalTitleHtml':'✏️ עריכת קלף <span id="ce-idx"></span>',
     'edit.cardEditInstructionsHtml':'לחצו על סמל כדי לבחור אותו · גררו כדי להזיז · הסרגל משנה גודל<br>\n        השינויים חלים על הקלף הזה בלבד',
     'edit.cutoutInstructionsHtml':'צבעו בירוק על מה שרוצים <b>לשמור</b>, ובאדום על ה<b>רקע</b>. מספיקים קווים גסים — אפשר לתקן שוב ושוב.',
@@ -1748,6 +1749,7 @@ const I18N={
     'export.printPageBtn':'📦 PDF — one page per card',
     'export.sheetBtn':'🗞️ Sheet 33×48.8',
     'export.dieCutBtn':'✂️ Die-cut file',
+    'export.dieCutHint':'You get a ZIP with 3 files: graphics, proof and cut line',
     'export.dieCutPadWarn':'Note: the symbols are only {mm} mm from the cut line, and the print shop asks for at least {min}. You can increase the frame padding and export again.',
     'export.dieCutCmykLoadFail':'The print-colour (CMYK) component did not load — refresh the page and try again',
     'export.sheetDiameterTitle':'Card diameter on the sheet',
@@ -2208,7 +2210,7 @@ const I18N={
     'header.stepExportHtml':'<span class="n">3</span>Export',
     'upload.cropHintTextHtml':'✂️ <strong>One photo can yield several symbols</strong> — click ✂ next to a group photo and crop each face separately. <strong>Five photos are enough for a whole game.</strong>',
     'edit.algoCheckBannerHtml':'🔍 <strong>Algorithm check:</strong> click two cards — the one shared symbol will be highlighted automatically',
-    'export.printShopNotesHtml':'📦 One page per card · 4 mm bleed · 300 DPI · the last page is the back.<br>\n          🗞️ Large sheet for a print shop — requires self-cutting.<br>\n          ✂️ Die-cut (magnets, stickers): 3 pages per card — design with bleed · design + cut line · cut line only. Red 0.15 mm line, corner crop marks, CMYK colours. If the back is on — 3 more pages for it at the end.',
+    'export.printShopNotesHtml':'📦 One page per card · 4 mm bleed · 300 DPI · the last page is the back.<br>\n          🗞️ Large sheet for a print shop — requires self-cutting.<br>\n          ✂️ Die-cut (magnets, stickers): a ZIP with 3 files — graphics only · proof (with cut line) · cut line only. Each file has one page per card, same size and position. Red 0.15 mm line, corner crop marks, CMYK colours. If the back is on, it is the last page of each file.',
     'edit.cardEditModalTitleHtml':'✏️ Edit card <span id="ce-idx"></span>',
     'edit.cardEditInstructionsHtml':'Click a symbol to select it · drag to move it · the slider changes its size<br>\n        Changes apply to this card only',
     'edit.cutoutInstructionsHtml':'Paint green over what you want to <b>keep</b>, and red over the <b>background</b>. Rough strokes are enough — you can always fix it again.',
@@ -2964,10 +2966,11 @@ window.applyI18n=applyI18n;
           <button data-i18n="export.sheetBtn" class="btn btn-out" id="btn-dosheet">🗞️ גיליון 33×48.8</button>
           <button data-i18n="export.dieCutBtn" class="btn btn-out" id="btn-dodiecut">✂️ קובץ לחיתוך צורני</button>
         </div>
+        <div data-i18n="export.dieCutHint" style="font-size:.72rem;color:var(--muted);margin-top:.3rem">מקבלים ZIP עם 3 קבצים: גרפיקה, הדמיה וקו חיתוך</div>
         <div data-i18n-html="export.printShopNotesHtml" style="font-size:.72rem;color:var(--muted);margin-top:.3rem;line-height:1.5">
           📦 עמוד לכל קלף · בליד 4 מ"מ · 300 DPI · העמוד האחרון הוא הגב.<br>
           🗞️ גיליון גדול לבית דפוס — דורש חיתוך עצמי.<br>
-          ✂️ חיתוך צורני (מגנטים, מדבקות): לכל קלף 3 עמודים — עיצוב עם גלישה · עיצוב + קו חיתוך · קו חיתוך בלבד. קו אדום 0.15 מ"מ, סימני חיתוך בפינות, צבעי CMYK. אם הגב מופעל — עוד 3 עמודים לגב בסוף.
+          ✂️ חיתוך צורני (מגנטים, מדבקות): ZIP עם 3 קבצים — גרפיקה לבד · הדמיה (עם קו חיתוך) · חיתוך לבד. בכל קובץ עמוד לכל קלף, באותו גודל ומיקום. קו אדום 0.15 מ"מ, סימני חיתוך בפינות, צבעי CMYK. אם הגב מופעל — הוא העמוד האחרון בכל קובץ.
         </div>
         <div id="sheet-diam-row" style="margin-top:.5rem" hidden>
           <div data-i18n="export.sheetDiameterTitle" class="og-t">קוטר הקלף בגיליון</div>
@@ -4136,7 +4139,7 @@ function rrect(ctx,x,y,w,h,cr){
   ctx.lineTo(x,y+cr);ctx.arcTo(x,y,x+cr,y,cr);ctx.closePath();
 }
 
-function drawCard(canvas,layout,imgs,shape,hitIdx){
+function drawCard(canvas,layout,imgs,shape,hitIdx,opts){
   hitIdx=hitIdx==null?-1:hitIdx;
   const ctx=canvas.getContext('2d'),sz=canvas.width;
   const G=cardGeom(sz);
@@ -4160,7 +4163,7 @@ function drawCard(canvas,layout,imgs,shape,hitIdx){
     else rrect(ctx,sqx+fw/2,sqy+fw/2,sq-fw,sq-fw,sqcr);
     ctx.strokeStyle=S.frame.color;ctx.globalAlpha=S.frame.op/100;
     ctx.lineWidth=fw;ctx.stroke();ctx.globalAlpha=1;ctx.restore();
-  }else{
+  }else if(!(opts&&opts.noOutline)){   // D-85: בקובץ חיתוך צורני קו המתאר הדק היה נצרב בתמונה ונראה על המגנט
     ctx.beginPath();
     if(isC)ctx.arc(cx,cy,r,0,Math.PI*2);else rrect(ctx,sqx,sqy,sq,sq,sqcr);
     ctx.strokeStyle='rgba(0,0,0,.12)';ctx.lineWidth=1.5;ctx.stroke();
@@ -8096,8 +8099,9 @@ async function expPrintPDF(setp){
 }
 
 // ══ D-77: קובץ לחיתוך צורני (מגנטים, מדבקות בחיתוך צורה) ══
-// נבנה לפי הנחיות בית דפוס (15/10/2026): לכל קלף 3 עמודים —
-//   (1) עיצוב עם גלישה · (2) עיצוב + קו חיתוך · (3) קו חיתוך בלבד.
+// נבנה לפי הנחיות בית דפוס (15/10/2026). D-85 (19/10): במקום PDF אחד עם 3 עמודים לכל קלף — ZIP עם 3 קבצים,
+// בכל אחד עמוד לכל קלף (+ הגב כעמוד אחרון), אותו גודל/מיקום/סדר, כדי שאפשר להניח אחד על השני:
+//   (1) גרפיקה לבד (עם גלישה וסימני חיתוך, בלי שום קו) · (2) הדמיה (גרפיקה + קו חיתוך) · (3) קו חיתוך בלבד.
 // קו החיתוך וקטורי, 0.15 מ"מ, RGB 255/0/0, **על שפת הקלף המצוירת** (cardGeom, כמו cutLines),
 // ולא על גבול התמונה: drawCard מצייר את הקלף עם שוליים M בתוך התמונה.
 // הגלישה: צבע השפה (מסגרת אם יש, אחרת רקע) ממלא את כל העמוד, והקלף המדויק מונח מעליו
@@ -8128,14 +8132,20 @@ function dieCutMarks(pdf,pxTrim,pxBleed,k,o){
 function dieCutPage(i,pxTrim,pxBleed){
   const pxPage=pxTrim+2*pxBleed;
   const trim=document.createElement('canvas');trim.width=trim.height=pxTrim;
-  drawCard(trim,S.layouts[i],S.imgEls,S.shape);          // שקיפות מחוץ לקלף נשמרת
+  drawCard(trim,S.layouts[i],S.imgEls,S.shape,-1,{noOutline:true});   // שקיפות מחוץ לקלף נשמרת; D-85: בלי קו מתאר
   const page=document.createElement('canvas');page.width=page.height=pxPage;
   const ctx=page.getContext('2d');
   ctx.fillStyle='#ffffff';ctx.fillRect(0,0,pxPage,pxPage);
   ctx.globalAlpha=(S.bg.op??100)/100;ctx.fillStyle=S.bg.color;ctx.fillRect(0,0,pxPage,pxPage);
   if(S.frame.w>0&&S.frame.op>0){ctx.globalAlpha=S.frame.op/100;ctx.fillStyle=S.frame.color;ctx.fillRect(0,0,pxPage,pxPage);}
   ctx.globalAlpha=1;
-  ctx.drawImage(trim,pxBleed,pxBleed);
+  // D-85: פיקסל השפה של הקלף המצויר חצי-שקוף (החלקה) ומערבב רקע+מסגרת שמצוירים שכבה על שכבה — מעל צבע השפה שכבר
+  // בעמוד הוא נראה כטבעת בהירה דקה ליד קו החיתוך. לכן הקלף מונח רק עד 1.5px פנימה (שם הוא צבע אחיד), והשפה עצמה
+  // היא צבע העמוד — המשך חלק של הגלישה.
+  const G=cardGeom(pxTrim);
+  ctx.save();ctx.translate(pxBleed,pxBleed);ctx.beginPath();
+  if(S.shape==='circle')ctx.arc(G.cx,G.cy,G.r-1.5,0,Math.PI*2);else rrect(ctx,G.sqx+1.5,G.sqy+1.5,G.sq-3,G.sq-3,Math.max(0,G.sqcr-1.5));
+  ctx.clip();ctx.drawImage(trim,0,0);ctx.restore();
   trim.width=trim.height=0;
   return page;
 }
@@ -8159,7 +8169,11 @@ function dieCutBackPage(pxTrim,pxBleed){
   sx.clip();sx.drawImage(trim,0,0);
   const hi=h-ins,reach=Math.ceil(pxBleed+(pxTrim/2-hi))+2;          // עד פינות העמוד גם בריבוע
   for(let j=reach;j>=1;j--){const d=pxTrim*(hi+j)/hi;ctx.drawImage(src,c-d/2,c-d/2,d,d);}
-  ctx.drawImage(trim,pxBleed,pxBleed);
+  // D-85: פיקסל השפה של הגב חצי-שקוף (החלקה) ומכיל גוון של הרקע שמעבר למסגרת — מעל ההארכה הוא נראה כקו דק
+  // ליד קו החיתוך. לכן הגב מונח רק עד 1.5px פנימה, והשפה עצמה היא המשך הצבע שבהארכה (בלי תפר).
+  ctx.save();ctx.translate(pxBleed,pxBleed);ctx.beginPath();
+  if(isC)ctx.arc(G.cx,G.cy,G.r-1.5,0,Math.PI*2);else rrect(ctx,G.sqx+1.5,G.sqy+1.5,G.sq-3,G.sq-3,Math.max(0,G.sqcr-1.5));
+  ctx.clip();ctx.drawImage(trim,0,0);ctx.restore();
   trim.width=trim.height=src.width=src.height=0;
   return page;
 }
@@ -8190,19 +8204,19 @@ async function expDieCutPDF(setp){
   const pageMm=pxPage*k;
   const dpi=Math.round(25.4/k);
   const o=DIECUT.slugMm,fullMm=pageMm+2*o;                         // D-79: שוליים לסימני חיתוך
-  const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:[fullMm,fullMm],compress:true});
-  // שלושת העמודים של כל צד — אותו מיקום בדיוק, סימני חיתוך בכולם כדי שבית הדפוס יוכל ליישר שכבות.
+  if(typeof JSZip==='undefined')throw new Error(t('msg.jszipNotLoaded'));
+  const mk=()=>new jsPDF({orientation:'portrait',unit:'mm',format:[fullMm,fullMm],compress:true});
+  const pdfG=mk(),pdfP=mk(),pdfC=mk();                              // גרפיקה · הדמיה · חיתוך
+  // עמוד אחד בכל קובץ לכל קלף — אותו מיקום בדיוק, סימני חיתוך בכולם כדי שבית הדפוס יוכל ליישר שכבות.
   const put3=(jpg,alias,first)=>{
-    if(!first)pdf.addPage([fullMm,fullMm]);
-    pdf.addImage(jpg,'JPEG',o,o,pageMm,pageMm,alias,'NONE');       // 1 — עיצוב עם גלישה
-    dieCutMarks(pdf,pxTrim,pxBleed,k,o);
-    pdf.addPage([fullMm,fullMm]);
-    pdf.addImage(jpg,'JPEG',o,o,pageMm,pageMm,alias,'NONE');       // 2 — עיצוב + קו
-    dieCutLine(pdf,pxTrim,pxBleed,k,o);
-    dieCutMarks(pdf,pxTrim,pxBleed,k,o);
-    pdf.addPage([fullMm,fullMm]);
-    dieCutLine(pdf,pxTrim,pxBleed,k,o);                            // 3 — קו בלבד
-    dieCutMarks(pdf,pxTrim,pxBleed,k,o);
+    if(!first){pdfG.addPage([fullMm,fullMm]);pdfP.addPage([fullMm,fullMm]);pdfC.addPage([fullMm,fullMm]);}
+    pdfG.addImage(jpg,'JPEG',o,o,pageMm,pageMm,alias,'NONE');       // 1 — עיצוב עם גלישה, בלי קו
+    dieCutMarks(pdfG,pxTrim,pxBleed,k,o);
+    pdfP.addImage(jpg,'JPEG',o,o,pageMm,pageMm,alias,'NONE');       // 2 — עיצוב + קו
+    dieCutLine(pdfP,pxTrim,pxBleed,k,o);
+    dieCutMarks(pdfP,pxTrim,pxBleed,k,o);
+    dieCutLine(pdfC,pxTrim,pxBleed,k,o);                           // 3 — קו בלבד
+    dieCutMarks(pdfC,pxTrim,pxBleed,k,o);
   };
   const n=S.deck.length,backOn=!!S.back.enabled;
   for(let i=0;i<n;i++){
@@ -8210,7 +8224,7 @@ async function expDieCutPDF(setp){
     const jpg=window.cmykJpeg.fromCanvas(page,DIECUT.quality);
     page.width=page.height=0;                                      // ⛔ שחרור זיכרון
     put3(jpg,'diecut-'+i,i===0);
-    setp(3+Math.round(92*(i+1)/(n+(backOn?1:0))),t('export.cardProgress',{i:i+1,total:n}));
+    setp(3+Math.round(88*(i+1)/(n+(backOn?1:0))),t('export.cardProgress',{i:i+1,total:n}));
     await tick();
   }
   if(backOn){
@@ -8220,10 +8234,15 @@ async function expDieCutPDF(setp){
     put3(jpg,'diecut-back',false);
     await tick();
   }
-  setp(98,'שומר…');
+  setp(94,'אורז קבצים…');
   const shapeLabel=S.shape==='circle'?'circle':'square';
-  const fn=`matchito-diecut-${n}cards-${trimMm}mm-${shapeLabel}${backOn?'-2sided':''}-cmyk.pdf`;
-  const blob=pdf.output('blob');
+  const base=`matchito-diecut-${n}cards-${trimMm}mm-${shapeLabel}${backOn?'-2sided':''}`;
+  const zip=new JSZip();
+  zip.file(`${base}-1-graphics-cmyk.pdf`,pdfG.output('blob'));
+  zip.file(`${base}-2-proof-cmyk.pdf`,pdfP.output('blob'));
+  zip.file(`${base}-3-cutline.pdf`,pdfC.output('blob'));
+  const fn=`${base}-cmyk.zip`;
+  const blob=await zip.generateAsync({type:'blob',compression:'STORE'});   // PDF כבר דחוס
   if(_exportUrl)URL.revokeObjectURL(_exportUrl);
   _exportUrl=URL.createObjectURL(blob);
   const lnk=document.getElementById('dl-link');
