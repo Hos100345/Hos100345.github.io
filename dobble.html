@@ -1157,6 +1157,10 @@ const I18N={
     'back.logoCropTitle':'בחירת חלק מהתמונה',
     'back.logoCropHint':'גררו את המסגרת, ושנו את גודלה בפינות. מה שבתוך המסגרת יופיע על הקלף.',
     'back.logoCropOk':'אישור',
+    'back.logoCropModeLabel':'צורת החיתוך',
+    'back.logoCropModeShape':'בצורת הקלף',
+    'back.logoCropModeFree':'חופשי',
+    'back.logoCropHintFree':'חיתוך חופשי: גררו צלעות ופינות לכל יחס. התמונה תופיע בצורה שלה, בלי עיגול או ריבוע. במקלדת: חיצים מזיזים, Alt+חצים משנים רוחב/גובה, פלוס/מינוס משנים גודל.',
     'back.logoCropCancel':'ביטול',
     'back.logoCropReset':'איפוס',
     'back.logoCropAria':'מסגרת חיתוך. חיצים מזיזים, פלוס ומינוס משנים גודל, Enter מאשר',
@@ -1870,6 +1874,10 @@ const I18N={
     'back.logoCropTitle':'Choose part of the image',
     'back.logoCropHint':'Drag the frame and resize it by the corners. What is inside the frame will appear on the card.',
     'back.logoCropOk':'OK',
+    'back.logoCropModeLabel':'Crop shape',
+    'back.logoCropModeShape':'Card shape',
+    'back.logoCropModeFree':'Free',
+    'back.logoCropHintFree':'Free crop: drag sides and corners to any ratio. The image appears in its own shape, without a circle or square. Keyboard: arrows move, Alt+arrows change width/height, plus/minus resize.',
     'back.logoCropCancel':'Cancel',
     'back.logoCropReset':'Reset',
     'back.logoCropAria':'Crop frame. Arrow keys move, plus and minus resize, Enter confirms',
@@ -3201,6 +3209,10 @@ window.applyI18n=applyI18n;
       <button class="modal-x" id="logo-crop-x" type="button" data-i18n-title="back.logoCropCancel" title="ביטול" aria-label="ביטול">✕</button>
     </div>
     <p data-i18n="back.logoCropHint" id="logo-crop-hint" style="font-size:.85rem;color:var(--muted);margin:.4rem 0">גררו את המסגרת, ושנו את גודלה בפינות. מה שבתוך המסגרת יופיע על הקלף.</p>
+    <div class="shape-grp" id="logo-crop-mode" role="group" data-i18n-title="back.logoCropModeLabel" title="צורת החיתוך" aria-label="צורת החיתוך" style="margin:0 0 .5rem">
+      <button type="button" class="sbt on" data-m="shape" aria-pressed="true" data-i18n="back.logoCropModeShape" style="flex:1">בצורת הקלף</button>
+      <button type="button" class="sbt" data-m="free" aria-pressed="false" data-i18n="back.logoCropModeFree" style="flex:1">חופשי</button>
+    </div>
     <canvas id="logo-crop-cv" width="360" height="360" tabindex="0" role="img" aria-describedby="logo-crop-hint" data-i18n-title="back.logoCropAria" title="מסגרת חיתוך. חיצים מזיזים, פלוס ומינוס משנים גודל, Enter מאשר" aria-label="מסגרת חיתוך. חיצים מזיזים, פלוס ומינוס משנים גודל, Enter מאשר" style="width:100%;max-width:360px;display:block;margin:0 auto;touch-action:none;border-radius:8px;background:#e5e7eb"></canvas>
     <div style="display:flex;gap:.5rem;margin-top:.8rem;flex-wrap:wrap">
       <button data-i18n="back.logoCropOk" class="btn btn-pri" id="logo-crop-ok" type="button">אישור</button>
@@ -4639,14 +4651,20 @@ function drawCardBack(canvas){
         ctx.save();
         // D-81: עד 100% — התמונה לא יוצאת מגבולות הקלף (בריבוע עיגול בקוטר 2r חורג מהצלעות)
         ctx.beginPath();if(isC)ctx.arc(cx,cy,r,0,Math.PI*2);else rrect(ctx,sqx,sqy,sq,sq,sqcr);ctx.clip();
-        // D-84: החיתוך של התמונה הולך לפי צורת הקלף — בקלף ריבוע תמונה מרובעת נשארת ריבוע (בעבר: תמיד עיגול)
-        ctx.beginPath();
-        if(isC)ctx.arc(cx,cy+lDy,lSize/2,0,Math.PI*2);
-        else rrect(ctx,cx-lSize/2,cy+lDy-lSize/2,lSize,lSize,lSize*.09);   // אותו יחס פינה כמו sqcr=sq*.09
-        ctx.clip();
         const lcr=backLogoCropRect(logoAsset.imgEl,B.logoCrop);
-        if(lcr)ctx.drawImage(logoAsset.imgEl,lcr.sx,lcr.sy,lcr.sw,lcr.sw,cx-lSize/2,cy+lDy-lSize/2,lSize,lSize);   // D-84: חלק נבחר מהתמונה
-        else drawCover(ctx,logoAsset.imgEl,cx-lSize/2,cy+lDy-lSize/2,lSize);
+        if(lcr&&lcr.free){
+          // D-86A: חיתוך חופשי — מלבן בכל יחס, מצויר בצורתו (בלי חיתוך לעיגול/ריבוע); "גודל" = הצלע הארוכה. נשאר רק החיתוך החיצוני לפי הקלף
+          const asp=lcr.sw/lcr.sh,dw=asp>=1?lSize:lSize*asp,dh=asp>=1?lSize/asp:lSize;
+          ctx.drawImage(logoAsset.imgEl,lcr.sx,lcr.sy,lcr.sw,lcr.sh,cx-dw/2,cy+lDy-dh/2,dw,dh);
+        }else{
+          // D-84: החיתוך של התמונה הולך לפי צורת הקלף — בקלף ריבוע תמונה מרובעת נשארת ריבוע (בעבר: תמיד עיגול)
+          ctx.beginPath();
+          if(isC)ctx.arc(cx,cy+lDy,lSize/2,0,Math.PI*2);
+          else rrect(ctx,cx-lSize/2,cy+lDy-lSize/2,lSize,lSize,lSize*.09);   // אותו יחס פינה כמו sqcr=sq*.09
+          ctx.clip();
+          if(lcr)ctx.drawImage(logoAsset.imgEl,lcr.sx,lcr.sy,lcr.sw,lcr.sw,cx-lSize/2,cy+lDy-lSize/2,lSize,lSize);   // D-84: חלק נבחר מהתמונה
+          else drawCover(ctx,logoAsset.imgEl,cx-lSize/2,cy+lDy-lSize/2,lSize);
+        }
         ctx.restore();
       }
     }
@@ -5847,6 +5865,12 @@ function backLogoCropRect(img,c){
   const iw=imgNatW(img),ih=imgNatH(img);
   if(!(iw>0&&ih>0))return null;
   const x=+c.x,y=+c.y,s=+c.s;
+  if(c.free){   // D-86A: מלבן חופשי {x,y,w,h,free:true}, כולם יחסיים לרוחב/גובה התמונה
+    const w=+c.w,h=+c.h;
+    if(!isFinite(x)||!isFinite(y)||!isFinite(w)||!isFinite(h)||w<=0||h<=0)return null;
+    const sx=Math.max(0,Math.min(x*iw,iw-1)),sy=Math.max(0,Math.min(y*ih,ih-1));
+    return{sx,sy,sw:Math.max(1,Math.min(w*iw,iw-sx)),sh:Math.max(1,Math.min(h*ih,ih-sy)),free:true};
+  }
   if(!isFinite(x)||!isFinite(y)||!isFinite(s)||s<=0)return null;
   const m=Math.min(iw,ih),sw=Math.min(s,1)*m;
   const sx=Math.max(0,Math.min(x*iw,iw-sw)),sy=Math.max(0,Math.min(y*ih,ih-sw));
@@ -7494,7 +7518,8 @@ function updateLogoPreview(){
   const cropBtn=document.getElementById('back-logo-crop');
   if(asset&&asset.imgEl){
     const pc=backLogoCropRect(asset.imgEl,S.back.logoCrop);
-    if(pc)ctx.drawImage(asset.imgEl,pc.sx,pc.sy,pc.sw,pc.sw,0,0,80,80);else drawCover(ctx,asset.imgEl,0,0,80);
+    if(pc&&pc.free){const a=pc.sw/pc.sh,dw=a>=1?80:80*a,dh=a>=1?80/a:80;ctx.drawImage(asset.imgEl,pc.sx,pc.sy,pc.sw,pc.sh,(80-dw)/2,(80-dh)/2,dw,dh);}
+    else if(pc)ctx.drawImage(asset.imgEl,pc.sx,pc.sy,pc.sw,pc.sw,0,0,80,80);else drawCover(ctx,asset.imgEl,0,0,80);
     removeBtn.style.display='';cropBtn.style.display='';
   }
   else{ctx.fillStyle='#e5e7eb';ctx.fillRect(0,0,80,80);removeBtn.style.display='none';cropBtn.style.display='none';}
@@ -7509,9 +7534,11 @@ document.getElementById('back-logo-file').addEventListener('change',async e=>{
 document.getElementById('back-logo-remove').addEventListener('click',()=>{
   removeBackLogo();updateLogoPreview();markBackDirty();schedIdbSave();
 });
-// ── D-84: חלון בחירת חלק מהתמונה. draft = {x,y,s} יחסי (x,y פינה שמאלית-עליונה ביחס לרוחב/גובה; s ביחס לצלע הקצרה).
-let _lcDraft=null,_lcDrag=null,_lcGeom=null;
-const LC_MIN=0.08;
+// ── D-84/D-86A: חלון בחירת חלק מהתמונה.
+// מצב "בצורת הקלף": _lcDraft = {x,y,s} יחסי (x,y פינה שמאלית-עליונה ביחס לרוחב/גובה; s ביחס לצלע הקצרה).
+// מצב "חופשי" (D-86A): _lcRect = {x,y,w,h} יחסיים לרוחב/גובה התמונה — מלבן בכל יחס.
+let _lcDraft=null,_lcRect=null,_lcFree=false,_lcDrag=null,_lcGeom=null;
+const LC_MIN=0.08,LC_MINR=0.04;
 function lcAsset(){return S.assets.find(a=>a.id===S.back.logoAssetId&&a.type==='backlogo');}
 function lcFull(img){const iw=imgNatW(img),ih=imgNatH(img),m=Math.min(iw,ih);return{x:(1-m/iw)/2,y:(1-m/ih)/2,s:1};}
 function lcClamp(d,img){
@@ -7519,34 +7546,64 @@ function lcClamp(d,img){
   const s=Math.max(LC_MIN,Math.min(1,d.s)),w=s*m;
   return{s,x:Math.max(0,Math.min(d.x,1-w/iw)),y:Math.max(0,Math.min(d.y,1-w/ih))};
 }
+function lcClampR(d){
+  const w=Math.max(LC_MINR,Math.min(1,d.w)),h=Math.max(LC_MINR,Math.min(1,d.h));
+  return{w,h,x:Math.max(0,Math.min(d.x,1-w)),y:Math.max(0,Math.min(d.y,1-h))};
+}
+// ריבוע ↔ מלבן: מעבר בין המצבים משמר את מרכז המסגרת
+function lcSquareToRect(d,img){const iw=imgNatW(img),ih=imgNatH(img),m=Math.min(iw,ih);return lcClampR({x:d.x,y:d.y,w:d.s*m/iw,h:d.s*m/ih});}
+function lcRectToSquare(r,img){
+  const iw=imgNatW(img),ih=imgNatH(img),m=Math.min(iw,ih);
+  const s=Math.min(r.w*iw,r.h*ih)/m,cx=(r.x+r.w/2),cy=(r.y+r.h/2);
+  return lcClamp({s,x:cx-s*m/iw/2,y:cy-s*m/ih/2},img);
+}
+function lcSetMode(free){
+  const a=lcAsset();if(!a||!a.imgEl)return;
+  if(free&&!_lcFree)_lcRect=lcSquareToRect(_lcDraft,a.imgEl);
+  else if(!free&&_lcFree)_lcDraft=lcRectToSquare(_lcRect,a.imgEl);
+  _lcFree=!!free;
+  document.querySelectorAll('#logo-crop-mode .sbt').forEach(b=>{const on=(b.dataset.m==='free')===_lcFree;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on?'true':'false');});
+  const h=document.getElementById('logo-crop-hint');h.textContent=_lcFree?t('back.logoCropHintFree'):t('back.logoCropHint');
+  lcDraw();
+}
 function lcDraw(){
-  const cv=document.getElementById('logo-crop-cv'),img=lcAsset()&&lcAsset().imgEl;if(!img||!_lcDraft)return;
+  const cv=document.getElementById('logo-crop-cv'),img=lcAsset()&&lcAsset().imgEl;if(!img||!(_lcFree?_lcRect:_lcDraft))return;
   const ctx=cv.getContext('2d'),W=cv.width,iw=imgNatW(img),ih=imgNatH(img),k=Math.min(W/iw,W/ih);
   const dw=iw*k,dh=ih*k,ox=(W-dw)/2,oy=(W-dh)/2,m=Math.min(iw,ih);
   _lcGeom={k,ox,oy,iw,ih,m};
   ctx.clearRect(0,0,W,W);ctx.drawImage(img,ox,oy,dw,dh);
-  const fx=ox+_lcDraft.x*iw*k,fy=oy+_lcDraft.y*ih*k,fs=_lcDraft.s*m*k,circ=S.shape==='circle';
-  const path=()=>{ctx.beginPath();if(circ)ctx.arc(fx+fs/2,fy+fs/2,fs/2,0,Math.PI*2);else rrect(ctx,fx,fy,fs,fs,fs*.09);};
-  ctx.save();ctx.fillStyle='rgba(20,16,60,.55)';ctx.beginPath();ctx.rect(ox,oy,dw,dh);
-  if(circ)ctx.arc(fx+fs/2,fy+fs/2,fs/2,0,Math.PI*2);else rrect(ctx,fx,fy,fs,fs,fs*.09);
+  let fx,fy,fw,fh;
+  if(_lcFree){fx=ox+_lcRect.x*iw*k;fy=oy+_lcRect.y*ih*k;fw=_lcRect.w*iw*k;fh=_lcRect.h*ih*k;}
+  else{fx=ox+_lcDraft.x*iw*k;fy=oy+_lcDraft.y*ih*k;fw=fh=_lcDraft.s*m*k;}
+  const circ=!_lcFree&&S.shape==='circle';
+  const shapePath=()=>{if(circ)ctx.arc(fx+fw/2,fy+fh/2,fw/2,0,Math.PI*2);else if(_lcFree)ctx.rect(fx,fy,fw,fh);else rrect(ctx,fx,fy,fw,fh,fw*.09);};
+  ctx.save();ctx.fillStyle='rgba(20,16,60,.55)';ctx.beginPath();ctx.rect(ox,oy,dw,dh);shapePath();
   ctx.fill('evenodd');ctx.restore();
-  path();ctx.lineWidth=2.5;ctx.strokeStyle='#fff';ctx.stroke();
-  ctx.lineWidth=1;ctx.strokeStyle='rgba(0,0,0,.5)';ctx.strokeRect(fx,fy,fs,fs);
-  [[fx,fy],[fx+fs,fy],[fx,fy+fs],[fx+fs,fy+fs]].forEach(([hx,hy])=>{ctx.beginPath();ctx.arc(hx,hy,9,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#4338CA';ctx.lineWidth=2.5;ctx.stroke();});
+  ctx.beginPath();shapePath();ctx.lineWidth=2.5;ctx.strokeStyle='#fff';ctx.stroke();
+  ctx.lineWidth=1;ctx.strokeStyle='rgba(0,0,0,.5)';ctx.strokeRect(fx,fy,fw,fh);
+  const hs=_lcFree?[[0,0],[.5,0],[1,0],[0,.5],[1,.5],[0,1],[.5,1],[1,1]]:[[0,0],[1,0],[0,1],[1,1]];
+  hs.forEach(([hx,hy])=>{ctx.beginPath();ctx.arc(fx+hx*fw,fy+hy*fh,9,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#4338CA';ctx.lineWidth=2.5;ctx.stroke();});
 }
 function lcOpen(){
   const a=lcAsset();if(!a||!a.imgEl)return;
-  const pc=S.back.logoCrop;
-  _lcDraft=lcClamp(backLogoCropRect(a.imgEl,pc)?{x:+pc.x,y:+pc.y,s:+pc.s}:lcFull(a.imgEl),a.imgEl);
-  document.getElementById('logo-crop-modal').hidden=false;lcDraw();
+  const pc=S.back.logoCrop,r=backLogoCropRect(a.imgEl,pc);
+  _lcFree=false;
+  _lcDraft=lcClamp(r&&!r.free?{x:+pc.x,y:+pc.y,s:+pc.s}:lcFull(a.imgEl),a.imgEl);
+  _lcRect=lcSquareToRect(_lcDraft,a.imgEl);
+  document.getElementById('logo-crop-modal').hidden=false;
+  if(r&&r.free){_lcRect=lcClampR({x:+pc.x,y:+pc.y,w:+pc.w,h:+pc.h});_lcFree=true;lcSetMode(true);}
+  else lcSetMode(false);
   document.getElementById('logo-crop-cv').focus();
 }
 function lcClose(){document.getElementById('logo-crop-modal').hidden=true;_lcDrag=null;document.getElementById('back-logo-crop').focus();}
 function lcOk(){
-  const a=lcAsset();if(a&&_lcDraft){
-    const f=lcFull(a.imgEl),d=_lcDraft;
-    // כמעט מלא ומרכזי = אותו דבר כמו ברירת המחדל → null (פיקסלים זהים ל-drawCover)
-    S.back.logoCrop=(d.s>=.999&&Math.abs(d.x-f.x)<.001&&Math.abs(d.y-f.y)<.001)?null:{x:+d.x.toFixed(5),y:+d.y.toFixed(5),s:+d.s.toFixed(5)};
+  const a=lcAsset();if(a&&(_lcFree?_lcRect:_lcDraft)){
+    if(_lcFree){const r=_lcRect;S.back.logoCrop={x:+r.x.toFixed(5),y:+r.y.toFixed(5),w:+r.w.toFixed(5),h:+r.h.toFixed(5),free:true};}
+    else{
+      const f=lcFull(a.imgEl),d=_lcDraft;
+      // כמעט מלא ומרכזי = אותו דבר כמו ברירת המחדל → null (פיקסלים זהים ל-drawCover)
+      S.back.logoCrop=(d.s>=.999&&Math.abs(d.x-f.x)<.001&&Math.abs(d.y-f.y)<.001)?null:{x:+d.x.toFixed(5),y:+d.y.toFixed(5),s:+d.s.toFixed(5)};
+    }
     updateLogoPreview();markBackDirty();schedIdbSave();
   }
   lcClose();
@@ -7555,18 +7612,39 @@ function lcPt(e){const cv=document.getElementById('logo-crop-cv'),r=cv.getBoundi
 (function(){
   const cv=document.getElementById('logo-crop-cv');
   cv.addEventListener('pointerdown',e=>{
-    if(!_lcDraft||!_lcGeom)return;
-    const g=_lcGeom,{px,py}=lcPt(e),fx=g.ox+_lcDraft.x*g.iw*g.k,fy=g.oy+_lcDraft.y*g.ih*g.k,fs=_lcDraft.s*g.m*g.k;
-    const hit=26;let corner=null;
-    [[0,0],[1,0],[0,1],[1,1]].forEach(([cx,cy])=>{if(!corner&&Math.hypot(px-(fx+cx*fs),py-(fy+cy*fs))<=hit)corner=[cx,cy];});
-    if(corner)_lcDrag={mode:'size',ax:fx+(1-corner[0])*fs,ay:fy+(1-corner[1])*fs,cx:corner[0],cy:corner[1]};
-    else if(px>=fx&&px<=fx+fs&&py>=fy&&py<=fy+fs)_lcDrag={mode:'move',dx:px-fx,dy:py-fy};
-    else return;
+    if(!_lcGeom||!(_lcFree?_lcRect:_lcDraft))return;
+    const g=_lcGeom,{px,py}=lcPt(e),hit=26;
+    if(_lcFree){
+      const fx=g.ox+_lcRect.x*g.iw*g.k,fy=g.oy+_lcRect.y*g.ih*g.k,fw=_lcRect.w*g.iw*g.k,fh=_lcRect.h*g.ih*g.k;
+      let hh=null,best=1e9;
+      [[0,0],[.5,0],[1,0],[0,.5],[1,.5],[0,1],[.5,1],[1,1]].forEach(([hx,hy])=>{const d=Math.hypot(px-(fx+hx*fw),py-(fy+hy*fh));if(d<=hit&&d<best){best=d;hh=[hx,hy];}});
+      if(hh)_lcDrag={mode:'hsize',hx:hh[0],hy:hh[1]};
+      else if(px>=fx&&px<=fx+fw&&py>=fy&&py<=fy+fh)_lcDrag={mode:'move',dx:px-fx,dy:py-fy};
+      else return;
+    }else{
+      const fx=g.ox+_lcDraft.x*g.iw*g.k,fy=g.oy+_lcDraft.y*g.ih*g.k,fs=_lcDraft.s*g.m*g.k;
+      let corner=null;
+      [[0,0],[1,0],[0,1],[1,1]].forEach(([cx,cy])=>{if(!corner&&Math.hypot(px-(fx+cx*fs),py-(fy+cy*fs))<=hit)corner=[cx,cy];});
+      if(corner)_lcDrag={mode:'size',ax:fx+(1-corner[0])*fs,ay:fy+(1-corner[1])*fs,cx:corner[0],cy:corner[1]};
+      else if(px>=fx&&px<=fx+fs&&py>=fy&&py<=fy+fs)_lcDrag={mode:'move',dx:px-fx,dy:py-fy};
+      else return;
+    }
     try{cv.setPointerCapture(e.pointerId);}catch(_){}e.preventDefault();
   });
   cv.addEventListener('pointermove',e=>{
     if(!_lcDrag)return;const a=lcAsset();if(!a)return;const g=_lcGeom,{px,py}=lcPt(e);
-    if(_lcDrag.mode==='move'){
+    if(_lcFree){
+      if(_lcDrag.mode==='move'){
+        _lcRect=lcClampR({w:_lcRect.w,h:_lcRect.h,x:(px-_lcDrag.dx-g.ox)/(g.iw*g.k),y:(py-_lcDrag.dy-g.oy)/(g.ih*g.k)});
+      }else{
+        // הידית שנגררת מזיזה את הצלע/הצלעות שלה; הצלעות הנגדיות נשארות במקומן. הכול מוגבל לתמונה ולמינימום
+        const X=Math.max(0,Math.min(1,(px-g.ox)/(g.iw*g.k))),Y=Math.max(0,Math.min(1,(py-g.oy)/(g.ih*g.k)));
+        let l=_lcRect.x,t=_lcRect.y,r=l+_lcRect.w,b=t+_lcRect.h;
+        if(_lcDrag.hx===0)l=Math.min(X,r-LC_MINR);else if(_lcDrag.hx===1)r=Math.max(X,l+LC_MINR);
+        if(_lcDrag.hy===0)t=Math.min(Y,b-LC_MINR);else if(_lcDrag.hy===1)b=Math.max(Y,t+LC_MINR);
+        _lcRect=lcClampR({x:l,y:t,w:r-l,h:b-t});
+      }
+    }else if(_lcDrag.mode==='move'){
       _lcDraft=lcClamp({s:_lcDraft.s,x:(px-_lcDrag.dx-g.ox)/(g.iw*g.k),y:(py-_lcDrag.dy-g.oy)/(g.ih*g.k)},a.imgEl);
     }else{
       // הפינה הנגדית נשארת במקומה; הצלע = הגדול מבין המרחקים, ומוגבלת כך שהמסגרת נשארת בתוך התמונה
@@ -7582,19 +7660,38 @@ function lcPt(e){const cv=document.getElementById('logo-crop-cv'),r=cv.getBoundi
   const end=()=>{_lcDrag=null;};
   cv.addEventListener('pointerup',end);cv.addEventListener('pointercancel',end);
   cv.addEventListener('keydown',e=>{
-    const a=lcAsset();if(!a||!_lcDraft)return;
-    const st=(e.shiftKey?.05:.01),d=_lcDraft,iw=imgNatW(a.imgEl),ih=imgNatH(a.imgEl),m=Math.min(iw,ih);let h=true;
-    if(e.key==='ArrowLeft')_lcDraft=lcClamp({...d,x:d.x-st*m/iw},a.imgEl);
-    else if(e.key==='ArrowRight')_lcDraft=lcClamp({...d,x:d.x+st*m/iw},a.imgEl);
-    else if(e.key==='ArrowUp')_lcDraft=lcClamp({...d,y:d.y-st*m/ih},a.imgEl);
-    else if(e.key==='ArrowDown')_lcDraft=lcClamp({...d,y:d.y+st*m/ih},a.imgEl);
-    else if(e.key==='+'||e.key==='='||e.key==='-'||e.key==='_'){
-      // שינוי גודל סביב המרכז
-      const g=(e.key==='+'||e.key==='=')?st:-st,ns=Math.max(LC_MIN,Math.min(1,d.s+g)),dw=(ns-d.s)*m;
-      _lcDraft=lcClamp({s:ns,x:d.x-dw/2/iw,y:d.y-dw/2/ih},a.imgEl);
-    }else if(e.key==='Enter'){lcOk();}
-    else if(e.key==='Escape'){lcClose();}
-    else h=false;
+    const a=lcAsset();if(!a||!(_lcFree?_lcRect:_lcDraft))return;
+    const st=(e.shiftKey?.05:.01),iw=imgNatW(a.imgEl),ih=imgNatH(a.imgEl),m=Math.min(iw,ih);let h=true;
+    const grow=(e.key==='+'||e.key==='='),shrink=(e.key==='-'||e.key==='_');
+    if(_lcFree){
+      const d=_lcRect,sx=st*m/iw,sy=st*m/ih;
+      if(e.altKey&&e.key.startsWith('Arrow')){
+        // Alt+חצים: רוחב/גובה (שמאל/ימין = רוחב, מעלה/מטה = גובה), סביב המרכז
+        const dw=e.key==='ArrowRight'?sx:e.key==='ArrowLeft'?-sx:0,dh=e.key==='ArrowUp'?sy:e.key==='ArrowDown'?-sy:0;
+        _lcRect=lcClampR({w:d.w+dw,h:d.h+dh,x:d.x-dw/2,y:d.y-dh/2});
+      }
+      else if(e.key==='ArrowLeft')_lcRect=lcClampR({...d,x:d.x-sx});
+      else if(e.key==='ArrowRight')_lcRect=lcClampR({...d,x:d.x+sx});
+      else if(e.key==='ArrowUp')_lcRect=lcClampR({...d,y:d.y-sy});
+      else if(e.key==='ArrowDown')_lcRect=lcClampR({...d,y:d.y+sy});
+      else if(grow||shrink){const f=grow?1+st*2:1/(1+st*2),nw=d.w*f,nh=d.h*f;_lcRect=lcClampR({w:nw,h:nh,x:d.x-(nw-d.w)/2,y:d.y-(nh-d.h)/2});}
+      else if(e.key==='Enter'){lcOk();}
+      else if(e.key==='Escape'){lcClose();}
+      else h=false;
+    }else{
+      const d=_lcDraft;
+      if(e.key==='ArrowLeft')_lcDraft=lcClamp({...d,x:d.x-st*m/iw},a.imgEl);
+      else if(e.key==='ArrowRight')_lcDraft=lcClamp({...d,x:d.x+st*m/iw},a.imgEl);
+      else if(e.key==='ArrowUp')_lcDraft=lcClamp({...d,y:d.y-st*m/ih},a.imgEl);
+      else if(e.key==='ArrowDown')_lcDraft=lcClamp({...d,y:d.y+st*m/ih},a.imgEl);
+      else if(grow||shrink){
+        // שינוי גודל סביב המרכז
+        const g=grow?st:-st,ns=Math.max(LC_MIN,Math.min(1,d.s+g)),dw=(ns-d.s)*m;
+        _lcDraft=lcClamp({s:ns,x:d.x-dw/2/iw,y:d.y-dw/2/ih},a.imgEl);
+      }else if(e.key==='Enter'){lcOk();}
+      else if(e.key==='Escape'){lcClose();}
+      else h=false;
+    }
     if(h){e.preventDefault();e.stopPropagation();lcDraw();}
   });
   document.getElementById('logo-crop-modal').addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();lcClose();}});
@@ -7602,7 +7699,12 @@ function lcPt(e){const cv=document.getElementById('logo-crop-cv'),r=cv.getBoundi
   document.getElementById('logo-crop-ok').addEventListener('click',lcOk);
   document.getElementById('logo-crop-cancel').addEventListener('click',lcClose);
   document.getElementById('logo-crop-x').addEventListener('click',lcClose);
-  document.getElementById('logo-crop-reset').addEventListener('click',()=>{const a=lcAsset();if(!a)return;_lcDraft=lcFull(a.imgEl);lcDraw();cv.focus();});
+  document.getElementById('logo-crop-mode').addEventListener('click',e=>{const b=e.target.closest('.sbt');if(b){lcSetMode(b.dataset.m==='free');cv.focus();}});
+  document.getElementById('logo-crop-reset').addEventListener('click',()=>{
+    const a=lcAsset();if(!a)return;
+    if(_lcFree)_lcRect={x:0,y:0,w:1,h:1};else _lcDraft=lcFull(a.imgEl);
+    lcDraw();cv.focus();
+  });
 })();
 document.getElementById('back-logo-size').addEventListener('input',e=>{
   S.back.logoSize=parseInt(e.target.value);document.getElementById('lbl-back-logo-size').textContent=S.back.logoSize+'%';markBackDirty();
