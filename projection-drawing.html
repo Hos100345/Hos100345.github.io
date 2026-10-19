@@ -5,9 +5,19 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <link rel="icon" href="images/favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
-  <title>ציור באוויר — מכוונים את המצלמה ומציירים לפי תמונה | הושעיה</title>
-<meta name="description" content="כלי חינמי לטלפון: מכוונים את המצלמה אל דף, ורואים עליו את התמונה כדי לצייר לפיה. לילדים, לסדנאות ולציור קיר.">
+  <title>ציור באוויר — מציירים בתנועת יד, בלי לגעת בטלפון | הושעיה</title>
+<meta name="description" content="משחק ציור חינמי לטלפון: המצלמה קולטת את תנועות היד או נקודה אדומה, ומציירים באוויר בלי לגעת במסך. מצב סלפי, ואפשר גם על קיר עם מקרן. לילדים, למשפחה ולסדנאות.">
 <style>
+#intro{position:fixed;inset:0;z-index:50;touch-action:pan-y;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);overflow-y:auto}
+#intro .box{max-width:460px;text-align:center}
+#intro h1{font-size:1.9em;color:#e94560;text-shadow:0 0 20px #e9456088;margin-bottom:6px}
+#intro .lead{color:#ddd;font-size:1.1em;margin-bottom:18px}
+#intro ul{list-style:none;text-align:right;display:grid;gap:12px;margin:0 0 22px}
+#intro li{background:#16213e;border:1px solid #0f3460;border-radius:14px;padding:12px 14px;line-height:1.5;color:#eee}
+#intro li b{color:#ff8fa3}
+#intro .note{color:#bbb;font-size:.85em;margin-bottom:18px}
+#introGo{padding:16px 40px;background:#e94560;color:#fff;border:none;border-radius:50px;font-size:1.2em;font-weight:bold;cursor:pointer;box-shadow:0 0 20px #e9456088}
+#introGo:focus-visible{outline:3px solid #fff;outline-offset:3px}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{background:#1a1a2e;color:#eee;font-family:'Segoe UI',Arial,sans-serif;overflow:hidden;touch-action:none;user-select:none}
 .screen{display:none;width:100vw;height:100vh;height:100dvh}
@@ -108,6 +118,20 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 </style>
 </head>
 <body>
+<div id="intro" role="dialog" aria-modal="true" aria-labelledby="introTitle">
+  <div class="box">
+    <h1 id="introTitle">🎨 ציור באוויר</h1>
+    <p class="lead">מציירים בלי לגעת בטלפון — משחק מהנה לכל המשפחה!</p>
+    <ul>
+      <li>🖐 <b>תנועות היד:</b> המצלמה קולטת את האצבע שלכם. מזיזים אותה באוויר — והקו מצטייר על המסך.</li>
+      <li>🔴 <b>נקודה אדומה:</b> אפשר לצייר גם עם חפץ אדום — עט, מכסה או כדור. זה הכי מדויק.</li>
+      <li>🤳 <b>מצב סלפי:</b> מעמידים את הטלפון מולכם, עומדים קצת רחוק, ורואים את עצמכם מציירים — כמו קסם.</li>
+      <li>📽️ <b>עם מקרן:</b> מקרינים על הקיר ומציירים עליו בתנועת יד — מושלם לסדנה ולמסיבה.</li>
+    </ul>
+    <p class="note">נצטרך אישור למצלמה. הכול קורה בתוך הטלפון — הווידאו לא נשלח לשום מקום.</p>
+    <button id="introGo" type="button">✨ מתחילים לצייר</button>
+  </div>
+</div>
 <div id="loading" class="hidden">
   <div class="spinner"></div>
   <p id="loadingMsg">טוען...</p>
@@ -1347,9 +1371,11 @@ document.addEventListener('visibilitychange',()=>{
   }
 });
 
-// ---- boot: step 1 (camera selection); the AI model preloads in parallel ----
-openSelCamera();
+// ---- boot: מסך הסבר קודם (W-49), ואז שלב 1 (בחירת מצלמה); מודל ה-AI נטען ברקע כבר עכשיו ----
 loadTFHandpose();
+(function(){const intro=document.getElementById('intro'),go=document.getElementById('introGo');
+  const start=()=>{intro.remove();openSelCamera();};
+  onTap(go,start);go.focus();})();
 </script>
 </body>
 </html>
