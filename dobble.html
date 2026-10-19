@@ -1164,6 +1164,10 @@ const I18N={
     'back.logoCropTitle':'בחירת חלק מהתמונה',
     'back.logoCropHint':'גררו את המסגרת, ושנו את גודלה בפינות. מה שבתוך המסגרת יופיע על הקלף.',
     'back.logoCropOk':'אישור',
+    'back.logoBgBtn':'✨ הסרת רקע',
+    'back.logoBgRestoreBtn':'🖼 החזר רקע',
+    'back.logoBgRemoved':'✨ הרקע הוסר מהתמונה',
+    'back.logoBgRestored':'🖼 הרקע חזר',
     'back.logoCropModeLabel':'צורת החיתוך',
     'back.logoCropModeShape':'בצורת הקלף',
     'back.logoCropModeFree':'חופשי',
@@ -1882,6 +1886,10 @@ const I18N={
     'back.logoCropTitle':'Choose part of the image',
     'back.logoCropHint':'Drag the frame and resize it by the corners. What is inside the frame will appear on the card.',
     'back.logoCropOk':'OK',
+    'back.logoBgBtn':'✨ Remove background',
+    'back.logoBgRestoreBtn':'🖼 Restore background',
+    'back.logoBgRemoved':'✨ Background removed from the image',
+    'back.logoBgRestored':'🖼 Background restored',
     'back.logoCropModeLabel':'Crop shape',
     'back.logoCropModeShape':'Card shape',
     'back.logoCropModeFree':'Free',
@@ -3170,6 +3178,7 @@ window.applyI18n=applyI18n;
         <div style="display:flex;flex-direction:column;gap:.4rem">
           <button data-i18n="back.logoUploadBtn" class="btn btn-sec" id="back-logo-btn" type="button">📤 העלה תמונה</button>
           <button data-i18n="back.logoCropBtn" class="btn btn-sec" id="back-logo-crop" type="button" style="display:none">✂️ בחירת חלק מהתמונה</button>
+          <button data-i18n="back.logoBgBtn" class="btn btn-sec" id="back-logo-bg" type="button" style="display:none">✨ הסרת רקע</button>
           <button data-i18n="back.logoRemoveBtn" class="btn btn-ghost" id="back-logo-remove" type="button" style="display:none">🗑 הסר תמונה</button>
         </div>
         <input type="file" id="back-logo-file" accept="image/*" hidden>
@@ -5861,11 +5870,9 @@ async function setBackLogoFromFile(f){
   }
 }
 function removeBackLogo(){
-  const prev=S.assets.find(a=>a.type==='backlogo');
-  if(prev){
-    if(prev.url)URL.revokeObjectURL(prev.url);
-    S.assets=S.assets.filter(a=>a.id!==prev.id);
-  }
+  // D-86B: ללוגו יכולים להיות שני נכסים — המקור והנגזרת בלי רקע (srcAssetId) — מסירים את כולם
+  S.assets.filter(a=>a.type==='backlogo').forEach(a=>{if(a.url)URL.revokeObjectURL(a.url);if(a.imgEl&&a.imgEl.width&&a.srcAssetId!=null)a.imgEl.width=a.imgEl.height=0;});
+  S.assets=S.assets.filter(a=>a.type!=='backlogo');
   S.back.logoAssetId=null;S.back.logoCrop=null;
 }
 
@@ -7525,14 +7532,19 @@ function updateLogoPreview(){
   ctx.clearRect(0,0,80,80);
   const asset=S.assets.find(a=>a.id===S.back.logoAssetId&&a.type==='backlogo');
   const removeBtn=document.getElementById('back-logo-remove');
-  const cropBtn=document.getElementById('back-logo-crop');
+  const cropBtn=document.getElementById('back-logo-crop'),bgBtn=document.getElementById('back-logo-bg');
   if(asset&&asset.imgEl){
+    const nobg=asset.srcAssetId!=null;
+    bgBtn.style.display='';bgBtn.textContent=t(nobg?'back.logoBgRestoreBtn':'back.logoBgBtn');
+    if(nobg){   // רקע משבצות — רואים שהרקע שקוף
+      for(let yy=0;yy<80;yy+=10)for(let xx=0;xx<80;xx+=10){ctx.fillStyle=((xx+yy)/10)%2?'#d1d5db':'#f3f4f6';ctx.fillRect(xx,yy,10,10);}
+    }
     const pc=backLogoCropRect(asset.imgEl,S.back.logoCrop);
     if(pc&&pc.free){const a=pc.sw/pc.sh,dw=a>=1?80:80*a,dh=a>=1?80/a:80;ctx.drawImage(asset.imgEl,pc.sx,pc.sy,pc.sw,pc.sh,(80-dw)/2,(80-dh)/2,dw,dh);}
     else if(pc)ctx.drawImage(asset.imgEl,pc.sx,pc.sy,pc.sw,pc.sw,0,0,80,80);else drawCover(ctx,asset.imgEl,0,0,80);
     removeBtn.style.display='';cropBtn.style.display='';
   }
-  else{ctx.fillStyle='#e5e7eb';ctx.fillRect(0,0,80,80);removeBtn.style.display='none';cropBtn.style.display='none';}
+  else{ctx.fillStyle='#e5e7eb';ctx.fillRect(0,0,80,80);removeBtn.style.display='none';cropBtn.style.display='none';bgBtn.style.display='none';}
 }
 document.getElementById('back-logo-btn').addEventListener('click',()=>document.getElementById('back-logo-file').click());
 document.getElementById('back-logo-file').addEventListener('change',async e=>{
@@ -7541,6 +7553,47 @@ document.getElementById('back-logo-file').addEventListener('change',async e=>{
   await setBackLogoFromFile(f);
   updateLogoPreview();
 });
+// ── D-86B: הסרת רקע מתמונת הגב — אותו כלי (AIImage.removeBg דרך bgJob) כמו ✨ בגלריה, בלי שינוי ב-js/ai-image.js.
+// המקור נשאר נכס backlogo; התוצאה (PNG עם שקיפות) נכס backlogo נוסף עם srcAssetId=המקור, ו-logoAssetId עובר אליה.
+// 🖼 מחזיר: logoAssetId חוזר למקור והנגזרת נמחקת. הגודל לא נחתך ל-bbox — כך logoCrop (יחסי) נשאר תקף על שני הנכסים.
+async function backCutout(src,signal,onProgress,mode){
+  const r=await AIImage.removeBg(src,{mode:mode||'object',signal,onProgress});
+  const cv=r.canvas,W=cv.width,H=cv.height,d=cv.getContext('2d').getImageData(0,0,W,H).data;
+  let op=0;for(let i=3;i<d.length;i+=4)if(d[i]>200)op++;
+  const f=op/(W*H);
+  if(f<.05||f>.98){cv.width=cv.height=0;return null;}   // לא נמצא חפץ ברור — לא מחליפים
+  return cv;
+}
+async function backBgToggle(q){
+  const a=lcAsset();if(!a||!a.imgEl)return;
+  if(a.srcAssetId!=null){   // 🖼 החזר רקע
+    const src=S.assets.find(x=>x.id===a.srcAssetId&&x.type==='backlogo');
+    if(!src){toast(t('faces.noSource'),'err');return;}
+    S.back.logoAssetId=src.id;
+    if(a.imgEl.width)a.imgEl.width=a.imgEl.height=0;
+    S.assets=S.assets.filter(x=>x.id!==a.id);
+    updateLogoPreview();markBackDirty();schedIdbSave();toast(t('back.logoBgRestored'),'ok');return;
+  }
+  if(bgBusy()){toast(t('faces.busy'),'ok');return;}
+  if(!afEnabled()){toast(t('faces.bgLowMem'),'err');return;}
+  if(!q)q=await bgQuality();
+  if(!q)return;   // ביטל את חלון האיכות
+  if(q==='fast')toast(t('faces.bgWorking'),'ok');
+  const btn=document.getElementById('back-logo-bg');btn.disabled=true;
+  let cv;
+  try{cv=await bgJob((ac,arm,onP)=>backCutout(a.imgEl,ac.signal,onP,q==='precise'?'precise':undefined),{q});}
+  catch(e){
+    btn.disabled=false;
+    if(e&&e.userStopped){toast(t('bgq.stoppedOne'),'ok');return;}
+    afTrack('back fail · '+q+' · '+String(e&&e.message||e).slice(0,80));aiFail(e,()=>backBgToggle(q));return;}
+  btn.disabled=false;
+  if(!cv){toast(t('bg.notFound'),'err');return;}
+  if(!S.assets.includes(a)||S.back.logoAssetId!==a.id){cv.width=cv.height=0;return;}   // הלוגו הוחלף/הוסר בזמן העיבוד
+  const d={id:++S.idSeq,type:'backlogo',name:a.name.replace(/\.[^.]+$/,'')+' ✨',url:'',thumb:makeThumb(cv),imgEl:cv,selected:true,srcAssetId:a.id};
+  S.assets.push(d);S.back.logoAssetId=d.id;
+  updateLogoPreview();markBackDirty();schedIdbSave();toast(t('back.logoBgRemoved'),'ok');
+}
+document.getElementById('back-logo-bg').addEventListener('click',()=>backBgToggle());
 document.getElementById('back-logo-remove').addEventListener('click',()=>{
   removeBackLogo();updateLogoPreview();markBackDirty();schedIdbSave();
 });
