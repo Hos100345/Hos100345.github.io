@@ -572,7 +572,12 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     const href = anchor.getAttribute('href');
     if (href.length < 2) return;
     const target = document.querySelector(href);
-    if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    if (!target) return;
+    e.preventDefault();
+    target.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    // W-47: גם המיקוד עובר ליעד — אחרת משתמש מקלדת/קורא מסך נשאר למעלה (WCAG 2.4.3)
+    if (!target.matches('a,button,input,select,textarea,[tabindex]')) target.setAttribute('tabindex', '-1');
+    target.focus({ preventScroll: true });
   });
 });
 
