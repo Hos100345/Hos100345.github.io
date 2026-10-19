@@ -116,7 +116,7 @@
       <div class="kpis" id="kpis"></div>
       <h2 style="margin-top:6px">לאיזה עמודים</h2><div id="by-page"></div>
       <h2 style="margin-top:14px">מאיפה הגיעו</h2><div id="by-src"></div>
-      <p class="hint">נספר בלי עוגיות ובלי לזהות אנשים: כל טעינת עמוד = כניסה אחת. הבדיקות שלי לא נספרות.</p>
+      <p class="hint">נספר בלי עוגיות ובלי לזהות אנשים: כל טעינת עמוד = כניסה אחת. הבדיקות שלי לא נספרות. המדידה התחילה ב-18/10/2026, אז "7 ימים" ו-"30 ימים" עוד כוללים רק את הימים מאז.</p>
     </div>
   </section>
 </main>
@@ -230,7 +230,7 @@ const PAGE_HE={index:'דף הבית',events:'אירועים ובלונים',comm
 async function loadStats(){
   if(!isAdmin()){needLogin($('kpis'));$('by-page').innerHTML='';$('by-src').innerHTML='';return;}
   $('kpis').innerHTML='<p class="hint">טוען…</p>';
-  const since=new Date(Date.now()-days*864e5);if(days===1)since.setHours(0,0,0,0);
+  const since=days===1?new Date(new Date().setHours(0,0,0,0)):new Date(Date.now()-days*864e5);   // "היום" = מחצות של היום (קודם נלקחה חצות של אתמול)
   const{data,error}=await sb.from('events').select('event,label,detail,ua').in('event',['site_view','site_wa','site_phone']).gte('created_at',since.toISOString()).limit(10000);
   if(error){$('kpis').innerHTML='<p class="msg" style="color:var(--err)">שגיאה: '+esc(error.message)+'</p>';return;}
   const v=data.filter(e=>e.event==='site_view'),wa=data.filter(e=>e.event==='site_wa').length,ph=data.filter(e=>e.event==='site_phone').length;
