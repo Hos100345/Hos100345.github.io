@@ -1,43 +1,43 @@
 // ⛔ קובץ שנוצר אוטומטית — אין לערוך ידנית.
 // מקור: dobble.html · נבנה ע"י tools/build-play-engine.py
-// בסיס: e601e2a · sha256(dobble.html)=441a3819cd91
+// בסיס: c15c378 · sha256(dobble.html)=b134ea94a142
 // כל פונקציה כאן היא עותק בייט-לבייט מהמחולל, כדי שקלף בנגן (play.html) ייראה
 // בדיוק כמו במחולל. play.html מגדיר את S, needsWatermark ו-t לפני השימוש.
 
-// ── ORDERS (dobble.html:3692) ──
+// ── ORDERS (dobble.html:3801) ──
 const ORDERS=[{q:2,total:7,spc:3},{q:3,total:13,spc:4},{q:4,total:21,spc:5},
               {q:5,total:31,spc:6},{q:7,total:57,spc:8},
               {q:8,total:73,spc:9},{q:9,total:91,spc:10}];
 
-// ── CARD_PX (dobble.html:3695) ──
+// ── CARD_PX (dobble.html:3804) ──
 const CARD_PX=500;
 
-// ── IMG_PX (dobble.html:3700) ──
+// ── IMG_PX (dobble.html:3809) ──
 const IMG_PX=400;
 
-// ── LOAD_MAX (dobble.html:3701) ──
+// ── LOAD_MAX (dobble.html:3810) ──
 const LOAD_MAX=1200; // צד ארוך מקסימלי בטעינה — שומר על יחס גובה-רוחב (לא כופה ריבוע)
 
-// ── fitLongSide (dobble.html:3704) ──
+// ── fitLongSide (dobble.html:3813) ──
 function fitLongSide(w,h,max){
   const scale=Math.min(1,max/Math.max(w,h));
   return{w:Math.max(1,Math.round(w*scale)),h:Math.max(1,Math.round(h*scale))};
 }
 
-// ── gf4a (dobble.html:3709) ──
+// ── gf4a (dobble.html:3818) ──
 function gf4a(a,b){return a^b}
 
-// ── gf4m (dobble.html:3710) ──
+// ── gf4m (dobble.html:3819) ──
 function gf4m(a,b){
   if(!a||!b)return 0;if(a===1)return b;if(b===1)return a;
   const a1=(a>>1)&1,a0=a&1,b1=(b>>1)&1,b0=b&1;
   return((((a1&b1)^(a1&b0)^(a0&b1))&1)<<1)|(((a1&b1)^(a0&b0))&1);
 }
 
-// ── gf8a (dobble.html:3717) ──
+// ── gf8a (dobble.html:3826) ──
 function gf8a(a,b){return a^b;}
 
-// ── gf8m (dobble.html:3718) ──
+// ── gf8m (dobble.html:3827) ──
 function gf8m(a,b){
   let r=0;
   while(b){
@@ -49,13 +49,13 @@ function gf8m(a,b){
   return r;
 }
 
-// ── gf9a (dobble.html:3730) ──
+// ── gf9a (dobble.html:3839) ──
 function gf9a(a,b){
   const h=((a/3|0)+(b/3|0))%3, l=(a%3+b%3)%3;
   return h*3+l;
 }
 
-// ── gf9m (dobble.html:3734) ──
+// ── gf9m (dobble.html:3843) ──
 function gf9m(a,b){
   const h1=a/3|0,l1=a%3,h2=b/3|0,l2=b%3;
   const hi=(h1*l2+l1*h2)%3;
@@ -63,7 +63,7 @@ function gf9m(a,b){
   return hi*3+lo;
 }
 
-// ── gfOps (dobble.html:3741) ──
+// ── gfOps (dobble.html:3850) ──
 function gfOps(q){
   if(q===4)return{a:gf4a,m:gf4m};
   if(q===8)return{a:gf8a,m:gf8m};
@@ -71,7 +71,7 @@ function gfOps(q){
   return{a:(a,b)=>(a+b)%q,m:(a,b)=>(a*b)%q};
 }
 
-// ── genDeck (dobble.html:3748) ──
+// ── genDeck (dobble.html:3857) ──
 function genDeck(q){
   const{a,m}=gfOps(q),D=[];
   D.push(Array.from({length:q+1},(_,i)=>i));
@@ -82,17 +82,17 @@ function genDeck(q){
   return D;
 }
 
-// ── bestOrder (dobble.html:3757) ──
+// ── bestOrder (dobble.html:3866) ──
 function bestOrder(n){let b=null;for(const o of ORDERS)if(o.total<=n)b=o;return b}
 
-// ── sr (dobble.html:3779) ──
+// ── sr (dobble.html:3888) ──
 function sr(seed){
   seed=Math.imul(seed^(seed>>>16),0x45d9f3b);
   seed=Math.imul(seed^(seed>>>16),0x45d9f3b);
   return((seed^(seed>>>16))>>>0)/0x100000000;
 }
 
-// ── buildLayouts (dobble.html:3786) ──
+// ── buildLayouts (dobble.html:3895) ──
 function buildLayouts(deck,seed,sMin,sMax){
   const range=sMax-sMin;
   return deck.map((syms,ci)=>{
@@ -104,19 +104,19 @@ function buildLayouts(deck,seed,sMin,sMax){
   });
 }
 
-// ── overlapFactor (dobble.html:3801) ──
+// ── overlapFactor (dobble.html:3910) ──
 function overlapFactor(){
   const ov=S.overlap||0;
   return ov>=0 ? 1-(ov/100)*.35 : 1+(-ov/100)*.20;
 }
 
-// ── contactFactor (dobble.html:3807) ──
+// ── contactFactor (dobble.html:3916) ──
 function contactFactor(){
   const ov=S.overlap||0;
   return ov>=0 ? 1-(ov/100)*0.85 : 1+(-ov/100)*0.60;
 }
 
-// ── symPos (dobble.html:3812) ──
+// ── symPos (dobble.html:3921) ──
 function symPos(n,cx,cy,r){
   if(S.layoutMode==='peripheral') return symPosPeriph(n,cx,cy,r);
   const ov=overlapFactor();
@@ -149,7 +149,7 @@ function symPos(n,cx,cy,r){
   return P;
 }
 
-// ── symPosPeriph (dobble.html:3844) ──
+// ── symPosPeriph (dobble.html:3953) ──
 function symPosPeriph(n,cx,cy,r){
   // All symbols on one ring — evenly spaced, sized so neighbours don't overlap
   // hs ≤ rr·sin(π/n) כדי ששכנים על הטבעת לא ייגעו, ו-rr+hs ≤ ~.90 כדי להישאר בקלף.
@@ -160,13 +160,52 @@ function symPosPeriph(n,cx,cy,r){
   return P;
 }
 
-// ── CIRCLE_RADIAL (dobble.html:8620) ──
+// ── CIRCLE_RADIAL (dobble.html:9354) ──
 function CIRCLE_RADIAL(){const a=new Float32Array(64);a.fill(1);return a;}
 
-// ── CIRCLE_META (dobble.html:3855) ──
+// ── CIRCLE_META (dobble.html:3964) ──
 const CIRCLE_META={hasAlpha:false,radial:CIRCLE_RADIAL()};
 
-// ── reachAt (dobble.html:3858) ──
+// ── symBoundNorm (dobble.html:3969) ──
+function symBoundNorm(){
+  if(S.shape!=='square')return null;
+  const G=cardGeom(500),pad=G.fw+S.symPad*G.ppMm;
+  return{H:(G.sq/2-pad)/G.rSym,cr:Math.max(0,G.sqcr-pad)/G.rSym};
+}
+
+// ── symOverSq (dobble.html:3977) ──
+function symOverSq(meta,rot,half,x,y,B,R){
+  const rad=meta.fine||meta.radial,n=rad.length,st=Math.PI*2/n,cu=meta.fine?1:1.012;   // עיגול אטום: פוליגון 64 צלעות — קצת מרווח לקשת
+  let mx=-Infinity;
+  if(B){
+    const a0=B.H-B.cr;
+    for(let i=0;i<n;i++){
+      const a=rot+i*st,rr=rad[i]*half*cu;
+      const qx=Math.abs(x+rr*Math.cos(a))-a0,qy=Math.abs(y+rr*Math.sin(a))-a0;
+      const d=Math.hypot(Math.max(qx,0),Math.max(qy,0))+Math.min(Math.max(qx,qy),0)-B.cr;
+      if(d>mx)mx=d;
+    }
+  }else{
+    for(let i=0;i<n;i++){
+      const a=rot+i*st,rr=rad[i]*half*cu;
+      const d=Math.hypot(x+rr*Math.cos(a),y+rr*Math.sin(a))-R;
+      if(d>mx)mx=d;
+    }
+  }
+  return mx;
+}
+
+// ── symGmaxSq (dobble.html:3998) ──
+function symGmaxSq(meta,rot,half,x,y,B,cap,R){
+  if(!(half>1e-9))return cap;
+  if(symOverSq(meta,rot,0,x,y,B,R)>0)return 0;
+  if(symOverSq(meta,rot,half*cap,x,y,B,R)<=0)return cap;
+  let lo=0,hi=cap;
+  for(let k=0;k<16;k++){const m=(lo+hi)/2;if(symOverSq(meta,rot,half*m,x,y,B,R)<=0)lo=m;else hi=m;}
+  return lo;
+}
+
+// ── reachAt (dobble.html:4008) ──
 function reachAt(meta,rotation,angle,half){
   const bins=64;
   let a=angle-rotation;                       // לזווית העולם מחסירים את סיבוב הסמל
@@ -175,7 +214,7 @@ function reachAt(meta,rotation,angle,half){
   return meta.radial[idx]*half;
 }
 
-// ── relaxSymbolPositions (dobble.html:3869) ──
+// ── relaxSymbolPositions (dobble.html:4019) ──
 function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
   const n=pos.length;
   if(!n)return;
@@ -185,6 +224,10 @@ function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
   const origX=pos.map(p=>p.x),origY=pos.map(p=>p.y);
   const kT=contactFactor();          // יעד המגע האמיתי — לעולם לא יורד, גם כשההרפיה מתפשרת
   const tol=rSym*0.015;
+  const SQ=(rSym===1&&cx===0&&cy===0)?symBoundNorm():null;   // D-87: בריבוע הגבול הוא ריבוע מעוגל, לא רדיוס
+  // סמל "דגום" = בדיקת גבול מול כל פרופיל הצורה: תמיד בריבוע, ובעיגול רק לסמל עם שקיפות. עיגול אטום = הנוסחה הישנה (פלט זהה לפיקסל)
+  const smp=i=>!!SQ||metas[i].hasAlpha;
+  const ovr=(i,x,y,h)=>symOverSq(metas[i],rots[i],h,x-cx,y-cy,SQ,rSym);
 
   // ההפרה הגרועה ביותר של פריסה נתונה מול יעד k (זוגות + גבול הקלף)
   function violation(P,k){
@@ -198,7 +241,7 @@ function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
     for(let i=0;i<n;i++){
       const dx=P[i].x-cx,dy=P[i].y-cy,dist=Math.hypot(dx,dy);
       const angOut=dist<1e-6?0:Math.atan2(dy,dx);
-      const over=dist+reachAt(metas[i],rots[i],angOut,halves[i])-rSym;
+      const over=smp(i)?ovr(i,P[i].x,P[i].y,halves[i]):dist+reachAt(metas[i],rots[i],angOut,halves[i])-rSym;
       if(over>mv)mv=over;
     }
     return mv;
@@ -224,6 +267,11 @@ function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
       for(let i=0;i<n;i++){
         const dx=P[i].x-cx,dy=P[i].y-cy,dist=Math.hypot(dx,dy);
         if(dist<1e-6)continue;
+        if(smp(i)){   // מושכים לכיוון המרכז בגובה החריגה
+          const o=ovr(i,P[i].x,P[i].y,halves[i]);
+          if(o>0){const m=Math.min(o,dist);P[i].x-=dx/dist*m;P[i].y-=dy/dist*m;moved++;}
+          continue;
+        }
         const angOut=Math.atan2(dy,dx);
         const reach=reachAt(metas[i],rots[i],angOut,halves[i]);
         if(dist+reach>rSym){
@@ -264,6 +312,24 @@ function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
     if(bestViol<=tol)break;
   }
 
+  // D-87: גבול קשיח בסוף — אם אחרי הכול סמל עדיין חורג (למשל כשהכיווץ הגלובלי נעצר בתקרת 0.20), מקטינים אותו עד שאין חריגה.
+  // בריבוע ובעיגול עם סמלים חתוכים בלבד: עיגול אטום כבר מובטח, ושם הפלט חייב להישאר זהה לפיקסל.
+  const needHard=!!SQ||metas.some(m=>m.hasAlpha);   // (עיגול אטום מובטח כבר, ושם הפלט חייב להישאר זהה)
+  function hardBound(){
+    if(!needHard)return;
+    for(let i=0;i<n;i++){
+      const half=pos[i].hs*layout.tr[i].sc;if(!(half>1e-9))continue;
+      let gi;
+      if(smp(i))gi=symGmaxSq(metas[i],rots[i],half,pos[i].x-cx,pos[i].y-cy,SQ,1,rSym);
+      else{
+        const dx=pos[i].x-cx,dy=pos[i].y-cy,dist=Math.hypot(dx,dy),ang=dist<1e-6?0:Math.atan2(dy,dx);
+        const reach=reachAt(metas[i],rots[i],ang,half);
+        gi=reach>1e-9&&dist+reach>rSym?Math.max(0,(rSym-dist)/reach):1;
+      }
+      if(gi<1)pos[i].hs*=Math.max(gi,0.02);
+    }
+  }
+
   // ── סגירה אנליטית: הערובה ל-0% חפיפה ו-0 חריגה, בצעד יחיד ──
   // need_ij ו-reach_i לינאריים במקדם g, ולכן
   //   g = min( d_ij / need_ij ,  (rSym − dist_i) / reach_i )
@@ -271,6 +337,7 @@ function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
   function exactShrink(P){
     let g=1;
     for(let i=0;i<n;i++){
+      if(smp(i)){g=Math.min(g,symGmaxSq(metas[i],rots[i],halves[i],P[i].x-cx,P[i].y-cy,SQ,1,rSym));continue;}
       const dx=P[i].x-cx,dy=P[i].y-cy,dist=Math.hypot(dx,dy);
       const angOut=dist<1e-6?0:Math.atan2(dy,dx);
       const reach=reachAt(metas[i],rots[i],angOut,halves[i]);
@@ -294,6 +361,7 @@ function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
     const gU=P=>{
       let gg=Infinity;
       for(let i=0;i<n;i++){
+        if(smp(i)){gg=Math.min(gg,symGmaxSq(metas[i],rots[i],halves[i],P[i].x-cx,P[i].y-cy,SQ,AUTO_GMAX,rSym));continue;}
         const dx=P[i].x-cx,dy=P[i].y-cy,dist=Math.hypot(dx,dy);
         const angOut=dist<1e-6?0:Math.atan2(dy,dx);
         const reach=reachAt(metas[i],rots[i],angOut,halves[i]);
@@ -320,6 +388,7 @@ function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
     setF(lo);best=loP;const F=lo;
     g=F*Math.min(1,gU(best));
     for(let i=0;i<n;i++){pos[i].x=best[i].x;pos[i].y=best[i].y;pos[i].hs=pos[i].hs*g;}
+    hardBound();
     return;
   }
 
@@ -327,6 +396,7 @@ function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
   if(g>=1&&S.tightFill&&(S.overlap||0)>=0){
     const fits=q=>{
       for(let i=0;i<n;i++){
+        if(smp(i)){if(ovr(i,best[i].x,best[i].y,halves[i]*q)>0.001*rSym)return false;continue;}
         const dx=best[i].x-cx,dy=best[i].y-cy,dist=Math.hypot(dx,dy);
         const angOut=dist<1e-6?0:Math.atan2(dy,dx);
         if(dist+reachAt(metas[i],rots[i],angOut,halves[i])*q>rSym*1.001)return false;
@@ -345,12 +415,13 @@ function relaxSymbolPositions(pos,layout,imgs,cx,cy,rSym){
   }
 
   for(let i=0;i<n;i++){pos[i].x=best[i].x;pos[i].y=best[i].y;pos[i].hs=pos[i].hs*g;}
+  hardBound();
 }
 
-// ── AUTO_GMAX (dobble.html:4040) ──
+// ── AUTO_GMAX (dobble.html:4222) ──
 const AUTO_GMAX=4,AUTO_STEPS=7;   // ראו "גודל אוטומטי" ב-relaxSymbolPositions. 7 צעדים = דיוק ~1% ב-F
 
-// ── cardGeom (dobble.html:4044) ──
+// ── cardGeom (dobble.html:4226) ──
 function cardGeom(sz){
   // המרווח היה 7px מוחלטים — 1.4% מהקלף ב-500px אבל 0.625% ב-1120px, מה שגרם
   // לסטייה של 1.59% ב-ppMm בין איכויות הייצוא ולפריסה שונה במקצת בכל אחת.
@@ -363,12 +434,14 @@ function cardGeom(sz){
   return{cx,cy,r,sq,sqx,sqy,sqcr,ppMm,fw,rSym};
 }
 
-// ── packSignature (dobble.html:4060) ──
+// ── packSignature (dobble.html:4242) ──
 function packSignature(n){
-  return [n,S.layoutMode,S.overlap,S.tightPack?1:0,S.tightFill?1:0,S.metaVer||0,S.sizeMode||'',S.sizeMode==='auto'?S.sizeK:''].join('|');
+  // D-87: בריבוע הגבול תלוי במידת הקלף, במסגרת ובמרחק מהשפה (ביחידות rSym) — לכן הם חלק מהחתימה. בעיגול החתימה זהה למה שהיה.
+  const sqSig=S.shape==='square'?'sq:'+[S.cardSizeMm,S.frame.w,S.symPad].join(','):'';
+  return [n,S.layoutMode,S.overlap,S.tightPack?1:0,S.tightFill?1:0,S.metaVer||0,S.sizeMode||'',S.sizeMode==='auto'?S.sizeK:'',sqSig].join('|');
 }
 
-// ── packNormalized (dobble.html:4063) ──
+// ── packNormalized (dobble.html:4247) ──
 function packNormalized(layout,imgs){
   const n=layout.syms.length;
   if(!n)return[];
@@ -376,26 +449,35 @@ function packNormalized(layout,imgs){
   const c=layout.__pack;
   if(c&&c.sig===sig)return c.pos;
   const pos=symPos(n,0,0,1);
+  // D-87: בריבוע נקודות הפתיחה מורחקות מעט מהמרכז — יש מקום בפינות (הפריסה הבסיסית מתוכננת לעיגול). ההרפיה מחזירה פנימה מה שחורג
+  if(S.shape==='square')for(const q of pos){q.x*=1.12;q.y*=1.12;}
   if(S.tightPack)relaxSymbolPositions(pos,layout,imgs,0,0,1);
-  else if(S.sizeMode==='auto')relaxSymbolPositions(pos,layout,[],0,0,1);   // גודל אוטומטי בלי "לפי צורה" = מילוי לפי עיגולים
-  else clampInsideCard(pos,layout,1);
+  else if(S.sizeMode==='auto'){
+    relaxSymbolPositions(pos,layout,[],0,0,1);   // גודל אוטומטי בלי "לפי צורה" = מילוי לפי עיגולים (המרווח בין סמלים)
+    // D-87: אבל גבול הקלף נאכף לפי הצורה האמיתית של כל סמל חתוך / לפי ריבוע. עיגול אטום — בלי נגיעה (פלט זהה לפיקסל)
+    if(S.shape==='square'||layout.syms.some(si=>imgs[si]&&imgs[si].__symMeta&&imgs[si].__symMeta.hasAlpha))clampInsideCard(pos,layout,1,imgs);
+  }
+  else clampInsideCard(pos,layout,1,imgs);
   layout.__pack={sig,pos};
   return pos;
 }
 
-// ── clampInsideCard (dobble.html:4078) ──
-function clampInsideCard(pos,layout,rSym){
-  let g=1;
+// ── clampInsideCard (dobble.html:4268) ──
+function clampInsideCard(pos,layout,rSym,imgs){
+  let g=1,smpUsed=false;
+  const SQ=(rSym===1)?symBoundNorm():null;   // D-87: ריבוע מעוגל במקום רדיוס; ובעיגול — סמל עם שקיפות נבדק מול כל הפרופיל שלו
   for(let i=0;i<pos.length;i++){
     const half=pos[i].hs*layout.tr[i].sc;
     if(half<=1e-9)continue;
+    const mt=(imgs&&imgs[layout.syms[i]]&&imgs[layout.syms[i]].__symMeta)||CIRCLE_META;
+    if(SQ||mt.hasAlpha){smpUsed=true;g=Math.min(g,symGmaxSq(mt,layout.tr[i].ro,half,pos[i].x,pos[i].y,SQ,1,rSym));continue;}
     const d=Math.hypot(pos[i].x,pos[i].y);
     if(d+half>rSym)g=Math.min(g,Math.max(0,(rSym-d)/half));
   }
-  if(g<1){g=Math.max(g,0.20);for(const p of pos)p.hs*=g;}
+  if(g<1){g=smpUsed?Math.max(g,0.02):Math.max(g,0.20);for(const p of pos)p.hs*=g;}
 }
 
-// ── computeCardPositions (dobble.html:4090) ──
+// ── computeCardPositions (dobble.html:4283) ──
 function computeCardPositions(layout,imgs,sz){
   const G=cardGeom(sz);
   const npos=packNormalized(layout,imgs);
@@ -404,7 +486,7 @@ function computeCardPositions(layout,imgs,sz){
   return{pos,G};
 }
 
-// ── applyCardEdits (dobble.html:4100) ──
+// ── applyCardEdits (dobble.html:4293) ──
 function applyCardEdits(pos,layout,G){
   const ed=(layout&&layout.ci!=null&&S.cardEdits)?S.cardEdits[layout.ci]:null;
   if(!ed)return;
@@ -416,7 +498,7 @@ function applyCardEdits(pos,layout,G){
   }
 }
 
-// ── rrect (dobble.html:4135) ──
+// ── rrect (dobble.html:4332) ──
 function rrect(ctx,x,y,w,h,cr){
   ctx.moveTo(x+cr,y);ctx.lineTo(x+w-cr,y);ctx.arcTo(x+w,y,x+w,y+cr,cr);
   ctx.lineTo(x+w,y+h-cr);ctx.arcTo(x+w,y+h,x+w-cr,y+h,cr);
@@ -424,7 +506,7 @@ function rrect(ctx,x,y,w,h,cr){
   ctx.lineTo(x,y+cr);ctx.arcTo(x,y,x+cr,y,cr);ctx.closePath();
 }
 
-// ── drawCard (dobble.html:4142) ──
+// ── drawCard (dobble.html:4339) ──
 function drawCard(canvas,layout,imgs,shape,hitIdx,opts){
   hitIdx=hitIdx==null?-1:hitIdx;
   const ctx=canvas.getContext('2d'),sz=canvas.width;
@@ -477,7 +559,7 @@ function drawCard(canvas,layout,imgs,shape,hitIdx,opts){
   if(needsWatermark())drawWatermark(ctx,cx,cy,r,isC,sq,sqx,sqy,sqcr,sz);
 }
 
-// ── drawWatermark (dobble.html:4195) ──
+// ── drawWatermark (dobble.html:4392) ──
 function drawWatermark(ctx,cx,cy,r,isC,sq,sqx,sqy,sqcr,sz){
   ctx.save();
   ctx.beginPath();
@@ -492,13 +574,13 @@ function drawWatermark(ctx,cx,cy,r,isC,sq,sqx,sqy,sqcr,sz){
   ctx.restore();
 }
 
-// ── imgNatW (dobble.html:8527) ──
+// ── imgNatW (dobble.html:9250) ──
 function imgNatW(el){return el.naturalWidth||el.width;}
 
-// ── imgNatH (dobble.html:8528) ──
+// ── imgNatH (dobble.html:9251) ──
 function imgNatH(el){return el.naturalHeight||el.height;}
 
-// ── drawCover (dobble.html:8531) ──
+// ── drawCover (dobble.html:9254) ──
 function drawCover(ctx,img,dx,dy,dSize){
   const iw=imgNatW(img),ih=imgNatH(img);
   const s=Math.max(dSize/iw,dSize/ih);
@@ -507,15 +589,17 @@ function drawCover(ctx,img,dx,dy,dSize){
   ctx.drawImage(img,sx,sy,sw,sh,dx,dy,dSize,dSize);
 }
 
-// ── symbolShapeMeta (dobble.html:8580) ──
+// ── symbolShapeMeta (dobble.html:9303) ──
 function symbolShapeMeta(cv){
   if(cv.__symMeta)return cv.__symMeta;
-  const N=64,bins=64;
+  // D-87: שני פרופילים. radial (64 זוויות, דגימה 64px) — מרחקי מגע בין סמלים, כמו תמיד (אבל שיא-שכנים במקום ממוצע, וללא תקרה 1).
+  // fine (128 זוויות, דגימה 128px) — בדיקת הגבול מול הקלף: הערכה תמיד קצת גדולה, כדי שאף פיקסל אטום לא ייצא.
+  const N=128,bins=64,fb=128;
   let data;
   try{
     const tmp=document.createElement('canvas');tmp.width=tmp.height=N;
     const tctx=tmp.getContext('2d');
-    tctx.drawImage(cv,0,0,N,N);
+    tctx.drawImage(cv,0,0,N,N);       // כמו ב-drawCard: סמל חתוך מצויר מתוח לריבוע ds×ds, לכן גם המדידה על ריבוע
     data=tctx.getImageData(0,0,N,N).data;
   }catch(e){
     const meta={hasAlpha:false,radial:CIRCLE_RADIAL()};
@@ -523,11 +607,11 @@ function symbolShapeMeta(cv){
   }
   let hasAlpha=false;
   for(let i=3;i<data.length;i+=4){if(data[i]<250){hasAlpha=true;break;}}
-  let radial;
+  let radial,fine=null;
   if(!hasAlpha){
     radial=CIRCLE_RADIAL();
   }else{
-    const raw=new Float32Array(bins);
+    const raw=new Float32Array(bins),rawF=new Float32Array(fb);
     const cx=N/2,cy=N/2,half=N/2;
     for(let y=0;y<N;y++)for(let x=0;x<N;x++){
       const idx=(y*N+x)*4;
@@ -537,34 +621,43 @@ function symbolShapeMeta(cv){
       let ang=Math.atan2(ddy,ddx);if(ang<0)ang+=Math.PI*2;
       const bin=Math.round(ang/(Math.PI*2)*bins)%bins;
       if(dist>raw[bin])raw[bin]=dist;
+      const bf=Math.round(ang/(Math.PI*2)*fb)%fb;
+      if(dist>rawF[bf])rawF[bf]=dist;
     }
+    // (1) בלי תקרה של 1 — פינות של צורה חתוכה מגיעות עד √2; (2) החלקה לפי המקסימום של השכנים, לא ממוצע — שיא חד (אוזן, כנף)
+    // לא נעלם; (3) מרווח: חצי פיקסל של הדגימה (נמדד מרכז הפיקסל, לא הקצה) + שגיאת כימות הזווית. ההערכה תמיד קצת גדולה.
     radial=new Float32Array(bins);
     for(let i=0;i<bins;i++){
-      const a=raw[(i-1+bins)%bins],b=raw[i],c=raw[(i+1)%bins];
-      radial[i]=Math.min(1,Math.max((a+b+c)/3,0.15));
+      const m=Math.max(raw[(i-1+bins)%bins],raw[i],raw[(i+1)%bins]);
+      radial[i]=m>0?Math.min(1.5,Math.max(m+0.03,0.15)):0.15;
+    }
+    fine=new Float32Array(fb);
+    for(let i=0;i<fb;i++){
+      const m=Math.max(rawF[(i-1+fb)%fb],rawF[i],rawF[(i+1)%fb]);
+      fine[i]=m>0?Math.min(1.5,Math.max(m+0.04,0.15)):0.15;
     }
   }
-  const meta={hasAlpha,radial};
+  const meta={hasAlpha,radial,fine};
   cv.__symMeta=meta;
   return meta;
 }
 
-// ── prepareSymbolMeta (dobble.html:8623) ──
+// ── prepareSymbolMeta (dobble.html:9357) ──
 function prepareSymbolMeta(){
   S.metaVer=(S.metaVer||0)+1;   // מבטל את ה-cache של הפריסה כשמטא-הצורה של הסמלים השתנה
   S.imgEls.forEach(img=>{if(img)symbolShapeMeta(img);});
 }
 
-// ── isSymbolAsset (dobble.html:4795) ──
+// ── isSymbolAsset (dobble.html:5035) ──
 function isSymbolAsset(a){return !a.isCropSource&&a.type!=='backlogo';}
 
-// ── isFaceSym (dobble.html:5444) ──
+// ── isFaceSym (dobble.html:5684) ──
 function isFaceSym(a){return !!(a&&a.type==='crop'&&a.af&&!a.af.kind);}
 
-// ── SH_LIM (dobble.html:5445) ──
+// ── SH_LIM (dobble.html:5685) ──
 var SH_LIM=24;   // ⛔ תקרת שינוי לפיקסל (רמות בהירות) — בלי הילות סביב קצוות; הבדיקה דורשת ≤25
 
-// ── shStrength (dobble.html:5448) ──
+// ── shStrength (dobble.html:5688) ──
 function shStrength(a){
   const src=S.assets.find(x=>x.id===a.srcAssetId);
   const side=src&&src.imgEl&&a.af&&a.af.s?a.af.s*imgNatW(src.imgEl):0;
@@ -572,7 +665,7 @@ function shStrength(a){
   return {amt:Math.max(.35,Math.min(1.3,.35+.25*(u-1))),rad:u<1.6?1:(u<3?2:3)};
 }
 
-// ── sharpenCanvas (dobble.html:5456) ──
+// ── sharpenCanvas (dobble.html:5696) ──
 function sharpenCanvas(src,{amt,rad}){
   const W=imgNatW(src),H=imgNatH(src),cv=document.createElement('canvas');cv.width=W;cv.height=H;
   const x=cv.getContext('2d');x.drawImage(src,0,0);
@@ -598,7 +691,7 @@ function sharpenCanvas(src,{amt,rad}){
   return cv;
 }
 
-// ── symImg (dobble.html:5480) ──
+// ── symImg (dobble.html:5720) ──
 function symImg(a){
   if(!(a&&a.af&&a.af.sh&&isFaceSym(a)))return a.imgEl;
   const c=a._sh;
