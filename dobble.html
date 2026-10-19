@@ -360,6 +360,7 @@
     .back-quick-btn{background:rgba(255,255,255,.55);border:1.5px solid rgba(67,56,202,.25);border-radius:100px;padding:.3rem .8rem;font-family:inherit;font-size:.75rem;font-weight:700;color:var(--indigo);cursor:pointer}
     .back-quick-btn:hover{background:rgba(67,56,202,.15)}
     .back-logo-prev{width:80px;height:80px;border-radius:50%;border:1.5px dashed var(--border);object-fit:cover;background:rgba(255,255,255,.5)}
+    .back-logo-prev.sq{border-radius:10px}   /* D-84: בקלף ריבוע התצוגה ריבוע, לא עיגול */
 
     /* ── SPINNER ── */
     .spin{display:inline-block;width:15px;height:15px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:sp .6s linear infinite}
@@ -1152,6 +1153,13 @@ const I18N={
     'back.logoTitle':'📷 תמונה או לוגו',
     'back.logoUploadBtn':'📤 העלה תמונה',
     'back.logoRemoveBtn':'🗑 הסר תמונה',
+    'back.logoCropBtn':'✂️ בחירת חלק מהתמונה',
+    'back.logoCropTitle':'בחירת חלק מהתמונה',
+    'back.logoCropHint':'גררו את המסגרת, ושנו את גודלה בפינות. מה שבתוך המסגרת יופיע על הקלף.',
+    'back.logoCropOk':'אישור',
+    'back.logoCropCancel':'ביטול',
+    'back.logoCropReset':'איפוס',
+    'back.logoCropAria':'מסגרת חיתוך. חיצים מזיזים, פלוס ומינוס משנים גודל, Enter מאשר',
     'back.logoSizeLabel':'גודל',
     'back.logoOffsetLabel':'היסט אנכי',
     'back.flipDirectionTitle':'כיוון הפיכת הדף',
@@ -1858,6 +1866,13 @@ const I18N={
     'back.logoTitle':'📷 Image or logo',
     'back.logoUploadBtn':'📤 Upload image',
     'back.logoRemoveBtn':'🗑 Remove image',
+    'back.logoCropBtn':'✂️ Choose part of the image',
+    'back.logoCropTitle':'Choose part of the image',
+    'back.logoCropHint':'Drag the frame and resize it by the corners. What is inside the frame will appear on the card.',
+    'back.logoCropOk':'OK',
+    'back.logoCropCancel':'Cancel',
+    'back.logoCropReset':'Reset',
+    'back.logoCropAria':'Crop frame. Arrow keys move, plus and minus resize, Enter confirms',
     'back.logoSizeLabel':'Size',
     'back.logoOffsetLabel':'Vertical offset',
     'back.flipDirectionTitle':'Page flip direction',
@@ -3136,6 +3151,7 @@ window.applyI18n=applyI18n;
         <canvas class="back-logo-prev" id="back-logo-prev" width="80" height="80"></canvas>
         <div style="display:flex;flex-direction:column;gap:.4rem">
           <button data-i18n="back.logoUploadBtn" class="btn btn-sec" id="back-logo-btn" type="button">📤 העלה תמונה</button>
+          <button data-i18n="back.logoCropBtn" class="btn btn-sec" id="back-logo-crop" type="button" style="display:none">✂️ בחירת חלק מהתמונה</button>
           <button data-i18n="back.logoRemoveBtn" class="btn btn-ghost" id="back-logo-remove" type="button" style="display:none">🗑 הסר תמונה</button>
         </div>
         <input type="file" id="back-logo-file" accept="image/*" hidden>
@@ -3173,6 +3189,23 @@ window.applyI18n=applyI18n;
     <div class="brow" style="justify-content:flex-end;margin-top:.8rem">
       <button data-i18n="back.cancelBtn" class="btn btn-ghost" id="back-cancel">ביטול</button>
       <button data-i18n="back.saveBtn" class="btn btn-ok" id="back-save">✅ שמור</button>
+    </div>
+  </div>
+</div>
+
+<!-- D-84: בחירת חלק מתמונת הגב — מסגרת 1:1 בצורת הקלף -->
+<div class="modal-bg" id="logo-crop-modal" hidden style="z-index:10003">
+  <div class="modal-card" style="max-width:420px" role="dialog" aria-modal="true" aria-labelledby="logo-crop-title">
+    <div class="modal-hdr">
+      <div data-i18n="back.logoCropTitle" class="modal-title" id="logo-crop-title">בחירת חלק מהתמונה</div>
+      <button class="modal-x" id="logo-crop-x" type="button" data-i18n-title="back.logoCropCancel" title="ביטול" aria-label="ביטול">✕</button>
+    </div>
+    <p data-i18n="back.logoCropHint" id="logo-crop-hint" style="font-size:.85rem;color:var(--muted);margin:.4rem 0">גררו את המסגרת, ושנו את גודלה בפינות. מה שבתוך המסגרת יופיע על הקלף.</p>
+    <canvas id="logo-crop-cv" width="360" height="360" tabindex="0" role="img" aria-describedby="logo-crop-hint" data-i18n-title="back.logoCropAria" title="מסגרת חיתוך. חיצים מזיזים, פלוס ומינוס משנים גודל, Enter מאשר" aria-label="מסגרת חיתוך. חיצים מזיזים, פלוס ומינוס משנים גודל, Enter מאשר" style="width:100%;max-width:360px;display:block;margin:0 auto;touch-action:none;border-radius:8px;background:#e5e7eb"></canvas>
+    <div style="display:flex;gap:.5rem;margin-top:.8rem;flex-wrap:wrap">
+      <button data-i18n="back.logoCropOk" class="btn btn-pri" id="logo-crop-ok" type="button">אישור</button>
+      <button data-i18n="back.logoCropCancel" class="btn btn-ghost" id="logo-crop-cancel" type="button">ביטול</button>
+      <button data-i18n="back.logoCropReset" class="btn btn-sec" id="logo-crop-reset" type="button">איפוס</button>
     </div>
   </div>
 </div>
@@ -4228,7 +4261,7 @@ function backDefaults(){
     pattern:{id:'none',color:'#FFFFFF',op:14,scale:100},
     frame:{id:'double',color:'#FFFFFF',w:3,op:100},
     symbol:{id:'sparkle',color:'#FFFFFF',size:46,op:100,dy:0},
-    logoAssetId:null,logoSize:40,logoDy:0,
+    logoAssetId:null,logoSize:40,logoDy:0,logoCrop:null,   // logoCrop: {x,y,s} יחסי 0–1 (s ביחס לצלע הקצרה); null = חיתוך מרכזי כמו drawCover
     text:{main:'',sub:'',font:'sans',color:'#FFFFFF',size:11,dy:34},
     duplex:{flip:'short',dx:0,dy:0,grow:0.6,order:'sequential'}
   };
@@ -4606,8 +4639,14 @@ function drawCardBack(canvas){
         ctx.save();
         // D-81: עד 100% — התמונה לא יוצאת מגבולות הקלף (בריבוע עיגול בקוטר 2r חורג מהצלעות)
         ctx.beginPath();if(isC)ctx.arc(cx,cy,r,0,Math.PI*2);else rrect(ctx,sqx,sqy,sq,sq,sqcr);ctx.clip();
-        ctx.beginPath();ctx.arc(cx,cy+lDy,lSize/2,0,Math.PI*2);ctx.clip();
-        drawCover(ctx,logoAsset.imgEl,cx-lSize/2,cy+lDy-lSize/2,lSize);
+        // D-84: החיתוך של התמונה הולך לפי צורת הקלף — בקלף ריבוע תמונה מרובעת נשארת ריבוע (בעבר: תמיד עיגול)
+        ctx.beginPath();
+        if(isC)ctx.arc(cx,cy+lDy,lSize/2,0,Math.PI*2);
+        else rrect(ctx,cx-lSize/2,cy+lDy-lSize/2,lSize,lSize,lSize*.09);   // אותו יחס פינה כמו sqcr=sq*.09
+        ctx.clip();
+        const lcr=backLogoCropRect(logoAsset.imgEl,B.logoCrop);
+        if(lcr)ctx.drawImage(logoAsset.imgEl,lcr.sx,lcr.sy,lcr.sw,lcr.sw,cx-lSize/2,cy+lDy-lSize/2,lSize,lSize);   // D-84: חלק נבחר מהתמונה
+        else drawCover(ctx,logoAsset.imgEl,cx-lSize/2,cy+lDy-lSize/2,lSize);
         ctx.restore();
       }
     }
@@ -4629,6 +4668,7 @@ function markBackDirty(){
   const live=document.getElementById('back-live-canvas');
   if(live&&modal&&!modal.hidden){
     live.classList.toggle('sq',S.shape!=='circle');
+    const lp=document.getElementById('back-logo-prev');if(lp)lp.classList.toggle('sq',S.shape!=='circle');
     const lctx=live.getContext('2d');
     lctx.clearRect(0,0,live.width,live.height);
     lctx.drawImage(S.backCanvas,0,0,live.width,live.height);
@@ -5798,7 +5838,19 @@ function removeBackLogo(){
     if(prev.url)URL.revokeObjectURL(prev.url);
     S.assets=S.assets.filter(a=>a.id!==prev.id);
   }
-  S.back.logoAssetId=null;
+  S.back.logoAssetId=null;S.back.logoCrop=null;
+}
+
+// D-84: {x,y,s} יחסי → ריבוע מקור בפיקסלים. ערך לא תקין/שבור → null (חיתוך מרכזי רגיל), לא קורס.
+function backLogoCropRect(img,c){
+  if(!c||typeof c!=='object')return null;
+  const iw=imgNatW(img),ih=imgNatH(img);
+  if(!(iw>0&&ih>0))return null;
+  const x=+c.x,y=+c.y,s=+c.s;
+  if(!isFinite(x)||!isFinite(y)||!isFinite(s)||s<=0)return null;
+  const m=Math.min(iw,ih),sw=Math.min(s,1)*m;
+  const sx=Math.max(0,Math.min(x*iw,iw-sw)),sy=Math.max(0,Math.min(y*ih,ih-sw));
+  return{sx,sy,sw};
 }
 
 function makeThumb(imgEl){
@@ -7439,8 +7491,13 @@ function updateLogoPreview(){
   ctx.clearRect(0,0,80,80);
   const asset=S.assets.find(a=>a.id===S.back.logoAssetId&&a.type==='backlogo');
   const removeBtn=document.getElementById('back-logo-remove');
-  if(asset&&asset.imgEl){drawCover(ctx,asset.imgEl,0,0,80);removeBtn.style.display='';}
-  else{ctx.fillStyle='#e5e7eb';ctx.fillRect(0,0,80,80);removeBtn.style.display='none';}
+  const cropBtn=document.getElementById('back-logo-crop');
+  if(asset&&asset.imgEl){
+    const pc=backLogoCropRect(asset.imgEl,S.back.logoCrop);
+    if(pc)ctx.drawImage(asset.imgEl,pc.sx,pc.sy,pc.sw,pc.sw,0,0,80,80);else drawCover(ctx,asset.imgEl,0,0,80);
+    removeBtn.style.display='';cropBtn.style.display='';
+  }
+  else{ctx.fillStyle='#e5e7eb';ctx.fillRect(0,0,80,80);removeBtn.style.display='none';cropBtn.style.display='none';}
 }
 document.getElementById('back-logo-btn').addEventListener('click',()=>document.getElementById('back-logo-file').click());
 document.getElementById('back-logo-file').addEventListener('change',async e=>{
@@ -7452,6 +7509,101 @@ document.getElementById('back-logo-file').addEventListener('change',async e=>{
 document.getElementById('back-logo-remove').addEventListener('click',()=>{
   removeBackLogo();updateLogoPreview();markBackDirty();schedIdbSave();
 });
+// ── D-84: חלון בחירת חלק מהתמונה. draft = {x,y,s} יחסי (x,y פינה שמאלית-עליונה ביחס לרוחב/גובה; s ביחס לצלע הקצרה).
+let _lcDraft=null,_lcDrag=null,_lcGeom=null;
+const LC_MIN=0.08;
+function lcAsset(){return S.assets.find(a=>a.id===S.back.logoAssetId&&a.type==='backlogo');}
+function lcFull(img){const iw=imgNatW(img),ih=imgNatH(img),m=Math.min(iw,ih);return{x:(1-m/iw)/2,y:(1-m/ih)/2,s:1};}
+function lcClamp(d,img){
+  const iw=imgNatW(img),ih=imgNatH(img),m=Math.min(iw,ih);
+  const s=Math.max(LC_MIN,Math.min(1,d.s)),w=s*m;
+  return{s,x:Math.max(0,Math.min(d.x,1-w/iw)),y:Math.max(0,Math.min(d.y,1-w/ih))};
+}
+function lcDraw(){
+  const cv=document.getElementById('logo-crop-cv'),img=lcAsset()&&lcAsset().imgEl;if(!img||!_lcDraft)return;
+  const ctx=cv.getContext('2d'),W=cv.width,iw=imgNatW(img),ih=imgNatH(img),k=Math.min(W/iw,W/ih);
+  const dw=iw*k,dh=ih*k,ox=(W-dw)/2,oy=(W-dh)/2,m=Math.min(iw,ih);
+  _lcGeom={k,ox,oy,iw,ih,m};
+  ctx.clearRect(0,0,W,W);ctx.drawImage(img,ox,oy,dw,dh);
+  const fx=ox+_lcDraft.x*iw*k,fy=oy+_lcDraft.y*ih*k,fs=_lcDraft.s*m*k,circ=S.shape==='circle';
+  const path=()=>{ctx.beginPath();if(circ)ctx.arc(fx+fs/2,fy+fs/2,fs/2,0,Math.PI*2);else rrect(ctx,fx,fy,fs,fs,fs*.09);};
+  ctx.save();ctx.fillStyle='rgba(20,16,60,.55)';ctx.beginPath();ctx.rect(ox,oy,dw,dh);
+  if(circ)ctx.arc(fx+fs/2,fy+fs/2,fs/2,0,Math.PI*2);else rrect(ctx,fx,fy,fs,fs,fs*.09);
+  ctx.fill('evenodd');ctx.restore();
+  path();ctx.lineWidth=2.5;ctx.strokeStyle='#fff';ctx.stroke();
+  ctx.lineWidth=1;ctx.strokeStyle='rgba(0,0,0,.5)';ctx.strokeRect(fx,fy,fs,fs);
+  [[fx,fy],[fx+fs,fy],[fx,fy+fs],[fx+fs,fy+fs]].forEach(([hx,hy])=>{ctx.beginPath();ctx.arc(hx,hy,9,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#4338CA';ctx.lineWidth=2.5;ctx.stroke();});
+}
+function lcOpen(){
+  const a=lcAsset();if(!a||!a.imgEl)return;
+  const pc=S.back.logoCrop;
+  _lcDraft=lcClamp(backLogoCropRect(a.imgEl,pc)?{x:+pc.x,y:+pc.y,s:+pc.s}:lcFull(a.imgEl),a.imgEl);
+  document.getElementById('logo-crop-modal').hidden=false;lcDraw();
+  document.getElementById('logo-crop-cv').focus();
+}
+function lcClose(){document.getElementById('logo-crop-modal').hidden=true;_lcDrag=null;document.getElementById('back-logo-crop').focus();}
+function lcOk(){
+  const a=lcAsset();if(a&&_lcDraft){
+    const f=lcFull(a.imgEl),d=_lcDraft;
+    // כמעט מלא ומרכזי = אותו דבר כמו ברירת המחדל → null (פיקסלים זהים ל-drawCover)
+    S.back.logoCrop=(d.s>=.999&&Math.abs(d.x-f.x)<.001&&Math.abs(d.y-f.y)<.001)?null:{x:+d.x.toFixed(5),y:+d.y.toFixed(5),s:+d.s.toFixed(5)};
+    updateLogoPreview();markBackDirty();schedIdbSave();
+  }
+  lcClose();
+}
+function lcPt(e){const cv=document.getElementById('logo-crop-cv'),r=cv.getBoundingClientRect(),q=cv.width/r.width;return{px:(e.clientX-r.left)*q,py:(e.clientY-r.top)*q};}
+(function(){
+  const cv=document.getElementById('logo-crop-cv');
+  cv.addEventListener('pointerdown',e=>{
+    if(!_lcDraft||!_lcGeom)return;
+    const g=_lcGeom,{px,py}=lcPt(e),fx=g.ox+_lcDraft.x*g.iw*g.k,fy=g.oy+_lcDraft.y*g.ih*g.k,fs=_lcDraft.s*g.m*g.k;
+    const hit=26;let corner=null;
+    [[0,0],[1,0],[0,1],[1,1]].forEach(([cx,cy])=>{if(!corner&&Math.hypot(px-(fx+cx*fs),py-(fy+cy*fs))<=hit)corner=[cx,cy];});
+    if(corner)_lcDrag={mode:'size',ax:fx+(1-corner[0])*fs,ay:fy+(1-corner[1])*fs,cx:corner[0],cy:corner[1]};
+    else if(px>=fx&&px<=fx+fs&&py>=fy&&py<=fy+fs)_lcDrag={mode:'move',dx:px-fx,dy:py-fy};
+    else return;
+    try{cv.setPointerCapture(e.pointerId);}catch(_){}e.preventDefault();
+  });
+  cv.addEventListener('pointermove',e=>{
+    if(!_lcDrag)return;const a=lcAsset();if(!a)return;const g=_lcGeom,{px,py}=lcPt(e);
+    if(_lcDrag.mode==='move'){
+      _lcDraft=lcClamp({s:_lcDraft.s,x:(px-_lcDrag.dx-g.ox)/(g.iw*g.k),y:(py-_lcDrag.dy-g.oy)/(g.ih*g.k)},a.imgEl);
+    }else{
+      // הפינה הנגדית נשארת במקומה; הצלע = הגדול מבין המרחקים, ומוגבלת כך שהמסגרת נשארת בתוך התמונה
+      const sx=_lcDrag.cx?1:-1,sy=_lcDrag.cy?1:-1;
+      let side=Math.max((px-_lcDrag.ax)*sx,(py-_lcDrag.ay)*sy);
+      const roomX=_lcDrag.cx?(g.ox+g.iw*g.k-_lcDrag.ax):(_lcDrag.ax-g.ox),roomY=_lcDrag.cy?(g.oy+g.ih*g.k-_lcDrag.ay):(_lcDrag.ay-g.oy);
+      side=Math.max(LC_MIN*g.m*g.k,Math.min(side,roomX,roomY,g.m*g.k));
+      const left=_lcDrag.cx?_lcDrag.ax:_lcDrag.ax-side,top=_lcDrag.cy?_lcDrag.ay:_lcDrag.ay-side;
+      _lcDraft=lcClamp({s:side/(g.m*g.k),x:(left-g.ox)/(g.iw*g.k),y:(top-g.oy)/(g.ih*g.k)},a.imgEl);
+    }
+    lcDraw();
+  });
+  const end=()=>{_lcDrag=null;};
+  cv.addEventListener('pointerup',end);cv.addEventListener('pointercancel',end);
+  cv.addEventListener('keydown',e=>{
+    const a=lcAsset();if(!a||!_lcDraft)return;
+    const st=(e.shiftKey?.05:.01),d=_lcDraft,iw=imgNatW(a.imgEl),ih=imgNatH(a.imgEl),m=Math.min(iw,ih);let h=true;
+    if(e.key==='ArrowLeft')_lcDraft=lcClamp({...d,x:d.x-st*m/iw},a.imgEl);
+    else if(e.key==='ArrowRight')_lcDraft=lcClamp({...d,x:d.x+st*m/iw},a.imgEl);
+    else if(e.key==='ArrowUp')_lcDraft=lcClamp({...d,y:d.y-st*m/ih},a.imgEl);
+    else if(e.key==='ArrowDown')_lcDraft=lcClamp({...d,y:d.y+st*m/ih},a.imgEl);
+    else if(e.key==='+'||e.key==='='||e.key==='-'||e.key==='_'){
+      // שינוי גודל סביב המרכז
+      const g=(e.key==='+'||e.key==='=')?st:-st,ns=Math.max(LC_MIN,Math.min(1,d.s+g)),dw=(ns-d.s)*m;
+      _lcDraft=lcClamp({s:ns,x:d.x-dw/2/iw,y:d.y-dw/2/ih},a.imgEl);
+    }else if(e.key==='Enter'){lcOk();}
+    else if(e.key==='Escape'){lcClose();}
+    else h=false;
+    if(h){e.preventDefault();e.stopPropagation();lcDraw();}
+  });
+  document.getElementById('logo-crop-modal').addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();lcClose();}});
+  document.getElementById('back-logo-crop').addEventListener('click',lcOpen);
+  document.getElementById('logo-crop-ok').addEventListener('click',lcOk);
+  document.getElementById('logo-crop-cancel').addEventListener('click',lcClose);
+  document.getElementById('logo-crop-x').addEventListener('click',lcClose);
+  document.getElementById('logo-crop-reset').addEventListener('click',()=>{const a=lcAsset();if(!a)return;_lcDraft=lcFull(a.imgEl);lcDraw();cv.focus();});
+})();
 document.getElementById('back-logo-size').addEventListener('input',e=>{
   S.back.logoSize=parseInt(e.target.value);document.getElementById('lbl-back-logo-size').textContent=S.back.logoSize+'%';markBackDirty();
 });
@@ -9639,7 +9791,7 @@ async function _idbRestoreSettings(){
     if(st&&typeof st==='object'&&!(S.canvases&&S.canvases.length)){
       // לוגו שהתמונה שלו לא במאגר (נוקה/נמחק) — מנתקים בשקט, בלי הודעת "הלוגו חסר" ברענון
       const lost=st.back&&st.back.logoAssetId&&!S.assets.some(a=>a.id===st.back.logoAssetId&&a.type==='backlogo');
-      applySettingsObject(lost?Object.assign({},st,{back:Object.assign({},st.back,{logoAssetId:null})}):st);
+      applySettingsObject(lost?Object.assign({},st,{back:Object.assign({},st.back,{logoAssetId:null,logoCrop:null})}):st);
     }
   }catch(e){console.warn('idbRestoreSettings:',e);}
   finally{
@@ -9931,7 +10083,7 @@ function applySettingsObject(st){
   S.back=mergeBack(st.back);
   // אם ה-asset של הלוגו לא שרד (למשל עיצוב ישן/גיבוי חלקי) — מנתקים את ההפניה בלי לשבור את הטעינה
   if(S.back.logoAssetId&&!S.assets.some(a=>a.id===S.back.logoAssetId&&a.type==='backlogo')){
-    S.back.logoAssetId=null;
+    S.back.logoAssetId=null;S.back.logoCrop=null;
     toast(t('msg.backLogoMissingFromBackup'),'err');
   }
   document.getElementById('chk-back-enabled').checked=!!S.back.enabled;
