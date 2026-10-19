@@ -87,6 +87,17 @@
       <p class="hint">20 האחרונות. לפתיחת הקבצים ושינוי סטטוס — הסטודיו ← לשונית "מנהל".</p>
       <div id="orders-list" style="margin-top:10px"></div>
     </div>
+    <div class="card">
+      <h2>🎁 הורדה להדפסה בבית — במתנה ללקוח</h2>
+      <p class="hint">כותבים את המייל של הלקוח. בסטודיו הוא לוחץ "⬇️ להדפסה בבית", כותב את אותו מייל ולוחץ "שילמתי — להורדה" — וזה נחשב כאילו שילם. כל מתנה = הורדה אחת של משחק אחד.</p>
+      <div style="display:grid;gap:8px;margin-top:10px">
+        <input type="email" id="g-email" placeholder="המייל של הלקוח" dir="ltr" autocomplete="off">
+        <input type="text" id="g-note" placeholder="הערה (לא חובה) — למשל: פיצוי על הדפסה שלא יצאה">
+        <div><button class="btn" id="g-add">🎁 לתת הורדה</button></div>
+      </div>
+      <p class="msg" id="g-msg"></p>
+      <div id="g-list" style="margin-top:10px"></div>
+    </div>
   </section>
 
   <section data-panel="prices" hidden>
@@ -122,7 +133,7 @@ function show(tab){
   document.querySelectorAll('nav.tabs [role=tab]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===tab)));
   document.querySelectorAll('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==tab);
   if(history.replaceState)history.replaceState(null,'','#'+tab);
-  if(tab==='orders')loadOrders();if(tab==='prices')loadPrices();if(tab==='stats')loadStats();
+  if(tab==='orders'){loadOrders();loadGrants();}if(tab==='prices')loadPrices();if(tab==='stats')loadStats();
 }
 document.querySelectorAll('nav.tabs [role=tab]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.tab)));
 document.querySelectorAll('[data-go]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();show(a.dataset.go);}));
@@ -162,6 +173,28 @@ async function loadOrders(){
   box.innerHTML='<table><thead><tr><th>מתי</th><th>מה</th><th>לקוח</th><th>₪</th><th>מצב</th></tr></thead><tbody>'+data.map(o=>
     `<tr><td>${new Date(o.created_at).toLocaleDateString('he-IL')}<br><small dir="ltr">${esc(o.code)}</small></td><td>${esc(PROD_HE[o.product]||o.product)}<br><small>${o.sheets} דפים</small></td><td>${esc(o.customer_name||'—')}<br><a href="https://wa.me/972${esc(String(o.customer_phone||'').replace(/^0/,''))}" dir="ltr">${esc(o.customer_phone||'')}</a></td><td>${o.price_ils??''}${o.paid?' ✓':''}</td><td>${STATUS_HE[o.status]||esc(o.status)}</td></tr>`).join('')+'</tbody></table>';
 }
+
+// ── הורדות במתנה (studio_grants — RLS: רק המייל של הושעיה) ──
+async function loadGrants(){
+  const box=$('g-list');if(!isAdmin()){box.innerHTML='';return;}
+  const{data,error}=await sb.from('studio_grants').select('id,email,note,created_at,used_at,used_product').order('created_at',{ascending:false}).limit(15);
+  if(error){box.innerHTML='<p class="msg" style="color:var(--err)">שגיאה: '+esc(error.message)+'</p>';return;}
+  if(!data.length){box.innerHTML='<p class="hint">עוד לא נתת הורדות במתנה.</p>';return;}
+  box.innerHTML='<table><thead><tr><th>מייל</th><th>מתי</th><th>מצב</th><th></th></tr></thead><tbody>'+data.map(g=>
+    `<tr><td dir="ltr" style="text-align:start">${esc(g.email)}${g.note?'<br><small dir="rtl">'+esc(g.note)+'</small>':''}</td><td>${new Date(g.created_at).toLocaleDateString('he-IL')}</td><td>${g.used_at?'✅ הורד ('+esc(PROD_HE[g.used_product]||g.used_product||'')+')':'⏳ ממתין'}</td><td>${g.used_at?'':`<button class="btn" style="padding:6px 10px;background:#fff;color:var(--err);border:1.5px solid var(--err)" data-del="${g.id}">ביטול</button>`}</td></tr>`).join('')+'</tbody></table>';
+  box.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',async()=>{if(!confirm('לבטל את ההורדה במתנה?'))return;const{error}=await sb.from('studio_grants').delete().eq('id',b.dataset.del).is('used_at',null);if(error)$('g-msg').textContent='שגיאה: '+error.message;loadGrants();}));
+}
+$('g-add').addEventListener('click',async()=>{
+  const m=$('g-msg'),email=$('g-email').value.trim().toLowerCase();
+  if(!isAdmin()){m.style.color='var(--err)';m.textContent='צריך להיכנס קודם';return;}
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){m.style.color='var(--err)';m.textContent='מייל לא תקין';return;}
+  $('g-add').disabled=true;
+  const{error}=await sb.from('studio_grants').insert({email,note:$('g-note').value.trim()||null});
+  $('g-add').disabled=false;
+  if(error){m.style.color='var(--err)';m.textContent='לא נשמר: '+error.message;return;}
+  m.style.color='var(--ok)';m.textContent='✓ '+email+' יכול להוריד משחק אחד. תגיד לו: בסטודיו "⬇️ להדפסה בבית" ← המייל ← "שילמתי — להורדה".';
+  $('g-email').value='';$('g-note').value='';loadGrants();
+});
 
 // ── מחירים ──
 const PRICE_HE=[['cards','🃏 קלפים / חפיסת מלחמה','לדף'],['memory','🧠 משחק זיכרון','לדף'],['quartets','👨‍👩‍👧‍👦 רביעיות','לדף'],['domino','🁫 דומינו','לדף'],['dice','🎲 קוביות','לדף'],['puzzle','🧩 פאזל','לפאזל'],['stickers','🏷️ מדבקות','לדף']];
