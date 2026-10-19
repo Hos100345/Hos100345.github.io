@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>ניהול — הושעיה אמן בלונים</title>
+<link rel="icon" href="images/favicon-32.png" type="image/png" sizes="32x32">
+<!-- W-43: מרכז ניהול אחד — כל הכלים בלשוניות/קישורים. כניסה במייל (Magic Link).
+     ההרשאה האמיתית בשרת: RLS על events / studio_orders / studio_prices לפי המייל של הושעיה. -->
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js?v=1"></script>
+<style>
+  :root{--navy:#14294D;--indigo:#4338CA;--line:#E5E7EB;--muted:#6B7280;--ok:#0F7B3F;--err:#B91C1C;--bg:#F4F5FB}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Heebo,system-ui,sans-serif;background:var(--bg);color:#1F2937}
+  header{background:var(--navy);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px}
+  header h1{font-size:1.15rem;margin:0;flex:1}
+  header a,header button{color:#fff;font:inherit;font-size:.85rem;background:none;border:0;cursor:pointer;text-decoration:underline}
+  nav.tabs{display:flex;gap:6px;overflow-x:auto;padding:10px 12px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5;scrollbar-width:none}
+  nav.tabs button{flex:0 0 auto;font:inherit;font-weight:700;border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;cursor:pointer;color:var(--muted)}
+  nav.tabs button[aria-selected=true]{background:var(--indigo);border-color:var(--indigo);color:#fff}
+  main{max-width:900px;margin:0 auto;padding:16px}
+  .card{background:#fff;border-radius:14px;padding:16px;box-shadow:0 2px 10px rgba(20,41,77,.07);margin-bottom:14px}
+  h2{font-size:1.05rem;margin:0 0 10px;color:var(--navy)}
+  .hint{color:var(--muted);font-size:.86rem;margin:6px 0 0}
+  .msg{margin-top:8px;font-size:.92rem}
+  .btn{font:inherit;font-weight:800;border:0;border-radius:999px;padding:11px 18px;cursor:pointer;background:var(--indigo);color:#fff}
+  .btn[disabled]{opacity:.5;cursor:default}
+  input{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;width:100%}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+  .tile{display:flex;flex-direction:column;gap:4px;padding:14px;border-radius:14px;background:#fff;border:1.5px solid var(--line);text-decoration:none;color:#1F2937;box-shadow:0 2px 8px rgba(20,41,77,.05)}
+  .tile:hover,.tile:focus-visible{border-color:var(--indigo)}
+  .tile b{font-size:1rem;color:var(--navy)} .tile i{font-style:normal;font-size:1.6rem} .tile span{font-size:.82rem;color:var(--muted)}
+  .badge{display:inline-block;background:#FEE2E2;color:var(--err);border-radius:999px;padding:1px 8px;font-size:.8rem;font-weight:800}
+  table{width:100%;border-collapse:collapse;font-size:.92rem}
+  th,td{text-align:start;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+  th{color:var(--muted);font-weight:700;font-size:.82rem}
+  .num{width:90px;text-align:center}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:12px}
+  .kpi{background:#fff;border-radius:12px;padding:12px;border:1px solid var(--line)}
+  .kpi b{display:block;font-size:1.6rem;color:var(--navy)} .kpi span{font-size:.82rem;color:var(--muted)}
+  .bar{height:8px;border-radius:999px;background:#E0E7FF;overflow:hidden;margin-top:4px} .bar i{display:block;height:100%;background:var(--indigo)}
+  .seg{display:flex;gap:6px;margin-bottom:10px} .seg button{font:inherit;border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;cursor:pointer}
+  .seg button[aria-pressed=true]{border-color:var(--indigo);color:var(--indigo);font-weight:800}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header><h1>⚙️ ניהול — הושעיה אמן בלונים</h1><a href="index.html">לאתר</a><button id="logout" hidden>יציאה</button></header>
+
+<section id="login" class="card" style="max-width:520px;margin:20px auto">
+  <h2>כניסה</h2>
+  <label for="email" style="font-weight:700">מייל</label>
+  <input type="email" id="email" value="hoshaya@gmail.com" autocomplete="email">
+  <div style="margin-top:10px"><button class="btn" id="send">שלח לי קישור כניסה</button></div>
+  <p class="msg" id="login-msg"></p>
+  <p class="hint">הקישורים בלשונית "הכל" עובדים גם בלי כניסה — כל כלי מבקש כניסה משלו.</p>
+</section>
+
+<nav class="tabs" role="tablist" aria-label="ניהול">
+  <button role="tab" data-tab="home" aria-selected="true">🏠 הכל</button>
+  <button role="tab" data-tab="orders" aria-selected="false">🖨️ הזמנות הדפסה <span class="badge" id="newcount" hidden></span></button>
+  <button role="tab" data-tab="prices" aria-selected="false">💰 מחירים</button>
+  <button role="tab" data-tab="stats" aria-selected="false">📈 כניסות לאתר</button>
+</nav>
+
+<main>
+  <section data-panel="home">
+    <div class="tiles">
+      <a class="tile" href="#orders" data-go="orders"><i>🖨️</i><b>הזמנות הדפסה</b><span>משחקים ומדבקות שלקוחות שלחו מהסטודיו</span></a>
+      <a class="tile" href="#prices" data-go="prices"><i>💰</i><b>מחירי משחקים להדפסה</b><span>המחיר שהלקוח רואה והשרת גובה</span></a>
+      <a class="tile" href="#stats" data-go="stats"><i>📈</i><b>כניסות לאתר</b><span>כמה נכנסו, לאן ומאיפה</span></a>
+      <a class="tile" href="https://hos100345.github.io/hoshaya-quotes/"><i>🎈</i><b>המחירון</b><span>הצעות מחיר, קטלוג תמונות, רישום, מלאי בלונים</span></a>
+      <a class="tile" href="gallery-admin.html"><i>📷</i><b>תמונות האתר</b><span>העלאה, הסתרה, ⭐ נבחרות</span></a>
+      <a class="tile" href="studio/"><i>🧩</i><b>הסטודיו</b><span>עיצוב משחקים; לשונית "מנהל" לקבצים של הזמנה</span></a>
+      <a class="tile" href="dobble.html"><i>🎯</i><b>המחולל — מנויים</b><span>לקוחות, קודים, הדפסות (לוח המנהל במחולל)</span></a>
+      <a class="tile" href="stickers-admin.html"><i>🏷️</i><b>הזמנות מדבקות לעפרונות</b><span>מדבקות שם</span></a>
+      <a class="tile" href="gallery.html"><i>🌐</i><b>הגלריה באתר</b><span>איך הלקוח רואה את התמונות</span></a>
+    </div>
+  </section>
+
+  <section data-panel="orders" hidden>
+    <div class="card">
+      <h2>🖨️ הזמנות הדפסה מהסטודיו</h2>
+      <p class="hint">20 האחרונות. לפתיחת הקבצים ושינוי סטטוס — הסטודיו ← לשונית "מנהל".</p>
+      <div id="orders-list" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <section data-panel="prices" hidden>
+    <div class="card">
+      <h2>💰 מחירי משחקים להדפסה</h2>
+      <p class="hint">מחיר לדף A4 מודפס (בפאזל — מחיר לפאזל שלם). זה המחיר שהלקוח רואה בסטודיו לפני ששולח הזמנה, ואותו השרת רושם בהזמנה. שינוי נכנס לתוקף מיד.</p>
+      <table style="margin-top:10px"><thead><tr><th>מוצר</th><th>מחיר ₪</th><th></th></tr></thead><tbody id="price-rows"></tbody></table>
+      <p class="msg" id="price-msg"></p>
+    </div>
+  </section>
+
+  <section data-panel="stats" hidden>
+    <div class="card">
+      <h2>📈 כניסות לאתר</h2>
+      <div class="seg" id="range"><button data-d="1">היום</button><button data-d="7" aria-pressed="true">7 ימים</button><button data-d="30">30 ימים</button></div>
+      <div class="kpis" id="kpis"></div>
+      <h2 style="margin-top:6px">לאיזה עמודים</h2><div id="by-page"></div>
+      <h2 style="margin-top:14px">מאיפה הגיעו</h2><div id="by-src"></div>
+      <p class="hint">נספר בלי עוגיות ובלי לזהות אנשים: כל טעינת עמוד = כניסה אחת. הבדיקות שלי לא נספרות.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const sb=supabase.createClient(window.SUPABASE_CONFIG.url,window.SUPABASE_CONFIG.anonKey);
+const ADMIN='hoshaya@gmail.com';
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let session=null;
+
+// ── לשוניות ──
+function show(tab){
+  document.querySelectorAll('nav.tabs [role=tab]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===tab)));
+  document.querySelectorAll('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==tab);
+  if(history.replaceState)history.replaceState(null,'','#'+tab);
+  if(tab==='orders')loadOrders();if(tab==='prices')loadPrices();if(tab==='stats')loadStats();
+}
+document.querySelectorAll('nav.tabs [role=tab]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.tab)));
+document.querySelectorAll('[data-go]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();show(a.dataset.go);}));
+
+// ── כניסה ──
+function needLogin(box){box.innerHTML='<p class="hint">צריך להיכנס קודם (למעלה) עם המייל של העסק.</p>';}
+function setSession(s){
+  session=s;const ok=!!s&&(s.user.email||'').toLowerCase()===ADMIN;
+  $('login').hidden=ok;$('logout').hidden=!s;
+  if(s&&!ok){$('login-msg').style.color='var(--err)';$('login-msg').textContent='המייל '+s.user.email+' אינו מורשה.';}
+  if(ok)countNew();
+  const t=(location.hash||'#home').slice(1);show(['home','orders','prices','stats'].includes(t)?t:'home');
+}
+sb.auth.getSession().then(({data})=>setSession(data.session));
+sb.auth.onAuthStateChange((_e,s)=>{if((s&&s.access_token)!==(session&&session.access_token))setSession(s);});
+$('send').addEventListener('click',async()=>{
+  const m=$('login-msg');$('send').disabled=true;m.style.color='var(--muted)';m.textContent='שולח…';
+  const{error}=await sb.auth.signInWithOtp({email:$('email').value.trim(),options:{emailRedirectTo:location.href.split('#')[0],shouldCreateUser:false}});
+  m.style.color=error?'var(--err)':'var(--ok)';m.textContent=error?'לא נשלח — בדוק את המייל ונסה שוב':'📩 נשלח קישור למייל. פתח אותו מהמכשיר הזה.';$('send').disabled=false;
+});
+$('logout').addEventListener('click',()=>sb.auth.signOut());
+const isAdmin=()=>session&&(session.user.email||'').toLowerCase()===ADMIN;
+
+// ── הזמנות ──
+const PROD_HE={stickers:'מדבקות',cards:'קלפים',memory:'זיכרון',quartets:'רביעיות',domino:'דומינו',dice:'קוביות',puzzle:'פאזל'};
+const STATUS_HE={uploading:'⏳ לא הושלמה',new:'🆕 חדשה',in_progress:'🛠️ בעבודה',done:'✅ הסתיימה',cancelled:'✖ בוטלה'};
+async function countNew(){
+  const{count}=await sb.from('studio_orders').select('id',{count:'exact',head:true}).eq('status','new');
+  const b=$('newcount');b.hidden=!count;b.textContent=count||'';
+}
+async function loadOrders(){
+  const box=$('orders-list');if(!isAdmin())return needLogin(box);
+  box.innerHTML='<p class="hint">טוען…</p>';
+  const{data,error}=await sb.from('studio_orders').select('code,created_at,product,customer_name,customer_phone,sheets,price_ils,status,paid').order('created_at',{ascending:false}).limit(20);
+  if(error){box.innerHTML='<p class="msg" style="color:var(--err)">שגיאה: '+esc(error.message)+'</p>';return;}
+  if(!data.length){box.innerHTML='<p class="hint">עוד אין הזמנות.</p>';return;}
+  box.innerHTML='<table><thead><tr><th>מתי</th><th>מה</th><th>לקוח</th><th>₪</th><th>מצב</th></tr></thead><tbody>'+data.map(o=>
+    `<tr><td>${new Date(o.created_at).toLocaleDateString('he-IL')}<br><small dir="ltr">${esc(o.code)}</small></td><td>${esc(PROD_HE[o.product]||o.product)}<br><small>${o.sheets} דפים</small></td><td>${esc(o.customer_name||'—')}<br><a href="https://wa.me/972${esc(String(o.customer_phone||'').replace(/^0/,''))}" dir="ltr">${esc(o.customer_phone||'')}</a></td><td>${o.price_ils??''}${o.paid?' ✓':''}</td><td>${STATUS_HE[o.status]||esc(o.status)}</td></tr>`).join('')+'</tbody></table>';
+}
+
+// ── מחירים ──
+const PRICE_HE=[['cards','🃏 קלפים / חפיסת מלחמה','לדף'],['memory','🧠 משחק זיכרון','לדף'],['quartets','👨‍👩‍👧‍👦 רביעיות','לדף'],['domino','🁫 דומינו','לדף'],['dice','🎲 קוביות','לדף'],['puzzle','🧩 פאזל','לפאזל'],['stickers','🏷️ מדבקות','לדף']];
+async function loadPrices(){
+  const tb=$('price-rows');tb.innerHTML='<tr><td colspan="3" class="hint">טוען…</td></tr>';
+  const{data,error}=await sb.from('studio_prices').select('product,per_sheet,updated_at');
+  if(error){tb.innerHTML='<tr><td colspan="3" style="color:var(--err)">שגיאה: '+esc(error.message)+'</td></tr>';return;}
+  const by=Object.fromEntries(data.map(r=>[r.product,r]));
+  tb.innerHTML=PRICE_HE.map(([k,he,unit])=>`<tr><td>${he}<br><small class="hint">${unit}${by[k]?' · עודכן '+new Date(by[k].updated_at).toLocaleDateString('he-IL'):''}</small></td><td><input class="num" type="number" min="1" max="1000" step="1" inputmode="numeric" data-k="${k}" value="${by[k]?by[k].per_sheet:''}" aria-label="מחיר ${he}"></td><td><button class="btn" data-save="${k}" ${isAdmin()?'':'disabled'}>שמירה</button></td></tr>`).join('');
+  if(!isAdmin())$('price-msg').textContent='כדי לשנות מחיר צריך להיכנס קודם.';
+  tb.querySelectorAll('[data-save]').forEach(b=>b.addEventListener('click',()=>savePrice(b.dataset.save,b)));
+}
+async function savePrice(k,btn){
+  const v=parseInt(tb_val(k),10),m=$('price-msg');
+  if(!(v>=1&&v<=1000)){m.style.color='var(--err)';m.textContent='מחיר בין 1 ל-1000 ₪';return;}
+  btn.disabled=true;
+  const{data,error}=await sb.from('studio_prices').update({per_sheet:v,updated_at:new Date().toISOString()}).eq('product',k).select();
+  btn.disabled=false;
+  if(error||!data||!data.length){m.style.color='var(--err)';m.textContent='לא נשמר'+(error?': '+error.message:' — אין הרשאה');return;}
+  m.style.color='var(--ok)';m.textContent='✓ נשמר: '+(PRICE_HE.find(x=>x[0]===k)||[,k])[1]+' — '+v+' ₪';
+}
+const tb_val=k=>document.querySelector(`input[data-k="${k}"]`).value;
+
+// ── כניסות לאתר (טבלת events, אירועים site_*) ──
+let days=7;
+document.querySelectorAll('#range button').forEach(b=>b.addEventListener('click',()=>{days=+b.dataset.d;document.querySelectorAll('#range button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));loadStats();}));
+function bars(box,map,total){
+  const rows=Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  box.innerHTML=rows.length?rows.map(([k,n])=>`<div style="margin:6px 0"><div style="display:flex;justify-content:space-between;gap:8px"><span>${esc(k)}</span><b>${n}</b></div><div class="bar"><i style="width:${Math.round(n/Math.max(1,total)*100)}%"></i></div></div>`).join(''):'<p class="hint">אין נתונים בתקופה הזו.</p>';
+}
+const SRC_HE={direct:'הקלידו כתובת / שמור',internal:'מעמוד אחר באתר'};
+const PAGE_HE={index:'דף הבית',events:'אירועים ובלונים',communities:'קהילות',workshops:'חוגים וסדנאות',schools:'בתי ספר',about:'אודות','card-games':'משחקים',gallery:'גלריה','matchito-info':'מאצ׳טו','one-match':'One Match (אנגלית)',accessibility:'נגישות'};
+async function loadStats(){
+  if(!isAdmin()){needLogin($('kpis'));$('by-page').innerHTML='';$('by-src').innerHTML='';return;}
+  $('kpis').innerHTML='<p class="hint">טוען…</p>';
+  const since=new Date(Date.now()-days*864e5);if(days===1)since.setHours(0,0,0,0);
+  const{data,error}=await sb.from('events').select('event,label,detail,ua').in('event',['site_view','site_wa','site_phone']).gte('created_at',since.toISOString()).limit(10000);
+  if(error){$('kpis').innerHTML='<p class="msg" style="color:var(--err)">שגיאה: '+esc(error.message)+'</p>';return;}
+  const v=data.filter(e=>e.event==='site_view'),wa=data.filter(e=>e.event==='site_wa').length,ph=data.filter(e=>e.event==='site_phone').length;
+  const mob=v.filter(e=>e.ua==='mobile').length;
+  $('kpis').innerHTML=`<div class="kpi"><b>${v.length}</b><span>כניסות לעמודים</span></div><div class="kpi"><b>${wa}</b><span>לחיצות וואטסאפ</span></div><div class="kpi"><b>${ph}</b><span>לחיצות טלפון</span></div><div class="kpi"><b>${v.length?Math.round(mob/v.length*100):0}%</b><span>מהטלפון</span></div>`;
+  const pages={},src={};
+  v.forEach(e=>{const p=PAGE_HE[e.label]||e.label||'?';pages[p]=(pages[p]||0)+1;const s=SRC_HE[e.detail]||e.detail||'לא ידוע';src[s]=(src[s]||0)+1;});
+  bars($('by-page'),pages,v.length);bars($('by-src'),src,v.length);
+}
+</script>
+</body>
+</html>
