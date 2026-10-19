@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>משחקים בטלפון | מחולל מאצ׳טו</title>
   <meta name="robots" content="noindex">
   <meta name="theme-color" content="#4338CA">
@@ -26,6 +26,7 @@
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     html,body{height:100%}
+    #scr-game,#scr-game .card,#scr-game .card canvas{touch-action:manipulation}   /* D-83: בלי הגדלה בלחיצה כפולה מהירה על הקלפים */
     body{
       touch-action:manipulation;
       font-family:'Heebo',system-ui,sans-serif;color:var(--text);direction:rtl;
@@ -1202,11 +1203,13 @@ function allTap(ci){
 }
 $('a-back').addEventListener('click',openHome);
 
-// ── בלי הגדלה בשתי אצבעות (D-72): ילדים נוגעים בכמה אצבעות והמסך "בורח". אייפון מתעלם מ-user-scalable=no,
-//    לכן גם חוסמים את מחוות הצביטה עצמה (gesturestart בספארי, ומגע של 2+ אצבעות בשאר).
-//    הגדלה בלחיצה כפולה — נחסמת ע"י touch-action:manipulation על body (בלי לבלוע נגיעות מהירות של ילדים).
-['gesturestart','gesturechange','gestureend'].forEach(t=>document.addEventListener(t,e=>e.preventDefault(),{passive:false}));
-document.addEventListener('touchmove',e=>{if(e.touches.length>1)e.preventDefault();},{passive:false});
+// ── בלי הגדלה בשתי אצבעות *בזמן משחק* (D-72): ילדים נוגעים בכמה אצבעות והמסך "בורח". אייפון מתעלם מ-user-scalable=no,
+//    לכן חוסמים את מחוות הצביטה עצמה (gesturestart בספארי, ומגע של 2+ אצבעות בשאר).
+//    D-83 (נגישות, WCAG 1.4.4): החסימה חלה רק כשמסך המשחק פתוח. בכניסה, בתפריטים ובהגדרות אפשר להגדיל בצביטה,
+//    ותג ה-viewport כבר לא חוסם הגדלה. הגדלה בלחיצה כפולה — נחסמת ע"י touch-action:manipulation (בלי לבלוע נגיעות מהירות).
+const inGameScreen=()=>{const g=$('scr-game');return !!g&&!g.hidden;};
+['gesturestart','gesturechange','gestureend'].forEach(t=>document.addEventListener(t,e=>{if(inGameScreen())e.preventDefault();},{passive:false}));
+document.addEventListener('touchmove',e=>{if(e.touches.length>1&&inGameScreen())e.preventDefault();},{passive:false});
 
 // ════════════════ אפליקציה (PWA) ════════════════
 // sw.js יושב בתיקייה /play/ ולכן שולט רק בה — לא בדאבל ולא בשאר האתר (אותו דפוס כמו /studio/).

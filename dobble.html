@@ -100,8 +100,8 @@
     .ropt.sel{border-color:var(--indigo);background:var(--purple-light)}
     .ropt-h{font-size:.95rem;font-weight:800;color:var(--indigo);margin-bottom:.15rem}
     .ropt-s{font-size:.78rem;color:var(--muted)}
-    .ropt-b{position:absolute;top:-8px;left:8px;background:var(--gold);color:#fff;font-size:.65rem;font-weight:700;padding:.1rem .45rem;border-radius:100px}
-    .ropt.dim{opacity:.55;cursor:default}
+    .ropt-b{position:absolute;top:-8px;left:8px;background:#B45309;color:#fff;font-size:.65rem;font-weight:700;padding:.1rem .45rem;border-radius:100px}
+    .ropt.dim{background:#f3f4f6;border-style:dashed;cursor:default}   /* D-83: opacity:.55 הוריד את הטקסט מתחת ל-4.5 */
     .ropt.dim:hover{border-color:#fcd34d}
 
     /* ── SHAPE TOGGLE ── */
@@ -501,7 +501,7 @@ function dcfgSave(patch){
       <input id="lock-inp" type="password" inputmode="text" maxlength="20" placeholder="• • •"
         style="text-align:center;font-size:2rem;letter-spacing:.6rem;width:180px;padding:.7rem .5rem;border-radius:16px;border:2.5px solid rgba(255,255,255,.35);outline:none;background:rgba(255,255,255,.94);font-family:inherit">
       <button data-i18n="lock.enterBtn" id="lock-go" type="button"
-        style="background:#6366f1;color:#fff;font-weight:800;font-size:1.05rem;padding:.7rem 2.4rem;border:none;border-radius:100px;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(99,102,241,.5)">כניסה ✓</button>
+        style="background:#5a5df0;color:#fff;font-weight:800;font-size:1.05rem;padding:.7rem 2.4rem;border:none;border-radius:100px;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(99,102,241,.5)">כניסה ✓</button>
       <div id="lock-err" style="color:#fca5a5;font-size:.88rem;min-height:1.2em"></div>
       <button data-i18n="lock.forgotCode" type="button" id="forgot-code-link"
         style="background:none;border:none;color:rgba(255,255,255,.55);font-size:.8rem;text-decoration:underline;cursor:pointer;font-family:inherit;padding:.4rem;margin-top:.3rem">
@@ -516,7 +516,7 @@ function dcfgSave(patch){
         style="width:100%;box-sizing:border-box;padding:.65rem .8rem;border-radius:14px;border:2px solid rgba(255,255,255,.35);outline:none;background:rgba(255,255,255,.94);font-family:inherit;font-size:1rem;direction:ltr;text-align:left">
       <input id="free-code" type="text" maxlength="20" placeholder="בחר/י קוד אישי (4–20 תווים)"
         style="width:100%;box-sizing:border-box;padding:.65rem .8rem;border-radius:14px;border:2px solid rgba(255,255,255,.35);outline:none;background:rgba(255,255,255,.94);font-family:inherit;font-size:1rem;direction:ltr;text-align:left" data-i18n-ph="lock.freeCodePh">
-      <button data-i18n="lock.freeSignupBtn" id="free-go" type="button" style="width:100%;background:#6366f1;color:#fff;font-weight:800;font-size:1.02rem;padding:.7rem 2rem;border:none;border-radius:100px;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(99,102,241,.5)">הרשמה וכניסה ✓</button>
+      <button data-i18n="lock.freeSignupBtn" id="free-go" type="button" style="width:100%;background:#5a5df0;color:#fff;font-weight:800;font-size:1.02rem;padding:.7rem 2rem;border:none;border-radius:100px;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(99,102,241,.5)">הרשמה וכניסה ✓</button>
       <div id="free-msg" style="color:#fca5a5;font-size:.85rem;min-height:1.2em"></div>
     </div>
 
@@ -533,7 +533,7 @@ function dcfgSave(patch){
 
     <div style="width:min(320px,80vw);height:1px;background:rgba(255,255,255,.18);margin-block:.3rem"></div>
     <a id="lock-wa" href="#" target="_blank" rel="noopener noreferrer"
-       style="display:inline-flex;align-items:center;gap:.5rem;background:#25D366;color:#fff;font-weight:700;font-size:.88rem;padding:.55rem 1.2rem;border-radius:100px;text-decoration:none;box-shadow:0 6px 24px rgba(37,211,102,.45)">
+       style="display:inline-flex;align-items:center;gap:.5rem;background:#0E7C3A;color:#fff;font-weight:700;font-size:.88rem;padding:.55rem 1.2rem;border-radius:100px;text-decoration:none;box-shadow:0 6px 24px rgba(14,124,58,.45)">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
       <span data-i18n="lock.waHelpBtn">עזרה בוואטסאפ</span>
     </a>
@@ -1271,6 +1271,38 @@ const I18N={
     'bg.bulkBtn':'✨ הסר רקע מהנבחרים',
     'bgq.title':'איכות הסרת הרקע',
     'back.contrastToast':'צבע הטקסט התחלף כדי שיראו אותו על הרקע',
+    'back.col.0F172A':'כחול לילה',
+    'back.col.92400E':'חום',
+    'back.col.831843':'בורדו',
+    'back.colFallback':'צבע {c}',
+    'back.col.FFFEF5':'שמנת',
+    'back.col.FFFBEB':'שמנת צהבהב',
+    'back.col.FFF8DC':'חמאה',
+    'back.col.FFF3D0':'וניל',
+    'back.col.FBF7EE':'שנהב',
+    'back.col.F5F0E8':'בז׳',
+    'back.col.EDE0CC':'חול',
+    'back.col.FFF0F5':'ורוד חיוור',
+    'back.col.F0F8FF':'תכלת חיוור',
+    'back.col.F0FFF0':'ירוק חיוור',
+    'back.col.F5F0FF':'סגול חיוור',
+    'back.col.FFFFFF':'לבן',
+    'back.col.000000':'שחור',
+    'back.col.1E1B4B':'כחול כהה',
+    'back.col.4338CA':'אינדיגו',
+    'back.col.818CF8':'סגול בהיר',
+    'back.col.7C3AED':'סגול',
+    'back.col.DB2777':'ורוד כהה',
+    'back.col.EC4899':'ורוד',
+    'back.col.EF4444':'אדום',
+    'back.col.B91C1C':'אדום כהה',
+    'back.col.F59E0B':'כתום',
+    'back.col.FDE047':'צהוב',
+    'back.col.15803D':'ירוק',
+    'back.col.84CC16':'ירוק בהיר',
+    'back.col.0EA5E9':'תכלת',
+    'back.col.0369A1':'כחול',
+    'back.col.D4AF37':'זהב',
     'back.confirmSaveTitle':'לשמור את השינויים בגב?',
     'back.confirmSaveBody':'עשיתם שינויים בעיצוב הגב שעדיין לא נשמרו.',
     'back.confirmSave':'שמור',
@@ -1944,6 +1976,38 @@ const I18N={
     'bg.bulkBtn':'✨ Remove background from selected',
     'bgq.title':'Background removal quality',
     'back.contrastToast':'The text color was changed so it can be seen on the background',
+    'back.col.0F172A':'Midnight blue',
+    'back.col.92400E':'Brown',
+    'back.col.831843':'Burgundy',
+    'back.colFallback':'Color {c}',
+    'back.col.FFFEF5':'Cream',
+    'back.col.FFFBEB':'Pale cream',
+    'back.col.FFF8DC':'Butter',
+    'back.col.FFF3D0':'Vanilla',
+    'back.col.FBF7EE':'Ivory',
+    'back.col.F5F0E8':'Beige',
+    'back.col.EDE0CC':'Sand',
+    'back.col.FFF0F5':'Pale pink',
+    'back.col.F0F8FF':'Pale blue',
+    'back.col.F0FFF0':'Pale green',
+    'back.col.F5F0FF':'Pale purple',
+    'back.col.FFFFFF':'White',
+    'back.col.000000':'Black',
+    'back.col.1E1B4B':'Dark blue',
+    'back.col.4338CA':'Indigo',
+    'back.col.818CF8':'Light purple',
+    'back.col.7C3AED':'Purple',
+    'back.col.DB2777':'Dark pink',
+    'back.col.EC4899':'Pink',
+    'back.col.EF4444':'Red',
+    'back.col.B91C1C':'Dark red',
+    'back.col.F59E0B':'Orange',
+    'back.col.FDE047':'Yellow',
+    'back.col.15803D':'Green',
+    'back.col.84CC16':'Light green',
+    'back.col.0EA5E9':'Sky blue',
+    'back.col.0369A1':'Blue',
+    'back.col.D4AF37':'Gold',
     'back.confirmSaveTitle':'Save your changes to the back?',
     'back.confirmSaveBody':'You made changes to the card back that are not saved yet.',
     'back.confirmSave':'Save',
@@ -2510,7 +2574,7 @@ window.applyI18n=applyI18n;
       </div>
       <div class="ob-step">
         <div class="ob-ico">📥</div>
-        <div><strong data-i18n="onboard.step3Title" style="color:var(--green)">שלב 3 — ייצוא</strong><div data-i18n="onboard.step3Desc" class="ob-s">PDF מוכן להדפסה בבית או ZIP של PNG בודדים — ואפשר גם להזמין הדפסה מקצועית בבית דפוס עם משלוח עד הבית (בתוספת תשלום)</div></div>
+        <div><strong data-i18n="onboard.step3Title" style="color:#047857">שלב 3 — ייצוא</strong><div data-i18n="onboard.step3Desc" class="ob-s">PDF מוכן להדפסה בבית או ZIP של PNG בודדים — ואפשר גם להזמין הדפסה מקצועית בבית דפוס עם משלוח עד הבית (בתוספת תשלום)</div></div>
       </div>
     </div>
     <div data-i18n-html="onboard.packageInfoHtml" style="background:rgba(238,236,251,.7);border:1.5px solid #c7d2fe;border-radius:10px;padding:.7rem 1rem;text-align:center;margin-bottom:.7rem;font-size:.78rem;color:var(--indigo);line-height:1.6">
@@ -2701,10 +2765,10 @@ window.applyI18n=applyI18n;
           <!-- שלושת הסרגלים נעולים (pointer-events:none) עד נגיעה מכוונת בשורה — גלילה
                בדף מעל סליידר בנייד הזיזה אותו בלי שהמשתמש שם לב. כפתורי −/+ לצעד מדויק. -->
           <div class="sl-row" data-sl-lock="sl-var">
-            <div class="sl-lbl"><span><span data-i18n="edit.varietyTitle">גיוון בגדלים</span><button type="button" class="help-btn" data-help="overlap" data-i18n-title="help.btnTitle" title="הסבר">?</button></span><strong id="lbl-var">80%–120%</strong></div>
+            <div class="sl-lbl"><span><span id="lbl-t-var" data-i18n="edit.varietyTitle">גיוון בגדלים</span><button type="button" class="help-btn" data-help="overlap" data-i18n-title="help.btnTitle" title="הסבר">?</button></span><strong id="lbl-var">80%–120%</strong></div>
             <div style="display:flex;align-items:center;gap:.4rem">
               <button class="btn btn-ghost" type="button" data-step="sl-var" data-dir="-1" aria-label="−" style="padding:.15rem .6rem;min-width:2rem;justify-content:center">−</button>
-              <input type="range" id="sl-var" min="0" max="50" value="20" step="5" style="pointer-events:none">
+              <input type="range" id="sl-var" min="0" max="50" value="20" step="5" style="pointer-events:none" aria-labelledby="lbl-t-var">
               <button class="btn btn-ghost" type="button" data-step="sl-var" data-dir="1" aria-label="+" style="padding:.15rem .6rem;min-width:2rem;justify-content:center">+</button>
             </div>
             <div style="display:flex;justify-content:space-between;font-size:.7rem;color:var(--muted);margin-top:.15rem"><span data-i18n="edit.varietyEqual">כולם שווים</span><span data-i18n="edit.varietyMixed">מגוונים</span></div>
@@ -2728,10 +2792,10 @@ window.applyI18n=applyI18n;
             </div>
           </div>
           <div class="sl-row" data-sl-lock="sl-ov">
-            <div class="sl-lbl"><span><span data-i18n="edit.overlapTitle">מרחק בין הסמלים</span><button type="button" class="help-btn" data-help="overlap" data-i18n-title="help.btnTitle" title="הסבר">?</button></span><strong id="lbl-ov">מרווח 30%</strong></div>
+            <div class="sl-lbl"><span><span id="lbl-t-ov" data-i18n="edit.overlapTitle">מרחק בין הסמלים</span><button type="button" class="help-btn" data-help="overlap" data-i18n-title="help.btnTitle" title="הסבר">?</button></span><strong id="lbl-ov">מרווח 30%</strong></div>
             <div style="display:flex;align-items:center;gap:.4rem">
               <button class="btn btn-ghost" type="button" data-step="sl-ov" data-dir="-1" aria-label="−" style="padding:.15rem .6rem;min-width:2rem;justify-content:center">−</button>
-              <input type="range" id="sl-ov" min="-100" max="100" value="-30" step="5" style="pointer-events:none">
+              <input type="range" id="sl-ov" min="-100" max="100" value="-30" step="5" style="pointer-events:none" aria-labelledby="lbl-t-ov">
               <button class="btn btn-ghost" type="button" data-step="sl-ov" data-dir="1" aria-label="+" style="padding:.15rem .6rem;min-width:2rem;justify-content:center">+</button>
             </div>
           </div>
@@ -2752,8 +2816,8 @@ window.applyI18n=applyI18n;
         <div class="sb-sec">
           <div data-i18n="edit.paddingTitle" class="sb-t">מרווח מהמסגרת</div>
           <div class="sl-row" data-sl-lock="sl-sympad">
-            <div class="sl-lbl"><span data-i18n="edit.paddingLabel">מרווח סמלים ← מסגרת</span><strong id="lbl-sympad">2 מ"מ</strong></div>
-            <input type="range" id="sl-sympad" min="0" max="30" step="0.5" value="2">
+            <div class="sl-lbl"><span id="lbl-t-sympad" data-i18n="edit.paddingLabel">מרווח סמלים ← מסגרת</span><strong id="lbl-sympad">2 מ"מ</strong></div>
+            <input type="range" id="sl-sympad" min="0" max="30" step="0.5" value="2" aria-labelledby="lbl-t-sympad">
           </div>
           <div data-i18n="edit.paddingNote" style="font-size:.75rem;color:var(--muted);line-height:1.5;margin-top:.3rem">
             מרחק הסמלים מהמסגרת, במ"מ אמיתיים. הטווח מותאם אוטומטית לקוטר הקלף ולרוחב המסגרת.
@@ -2801,15 +2865,15 @@ window.applyI18n=applyI18n;
             <button class="sbt" data-pp="9"  style="flex:1">9</button>
           </div>
           <div data-i18n="export.perA4Title" style="font-size:.75rem;color:var(--muted);margin:-.25rem 0 .5rem">קלפים בדף A4</div>
-          <div class="sl-lock" data-sl-lock="sl-card-size"><div class="sl-lbl"><span><span data-i18n="export.diameterLabel">קוטר</span><button type="button" class="help-btn" data-help="cardsize" data-i18n-title="help.btnTitle" title="הסבר">?</button></span><strong id="lbl-card-size">85 מ"מ</strong></div>
-          <input type="range" id="sl-card-size" min="20" max="195" value="85" step="1"></div>
+          <div class="sl-lock" data-sl-lock="sl-card-size"><div class="sl-lbl"><span><span id="lbl-t-card-size" data-i18n="export.diameterLabel">קוטר</span><button type="button" class="help-btn" data-help="cardsize" data-i18n-title="help.btnTitle" title="הסבר">?</button></span><strong id="lbl-card-size">85 מ"מ</strong></div>
+          <input type="range" id="sl-card-size" min="20" max="195" value="85" step="1" aria-labelledby="lbl-t-card-size"></div>
           <button data-i18n="export.cardSizeResetBtn" class="btn btn-ghost" type="button" data-reset="sl-card-size,sl-spacing"
                   style="width:100%;justify-content:center;margin-top:.5rem;font-size:.8rem">↺ ברירת מחדל</button>
         </div>
         <div class="og">
           <div data-i18n="export.gapTitle" class="og-t">מרווח בין קלפים</div>
-          <div class="sl-lock" data-sl-lock="sl-spacing"><div class="sl-lbl"><span data-i18n="export.gapDensityNote">0 = צפיפות מקסימלית (Hex)</span><strong id="lbl-spacing">5 מ"מ</strong></div>
-          <input type="range" id="sl-spacing" min="0" max="40" value="5" step="1"></div>
+          <div class="sl-lock" data-sl-lock="sl-spacing"><div class="sl-lbl"><span id="lbl-t-spacing" data-i18n="export.gapDensityNote">0 = צפיפות מקסימלית (Hex)</span><strong id="lbl-spacing">5 מ"מ</strong></div>
+          <input type="range" id="sl-spacing" min="0" max="40" value="5" step="1" aria-labelledby="lbl-t-spacing"></div>
         </div>
         <div class="og">
           <div data-i18n="export.originTitle" class="og-t">נקודת מוצא</div>
@@ -2820,14 +2884,14 @@ window.applyI18n=applyI18n;
         </div>
         <div class="og">
           <div class="tog-row">
-            <label class="tswitch"><input type="checkbox" id="chk-crop" checked><span class="tslider"></span></label>
-            <span data-i18n="export.cropMarksLabel" class="tog-lbl">סימני חיתוך (Crop Marks)</span>
+            <label class="tswitch"><input type="checkbox" id="chk-crop" checked aria-labelledby="lbl-t-crop"><span class="tslider"></span></label>
+            <span id="lbl-t-crop" data-i18n="export.cropMarksLabel" class="tog-lbl">סימני חיתוך (Crop Marks)</span>
           </div>
         </div>
         <div class="og">
           <div class="tog-row">
-            <label class="tswitch"><input type="checkbox" id="chk-sil"><span class="tslider"></span></label>
-            <span data-i18n="export.silhouetteModeLabel" class="tog-lbl">מצב Silhouette Cameo ✂️</span>
+            <label class="tswitch"><input type="checkbox" id="chk-sil" aria-labelledby="lbl-t-sil"><span class="tslider"></span></label>
+            <span id="lbl-t-sil" data-i18n="export.silhouetteModeLabel" class="tog-lbl">מצב Silhouette Cameo ✂️</span>
           </div>
         </div>
         <div class="og">
@@ -2836,10 +2900,10 @@ window.applyI18n=applyI18n;
             <div class="dp-inner">
               <div class="dp-sec">
                 <div data-i18n="export.frameTitle" class="dp-sec-hd">מסגרת</div>
-                <div class="sl-lock" data-sl-lock="sl-fw"><div class="sl-lbl"><span data-i18n="export.frameWidthLabel">רוחב מסגרת</span><strong id="lbl-fw">0 מ"מ</strong></div>
-                <input type="range" id="sl-fw" min="0" max="25" step="0.5" value="0"></div>
-                <div class="sl-lock" data-sl-lock="sl-fop"><div class="sl-lbl"><span data-i18n="export.pigmentLabel">עוצמת פיגמנט</span><strong id="lbl-fop">100%</strong></div>
-                <input type="range" id="sl-fop" min="0" max="100" step="1" value="100"></div>
+                <div class="sl-lock" data-sl-lock="sl-fw"><div class="sl-lbl"><span id="lbl-t-fw" data-i18n="export.frameWidthLabel">רוחב מסגרת</span><strong id="lbl-fw">0 מ"מ</strong></div>
+                <input type="range" id="sl-fw" min="0" max="25" step="0.5" value="0" aria-labelledby="lbl-t-fw"></div>
+                <div class="sl-lock" data-sl-lock="sl-fop"><div class="sl-lbl"><span id="lbl-t-fop" data-i18n="export.pigmentLabel">עוצמת פיגמנט</span><strong id="lbl-fop">100%</strong></div>
+                <input type="range" id="sl-fop" min="0" max="100" step="1" value="100" aria-labelledby="lbl-t-fop"></div>
                 <div class="swatch-row" id="sw-frame"></div>
                 <label class="cp-row"><span data-i18n="export.customColorLabel">צבע חופשי</span><input type="color" id="pick-frame" value="#4338CA"></label>
               </div>
@@ -2847,8 +2911,8 @@ window.applyI18n=applyI18n;
                 <div data-i18n="export.bgTitle" class="dp-sec-hd">רקע</div>
                 <div class="swatch-row" id="sw-bg"></div>
                 <label class="cp-row"><span data-i18n="export.customColorLabel2">צבע חופשי</span><input type="color" id="pick-bg" value="#FFFEF5"></label>
-                <div class="sl-lock" data-sl-lock="sl-bop"><div class="sl-lbl"><span data-i18n="export.pigmentLabel2">עוצמת פיגמנט</span><strong id="lbl-bop">100%</strong></div>
-                <input type="range" id="sl-bop" min="0" max="100" step="1" value="100"></div>
+                <div class="sl-lock" data-sl-lock="sl-bop"><div class="sl-lbl"><span id="lbl-t-bop" data-i18n="export.pigmentLabel2">עוצמת פיגמנט</span><strong id="lbl-bop">100%</strong></div>
+                <input type="range" id="sl-bop" min="0" max="100" step="1" value="100" aria-labelledby="lbl-t-bop"></div>
               </div>
             </div>
           </details>
@@ -2856,8 +2920,8 @@ window.applyI18n=applyI18n;
         <div class="og">
           <div data-i18n="export.backTitle" class="og-t">גב הקלף</div>
           <div class="tog-row">
-            <label class="tswitch"><input type="checkbox" id="chk-back-enabled"><span class="tslider"></span></label>
-            <span data-i18n="export.duplexLabel" class="tog-lbl">הדפסה דו-צדדית (גב מעוצב)</span>
+            <label class="tswitch"><input type="checkbox" id="chk-back-enabled" aria-labelledby="lbl-t-duplex"><span class="tslider"></span></label>
+            <span id="lbl-t-duplex" data-i18n="export.duplexLabel" class="tog-lbl">הדפסה דו-צדדית (גב מעוצב)</span>
           </div>
           <button data-i18n="export.editBackBtn" class="btn btn-sec" id="btn-back-design-2" style="width:100%;justify-content:center;margin-top:.6rem">🎴 ערוך גב</button>
         </div>
@@ -3013,10 +3077,10 @@ window.applyI18n=applyI18n;
       <div class="back-sym-grid" id="back-pattern-grid"></div>
       <div class="swatch-row" id="back-pattern-sw"></div>
       <label class="cp-row"><span data-i18n="back.customColorLabel3">צבע חופשי</span><input type="color" id="back-pattern-pick" value="#FFFFFF"></label>
-      <div class="sl-lock" data-sl-lock="back-pattern-op"><div class="sl-lbl"><span data-i18n="back.patternOpacityLabel">שקיפות דוגמה</span><strong id="lbl-back-pattern-op">14%</strong></div>
-      <input type="range" id="back-pattern-op" min="0" max="100" step="1" value="14"></div>
-      <div class="sl-lock" data-sl-lock="back-pattern-scale"><div class="sl-lbl"><span data-i18n="back.patternScaleLabel">קנה מידה</span><strong id="lbl-back-pattern-scale">100%</strong></div>
-      <input type="range" id="back-pattern-scale" min="40" max="220" step="5" value="100"></div>
+      <div class="sl-lock" data-sl-lock="back-pattern-op"><div class="sl-lbl"><span id="lbl-t-back-pattern-op" data-i18n="back.patternOpacityLabel">שקיפות דוגמה</span><strong id="lbl-back-pattern-op">14%</strong></div>
+      <input type="range" id="back-pattern-op" min="0" max="100" step="1" value="14" aria-labelledby="lbl-t-back-pattern-op"></div>
+      <div class="sl-lock" data-sl-lock="back-pattern-scale"><div class="sl-lbl"><span id="lbl-t-back-pattern-scale" data-i18n="back.patternScaleLabel">קנה מידה</span><strong id="lbl-back-pattern-scale">100%</strong></div>
+      <input type="range" id="back-pattern-scale" min="40" max="220" step="5" value="100" aria-labelledby="lbl-t-back-pattern-scale"></div>
     </div>
 
     <div class="back-tabpage" id="back-tab-frame">
@@ -3299,8 +3363,8 @@ window.applyI18n=applyI18n;
         </label>
         <button data-i18n="edit.findFacesBtn" type="button" class="btn btn-sec" id="btn-faces" style="font-size:.82rem;padding:.3rem .7rem">🙂 מצא פנים</button>
         <div id="rmbg-tol-row" data-sl-lock="rng-rmbg-tol" hidden style="display:flex;align-items:center;gap:.4rem;padding-right:.2rem">
-          <span data-i18n="edit.removeBgSensitivityLabel" style="font-size:.75rem;color:#6b7280;white-space:nowrap">רגישות:</span>
-          <input type="range" id="rng-rmbg-tol" min="2" max="140" value="35" style="flex:1;min-width:70px;accent-color:var(--indigo)">
+          <span id="lbl-t-rmbg-tol" data-i18n="edit.removeBgSensitivityLabel" style="font-size:.75rem;color:#6b7280;white-space:nowrap">רגישות:</span>
+          <input type="range" id="rng-rmbg-tol" aria-labelledby="lbl-t-rmbg-tol" min="2" max="140" value="35" style="flex:1;min-width:70px;accent-color:var(--indigo)">
           <span id="rmbg-tol-val" style="font-size:.78rem;color:var(--indigo);font-weight:700;width:2em;text-align:left">35</span>
         </div>
       </div>
@@ -3340,12 +3404,12 @@ window.applyI18n=applyI18n;
     </div>
 
     <div class="sl-row" data-sl-lock="sl-cut-brush">
-      <div class="sl-lbl"><span data-i18n="edit.cutoutBrushSizeLabel">גודל מברשת</span><strong id="lbl-cut-brush">28</strong></div>
-      <input type="range" id="sl-cut-brush" min="8" max="70" step="2" value="28">
+      <div class="sl-lbl"><span id="lbl-t-cut-brush" data-i18n="edit.cutoutBrushSizeLabel">גודל מברשת</span><strong id="lbl-cut-brush">28</strong></div>
+      <input type="range" id="sl-cut-brush" min="8" max="70" step="2" value="28" aria-labelledby="lbl-t-cut-brush">
     </div>
     <div class="sl-row" data-sl-lock="sl-cut-fine">
-      <div class="sl-lbl"><span data-i18n="edit.cutoutFeatherLabel">עדינות הגזירה</span><strong id="lbl-cut-fine">50</strong></div>
-      <input type="range" id="sl-cut-fine" min="0" max="100" step="5" value="50">
+      <div class="sl-lbl"><span id="lbl-t-cut-fine" data-i18n="edit.cutoutFeatherLabel">עדינות הגזירה</span><strong id="lbl-cut-fine">50</strong></div>
+      <input type="range" id="sl-cut-fine" min="0" max="100" step="5" value="50" aria-labelledby="lbl-t-cut-fine">
     </div>
 
     <div class="canvas-wrap" id="cutout-wrap" style="position:relative;touch-action:none">
@@ -3433,7 +3497,7 @@ window.applyI18n=applyI18n;
       <div class="modal-title">🔐 קוד ניהול</div>
       <button class="modal-x" id="adm-gate-x">✕</button>
     </div>
-    <input id="adm-gate-inp" type="password" maxlength="20" class="adm-inp"
+    <input id="adm-gate-inp" type="password" maxlength="20" class="adm-inp" aria-label="קוד ניהול"
       style="background:rgba(255,255,255,.85);color:var(--text);border-color:var(--border);text-align:center;font-size:1.25rem;letter-spacing:.3rem">
     <div id="adm-gate-msg" style="color:#b91c1c;font-size:.85rem;min-height:1.3em;margin-top:.5rem"></div>
   </div>
@@ -7124,7 +7188,7 @@ function buildSwatches(containerId,colors,getColor,setColor,pickerId){
   colors.forEach(c=>{
     const sw=document.createElement('button');
     sw.type='button';sw.className='sw'+(c===getColor()?' on':'');
-    sw.style.background=c;
+    sw.style.background=c;sw.setAttribute('aria-label',swatchName(c));
     if(c==='#FFFFFF')sw.style.boxShadow='0 1px 3px rgba(0,0,0,.25),inset 0 0 0 1px #ddd';
     sw.addEventListener('click',()=>{
       setColor(c);pick.value=c;
@@ -7219,12 +7283,15 @@ document.addEventListener('click',e=>{
   toast(t('msg.resetToDefault'),'ok');
 });
 
+// D-83: שם נגיש לדוגמית צבע — שם בעברית אם מוכר, אחרת "צבע #hex"
+function swatchName(c){const k='back.col.'+String(c).slice(1).toUpperCase(),nm=t(k);return nm!==k?nm:t('back.colFallback',{c});}
 function buildSwatchesGeneric(containerId,colors,pickerId,onPick){
   const el=document.getElementById(containerId),pick=document.getElementById(pickerId);
   el.innerHTML='';
   colors.forEach(c=>{
     const sw=document.createElement('button');
     sw.type='button';sw.className='sw';sw.dataset.c=c;sw.style.background=c;
+    sw.setAttribute('aria-label',swatchName(c));
     if(c==='#FFFFFF')sw.style.boxShadow='0 1px 3px rgba(0,0,0,.25),inset 0 0 0 1px #ddd';
     sw.addEventListener('click',()=>{
       pick.value=c;onPick(c);
