@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Silhouette - מעצב מדבקות חכם לעפרונות</title>
 <!-- אין <link> קבוע לפונטים כאן בכוונה — הוא סתר טעינה עצלה. js/hebrew-fonts.js
      טוען כל משפחה רק כשהיא נבחרת בפועל (HebrewFonts.load), ומטמון ה-Map הפנימי
@@ -18,7 +18,7 @@
   .btn:hover{background:#f1f5f9;border-color:#94a3b8}
   .btn-primary{background:#0f172a;color:#fff;border-color:#0f172a}
   .btn-primary:hover{background:#1e293b}
-  .btn-danger{background:#fee2e2;color:#dc2626;border-color:#fca5a5}
+  .btn-danger{background:#fee2e2;color:#b91c1c;border-color:#fca5a5}
   .wrap{max-width:1600px;margin:0 auto;padding:12px;display:flex;flex-direction:column;gap:12px}
   @media(min-width:1100px){ .wrap{flex-direction:row} .left{width:380px} .center{flex:1} }
   .panel{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:0 1px 3px rgba(0,0,0,0.02)}
@@ -59,7 +59,7 @@
   .font-display{text-align:center;padding:4px 6px;width:100%;min-width:0;border:1px solid #cbd5e1;border-radius:8px;background:#fff}
   .font-display:hover{background:#f1f5f9}
   .font-name-display{font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .15s}
-  .font-meta-display{font-size:10px;color:#94a3b8;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .font-meta-display{font-size:10px;color:#566579;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .font-all-list{max-height:400px;overflow:auto;display:flex;flex-direction:column;gap:12px;padding:4px}
   .font-cat-heading{font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
   .font-tile-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -107,7 +107,7 @@
 
       <div class="groups-mode-hide" id="shape-select-block">
         <div style="margin-bottom:6px">
-          <label style="font-size:12px;font-weight:700;display:block;margin-bottom:4px">🎨 צורת חיתוך מעניינת:</label>
+          <label for="sticker-shape" style="font-size:12px;font-weight:700;display:block;margin-bottom:4px">🎨 צורת חיתוך מעניינת:</label>
           <select id="sticker-shape">
             <option value="banner">🎗️ סרט / באנר מעוצב (מושלם לעיפרון)</option>
             <option value="circle">⚪ עיגול מושלם</option>
@@ -136,7 +136,7 @@
         <!-- textarea, לא input — מאפשר Enter לשבירת שורה מפורשת (מכתב:
              ברכה/גוף/חתימה). .value/.focus()/.select() זהים ל-input, אין
              <form> שיגרום ל-submit בטעות. ראה wrapTextLines ב-layoutText. -->
-        <textarea id="sel-text-input" rows="3" style="resize:vertical;font-family:inherit"></textarea>
+        <textarea id="sel-text-input" rows="3" aria-label="טקסט המדבקה" style="resize:vertical;font-family:inherit"></textarea>
         <div class="row" style="margin-top:6px">
           <div>
             <label style="font-size:11px">פונט:</label>
@@ -146,7 +146,7 @@
             </div>
           </div>
           <div>
-            <label style="font-size:11px">מסגרת אות:</label>
+            <label for="sel-stroke" style="font-size:11px">מסגרת אות:</label>
             <select id="sel-stroke">
               <option value="white">לבנה בולטת</option>
               <option value="none">ללא</option>
@@ -173,7 +173,7 @@
     <div class="panel groups-mode-hide" id="size-panel">
       <h2>2️⃣ גודל פיזי סופי וחישוב דף</h2>
       <div>
-        <label style="font-size:11px" id="wid-mm-label">גובה (ס"מ)</label>
+        <label for="wid-mm" style="font-size:11px" id="wid-mm-label">גובה (ס"מ)</label>
         <div style="display:flex;align-items:center;gap:4px">
           <button class="btn" id="wid-down" type="button" style="padding:6px 12px;font-size:16px" aria-label="הקטן גובה">−</button>
           <input type="number" id="wid-mm" min="1" step="0.1" value="1.5" style="text-align:center">
@@ -187,7 +187,7 @@
            לקבוע גובה, לא כלי ניהול. הלוגיקה (applyHeight) לא השתנתה בכלל. -->
       <div class="row" style="margin-top:6px">
         <button class="btn btn-primary" id="fit-pencil"   style="font-size:12px;background:#4f46e5;border-color:#4f46e5">✏️ עפרונות</button>
-        <button class="btn btn-primary" id="fit-average"  style="font-size:12px;background:#059669;border-color:#059669">📐 ממוצע</button>
+        <button class="btn btn-primary" id="fit-average"  style="font-size:12px;background:#047857;border-color:#047857">📐 ממוצע</button>
         <button class="btn btn-primary" id="fit-notebook" style="font-size:12px;background:#b45309;border-color:#b45309">📓 מחברות</button>
       </div>
 
