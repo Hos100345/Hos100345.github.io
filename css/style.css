@@ -1852,3 +1852,8 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .season-icon { font-size: 1.6rem; flex: 0 0 auto; }
 .season-text { flex: 1 1 14rem; }
 .season-cta { flex: 0 0 auto; font-weight: 800; color: #8A4B00; white-space: nowrap; }
+
+/* W-47: קישור דילוג לתוכן (WCAG 2.4.1) — מוסתר עד שמגיעים אליו במקלדת */
+.skip-link { position: absolute; top: -100px; right: 1rem; z-index: 10000; background: var(--blue); color: #fff; padding: .6rem 1rem; border-radius: 8px; font-weight: 700; text-decoration: none; }
+.skip-link:focus { top: .5rem; }
+main:focus { outline: none; }
