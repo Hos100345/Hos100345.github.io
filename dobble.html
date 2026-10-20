@@ -469,6 +469,7 @@
     @keyframes attnPulse{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.7)}50%{box-shadow:0 0 0 12px rgba(245,158,11,0)}}
     .btn.attn{animation:attnPulse 1.2s ease-in-out infinite;outline:3px solid #F59E0B;outline-offset:3px}
     @media(prefers-reduced-motion:reduce){.btn.attn{animation:none}}
+    #local-note[hidden]{display:none!important}   /* D-89B: display:flex ב-inline גובר על [hidden] */
 </style>
 </head>
 <body>
@@ -884,6 +885,14 @@ const I18N={
     'onboard.contactBtn':'📱 פנה/י אלינו בוואטסאפ',
     'onboard.startBtn':'🚀 בואו נתחיל!',
     'header.homeLink':'→ האתר',
+    'sync.localOnly':'💾 המשחק שמור רק בדפדפן הזה.',
+    'sync.localOnlyAct':'לגיבוי בענן ←',
+    'sync.emptyNote':'לא מצאנו משחק בדפדפן הזה. אם בניתם משחק בטלפון או בדפדפן אחר — פתחו את האתר שם.',
+    'sync.cloudFoundTitle':'נמצא משחק בחשבון שלכם',
+    'sync.cloudFoundBody':'אין כאן תמונות, אבל בחשבון שלכם שמור «{name}». לטעון אותו?',
+    'sync.cloudFoundOk':'כן, לטעון',
+    'sync.cloudFoundNo':'לא עכשיו',
+    'sync.autoBackedUp':'המשחק שלכם גובה בענן ☁️',
     'a11y.skip':'דלג לתוכן',
     'header.title':'🎯 מחולל משחק מאצ׳טו',
     'header.accountBtnTitle':'חשבון וסנכרון',
@@ -1628,6 +1637,14 @@ const I18N={
     'onboard.contactBtn':'📱 Message us on WhatsApp',
     'onboard.startBtn':'🚀 Let’s get started!',
     'header.homeLink':'→ Website',
+    'sync.localOnly':'💾 Your game is saved only in this browser.',
+    'sync.localOnlyAct':'Back up to the cloud →',
+    'sync.emptyNote':'We did not find a game in this browser. If you built a game on your phone or in another browser — open the site there.',
+    'sync.cloudFoundTitle':'A game was found in your account',
+    'sync.cloudFoundBody':'There are no images here, but "{name}" is saved in your account. Load it?',
+    'sync.cloudFoundOk':'Yes, load it',
+    'sync.cloudFoundNo':'Not now',
+    'sync.autoBackedUp':'Your game was backed up to the cloud ☁️',
     'a11y.skip':'Skip to content',
     'header.title':'🎯 One Match Generator',
     'header.accountBtnTitle':'Account & sync',
@@ -2731,6 +2748,12 @@ window.applyI18n=applyI18n;
 <section id="s1" class="scr on">
   <div class="box">
     <h2 data-i18n="upload.title" class="box-h">העלאת סמלים</h2>
+    <!-- D-89B: אזהרה קבועה כשהעבודה שמורה רק בדפדפן הזה / הודעה כשמחוברים ואין כאן משחק -->
+    <div id="local-note" hidden role="status" style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;background:#fffbeb;border:1px solid #fcd34d;border-radius:12px;padding:.5rem .8rem;font-size:.86rem;line-height:1.5;margin-bottom:.6rem">
+      <span id="local-note-txt"></span>
+      <button type="button" id="local-note-act" class="btn btn-ghost" style="padding:.25rem .6rem;min-height:auto;font-size:.86rem;font-weight:700;color:var(--indigo)"></button>
+      <button type="button" id="local-note-x" class="btn btn-ghost" hidden style="padding:.25rem .55rem;min-height:auto;margin-inline-start:auto" aria-label="סגירה">✕</button>
+    </div>
     <p data-i18n="upload.desc" class="box-s">גרור/י תמונות לכאן — כל העלאה נוספת מצטברת למאגר. לחץ/י ✂ על תמונה כדי להפיק ממנה סמלים נוספים.</p>
 
     <!-- ── Single Upload Component ── -->
@@ -6272,6 +6295,7 @@ document.getElementById('btn-clear-all').addEventListener('click',()=>{
 });
 
 function updateCounter(){
+  if(typeof updateLocalNote==='function')updateLocalNote();
   const usable=S.assets.filter(isSymbolAsset);
   const n=usable.filter(a=>a.selected!==false).length;
   const nSrc=S.assets.filter(a=>a.isCropSource).length;
@@ -11856,6 +11880,7 @@ function updateAuthUI(session){
     inEl.hidden=true;outEl.hidden=false;dot.hidden=true;
   }
   renderDesigns();   // מרענן את רשימת העיצובים (מקומי + ענן)
+  if(typeof updateLocalNote==='function')updateLocalNote();
   if(typeof refreshSubscribersUI==='function')refreshSubscribersUI();
   if(typeof window.dobbleRefreshAiButton==='function')window.dobbleRefreshAiButton();
   updateCloudSaveBtn();
@@ -11868,11 +11893,17 @@ document.getElementById('auth-send').addEventListener('click',async()=>{
   if(!SB){msg.style.color='#b91c1c';msg.textContent=t('msg.syncUnavailable');return;}
   const btn=document.getElementById('auth-send');btn.disabled=true;
   msg.style.color='var(--muted)';msg.textContent=t('msg.sendingLink');
+  // D-89B: גם חיבור דרך "חשבון וסנכרון" מגבה אחרי הכניסה (עד עכשיו רק cloudsave-modal סימן את הדגל) — לקוח שנכנס כך אחרי תשלום איבד את המשחק
+  const hadWork=S.assets.some(isSymbolAsset);
   try{
+    if(hadWork)localStorage.setItem('dobble_pending_cloud_save','1');
     const{error}=await SB.auth.signInWithOtp({email,options:{emailRedirectTo:location.href}});
     if(error)throw error;
     msg.style.color='#166534';msg.textContent=t('msg.magicLinkSent');
-  }catch(e){msg.style.color='#b91c1c';msg.textContent='שגיאה בשליחה: '+(e.message||e);}
+  }catch(e){
+    if(hadWork)localStorage.removeItem('dobble_pending_cloud_save');
+    msg.style.color='#b91c1c';msg.textContent='שגיאה בשליחה: '+(e.message||e);
+  }
   btn.disabled=false;
 });
 
@@ -11958,6 +11989,59 @@ async function maybeAutoSaveAfterCloudConnect(){
     if(cloudsaveModal)cloudsaveModal.hidden=true;
   }catch(e){console.warn('maybeAutoSaveAfterCloudConnect:',e);}
 }
+
+// ── D-89B: אחרי חיבור — (1) גיבוי אוטומטי אם יש כאן עבודה ואין כלום בענן; (2) אם אין כאן עבודה: להציע טעינה מהענן / להסביר ──
+// ⛔ לא מגבה כשיש כבר משהו בענן (אין כפילות), לא במצב תמיכה, לא למנהל/חשבון מנוי-קוד. פעם אחת לסשן.
+// ⛔ כלל idbLoad: מחכים ל-idbLoad() המאוחד (_idbLoadOnce) — לא דוחפים ל-S.assets בעצמנו.
+let _syncCheckDone=false;
+async function postConnectChecks(){
+  if(_syncCheckDone||window.__supportMode||!isSignedIn())return;
+  const email=String(authSession.user.email||'').toLowerCase();
+  if(isSubscriberEmail(email)||adminEmails().includes(email))return;
+  _syncCheckDone=true;
+  try{
+    await idbLoad();
+    const cloud=await cloudListDesigns();
+    const has=S.assets.some(isSymbolAsset);
+    if(has){
+      if(!cloud.length){await cloudAutosave();toast(t('sync.autoBackedUp'),'ok');}
+      return;
+    }
+    if(cloud.length){
+      // לא מציעים בכל טעינת דף: לכל חשבון — פעם ב-24 שעות לכל היותר
+      const k='dobble_cloud_offer_'+authSession.user.id;let last=0;try{last=+localStorage.getItem(k)||0;}catch(e){}
+      if(Date.now()-last<864e5)return;
+      try{localStorage.setItem(k,String(Date.now()));}catch(e){}
+      const row=cloud[0];   // cloudListDesigns ממוין מהחדש לישן
+      const ok=await confirmDialog({icon:'☁️',title:t('sync.cloudFoundTitle'),body:t('sync.cloudFoundBody',{name:row.name}),
+        okText:t('sync.cloudFoundOk'),noText:t('sync.cloudFoundNo'),okStyle:'primary'});
+      if(ok)await loadCloudDesign(row);
+      return;
+    }
+    showLocalNote('empty');
+  }catch(e){console.warn('postConnectChecks:',e);_syncCheckDone=false;}
+}
+// הערה בשלב 1: 'local' = אזהרה קבועה (לא מחובר, יש תמונות); 'empty' = מחובר ואין כאן כלום ואין כלום בענן (ניתן לסגירה)
+let _noteMode='',_emptyDismissed=false;
+function showLocalNote(mode){
+  const el=document.getElementById('local-note');if(!el)return;
+  _noteMode=mode;
+  if(!mode||(mode==='empty'&&_emptyDismissed)){el.hidden=true;return;}
+  document.getElementById('local-note-txt').textContent=t(mode==='local'?'sync.localOnly':'sync.emptyNote');
+  const act=document.getElementById('local-note-act');
+  act.hidden=mode!=='local';act.textContent=t('sync.localOnlyAct');
+  document.getElementById('local-note-x').hidden=mode==='local';
+  el.hidden=false;
+}
+function updateLocalNote(){
+  if(_noteMode==='empty'){if(S.assets.some(isSymbolAsset))showLocalNote('');return;}
+  const unlocked=sessionStorage.getItem('dobble_unlocked')==='1';
+  const email=authSession&&authSession.user?String(authSession.user.email||'').toLowerCase():'';
+  const needs=unlocked&&!window.__supportMode&&!isSignedIn()&&S.assets.some(isSymbolAsset);
+  showLocalNote(needs?'local':'');
+}
+document.getElementById('local-note-act').addEventListener('click',()=>{document.getElementById('auth-modal').hidden=false;});
+document.getElementById('local-note-x').addEventListener('click',()=>{_emptyDismissed=true;showLocalNote('');});
 
 document.getElementById('auth-signout').addEventListener('click',async()=>{
   if(SB)await SB.auth.signOut();
@@ -12465,7 +12549,7 @@ if(SB){
       applySessionTier(session).then(()=>{
         toast(t('msg.signedInSyncingDesigns'),'ok');
         syncDesigns(session);
-        maybeAutoSaveAfterCloudConnect();
+        maybeAutoSaveAfterCloudConnect().then(()=>postConnectChecks());
         if(!_codesShown){_codesShown=true;showMyCodes();}
       });
       return;
@@ -12476,7 +12560,7 @@ if(SB){
     // showMyCodes חייבת לרוץ גם כאן, אחרת התכונה לא עובדת כלל למקרה השימוש שלשמו נבנתה.
     guardedUnlock(session).then(ok=>{   // בודק תוקף מנוי; אם תקין — פותח את האפליקציה
       if(ok){
-        toast(t('msg.signedInLoadingDesigns'),'ok'); syncDesigns(session); maybeAutoSaveAfterCloudConnect();
+        toast(t('msg.signedInLoadingDesigns'),'ok'); syncDesigns(session); maybeAutoSaveAfterCloudConnect().then(()=>postConnectChecks());
         if(!_codesShown){_codesShown=true;showMyCodes();}
       }
     });
