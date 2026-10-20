@@ -19,5 +19,5 @@ window.SUPABASE_CONFIG = {
 
   // D-89C: כניסה בקוד בן 6 ספרות מהמייל (במקום/בנוסף לקישור). ⛔ להדליק (true) רק אחרי שהוספתם {{ .Token }} לתבנית Magic Link
   // בדשבורד Supabase (Authentication → Emails → Templates → Magic Link) — אחרת המייל לא כולל קוד והשדה לא יעבוד.
-  otpCode: false
+  otpCode: true
 };
