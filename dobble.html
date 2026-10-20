@@ -399,6 +399,8 @@
     .design-del:hover{background:#ef4444;color:#fff}
 
     /* ── הדפסה ומשלוח ── */
+.legal-line a,.legal-foot a{color:inherit;text-decoration:underline}
+    .legal-foot{text-align:center;font-size:.8rem;color:var(--muted);padding:1rem 1rem 1.6rem}
     .print-order{position:relative;border:2px solid rgba(37,211,102,.4)}
     .po-badge{position:absolute;top:-12px;inset-inline-start:1.4rem;background:linear-gradient(120deg,#25D366,#1DA851);color:#fff;font-size:.75rem;font-weight:800;padding:.25rem .85rem;border-radius:100px;box-shadow:0 4px 14px rgba(37,211,102,.4)}
     .po-list{list-style:none;display:flex;gap:1rem;flex-wrap:wrap;margin:0;padding:0}
@@ -535,6 +537,7 @@ function dcfgSave(patch){
         style="width:100%;box-sizing:border-box;padding:.65rem .8rem;border-radius:14px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.94);font-family:inherit;font-size:1rem;direction:ltr;text-align:left">
       <input id="free-code" type="text" maxlength="20" placeholder="בחר/י קוד אישי (4–20 תווים)"
         style="width:100%;box-sizing:border-box;padding:.65rem .8rem;border-radius:14px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.94);font-family:inherit;font-size:1rem;direction:ltr;text-align:left" data-i18n-ph="lock.freeCodePh">
+      <div data-i18n-html="legal.signupHtml" class="legal-line" style="color:#cbd5e1">בהרשמה אתם מאשרים את <a href="terms.html" target="_blank" rel="noopener">תנאי השימוש</a> ואת <a href="privacy.html" target="_blank" rel="noopener">מדיניות הפרטיות</a>. המשחקים לשימוש אישי בלבד.</div>
       <button data-i18n="lock.freeSignupBtn" id="free-go" type="button" style="width:100%;background:#5a5df0;color:#fff;font-weight:800;font-size:1.02rem;padding:.7rem 2rem;border:none;border-radius:100px;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(99,102,241,.5)">הרשמה וכניסה ✓</button>
       <div id="free-msg" style="color:#fca5a5;font-size:.85rem;min-height:1.2em"></div>
     </div>
@@ -546,6 +549,7 @@ function dcfgSave(patch){
       <div id="lock-usd-note" hidden style="font-size:.78rem;opacity:.8;line-height:1.5;margin-top:.4rem"></div>
       <input id="buy-email" type="email" inputmode="email" placeholder="name@example.com" hidden
         style="width:100%;box-sizing:border-box;padding:.65rem .8rem;border-radius:14px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.94);font-family:inherit;font-size:1rem;direction:ltr;text-align:left">
+      <div data-i18n-html="legal.buyHtml" class="legal-line" style="color:#cbd5e1">ברכישה אתם מאשרים את <a href="terms.html" target="_blank" rel="noopener">תנאי השימוש</a> ואת <a href="privacy.html" target="_blank" rel="noopener">מדיניות הפרטיות</a>. המשחקים לשימוש אישי בלבד.</div>
       <button data-i18n="lock.goToPaymentBtn" id="buy-go" type="button" hidden style="width:100%;background:#6366f1;color:#fff;font-weight:800;font-size:1.02rem;padding:.7rem 2rem;border:none;border-radius:100px;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(99,102,241,.5)">מעבר לתשלום</button>
       <div id="buy-msg" style="color:#fca5a5;font-size:.85rem;min-height:1.2em"></div>
     </div>
@@ -1082,6 +1086,12 @@ const I18N={
     'paid.noOrder':'צריך לפחות 7 תמונות כדי ליצור משחק',
     'paid.failed':'לא הצלחנו לפתוח את שלב ההורדה — עברו ל"שלב 3" ידנית',
     'export.stepsLine':'1. צור PDF ← 2. הורד קובץ',
+    'legal.signupHtml':'בהרשמה אתם מאשרים את <a href="terms.html" target="_blank" rel="noopener">תנאי השימוש</a> ואת <a href="privacy.html" target="_blank" rel="noopener">מדיניות הפרטיות</a>. המשחקים לשימוש אישי בלבד.',
+    'legal.buyHtml':'ברכישה אתם מאשרים את <a href="terms.html" target="_blank" rel="noopener">תנאי השימוש</a> ואת <a href="privacy.html" target="_blank" rel="noopener">מדיניות הפרטיות</a>. המשחקים לשימוש אישי בלבד.',
+    'legal.exportHtml':'🔒 לשימוש אישי, משפחתי וחינוכי בלבד — אסור למכור או להפיץ בחנויות. <a href="terms.html" target="_blank" rel="noopener">תנאי שימוש</a>',
+    'legal.printSaleHtml':'הדפסה בכמות למכירה — רק באישור. <a href="#" class="js-legal-wa" target="_blank" rel="noopener">לפנייה</a>',
+    'legal.footHtml':'<a href="terms.html" target="_blank" rel="noopener">תנאי שימוש</a> · <a href="privacy.html" target="_blank" rel="noopener">פרטיות</a>',
+    'legal.waMsg':'שלום הושעיה, אני מתעניין/ת בהדפסה בכמות למכירה של משחק מאצ׳טו.',
     'gift.limitTitle':'ההורדות במתנה נוצלו 🎁',
     'gift.limitBody':'רוצים עוד? אפשר לרכוש מנוי, או לכתוב להושעיה.',
     'gift.buy':'לרכישה',
@@ -1848,6 +1858,12 @@ const I18N={
     'paid.noOrder':'You need at least 7 images to create a game',
     'paid.failed':'We could not open the download step — go to "Step 3" manually',
     'export.stepsLine':'1. Create the PDF → 2. Download the file',
+    'legal.signupHtml':'By signing up you agree to the <a href="terms.html" target="_blank" rel="noopener">Terms of Use</a> and the <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>. Games are for personal use only.',
+    'legal.buyHtml':'By purchasing you agree to the <a href="terms.html" target="_blank" rel="noopener">Terms of Use</a> and the <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>. Games are for personal use only.',
+    'legal.exportHtml':'🔒 For personal, family and educational use only — no selling or distributing in stores. <a href="terms.html" target="_blank" rel="noopener">Terms of Use</a>',
+    'legal.printSaleHtml':'Printing in quantity for sale — by approval only. <a href="#" class="js-legal-wa" target="_blank" rel="noopener">Contact us</a>',
+    'legal.footHtml':'<a href="terms.html" target="_blank" rel="noopener">Terms of Use</a> · <a href="privacy.html" target="_blank" rel="noopener">Privacy</a>',
+    'legal.waMsg':'Hi Hoshaya, I am interested in printing a One Match game in quantity for sale.',
     'gift.limitTitle':'Your gift downloads are used up 🎁',
     'gift.limitBody':'Want more? You can buy a plan, or message Hoshaya.',
     'gift.buy':'Buy',
@@ -3122,6 +3138,7 @@ window.applyI18n=applyI18n;
 
     <div id="exp-excess" hidden></div>
     <div id="gift-left" hidden role="status" style="font-weight:700;color:#92400e;background:#fffbeb;border:1px solid #fcd34d;border-radius:12px;padding:.4rem .8rem;margin:.2rem 0 .5rem"></div>
+    <div data-i18n-html="legal.exportHtml" class="legal-line" style="color:var(--muted);margin:.1rem 0 .4rem">🔒 לשימוש אישי, משפחתי וחינוכי בלבד — אסור למכור או להפיץ בחנויות. <a href="terms.html" target="_blank" rel="noopener">תנאי שימוש</a></div>
     <div data-i18n="export.stepsLine" id="exp-steps" style="font-weight:700;color:var(--indigo);margin:.2rem 0 .5rem">1. צור PDF ← 2. הורד קובץ</div>
     <div class="brow">
       <button data-i18n="export.previewBtn" class="btn btn-sec" id="btn-prevprint">👁 תצוגה מקדימה</button>
@@ -3146,6 +3163,7 @@ window.applyI18n=applyI18n;
           🗞️ גיליון גדול לבית דפוס — דורש חיתוך עצמי.<br>
           ✂️ חיתוך צורני (מגנטים, מדבקות): ZIP עם 3 קבצים — גרפיקה לבד · הדמיה (עם קו חיתוך) · חיתוך לבד. בכל קובץ עמוד לכל קלף, באותו גודל ומיקום. קו אדום 0.15 מ"מ, סימני חיתוך בפינות, צבעי CMYK. אם הגב מופעל — הוא העמוד האחרון בכל קובץ.
         </div>
+        <div data-i18n-html="legal.printSaleHtml" class="legal-line" style="color:var(--muted);margin-top:.4rem">הדפסה בכמות למכירה — רק באישור. <a href="#" class="js-legal-wa" target="_blank" rel="noopener">לפנייה</a></div>
         <div id="sheet-diam-row" style="margin-top:.5rem" hidden>
           <div data-i18n="export.sheetDiameterTitle" class="og-t">קוטר הקלף בגיליון</div>
           <div class="shape-grp" id="sheet-diam" style="width:100%">
@@ -3200,6 +3218,7 @@ window.applyI18n=applyI18n;
 
 </div><!-- /wrap -->
 </main>
+<footer class="legal-foot" data-i18n-html="legal.footHtml"><a href="terms.html" target="_blank" rel="noopener">תנאי שימוש</a> · <a href="privacy.html" target="_blank" rel="noopener">פרטיות</a></footer>
 
 <!-- PRINT PREVIEW MODAL -->
 <div class="modal-bg" id="ppmodal" hidden data-esc="#ppmodal-x">
@@ -8611,6 +8630,11 @@ function showGiftLimit(code){
   document.getElementById('gift-modal').hidden=false;
   renderGiftLeft({limit:1,remaining:0});
 }
+document.addEventListener('click',e=>{   // D-92: 'לפנייה' פותח וואטסאפ להושעיה (הקישור נבנה בלחיצה, כי data-i18n-html יוצר אותו מחדש)
+  const a=e.target.closest&&e.target.closest('a.js-legal-wa');if(!a)return;
+  const wa=String(localStorage.getItem('dobble_wa')||(typeof DCFG!=='undefined'&&DCFG.whatsapp)||'').replace(/\D/g,'');
+  a.href='https://wa.me/'+wa+'?text='+encodeURIComponent(t('legal.waMsg'));
+},true);
 document.getElementById('gift-close').addEventListener('click',()=>{document.getElementById('gift-modal').hidden=true;});
 document.getElementById('gift-buy').addEventListener('click',()=>{document.getElementById('gift-modal').hidden=true;window.showUpgradeModal&&window.showUpgradeModal();});
 
