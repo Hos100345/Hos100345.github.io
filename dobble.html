@@ -478,7 +478,7 @@
 <!-- CONFIG (קודים, וואטסאפ, חבילות) -->
 <!-- ?v=N — מעלים את המספר בכל שינוי בקובץ, אחרת הדפדפן יגיש גרסה ישנה מהמטמון -->
 <script src="js/dobble-config.js?v=2"></script>
-<script src="js/supabase-config.js?v=1"></script>
+<script src="js/supabase-config.js?v=2"></script>
 <script src="js/hebrew-fonts.js?v=1"></script>
 <script src="js/latin-fonts.js?v=1"></script>
 <script src="js/back-assets.js?v=1"></script>
@@ -893,6 +893,12 @@ const I18N={
     'sync.cloudFoundOk':'כן, לטעון',
     'sync.cloudFoundNo':'לא עכשיו',
     'sync.autoBackedUp':'המשחק שלכם גובה בענן ☁️',
+    'auth.otpLabel':'או הקלידו את הקוד מהמייל:',
+    'auth.otpVerify':'אימות',
+    'auth.otpBad':'הקוד שגוי או שפג תוקפו. בדקו שהקלדתם את הקוד מהמייל האחרון.',
+    'auth.otpOk':'התחברתם ✓',
+    'auth.otpPrompt':'הקלידו את הקוד מהמייל (או השאירו ריק ולחצו על הקישור במייל):',
+    'auth.rateLimit':'נשלחו יותר מדי מיילים בשעה האחרונה. אם כבר קיבלתם מייל — השתמשו בקוד שבו. אחרת נסו שוב בעוד כמה דקות.',
     'a11y.skip':'דלג לתוכן',
     'header.title':'🎯 מחולל משחק מאצ׳טו',
     'header.accountBtnTitle':'חשבון וסנכרון',
@@ -1645,6 +1651,12 @@ const I18N={
     'sync.cloudFoundOk':'Yes, load it',
     'sync.cloudFoundNo':'Not now',
     'sync.autoBackedUp':'Your game was backed up to the cloud ☁️',
+    'auth.otpLabel':'Or type the code from the email:',
+    'auth.otpVerify':'Verify',
+    'auth.otpBad':'The code is wrong or has expired. Check that you typed the code from the latest email.',
+    'auth.otpOk':'Signed in ✓',
+    'auth.otpPrompt':'Type the code from the email (or leave empty and click the link in the email):',
+    'auth.rateLimit':'Too many emails were sent in the last hour. If you already received an email — use the code in it. Otherwise try again in a few minutes.',
     'a11y.skip':'Skip to content',
     'header.title':'🎯 One Match Generator',
     'header.accountBtnTitle':'Account & sync',
@@ -11886,6 +11898,48 @@ function updateAuthUI(session){
   updateCloudSaveBtn();
 }
 
+// ══ D-89C: כניסה בקוד מהמייל (במקום קישור) ══
+// קישור מהמייל נפתח לפעמים בדפדפן אחר (Gmail פותח דפדפן משלו) — ואז המשחק "לא שם"; וגם עובד פעם אחת. קוד בן 6 ספרות מוקלד באותו דף.
+// מופיע רק כש-SUPABASE_CONFIG.otpCode===true (הושעיה מדליק אחרי שהוסיף {{ .Token }} לתבנית Magic Link ב-Supabase). הקישור ממשיך לעבוד כגיבוי.
+const otpOn=()=>!!(window.SUPABASE_CONFIG&&window.SUPABASE_CONFIG.otpCode===true);
+// שגיאת rate limit (מכסת המיילים של שרת המיילים המובנה של Supabase) — בעברית, בלי הטקסט באנגלית
+function authSendErr(e,fallbackPrefix){
+  const m=String((e&&e.message)||e||'');
+  if(/rate.?limit|too many requests/i.test(m)||(e&&(e.status===429||e.code==='over_email_send_rate_limit')))return t('auth.rateLimit');
+  return (fallbackPrefix||'שגיאה בשליחה: ')+m;
+}
+// מזריק (פעם אחת) שדה קוד אחרי אלמנט ההודעה. onOk נקרא אחרי אימות מוצלח (ההתחברות עצמה מגיעה דרך onAuthStateChange הקיים).
+function showOtpBox(after,email,pfx,onOk){
+  if(!otpOn())return;
+  let box=document.getElementById(pfx+'-otp');
+  if(!box){
+    box=document.createElement('div');box.id=pfx+'-otp';box.style.cssText='margin-top:.7rem;text-align:center';
+    box.innerHTML='<label for="'+pfx+'-otp-in" style="display:block;font-size:.85rem;margin-bottom:.3rem">'+t('auth.otpLabel')+'</label>'+
+      '<div style="display:flex;gap:.4rem;justify-content:center"><input id="'+pfx+'-otp-in" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="8" dir="ltr" '+
+      'style="width:9rem;text-align:center;font-size:1.3rem;letter-spacing:.35rem;padding:.45rem .5rem;border-radius:var(--rs);border:1.5px solid var(--border);font-family:inherit">'+
+      '<button type="button" id="'+pfx+'-otp-go" class="btn btn-pri">'+t('auth.otpVerify')+'</button></div>'+
+      '<div id="'+pfx+'-otp-msg" role="status" style="font-size:.85rem;min-height:1.3em;margin-top:.4rem"></div>';
+    after.insertAdjacentElement('afterend',box);
+    const inp=box.querySelector('input'),go=box.querySelector('button'),om=box.querySelector('[role=status]');
+    const run=async()=>{
+      const token=(inp.value||'').replace(/\s+/g,'');
+      if(!/^\d{6,8}$/.test(token)){om.style.color='#b91c1c';om.textContent=t('auth.otpBad');return;}
+      go.disabled=true;om.style.color='var(--muted)';om.textContent='…';
+      try{
+        const{error}=await SB.auth.verifyOtp({email:box.dataset.email,token,type:'email'});
+        if(error)throw error;
+        om.style.color='#166534';om.textContent=t('auth.otpOk');inp.value='';
+        onOk&&onOk();
+      }catch(e){om.style.color='#b91c1c';om.textContent=t('auth.otpBad');console.warn('verifyOtp:',e&&e.message||e);}
+      go.disabled=false;
+    };
+    go.addEventListener('click',run);
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();run();}});
+  }
+  box.dataset.email=email;box.hidden=false;
+  const i=box.querySelector('input');if(i)setTimeout(()=>{try{i.focus({preventScroll:true});}catch(e){}},50);
+}
+
 document.getElementById('auth-send').addEventListener('click',async()=>{
   const msg=document.getElementById('auth-msg');
   const email=document.getElementById('auth-email').value.trim();
@@ -11900,9 +11954,10 @@ document.getElementById('auth-send').addEventListener('click',async()=>{
     const{error}=await SB.auth.signInWithOtp({email,options:{emailRedirectTo:location.href}});
     if(error)throw error;
     msg.style.color='#166534';msg.textContent=t('msg.magicLinkSent');
+    showOtpBox(msg,email,'auth');
   }catch(e){
     if(hadWork)localStorage.removeItem('dobble_pending_cloud_save');
-    msg.style.color='#b91c1c';msg.textContent='שגיאה בשליחה: '+(e.message||e);
+    msg.style.color='#b91c1c';msg.textContent=authSendErr(e);
   }
   btn.disabled=false;
 });
@@ -11967,9 +12022,10 @@ document.getElementById('cloudsave-send').addEventListener('click',async()=>{
     const{error}=await SB.auth.signInWithOtp({email,options:{emailRedirectTo:location.href}});
     if(error)throw error;
     msg.style.color='#166534';msg.textContent=t('msg.magicLinkSentCloudsave');
+    showOtpBox(msg,email,'cloudsave');
   }catch(e){
     localStorage.removeItem('dobble_pending_cloud_save');
-    msg.style.color='#b91c1c';msg.textContent='שגיאה בשליחה: '+(e.message||e);
+    msg.style.color='#b91c1c';msg.textContent=authSendErr(e);
   }
   btn.disabled=false;
 });
@@ -12156,9 +12212,16 @@ async function startCodeRecovery(){
     const {error}=await SB.auth.signInWithOtp({email,options:{emailRedirectTo:location.href}});
     if(error)throw error;
     toast(t('msg.loginLinkSentShowCode'),'ok');
+    if(otpOn()){   // D-89C: אפשר להקליד את הקוד מהמייל גם כאן, בלי לעבור לדפדפן אחר
+      const tok=(prompt(t('auth.otpPrompt'))||'').replace(/\s+/g,'');
+      if(tok){
+        const r=await SB.auth.verifyOtp({email,token:tok,type:'email'});
+        if(r.error)toast(t('auth.otpBad'),'err');else toast(t('auth.otpOk'),'ok');
+      }
+    }
   }catch(e){
     console.warn('startCodeRecovery:',e);
-    toast('שליחת הקישור נכשלה: '+(e.message||e),'err');
+    toast(authSendErr(e,'שליחת הקישור נכשלה: '),'err');
   }
 }
 

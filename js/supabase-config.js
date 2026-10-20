@@ -15,5 +15,9 @@ window.SUPABASE_CONFIG = {
 
   // מיילים של מנהלים — רק הם רואים ומפעילים את ניהול המנויים בלוח הבקרה.
   // האכיפה האמיתית היא בצד ה-Edge Function; זה רק לתצוגה.
-  adminEmails: ["hoshaya@gmail.com"]
+  adminEmails: ["hoshaya@gmail.com"],
+
+  // D-89C: כניסה בקוד בן 6 ספרות מהמייל (במקום/בנוסף לקישור). ⛔ להדליק (true) רק אחרי שהוספתם {{ .Token }} לתבנית Magic Link
+  // בדשבורד Supabase (Authentication → Emails → Templates → Magic Link) — אחרת המייל לא כולל קוד והשדה לא יעבוד.
+  otpCode: false
 };
