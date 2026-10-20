@@ -899,6 +899,14 @@ const I18N={
     'sync.autoBackedUp':'המשחק שלכם גובה בענן ☁️',
     'auth.otpLabel':'או הקלידו את הקוד מהמייל:',
     'auth.otpVerify':'אימות',
+    'auth.otpResumeTitle':'📧 שלחנו קוד ל-{email}. הקלידו אותו כאן:',
+    'auth.otpStay':'אפשר לעבור למייל ולחזור — הקוד יחכה כאן.',
+    'auth.otpResend':'שלחו קוד חדש',
+    'auth.otpResendWait':'שלחו קוד חדש ({n})',
+    'auth.otpResendWarn':'שימו לב: קוד חדש מבטל את הקודם.',
+    'auth.otpResent':'שלחנו קוד חדש. הקלידו את הקוד מהמייל האחרון.',
+    'auth.otpNotMine':'זה לא המייל שלי',
+    'auth.otpClose':'סגירה',
     'auth.otpBad':'הקוד שגוי או שפג תוקפו. בדקו שהקלדתם את הקוד מהמייל האחרון.',
     'auth.otpOk':'התחברתם ✓',
     'auth.otpPrompt':'הקלידו את הקוד מהמייל (או השאירו ריק ולחצו על הקישור במייל):',
@@ -1671,6 +1679,14 @@ const I18N={
     'sync.autoBackedUp':'Your game was backed up to the cloud ☁️',
     'auth.otpLabel':'Or type the code from the email:',
     'auth.otpVerify':'Verify',
+    'auth.otpResumeTitle':'📧 We sent a code to {email}. Type it here:',
+    'auth.otpStay':'You can switch to your email and come back — the code will wait here.',
+    'auth.otpResend':'Send a new code',
+    'auth.otpResendWait':'Send a new code ({n})',
+    'auth.otpResendWarn':'Note: a new code cancels the previous one.',
+    'auth.otpResent':'A new code was sent. Type the code from the latest email.',
+    'auth.otpNotMine':'This is not my email',
+    'auth.otpClose':'Close',
     'auth.otpBad':'The code is wrong or has expired. Check that you typed the code from the latest email.',
     'auth.otpOk':'Signed in ✓',
     'auth.otpPrompt':'Type the code from the email (or leave empty and click the link in the email):',
@@ -3667,6 +3683,15 @@ window.applyI18n=applyI18n;
 </div>
 
 <!-- AUTH MODAL (חשבון וסנכרון — Magic Link) -->
+<!-- D-91: חזרה מאפליקציית המייל — שדה הקוד נפתח לבד -->
+<div class="modal-bg" id="otpres-modal" hidden data-esc="#otpres-close" style="z-index:10002" role="dialog" aria-modal="true" aria-labelledby="otpres-title">
+  <div class="modal-card" style="max-width:420px;width:94%;text-align:center">
+    <div id="otpres-title" style="font-size:1.05rem;font-weight:800;line-height:1.5;margin-bottom:.4rem"></div>
+    <div id="otpres-head"></div>
+    <button data-i18n="auth.otpClose" class="btn btn-ghost" id="otpres-close" type="button" style="width:100%;justify-content:center;margin-top:.7rem">סגירה</button>
+  </div>
+</div>
+
 <div class="modal-bg" id="auth-modal" hidden data-esc="#auth-x">
   <div class="modal-card" style="max-width:420px">
     <div class="modal-hdr">
@@ -12146,8 +12171,20 @@ function authSendErr(e,fallbackPrefix){
   if(/rate.?limit|too many requests/i.test(m)||(e&&(e.status===429||e.code==='over_email_send_rate_limit')))return t('auth.rateLimit');
   return (fallbackPrefix||'שגיאה בשליחה: ')+m;
 }
+// D-91: זוכרים שנשלח קוד (localStorage — שורד רענון, וגם חזרה מאפליקציית המייל). תוקף 15 דקות; נמחק אחרי כניסה / "זה לא המייל שלי".
+const OTP_PENDING_MS=15*60*1000,OTP_RESEND_MS=60*1000;
+function otpPendingGet(){
+  try{
+    const o=JSON.parse(localStorage.getItem('otpPending')||'null');
+    if(o&&o.email&&Date.now()-o.t<OTP_PENDING_MS&&Date.now()-o.t>=0)return o;
+    if(o)localStorage.removeItem('otpPending');
+  }catch(e){}
+  return null;
+}
+function otpPendingSet(email){try{localStorage.setItem('otpPending',JSON.stringify({email,t:Date.now()}));}catch(e){}}
+function otpPendingClear(){try{localStorage.removeItem('otpPending');}catch(e){}}
 // מזריק (פעם אחת) שדה קוד אחרי אלמנט ההודעה. onOk נקרא אחרי אימות מוצלח (ההתחברות עצמה מגיעה דרך onAuthStateChange הקיים).
-function showOtpBox(after,email,pfx,onOk){
+function showOtpBox(after,email,pfx,onOk,onReset){
   if(!otpOn())return;
   let box=document.getElementById(pfx+'-otp');
   if(!box){
@@ -12156,7 +12193,12 @@ function showOtpBox(after,email,pfx,onOk){
       '<div style="display:flex;gap:.4rem;justify-content:center"><input id="'+pfx+'-otp-in" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="8" dir="ltr" '+
       'style="width:9rem;text-align:center;font-size:1.3rem;letter-spacing:.35rem;padding:.45rem .5rem;border-radius:var(--rs);border:1.5px solid var(--border);font-family:inherit">'+
       '<button type="button" id="'+pfx+'-otp-go" class="btn btn-pri">'+t('auth.otpVerify')+'</button></div>'+
-      '<div id="'+pfx+'-otp-msg" role="status" style="font-size:.85rem;min-height:1.3em;margin-top:.4rem"></div>';
+      '<div id="'+pfx+'-otp-msg" role="status" style="font-size:.85rem;min-height:1.3em;margin-top:.4rem"></div>'+
+      '<div style="font-size:.82rem;color:var(--muted);line-height:1.5">'+t('auth.otpStay')+'</div>'+
+      '<div style="font-size:.78rem;color:var(--muted);margin-top:.5rem">'+t('auth.otpResendWarn')+'</div>'+
+      '<div style="display:flex;gap:.9rem;justify-content:center;flex-wrap:wrap;margin-top:.2rem">'+
+      '<button type="button" id="'+pfx+'-otp-resend" class="linkbtn" style="background:none;border:none;color:var(--indigo);text-decoration:underline;cursor:pointer;font-family:inherit;font-size:.85rem;padding:.4rem .3rem"></button>'+
+      '<button type="button" id="'+pfx+'-otp-notmine" style="background:none;border:none;color:var(--muted);text-decoration:underline;cursor:pointer;font-family:inherit;font-size:.85rem;padding:.4rem .3rem">'+t('auth.otpNotMine')+'</button></div>';
     after.insertAdjacentElement('afterend',box);
     const inp=box.querySelector('input'),go=box.querySelector('button'),om=box.querySelector('[role=status]');
     const run=async()=>{
@@ -12166,17 +12208,65 @@ function showOtpBox(after,email,pfx,onOk){
       try{
         const{error}=await SB.auth.verifyOtp({email:box.dataset.email,token,type:'email'});
         if(error)throw error;
+        otpPendingClear();
         om.style.color='#166534';om.textContent=t('auth.otpOk');inp.value='';
-        onOk&&onOk();
+        box._onOk&&box._onOk();
       }catch(e){om.style.color='#b91c1c';om.textContent=t('auth.otpBad');console.warn('verifyOtp:',e&&e.message||e);}
       go.disabled=false;
     };
     go.addEventListener('click',run);
     inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();run();}});
+    // D-91: שלחו קוד חדש (אחרי 60 שנ׳ מהשליחה הקודמת — השרת חוסם שליחה חוזרת בתוך דקה) / זה לא המייל שלי
+    const rs=box.querySelector('#'+pfx+'-otp-resend'),nm=box.querySelector('#'+pfx+'-otp-notmine');
+    const left=()=>{const o=otpPendingGet();return o?Math.max(0,Math.ceil((OTP_RESEND_MS-(Date.now()-o.t))/1000)):0;};
+    const tick=()=>{const l=left();rs.disabled=l>0;rs.textContent=l>0?t('auth.otpResendWait',{n:l}):t('auth.otpResend');rs.style.opacity=l>0?.6:1;};
+    tick();setInterval(()=>{if(!box.hidden)tick();},1000);
+    rs.addEventListener('click',async()=>{
+      if(left()>0||!SB)return;
+      rs.disabled=true;om.style.color='var(--muted)';om.textContent='…';
+      try{
+        const{error}=await SB.auth.signInWithOtp({email:box.dataset.email,options:{emailRedirectTo:location.href}});
+        if(error)throw error;
+        otpPendingSet(box.dataset.email);om.style.color='#166534';om.textContent=t('auth.otpResent');
+      }catch(e){om.style.color='#b91c1c';om.textContent=authSendErr(e);}
+      tick();
+    });
+    nm.addEventListener('click',()=>{otpPendingClear();box.hidden=true;inp.value='';om.textContent='';if(box._onReset)box._onReset();else after.textContent='';});
   }
+  box._onOk=onOk;box._onReset=onReset;
   box.dataset.email=email;box.hidden=false;
   const i=box.querySelector('input');if(i)setTimeout(()=>{try{i.focus({preventScroll:true});}catch(e){}},50);
 }
+
+// D-91: חלון "שלחנו קוד ל-..." — נפתח לבד אחרי רענון / חזרה מהמייל כשיש otpPending בתוקף
+function showOtpResume(){
+  const o=otpPendingGet();if(!o||!otpOn())return;
+  const m=document.getElementById('otpres-modal');
+  document.getElementById('otpres-title').textContent=t('auth.otpResumeTitle',{email:o.email});
+  const close=()=>{m.hidden=true;};
+  showOtpBox(document.getElementById('otpres-head'),o.email,'otpres',close,close);
+  m.hidden=false;
+}
+document.getElementById('otpres-close').addEventListener('click',()=>{document.getElementById('otpres-modal').hidden=true;});
+// כל חלון שבו מבקשים קישור נפתח ישר במצב "הקלידו את הקוד" כשיש otpPending בתוקף
+for(const [mid,pfx,msgId] of [['auth-modal','auth','auth-msg'],['cloudsave-modal','cloudsave','cloudsave-msg']]){
+  const el=document.getElementById(mid);
+  new MutationObserver(()=>{
+    if(el.hidden||!otpOn()||isSignedIn())return;
+    const o=otpPendingGet();if(!o)return;
+    const msg=document.getElementById(msgId);
+    msg.style.color='var(--muted)';msg.textContent=t('auth.otpResumeTitle',{email:o.email});
+    showOtpBox(msg,o.email,pfx);
+  }).observe(el,{attributes:true,attributeFilter:['hidden']});
+}
+setTimeout(async()=>{   // פתיחת הדף: אם אין סשן ויש קוד שנשלח — החלון נפתח מיד
+  try{
+    if(!SB||!otpOn()||!otpPendingGet())return;
+    const r=await SB.auth.getSession();
+    if(r&&r.data&&r.data.session){otpPendingClear();return;}
+    showOtpResume();
+  }catch(e){}
+},900);
 
 document.getElementById('auth-send').addEventListener('click',async()=>{
   const msg=document.getElementById('auth-msg');
@@ -12192,6 +12282,7 @@ document.getElementById('auth-send').addEventListener('click',async()=>{
     const{error}=await SB.auth.signInWithOtp({email,options:{emailRedirectTo:location.href}});
     if(error)throw error;
     msg.style.color='#166534';msg.textContent=t('msg.magicLinkSent');
+    if(otpOn())otpPendingSet(email);
     showOtpBox(msg,email,'auth');
   }catch(e){
     if(hadWork)localStorage.removeItem('dobble_pending_cloud_save');
@@ -12260,6 +12351,7 @@ document.getElementById('cloudsave-send').addEventListener('click',async()=>{
     const{error}=await SB.auth.signInWithOtp({email,options:{emailRedirectTo:location.href}});
     if(error)throw error;
     msg.style.color='#166534';msg.textContent=t('msg.magicLinkSentCloudsave');
+    if(otpOn())otpPendingSet(email);
     showOtpBox(msg,email,'cloudsave');
   }catch(e){
     localStorage.removeItem('dobble_pending_cloud_save');
@@ -12442,6 +12534,7 @@ function unlockFromSession(session,maxOrder){
 // מוצג רק אחרי שהבעלות על המייל אומתה. my_access_codes שולפת את המייל
 // מ-auth.jwt() ולא מקלט — הפרונט לא יכול לבקש קוד של מישהו אחר.
 async function startCodeRecovery(){
+  if(otpOn()&&otpPendingGet()&&!isSignedIn()){showOtpResume();return;}   // D-91: כבר נשלח קוד — מקלידים אותו, לא שולחים מייל נוסף
   const email=(prompt('הזינו את המייל שאיתו נרשמתם — נשלח אליו קישור כניסה:')||'').trim();
   if(!email)return;
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){toast(t('msg.invalidEmailAddress'),'err');return;}
@@ -12450,13 +12543,7 @@ async function startCodeRecovery(){
     const {error}=await SB.auth.signInWithOtp({email,options:{emailRedirectTo:location.href}});
     if(error)throw error;
     toast(t('msg.loginLinkSentShowCode'),'ok');
-    if(otpOn()){   // D-89C: אפשר להקליד את הקוד מהמייל גם כאן, בלי לעבור לדפדפן אחר
-      const tok=(prompt(t('auth.otpPrompt'))||'').replace(/\s+/g,'');
-      if(tok){
-        const r=await SB.auth.verifyOtp({email,token:tok,type:'email'});
-        if(r.error)toast(t('auth.otpBad'),'err');else toast(t('auth.otpOk'),'ok');
-      }
-    }
+    if(otpOn()){otpPendingSet(email);showOtpResume();}   // D-91: חלון הקוד (במקום prompt) — נשאר גם אחרי מעבר לאפליקציית המייל
   }catch(e){
     console.warn('startCodeRecovery:',e);
     toast(authSendErr(e,'שליחת הקישור נכשלה: '),'err');
@@ -12842,6 +12929,8 @@ if(SB){
     updateAuthUI(session);
     if(event==='SIGNED_OUT'){_authHandledUid=null;return;}
     if(event!=='SIGNED_IN'||!session||!session.user)return;
+    otpPendingClear();
+    const om2=document.getElementById('otpres-modal');if(om2)om2.hidden=true;   // D-91
     const uid=session.user.id;
     if(uid===_authHandledUid)return;              // אותו משתמש, פליטה חוזרת — מתעלמים
     _authHandledUid=uid;
