@@ -100,11 +100,12 @@
     </div>
     <div class="card">
       <h2>🎯 המחולל (מאצ׳טו) — במתנה ללקוח</h2>
-      <p class="hint">כותבים את המייל של הלקוח, בוחרים כמה קלפים ולכמה זמן — ומקבלים קוד. שולחים לו את הקוד, ובמחולל הוא לוחץ "יש לי קוד". אם כבר יש לו קוד, אותו קוד משודרג ומוארך.</p>
+      <p class="hint">כותבים את המייל של הלקוח, בוחרים כמה קלפים, כמה הורדות ולכמה זמן — ומקבלים קוד. שולחים לו את הקוד, ובמחולל הוא לוחץ "יש לי קוד". ברירת המחדל: הדפסה אחת. אם כבר יש לו קוד, אותו קוד משודרג ומוארך (מגבלת הורדות קיימת לא קטנה, ולקוח בלי הגבלה — נשאר בלי הגבלה).</p>
       <div style="display:grid;gap:8px;margin-top:10px">
         <input type="email" id="dg-email" placeholder="המייל של הלקוח" dir="ltr" autocomplete="off">
-        <div class="seg" id="dg-tier" style="margin:0;flex-wrap:wrap"><button data-v="13">13 קלפים</button><button data-v="21">21</button><button data-v="31">31</button><button data-v="57" aria-pressed="true">57 (הכל)</button></div>
-        <div class="seg" id="dg-months" style="margin:0"><button data-v="1" aria-pressed="true">חודש</button><button data-v="3">3 חודשים</button><button data-v="12">שנה</button></div>
+        <div class="seg" id="dg-tier" aria-label="כמה קלפים" style="margin:0;flex-wrap:wrap"><button data-v="13">13 קלפים</button><button data-v="21" aria-pressed="true">21</button><button data-v="31">31</button><button data-v="57">57 (הכל)</button></div>
+        <div class="seg" id="dg-dl" aria-label="כמה הורדות" style="margin:0;flex-wrap:wrap"><button data-v="1" aria-pressed="true">הורדה אחת</button><button data-v="3">3 הורדות</button><button data-v="5">5 הורדות</button><button data-v="0">ללא הגבלה</button></div>
+        <div class="seg" id="dg-days" aria-label="לכמה זמן" style="margin:0;flex-wrap:wrap"><button data-v="7">שבוע</button><button data-v="30" aria-pressed="true">חודש</button><button data-v="90">3 חודשים</button><button data-v="365">שנה</button></div>
         <input type="text" id="dg-note" placeholder="הערה (לא חובה) — למשל: מתנה לגננת">
         <div><button class="btn" id="dg-add">🎁 לתת גישה למחולל</button></div>
       </div>
@@ -211,29 +212,36 @@ $('g-add').addEventListener('click',async()=>{
 
 // ── מתנה במחולל (RPC admin_gift_dobble — בודק בשרת שזה המייל של הושעיה) ──
 const segVal=id=>Number(document.querySelector('#'+id+' [aria-pressed=true]').dataset.v);
-['dg-tier','dg-months'].forEach(id=>$(id).querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+['dg-tier','dg-dl','dg-days'].forEach(id=>$(id).querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
   $(id).querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
 })));
+const daysHe=d=>d===7?'שבוע':d===90?'3 חודשים':d===365?'שנה':'חודש';
 const fmtDate=d=>d?new Date(d).toLocaleDateString('he-IL'):'ללא הגבלה';
 async function loadDobbleGifts(){
   const box=$('dg-list');if(!isAdmin()){box.innerHTML='';return;}
   const{data,error}=await sb.rpc('admin_list_dobble_gifts');
   if(error){box.innerHTML='<p class="msg" style="color:var(--err)">שגיאה: '+esc(error.message)+'</p>';return;}
   if(!data.length){box.innerHTML='<p class="hint">עוד לא נתת גישה למחולל במתנה.</p>';return;}
-  box.innerHTML='<table><thead><tr><th>מייל</th><th>מה</th><th>קוד</th><th>בתוקף עד</th></tr></thead><tbody>'+data.map(g=>
-    `<tr><td dir="ltr" style="text-align:start">${esc(g.email)}${g.note?'<br><small dir="rtl">'+esc(g.note)+'</small>':''}</td><td>${g.tier} קלפים<br><small>${g.months===12?'שנה':g.months===3?'3 חודשים':'חודש'}${g.extended?' · הארכה':''}</small></td><td dir="ltr"><b>${esc(g.code)}</b></td><td>${fmtDate(g.expires_at)}</td></tr>`).join('')+'</tbody></table>';
+  box.innerHTML='<table><thead><tr><th>מייל</th><th>מה</th><th>קוד</th><th>בתוקף עד</th><th>הורדות</th></tr></thead><tbody>'+data.map(g=>
+    `<tr><td dir="ltr" style="text-align:start">${esc(g.email)}${g.note?'<br><small dir="rtl">'+esc(g.note)+'</small>':''}</td><td>${g.tier} קלפים<br><small>${daysHe(g.days)}${g.extended?' · הארכה':''}</small></td><td dir="ltr"><b>${esc(g.code)}</b></td><td>${fmtDate(g.expires_at)}</td><td>${g.download_limit==null?'ללא הגבלה':(g.download_count||0)+'/'+g.download_limit}</td></tr>`).join('')+'</tbody></table>';
 }
 $('dg-add').addEventListener('click',async()=>{
   const m=$('dg-msg'),email=$('dg-email').value.trim().toLowerCase();
   if(!isAdmin()){m.style.color='var(--err)';m.textContent='צריך להיכנס קודם';return;}
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){m.style.color='var(--err)';m.textContent='מייל לא תקין';return;}
   $('dg-add').disabled=true;
-  const{data,error}=await sb.rpc('admin_gift_dobble',{p_email:email,p_tier:segVal('dg-tier'),p_months:segVal('dg-months'),p_note:$('dg-note').value.trim()||null});
+  const dlSel=segVal('dg-dl'),dl=dlSel===0?null:dlSel,tier=segVal('dg-tier'),days=segVal('dg-days');
+  const{data,error}=await sb.rpc('admin_gift_dobble',{p_email:email,p_tier:tier,p_days:days,p_downloads:dl,p_note:$('dg-note').value.trim()||null});
   $('dg-add').disabled=false;
   if(error||!data||!data.ok){m.style.color='var(--err)';m.textContent='לא נשמר: '+(error?error.message:(data&&data.reason)||'שגיאה');return;}
   m.style.color='var(--ok)';
-  m.innerHTML=`✓ ${data.extended?'הקוד הקיים של '+esc(email)+' שודרג והוארך':esc(email)+' קיבל גישה'}: <b dir="ltr">${esc(data.code)}</b> · ${data.max_order} קלפים · עד ${fmtDate(data.expires_at)}`+
-    ` <a href="https://wa.me/?text=${encodeURIComponent('מתנה ממני 🎁 גישה למחולל משחק מאצ׳טו: www.hoshaya.co.il/dobble.html\nלוחצים "יש לי קוד" ומקלידים: '+data.code)}" target="_blank" rel="noopener">שלח בוואטסאפ</a>`;
+  // ⚠️ קוד קיים בלי הגבלה (מסלול בתשלום) נשאר בלי הגבלה — מציינים כדי שההודעה ללקוח תהיה נכונה
+  const kept=data.download_limit==null&&dl!=null;
+  const dlTxt=data.download_limit==null?'ללא הגבלת הורדות':data.download_limit===1?'להורדה אחת':'ל-'+data.download_limit+' הורדות';
+  const what=data.download_limit===1?'משחק אחד':'גישה למחולל משחק מאצ׳טו';
+  const wa=`מתנה ממני 🎁 קיבלת במתנה ${what} עד ${data.max_order} קלפים, ${dlTxt}, עד ${fmtDate(data.expires_at)}.\nנכנסים לאתר www.hoshaya.co.il/dobble.html ← "יש לי קוד" ← ${data.code}`;
+  m.innerHTML=`✓ ${data.extended?'הקוד הקיים של '+esc(email)+' שודרג והוארך':esc(email)+' קיבל גישה'}: <b dir="ltr">${esc(data.code)}</b> · ${data.max_order} קלפים · ${dlTxt} · עד ${fmtDate(data.expires_at)}`+(kept?' <small>(הקוד שלו כבר בלי הגבלת הורדות — לא שונה)</small>':'')+
+    ` <a href="https://wa.me/?text=${encodeURIComponent(wa)}" target="_blank" rel="noopener">שלח בוואטסאפ ←</a>`;
   $('dg-email').value='';$('dg-note').value='';loadDobbleGifts();
 });
 

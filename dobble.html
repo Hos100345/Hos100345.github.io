@@ -1082,6 +1082,14 @@ const I18N={
     'paid.noOrder':'צריך לפחות 7 תמונות כדי ליצור משחק',
     'paid.failed':'לא הצלחנו לפתוח את שלב ההורדה — עברו ל"שלב 3" ידנית',
     'export.stepsLine':'1. צור PDF ← 2. הורד קובץ',
+    'gift.limitTitle':'ההורדות במתנה נוצלו 🎁',
+    'gift.limitBody':'רוצים עוד? אפשר לרכוש מנוי, או לכתוב להושעיה.',
+    'gift.buy':'לרכישה',
+    'gift.wa':'וואטסאפ להושעיה',
+    'gift.close':'סגירה',
+    'gift.left1':'🎁 נשארה לך הורדה אחת',
+    'gift.leftN':'🎁 נשארו לך {n} הורדות',
+    'gift.waMsg':'שלום הושעיה, נגמרו ההורדות במתנה במחולל מאצ׳טו ואשמח להמשיך. הקוד שלי: {code}',
     'export.createZipBtn':'🗜️ צור ZIP (PNG)',
     'export.createDxfBtn':'✂️ ייצא DXF לחיתוך',
     'export.backToEditBtn':'← חזרה לעריכה',
@@ -1840,6 +1848,14 @@ const I18N={
     'paid.noOrder':'You need at least 7 images to create a game',
     'paid.failed':'We could not open the download step — go to "Step 3" manually',
     'export.stepsLine':'1. Create the PDF → 2. Download the file',
+    'gift.limitTitle':'Your gift downloads are used up 🎁',
+    'gift.limitBody':'Want more? You can buy a plan, or message Hoshaya.',
+    'gift.buy':'Buy',
+    'gift.wa':'WhatsApp Hoshaya',
+    'gift.close':'Close',
+    'gift.left1':'🎁 You have 1 download left',
+    'gift.leftN':'🎁 You have {n} downloads left',
+    'gift.waMsg':'Hi Hoshaya, my gift downloads in the One Match generator are used up and I would like to continue. My code: {code}',
     'export.createZipBtn':'🗜️ Create ZIP (PNG)',
     'export.createDxfBtn':'✂️ Export DXF for cutting',
     'export.backToEditBtn':'← Back to editing',
@@ -2682,6 +2698,18 @@ window.applyI18n=applyI18n;
 })();
 </script>
 
+<!-- D-90: ההורדות במתנה נוצלו -->
+<div class="modal-bg" id="gift-modal" hidden data-esc="#gift-close" style="z-index:10001">
+  <div class="modal-card" style="max-width:420px;width:94%;text-align:center">
+    <div style="font-size:2.6rem;margin-bottom:.3rem">🎁</div>
+    <div data-i18n="gift.limitTitle" id="gift-title" style="font-size:1.3rem;font-weight:800;margin-bottom:.5rem">ההורדות במתנה נוצלו 🎁</div>
+    <div data-i18n="gift.limitBody" style="color:var(--muted);font-size:.96rem;line-height:1.6;margin-bottom:1rem">רוצים עוד? אפשר לרכוש מנוי, או לכתוב להושעיה.</div>
+    <button data-i18n="gift.buy" class="btn btn-pri" id="gift-buy" type="button" style="width:100%;justify-content:center">לרכישה</button>
+    <a data-i18n="gift.wa" class="btn btn-ok" id="gift-wa" target="_blank" rel="noopener" style="width:100%;justify-content:center;margin-top:.5rem;text-decoration:none">וואטסאפ להושעיה</a>
+    <button data-i18n="gift.close" class="btn btn-ghost" id="gift-close" type="button" style="width:100%;justify-content:center;margin-top:.5rem">סגירה</button>
+  </div>
+</div>
+
 <!-- D-89A: אחרי תשלום -->
 <div class="modal-bg" id="paid-modal" hidden data-esc="#paid-later" style="z-index:10001">
   <div class="modal-card" style="max-width:420px;width:94%;text-align:center">
@@ -3093,6 +3121,7 @@ window.applyI18n=applyI18n;
     </label>
 
     <div id="exp-excess" hidden></div>
+    <div id="gift-left" hidden role="status" style="font-weight:700;color:#92400e;background:#fffbeb;border:1px solid #fcd34d;border-radius:12px;padding:.4rem .8rem;margin:.2rem 0 .5rem"></div>
     <div data-i18n="export.stepsLine" id="exp-steps" style="font-weight:700;color:var(--indigo);margin:.2rem 0 .5rem">1. צור PDF ← 2. הורד קובץ</div>
     <div class="brow">
       <button data-i18n="export.previewBtn" class="btn btn-sec" id="btn-prevprint">👁 תצוגה מקדימה</button>
@@ -5004,6 +5033,7 @@ function goScr(n){
   });
   window.scrollTo({top:0,behavior:'smooth'});
   if(typeof updateExcessLine==='function')updateExcessLine();
+  if(n===3&&typeof refreshGiftLeft==='function')refreshGiftLeft();   // D-90
 }
 
 // ══ UPLOAD (Append Mode) ══
@@ -8534,6 +8564,56 @@ document.getElementById('dl-link').addEventListener('click',()=>{
     detail:`${S._lastFile||''} · ${fmtSize(S._lastSize||0)}`});
 });
 
+// ══ D-90: הורדות במתנה ══
+function giftCode(){
+  if(window.__supportMode)return '';                       // מצב תמיכה: לא נספר
+  try{if(typeof isAdminUser==='function'&&isAdminUser())return '';}catch(e){}
+  try{const sub=JSON.parse(sessionStorage.getItem('dobble_sub')||'null');return (sub&&sub.code)||'';}catch(e){return '';}   // מנהל בקוד ניהול: אין dobble_sub
+}
+// טביעת אצבע של המשחק: התמונות (8×8 לכל סמל), מספר הקלפים. לא כוללת מידה/צורה/צבעים/מסגרת/גב — עיצוב מחדש של אותו משחק לא נספר כמשחק חדש.
+async function gameFingerprint(){
+  const parts=[S.order?S.order.total:0,S.imgEls.length];
+  const c=document.createElement('canvas');c.width=c.height=8;const x=c.getContext('2d');
+  for(const im of S.imgEls){
+    try{x.clearRect(0,0,8,8);x.drawImage(im,0,0,8,8);const d=x.getImageData(0,0,8,8).data;let h='';for(let i=0;i<d.length;i+=4)h+=((d[i]>>4)).toString(16)+((d[i+1]>>4)).toString(16)+((d[i+2]>>4)).toString(16);parts.push(h);}catch(e){parts.push('?');}
+  }
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(parts)));
+  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('').slice(0,40);
+}
+async function giftRpc(fn,body){
+  const cfg=window.SUPABASE_CONFIG||{},ac=new AbortController(),tm=setTimeout(()=>ac.abort(),8000);
+  try{
+    const r=await fetch(cfg.url+'/rest/v1/rpc/'+fn,{method:'POST',signal:ac.signal,headers:{'Content-Type':'application/json','apikey':cfg.anonKey,'Authorization':'Bearer '+cfg.anonKey},body:JSON.stringify(body)});
+    if(!r.ok)return null;return await r.json();
+  }catch(e){return null;}finally{clearTimeout(tm);}
+}
+async function giftDownloadGate(){
+  const code=giftCode();if(!code)return true;
+  let fp=null;try{fp=await gameFingerprint();}catch(e){}
+  const r=await giftRpc('consume_code_download',{p_code:code,p_fp:fp});
+  if(r&&r.ok===false&&r.reason==='download_limit'){showGiftLimit(code);return false;}   // ⛔ חוסמים רק על תשובה מפורשת
+  if(r&&r.limit!=null)renderGiftLeft(r);
+  return true;
+}
+function renderGiftLeft(st){
+  const el=document.getElementById('gift-left');if(!el)return;
+  if(!st||st.limit==null){el.hidden=true;return;}
+  const n=Math.max(0,st.remaining!=null?st.remaining:st.limit-(st.used||0));
+  el.textContent=t(n===1?'gift.left1':'gift.leftN',{n});el.hidden=false;
+}
+async function refreshGiftLeft(){
+  const code=giftCode();if(!code){renderGiftLeft(null);return;}
+  renderGiftLeft(await giftRpc('code_download_status',{p_code:code}));
+}
+function showGiftLimit(code){
+  const wa=String(localStorage.getItem('dobble_wa')||(typeof DCFG!=='undefined'&&DCFG.whatsapp)||'').replace(/\D/g,'');
+  document.getElementById('gift-wa').href='https://wa.me/'+wa+'?text='+encodeURIComponent(t('gift.waMsg',{code}));
+  document.getElementById('gift-modal').hidden=false;
+  renderGiftLeft({limit:1,remaining:0});
+}
+document.getElementById('gift-close').addEventListener('click',()=>{document.getElementById('gift-modal').hidden=true;});
+document.getElementById('gift-buy').addEventListener('click',()=>{document.getElementById('gift-modal').hidden=true;window.showUpgradeModal&&window.showUpgradeModal();});
+
 async function doExport(type){
   if(!isWithinTier(S.order)){
     window.showUpgradeModal&&window.showUpgradeModal();
@@ -8551,6 +8631,9 @@ async function doExport(type){
       }
     }catch(e){console.warn('consume_print_quota:',e);}
   }
+  // D-90: מתנה עם מספר הורדות מוגבל (dobble_access_codes.download_limit). אכיפה בשרת (consume_code_download) — לא אמון בדפדפן.
+  // אותו משחק (טביעת אצבע) שכבר הורד ב-24 השעות האחרונות לא נספר שוב (PDF ואז גיליון/ZIP/חיתוך צורני). תקלת רשת = fail-open.
+  if(!(await giftDownloadGate()))return;
   // ודאות טעינה לפני ציור ל-PDF/תמונה: canvas לא ממתין לפונטים בעצמו,
   // אז בלי זה גב עם פונט Google שעוד לא נטען היה נופל בשקט לפונט המערכת
   // בייצוא בזמן שהתצוגה החיה כבר מציגה את הפונט הנכון. fail-open — כשל
