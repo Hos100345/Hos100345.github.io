@@ -465,6 +465,10 @@
     :focus-visible{outline:3px solid #2563EB;outline-offset:2px;box-shadow:0 0 0 2px #fff}
     .skip-link{position:absolute;top:-100px;right:1rem;z-index:20000;background:var(--blue);color:#fff;padding:.6rem 1rem;border-radius:8px;font-weight:700;text-decoration:none}
     .skip-link:focus{top:.5rem}
+    /* D-89A: הדגשת «צור PDF» אחרי שדרוג */
+    @keyframes attnPulse{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.7)}50%{box-shadow:0 0 0 12px rgba(245,158,11,0)}}
+    .btn.attn{animation:attnPulse 1.2s ease-in-out infinite;outline:3px solid #F59E0B;outline-offset:3px}
+    @media(prefers-reduced-motion:reduce){.btn.attn{animation:none}}
     #local-note[hidden]{display:none!important}   /* D-89B: display:flex ב-inline גובר על [hidden] */
 </style>
 </head>
@@ -636,7 +640,7 @@ function dcfgSave(patch){
     setTimeout(()=>{ls.style.display='none';cb&&cb();},420);
   }
 
-  function doUserUnlock(code,label,maxOrder){
+  function doUserUnlock(code,label,maxOrder,expiresAt,fresh){
     sessionStorage.setItem('dobble_unlocked','1');
     // ברירת מחדל 91 (גישה מלאה = החפיסה הגדולה ביותר) — למסלולי כניסה ישנים שלא מדווחים max_order (קוד מקומי/מנהל)
     sessionStorage.setItem('dobble_max_order',String(maxOrder!=null?maxOrder:91));
@@ -645,6 +649,8 @@ function dcfgSave(patch){
     removeLockScreen(()=>{
       window.track&&window.track('unlock',{});
       window._afterUnlock&&window._afterUnlock();
+      // D-89A: שדרוג מסלול שזוהה בכניסה (או תשלום שנקלט עכשיו) → חלון "התשלום התקבל" עם כפתור ישר להורדה
+      try{window.paidTierCheck&&window.paidTierCheck(code,maxOrder,expiresAt,{force:!!fresh});}catch(e){console.warn('paidTierCheck:',e);}
     });
   }
 
@@ -705,7 +711,7 @@ function dcfgSave(patch){
     const ls=document.getElementById('lock-screen');
     if(ls)ls.style.display='none';
   };
-  window.dobbleUnlock=function(code,label,maxOrder){ doUserUnlock(code,label,maxOrder); };
+  window.dobbleUnlock=function(code,label,maxOrder,expiresAt,fresh){ doUserUnlock(code,label,maxOrder,expiresAt,fresh); };
 
   document.getElementById('lock-cancel').addEventListener('click',()=>window.hideLockScreen());
 
@@ -764,7 +770,7 @@ function dcfgSave(patch){
       submitting=false;err.textContent='';
       if(res&&res.valid){
         const label=res.type==='partner'?'קוד שותף':'כרטיס גישה';
-        doUserUnlock(v,label,res.max_order);return;
+        doUserUnlock(v,label,res.max_order,res.expires_at);return;
       }
       if(res&&res.reason==='expired'){
         window.showRenewPopup&&window.showRenewPopup('expired');return;
@@ -1060,6 +1066,16 @@ const I18N={
     'export.qualityPrintBtn':'איכות הדפסה',
     'export.previewBtn':'👁 תצוגה מקדימה',
     'export.createPdfBtn':'⚙️ צור PDF',
+    'paid.title':'התשלום התקבל',
+    'paid.body':'המשחק שלכם פתוח עד {n} קלפים, עד {date}.',
+    'paid.bodyNoDate':'המשחק שלכם פתוח עד {n} קלפים.',
+    'paid.go':'📥 להורדת המשחק',
+    'paid.later':'אחר כך',
+    'paid.gotIt':'הבנתי',
+    'paid.none':'המשחק נשמר בדפדפן שבו בניתם אותו — פתחו את האתר באותו טלפון ובאותו דפדפן.',
+    'paid.noOrder':'צריך לפחות 7 תמונות כדי ליצור משחק',
+    'paid.failed':'לא הצלחנו לפתוח את שלב ההורדה — עברו ל"שלב 3" ידנית',
+    'export.stepsLine':'1. צור PDF ← 2. הורד קובץ',
     'export.createZipBtn':'🗜️ צור ZIP (PNG)',
     'export.createDxfBtn':'✂️ ייצא DXF לחיתוך',
     'export.backToEditBtn':'← חזרה לעריכה',
@@ -1802,6 +1818,16 @@ const I18N={
     'export.qualityPrintBtn':'Print quality',
     'export.previewBtn':'👁 Preview',
     'export.createPdfBtn':'⚙️ Create PDF',
+    'paid.title':'Payment received',
+    'paid.body':'Your game is open up to {n} cards, until {date}.',
+    'paid.bodyNoDate':'Your game is open up to {n} cards.',
+    'paid.go':'📥 Download your game',
+    'paid.later':'Later',
+    'paid.gotIt':'Got it',
+    'paid.none':'Your game is saved in the browser where you built it — open the site on the same phone and the same browser.',
+    'paid.noOrder':'You need at least 7 images to create a game',
+    'paid.failed':'We could not open the download step — go to "Step 3" manually',
+    'export.stepsLine':'1. Create the PDF → 2. Download the file',
     'export.createZipBtn':'🗜️ Create ZIP (PNG)',
     'export.createDxfBtn':'✂️ Export DXF for cutting',
     'export.backToEditBtn':'← Back to editing',
@@ -2615,7 +2641,7 @@ window.applyI18n=applyI18n;
         try{localStorage.removeItem('dobble_pay_email');}catch(e){}
         setTimeout(()=>{
           m.hidden=true;
-          window.dobbleUnlock&&window.dobbleUnlock(finalCode,'גישה מלאה',data.max_order);
+          window.dobbleUnlock&&window.dobbleUnlock(finalCode,'גישה מלאה',data.max_order,data.expires_at,true);
           try{
             const url=new URL(location.href);
             url.searchParams.delete('paid');url.searchParams.delete('tier');
@@ -2643,6 +2669,18 @@ window.applyI18n=applyI18n;
   }catch(e){}
 })();
 </script>
+
+<!-- D-89A: אחרי תשלום -->
+<div class="modal-bg" id="paid-modal" hidden data-esc="#paid-later" style="z-index:10001">
+  <div class="modal-card" style="max-width:420px;width:94%;text-align:center">
+    <div style="font-size:2.6rem;margin-bottom:.3rem">✅</div>
+    <div data-i18n="paid.title" id="paid-title" style="font-size:1.3rem;font-weight:800;margin-bottom:.5rem">התשלום התקבל</div>
+    <div id="paid-body" style="color:var(--muted);font-size:.96rem;line-height:1.6;margin-bottom:1rem"></div>
+    <div id="paid-none" hidden data-i18n="paid.none" style="background:#fffbeb;border:1px solid #fcd34d;border-radius:12px;padding:.7rem .8rem;font-size:.9rem;line-height:1.6;margin-bottom:1rem">המשחק נשמר בדפדפן שבו בניתם אותו — פתחו את האתר באותו טלפון ובאותו דפדפן.</div>
+    <button data-i18n="paid.go" class="btn btn-pri" id="paid-go" type="button" style="width:100%;justify-content:center;font-size:1.1rem;padding:.9rem">📥 להורדת המשחק</button>
+    <button data-i18n="paid.later" class="btn btn-ghost" id="paid-later" type="button" style="width:100%;justify-content:center;margin-top:.5rem">אחר כך</button>
+  </div>
+</div>
 
 <!-- ONBOARDING MODAL -->
 <div class="modal-bg" id="onboard-modal" hidden data-esc="#onboard-start">
@@ -3043,6 +3081,7 @@ window.applyI18n=applyI18n;
     </label>
 
     <div id="exp-excess" hidden></div>
+    <div data-i18n="export.stepsLine" id="exp-steps" style="font-weight:700;color:var(--indigo);margin:.2rem 0 .5rem">1. צור PDF ← 2. הורד קובץ</div>
     <div class="brow">
       <button data-i18n="export.previewBtn" class="btn btn-sec" id="btn-prevprint">👁 תצוגה מקדימה</button>
       <button data-i18n="export.createPdfBtn" class="btn btn-pri" id="btn-doexp">⚙️ צור PDF</button>
@@ -12185,15 +12224,72 @@ async function refreshCodeTier(){
     const t=parseInt(info.max_order,10);
     if(isNaN(t))return;
     const cur=parseInt(sessionStorage.getItem('dobble_max_order')||'0',10)||0;
-    if(t<=cur)return;                      // אין שינוי, או ניסיון הורדה — מתעלמים
+    if(t<=cur){paidTierCheck(code,t,info.expires_at);return;}   // אין שינוי (רק מתעדים מה נראה), או ניסיון הורדה — מתעלמים
     sessionStorage.setItem('dobble_max_order',String(t));
-    toast(window.t('msg.tierUpgraded',{n:t}),'ok');
+    if(!paidTierCheck(code,t,info.expires_at))toast(window.t('msg.tierUpgraded',{n:t}),'ok');
   }catch(e){console.warn('refreshCodeTier:',e);}
 }
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='visible')refreshCodeTier();
 });
 window.addEventListener('focus',()=>{refreshCodeTier();});
+
+// ══ D-89A: אחרי תשלום — הולכים ישר להורדה ══
+// לקוח ששילם (auto-claim שדרג את הקוד בשרת) לא מצא איפה מורידים. כשמזהים שהמסלול עלה (רענון קוד, כניסה חוזרת בקוד, או claim)
+// מוצג חלון אחד "✅ התשלום התקבל" עם כפתור "📥 להורדת המשחק". "ראינו" נשמר ב-localStorage לפי code+max_order+expires_at — פעם אחת לכל שדרוג.
+// נקרא עם fresh=true רק כשהתשלום נקלט עכשיו (claim); אחרת מציג רק כשהמסלול גבוה ממה שהמכשיר הזה ראה קודם לכן לאותו קוד.
+function paidTierCheck(code,max,expires,opts){
+  max=Number(max);
+  if(!code||!isFinite(max))return false;
+  let seen={};try{seen=JSON.parse(localStorage.getItem('dobble_tier_seen')||'{}')||{};}catch(e){}
+  const prev=seen[code];
+  seen[code]=Math.max(prev||0,max);
+  try{localStorage.setItem('dobble_tier_seen',JSON.stringify(seen));}catch(e){}
+  const upgraded=(opts&&opts.force)?max>7:(prev!=null&&max>prev&&max>7);
+  if(!upgraded)return false;
+  const key=[code,max,expires||''].join('|');
+  let shown=[];try{shown=JSON.parse(localStorage.getItem('dobble_paid_shown')||'[]')||[];}catch(e){}
+  if(shown.includes(key))return false;
+  shown.push(key);try{localStorage.setItem('dobble_paid_shown',JSON.stringify(shown.slice(-20)));}catch(e){}
+  showPaidModal({max,expires});
+  return true;
+}
+window.paidTierCheck=paidTierCheck;
+function paidSymbols(){return S.assets.filter(a=>isSymbolAsset(a)&&a.selected!==false);}
+async function showPaidModal(info){
+  try{if(typeof _idbLoadOnce!=='undefined'&&_idbLoadOnce)await _idbLoadOnce;}catch(e){}   // מחכים שהתמונות מהדפדפן נטענו — כדי לדעת איזה מצב להציג
+  const hasGame=!!(S.deck&&S.deck.length&&S.canvases&&S.canvases.length),n=paidSymbols().length;
+  const state=hasGame?'game':(n>=7?'images':'none');
+  const m=document.getElementById('paid-modal');
+  let d='';
+  if(info.expires){try{d=new Date(info.expires).toLocaleDateString(LANG==='en'?'en-GB':'he-IL');}catch(e){}}
+  document.getElementById('paid-body').textContent=d?t('paid.body',{n:info.max,date:d}):t('paid.bodyNoDate',{n:info.max});
+  const none=state==='none';
+  document.getElementById('paid-none').hidden=!none;
+  document.getElementById('paid-go').hidden=none;
+  document.getElementById('paid-later').textContent=t(none?'paid.gotIt':'paid.later');
+  m.dataset.state=state;m.hidden=false;
+}
+async function paidGo(){
+  const m=document.getElementById('paid-modal'),state=m.dataset.state;
+  m.hidden=true;
+  try{
+    if(state==='images'&&!(S.deck&&S.deck.length)){
+      const syms=paidSymbols();
+      if(!S.order){S.order=bestOrder(Math.min(syms.length,currentMaxOrder()||91));}
+      if(!S.order){toast(t('paid.noOrder'),'err');return;}
+      await generate();
+    }
+    goScr(3);
+    // מדגישים את "צור PDF" ומראים אותו על המסך (goScr גולל לראש הדף)
+    const b=document.getElementById('btn-doexp');
+    b.classList.add('attn');
+    setTimeout(()=>{try{b.scrollIntoView({block:'center',behavior:'smooth'});b.focus({preventScroll:true});}catch(e){}},450);
+    b.addEventListener('click',()=>b.classList.remove('attn'),{once:true});
+  }catch(e){console.warn('paidGo:',e);toast(t('paid.failed'),'err');}
+}
+document.getElementById('paid-go').addEventListener('click',paidGo);
+document.getElementById('paid-later').addEventListener('click',()=>{document.getElementById('paid-modal').hidden=true;});
 
 // המסלול שהחשבון מקנה. מרכז במקום אחד את מה שהיה מפוזר כברירות מחדל בתוך
 // unlockFromSession:
