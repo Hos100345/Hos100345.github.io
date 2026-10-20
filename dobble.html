@@ -4160,6 +4160,129 @@ function reachAt(meta,rotation,angle,half){
   return meta.radial[idx]*half;
 }
 
+// ══ D-93: מרחק אמיתי בין סמלים חתוכים (מסכות אטומות) ══
+// פרופיל רדיאלי (reachAt) בודק רק את הכיוון שעל הקו בין שני המרכזים — שתי צורות מוארכות / קעורות (כוכב, פס, צלב, כנף) חופפות מחוץ לקו הזה.
+// כאן: מסכה 64×64 לכל סמל (alpha>10, כמו הציור) + שדה מרחק; המרחק בין שני סמלים = הקרוב ביותר בין נקודות השפה של האחד לסט האטום של השני.
+// פועל רק על זוגות שאחד מהם חתוך (hasAlpha). עיגול אטום נשאר בנוסחה הישנה — פלט זהה לפיקסל.
+const EX_N=64;
+const EX_CIRC=(()=>{const a=new Float32Array(128);for(let i=0;i<64;i++){const t=i*Math.PI/32;a[2*i]=Math.cos(t);a[2*i+1]=Math.sin(t);}return a;})();
+const EX_SQE=(()=>{const a=new Float32Array(256);for(let i=0;i<128;i++){const sd=Math.floor(i/32),f=(i%32)/32*2-1;const q=[[f,-1],[1,f],[-f,1],[-1,-f]][sd];a[2*i]=q[0];a[2*i+1]=q[1];}return a;})();
+// נגזר מ-meta.m64 ו-S.symShape (בעיגול הציור חותך לעיגול) ונשמר על ה-meta. null = סמל אטום (אנליטי).
+function exactData(meta){
+  if(!meta||!meta.m64)return null;
+  const key=S.symShape==='square'?'s':'c';
+  const c=meta.__ex;if(c&&c.key===key)return c;
+  const N=EX_N,m=meta.m64,op=new Uint8Array(N*N),clip=key==='c';
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+    if(!m[y*N+x])continue;
+    if(clip&&Math.hypot((x+.5)/N*2-1,(y+.5)/N*2-1)>1+1.5/N)continue;
+    op[y*N+x]=1;
+  }
+  const dt=new Float32Array(N*N),ed=[];
+  for(let k=0;k<N*N;k++)dt[k]=op[k]?0:1e9;
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+    const k=y*N+x;let v=dt[k];
+    if(x>0)v=Math.min(v,dt[k-1]+1);
+    if(y>0){v=Math.min(v,dt[k-N]+1);if(x>0)v=Math.min(v,dt[k-N-1]+1.414);if(x<N-1)v=Math.min(v,dt[k-N+1]+1.414);}
+    dt[k]=v;
+  }
+  for(let y=N-1;y>=0;y--)for(let x=N-1;x>=0;x--){
+    const k=y*N+x;let v=dt[k];
+    if(x<N-1)v=Math.min(v,dt[k+1]+1);
+    if(y<N-1){v=Math.min(v,dt[k+N]+1);if(x<N-1)v=Math.min(v,dt[k+N+1]+1.414);if(x>0)v=Math.min(v,dt[k+N-1]+1.414);}
+    dt[k]=v;
+  }
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+    if(!op[y*N+x])continue;
+    if(x===0||y===0||x===N-1||y===N-1||!op[y*N+x-1]||!op[y*N+x+1]||!op[(y-1)*N+x]||!op[(y+1)*N+x])ed.push((x+.5)/N*2-1,(y+.5)/N*2-1);
+  }
+  let rs=0;for(let i=0;i<meta.radial.length;i++)rs+=meta.radial[i];
+  const ex={key,dt,edge:Float32Array.from(ed),rm:rs/meta.radial.length};
+  meta.__ex=ex;return ex;
+}
+// סמל לבדיקה מדויקת: {ex,ro,h,x,y}. מרחק (יחידות עולם) מנקודות השפה של A אל הסט האטום של B, פחות מרווח ביטחון של רזולוציית המסכה.
+function exDir(A,B){
+  const sqS=S.symShape==='square',ea=A.ex?A.ex.edge:(sqS?EX_SQE:EX_CIRC),N=EX_N;
+  const slack=(A.ex?.71*2*A.h/N:0)+(B.ex?1.42*2*B.h/N:0);
+  const ca=Math.cos(A.ro),sa=Math.sin(A.ro),cb=Math.cos(B.ro),sb=Math.sin(B.ro),dtB=B.ex&&B.ex.dt,cw=2*B.h/N;
+  let best=1e9;
+  for(let k=0;k<ea.length;k+=2){
+    const u=ea[k]*A.h,v=ea[k+1]*A.h;
+    const wx=A.x+u*ca-v*sa-B.x,wy=A.y+u*sa+v*ca-B.y;
+    const qx=(wx*cb+wy*sb)/B.h,qy=(-wx*sb+wy*cb)/B.h;   // סיבוב הפוך של B
+    let d;
+    if(dtB){
+      const gx=(qx+1)*.5*N-.5,gy=(qy+1)*.5*N-.5;
+      const ix=Math.min(N-1,Math.max(0,Math.round(gx))),iy=Math.min(N-1,Math.max(0,Math.round(gy)));
+      const ox=gx<0?gx:(gx>N-1?gx-(N-1):0),oy=gy<0?gy:(gy>N-1?gy-(N-1):0);
+      d=(dtB[iy*N+ix]+Math.hypot(ox,oy))*cw;
+    }else d=sqS?Math.max(0,Math.max(Math.abs(qx),Math.abs(qy))-1)*B.h:Math.max(0,Math.hypot(qx,qy)-1)*B.h;
+    if(d-slack<best)best=d-slack;
+  }
+  return best;
+}
+// כמה המרווח הנדרש (fk × סכום "הרדיוסים הממוצעים") גדול מהמרווח בפועל. >0 = הפרה. fk=0 → נגיעה מותרת, חפיפה אסורה.
+function exDeficit(A,B,fk){
+  const rA=A.ex?A.ex.rm:1,rB=B.ex?B.ex.rm:1,tgt=fk*(rA*A.h+rB*B.h);
+  const mA=A.ex?1.5:(S.symShape==='square'?1.42:1),mB=B.ex?1.5:(S.symShape==='square'?1.42:1);
+  if(Math.hypot(B.x-A.x,B.y-A.y)>mA*A.h+mB*B.h+tgt)return -1;
+  return tgt-Math.min(exDir(A,B),exDir(B,A));
+}
+// גבול קשיח בין סמלים (D-93), אחרי הפריסה הרגילה: דוחפים זוגות מופרים לאורך הקו בין המרכזים, ואם עדיין יש הפרה — מקטינים את הזוג.
+// רק כשיש סמל חתוך בקלף, ורק כש-overlap≤0 (חפיפה מותרת רק כשהמשתמש בחר חפיפה). pos מנורמל (rSym=1, מרכז 0,0), משתנה במקום.
+function exactSeparate(pos,layout,imgs){
+  if((S.overlap||0)>0)return;
+  const n=pos.length;if(n<2)return;
+  const metas=layout.syms.map(si=>(imgs[si]&&imgs[si].__symMeta)||CIRCLE_META);
+  if(!metas.some(m=>m.hasAlpha&&m.m64))return;
+  const kT=contactFactor(),fk=Math.max(0,kT-1),hullToo=!!(S.tightPack||S.sizeMode==='auto'),SQ=symBoundNorm();
+  const st=pos.map((p,i)=>({m:metas[i],ex:exactData(metas[i]),ro:layout.tr[i].ro,sc:layout.tr[i].sc,x:p.x,y:p.y,h:p.hs*layout.tr[i].sc}));
+  const pairs=[];
+  for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){
+    if(st[i].ex||st[j].ex)pairs.push([i,j,true]);
+    else if(hullToo)pairs.push([i,j,false]);   // אטום מול אטום: רק כשהפריסה הרגילה כבר אוכפת אותם (ההרפיה) — לא נוגעים בציר אחר
+  }
+  const def=(a,b,ex)=>{
+    if(ex)return exDeficit(a,b,fk);
+    const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy)||1e-4,ang=Math.atan2(dy,dx);
+    return (reachAt(a.m,a.ro,ang+Math.PI,a.h)+reachAt(b.m,b.ro,ang,b.h))*kT-d;
+  };
+  const out=s2=>{   // חריגה מגבול הקלף (>0)
+    const dist=Math.hypot(s2.x,s2.y);
+    if(SQ||s2.ex)return symOverSq(s2.m,s2.ro,s2.h,s2.x,s2.y,SQ,1);
+    return dist+reachAt(s2.m,s2.ro,dist<1e-6?0:Math.atan2(s2.y,s2.x),s2.h)-1;
+  };
+  for(let it=0;it<12;it++){
+    let moved=0;
+    for(const [i,j,ex] of pairs){
+      const a=st[i],b=st[j],dfc=def(a,b,ex);
+      if(!(dfc>1e-4))continue;
+      let dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy);
+      if(d<1e-6){dx=Math.cos(i*2.4);dy=Math.sin(i*2.4);d=1;}
+      const ux=dx/d,uy=dy/d,push=dfc/2;
+      a.x-=ux*push;a.y-=uy*push;b.x+=ux*push;b.y+=uy*push;moved++;
+    }
+    for(const s2 of st){   // מושכים פנימה סמל שיצא מהקלף
+      const o=out(s2);
+      if(o>0){const dist=Math.hypot(s2.x,s2.y);if(dist>1e-6){const m=Math.min(o,dist);s2.x-=s2.x/dist*m;s2.y-=s2.y/dist*m;moved++;}}
+    }
+    if(!moved)break;
+  }
+  for(const s2 of st){   // גבול הקלף: רק הקטנה (נשארת בתוך הקלף גם אחרי הקטנות הבאות)
+    if(!(out(s2)>0))continue;
+    let lo=0,hi=1;for(let k=0;k<14;k++){const m=(lo+hi)/2,h0=s2.h;s2.h=h0*m;const o=out(s2);s2.h=h0;if(o<=0)lo=m;else hi=m;}
+    s2.h*=Math.max(lo,0.02);
+  }
+  for(let it=0;it<60;it++){   // אם נשארה הפרה — מקטינים את הזוג (המרווח הנדרש קטן יחד איתו)
+    let bad=0;
+    for(const [i,j,ex] of pairs){
+      if(def(st[i],st[j],ex)>1e-4){st[i].h*=0.95;st[j].h*=0.95;bad++;}
+    }
+    if(!bad)break;
+  }
+  for(let i=0;i<n;i++){pos[i].x=st[i].x;pos[i].y=st[i].y;pos[i].hs=st[i].h/st[i].sc;}
+}
+
 // הרפיה איטרטיבית מודעת-צורה: מתחילים מהמיקומים של symPos() ודוחפים סמלים עד
 // שאף זוג לא חורג ממרחק המגע הנדרש. דטרמיניסטי לחלוטין — אין רנדום — כדי
 // שהתצוגה המקדימה וה-PDF יהיו זהים בדיוק. משנה pos במקום (x,y,hs).
@@ -4389,7 +4512,7 @@ function cardGeom(sz){
 function packSignature(n){
   // D-87: בריבוע הגבול תלוי במידת הקלף, במסגרת ובמרחק מהשפה (ביחידות rSym) — לכן הם חלק מהחתימה. בעיגול החתימה זהה למה שהיה.
   const sqSig=S.shape==='square'?'sq:'+[S.cardSizeMm,S.frame.w,S.symPad].join(','):'';
-  return [n,S.layoutMode,S.overlap,S.tightPack?1:0,S.tightFill?1:0,S.metaVer||0,S.sizeMode||'',S.sizeMode==='auto'?S.sizeK:'',sqSig].join('|');
+  return [n,S.layoutMode,S.overlap,S.tightPack?1:0,S.tightFill?1:0,S.metaVer||0,S.sizeMode||'',S.sizeMode==='auto'?S.sizeK:'',sqSig,S.symShape==='square'?'ss':''].join('|');
 }
 function packNormalized(layout,imgs){
   const n=layout.syms.length;
@@ -4407,6 +4530,7 @@ function packNormalized(layout,imgs){
     if(S.shape==='square'||layout.syms.some(si=>imgs[si]&&imgs[si].__symMeta&&imgs[si].__symMeta.hasAlpha))clampInsideCard(pos,layout,1,imgs);
   }
   else clampInsideCard(pos,layout,1,imgs);
+  exactSeparate(pos,layout,imgs);   // D-93
   layout.__pack={sig,pos};
   return pos;
 }
@@ -9555,6 +9679,13 @@ function symbolShapeMeta(cv){
     }
   }
   const meta={hasAlpha,radial,fine};
+  if(hasAlpha){   // D-93: מסכה 64×64 (OR על בלוקים 2×2 של הדגימה) למרחק אמיתי בין סמלים חתוכים
+    const m64=new Uint8Array(64*64);
+    for(let y=0;y<64;y++)for(let x=0;x<64;x++){
+      if(data[((2*y)*N+2*x)*4+3]>10||data[((2*y)*N+2*x+1)*4+3]>10||data[((2*y+1)*N+2*x)*4+3]>10||data[((2*y+1)*N+2*x+1)*4+3]>10)m64[y*64+x]=1;
+    }
+    meta.m64=m64;
+  }
   cv.__symMeta=meta;
   return meta;
 }

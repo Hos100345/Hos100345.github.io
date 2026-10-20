@@ -33,7 +33,7 @@ NAMES = [
     'gf4a', 'gf4m', 'gf8a', 'gf8m', 'gf9a', 'gf9m', 'gfOps', 'genDeck', 'bestOrder',
     # פריסה
     'sr', 'buildLayouts', 'overlapFactor', 'contactFactor', 'symPos', 'symPosPeriph',
-    'CIRCLE_RADIAL', 'CIRCLE_META', 'symBoundNorm', 'symOverSq', 'symGmaxSq', 'reachAt', 'relaxSymbolPositions', 'AUTO_GMAX',
+    'CIRCLE_RADIAL', 'CIRCLE_META', 'symBoundNorm', 'symOverSq', 'symGmaxSq', 'reachAt', 'EX_N', 'EX_CIRC', 'EX_SQE', 'exactData', 'exDir', 'exDeficit', 'exactSeparate', 'relaxSymbolPositions', 'AUTO_GMAX',
     'cardGeom', 'packSignature', 'packNormalized', 'clampInsideCard',
     'computeCardPositions', 'applyCardEdits',
     # ציור
