@@ -465,6 +465,11 @@
     :focus-visible{outline:3px solid #2563EB;outline-offset:2px;box-shadow:0 0 0 2px #fff}
     .skip-link{position:absolute;top:-100px;right:1rem;z-index:20000;background:var(--blue);color:#fff;padding:.6rem 1rem;border-radius:8px;font-weight:700;text-decoration:none}
     .skip-link:focus{top:.5rem}
+    /* D-89A: הדגשת «צור PDF» אחרי שדרוג */
+    @keyframes attnPulse{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.7)}50%{box-shadow:0 0 0 12px rgba(245,158,11,0)}}
+    .btn.attn{animation:attnPulse 1.2s ease-in-out infinite;outline:3px solid #F59E0B;outline-offset:3px}
+    @media(prefers-reduced-motion:reduce){.btn.attn{animation:none}}
+    #local-note[hidden]{display:none!important}   /* D-89B: display:flex ב-inline גובר על [hidden] */
 </style>
 </head>
 <body>
@@ -635,7 +640,7 @@ function dcfgSave(patch){
     setTimeout(()=>{ls.style.display='none';cb&&cb();},420);
   }
 
-  function doUserUnlock(code,label,maxOrder){
+  function doUserUnlock(code,label,maxOrder,expiresAt,fresh){
     sessionStorage.setItem('dobble_unlocked','1');
     // ברירת מחדל 91 (גישה מלאה = החפיסה הגדולה ביותר) — למסלולי כניסה ישנים שלא מדווחים max_order (קוד מקומי/מנהל)
     sessionStorage.setItem('dobble_max_order',String(maxOrder!=null?maxOrder:91));
@@ -644,6 +649,8 @@ function dcfgSave(patch){
     removeLockScreen(()=>{
       window.track&&window.track('unlock',{});
       window._afterUnlock&&window._afterUnlock();
+      // D-89A: שדרוג מסלול שזוהה בכניסה (או תשלום שנקלט עכשיו) → חלון "התשלום התקבל" עם כפתור ישר להורדה
+      try{window.paidTierCheck&&window.paidTierCheck(code,maxOrder,expiresAt,{force:!!fresh});}catch(e){console.warn('paidTierCheck:',e);}
     });
   }
 
@@ -704,7 +711,7 @@ function dcfgSave(patch){
     const ls=document.getElementById('lock-screen');
     if(ls)ls.style.display='none';
   };
-  window.dobbleUnlock=function(code,label,maxOrder){ doUserUnlock(code,label,maxOrder); };
+  window.dobbleUnlock=function(code,label,maxOrder,expiresAt,fresh){ doUserUnlock(code,label,maxOrder,expiresAt,fresh); };
 
   document.getElementById('lock-cancel').addEventListener('click',()=>window.hideLockScreen());
 
@@ -763,7 +770,7 @@ function dcfgSave(patch){
       submitting=false;err.textContent='';
       if(res&&res.valid){
         const label=res.type==='partner'?'קוד שותף':'כרטיס גישה';
-        doUserUnlock(v,label,res.max_order);return;
+        doUserUnlock(v,label,res.max_order,res.expires_at);return;
       }
       if(res&&res.reason==='expired'){
         window.showRenewPopup&&window.showRenewPopup('expired');return;
@@ -878,6 +885,14 @@ const I18N={
     'onboard.contactBtn':'📱 פנה/י אלינו בוואטסאפ',
     'onboard.startBtn':'🚀 בואו נתחיל!',
     'header.homeLink':'→ האתר',
+    'sync.localOnly':'💾 המשחק שמור רק בדפדפן הזה.',
+    'sync.localOnlyAct':'לגיבוי בענן ←',
+    'sync.emptyNote':'לא מצאנו משחק בדפדפן הזה. אם בניתם משחק בטלפון או בדפדפן אחר — פתחו את האתר שם.',
+    'sync.cloudFoundTitle':'נמצא משחק בחשבון שלכם',
+    'sync.cloudFoundBody':'אין כאן תמונות, אבל בחשבון שלכם שמור «{name}». לטעון אותו?',
+    'sync.cloudFoundOk':'כן, לטעון',
+    'sync.cloudFoundNo':'לא עכשיו',
+    'sync.autoBackedUp':'המשחק שלכם גובה בענן ☁️',
     'auth.otpLabel':'או הקלידו את הקוד מהמייל:',
     'auth.otpVerify':'אימות',
     'auth.otpBad':'הקוד שגוי או שפג תוקפו. בדקו שהקלדתם את הקוד מהמייל האחרון.',
@@ -1057,6 +1072,16 @@ const I18N={
     'export.qualityPrintBtn':'איכות הדפסה',
     'export.previewBtn':'👁 תצוגה מקדימה',
     'export.createPdfBtn':'⚙️ צור PDF',
+    'paid.title':'התשלום התקבל',
+    'paid.body':'המשחק שלכם פתוח עד {n} קלפים, עד {date}.',
+    'paid.bodyNoDate':'המשחק שלכם פתוח עד {n} קלפים.',
+    'paid.go':'📥 להורדת המשחק',
+    'paid.later':'אחר כך',
+    'paid.gotIt':'הבנתי',
+    'paid.none':'המשחק נשמר בדפדפן שבו בניתם אותו — פתחו את האתר באותו טלפון ובאותו דפדפן.',
+    'paid.noOrder':'צריך לפחות 7 תמונות כדי ליצור משחק',
+    'paid.failed':'לא הצלחנו לפתוח את שלב ההורדה — עברו ל"שלב 3" ידנית',
+    'export.stepsLine':'1. צור PDF ← 2. הורד קובץ',
     'export.createZipBtn':'🗜️ צור ZIP (PNG)',
     'export.createDxfBtn':'✂️ ייצא DXF לחיתוך',
     'export.backToEditBtn':'← חזרה לעריכה',
@@ -1618,6 +1643,14 @@ const I18N={
     'onboard.contactBtn':'📱 Message us on WhatsApp',
     'onboard.startBtn':'🚀 Let’s get started!',
     'header.homeLink':'→ Website',
+    'sync.localOnly':'💾 Your game is saved only in this browser.',
+    'sync.localOnlyAct':'Back up to the cloud →',
+    'sync.emptyNote':'We did not find a game in this browser. If you built a game on your phone or in another browser — open the site there.',
+    'sync.cloudFoundTitle':'A game was found in your account',
+    'sync.cloudFoundBody':'There are no images here, but "{name}" is saved in your account. Load it?',
+    'sync.cloudFoundOk':'Yes, load it',
+    'sync.cloudFoundNo':'Not now',
+    'sync.autoBackedUp':'Your game was backed up to the cloud ☁️',
     'auth.otpLabel':'Or type the code from the email:',
     'auth.otpVerify':'Verify',
     'auth.otpBad':'The code is wrong or has expired. Check that you typed the code from the latest email.',
@@ -1797,6 +1830,16 @@ const I18N={
     'export.qualityPrintBtn':'Print quality',
     'export.previewBtn':'👁 Preview',
     'export.createPdfBtn':'⚙️ Create PDF',
+    'paid.title':'Payment received',
+    'paid.body':'Your game is open up to {n} cards, until {date}.',
+    'paid.bodyNoDate':'Your game is open up to {n} cards.',
+    'paid.go':'📥 Download your game',
+    'paid.later':'Later',
+    'paid.gotIt':'Got it',
+    'paid.none':'Your game is saved in the browser where you built it — open the site on the same phone and the same browser.',
+    'paid.noOrder':'You need at least 7 images to create a game',
+    'paid.failed':'We could not open the download step — go to "Step 3" manually',
+    'export.stepsLine':'1. Create the PDF → 2. Download the file',
     'export.createZipBtn':'🗜️ Create ZIP (PNG)',
     'export.createDxfBtn':'✂️ Export DXF for cutting',
     'export.backToEditBtn':'← Back to editing',
@@ -2610,7 +2653,7 @@ window.applyI18n=applyI18n;
         try{localStorage.removeItem('dobble_pay_email');}catch(e){}
         setTimeout(()=>{
           m.hidden=true;
-          window.dobbleUnlock&&window.dobbleUnlock(finalCode,'גישה מלאה',data.max_order);
+          window.dobbleUnlock&&window.dobbleUnlock(finalCode,'גישה מלאה',data.max_order,data.expires_at,true);
           try{
             const url=new URL(location.href);
             url.searchParams.delete('paid');url.searchParams.delete('tier');
@@ -2638,6 +2681,18 @@ window.applyI18n=applyI18n;
   }catch(e){}
 })();
 </script>
+
+<!-- D-89A: אחרי תשלום -->
+<div class="modal-bg" id="paid-modal" hidden data-esc="#paid-later" style="z-index:10001">
+  <div class="modal-card" style="max-width:420px;width:94%;text-align:center">
+    <div style="font-size:2.6rem;margin-bottom:.3rem">✅</div>
+    <div data-i18n="paid.title" id="paid-title" style="font-size:1.3rem;font-weight:800;margin-bottom:.5rem">התשלום התקבל</div>
+    <div id="paid-body" style="color:var(--muted);font-size:.96rem;line-height:1.6;margin-bottom:1rem"></div>
+    <div id="paid-none" hidden data-i18n="paid.none" style="background:#fffbeb;border:1px solid #fcd34d;border-radius:12px;padding:.7rem .8rem;font-size:.9rem;line-height:1.6;margin-bottom:1rem">המשחק נשמר בדפדפן שבו בניתם אותו — פתחו את האתר באותו טלפון ובאותו דפדפן.</div>
+    <button data-i18n="paid.go" class="btn btn-pri" id="paid-go" type="button" style="width:100%;justify-content:center;font-size:1.1rem;padding:.9rem">📥 להורדת המשחק</button>
+    <button data-i18n="paid.later" class="btn btn-ghost" id="paid-later" type="button" style="width:100%;justify-content:center;margin-top:.5rem">אחר כך</button>
+  </div>
+</div>
 
 <!-- ONBOARDING MODAL -->
 <div class="modal-bg" id="onboard-modal" hidden data-esc="#onboard-start">
@@ -2705,6 +2760,12 @@ window.applyI18n=applyI18n;
 <section id="s1" class="scr on">
   <div class="box">
     <h2 data-i18n="upload.title" class="box-h">העלאת סמלים</h2>
+    <!-- D-89B: אזהרה קבועה כשהעבודה שמורה רק בדפדפן הזה / הודעה כשמחוברים ואין כאן משחק -->
+    <div id="local-note" hidden role="status" style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;background:#fffbeb;border:1px solid #fcd34d;border-radius:12px;padding:.5rem .8rem;font-size:.86rem;line-height:1.5;margin-bottom:.6rem">
+      <span id="local-note-txt"></span>
+      <button type="button" id="local-note-act" class="btn btn-ghost" style="padding:.25rem .6rem;min-height:auto;font-size:.86rem;font-weight:700;color:var(--indigo)"></button>
+      <button type="button" id="local-note-x" class="btn btn-ghost" hidden style="padding:.25rem .55rem;min-height:auto;margin-inline-start:auto" aria-label="סגירה">✕</button>
+    </div>
     <p data-i18n="upload.desc" class="box-s">גרור/י תמונות לכאן — כל העלאה נוספת מצטברת למאגר. לחץ/י ✂ על תמונה כדי להפיק ממנה סמלים נוספים.</p>
 
     <!-- ── Single Upload Component ── -->
@@ -3032,6 +3093,7 @@ window.applyI18n=applyI18n;
     </label>
 
     <div id="exp-excess" hidden></div>
+    <div data-i18n="export.stepsLine" id="exp-steps" style="font-weight:700;color:var(--indigo);margin:.2rem 0 .5rem">1. צור PDF ← 2. הורד קובץ</div>
     <div class="brow">
       <button data-i18n="export.previewBtn" class="btn btn-sec" id="btn-prevprint">👁 תצוגה מקדימה</button>
       <button data-i18n="export.createPdfBtn" class="btn btn-pri" id="btn-doexp">⚙️ צור PDF</button>
@@ -6245,6 +6307,7 @@ document.getElementById('btn-clear-all').addEventListener('click',()=>{
 });
 
 function updateCounter(){
+  if(typeof updateLocalNote==='function')updateLocalNote();
   const usable=S.assets.filter(isSymbolAsset);
   const n=usable.filter(a=>a.selected!==false).length;
   const nSrc=S.assets.filter(a=>a.isCropSource).length;
@@ -11829,6 +11892,7 @@ function updateAuthUI(session){
     inEl.hidden=true;outEl.hidden=false;dot.hidden=true;
   }
   renderDesigns();   // מרענן את רשימת העיצובים (מקומי + ענן)
+  if(typeof updateLocalNote==='function')updateLocalNote();
   if(typeof refreshSubscribersUI==='function')refreshSubscribersUI();
   if(typeof window.dobbleRefreshAiButton==='function')window.dobbleRefreshAiButton();
   updateCloudSaveBtn();
@@ -11883,12 +11947,18 @@ document.getElementById('auth-send').addEventListener('click',async()=>{
   if(!SB){msg.style.color='#b91c1c';msg.textContent=t('msg.syncUnavailable');return;}
   const btn=document.getElementById('auth-send');btn.disabled=true;
   msg.style.color='var(--muted)';msg.textContent=t('msg.sendingLink');
+  // D-89B: גם חיבור דרך "חשבון וסנכרון" מגבה אחרי הכניסה (עד עכשיו רק cloudsave-modal סימן את הדגל) — לקוח שנכנס כך אחרי תשלום איבד את המשחק
+  const hadWork=S.assets.some(isSymbolAsset);
   try{
+    if(hadWork)localStorage.setItem('dobble_pending_cloud_save','1');
     const{error}=await SB.auth.signInWithOtp({email,options:{emailRedirectTo:location.href}});
     if(error)throw error;
     msg.style.color='#166534';msg.textContent=t('msg.magicLinkSent');
     showOtpBox(msg,email,'auth');
-  }catch(e){msg.style.color='#b91c1c';msg.textContent=authSendErr(e);}
+  }catch(e){
+    if(hadWork)localStorage.removeItem('dobble_pending_cloud_save');
+    msg.style.color='#b91c1c';msg.textContent=authSendErr(e);
+  }
   btn.disabled=false;
 });
 
@@ -11975,6 +12045,59 @@ async function maybeAutoSaveAfterCloudConnect(){
     if(cloudsaveModal)cloudsaveModal.hidden=true;
   }catch(e){console.warn('maybeAutoSaveAfterCloudConnect:',e);}
 }
+
+// ── D-89B: אחרי חיבור — (1) גיבוי אוטומטי אם יש כאן עבודה ואין כלום בענן; (2) אם אין כאן עבודה: להציע טעינה מהענן / להסביר ──
+// ⛔ לא מגבה כשיש כבר משהו בענן (אין כפילות), לא במצב תמיכה, לא למנהל/חשבון מנוי-קוד. פעם אחת לסשן.
+// ⛔ כלל idbLoad: מחכים ל-idbLoad() המאוחד (_idbLoadOnce) — לא דוחפים ל-S.assets בעצמנו.
+let _syncCheckDone=false;
+async function postConnectChecks(){
+  if(_syncCheckDone||window.__supportMode||!isSignedIn())return;
+  const email=String(authSession.user.email||'').toLowerCase();
+  if(isSubscriberEmail(email)||adminEmails().includes(email))return;
+  _syncCheckDone=true;
+  try{
+    await idbLoad();
+    const cloud=await cloudListDesigns();
+    const has=S.assets.some(isSymbolAsset);
+    if(has){
+      if(!cloud.length){await cloudAutosave();toast(t('sync.autoBackedUp'),'ok');}
+      return;
+    }
+    if(cloud.length){
+      // לא מציעים בכל טעינת דף: לכל חשבון — פעם ב-24 שעות לכל היותר
+      const k='dobble_cloud_offer_'+authSession.user.id;let last=0;try{last=+localStorage.getItem(k)||0;}catch(e){}
+      if(Date.now()-last<864e5)return;
+      try{localStorage.setItem(k,String(Date.now()));}catch(e){}
+      const row=cloud[0];   // cloudListDesigns ממוין מהחדש לישן
+      const ok=await confirmDialog({icon:'☁️',title:t('sync.cloudFoundTitle'),body:t('sync.cloudFoundBody',{name:row.name}),
+        okText:t('sync.cloudFoundOk'),noText:t('sync.cloudFoundNo'),okStyle:'primary'});
+      if(ok)await loadCloudDesign(row);
+      return;
+    }
+    showLocalNote('empty');
+  }catch(e){console.warn('postConnectChecks:',e);_syncCheckDone=false;}
+}
+// הערה בשלב 1: 'local' = אזהרה קבועה (לא מחובר, יש תמונות); 'empty' = מחובר ואין כאן כלום ואין כלום בענן (ניתן לסגירה)
+let _noteMode='',_emptyDismissed=false;
+function showLocalNote(mode){
+  const el=document.getElementById('local-note');if(!el)return;
+  _noteMode=mode;
+  if(!mode||(mode==='empty'&&_emptyDismissed)){el.hidden=true;return;}
+  document.getElementById('local-note-txt').textContent=t(mode==='local'?'sync.localOnly':'sync.emptyNote');
+  const act=document.getElementById('local-note-act');
+  act.hidden=mode!=='local';act.textContent=t('sync.localOnlyAct');
+  document.getElementById('local-note-x').hidden=mode==='local';
+  el.hidden=false;
+}
+function updateLocalNote(){
+  if(_noteMode==='empty'){if(S.assets.some(isSymbolAsset))showLocalNote('');return;}
+  const unlocked=sessionStorage.getItem('dobble_unlocked')==='1';
+  const email=authSession&&authSession.user?String(authSession.user.email||'').toLowerCase():'';
+  const needs=unlocked&&!window.__supportMode&&!isSignedIn()&&S.assets.some(isSymbolAsset);
+  showLocalNote(needs?'local':'');
+}
+document.getElementById('local-note-act').addEventListener('click',()=>{document.getElementById('auth-modal').hidden=false;});
+document.getElementById('local-note-x').addEventListener('click',()=>{_emptyDismissed=true;showLocalNote('');});
 
 document.getElementById('auth-signout').addEventListener('click',async()=>{
   if(SB)await SB.auth.signOut();
@@ -12164,15 +12287,72 @@ async function refreshCodeTier(){
     const t=parseInt(info.max_order,10);
     if(isNaN(t))return;
     const cur=parseInt(sessionStorage.getItem('dobble_max_order')||'0',10)||0;
-    if(t<=cur)return;                      // אין שינוי, או ניסיון הורדה — מתעלמים
+    if(t<=cur){paidTierCheck(code,t,info.expires_at);return;}   // אין שינוי (רק מתעדים מה נראה), או ניסיון הורדה — מתעלמים
     sessionStorage.setItem('dobble_max_order',String(t));
-    toast(window.t('msg.tierUpgraded',{n:t}),'ok');
+    if(!paidTierCheck(code,t,info.expires_at))toast(window.t('msg.tierUpgraded',{n:t}),'ok');
   }catch(e){console.warn('refreshCodeTier:',e);}
 }
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='visible')refreshCodeTier();
 });
 window.addEventListener('focus',()=>{refreshCodeTier();});
+
+// ══ D-89A: אחרי תשלום — הולכים ישר להורדה ══
+// לקוח ששילם (auto-claim שדרג את הקוד בשרת) לא מצא איפה מורידים. כשמזהים שהמסלול עלה (רענון קוד, כניסה חוזרת בקוד, או claim)
+// מוצג חלון אחד "✅ התשלום התקבל" עם כפתור "📥 להורדת המשחק". "ראינו" נשמר ב-localStorage לפי code+max_order+expires_at — פעם אחת לכל שדרוג.
+// נקרא עם fresh=true רק כשהתשלום נקלט עכשיו (claim); אחרת מציג רק כשהמסלול גבוה ממה שהמכשיר הזה ראה קודם לכן לאותו קוד.
+function paidTierCheck(code,max,expires,opts){
+  max=Number(max);
+  if(!code||!isFinite(max))return false;
+  let seen={};try{seen=JSON.parse(localStorage.getItem('dobble_tier_seen')||'{}')||{};}catch(e){}
+  const prev=seen[code];
+  seen[code]=Math.max(prev||0,max);
+  try{localStorage.setItem('dobble_tier_seen',JSON.stringify(seen));}catch(e){}
+  const upgraded=(opts&&opts.force)?max>7:(prev!=null&&max>prev&&max>7);
+  if(!upgraded)return false;
+  const key=[code,max,expires||''].join('|');
+  let shown=[];try{shown=JSON.parse(localStorage.getItem('dobble_paid_shown')||'[]')||[];}catch(e){}
+  if(shown.includes(key))return false;
+  shown.push(key);try{localStorage.setItem('dobble_paid_shown',JSON.stringify(shown.slice(-20)));}catch(e){}
+  showPaidModal({max,expires});
+  return true;
+}
+window.paidTierCheck=paidTierCheck;
+function paidSymbols(){return S.assets.filter(a=>isSymbolAsset(a)&&a.selected!==false);}
+async function showPaidModal(info){
+  try{if(typeof _idbLoadOnce!=='undefined'&&_idbLoadOnce)await _idbLoadOnce;}catch(e){}   // מחכים שהתמונות מהדפדפן נטענו — כדי לדעת איזה מצב להציג
+  const hasGame=!!(S.deck&&S.deck.length&&S.canvases&&S.canvases.length),n=paidSymbols().length;
+  const state=hasGame?'game':(n>=7?'images':'none');
+  const m=document.getElementById('paid-modal');
+  let d='';
+  if(info.expires){try{d=new Date(info.expires).toLocaleDateString(LANG==='en'?'en-GB':'he-IL');}catch(e){}}
+  document.getElementById('paid-body').textContent=d?t('paid.body',{n:info.max,date:d}):t('paid.bodyNoDate',{n:info.max});
+  const none=state==='none';
+  document.getElementById('paid-none').hidden=!none;
+  document.getElementById('paid-go').hidden=none;
+  document.getElementById('paid-later').textContent=t(none?'paid.gotIt':'paid.later');
+  m.dataset.state=state;m.hidden=false;
+}
+async function paidGo(){
+  const m=document.getElementById('paid-modal'),state=m.dataset.state;
+  m.hidden=true;
+  try{
+    if(state==='images'&&!(S.deck&&S.deck.length)){
+      const syms=paidSymbols();
+      if(!S.order){S.order=bestOrder(Math.min(syms.length,currentMaxOrder()||91));}
+      if(!S.order){toast(t('paid.noOrder'),'err');return;}
+      await generate();
+    }
+    goScr(3);
+    // מדגישים את "צור PDF" ומראים אותו על המסך (goScr גולל לראש הדף)
+    const b=document.getElementById('btn-doexp');
+    b.classList.add('attn');
+    setTimeout(()=>{try{b.scrollIntoView({block:'center',behavior:'smooth'});b.focus({preventScroll:true});}catch(e){}},450);
+    b.addEventListener('click',()=>b.classList.remove('attn'),{once:true});
+  }catch(e){console.warn('paidGo:',e);toast(t('paid.failed'),'err');}
+}
+document.getElementById('paid-go').addEventListener('click',paidGo);
+document.getElementById('paid-later').addEventListener('click',()=>{document.getElementById('paid-modal').hidden=true;});
 
 // המסלול שהחשבון מקנה. מרכז במקום אחד את מה שהיה מפוזר כברירות מחדל בתוך
 // unlockFromSession:
@@ -12432,7 +12612,7 @@ if(SB){
       applySessionTier(session).then(()=>{
         toast(t('msg.signedInSyncingDesigns'),'ok');
         syncDesigns(session);
-        maybeAutoSaveAfterCloudConnect();
+        maybeAutoSaveAfterCloudConnect().then(()=>postConnectChecks());
         if(!_codesShown){_codesShown=true;showMyCodes();}
       });
       return;
@@ -12443,7 +12623,7 @@ if(SB){
     // showMyCodes חייבת לרוץ גם כאן, אחרת התכונה לא עובדת כלל למקרה השימוש שלשמו נבנתה.
     guardedUnlock(session).then(ok=>{   // בודק תוקף מנוי; אם תקין — פותח את האפליקציה
       if(ok){
-        toast(t('msg.signedInLoadingDesigns'),'ok'); syncDesigns(session); maybeAutoSaveAfterCloudConnect();
+        toast(t('msg.signedInLoadingDesigns'),'ok'); syncDesigns(session); maybeAutoSaveAfterCloudConnect().then(()=>postConnectChecks());
         if(!_codesShown){_codesShown=true;showMyCodes();}
       }
     });
