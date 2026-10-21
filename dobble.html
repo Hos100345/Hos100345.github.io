@@ -107,7 +107,7 @@
     /* ── SHAPE TOGGLE ── */
     .shape-row{display:flex;align-items:center;gap:.85rem;margin-top:1.1rem}
     .shape-lbl{font-size:.875rem;font-weight:700}
-    .sbt[hidden],.back-sym-btn[hidden],.back-preset-btn[hidden]{display:none}   /* D-95: כפתורי מנהל — כלל [hidden] */
+    .sbt[hidden],.back-sym-btn[hidden],.back-preset-btn[hidden],.shape-row[hidden]{display:none}   /* D-95: כפתורי מנהל — כלל [hidden] */
     .shape-grp{display:flex;border:2px solid var(--border);border-radius:100px;overflow:hidden}
     .sbt{padding:.4rem 1rem;font-size:.85rem;font-weight:700;font-family:inherit;background:transparent;border:none;cursor:pointer;color:var(--muted);transition:all var(--tr)}
     .sbt.on{background:var(--indigo);color:#fff}
@@ -1109,6 +1109,10 @@ const I18N={
     'back.presetNameMenorah':'חנוכייה',
     'back.presetNameDreidel':'סביבון',
     'shape.smallWarn':'בצורה הזו הסמלים יוצאים קטנים מ-{min} מ"מ (הקטן ביותר: {cur} מ"מ). אפשר להגדיל את הקלף או להפחית סמלים.',
+    'shape.artLabel':'ציור חלש מאחורי הסמלים (חנוכה)',
+    'shape.artOp':'עוצמת הציור',
+    'shape.artLetter':'אות הסביבון',
+    'shape.artLetterAuto':'לפי מספר הקלף',
     'gift.limitTitle':'ההורדות במתנה נוצלו 🎁',
     'gift.limitBody':'רוצים עוד? אפשר לרכוש מנוי, או לכתוב להושעיה.',
     'gift.buy':'לרכישה',
@@ -1897,6 +1901,10 @@ const I18N={
     'back.presetNameMenorah':'Menorah',
     'back.presetNameDreidel':'Dreidel',
     'shape.smallWarn':'In this shape the symbols come out smaller than {min} mm (smallest: {cur} mm). Make the card larger or use fewer symbols.',
+    'shape.artLabel':'Faint drawing behind the symbols (Hanukkah)',
+    'shape.artOp':'Drawing strength',
+    'shape.artLetter':'Dreidel letter',
+    'shape.artLetterAuto':'By card number',
     'gift.limitTitle':'Your gift downloads are used up 🎁',
     'gift.limitBody':'Want more? You can buy a plan, or message Hoshaya.',
     'gift.buy':'Buy',
@@ -2933,6 +2941,19 @@ window.applyI18n=applyI18n;
         <button data-i18n="upload.cardShapeMenorahSmooth" class="sbt admin-shape" data-s="menorah-smooth" hidden>🕎 חנוכייה חלקה</button>
         <button data-i18n="upload.cardShapeDreidel" class="sbt admin-shape" data-s="dreidel" hidden>🪀 סביבון</button>
       </div>
+    </div>
+    <div class="shape-row admin-shape" id="shape-art-row" hidden style="flex-wrap:wrap;gap:.6rem 1rem">
+      <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;font-weight:700"><input type="checkbox" id="shape-art-on"><span data-i18n="shape.artLabel">ציור חלש מאחורי הסמלים (חנוכה)</span></label>
+      <div class="sl-row" data-sl-lock="sl-shart" style="min-width:12rem">
+        <div class="sl-lbl"><span id="lbl-shart" data-i18n="shape.artOp">עוצמת הציור</span><b id="shart-val">12%</b></div>
+        <div style="display:flex;align-items:center;gap:.4rem">
+          <button class="btn btn-ghost" type="button" data-step="sl-shart" data-dir="-1" aria-label="−" style="padding:.15rem .6rem;min-width:2rem;justify-content:center">−</button>
+          <input type="range" id="sl-shart" min="8" max="15" value="12" step="1" style="pointer-events:none" aria-labelledby="lbl-shart">
+          <button class="btn btn-ghost" type="button" data-step="sl-shart" data-dir="1" aria-label="+" style="padding:.15rem .6rem;min-width:2rem;justify-content:center">+</button>
+        </div>
+      </div>
+      <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;font-weight:700"><span data-i18n="shape.artLetter">אות הסביבון</span>
+        <select id="shape-art-letter"><option value="נ">נ</option><option value="ג">ג</option><option value="ה">ה</option><option value="ש">ש</option><option value="auto" data-i18n="shape.artLetterAuto">לפי מספר הקלף</option></select></label>
     </div>
     <div class="shape-row">
       <span data-i18n="upload.symbolShapeLabel" class="shape-lbl">צורת סמל:</span>
@@ -4532,39 +4553,69 @@ const AUTO_GMAX=4,AUTO_STEPS=7;   // ראו "גודל אוטומטי" ב-relaxSy
 // מכל נתיב נגזרים: ציור (clip/stroke), שדה מרחק מסומן SDF (גבול הסמלים, אופסט למסגרת/גלישה), וקו חיתוך וקטורי.
 // circle ו-square אינם כאן — נשארים בדיוק כמו קודם.
 const CARD_SHAPES={
-  'menorah-candles':{he:'חנוכייה עם נרות',en:'Menorah with candles',ops:()=>menorahOps(true)},
-  'menorah-smooth':{he:'חנוכייה חלקה',en:'Smooth menorah',ops:()=>menorahOps(false)},
-  'dreidel':{he:'סביבון',en:'Dreidel',ops:()=>dreidelOps()}
+  'menorah-candles':{he:'חנוכייה עם בליטות להבות',en:'Menorah with flame bumps',ops:()=>abstractShapeOps('menorah-candles')},
+  'menorah-smooth':{he:'חנוכייה עם קשת חלקה',en:'Menorah with smooth arch',ops:()=>abstractShapeOps('menorah-smooth')},
+  'dreidel':{he:'סביבון',en:'Dreidel',ops:()=>abstractShapeOps('dreidel')}
 };
 function isSpecialShape(id){return !!CARD_SHAPES[id===undefined?S.shape:id];}
-function menorahOps(candles){
-  const o=[],yb=candles?.215:.1,X0=.03,X1=.97,cr=.05;
-  o.push(['M',X0,yb+cr]);
-  o.push(['C',X0,yb+cr*.45,X0+cr*.45,yb,X0+cr,yb]);
-  if(candles){
-    for(let k=0;k<9;k++){
-      const cx=.08+k*.105,hw=.027,top=k===4?.0:.085,ty=top+hw,kk=.5523*hw;
-      o.push(['L',cx-hw,yb],['L',cx-hw,ty]);
-      o.push(['C',cx-hw,ty-kk,cx-kk,top,cx,top]);
-      o.push(['C',cx+kk,top,cx+hw,ty-kk,cx+hw,ty]);
-      o.push(['L',cx+hw,yb]);
-    }
+// D-95B: צורה מופשטת ועגולה שרק מרמזת על חנוכייה / סביבון. נבנית מצורות פשוטות (אליפסה, מלבן מעוגל, מעטפת קמורה) ואז
+// "סגירה+פתיחה" מורפולוגית ברדיוס 6 מ"מ (ביחידות קלף של 85 מ"מ: 0.0706) — כך אין פינה חדה (רדיוס עיקום ≥6 מ"מ), אין חריץ צר מ-12 מ"מ
+// ואין בליטה/צוואר דק. מידות בקלף 85 מ"מ = יחידות תיבה × 85. הקו הסופי נדגם לפוליגון חלק (אותו נתיב לציור, ל-SDF ולחיתוך).
+const SHAPE_RAD=.082,DOME_N=2.5;   // 7 מ"מ — הפער שמעל 6 מ"מ סופג את ההחלקה
+function _maskDilate(m,N,r){const d=edt2d(m,N,1),o=new Uint8Array(N*N);for(let i=0;i<N*N;i++)o[i]=d[i]<=r?1:0;return o;}
+function _maskErode(m,N,r){const d=edt2d(m,N,0),o=new Uint8Array(N*N);for(let i=0;i<N*N;i++)o[i]=d[i]>r?1:0;return o;}
+function abstractShapeOps(id){
+  const N=SHAPE_N*2,k=N/SHAPE_S,M=SHAPE_M,X=u=>(u+M)*k;   // בנייה ברזולוציה כפולה — קווים ישרים/אלכסוניים בלי אדוות פיקסל
+  const cv=document.createElement('canvas');cv.width=cv.height=N;
+  const c=cv.getContext('2d',{willReadFrequently:true});c.fillStyle='#000';
+  const ell=(cx,cy,rx,ry)=>{c.beginPath();c.ellipse(X(cx),X(cy),rx*k,ry*k,0,0,Math.PI*2);c.fill();};
+  const rect=(x,y,w,h)=>{c.beginPath();c.rect(X(x),X(y),w*k,h*k);c.fill();};
+  const rr=(x,y,w,h,cr)=>{c.beginPath();rrect(c,X(x),X(y),w*k,h*k,cr*k);c.fill();};
+  const circ=(cx,cy,r)=>ell(cx,cy,r,r);
+  if(id==='dreidel'){
+    // גוף = מעטפת קמורה של 5 מרכזים מורחבת ב-0.12 (10 מ"מ): פינות עליונות, פינות אמצע וחוד עגול; ידית רחבה וקצרה עם קצה עגול
+    c.beginPath();[[.22,.29],[.78,.29],[.78,.55],[.5,.85],[.22,.55]].forEach((q,i)=>i?c.lineTo(X(q[0]),X(q[1])):c.moveTo(X(q[0]),X(q[1])));c.closePath();c.fill();
+    const g=c.getImageData(0,0,N,N).data,hm=new Uint8Array(N*N);
+    for(let i=0;i<N*N;i++)hm[i]=g[i*4+3]>127?1:0;
+    const hd=_maskDilate(hm,N,.12*k);   // רק הגוף מורחב; הידית נוספת אחרי
+    c.clearRect(0,0,N,N);rr(.35,.03,.30,.30,.15);
+    const h2=c.getImageData(0,0,N,N).data;
+    c.clearRect(0,0,N,N);const im=c.createImageData(N,N);
+    for(let i=0;i<N*N;i++){const v=hd[i]||h2[i*4+3]>127;im.data[i*4+3]=v?255:0;}
+    c.putImageData(im,0,0);
+  }else{
+    const topY=x=>.40-.345*Math.pow(Math.max(0,1-Math.pow(Math.abs(x-.5)/.4,DOME_N)),1/DOME_N);
+    c.beginPath();for(let i=0;i<=160;i++){const t=i/160*Math.PI*2,ct=Math.cos(t),st=Math.sin(t);   // כיפה: על-אליפסה (n=2.5), 80% מרוחב הקלף
+      const px=.5+.40*Math.sign(ct)*Math.pow(Math.abs(ct),2/DOME_N),py=.40+.345*Math.sign(st)*Math.pow(Math.abs(st),2/DOME_N);i?c.lineTo(X(px),X(py)):c.moveTo(X(px),X(py));}c.closePath();c.fill();
+    rect(.28,.55,.44,.30);                // צוואר 37 מ"מ
+    rr(.17,.79,.66,.185,.0925);           // בסיס עגול: 66% מהרוחב
+    if(id==='menorah-candles')for(const x of[.5,.26,.74])circ(x,topY(x)+.19-.044,.19);   // 3 בליטות רכות, גובה 3.7 מ"מ, בסיס ≥20 מ"מ
   }
-  o.push(['L',X1-cr,yb]);
-  o.push(['C',X1-cr*.45,yb,X1,yb+cr*.45,X1,yb+cr]);
-  o.push(['L',X1,yb+.12]);
-  o.push(['C',X1,.60,.64,.68,.57,.79]);                 // הקערה מצטמצמת לרגל
-  o.push(['L',.57,.87]);
-  o.push(['C',.57,.915,.72,.915,.77,.955]);              // פיתול הבסיס
-  o.push(['C',.81,.975,.80,1,.74,1]);
-  o.push(['L',.26,1]);
-  o.push(['C',.20,1,.19,.975,.23,.955]);
-  o.push(['C',.28,.915,.43,.915,.43,.87]);
-  o.push(['L',.43,.79]);
-  o.push(['C',.36,.68,.03,.60,.03,yb+.12]);
-  o.push(['L',X0,yb+cr]);
-  o.push(['Z']);
-  return o;
+  const a=c.getImageData(0,0,N,N).data;let m=new Uint8Array(N*N);
+  for(let i=0;i<N*N;i++)m[i]=a[i*4+3]>127?1:0;
+  const r=SHAPE_RAD*k;
+  m=_maskDilate(_maskErode(m,N,r),N,r);   // פתיחה: מעגלת פינות חיצוניות ומסירה בליטות דקות
+  m=_maskErode(_maskDilate(m,N,r),N,r);   // סגירה (אחרונה — שומרת רדיוס פנימי ≥ r): ממלאת חריצים צרים ומעגלת פינות פנימיות
+  // טשטוש קל של המסכה (3 מעברי ממוצע אופקי+אנכי) ← שדה רציף; הקו ברמה 0.5 חלק, בלי מדרגות פיקסל
+  let f=new Float32Array(N*N);for(let i=0;i<N*N;i++)f[i]=m[i];
+  const tmp=new Float32Array(N*N),RB=6;
+  for(let pass=0;pass<4;pass++){
+    for(let y=0;y<N;y++)for(let x=0;x<N;x++){let a2=0,c2=0;for(let d=-RB;d<=RB;d++){const xx=x+d;if(xx>=0&&xx<N){a2+=f[y*N+xx];c2++;}}tmp[y*N+x]=a2/c2;}
+    for(let y=0;y<N;y++)for(let x=0;x<N;x++){let a2=0,c2=0;for(let d=-RB;d<=RB;d++){const yy=y+d;if(yy>=0&&yy<N){a2+=tmp[yy*N+x];c2++;}}f[y*N+x]=a2/c2;}
+  }
+  for(let i=0;i<N*N;i++)f[i]=.5-f[i];   // שלילי = פנים
+  let pts=marchingLoop(f,N,0);   // [x,y,...] בקואורדינטות תיבה
+  let n=pts.length/2;
+  for(let it=0;it<18;it++){const q=pts.slice();for(let i=0;i<n;i++){const a2=((i-1+n)%n)*2,b2=((i+1)%n)*2;pts[2*i]=(q[a2]+q[2*i]*2+q[b2])/4;pts[2*i+1]=(q[a2+1]+q[2*i+1]*2+q[b2+1])/4;}}
+  const cum=[0];for(let i=1;i<=n;i++){const a2=(i-1)*2,b2=(i%n)*2;cum.push(cum[i-1]+Math.hypot(pts[b2]-pts[a2],pts[b2+1]-pts[a2+1]));}
+  const total=cum[n],cnt=Math.max(120,Math.round(total/.004)),ops=[];let seg=0;
+  for(let j=0;j<cnt;j++){
+    const tgt=j/cnt*total;while(seg<n-1&&cum[seg+1]<tgt)seg++;
+    const a2=seg*2,b2=((seg+1)%n)*2,sl=cum[seg+1]-cum[seg]||1,t=(tgt-cum[seg])/sl;
+    ops.push([j?'L':'M',pts[a2]+(pts[b2]-pts[a2])*t,pts[a2+1]+(pts[b2+1]-pts[a2+1])*t]);
+  }
+  ops.push(['Z']);
+  return ops;
 }
 function dreidelOps(){
   return [['M',.465,.11],['L',.465,.03],['C',.465,0,.535,0,.535,.03],['L',.535,.11],
@@ -4635,6 +4686,13 @@ function shapeInfo(id){
   for(let i=0;i<N*N;i++)bin[i]=a[i*4+3]>127?1:0;
   const dOut=edt2d(bin,N,1),dIn=edt2d(bin,N,0),sdf=new Float32Array(N*N);   // מחוץ: מרחק לפנים · פנים: מרחק לחוץ
   for(let i=0;i<N*N;i++)sdf[i]=(bin[i]?-(dIn[i]-.5):(dOut[i]-.5))*SHAPE_S/N;          // שלילי = בפנים (יחידות תיבה)
+  {   // החלקת ה-SDF (2 מעברי ממוצע) — קווי אופסט (מסגרת/גלישה) בלי מדרגות פיקסל
+    const tmp=new Float32Array(N*N),R=2;
+    for(let pass=0;pass<2;pass++){
+      for(let y=0;y<N;y++)for(let x=0;x<N;x++){let a2=0,c2=0;for(let d=-R;d<=R;d++){const xx=x+d;if(xx>=0&&xx<N){a2+=sdf[y*N+xx];c2++;}}tmp[y*N+x]=a2/c2;}
+      for(let y=0;y<N;y++)for(let x=0;x<N;x++){let a2=0,c2=0;for(let d=-R;d<=R;d++){const yy=y+d;if(yy>=0&&yy<N){a2+=tmp[yy*N+x];c2++;}}sdf[y*N+x]=a2/c2;}
+    }
+  }
   inf={ops,N,sdf,contours:{}};CARD_SHAPES._c[id]=inf;
   shapePolyline(id);
   return inf;
@@ -4648,11 +4706,10 @@ function shapeSdfAt(inf,u,v){
   const ox=(gx-cx)/N*SHAPE_S,oy=(gy-cy)/N*SHAPE_S;
   return (ox||oy)?val+Math.hypot(ox,oy):val;
 }
-// קו מתאר (מרובע-צעדים) ברמה L של ה-SDF (יחידות תיבה; שלילי = פנימה, חיובי = החוצה). מחזיר את הלולאה הארוכה ביותר, נקודות מנורמלות [x,y,...].
-function shapeContour(id,L){
-  const inf=shapeInfo(id),key=Math.round(L*20000);
-  if(inf.contours[key])return inf.contours[key];
-  const N=inf.N,s=inf.sdf,segs=[],eid=(x,y,dir)=>(y*N+x)*2+dir;
+// קו מתאר (מרובע-צעדים) ברמה L של ה-SDF (יחידות תיבה; שלילי = פנימה, חיובי = החוצה). לולאה ארוכה ביותר.
+// מרובע-צעדים על שדה מסומן s (N×N, יחידות תיבה) ברמה L; מחזיר את הלולאה הארוכה ביותר כנקודות [x,y,...] בקואורדינטות תיבה
+function marchingLoop(s,N,L){
+  const segs=[],eid=(x,y,dir)=>(y*N+x)*2+dir;
   const pt=(e)=>{   // נקודת החיתוך על הקצה e
     const dir=e&1,idx=e>>1,x=idx%N,y=(idx-x)/N;
     const a=s[idx],b=dir===0?s[idx+1]:s[idx+N],t=(L-a)/(b-a);
@@ -4686,6 +4743,12 @@ function shapeContour(id,L){
     }
     if(loop.length>best.length)best=loop;
   }
+  return best;
+}
+function shapeContour(id,L){
+  const inf=shapeInfo(id),key=Math.round(L*20000);
+  if(inf.contours[key])return inf.contours[key];
+  const best=marchingLoop(inf.sdf,inf.N,L);
   inf.contours[key]=best;
   return best;
 }
@@ -4807,6 +4870,41 @@ function packSpecial(pos,layout,imgs,B){
 }
 // חוצה את הקו הצורני לפוליגון עבור jsPDF (מ"מ): מחזיר נקודות מוחלטות [[x,y],...] בתיבה ששמאלה-עליון (x0,y0) וצלעה box
 function shapeCutPoints(id,x0,y0,box){return shapePolyline(id).map(p=>[x0+p[0]*box,y0+p[1]*box]);}
+// D-95B: ציור חנוכייה / סביבון מותאם לצורה — מצויר בקואורדינטות תיבה (0..1) ולכן גדל עם הקלף, ונחתך לקו החיתוך פחות 4 מ"מ.
+// צבע אחד; קו נקי + מילוי רך. חנוכייה: קשת הנרות מקבילה לקשת הקלף, זרועות מהגזע, בסיס בתוך הבסיס. סביבון: גוף, כתף ואות גדולה.
+const DREIDEL_LETTERS=['נ','ג','ה','ש'];
+function drawShapeArt(ctx,id,G,color,alpha,letter){
+  const box=2*G.r,x0=G.cx-G.r,y0=G.cy-G.r,X=u=>x0+u*box,Y=v=>y0+v*box,L=v=>v*box;
+  ctx.save();
+  ctx.beginPath();traceCardShape(ctx,id,G,G.ppMm*4);ctx.clip();   // גבול הציור = קו החיתוך פחות 4 מ"מ
+  ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=color;ctx.fillStyle=color;
+  const A=alpha==null?1:alpha;
+  ctx.globalAlpha=A*.10;ctx.fillRect(0,0,G.cx*2,G.cy*2);          // מילוי רך של כל הצורה הפנימית
+  ctx.globalAlpha=A;ctx.lineWidth=L(.008);
+  ctx.beginPath();traceCardShape(ctx,id,G,G.ppMm*4);ctx.stroke();   // קו מקביל לחיתוך
+  if(id==='dreidel'){
+    ctx.lineWidth=L(.012);
+    ctx.beginPath();ctx.moveTo(X(.2),Y(.40));ctx.lineTo(X(.8),Y(.40));ctx.stroke();   // כתף הסביבון
+    ctx.lineWidth=L(.006);ctx.globalAlpha=A*.7;ctx.beginPath();traceCardShape(ctx,id,G,G.ppMm*11);ctx.stroke();ctx.globalAlpha=A;ctx.lineWidth=L(.012);   // קו פנימי נוסף, מקביל לחיתוך
+    ctx.globalAlpha=A*.22;ctx.beginPath();ctx.ellipse(X(.5),Y(.17),L(.06),L(.05),0,0,Math.PI*2);ctx.fill();   // ידית רכה
+    ctx.globalAlpha=A;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.font=`800 ${L(.34)}px Heebo,Arial,sans-serif`;ctx.fillText(letter||'נ',X(.5),Y(.62));
+  }else{
+    const arch=x=>.40-.298*Math.pow(Math.max(0,1-Math.pow(Math.abs(x-.5)/.353,2.5)),.4);   // קשת הכיפה הפנימית (מקבילה לקלף)
+    ctx.lineWidth=L(.016);
+    const xs=[];for(let k=-4;k<=4;k++)xs.push(.5+k*.08);
+    xs.forEach((x,i)=>{
+      const sham=i===4,top=arch(x)+(sham?.0:.035),flameH=.05,candleTop=top+flameH,candleBase=candleTop+(sham?.15:.115);
+      if(!sham){const dx=x-.5;ctx.beginPath();ctx.moveTo(X(.5),Y(.66));ctx.bezierCurveTo(X(.5+dx*.55),Y(.73),X(.5+dx),Y(.62),X(x),Y(candleBase));ctx.stroke();}   // זרוע
+      ctx.fillRect(X(x-.017),Y(candleTop),L(.034),L(candleBase-candleTop));                                   // נר
+      ctx.beginPath();ctx.ellipse(X(x),Y(top+flameH*.5),L(.016),L(flameH*.55),0,0,Math.PI*2);ctx.fill();   // להבה
+    });
+    ctx.beginPath();ctx.moveTo(X(.5),Y(.38));ctx.lineTo(X(.5),Y(.84));ctx.stroke();                          // גזע
+    ctx.globalAlpha=A*.55;ctx.beginPath();rrect(ctx,X(.24),Y(.845),L(.52),L(.085),L(.042));ctx.fill();       // בסיס — מילוי רך
+    ctx.globalAlpha=A;ctx.beginPath();rrect(ctx,X(.24),Y(.845),L(.52),L(.085),L(.042));ctx.stroke();
+  }
+  ctx.restore();
+}
 function pdfStrokeShape(pdf,id,cxMm,cyMm,boxMm){
   const P=shapeCutPoints(id,cxMm-boxMm/2,cyMm-boxMm/2,boxMm),rel=[];
   for(let i=1;i<P.length;i++)rel.push([P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]]);
@@ -4963,6 +5061,10 @@ function drawCard(canvas,layout,imgs,shape,hitIdx,opts){
     ctx.strokeStyle='rgba(0,0,0,.12)';ctx.lineWidth=1.5;ctx.stroke();
   }
 
+  if(SP&&S.shapeArt&&S.shapeArt.on&&!(opts&&opts.noArt)){   // D-95B: ציור חלש מאחורי הסמלים (מנהל)
+    const lt=S.shapeArt.letter==='auto'?DREIDEL_LETTERS[(layout.ci||0)%4]:S.shapeArt.letter;
+    drawShapeArt(ctx,SP,G,S.shapeArt.color||'#1E3A8A',(S.shapeArt.op||12)/100,lt);
+  }
   const pos=computeCardPositions(layout,imgs,sz).pos;
   for(let i=0;i<layout.syms.length;i++){
     const si=layout.syms[i],pp=pos[i],t=layout.tr[i],img=imgs[si];
@@ -5046,8 +5148,8 @@ BackAssets.SYMBOLS_ADMIN=[
   }}
 ];
 BackAssets.PRESETS_ADMIN=[
-  {id:'hanukkah-menorah',nameKey:'back.presetNameMenorah',admin:true,apply(){return{bg:{mode:'radial',c1:'#1E40AF',c2:'#0B1B4D'},pattern:{id:'stars',color:'#FDE68A',op:14,scale:90},frame:{id:'double',color:'#FDE68A',w:3,op:100},symbol:{id:'menorah',color:'#FDE68A',size:68,op:100,dy:-6}};}},
-  {id:'hanukkah-dreidel',nameKey:'back.presetNameDreidel',admin:true,apply(){return{bg:{mode:'diag',c1:'#1D4ED8',c2:'#0EA5E9'},pattern:{id:'dots',color:'#FFFFFF',op:22,scale:80},frame:{id:'double',color:'#FFFFFF',w:3,op:100},symbol:{id:'dreidel',color:'#FFFFFF',size:60,op:100,dy:0}};}}
+  {id:'hanukkah-menorah',nameKey:'back.presetNameMenorah',admin:true,apply(){return{bg:{mode:'radial',c1:'#1E40AF',c2:'#0B1B4D'},pattern:{id:'stars',color:'#FDE68A',op:14,scale:90},frame:{id:'double',color:'#FDE68A',w:3,op:100},symbol:{id:isSpecialShape()?'shape-art':'menorah',color:'#FDE68A',size:68,op:100,dy:-6}};}},
+  {id:'hanukkah-dreidel',nameKey:'back.presetNameDreidel',admin:true,apply(){return{bg:{mode:'diag',c1:'#1D4ED8',c2:'#0EA5E9'},pattern:{id:'dots',color:'#FFFFFF',op:22,scale:80},frame:{id:'double',color:'#FFFFFF',w:3,op:100},symbol:{id:isSpecialShape()?'shape-art':'dreidel',color:'#FFFFFF',size:60,op:100,dy:0}};}}
 ];
 BACK_SYMBOLS.push(..._withBackName(BackAssets.SYMBOLS_ADMIN));
 BACK_PRESETS.push(..._withBackName(BackAssets.PRESETS_ADMIN));
@@ -5435,7 +5537,9 @@ function drawCardBack(canvas){
 
   if(B.symbol.id!=='none'&&B.symbol.op>0){
     const sym=BACK_SYMBOLS.find(s=>s.id===B.symbol.id);
-    if(sym){
+    if(B.symbol.id==='shape-art'){   // D-95B: ציור מותאם לצורה (חנוכייה/סביבון) — תמיד מלא ובצבע הסמל
+      if(SP)drawShapeArt(ctx,SP,{cx,cy,r,ppMm},B.symbol.color,B.symbol.op/100,S.shapeArt&&S.shapeArt.letter&&S.shapeArt.letter!=='auto'?S.shapeArt.letter:'נ');
+    }else if(sym){
       const sSize=r*B.symbol.size/100,sDy=r*B.symbol.dy/100;
       ctx.save();
       ctx.translate(cx,cy+sDy);ctx.scale(sSize,sSize);
@@ -5522,6 +5626,7 @@ const S={
   // D-60: עיצוב חדש = גודל אוטומטי (sizeMode:'auto') — הסמלים ממלאים את הקלף עד הגבול החוקי, sizeK = "גיוון בגדלים"
   // (sMin=1-k, sMax=1+k). עיצוב שנטען בלי sizeMode = legacy, מתנהג בייט-לבייט כמו לפני D-60 עד הנגיעה הראשונה.
   sizeMode:'auto',sizeK:.20,
+  shapeArt:{on:false,op:12,letter:'נ',color:'#1E3A8A'},   // D-95B: ציור חלש בחזית צורה מיוחדת (מנהל)
   tightPack:true,tightFill:true,    // חפיפה לפי צורת הסמל / מילוי מיטבי של הקלף (דלוק כברירת מחדל מאז 30/09 — ראו מרשם-מחולל D-52)
   sel:[],
   cardEdits:{},   // { [cardIdx]: { [slot]: {s,dx,dy} } } — התאמות ידניות לקלף בודד. dx/dy ביחידות rSym.
@@ -7031,6 +7136,29 @@ document.getElementById('shp').addEventListener('click',e=>{
   b.classList.add('on');S.shape=b.dataset.s;
 });
 
+// D-95B: ציור חלש בחזית — מנהל בלבד, ברירת מחדל כבויה
+function syncShapeArtUi(){
+  const a=S.shapeArt||{};
+  const on=document.getElementById('shape-art-on'),sl=document.getElementById('sl-shart'),lt=document.getElementById('shape-art-letter');
+  if(!on)return;
+  on.checked=!!a.on;sl.value=a.op||12;document.getElementById('shart-val').textContent=(a.op||12)+'%';lt.value=a.letter||'נ';
+  const row=document.getElementById('shape-art-row');
+  row.dataset.show=isSpecialShape()?'1':'0';
+  row.hidden=!(isSpecialShape()&&isAdminUser());
+}
+function redrawFronts(){if(S.canvases.length&&S.layouts.length)S.canvases.forEach((c,i)=>drawCard(c,S.layouts[i],S.imgEls,S.shape));}
+(function(){
+  const on=document.getElementById('shape-art-on'),sl=document.getElementById('sl-shart'),lt=document.getElementById('shape-art-letter');
+  on.addEventListener('change',()=>{S.shapeArt.on=on.checked;redrawFronts();});
+  sl.addEventListener('input',()=>{S.shapeArt.op=+sl.value;document.getElementById('shart-val').textContent=sl.value+'%';redrawFronts();});
+  lt.addEventListener('change',()=>{S.shapeArt.letter=lt.value;redrawFronts();markBackDirty();});
+  document.getElementById('shp').addEventListener('click',()=>{
+    syncShapeArtUi();
+    if(isSpecialShape()&&isAdminUser()&&!S.back.enabled){   // גב ברירת מחדל לצורה מיוחדת: ציור החנוכייה/הסביבון
+      applyBackPreset(BACK_PRESETS.find(p=>p.id===(S.shape==='dreidel'?'hanukkah-dreidel':'hanukkah-menorah')));
+    }
+  });
+})();
 document.getElementById('symshp').addEventListener('click',e=>{
   const b=e.target.closest('.sbt');if(!b)return;
   document.querySelectorAll('#symshp .sbt').forEach(x=>x.classList.remove('on'));
@@ -11179,7 +11307,7 @@ function buildSettingsObject(){
   return {shape:S.shape,symShape:S.symShape,sMin:S.sMin,sMax:S.sMax,seed:S.seed,layoutMode:S.layoutMode,
     cardSizeMm:S.cardSizeMm,spacingMm:S.spacingMm,startPos:S.startPos,
     frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),symPad:S.symPad,overlap:S.overlap,
-    tightPack:S.tightPack,tightFill:S.tightFill,
+    tightPack:S.tightPack,tightFill:S.tightFill,shapeArt:Object.assign({},S.shapeArt),
     ...(S.sizeMode==='auto'?{sizeMode:'auto',sizeK:S.sizeK}:{}),   // D-60 — legacy שלא נגעו בו נשמר בלי השדה
     back:JSON.parse(JSON.stringify(S.back)),
     cardEdits:JSON.parse(JSON.stringify(S.cardEdits||{})),
@@ -11402,7 +11530,8 @@ function applySettingsObject(st){
     seed:st.seed||1,layoutMode:st.layoutMode||'scatter',cardSizeMm:st.cardSizeMm||85,
     spacingMm:st.spacingMm??5,startPos:st.startPos||'center',symPad:st.symPad??2,overlap:st.overlap??0,
     tightPack:st.tightPack!==false,tightFill:!!st.tightFill,cardEdits:st.cardEdits||{},
-    sizeMode:st.sizeMode==='auto'?'auto':undefined,sizeK:st.sizeK??.2});   // D-60: בלי sizeMode = legacy
+    sizeMode:st.sizeMode==='auto'?'auto':undefined,sizeK:st.sizeK??.2,
+    shapeArt:Object.assign({on:false,op:12,letter:'נ',color:'#1E3A8A'},st.shapeArt||{})});   // D-60: בלי sizeMode = legacy
   if(st.frame)S.frame=Object.assign({},st.frame);
   if(st.bg)S.bg=Object.assign({},st.bg);
   S.back=mergeBack(st.back);
@@ -11868,6 +11997,7 @@ function isAdminUser(){return !!(authSession&&authSession.user&&adminEmails().in
 function refreshAdminShapeUi(){
   const ad=isAdminUser();
   document.querySelectorAll('.admin-shape,[data-admin="1"]').forEach(b=>{b.hidden=!ad;});
+  if(typeof syncShapeArtUi==='function')syncShapeArtUi();   // השורה מוצגת רק כשנבחרה צורה מיוחדת
 }
 
 async function callManageSubscriber(payload){
