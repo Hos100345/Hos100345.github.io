@@ -107,6 +107,7 @@
     /* ── SHAPE TOGGLE ── */
     .shape-row{display:flex;align-items:center;gap:.85rem;margin-top:1.1rem}
     .shape-lbl{font-size:.875rem;font-weight:700}
+    .g-item.g-hl{outline:3px solid #F59E0B;outline-offset:1px;box-shadow:0 0 0 6px rgba(245,158,11,.28)}   /* D-96 */
     .shape-grp{display:flex;border:2px solid var(--border);border-radius:100px;overflow:hidden}
     .sbt{padding:.4rem 1rem;font-size:.85rem;font-weight:700;font-family:inherit;background:transparent;border:none;cursor:pointer;color:var(--muted);transition:all var(--tr)}
     .sbt.on{background:var(--indigo);color:#fff}
@@ -973,6 +974,7 @@ const I18N={
     'upload.tooManyImagesWarn':'שים לב: {n} תמונות בהעלאה אחת — זה עלול לקחת זמן רב מאוד.',
     'upload.imagesAdded':'נוספו {n} תמונות למאגר ✓',
     'upload.skippedAlreadyHadSuffix':' · דילגנו על {n} שכבר היו',
+    'upload.dupInSources':'{n} מהתמונות כבר נמצאות בתיקייה 📷 תמונות מקוריות — פתחנו אותה בשבילך',
     'upload.skippedAlreadyInPool':'דילגנו על {n} תמונות שכבר קיימות במאגר',
     'upload.poolExceedsUsable':'במאגר {n} סמלים — המשחק ישתמש עד {max}. סמנו אילו להשתמש, או מחקו תיקיות מיותרות 🗂️',
     'upload.nonImageFilesSkipped':'{n} קבצים שאינם תמונות דולגו',
@@ -1753,6 +1755,7 @@ const I18N={
     'upload.tooManyImagesWarn':'Note: {n} images in one upload — this could take a very long time.',
     'upload.imagesAdded':'Added {n} images to your library ✓',
     'upload.skippedAlreadyHadSuffix':' · skipped {n} already there',
+    'upload.dupInSources':'{n} of the images are already in the 📷 Original photos folder — we opened it for you',
     'upload.skippedAlreadyInPool':'Skipped {n} images already in your library',
     'upload.poolExceedsUsable':'Your library has {n} symbols — the game will use up to {max}. Mark which ones to use, or delete extra folders 🗂️',
     'upload.nonImageFilesSkipped':'{n} non-image files were skipped',
@@ -5326,6 +5329,16 @@ const MAX_USABLE_SYMBOLS=ORDERS[ORDERS.length-1].total;   // 91
 // בתרחיש שגרם לבעיה (משתמש מעלה שוב את אותה אצווה אחרי תקיעה) השם תמיד זהה, ועדיף לתפוס
 // את זה מאשר לפספס. שני קבצים שונים באמת עם אותו שם — נדיר, והמשתמש מקבל דיווח מה דולג.
 function assetDupKey(name,size){return String(name||'')+'|'+(size==null?'':size);}
+// D-96: אותו מפתח כמו buildDupIndex, אבל עם הנכסים עצמם — כדי להבחין בין כפילות מול תמונה רגילה, מקור עם נגזרת (חסום) ומקור יתום (מוחזר)
+function buildDupMap(){
+  const m=new Map(),add=(k,a)=>{let l=m.get(k);if(!l){l=[];m.set(k,l);}l.push(a);};
+  S.assets.forEach(a=>{
+    if(a.type!=='image')return;
+    add(assetDupKey(a.name,a.fsize),a);
+    if(a.fsize==null)add(assetDupKey(a.name,null),a);
+  });
+  return m;
+}
 function buildDupIndex(){
   const s=new Set();
   S.assets.forEach(a=>{
@@ -5360,17 +5373,44 @@ async function addFiles(files,opts){
   // ── סינון כפילויות לפני שמתחילים לעבוד ──
   // בלי זה, כל ניסיון חוזר אחרי תקיעה *הוסיף* את כל האצווה שוב במקום להחליף אותה,
   // והמאגר תפח פי מספר הניסיונות (לקוח אמיתי הגיע כך לאלפי תמונות).
-  const dup=buildDupIndex();
-  const imgs=[];let skippedDup=0;
+  // D-96: כפילות מול מקור (isCropSource) — אחרי זיהוי פנים המקור עובר לתיקייה סגורה, והלקוח לא רואה למה "כבר קיים".
+  //   • מקור שיש לו נגזרת → חסום, אבל פותחים את התיקייה ומדגישים (הודעה upload.dupInSources).
+  //   • מקור יתום (אין לו אף crop) → הלקוח מעלה אותו שוב בכוונה: מחזירים אותו לגלריה, בלי עותק.
+  //   • כפילות מול תמונה רגילה — כמו שהיה.
+  const dupMap=buildDupMap(),seen=new Set();
+  const imgs=[];let skippedDup=0,skippedSrc=0;const restored=[],blockedSrc=new Set();
   for(const f of picked){
-    if(dup.has(assetDupKey(f.name,f.size))||dup.has(assetDupKey(f.name,null))){skippedDup++;continue;}
-    dup.add(assetDupKey(f.name,f.size));   // גם מונע כפילות בתוך אותה בחירה
-    imgs.push(f);
+    const k1=assetDupKey(f.name,f.size),k2=assetDupKey(f.name,null);
+    if(seen.has(k1)){skippedDup++;continue;}   // כפילות בתוך אותה בחירה
+    seen.add(k1);
+    const hits=(dupMap.get(k1)||[]).concat(k2!==k1?(dupMap.get(k2)||[]):[]);
+    if(!hits.length){imgs.push(f);continue;}
+    if(hits.some(a=>!a.isCropSource)){skippedDup++;continue;}
+    const orphan=hits.find(a=>!S.assets.some(x=>x.type==='crop'&&x.srcAssetId===a.id));
+    if(orphan){orphan.isCropSource=false;orphan.selected=true;restored.push(orphan);}
+    else{skippedSrc++;hits.forEach(a=>blockedSrc.add(a.id));}
   }
-  if(!imgs.length){
-    toast(skippedDup?t('upload.allAlreadyInPool',{n:skippedDup}):t('msg.noImagesSelected'),'err');
-    return;
-  }
+  let _hlTimer=0;
+  const finishDup=(okCount,early)=>{   // פעם אחת אחרי האצווה (כלל renderGallery): רינדור, הודעות, פתיחת תיקיית המקורות
+    const added=okCount+restored.length;
+    if(blockedSrc.size){_srcFolderOpen=true;_hlIds=new Set(blockedSrc);}
+    if(added||blockedSrc.size){renderGallery();updateCounter();}
+    if(added){
+      toast(t('upload.imagesAdded',{n:added})+(skippedDup?t('upload.skippedAlreadyHadSuffix',{n:skippedDup}):''),'ok');
+      schedIdbSave();
+    }else if(skippedDup){
+      toast(early?t('upload.allAlreadyInPool',{n:skippedDup}):t('upload.skippedAlreadyInPool',{n:skippedDup}),early?'err':'ok');
+    }else if(early&&!skippedSrc){
+      toast(t('msg.noImagesSelected'),'err');
+    }
+    if(blockedSrc.size){
+      toast(t('upload.dupInSources',{n:skippedSrc}),'ok');
+      requestAnimationFrame(()=>{const fd=document.querySelector('.g-src-folder');if(fd)fd.scrollIntoView({behavior:'smooth',block:'center'});});
+      clearTimeout(_hlTimer);
+      _hlTimer=setTimeout(()=>{document.querySelectorAll('.g-item.g-hl').forEach(e=>e.classList.remove('g-hl'));_hlIds=null;},3200);
+    }
+  };
+  if(!imgs.length){finishDup(0,true);return;}
 
   // ── אזהרה כשהמאגר חורג ממה שהמחולל יכול לנצל ──
   const usableNow=S.assets.filter(isSymbolAsset).length;
@@ -5412,13 +5452,7 @@ async function addFiles(files,opts){
   // renderGallery() משרטט מחדש את כל התמונונים בגלריה (לא רק את החדשות) — קריאה לה
   // בתוך הלולאה, פעם לכל תמונה, הופכת העלאה של N תמונות לגלריה עם M תמונות קיימות
   // ל-O(N×M) ציורי canvas, ומאיטה יותר ויותר ככל שהמאגר גדל. קריאה יחידה אחרי כל האצווה.
-  if(okCount){
-    renderGallery();updateCounter();
-    toast(t('upload.imagesAdded',{n:okCount})+(skippedDup?t('upload.skippedAlreadyHadSuffix',{n:skippedDup}):''),'ok');
-    schedIdbSave();
-  }else if(skippedDup){
-    toast(t('upload.skippedAlreadyInPool',{n:skippedDup}),'ok');
-  }
+  finishDup(okCount,false);
   // תזכורת אחרי ההעלאה — כדי שהמשתמש יבין שהעודף לא ייכנס לשום משחק, וידע לבחור/למחוק.
   const usableAfter=S.assets.filter(isSymbolAsset).length;
   if(usableAfter>MAX_USABLE_SYMBOLS){
@@ -6359,7 +6393,8 @@ function makeThumb(imgEl){
 function buildGalleryItem(a){
   const item=document.createElement('div');
   const isOn=a.selected!==false;
-  item.className='g-item'+(a.type==='crop'?' crop':a.isCropSource?' source':'')+(!a.isCropSource&&!isOn?' off':'');
+  item.className='g-item'+(a.type==='crop'?' crop':a.isCropSource?' source':'')+(!a.isCropSource&&!isOn?' off':'')+(_hlIds&&_hlIds.has(a.id)?' g-hl':'');
+  item.dataset.aid=a.id;
   const thumbCv=document.createElement('canvas');thumbCv.width=thumbCv.height=72;
   drawCover(thumbCv.getContext('2d'),symImg(a),0,0,72);
   item.appendChild(thumbCv);
@@ -6468,6 +6503,7 @@ function renderGallery(){
 }
 
 let _srcFolderOpen=false;   // תיקיית המקורות סגורה בכל טעינת דף
+let _hlIds=null;            // D-96: אריחים שחסמו העלאה חוזרת — מודגשים 3 שניות
 function buildSourcesFolder(items){
   const wrap=document.createElement('div');wrap.className='g-folder g-src-folder';
   const hdr=document.createElement('div');hdr.className='g-fold-hdr';
