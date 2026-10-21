@@ -33,7 +33,12 @@ NAMES = [
     'gf4a', 'gf4m', 'gf8a', 'gf8m', 'gf9a', 'gf9m', 'gfOps', 'genDeck', 'bestOrder',
     # פריסה
     'sr', 'buildLayouts', 'overlapFactor', 'contactFactor', 'symPos', 'symPosPeriph',
-    'CIRCLE_RADIAL', 'CIRCLE_META', 'symBoundNorm', 'symOverSq', 'symGmaxSq', 'reachAt', 'EX_N', 'EX_CIRC', 'EX_SQE', 'exactData', 'exDir', 'exDeficit', 'exactSeparate', 'relaxSymbolPositions', 'AUTO_GMAX',
+    'CIRCLE_RADIAL', 'CIRCLE_META', 'symBoundNorm', 'symOverSq', 'symGmaxSq', 'reachAt', 'EX_N', 'EX_CIRC', 'EX_SQE', 'exactData', 'exDir', 'exDeficit', 'exactSeparate',
+    # D-95: צורות קלף מיוחדות (חנוכייה, סביבון) — ציור, SDF, גבול סמלים, אריזה
+    'CARD_SHAPES', 'isSpecialShape', 'SHAPE_RAD', '_maskDilate', '_maskErode', 'abstractShapeOps', 'marchingLoop', 'DREIDEL_LETTERS', 'drawShapeArt', '_artLayers', 'shapeArtLayer', 'canvasHasAlpha', 'SHAPED_SZ', 'symFrameColor', 'SYM_EST_MM', 'shapedSymCanvas', 'drawShapedSymbol', 'traceShapeOps', 'shapePolyline', 'edt1d', 'edt2d',
+    'SHAPE_N', 'shapeInfo', 'shapeSdfAt', 'shapeContour', 'traceCardShape', 'specialBound', '_UCS', 'unitCS', 'fldOver', 'fldPull',
+    'shapeInitPos', 'packSpecial',
+    'relaxSymbolPositions', 'AUTO_GMAX',
     'cardGeom', 'packSignature', 'packNormalized', 'clampInsideCard',
     'computeCardPositions', 'applyCardEdits',
     # ציור
