@@ -5395,16 +5395,17 @@ async function addFiles(files,opts){
     const added=okCount+restored.length;
     if(blockedSrc.size){_srcFolderOpen=true;_hlIds=new Set(blockedSrc);}
     if(added||blockedSrc.size){renderGallery();updateCounter();}
-    if(added){
-      toast(t('upload.imagesAdded',{n:added})+(skippedDup?t('upload.skippedAlreadyHadSuffix',{n:skippedDup}):''),'ok');
-      schedIdbSave();
-    }else if(skippedDup){
-      toast(early?t('upload.allAlreadyInPool',{n:skippedDup}):t('upload.skippedAlreadyInPool',{n:skippedDup}),early?'err':'ok');
-    }else if(early&&!skippedSrc){
-      toast(t('msg.noImagesSelected'),'err');
+    // toast() מחליף את ההודעה הקודמת מיד — לכן הודעה אחת משולבת (נוספו · דולגו · כבר בתיקיית המקורות), ונשארת יותר זמן
+    const parts=[];let kind='ok';
+    if(added){parts.push(t('upload.imagesAdded',{n:added})+(skippedDup?t('upload.skippedAlreadyHadSuffix',{n:skippedDup}):''));schedIdbSave();}
+    else if(skippedDup){parts.push(early?t('upload.allAlreadyInPool',{n:skippedDup}):t('upload.skippedAlreadyInPool',{n:skippedDup}));if(early&&!blockedSrc.size)kind='err';}
+    else if(early&&!skippedSrc){parts.push(t('msg.noImagesSelected'));kind='err';}
+    if(blockedSrc.size)parts.push(t('upload.dupInSources',{n:skippedSrc}));
+    if(parts.length){
+      toast(parts.join(' · '),kind);
+      if(blockedSrc.size){clearTimeout(_toastTimer);_toastTimer=setTimeout(()=>{const tt=document.getElementById('toast');if(tt){tt.classList.remove('show');tt.style.pointerEvents='';}},7000);}
     }
     if(blockedSrc.size){
-      toast(t('upload.dupInSources',{n:skippedSrc}),'ok');
       requestAnimationFrame(()=>{const fd=document.querySelector('.g-src-folder');if(fd)fd.scrollIntoView({behavior:'smooth',block:'center'});});
       clearTimeout(_hlTimer);
       _hlTimer=setTimeout(()=>{document.querySelectorAll('.g-item.g-hl').forEach(e=>e.classList.remove('g-hl'));_hlIds=null;},3200);
