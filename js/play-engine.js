@@ -1,6 +1,6 @@
 // ⛔ קובץ שנוצר אוטומטית — אין לערוך ידנית.
 // מקור: dobble.html · נבנה ע"י tools/build-play-engine.py
-// בסיס: 2a3db8b · sha256(dobble.html)=9b742e76c342
+// בסיס: 2116024 · sha256(dobble.html)=80bcf75246bb
 // כל פונקציה כאן היא עותק בייט-לבייט מהמחולל, כדי שקלף בנגן (play.html) ייראה
 // בדיוק כמו במחולל. play.html מגדיר את S, needsWatermark ו-t לפני השימוש.
 
@@ -160,7 +160,7 @@ function symPosPeriph(n,cx,cy,r){
   return P;
 }
 
-// ── CIRCLE_RADIAL (dobble.html:10102) ──
+// ── CIRCLE_RADIAL (dobble.html:10103) ──
 function CIRCLE_RADIAL(){const a=new Float32Array(64);a.fill(1);return a;}
 
 // ── CIRCLE_META (dobble.html:4131) ──
@@ -999,13 +999,13 @@ function drawWatermark(ctx,cx,cy,r,isC,sq,sqx,sqy,sqcr,sz,SP){
   ctx.restore();
 }
 
-// ── imgNatW (dobble.html:9991) ──
+// ── imgNatW (dobble.html:9992) ──
 function imgNatW(el){return el.naturalWidth||el.width;}
 
-// ── imgNatH (dobble.html:9992) ──
+// ── imgNatH (dobble.html:9993) ──
 function imgNatH(el){return el.naturalHeight||el.height;}
 
-// ── drawCover (dobble.html:9995) ──
+// ── drawCover (dobble.html:9996) ──
 function drawCover(ctx,img,dx,dy,dSize){
   const iw=imgNatW(img),ih=imgNatH(img);
   const s=Math.max(dSize/iw,dSize/ih);
@@ -1014,7 +1014,7 @@ function drawCover(ctx,img,dx,dy,dSize){
   ctx.drawImage(img,sx,sy,sw,sh,dx,dy,dSize,dSize);
 }
 
-// ── symbolShapeMeta (dobble.html:10044) ──
+// ── symbolShapeMeta (dobble.html:10045) ──
 function symbolShapeMeta(cv){
   if(cv.__symMeta)return cv.__symMeta;
   // D-87: שני פרופילים. radial (64 זוויות, דגימה 64px) — מרחקי מגע בין סמלים, כמו תמיד (אבל שיא-שכנים במקום ממוצע, וללא תקרה 1).
@@ -1074,22 +1074,22 @@ function symbolShapeMeta(cv){
   return meta;
 }
 
-// ── prepareSymbolMeta (dobble.html:10105) ──
+// ── prepareSymbolMeta (dobble.html:10106) ──
 function prepareSymbolMeta(){
   S.metaVer=(S.metaVer||0)+1;   // מבטל את ה-cache של הפריסה כשמטא-הצורה של הסמלים השתנה
   S.imgEls.forEach(img=>{if(img)symbolShapeMeta(img);});
 }
 
-// ── isSymbolAsset (dobble.html:5673) ──
+// ── isSymbolAsset (dobble.html:5674) ──
 function isSymbolAsset(a){return !a.isCropSource&&a.type!=='backlogo';}
 
-// ── isFaceSym (dobble.html:6322) ──
+// ── isFaceSym (dobble.html:6323) ──
 function isFaceSym(a){return !!(a&&a.type==='crop'&&a.af&&!a.af.kind);}
 
-// ── SH_LIM (dobble.html:6323) ──
+// ── SH_LIM (dobble.html:6324) ──
 var SH_LIM=24;   // ⛔ תקרת שינוי לפיקסל (רמות בהירות) — בלי הילות סביב קצוות; הבדיקה דורשת ≤25
 
-// ── shStrength (dobble.html:6326) ──
+// ── shStrength (dobble.html:6327) ──
 function shStrength(a){
   const src=S.assets.find(x=>x.id===a.srcAssetId);
   const side=src&&src.imgEl&&a.af&&a.af.s?a.af.s*imgNatW(src.imgEl):0;
@@ -1097,7 +1097,7 @@ function shStrength(a){
   return {amt:Math.max(.35,Math.min(1.3,.35+.25*(u-1))),rad:u<1.6?1:(u<3?2:3)};
 }
 
-// ── sharpenCanvas (dobble.html:6334) ──
+// ── sharpenCanvas (dobble.html:6335) ──
 function sharpenCanvas(src,{amt,rad}){
   const W=imgNatW(src),H=imgNatH(src),cv=document.createElement('canvas');cv.width=W;cv.height=H;
   const x=cv.getContext('2d');x.drawImage(src,0,0);
@@ -1123,7 +1123,7 @@ function sharpenCanvas(src,{amt,rad}){
   return cv;
 }
 
-// ── symImg (dobble.html:6358) ──
+// ── symImg (dobble.html:6359) ──
 function symImg(a){
   if(!(a&&a.af&&a.af.sh&&isFaceSym(a)))return a.imgEl;
   const c=a._sh;

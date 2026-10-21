@@ -2927,8 +2927,8 @@ window.applyI18n=applyI18n;
     <div class="shape-row">
       <span data-i18n="upload.cardShapeLabel" class="shape-lbl">צורת קלף:</span>
       <div class="shape-grp" id="shp">
-        <button data-i18n="upload.cardShapeRound" class="sbt on" data-s="circle">⭕ עגול</button>
-        <button data-i18n="upload.cardShapeSquare" class="sbt"    data-s="square">⬜ מרובע</button>
+        <button data-i18n="upload.cardShapeRound" class="sbt" data-s="circle">⭕ עגול</button>
+        <button data-i18n="upload.cardShapeSquare" class="sbt on" data-s="square">⬜ מרובע</button>
         <button data-i18n="upload.cardShapeMenorahCandles" class="sbt admin-shape" data-s="menorah-candles" hidden>🕎 חנוכייה עם נרות</button>
         <button data-i18n="upload.cardShapeMenorahSmooth" class="sbt admin-shape" data-s="menorah-smooth" hidden>🕎 חנוכייה חלקה</button>
         <button data-i18n="upload.cardShapeDreidel" class="sbt admin-shape" data-s="dreidel" hidden>🪀 סביבון</button>
@@ -5517,7 +5517,8 @@ function markBackDirty(){
 const S={
   assets:[],
   order:null,deck:[],layouts:[],imgEls:[],canvases:[],
-  shape:'circle',symShape:'circle',sMin:.80,sMax:1.20,seed:1,layoutMode:'scatter',overlap:-30,
+  shape:'square',symShape:'circle',sMin:.80,   // D-94: לקוח חדש מתחיל עם קלף מרובע; כל טעינה של הגדרות שמורות בלי shape = 'circle' (applySettingsObject)
+  sMax:1.20,seed:1,layoutMode:'scatter',overlap:-30,
   // D-60: עיצוב חדש = גודל אוטומטי (sizeMode:'auto') — הסמלים ממלאים את הקלף עד הגבול החוקי, sizeK = "גיוון בגדלים"
   // (sMin=1-k, sMax=1+k). עיצוב שנטען בלי sizeMode = legacy, מתנהג בייט-לבייט כמו לפני D-60 עד הנגיעה הראשונה.
   sizeMode:'auto',sizeK:.20,
@@ -11112,6 +11113,10 @@ async function _idbRestoreSettings(){
       // לוגו שהתמונה שלו לא במאגר (נוקה/נמחק) — מנתקים בשקט, בלי הודעת "הלוגו חסר" ברענון
       const lost=st.back&&st.back.logoAssetId&&!S.assets.some(a=>a.id===st.back.logoAssetId&&a.type==='backlogo');
       applySettingsObject(lost?Object.assign({},st,{back:Object.assign({},st.back,{logoAssetId:null,logoCrop:null})}):st);
+    }else if(!st&&S.assets.length&&!(S.canvases&&S.canvases.length)){
+      // D-94: לקוח קיים עם תמונות במאגר אבל בלי הגדרות שמורות (נוצר לפני שהגדרות נשמרו) — עבד עם עיגול, נשאר עיגול
+      S.shape='circle';
+      document.querySelectorAll('#shp .sbt').forEach(b=>b.classList.toggle('on',b.dataset.s==='circle'));
     }
   }catch(e){console.warn('idbRestoreSettings:',e);}
   finally{
@@ -11358,7 +11363,7 @@ async function deleteDesign(name){
 
 function applySettingsToUI(st){
   // צורת קלף + סידור
-  document.querySelectorAll('#shp .sbt').forEach(b=>b.classList.toggle('on',b.dataset.s===st.shape));
+  document.querySelectorAll('#shp .sbt').forEach(b=>b.classList.toggle('on',b.dataset.s===(st.shape||'circle')));
   document.querySelectorAll('#symshp .sbt').forEach(b=>b.classList.toggle('on',b.dataset.s===(st.symShape||'circle')));
   document.querySelectorAll('#layout-mode-grp .sbt').forEach(b=>b.classList.toggle('on',b.dataset.lm===st.layoutMode));
   // סליידרים של גודל סמלים
