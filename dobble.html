@@ -1115,6 +1115,9 @@ const I18N={
     'shape.artOp':'עוצמת הציור',
     'shape.artLetter':'אות הסביבון',
     'shape.artLetterAuto':'לפי מספר הקלף',
+    'upload.symbolShapeCard':'🕎 בצורת הקלף',
+    'shape.artBlur':'טשטוש הציור',
+    'shape.symFrame':'מסגרת דקה סביב כל סמל',
     'gift.limitTitle':'ההורדות במתנה נוצלו 🎁',
     'gift.limitBody':'רוצים עוד? אפשר לרכוש מנוי, או לכתוב להושעיה.',
     'gift.buy':'לרכישה',
@@ -1908,6 +1911,9 @@ const I18N={
     'shape.artOp':'Drawing strength',
     'shape.artLetter':'Dreidel letter',
     'shape.artLetterAuto':'By card number',
+    'upload.symbolShapeCard':'🕎 Card shape',
+    'shape.artBlur':'Drawing blur',
+    'shape.symFrame':'Thin frame around each symbol',
     'gift.limitTitle':'Your gift downloads are used up 🎁',
     'gift.limitBody':'Want more? You can buy a plan, or message Hoshaya.',
     'gift.buy':'Buy',
@@ -2955,6 +2961,15 @@ window.applyI18n=applyI18n;
           <button class="btn btn-ghost" type="button" data-step="sl-shart" data-dir="1" aria-label="+" style="padding:.15rem .6rem;min-width:2rem;justify-content:center">+</button>
         </div>
       </div>
+      <div class="sl-row" data-sl-lock="sl-shblur" style="min-width:12rem">
+        <div class="sl-lbl"><span id="lbl-shblur" data-i18n="shape.artBlur">טשטוש הציור</span><b id="shblur-val">2 מ"מ</b></div>
+        <div style="display:flex;align-items:center;gap:.4rem">
+          <button class="btn btn-ghost" type="button" data-step="sl-shblur" data-dir="-1" aria-label="−" style="padding:.15rem .6rem;min-width:2rem;justify-content:center">−</button>
+          <input type="range" id="sl-shblur" min="0" max="4" value="0" step="0.5" style="pointer-events:none" aria-labelledby="lbl-shblur">
+          <button class="btn btn-ghost" type="button" data-step="sl-shblur" data-dir="1" aria-label="+" style="padding:.15rem .6rem;min-width:2rem;justify-content:center">+</button>
+        </div>
+      </div>
+      <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;font-weight:700"><input type="checkbox" id="shape-symframe" checked><span data-i18n="shape.symFrame">מסגרת דקה סביב כל סמל</span></label>
       <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;font-weight:700"><span data-i18n="shape.artLetter">אות הסביבון</span>
         <select id="shape-art-letter"><option value="נ">נ</option><option value="ג">ג</option><option value="ה">ה</option><option value="ש">ש</option><option value="auto" data-i18n="shape.artLetterAuto">לפי מספר הקלף</option></select></label>
     </div>
@@ -2963,6 +2978,7 @@ window.applyI18n=applyI18n;
       <div class="shape-grp" id="symshp">
         <button data-i18n="upload.symbolShapeRound" class="sbt on" data-s="circle">⭕ עגול</button>
         <button data-i18n="upload.symbolShapeSquare" class="sbt"    data-s="square">⬜ מרובע</button>
+        <button data-i18n="upload.symbolShapeCard" class="sbt admin-shape" id="symshp-card" data-s="shape" hidden>🕎 בצורת הקלף</button>
       </div>
     </div>
 
@@ -4089,7 +4105,8 @@ function buildLayouts(deck,seed,sMin,sMax){
     const base=seed*10000+ci;
     const sh=[...syms];
     for(let i=sh.length-1;i>0;i--){const j=Math.floor(sr(base*100+i)*(i+1));[sh[i],sh[j]]=[sh[j],sh[i]];}
-    const tr=sh.map((_,si)=>({sc:sMin+sr(base*200+si*7)*range,ro:sr(base*300+si*13+7)*Math.PI*2}));
+    const upright=S.symShape==='shape'&&!!CARD_SHAPES[S.shape];   // D-95C: סמל בצורת חנוכייה/סביבון נשאר כמעט זקוף (±15°)
+    const tr=sh.map((_,si)=>({sc:sMin+sr(base*200+si*7)*range,ro:upright?(sr(base*300+si*13+7)*2-1)*Math.PI/12:sr(base*300+si*13+7)*Math.PI*2}));
     return{syms:sh,tr,ci};   // ci = אינדקס הקלף — נדרש לשליפת התאמות ידניות (S.cardEdits)
   });
 }
@@ -4221,7 +4238,7 @@ const EX_SQE=(()=>{const a=new Float32Array(256);for(let i=0;i<128;i++){const sd
 // נגזר מ-meta.m64 ו-S.symShape (בעיגול הציור חותך לעיגול) ונשמר על ה-meta. null = סמל אטום (אנליטי).
 function exactData(meta){
   if(!meta||!meta.m64)return null;
-  const key=S.symShape==='square'?'s':'c';
+  const key=S.symShape==='square'?'s':(S.symShape==='shape'?'n':'c');   // 'n' = סמל בצורת הקלף (D-95C): מצויר בלי קליפ — אסור לחתוך את המסכה לעיגול
   const c=meta.__ex;if(c&&c.key===key)return c;
   const N=EX_N,m=meta.m64,op=new Uint8Array(N*N),clip=key==='c';
   for(let y=0;y<N;y++)for(let x=0;x<N;x++){
@@ -4876,31 +4893,52 @@ function shapeCutPoints(id,x0,y0,box){return shapePolyline(id).map(p=>[x0+p[0]*b
 // D-95B: ציור חנוכייה / סביבון מותאם לצורה — מצויר בקואורדינטות תיבה (0..1) ולכן גדל עם הקלף, ונחתך לקו החיתוך פחות 4 מ"מ.
 // צבע אחד; קו נקי + מילוי רך. חנוכייה: קשת הנרות מקבילה לקשת הקלף, זרועות מהגזע, בסיס בתוך הבסיס. סביבון: גוף, כתף ואות גדולה.
 const DREIDEL_LETTERS=['נ','ג','ה','ש'];
-function drawShapeArt(ctx,id,G,color,alpha,letter){
+// D-95C: שכבת הציור המטושטשת — מחושבת פעם אחת לכל צורה / גודל / אות / צבע / טשטוש ונשמרת (לא בכל ציור של קלף)
+const _artLayers=new Map();
+function shapeArtLayer(id,G,sz,letter,color,blurMm){
+  const key=[id,sz,S.cardSizeMm,S.frame.w,letter,color,blurMm].join('|');
+  let L=_artLayers.get(key);if(L)return L;
+  const raw=document.createElement('canvas');raw.width=raw.height=sz;
+  drawShapeArt(raw.getContext('2d'),id,G,color,1,letter,3.2);   // קווים עבים יותר — הטשטוש מדלל אותם
+  const px=Math.max(0,blurMm)*G.ppMm;
+  L=document.createElement('canvas');L.width=L.height=sz;const c=L.getContext('2d');
+  if(px<.5)c.drawImage(raw,0,0);
+  else if(typeof c.filter==='string'){c.filter='blur('+px.toFixed(2)+'px)';c.drawImage(raw,0,0);c.filter='none';}
+  else{   // Safari ישן: טשטוש בהקטנה והגדלה
+    const f=Math.max(2,Math.round(px)),sm=document.createElement('canvas');sm.width=sm.height=Math.max(8,Math.round(sz/f));
+    const sx=sm.getContext('2d');sx.imageSmoothingQuality='high';sx.drawImage(raw,0,0,sm.width,sm.height);
+    c.imageSmoothingQuality='high';c.drawImage(sm,0,0,sz,sz);
+  }
+  if(_artLayers.size>=10)_artLayers.delete(_artLayers.keys().next().value);
+  _artLayers.set(key,L);
+  return L;
+}
+function drawShapeArt(ctx,id,G,color,alpha,letter,lwMul){
+  const LW=lwMul||1;
   const box=2*G.r,x0=G.cx-G.r,y0=G.cy-G.r,X=u=>x0+u*box,Y=v=>y0+v*box,L=v=>v*box;
   ctx.save();
   ctx.beginPath();traceCardShape(ctx,id,G,G.ppMm*4);ctx.clip();   // גבול הציור = קו החיתוך פחות 4 מ"מ
   ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=color;ctx.fillStyle=color;
   const A=alpha==null?1:alpha;
   ctx.globalAlpha=A*.10;ctx.fillRect(0,0,G.cx*2,G.cy*2);          // מילוי רך של כל הצורה הפנימית
-  ctx.globalAlpha=A;ctx.lineWidth=L(.008);
+  ctx.globalAlpha=A;ctx.lineWidth=L(.008*LW);
   ctx.beginPath();traceCardShape(ctx,id,G,G.ppMm*4);ctx.stroke();   // קו מקביל לחיתוך
   if(id==='dreidel'){
-    ctx.lineWidth=L(.012);
+    ctx.lineWidth=L(.012*LW);
     ctx.beginPath();ctx.moveTo(X(.2),Y(.40));ctx.lineTo(X(.8),Y(.40));ctx.stroke();   // כתף הסביבון
-    ctx.lineWidth=L(.006);ctx.globalAlpha=A*.7;ctx.beginPath();traceCardShape(ctx,id,G,G.ppMm*11);ctx.stroke();ctx.globalAlpha=A;ctx.lineWidth=L(.012);   // קו פנימי נוסף, מקביל לחיתוך
+    ctx.lineWidth=L(.006*LW);ctx.globalAlpha=A*.7;ctx.beginPath();traceCardShape(ctx,id,G,G.ppMm*11);ctx.stroke();ctx.globalAlpha=A;ctx.lineWidth=L(.012*LW);   // קו פנימי נוסף, מקביל לחיתוך
     ctx.globalAlpha=A*.22;ctx.beginPath();ctx.ellipse(X(.5),Y(.17),L(.06),L(.05),0,0,Math.PI*2);ctx.fill();   // ידית רכה
     ctx.globalAlpha=A;ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.font=`800 ${L(.34)}px Heebo,Arial,sans-serif`;ctx.fillText(letter||'נ',X(.5),Y(.62));
   }else{
     const arch=x=>.40-.298*Math.pow(Math.max(0,1-Math.pow(Math.abs(x-.5)/.353,2.5)),.4);   // קשת הכיפה הפנימית (מקבילה לקלף)
-    ctx.lineWidth=L(.016);
+    ctx.lineWidth=L(.016*LW);
     const xs=[];for(let k=-4;k<=4;k++)xs.push(.5+k*.08);
     xs.forEach((x,i)=>{
       const sham=i===4,top=arch(x)+(sham?.0:.035),flameH=.05,candleTop=top+flameH,candleBase=candleTop+(sham?.15:.115);
       if(!sham){const dx=x-.5;ctx.beginPath();ctx.moveTo(X(.5),Y(.66));ctx.bezierCurveTo(X(.5+dx*.55),Y(.73),X(.5+dx),Y(.62),X(x),Y(candleBase));ctx.stroke();}   // זרוע
       ctx.fillRect(X(x-.017),Y(candleTop),L(.034),L(candleBase-candleTop));                                   // נר
-      ctx.beginPath();ctx.ellipse(X(x),Y(top+flameH*.5),L(.016),L(flameH*.55),0,0,Math.PI*2);ctx.fill();   // להבה
+      ctx.beginPath();ctx.ellipse(X(x),Y(top+flameH*.5),L(.016*LW),L(flameH*.55),0,0,Math.PI*2);ctx.fill();   // להבה
     });
     ctx.beginPath();ctx.moveTo(X(.5),Y(.38));ctx.lineTo(X(.5),Y(.84));ctx.stroke();                          // גזע
     ctx.globalAlpha=A*.55;ctx.beginPath();rrect(ctx,X(.24),Y(.845),L(.52),L(.085),L(.042));ctx.fill();       // בסיס — מילוי רך
@@ -5066,7 +5104,11 @@ function drawCard(canvas,layout,imgs,shape,hitIdx,opts){
 
   if(SP&&S.shapeArt&&S.shapeArt.on&&!(opts&&opts.noArt)){   // D-95B: ציור חלש מאחורי הסמלים (מנהל)
     const lt=S.shapeArt.letter==='auto'?DREIDEL_LETTERS[(layout.ci||0)%4]:S.shapeArt.letter;
-    drawShapeArt(ctx,SP,G,S.shapeArt.color||'#1E3A8A',(S.shapeArt.op||12)/100,lt);
+    if(S.shapeArt.blur>0){
+      ctx.save();ctx.beginPath();traceCardShape(ctx,SP,G,0);ctx.clip();
+      ctx.globalAlpha=(S.shapeArt.op||12)/100;ctx.drawImage(shapeArtLayer(SP,G,sz,lt,S.shapeArt.color||'#1E3A8A',S.shapeArt.blur),0,0);
+      ctx.restore();
+    }else drawShapeArt(ctx,SP,G,S.shapeArt.color||'#1E3A8A',(S.shapeArt.op||12)/100,lt);
   }
   const pos=computeCardPositions(layout,imgs,sz).pos;
   for(let i=0;i<layout.syms.length;i++){
@@ -5629,7 +5671,7 @@ const S={
   // D-60: עיצוב חדש = גודל אוטומטי (sizeMode:'auto') — הסמלים ממלאים את הקלף עד הגבול החוקי, sizeK = "גיוון בגדלים"
   // (sMin=1-k, sMax=1+k). עיצוב שנטען בלי sizeMode = legacy, מתנהג בייט-לבייט כמו לפני D-60 עד הנגיעה הראשונה.
   sizeMode:'auto',sizeK:.20,
-  shapeArt:{on:false,op:12,letter:'נ',color:'#1E3A8A'},   // D-95B: ציור חלש בחזית צורה מיוחדת (מנהל)
+  shapeArt:{on:false,op:12,letter:'נ',color:'#1E3A8A',blur:0,symFrame:true},   // D-95B/C: ציור חלש בחזית צורה מיוחדת (מנהל)
   tightPack:true,tightFill:true,    // חפיפה לפי צורת הסמל / מילוי מיטבי של הקלף (דלוק כברירת מחדל מאז 30/09 — ראו מרשם-מחולל D-52)
   sel:[],
   cardEdits:{},   // { [cardIdx]: { [slot]: {s,dx,dy} } } — התאמות ידניות לקלף בודד. dx/dy ביחידות rSym.
@@ -6497,12 +6539,40 @@ function sharpenCanvas(src,{amt,rad}){
   return cv;
 }
 function symImg(a){
-  if(!(a&&a.af&&a.af.sh&&isFaceSym(a)))return a.imgEl;
-  const c=a._sh;
-  if(c&&c.src===a.imgEl)return c.cv;
-  const cv=sharpenCanvas(a.imgEl,shStrength(a));
-  a._sh={src:a.imgEl,cv};
-  return cv;
+  let base;
+  if(!(a&&a.af&&a.af.sh&&isFaceSym(a)))base=a.imgEl;
+  else{
+    const c=a._sh;
+    if(c&&c.src===a.imgEl)base=c.cv;
+    else{base=sharpenCanvas(a.imgEl,shStrength(a));a._sh={src:a.imgEl,cv:base};}
+  }
+  return S.symShape==='shape'?shapedSymCanvas(a,base):base;   // D-95C
+}
+// D-95C: "סמל בתוך סמל" — בקלף בצורה מיוחדת כל תמונה אטומה נחתכת לצורת הקלף, מוקטנת (drawCover בתוך נתיב הצורה). התוצאה קנבס עם שקיפות,
+// ולכן הפריסה, הגבול מול הקלף ומניעת החפיפה (D-87, D-93) עובדים עליו כמו על כל סמל חתוך. סמל שכבר שקוף — לא נחתך שוב.
+const SHAPED_SZ=256;
+function shapedSymCanvas(a,base){
+  const sid=S.shape;
+  if(!base||!CARD_SHAPES[sid])return base;
+  const frameOn=!(S.shapeArt&&S.shapeArt.symFrame===false),fc=(S.frame&&S.frame.w>0)?S.frame.color:'#C9A227';
+  const key=sid+'|'+(frameOn?fc:'-');
+  const c0=a._shp;
+  if(c0&&c0.src===base&&c0.key===key)return c0.cv;
+  let out=base;
+  if(!canvasHasAlpha(base)){
+    const SZ=SHAPED_SZ,cv=document.createElement('canvas');cv.width=cv.height=SZ;const c=cv.getContext('2d');
+    const ops=shapeInfo(sid).ops;shapePolyline(sid);const bb=shapeInfo(sid).bbox;
+    const side=Math.max(bb[2]-bb[0],bb[3]-bb[1]),sc=SZ*.94/side,ox=SZ/2-(bb[0]+bb[2])/2*sc,oy=SZ/2-(bb[1]+bb[3])/2*sc;
+    c.save();c.beginPath();traceShapeOps(c,ops,ox,oy,sc,sc);c.clip();
+    let dx=0,dy=0,ds=SZ;
+    if(a.af&&sid!=='dreidel'){const cxp=ox+.5*sc,cyp=oy+.40*sc;ds=SZ*.9;dx=cxp-ds/2;dy=cyp-ds/2;}   // פנים — במרכז הכיפה (החלק הרחב)
+    drawCover(c,base,dx,dy,ds);
+    c.restore();
+    if(frameOn){c.beginPath();traceShapeOps(c,ops,ox,oy,sc,sc);c.lineWidth=SZ*.045;c.lineJoin='round';c.strokeStyle=fc;c.stroke();}
+    out=cv;
+  }
+  a._shp={src:base,key,cv:out};
+  return out;
 }
 // משחק שכבר נוצר: אותו מיפוי של generate, כדי שהקלפים יציגו את המצב החדש בלי ליצור מחדש
 function shRefreshGame(){
@@ -7174,10 +7244,14 @@ document.getElementById('shp').addEventListener('click',e=>{
 });
 
 // D-95B: ציור חלש בחזית — מנהל בלבד, ברירת מחדל כבויה
+var _shpWas=false;   // היה מיוחד לפני הלחיצה (גם אחרי טעינת עיצוב — applySettingsObject מעדכן)
 function syncShapeArtUi(){
   const a=S.shapeArt||{};
   const on=document.getElementById('shape-art-on'),sl=document.getElementById('sl-shart'),lt=document.getElementById('shape-art-letter');
   if(!on)return;
+  const bl=document.getElementById('sl-shblur'),sf=document.getElementById('shape-symframe'),cardBtn=document.getElementById('symshp-card');
+  bl.value=a.blur||0;document.getElementById('shblur-val').textContent=(a.blur||0)+' מ"מ';sf.checked=a.symFrame!==false;
+  cardBtn.hidden=!(isSpecialShape()&&isAdminUser());
   on.checked=!!a.on;sl.value=a.op||12;document.getElementById('shart-val').textContent=(a.op||12)+'%';lt.value=a.letter||'נ';
   const row=document.getElementById('shape-art-row');
   row.dataset.show=isSpecialShape()?'1':'0';
@@ -7189,8 +7263,17 @@ function redrawFronts(){if(S.canvases.length&&S.layouts.length)S.canvases.forEac
   on.addEventListener('change',()=>{S.shapeArt.on=on.checked;redrawFronts();});
   sl.addEventListener('input',()=>{S.shapeArt.op=+sl.value;document.getElementById('shart-val').textContent=sl.value+'%';redrawFronts();});
   lt.addEventListener('change',()=>{S.shapeArt.letter=lt.value;redrawFronts();markBackDirty();});
+  const bl=document.getElementById('sl-shblur'),sf=document.getElementById('shape-symframe');
+  bl.addEventListener('input',()=>{S.shapeArt.blur=+bl.value;document.getElementById('shblur-val').textContent=bl.value+' מ"מ';redrawFronts();});
+  sf.addEventListener('change',()=>{S.shapeArt.symFrame=sf.checked;rebuildSymImgs();});
   document.getElementById('shp').addEventListener('click',()=>{
-    syncShapeArtUi();
+    const nowSpecial=isSpecialShape();
+    if(nowSpecial&&isAdminUser()&&!_shpWas){   // D-95C: בחירת צורה מיוחדת = סמלים בצורת הקלף + ציור רקע מטושטש (12%, 2 מ"מ)
+      S.symShape='shape';S.shapeArt.on=true;S.shapeArt.op=12;S.shapeArt.blur=2;
+    }else if(!nowSpecial&&S.symShape==='shape')S.symShape='circle';
+    document.querySelectorAll('#symshp .sbt').forEach(x=>x.classList.toggle('on',x.dataset.s===S.symShape));
+    _shpWas=nowSpecial;
+    syncShapeArtUi();rebuildSymImgs();
     if(isSpecialShape()&&isAdminUser()&&!S.back.enabled){   // גב ברירת מחדל לצורה מיוחדת: ציור החנוכייה/הסביבון
       applyBackPreset(BACK_PRESETS.find(p=>p.id===(S.shape==='dreidel'?'hanukkah-dreidel':'hanukkah-menorah')));
     }
@@ -7200,8 +7283,14 @@ document.getElementById('symshp').addEventListener('click',e=>{
   const b=e.target.closest('.sbt');if(!b)return;
   document.querySelectorAll('#symshp .sbt').forEach(x=>x.classList.remove('on'));
   b.classList.add('on');S.symShape=b.dataset.s;
-  S.canvases.forEach((c,i)=>drawCard(c,S.layouts[i],S.imgEls,S.shape));
+  rebuildSymImgs();   // D-95C: 'shape' משנה את תמונות הסמלים והסיבוב, לא רק את הציור
 });
+// D-95C: בונה מחדש את תמונות הסמלים (symImg) ואת הפריסות אחרי שינוי צורת סמל / צורת קלף / מסגרת סמל, ומצייר מחדש
+function rebuildSymImgs(){
+  if(!S.order||!S.deck.length||!S.imgEls.length){return;}
+  S.imgEls=S.assets.filter(a=>isSymbolAsset(a)&&a.selected!==false).slice(0,S.order.total).map(symImg);
+  prepareSymbolMeta();S.layouts=buildLayouts(S.deck,S.seed,S.sMin,S.sMax);redrawCards();
+}
 
 document.getElementById('layout-mode-grp').addEventListener('click',e=>{
   const b=e.target.closest('.sbt');if(!b)return;
@@ -8347,6 +8436,7 @@ async function redrawCards(){
     drawCard(S.canvases[i],S.layouts[i],S.imgEls,S.shape);
     if(i%8===7)await tick();
   }
+  warnSpecialShapeSizes();
   updateVarMm();
 }
 function onDesignChange(){resetExport();redrawCards();updatePaperPrev();}
@@ -11568,7 +11658,8 @@ function applySettingsObject(st){
     spacingMm:st.spacingMm??5,startPos:st.startPos||'center',symPad:st.symPad??2,overlap:st.overlap??0,
     tightPack:st.tightPack!==false,tightFill:!!st.tightFill,cardEdits:st.cardEdits||{},
     sizeMode:st.sizeMode==='auto'?'auto':undefined,sizeK:st.sizeK??.2,
-    shapeArt:Object.assign({on:false,op:12,letter:'נ',color:'#1E3A8A'},st.shapeArt||{})});   // D-60: בלי sizeMode = legacy
+    shapeArt:Object.assign({on:false,op:12,letter:'נ',color:'#1E3A8A',blur:0,symFrame:true},st.shapeArt||{})});   // D-60: בלי sizeMode = legacy
+  _shpWas=isSpecialShape();
   if(st.frame)S.frame=Object.assign({},st.frame);
   if(st.bg)S.bg=Object.assign({},st.bg);
   S.back=mergeBack(st.back);
