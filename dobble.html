@@ -1130,6 +1130,11 @@ const I18N={
     'shape.colWhite':'לבן',
     'shape.colBlack':'שחור',
     'shape.smallFrameWarn':'הסמלים יוצאים {cur} מ"מ — מסגרת דקה יותר תגדיל אותם',
+    'export.psBackLabel':'איפה הגב',
+    'export.psBackEnd':'גב אחד בסוף',
+    'export.psBackEach':'גב אחרי כל קלף (דו-צדדי)',
+    'export.psBleedLabel':'גודל הבליד',
+    'export.psBleedMm':'{n} מ"מ',
     'gift.limitTitle':'ההורדות במתנה נוצלו 🎁',
     'gift.limitBody':'רוצים עוד? אפשר לרכוש מנוי, או לכתוב להושעיה.',
     'gift.buy':'לרכישה',
@@ -1635,7 +1640,7 @@ const I18N={
     'header.stepExportHtml':'<span class="n">3</span>ייצוא',
     'upload.cropHintTextHtml':'✂️ <strong>מתמונה אחת אפשר להפיק כמה סמלים</strong> — לחצו על ✂ ליד תמונה קבוצתית וחתכו כל פרצוף בנפרד. <strong>כך חמש תמונות מספיקות למשחק שלם.</strong>',
     'edit.algoCheckBannerHtml':'🔍 <strong>בדיקת אלגוריתם:</strong> לחץ/י על שני קלפים — הסמל המשותף היחיד יסומן אוטומטית',
-    'export.printShopNotesHtml':'📦 עמוד לכל קלף · בליד 4 מ"מ · 300 DPI · העמוד האחרון הוא הגב.<br>\n          🗞️ גיליון גדול לבית דפוס — דורש חיתוך עצמי.<br>\n          ✂️ חיתוך צורני (מגנטים, מדבקות): ZIP עם 3 קבצים — גרפיקה לבד · הדמיה (עם קו חיתוך) · חיתוך לבד. בכל קובץ עמוד לכל קלף, באותו גודל ומיקום. קו אדום 0.15 מ"מ, סימני חיתוך בפינות, צבעי CMYK. אם הגב מופעל — הוא העמוד האחרון בכל קובץ.',
+    'export.printShopNotesHtml':'📦 עמוד לכל קלף · הגב: בסוף, או אחרי כל קלף להדפסה דו-צדדית · בליד 3–5 מ"מ לבחירה · 300 DPI.<br>\n          🗞️ גיליון גדול לבית דפוס — דורש חיתוך עצמי.<br>\n          ✂️ חיתוך צורני (מגנטים, מדבקות): ZIP עם 3 קבצים — גרפיקה לבד · הדמיה (עם קו חיתוך) · חיתוך לבד. בכל קובץ עמוד לכל קלף, באותו גודל ומיקום. קו אדום 0.15 מ"מ, סימני חיתוך בפינות, צבעי CMYK. אם הגב מופעל — הוא העמוד האחרון בכל קובץ.',
     'edit.cardEditModalTitleHtml':'✏️ עריכת קלף <span id="ce-idx"></span>',
     'edit.cardEditInstructionsHtml':'לחצו על סמל כדי לבחור אותו · גררו כדי להזיז · הסרגל משנה גודל<br>\n        השינויים חלים על הקלף הזה בלבד',
     'edit.cutoutInstructionsHtml':'צבעו בירוק על מה שרוצים <b>לשמור</b>, ובאדום על ה<b>רקע</b>. מספיקים קווים גסים — אפשר לתקן שוב ושוב.',
@@ -1933,6 +1938,11 @@ const I18N={
     'shape.colWhite':'White',
     'shape.colBlack':'Black',
     'shape.smallFrameWarn':'Symbols come out {cur} mm — a thinner frame will make them larger',
+    'export.psBackLabel':'Where the back goes',
+    'export.psBackEnd':'One back at the end',
+    'export.psBackEach':'Back after every card (double-sided)',
+    'export.psBleedLabel':'Bleed size',
+    'export.psBleedMm':'{n} mm',
     'gift.limitTitle':'Your gift downloads are used up 🎁',
     'gift.limitBody':'Want more? You can buy a plan, or message Hoshaya.',
     'gift.buy':'Buy',
@@ -2436,7 +2446,7 @@ const I18N={
     'header.stepExportHtml':'<span class="n">3</span>Export',
     'upload.cropHintTextHtml':'✂️ <strong>One photo can yield several symbols</strong> — click ✂ next to a group photo and crop each face separately. <strong>Five photos are enough for a whole game.</strong>',
     'edit.algoCheckBannerHtml':'🔍 <strong>Algorithm check:</strong> click two cards — the one shared symbol will be highlighted automatically',
-    'export.printShopNotesHtml':'📦 One page per card · 4 mm bleed · 300 DPI · the last page is the back.<br>\n          🗞️ Large sheet for a print shop — requires self-cutting.<br>\n          ✂️ Die-cut (magnets, stickers): a ZIP with 3 files — graphics only · proof (with cut line) · cut line only. Each file has one page per card, same size and position. Red 0.15 mm line, corner crop marks, CMYK colours. If the back is on, it is the last page of each file.',
+    'export.printShopNotesHtml':'📦 One page per card · back: at the end, or after every card for double-sided printing · 3–5 mm bleed of your choice · 300 DPI.<br>\n          🗞️ Large sheet for a print shop — requires self-cutting.<br>\n          ✂️ Die-cut (magnets, stickers): a ZIP with 3 files — graphics only · proof (with cut line) · cut line only. Each file has one page per card, same size and position. Red 0.15 mm line, corner crop marks, CMYK colours. If the back is on, it is the last page of each file.',
     'edit.cardEditModalTitleHtml':'✏️ Edit card <span id="ce-idx"></span>',
     'edit.cardEditInstructionsHtml':'Click a symbol to select it · drag to move it · the slider changes its size<br>\n        Changes apply to this card only',
     'edit.cutoutInstructionsHtml':'Paint green over what you want to <b>keep</b>, and red over the <b>background</b>. Rough strokes are enough — you can always fix it again.',
@@ -3257,14 +3267,30 @@ window.applyI18n=applyI18n;
     <details id="printshop-fold" style="margin-top:.6rem">
       <summary data-i18n="export.printShopFold" style="cursor:pointer;font-size:.86rem;color:var(--muted);padding:.35rem 0">🖨️ לבית דפוס</summary>
       <div style="margin-top:.5rem">
-        <div class="brow">
+        <!-- D-98: סדר הגב וגודל הבליד לקובץ 'עמוד לכל קלף' — העדפת הדפסה (localStorage), לא חלק מהעיצוב -->
+        <div class="shape-row" style="margin-top:.2rem;flex-wrap:wrap">
+          <span id="ps-back-lbl" data-i18n="export.psBackLabel" class="shape-lbl">איפה הגב</span>
+          <div class="shape-grp" id="ps-back" role="group" aria-labelledby="ps-back-lbl" style="flex-wrap:wrap">
+            <button type="button" class="sbt on" data-v="end" aria-pressed="true" data-i18n="export.psBackEnd">גב אחד בסוף</button>
+            <button type="button" class="sbt" data-v="each" aria-pressed="false" data-i18n="export.psBackEach">גב אחרי כל קלף (דו-צדדי)</button>
+          </div>
+        </div>
+        <div class="shape-row" style="margin-top:.5rem;flex-wrap:wrap">
+          <span id="ps-bleed-lbl" data-i18n="export.psBleedLabel" class="shape-lbl">גודל הבליד</span>
+          <div class="shape-grp" id="ps-bleed" role="group" aria-labelledby="ps-bleed-lbl">
+            <button type="button" class="sbt" data-v="3" aria-pressed="false">3 מ"מ</button>
+            <button type="button" class="sbt on" data-v="4" aria-pressed="true">4 מ"מ</button>
+            <button type="button" class="sbt" data-v="5" aria-pressed="false">5 מ"מ</button>
+          </div>
+        </div>
+        <div class="brow" style="margin-top:.7rem">
           <button data-i18n="export.printPageBtn" class="btn btn-out" id="btn-doprint">📦 PDF — עמוד לכל קלף</button>
           <button data-i18n="export.sheetBtn" class="btn btn-out" id="btn-dosheet">🗞️ גיליון 33×48.8</button>
           <button data-i18n="export.dieCutBtn" class="btn btn-out" id="btn-dodiecut">✂️ קובץ לחיתוך צורני</button>
         </div>
         <div data-i18n="export.dieCutHint" style="font-size:.72rem;color:var(--muted);margin-top:.3rem">מקבלים ZIP עם 3 קבצים: גרפיקה, הדמיה וקו חיתוך</div>
         <div data-i18n-html="export.printShopNotesHtml" style="font-size:.72rem;color:var(--muted);margin-top:.3rem;line-height:1.5">
-          📦 עמוד לכל קלף · בליד 4 מ"מ · 300 DPI · העמוד האחרון הוא הגב.<br>
+          📦 עמוד לכל קלף · הגב: בסוף, או אחרי כל קלף להדפסה דו-צדדית · בליד 3–5 מ"מ לבחירה · 300 DPI.<br>
           🗞️ גיליון גדול לבית דפוס — דורש חיתוך עצמי.<br>
           ✂️ חיתוך צורני (מגנטים, מדבקות): ZIP עם 3 קבצים — גרפיקה לבד · הדמיה (עם קו חיתוך) · חיתוך לבד. בכל קובץ עמוד לכל קלף, באותו גודל ומיקום. קו אדום 0.15 מ"מ, סימני חיתוך בפינות, צבעי CMYK. אם הגב מופעל — הוא העמוד האחרון בכל קובץ.
         </div>
@@ -5607,8 +5633,6 @@ function drawCardBack(canvas){
     ctx.restore();
   }
 
-  drawBackFrame(ctx,cx,cy,r,isC,sq,sqx,sqy,sqcr,B.frame,ppMm,SP);
-
   if(B.symbol.id!=='none'&&B.symbol.op>0){
     const sym=BACK_SYMBOLS.find(s=>s.id===B.symbol.id);
     if(B.symbol.id==='shape-art'){   // D-95B: ציור מותאם לצורה (חנוכייה/סביבון) — תמיד מלא ובצבע הסמל
@@ -5665,6 +5689,9 @@ function drawCardBack(canvas){
       ctx.restore();
     });
   }
+
+  // D-98: המסגרת מצוירת אחרי כל התמונות (לוגו ותמונות נוספות) ולפני הטקסט — כך תמונה גדולה לא מסתירה אותה. ה-clip הפנימי של drawBackFrame שומר אותה בתוך צורת הקלף
+  drawBackFrame(ctx,cx,cy,r,isC,sq,sqx,sqy,sqcr,B.frame,ppMm,SP);
 
   drawBackText(ctx,cx,cy,r,B.text);
 
@@ -9796,6 +9823,17 @@ function renderBleedPair(drawFn,pxTrim,pxPage,jpg,edge){
   return{big,trim};
 }
 
+// D-98: העדפות 'עמוד לכל קלף' — localStorage בלבד (בית דפוס קבוע = נשאר בפעם הבאה), לא בעיצוב ולא בענן
+function printBackMode(){try{return localStorage.getItem('dobble_print_back')==='each'?'each':'end';}catch(e){return 'end';}}
+function printBleedMm(){try{const v=+localStorage.getItem('dobble_print_bleed');return v===3||v===5?v:PRINT_SHOP.bleedMm;}catch(e){return PRINT_SHOP.bleedMm;}}
+function syncPrintPrefsUi(){
+  const bm=printBackMode(),bl=String(printBleedMm());
+  document.querySelectorAll('#ps-back .sbt').forEach(b=>{const on=b.dataset.v===bm;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on?'true':'false');});
+  document.querySelectorAll('#ps-bleed .sbt').forEach(b=>{const on=b.dataset.v===bl;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on?'true':'false');b.textContent=t('export.psBleedMm',{n:b.dataset.v});});
+}
+document.getElementById('ps-back').addEventListener('click',e=>{const b=e.target.closest('.sbt');if(!b)return;try{localStorage.setItem('dobble_print_back',b.dataset.v);}catch(x){}syncPrintPrefsUi();});
+document.getElementById('ps-bleed').addEventListener('click',e=>{const b=e.target.closest('.sbt');if(!b)return;try{localStorage.setItem('dobble_print_bleed',b.dataset.v);}catch(x){}syncPrintPrefsUi();});
+syncPrintPrefsUi();
 async function expPrintPDF(setp){
   if(!window.jspdf?.jsPDF)throw new Error('ספריית jsPDF לא נטענה — נדרש חיבור לאינטרנט');
   if(!S.deck?.length)throw new Error('אין משחק לייצוא — לחצו "ייצר משחק" קודם');
@@ -9803,7 +9841,8 @@ async function expPrintPDF(setp){
   if(!S.back.enabled)throw new Error('בית הדפוס דורש עיצוב גב. הפעילו את עורך הגב ונסו שוב');
   const{jsPDF}=window.jspdf;
   const trimMm=S.cardSizeMm;
-  const bleedMm=PRINT_SHOP.bleedMm;
+  const bleedMm=printBleedMm();   // D-98: 3/4/5 (ברירת מחדל = PRINT_SHOP.bleedMm). רק כאן — לא PRINT_SHEET ולא החיתוך הצורני
+  const each=printBackMode()==='each';   // D-98: גב אחרי כל קלף (דו-צדדי). ברירת מחדל: גב אחד בסוף, כמו תמיד
   const pageMm=trimMm+2*bleedMm;
   // pxTrim נגזר מדרישת ה-DPI ולא מקבוע. EXPORT_PX.print הוא רצפה בלבד:
   // לקלף קטן הוא כבר מספיק, לקלף גדול הוא נמוך מדי וחייב לעלות.
@@ -9818,15 +9857,29 @@ async function expPrintPDF(setp){
   const pdf=new jsPDF({orientation:'portrait',unit:'mm',
                        format:[pageMm,pageMm],compress:true});
   const totalUnits=S.deck.length+1;
+  // D-98: הגב זהה בכל עמוד — מצוירים פעם אחת, והתמונה נוספת שוב ושוב עם אותו alias (ה-PDF לא מתנפח פי N).
+  // הקלף סימטרי שמאל-ימין (עגול/מרובע/חנוכייה/סביבון), ולכן גב לא משוקף נופל בדיוק מאחורי החזית בדו-צדדי.
+  let backBigURL=null,backTrimURL=null;
+  if(each){
+    const{big,trim}=renderBleedPair(cv=>drawCardBack(cv),pxTrim,pxPage,jpg,edgeFillBack());
+    backBigURL=big.toDataURL('image/jpeg',PRINT_SHOP.jpegQuality);backTrimURL=trim.toDataURL('image/jpeg',PRINT_SHOP.jpegQuality);
+    big.width=big.height=trim.width=trim.height=0;
+  }
   for(let i=0;i<S.deck.length;i++){
     if(i>0)pdf.addPage([pageMm,pageMm]);
     const{big,trim}=renderBleedPair(cv=>drawCard(cv,S.layouts[i],S.imgEls,S.shape),pxTrim,pxPage,jpg,edgeFillFront());
     pdf.addImage(big.toDataURL('image/jpeg',PRINT_SHOP.jpegQuality),'JPEG',0,0,pageMm,pageMm);
     pdf.addImage(trim.toDataURL('image/jpeg',PRINT_SHOP.jpegQuality),'JPEG',bleedMm,bleedMm,trimMm,trimMm);
     big.width=big.height=trim.width=trim.height=0;      // ⛔ שחרור זיכרון — לא אופציונלי
+    if(each){
+      pdf.addPage([pageMm,pageMm]);
+      pdf.addImage(backBigURL,'JPEG',0,0,pageMm,pageMm,'ps-back-big');
+      pdf.addImage(backTrimURL,'JPEG',bleedMm,bleedMm,trimMm,trimMm,'ps-back-trim');
+    }
     setp(3+Math.round(92*(i+1)/totalUnits),t('export.cardProgress',{i:i+1,total:S.deck.length}));
     if(i%3===2)await tick();
   }
+  if(!each){
   pdf.addPage([pageMm,pageMm]);
   {
     const{big,trim}=renderBleedPair(cv=>drawCardBack(cv),pxTrim,pxPage,jpg,edgeFillBack());
@@ -9834,9 +9887,10 @@ async function expPrintPDF(setp){
     pdf.addImage(trim.toDataURL('image/jpeg',PRINT_SHOP.jpegQuality),'JPEG',bleedMm,bleedMm,trimMm,trimMm);
     big.width=big.height=trim.width=trim.height=0;
   }
+  }
   setp(98,'שומר…');
   const shapeLabel=S.shape==='circle'?'circle':(isSpecialShape()?S.shape:'square');
-  const fn=`matchito-print-${S.deck.length}cards-${trimMm}mm-${shapeLabel}-bleed${bleedMm}.pdf`;
+  const fn=`matchito-print-${S.deck.length}cards-${trimMm}mm-${shapeLabel}-bleed${bleedMm}${each?'-duplex':''}.pdf`;
   const blob=pdf.output('blob');
   if(_exportUrl)URL.revokeObjectURL(_exportUrl);
   _exportUrl=URL.createObjectURL(blob);
