@@ -1135,6 +1135,20 @@ const I18N={
     'export.psBackEach':'גב אחרי כל קלף (דו-צדדי)',
     'export.psBleedLabel':'גודל הבליד',
     'export.psBleedMm':'{n} מ"מ',
+    'back.numTitle':'🔢 מספור קלפים',
+    'back.numOn':'להציג מספר קלף בגב',
+    'back.numFmt':'תצוגה',
+    'back.numFmtN':'12',
+    'back.numFmtOf':'12/57',
+    'back.numFmtHash':'#12',
+    'back.numPos':'מיקום',
+    'back.numPosBottom':'למטה במרכז',
+    'back.numPosCorner':'פינה למטה',
+    'back.numPosTop':'למעלה במרכז',
+    'back.numSize':'גודל',
+    'back.numColor':'צבע',
+    'back.numFont':'גופן',
+    'export.psNumNote':'עם מספור, כל קלף מקבל גב משלו',
     'gift.limitTitle':'ההורדות במתנה נוצלו 🎁',
     'gift.limitBody':'רוצים עוד? אפשר לרכוש מנוי, או לכתוב להושעיה.',
     'gift.buy':'לרכישה',
@@ -1943,6 +1957,20 @@ const I18N={
     'export.psBackEach':'Back after every card (double-sided)',
     'export.psBleedLabel':'Bleed size',
     'export.psBleedMm':'{n} mm',
+    'back.numTitle':'🔢 Card numbering',
+    'back.numOn':'Show the card number on the back',
+    'back.numFmt':'Display',
+    'back.numFmtN':'12',
+    'back.numFmtOf':'12/57',
+    'back.numFmtHash':'#12',
+    'back.numPos':'Position',
+    'back.numPosBottom':'Bottom centre',
+    'back.numPosCorner':'Bottom corner',
+    'back.numPosTop':'Top centre',
+    'back.numSize':'Size',
+    'back.numColor':'Colour',
+    'back.numFont':'Font',
+    'export.psNumNote':'With numbering, every card gets its own back',
     'gift.limitTitle':'Your gift downloads are used up 🎁',
     'gift.limitBody':'Want more? You can buy a plan, or message Hoshaya.',
     'gift.buy':'Buy',
@@ -3275,6 +3303,7 @@ window.applyI18n=applyI18n;
             <button type="button" class="sbt" data-v="each" aria-pressed="false" data-i18n="export.psBackEach">גב אחרי כל קלף (דו-צדדי)</button>
           </div>
         </div>
+        <div id="ps-num-note" hidden style="font-size:.78rem;color:var(--muted);margin-top:.35rem" data-i18n="export.psNumNote">עם מספור, כל קלף מקבל גב משלו</div>
         <div class="shape-row" style="margin-top:.5rem;flex-wrap:wrap">
           <span id="ps-bleed-lbl" data-i18n="export.psBleedLabel" class="shape-lbl">גודל הבליד</span>
           <div class="shape-grp" id="ps-bleed" role="group" aria-labelledby="ps-bleed-lbl">
@@ -3417,10 +3446,10 @@ window.applyI18n=applyI18n;
       <div data-i18n="back.frameColorTitle" class="og-t" style="margin-top:.5rem">צבע</div>
       <div class="swatch-row" id="back-frame-sw"></div>
       <label class="cp-row"><span data-i18n="back.customColorLabel4">צבע חופשי</span><input type="color" id="back-frame-pick" value="#FFFFFF"></label>
-      <div class="sl-lock" data-sl-lock="back-frame-w"><div class="sl-lbl"><span data-i18n="back.frameWidthLabel">רוחב</span><strong id="lbl-back-frame-w">3 מ"מ</strong></div>
-      <input type="range" id="back-frame-w" min="0" max="15" step="0.5" value="3"></div>
-      <div class="sl-lock" data-sl-lock="back-frame-op"><div class="sl-lbl"><span data-i18n="back.frameOpacityLabel">שקיפות</span><strong id="lbl-back-frame-op">100%</strong></div>
-      <input type="range" id="back-frame-op" min="0" max="100" step="1" value="100"></div>
+      <div class="sl-lock" data-sl-lock="back-frame-w"><div class="sl-lbl"><span id="lbl-t-back-frame-w" data-i18n="back.frameWidthLabel">רוחב</span><strong id="lbl-back-frame-w">3 מ"מ</strong></div>
+      <input type="range" aria-labelledby="lbl-t-back-frame-w" id="back-frame-w" min="0" max="15" step="0.5" value="3"></div>
+      <div class="sl-lock" data-sl-lock="back-frame-op"><div class="sl-lbl"><span id="lbl-t-back-frame-op" data-i18n="back.frameOpacityLabel">שקיפות</span><strong id="lbl-back-frame-op">100%</strong></div>
+      <input type="range" aria-labelledby="lbl-t-back-frame-op" id="back-frame-op" min="0" max="100" step="1" value="100"></div>
     </div>
 
     <div class="back-tabpage" id="back-tab-symbol">
@@ -3429,10 +3458,10 @@ window.applyI18n=applyI18n;
       <div data-i18n="back.symbolColorTitle" class="og-t" style="margin-top:.5rem">צבע</div>
       <div class="swatch-row" id="back-sym-sw"></div>
       <label class="cp-row"><span data-i18n="back.customColorLabel5">צבע חופשי</span><input type="color" id="back-sym-pick" value="#FFFFFF"></label>
-      <div class="sl-lock" data-sl-lock="back-sym-size"><div class="sl-lbl"><span data-i18n="back.symbolSizeLabel">גודל</span><strong id="lbl-back-sym-size">46%</strong></div>
-      <input type="range" id="back-sym-size" min="0" max="90" step="1" value="46"></div>
-      <div class="sl-lock" data-sl-lock="back-sym-dy"><div class="sl-lbl"><span data-i18n="back.symbolOffsetLabel">היסט אנכי</span><strong id="lbl-back-sym-dy">0%</strong></div>
-      <input type="range" id="back-sym-dy" min="-60" max="60" step="1" value="0"></div>
+      <div class="sl-lock" data-sl-lock="back-sym-size"><div class="sl-lbl"><span id="lbl-t-back-sym-size" data-i18n="back.symbolSizeLabel">גודל</span><strong id="lbl-back-sym-size">46%</strong></div>
+      <input type="range" aria-labelledby="lbl-t-back-sym-size" id="back-sym-size" min="0" max="90" step="1" value="46"></div>
+      <div class="sl-lock" data-sl-lock="back-sym-dy"><div class="sl-lbl"><span id="lbl-t-back-sym-dy" data-i18n="back.symbolOffsetLabel">היסט אנכי</span><strong id="lbl-back-sym-dy">0%</strong></div>
+      <input type="range" aria-labelledby="lbl-t-back-sym-dy" id="back-sym-dy" min="-60" max="60" step="1" value="0"></div>
     </div>
 
     <div class="back-tabpage" id="back-tab-text">
@@ -3449,10 +3478,37 @@ window.applyI18n=applyI18n;
       <div data-i18n="back.textColorTitle" class="og-t" style="margin-top:.5rem">צבע</div>
       <div class="swatch-row" id="back-text-sw"></div>
       <label class="cp-row"><span data-i18n="back.customColorLabel6">צבע חופשי</span><input type="color" id="back-text-pick" value="#FFFFFF"></label>
-      <div class="sl-lock" data-sl-lock="back-text-size"><div class="sl-lbl"><span data-i18n="back.textSizeLabel">גודל</span><strong id="lbl-back-text-size">11%</strong></div>
-      <input type="range" id="back-text-size" min="4" max="22" step="0.5" value="11"></div>
-      <div class="sl-lock" data-sl-lock="back-text-dy"><div class="sl-lbl"><span data-i18n="back.textOffsetLabel">היסט אנכי</span><strong id="lbl-back-text-dy">34%</strong></div>
-      <input type="range" id="back-text-dy" min="-60" max="70" step="1" value="34"></div>
+      <div class="sl-lock" data-sl-lock="back-text-size"><div class="sl-lbl"><span id="lbl-t-back-text-size" data-i18n="back.textSizeLabel">גודל</span><strong id="lbl-back-text-size">11%</strong></div>
+      <input type="range" aria-labelledby="lbl-t-back-text-size" id="back-text-size" min="4" max="22" step="0.5" value="11"></div>
+      <div class="sl-lock" data-sl-lock="back-text-dy"><div class="sl-lbl"><span id="lbl-t-back-text-dy" data-i18n="back.textOffsetLabel">היסט אנכי</span><strong id="lbl-back-text-dy">34%</strong></div>
+      <input type="range" aria-labelledby="lbl-t-back-text-dy" id="back-text-dy" min="-60" max="70" step="1" value="34"></div>
+      <!-- D-99: מספור קלפים בגב — מנהל בלבד (hidden עד refreshAdminShapeUi) -->
+      <div id="back-num-box" data-admin="1" hidden style="margin-top:.8rem;padding-top:.7rem;border-top:1px dashed var(--border)">
+        <div data-i18n="back.numTitle" class="og-t">🔢 מספור קלפים</div>
+        <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;font-weight:700"><input type="checkbox" id="back-num-on"><span data-i18n="back.numOn">להציג מספר קלף בגב</span></label>
+        <div data-i18n="back.numFmt" class="og-t" style="margin-top:.4rem" id="lbl-back-num-fmt">תצוגה</div>
+        <div class="shape-grp" id="back-num-fmt" role="group" aria-labelledby="lbl-back-num-fmt" style="flex-wrap:wrap">
+          <button type="button" class="sbt on" data-v="n" aria-pressed="true" data-i18n="back.numFmtN">12</button>
+          <button type="button" class="sbt" data-v="of" aria-pressed="false" data-i18n="back.numFmtOf">12/57</button>
+          <button type="button" class="sbt" data-v="hash" aria-pressed="false" data-i18n="back.numFmtHash">#12</button>
+        </div>
+        <div data-i18n="back.numPos" class="og-t" style="margin-top:.4rem" id="lbl-back-num-pos">מיקום</div>
+        <div class="shape-grp" id="back-num-pos" role="group" aria-labelledby="lbl-back-num-pos" style="flex-wrap:wrap">
+          <button type="button" class="sbt on" data-v="bottom" aria-pressed="true" data-i18n="back.numPosBottom">למטה במרכז</button>
+          <button type="button" class="sbt" data-v="corner" aria-pressed="false" data-i18n="back.numPosCorner">פינה למטה</button>
+          <button type="button" class="sbt" data-v="top" aria-pressed="false" data-i18n="back.numPosTop">למעלה במרכז</button>
+        </div>
+        <div class="sl-lock" data-sl-lock="back-num-size"><div class="sl-lbl"><span data-i18n="back.numSize">גודל</span><strong id="lbl-back-num-size">9 מ"מ</strong></div>
+        <input type="range" id="back-num-size" min="5" max="20" step="0.5" value="9" aria-label="גודל המספר"></div>
+        <div data-i18n="back.numColor" class="og-t" style="margin-top:.4rem">צבע</div>
+        <div class="swatch-row" id="back-num-sw"></div>
+        <label class="cp-row"><span data-i18n="back.customColorLabel6">צבע חופשי</span><input type="color" id="back-num-pick" value="#FFFFFF"></label>
+        <div data-i18n="back.numFont" class="og-t" style="margin-top:.4rem">גופן</div>
+        <div class="font-display" id="back-num-font-display-btn" role="button" tabindex="0">
+          <div id="back-num-font-name-display" class="font-name-display">רגיל</div>
+          <div id="back-num-font-meta-display" class="font-meta-display" data-i18n="back.fontPickHint">לחץ לבחירת פונט</div>
+        </div>
+      </div>
     </div>
 
     <div class="back-tabpage" id="back-tab-logo">
@@ -5265,7 +5321,8 @@ function backDefaults(){
     logoAssetId:null,logoSize:40,logoDy:0,logoCrop:null,images:[],   // images (D-86C): [{assetId,crop,cx,cy,size,rot}] — cx/cy מרכז ביחס למרכז הקלף ביחידות r, size = הצלע הארוכה ביחידות 2r, rot במעלות
        // logoCrop: {x,y,s} יחסי 0–1 (s ביחס לצלע הקצרה); null = חיתוך מרכזי כמו drawCover
     text:{main:'',sub:'',font:'sans',color:'#FFFFFF',size:11,dy:34},
-    duplex:{flip:'short',dx:0,dy:0,grow:0.6,order:'sequential'}
+    duplex:{flip:'short',dx:0,dy:0,grow:0.6,order:'sequential'},
+    num:{on:false,fmt:'n',pos:'bottom',size:9,color:'#FFFFFF',font:'sans'}   // D-99: מספור קלפים בגב (מנהל)
   };
 }
 // מיזוג עומק-2 מול ברירות מחדל — עיצוב ישן בלי back (או עם שדות חסרים) לא קורס
@@ -5274,7 +5331,7 @@ function mergeBack(saved){
   const d=backDefaults();
   if(!saved||typeof saved!=='object')return d;
   const out=Object.assign({},d,saved);
-  ['bg','pattern','frame','symbol','text','duplex'].forEach(k=>{out[k]=Object.assign({},d[k],saved[k]||{});});
+  ['bg','pattern','frame','symbol','text','duplex','num'].forEach(k=>{out[k]=Object.assign({},d[k],saved[k]||{});});
   // D-86C: תמונות נוספות — עותק עמוק (בלי הפניות משותפות בין העתקות), רק שדות מוכרים, עד BACK_IMG_MAX
   out.images=(Array.isArray(saved.images)?saved.images:[]).slice(0,BACK_IMG_MAX).filter(i=>i&&i.assetId!=null).map(i=>({
     assetId:i.assetId,crop:i.crop&&typeof i.crop==='object'?Object.assign({},i.crop):null,
@@ -5317,9 +5374,10 @@ function backFontCatLabel(tab,cat){
 // שהפונט אומת שנטען (מראה ל-pencil-stickers.html). מפתחות legacy
 // (sans/serif/round, בלי רשומה באף מאגר) אין מה לטעון — תמיד "נטענים"
 // (גופן מערכת מוכן תמיד). העיצוב מוצג תמיד בפונט שנשמר, בלי קשר לטאב או לשפה.
-function renderBackFontPreview(key,loaded){
-  const nameEl=document.getElementById('back-font-name-display');
-  const metaEl=document.getElementById('back-font-meta-display');
+function renderBackFontPreview(key,loaded,tgt){
+  const pfx=tgt==='num'?'back-num-font':'back-font';
+  const nameEl=document.getElementById(pfx+'-name-display');
+  const metaEl=document.getElementById(pfx+'-meta-display');
   if(!nameEl||!metaEl)return;
   const hit=backFontLookup(key);
   const legacyLabels={sans:'back.fontNormalBtn',serif:'back.fontClassicBtn',round:'back.fontRoundBtn'};
@@ -5333,9 +5391,12 @@ function renderBackFontPreview(key,loaded){
 // זו קריאת רשת), ודילוג שקט על פונט שבור (attempt חוסם לולאה אינסופית
 // אופליין). key יכול להיות 'sans'/'serif'/'round' (legacy, בלי טעינה) או
 // שם משפחה אמיתי מאחד משני המאגרים.
+let _backFontTarget='text';   // D-99: בורר הפונטים משרת גם את מספור הקלפים
+function backFontObj(){return _backFontTarget==='num'?S.back.num:S.back.text;}
 async function setBackFont(key,attempt){
-  S.back.text.font=key;
-  renderBackFontPreview(key,false);
+  const tgtObj=backFontObj(),tgtName=_backFontTarget;
+  tgtObj.font=key;
+  renderBackFontPreview(key,false,tgtName);
   markBackDirty();
   const hit=backFontLookup(key);
   if(!hit){renderBackFontPreview(key,true);return;}
@@ -5346,8 +5407,8 @@ async function setBackFont(key,attempt){
     skipToNextBackFont(hit,attempt);
     return;
   }
-  if(S.back.text.font!==key)return;
-  renderBackFontPreview(key,true);
+  if(tgtObj.font!==key)return;
+  renderBackFontPreview(key,true,tgtName);
   markBackDirty();
 }
 
@@ -5366,7 +5427,7 @@ function skipToNextBackFont(hit,attempt){
 // הטאב שנפתח: המאגר שמחזיק את הפונט הנוכחי (כדי שהאריח הנבחר ייראה),
 // ואם הפונט הוא legacy — ברירת המחדל לפי LANG.
 function backFontDefaultTab(){
-  const hit=backFontLookup(S.back.text.font);
+  const hit=backFontLookup(backFontObj().font);
   return hit?hit.tab:(LANG==='en'?'en':'he');
 }
 function setBackFontTab(tab){
@@ -5396,7 +5457,7 @@ function buildBackFontAllList(tab){
     grid.className='font-tile-grid';
     recs.forEach(rec=>{
       const tile=document.createElement('div');
-      tile.className='font-tile'+(rec.f===S.back.text.font?' selected':'');
+      tile.className='font-tile'+(rec.f===backFontObj().font?' selected':'');
       tile.dataset.font=rec.f;
       tile.style.opacity='.45';
       tile.textContent=previewText;
@@ -5609,7 +5670,60 @@ function backImgLayout(L,img,r){
   const a=sw/sh,long=Math.max(.02,Math.min(2.5,+L.size||.4))*2*r;
   return{sx,sy,sw,sh,w:a>=1?long:long*a,h:a>=1?long/a:long,clip};
 }
-function drawCardBack(canvas){
+// ══ D-99: מספור קלפים בגב ══
+// הציור אחרון (אחרי הטקסט), בתוך חיתוך הקלף ו-4 מ"מ לפחות משפת החיתוך, עם הילה דקה בצבע מנוגד. הגיאומטריה נגזרת מרוחב הקנבס בלבד —
+// ולכן אפשר לצייר את הגב פעם אחת בלי מספר, ולכל קלף להעתיק ולצייר רק את המספר (makeNumberedBackDrawer).
+function backNumText(idx,total){
+  const n=idx+1,f=(S.back.num&&S.back.num.fmt)||'n';
+  return f==='of'?n+'/'+total:f==='hash'?'#'+n:String(n);
+}
+function backNumInside(sz,x,y){   // האם הנקודה בתוך הקלף, 4 מ"מ לפחות משפת החיתוך
+  const M=sz*0.014,cx=sz/2,cy=sz/2,r=sz/2-M,ppMm=(sz-2*M)/Math.max(1,S.cardSizeMm),ins=4*ppMm;
+  if(S.shape==='circle')return Math.hypot(x-cx,y-cy)<=r-ins;
+  if(CARD_SHAPES[S.shape]){const inf=shapeInfo(S.shape),u=(x-(cx-r))/(2*r),v=(y-(cy-r))/(2*r);return shapeSdfAt(inf,u,v)<=-ins/(2*r);}
+  const sq=r*1.88,cr=sq*.09,h=sq/2,qx=Math.abs(x-cx)-(h-cr),qy=Math.abs(y-cy)-(h-cr);
+  return Math.hypot(Math.max(qx,0),Math.max(qy,0))+Math.min(Math.max(qx,qy),0)-cr<=-ins;
+}
+function drawBackNumber(ctx,sz,idx,total){
+  const N=S.back.num;if(!N)return;
+  const M=sz*0.014,cx=sz/2,cy=sz/2,r=sz/2-M,ppMm=(sz-2*M)/Math.max(1,S.cardSizeMm);
+  const str=backNumText(idx,total),halo=.55*ppMm;
+  ctx.save();
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  // מתחילים בקצה הקלף ונכנסים פנימה לאורך הכיוון עד שהמספר כולו (גבולות הדיו האמיתיים + הילה) בתוך הקלף, 4 מ"מ משפת החיתוך.
+  // בחנוכייה/סביבון "למטה" = מרכז הבסיס הרחב, לא קצה צר. אם לא נכנס בשום מקום (למשל 12/57 בגודל 20 מ"מ בצורה צרה) — מקטינים את הגופן ב-10% ומנסים שוב.
+  let sx,sy,dx,dy;
+  if(N.pos==='top'){sx=cx;sy=cy-r;dx=0;dy=1;}
+  else if(N.pos==='corner'){sx=cx+r*.72;sy=cy+r*.72;dx=-.7071;dy=-.7071;}
+  else{sx=cx;sy=cy+r;dx=0;dy=-1;}
+  let fs=Math.max(6,N.size*ppMm),x=sx,y=sy,placed=false;
+  for(let attempt=0;attempt<16&&!placed;attempt++){
+    ctx.font=`800 ${fs}px ${resolveBackFont(N.font)}`;
+    const mt=ctx.measureText(str),xl=mt.actualBoundingBoxLeft+halo,xr=mt.actualBoundingBoxRight+halo,ya=mt.actualBoundingBoxAscent+halo,yd=mt.actualBoundingBoxDescent+halo;
+    const fits=(px,py)=>{for(const[ox,oy]of[[-xl,-ya],[xr,-ya],[-xl,yd],[xr,yd],[0,-ya],[0,yd],[-xl,0],[xr,0]])if(!backNumInside(sz,px+ox,py+oy))return false;return true;};
+    x=sx;y=sy;const step=.25*ppMm;
+    for(let k=0;k<400&&!(placed=fits(x,y));k++){x+=dx*step;y+=dy*step;if(Math.hypot(x-cx,y-cy)>r*1.05)break;}
+    if(!placed)fs*=.9;
+  }
+  if(!placed){x=cx;y=cy;}
+  const c=N.color||'#FFFFFF',m=/^#?([0-9a-f]{6})$/i.exec(c),lum=m?(parseInt(m[1].slice(0,2),16)*.299+parseInt(m[1].slice(2,4),16)*.587+parseInt(m[1].slice(4,6),16)*.114):255;
+  ctx.lineJoin='round';ctx.lineWidth=halo*2;ctx.strokeStyle=lum>140?'rgba(0,0,0,.9)':'rgba(255,255,255,.95)';
+  ctx.strokeText(str,x,y);ctx.fillStyle=c;ctx.fillText(str,x,y);
+  ctx.restore();
+}
+function numOn(){return !!(S.back.enabled&&S.back.num&&S.back.num.on);}
+// גב ממוספר לייצוא: הגב בלי מספר מצויר פעם אחת לכל גודל קנבס; לכל קלף מעתיקים ומציירים רק את המספר
+function makeNumberedBackDrawer(){
+  const cache=new Map(),total=S.deck.length;
+  const draw=(cv,idx)=>{
+    const w=cv.width;let base=cache.get(w);
+    if(!base){base=document.createElement('canvas');base.width=base.height=w;drawCardBack(base,undefined,{noNum:true});cache.set(w,base);}
+    const x=cv.getContext('2d');x.clearRect(0,0,w,w);x.drawImage(base,0,0);drawBackNumber(x,w,idx,total);
+  };
+  draw.free=()=>{cache.forEach(c=>{c.width=c.height=0;});cache.clear();};
+  return draw;
+}
+function drawCardBack(canvas,idx,opts){
   // אותו מרווח יחסי כמו ב-cardGeom — החזית והגב חייבים להסכים על הגאומטריה,
   // אחרת בהדפסה דו-צדדית הם לא יתלכדו.
   const ctx=canvas.getContext('2d'),sz=canvas.width;
@@ -5694,6 +5808,8 @@ function drawCardBack(canvas){
   drawBackFrame(ctx,cx,cy,r,isC,sq,sqx,sqy,sqcr,B.frame,ppMm,SP);
 
   drawBackText(ctx,cx,cy,r,B.text);
+
+  if(B.num&&B.num.on&&!(opts&&opts.noNum))drawBackNumber(ctx,sz,idx==null?0:idx,S.deck.length||S.order&&S.order.total||57);   // D-99: אחרון, אחרי הטקסט
 
   if(needsWatermark())drawWatermark(ctx,cx,cy,r,isC,sq,sqx,sqy,sqcr,sz,SP);
 }
@@ -8327,7 +8443,7 @@ async function estimatePdfBytes(px){
                           jpg?'JPEG':'PNG',10,10,d,d);
       backCost=Math.max(0,backProbe.output('blob').size-empty);
     }
-    return Math.round(empty+frontCost*S.deck.length+backCost);
+    return Math.round(empty+frontCost*S.deck.length+backCost*(numOn()?S.deck.length:1));   // D-99: מספור = גב לכל קלף
   }catch(e){console.warn('estimatePdfBytes:',e);return null;}
 }
 
@@ -8653,6 +8769,7 @@ buildSwatchesGeneric('back-pattern-sw',BACK_COLORS,'back-pattern-pick',c=>{S.bac
 buildSwatchesGeneric('back-frame-sw',BACK_COLORS,'back-frame-pick',c=>{S.back.frame.color=c;markBackDirty();});
 buildSwatchesGeneric('back-sym-sw',BACK_COLORS,'back-sym-pick',c=>{S.back.symbol.color=c;markBackDirty();});
 buildSwatchesGeneric('back-text-sw',BACK_COLORS,'back-text-pick',c=>{S.back.text.color=c;markBackDirty();});
+buildSwatchesGeneric('back-num-sw',BACK_COLORS,'back-num-pick',c=>{S.back.num.color=c;markBackDirty();});   // D-99
 
 document.getElementById('back-bg-pick1').addEventListener('input',e=>{S.back.bg.c1=e.target.value;syncSwatchRow('back-bg-sw1',null);backBgChanged();});
 document.getElementById('back-bg-pick2').addEventListener('input',e=>{S.back.bg.c2=e.target.value;syncSwatchRow('back-bg-sw2',null);backBgChanged();});
@@ -8660,6 +8777,23 @@ document.getElementById('back-pattern-pick').addEventListener('input',e=>{S.back
 document.getElementById('back-frame-pick').addEventListener('input',e=>{S.back.frame.color=e.target.value;syncSwatchRow('back-frame-sw',null);markBackDirty();});
 document.getElementById('back-sym-pick').addEventListener('input',e=>{S.back.symbol.color=e.target.value;syncSwatchRow('back-sym-sw',null);markBackDirty();});
 document.getElementById('back-text-pick').addEventListener('input',e=>{S.back.text.color=e.target.value;syncSwatchRow('back-text-sw',null);markBackDirty();});
+// D-99: מספור קלפים בגב
+document.getElementById('back-num-pick').addEventListener('input',e=>{S.back.num.color=e.target.value;syncSwatchRow('back-num-sw',null);markBackDirty();});
+document.getElementById('back-num-on').addEventListener('change',e=>{S.back.num.on=e.target.checked;markBackDirty();syncPrintPrefsUi();});
+for(const [gid,key,att] of [['back-num-fmt','fmt','v'],['back-num-pos','pos','v']])
+  document.getElementById(gid).addEventListener('click',e=>{const b=e.target.closest('.sbt');if(!b)return;S.back.num[key]=b.dataset[att];syncBackNumUi();markBackDirty();});
+document.getElementById('back-num-size').addEventListener('input',e=>{S.back.num.size=parseFloat(e.target.value);document.getElementById('lbl-back-num-size').textContent=S.back.num.size+' מ"מ';markBackDirty();});
+document.getElementById('back-num-font-display-btn').addEventListener('click',()=>{_backFontTarget='num';setBackFontTab(backFontDefaultTab());document.getElementById('back-font-all-modal').hidden=false;});
+document.getElementById('back-num-font-display-btn').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();document.getElementById('back-num-font-display-btn').click();}});
+function syncBackNumUi(){
+  const N=S.back.num;if(!N||!document.getElementById('back-num-on'))return;
+  document.getElementById('back-num-on').checked=!!N.on;
+  document.querySelectorAll('#back-num-fmt .sbt').forEach(b=>{const on=b.dataset.v===N.fmt;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on?'true':'false');});
+  document.querySelectorAll('#back-num-pos .sbt').forEach(b=>{const on=b.dataset.v===N.pos;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on?'true':'false');});
+  document.getElementById('back-num-size').value=N.size;document.getElementById('lbl-back-num-size').textContent=N.size+' מ"מ';
+  document.getElementById('back-num-pick').value=N.color;syncSwatchRow('back-num-sw',N.color);
+  renderBackFontPreview(N.font,true,'num');
+}
 
 document.getElementById('back-bg-mode-grp').addEventListener('click',e=>{
   const b=e.target.closest('.sbt');if(!b)return;
@@ -8687,6 +8821,7 @@ document.getElementById('back-sym-dy').addEventListener('input',e=>{
 document.getElementById('back-text-main').addEventListener('input',e=>{S.back.text.main=e.target.value;markBackDirty();});
 document.getElementById('back-text-sub').addEventListener('input',e=>{S.back.text.sub=e.target.value;markBackDirty();});
 document.getElementById('back-font-display-btn').addEventListener('click',()=>{
+  _backFontTarget='text';
   setBackFontTab(backFontDefaultTab());
   document.getElementById('back-font-all-modal').hidden=false;
 });
@@ -9266,6 +9401,7 @@ function syncBackUIFromState(){
   document.getElementById('back-text-main').value=B.text.main;
   document.getElementById('back-text-sub').value=B.text.sub;
   renderBackFontPreview(B.text.font,true);
+  syncBackNumUi();
   document.getElementById('back-text-pick').value=B.text.color;syncSwatchRow('back-text-sw',B.text.color);
   document.getElementById('back-text-size').value=B.text.size;document.getElementById('lbl-back-text-size').textContent=B.text.size+'%';
   document.getElementById('back-text-dy').value=B.text.dy;document.getElementById('lbl-back-text-dy').textContent=B.text.dy+'%';
@@ -9538,6 +9674,7 @@ async function doExport(type){
       catch(e){console.warn('export font load:',e);}
     }
   }
+  if(numOn()&&S.back.num.font){const hn=backFontLookup(S.back.num.font);if(hn){try{await withTimeout(hn.lib.load(S.back.num.font),10000,'טעינת הפונט נתקעה');}catch(e){console.warn('export num font load:',e);}}}   // D-99
   resetExport();
   document.getElementById('exp-prog').classList.add('on');
   const setp=(p,t)=>{document.getElementById('exp-bar').style.width=p+'%';document.getElementById('exp-lbl').textContent=t;};
@@ -9622,12 +9759,17 @@ async function expPDF(setp){
   let backURL=null,grow=0;
   // מציירים לקנבס זמני נפרד בגודל px, לא ל-S.backCanvas (שנשאר תמיד CARD_PX לעורך
   // הגב) — אחרת בהדפסה דו-צדדית באיכות גבוהה הגב יצא מטושטש על אותו דף כמו החזית.
+  // D-99: מספור דלוק ⇒ גב שונה לכל קלף (הגב של קלף i מאחורי קלף i); כבוי ⇒ גב אחד כמו תמיד
+  const numB=(backOn&&numOn())?makeNumberedBackDrawer():null;
+  const numBackURL=i=>{const cv=document.createElement('canvas');cv.width=cv.height=px;numB(cv,i);flattenToWhiteIfJpg(cv,jpg);const u=jpg?cv.toDataURL('image/jpeg',0.92):cv.toDataURL('image/png',1);cv.width=cv.height=0;return u;};
   if(backOn){
+    grow=S.back.duplex.grow||0;
+    if(!numB){
     const backTmp=document.createElement('canvas');backTmp.width=backTmp.height=px;
     drawCardBack(backTmp);
     flattenToWhiteIfJpg(backTmp,jpg);
     backURL=jpg?backTmp.toDataURL('image/jpeg',0.92):backTmp.toDataURL('image/png',1);
-    grow=S.back.duplex.grow||0;
+    }
   }
 
   for(const entry of order){
@@ -9682,7 +9824,7 @@ async function expPDF(setp){
       const sizeD=cardMm+2*grow;
       for(let j=0;j<idxs.length;j++){
         const bp=backPos(positions[j]);
-        pdf.addImage(backURL,'PNG',bp.x-sizeD/2,bp.y-sizeD/2,sizeD,sizeD);
+        pdf.addImage(numB?numBackURL(idxs[j]):backURL,'PNG',bp.x-sizeD/2,bp.y-sizeD/2,sizeD,sizeD);
         if(S.crop){
           const d=cardMm,cg=2,cl=4,lx=bp.x-d/2,ly=bp.y-d/2;
           pdf.setDrawColor(0);pdf.setLineWidth(.25);
@@ -9697,6 +9839,7 @@ async function expPDF(setp){
       }
     }
   }
+  if(numB)numB.free();
   setp(98,'שומר…');
   const blob=pdf.output('blob');
   if(_exportUrl)URL.revokeObjectURL(_exportUrl);
@@ -9829,6 +9972,7 @@ function printBleedMm(){try{const v=+localStorage.getItem('dobble_print_bleed');
 function syncPrintPrefsUi(){
   const bm=printBackMode(),bl=String(printBleedMm());
   document.querySelectorAll('#ps-back .sbt').forEach(b=>{const on=b.dataset.v===bm;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on?'true':'false');});
+  const nn=document.getElementById('ps-num-note');if(nn)nn.hidden=!numOn();   // D-99
   document.querySelectorAll('#ps-bleed .sbt').forEach(b=>{const on=b.dataset.v===bl;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on?'true':'false');b.textContent=t('export.psBleedMm',{n:b.dataset.v});});
 }
 document.getElementById('ps-back').addEventListener('click',e=>{const b=e.target.closest('.sbt');if(!b)return;try{localStorage.setItem('dobble_print_back',b.dataset.v);}catch(x){}syncPrintPrefsUi();});
@@ -9859,8 +10003,10 @@ async function expPrintPDF(setp){
   const totalUnits=S.deck.length+1;
   // D-98: הגב זהה בכל עמוד — מצוירים פעם אחת, והתמונה נוספת שוב ושוב עם אותו alias (ה-PDF לא מתנפח פי N).
   // הקלף סימטרי שמאל-ימין (עגול/מרובע/חנוכייה/סביבון), ולכן גב לא משוקף נופל בדיוק מאחורי החזית בדו-צדדי.
+  const numB=numOn()?makeNumberedBackDrawer():null;   // D-99: מספור דלוק ⇒ גב משלו לכל קלף (בשני המצבים)
+  const addNumBack=i=>{const{big:bb,trim:tt}=renderBleedPair(cv=>numB(cv,i),pxTrim,pxPage,jpg,edgeFillBack());pdf.addImage(bb.toDataURL('image/jpeg',PRINT_SHOP.jpegQuality),'JPEG',0,0,pageMm,pageMm);pdf.addImage(tt.toDataURL('image/jpeg',PRINT_SHOP.jpegQuality),'JPEG',bleedMm,bleedMm,trimMm,trimMm);bb.width=bb.height=tt.width=tt.height=0;};
   let backBigURL=null,backTrimURL=null;
-  if(each){
+  if(each&&!numB){
     const{big,trim}=renderBleedPair(cv=>drawCardBack(cv),pxTrim,pxPage,jpg,edgeFillBack());
     backBigURL=big.toDataURL('image/jpeg',PRINT_SHOP.jpegQuality);backTrimURL=trim.toDataURL('image/jpeg',PRINT_SHOP.jpegQuality);
     big.width=big.height=trim.width=trim.height=0;
@@ -9873,13 +10019,17 @@ async function expPrintPDF(setp){
     big.width=big.height=trim.width=trim.height=0;      // ⛔ שחרור זיכרון — לא אופציונלי
     if(each){
       pdf.addPage([pageMm,pageMm]);
+      if(numB)addNumBack(i);
+      else{
       pdf.addImage(backBigURL,'JPEG',0,0,pageMm,pageMm,'ps-back-big');
       pdf.addImage(backTrimURL,'JPEG',bleedMm,bleedMm,trimMm,trimMm,'ps-back-trim');
+      }
     }
     setp(3+Math.round(92*(i+1)/totalUnits),t('export.cardProgress',{i:i+1,total:S.deck.length}));
     if(i%3===2)await tick();
   }
-  if(!each){
+  if(!each&&numB){for(let i=0;i<S.deck.length;i++){pdf.addPage([pageMm,pageMm]);addNumBack(i);if(i%3===2)await tick();}}   // D-99: N עמודי גב בסוף, לפי הסדר
+  else if(!each){
   pdf.addPage([pageMm,pageMm]);
   {
     const{big,trim}=renderBleedPair(cv=>drawCardBack(cv),pxTrim,pxPage,jpg,edgeFillBack());
@@ -9888,6 +10038,7 @@ async function expPrintPDF(setp){
     big.width=big.height=trim.width=trim.height=0;
   }
   }
+  if(numB)numB.free();
   setp(98,'שומר…');
   const shapeLabel=S.shape==='circle'?'circle':(isSpecialShape()?S.shape:'square');
   const fn=`matchito-print-${S.deck.length}cards-${trimMm}mm-${shapeLabel}-bleed${bleedMm}${each?'-duplex':''}.pdf`;
@@ -9972,10 +10123,10 @@ function dieCutPage(i,pxTrim,pxBleed){
 // (renderBleedPair): המסגרת המוגדלת יושבת בתוך הגלישה ומשאירה טבעת לבנה ליד הקו. במקום זה —
 // הארכת שפה: הגב מצויר שוב ושוב בהגדלות של פיקסל אחד, הגדול ראשון, כך שבכל נקודה בגלישה
 // נשאר הצבע שעל שפת הגב באותו כיוון. מעל הכול — הגב המדויק.
-function dieCutBackPage(pxTrim,pxBleed){
+function dieCutBackPage(pxTrim,pxBleed,opts){
   const pxPage=pxTrim+2*pxBleed,c=pxPage/2;
   const trim=document.createElement('canvas');trim.width=trim.height=pxTrim;
-  drawCardBack(trim);
+  if(opts&&opts.noNum)drawCardBack(trim,undefined,{noNum:true});else drawCardBack(trim);
   const page=document.createElement('canvas');page.width=page.height=pxPage;
   const ctx=page.getContext('2d');
   ctx.fillStyle='#ffffff';ctx.fillRect(0,0,pxPage,pxPage);
@@ -10050,7 +10201,19 @@ async function expDieCutPDF(setp){
     setp(3+Math.round(88*(i+1)/(n+(backOn?1:0))),t('export.cardProgress',{i:i+1,total:n}));
     await tick();
   }
-  if(backOn){
+  if(backOn&&numOn()){   // D-99: N עמודי גב בסוף כל קובץ, באותו סדר. עמוד הבסיס (בלי מספר) נבנה פעם אחת; לכל קלף מעתיקים ומציירים רק את המספר
+    const basePage=dieCutBackPage(pxTrim,pxBleed,{noNum:true});
+    for(let i=0;i<n;i++){
+      const pg=document.createElement('canvas');pg.width=pg.height=basePage.width;const px2=pg.getContext('2d');
+      px2.drawImage(basePage,0,0);px2.save();px2.translate(pxBleed,pxBleed);drawBackNumber(px2,pxTrim,i,n);px2.restore();
+      const jpg=window.cmykJpeg.fromCanvas(pg,DIECUT.quality);
+      pg.width=pg.height=0;
+      put3(jpg,'diecut-back-'+i,false);
+      setp(3+Math.round(88*(n+(i+1)/n)/(n+1)),t('export.cardProgress',{i:i+1,total:n}));
+      await tick();
+    }
+    basePage.width=basePage.height=0;
+  }else if(backOn){
     const page=dieCutBackPage(pxTrim,pxBleed);
     const jpg=window.cmykJpeg.fromCanvas(page,DIECUT.quality);
     page.width=page.height=0;
@@ -10163,10 +10326,22 @@ async function expSheetPDF(setp){
       // הגב מרונדר פעם אחת לכל משחק, לא לכל מקום — במגש מלא זה 4 רינדורים, לא 24.
       // אותו באג ניפוח היה גם כאן: נשמר רק bBig, והגב (כולל המסגרת שעוצבה
       // לשפה) צויר ב-pageMm במקום ב-trimMm. שומרים את שתי השכבות.
+      if(numOn()){   // D-99: גב משלו לכל קלף של ה-job (הבסיס בלי מספר מצויר פעם אחת)
+        const drawN=makeNumberedBackDrawer(),per=[];
+        for(let k=0;k<deckLen;k++){
+          const{big:nb,trim:nt}=renderBleedPair(cv=>drawN(cv,k),pxTrim,pxPage,jpg,edgeFillBack());
+          per.push({url:nb.toDataURL('image/jpeg',PRINT_SHOP.jpegQuality),trimUrl:nt.toDataURL('image/jpeg',PRINT_SHOP.jpegQuality)});
+          nb.width=nb.height=nt.width=nt.height=0;
+          if(k%3===2)await tick();
+        }
+        drawN.free();
+        backJobs.push({per,count:deckLen});
+      }else{
       const{big:bBig,trim:bTrim}=renderBleedPair(cv=>drawCardBack(cv),pxTrim,pxPage,jpg,edgeFillBack());
       backJobs.push({url:bBig.toDataURL('image/jpeg',PRINT_SHOP.jpegQuality),
                      trimUrl:bTrim.toDataURL('image/jpeg',PRINT_SHOP.jpegQuality),count:deckLen});
       bBig.width=bBig.height=bTrim.width=bTrim.height=0;
+      }
     }
 
     // ── גב: אותו רצף אינדקסים כמו החזית, אבל x משוקף — בהיפוך הגיליון
@@ -10186,8 +10361,9 @@ async function expSheetPDF(setp){
       while(bRemain===0&&bi<backJobs.length-1){bi++;bRemain=backJobs[bi].count;}
       const p=L.pts[i%L.perSheet];
       const mx=PRINT_SHEET.wMm-p.x-trimMm;   // שיקוף x של אזור החיתוך — ראו הערת הגב למעלה
-      pdf.addImage(backJobs[bi].url,'JPEG',mx-bleedMm,p.y-bleedMm,pageMm,pageMm);
-      pdf.addImage(backJobs[bi].trimUrl,'JPEG',mx,p.y,trimMm,trimMm);   // שכבת הגב בגודל האמיתי, כמו בחזית
+      const bj=backJobs[bi],bu=bj.per?bj.per[bj.count-bRemain]:bj;   // D-99: מספור ⇒ הגב של הקלף ה-k ב-job
+      pdf.addImage(bu.url,'JPEG',mx-bleedMm,p.y-bleedMm,pageMm,pageMm);
+      pdf.addImage(bu.trimUrl,'JPEG',mx,p.y,trimMm,trimMm);   // שכבת הגב בגודל האמיתי, כמו בחזית
       bRemain--;
     }
 
@@ -10226,7 +10402,16 @@ async function expZIP(setp){
     setp(3+Math.round(82*(i+1)/totalUnits),t('export.cardProgress',{i:i+1,total:S.deck.length}));
     if(i%8===7)await tick();
   }
-  if(backOn){
+  if(backOn&&numOn()){   // D-99: card-001-back.png, card-002-back.png… — הגב בלי מספר מצויר פעם אחת
+    const drawN=makeNumberedBackDrawer(),bt=document.createElement('canvas');bt.width=bt.height=px;
+    for(let i=0;i<S.deck.length;i++){
+      drawN(bt,i);
+      folder.file(`card-${String(i+1).padStart(3,'0')}-back.png`,bt.toDataURL('image/png',1).split(',')[1],{base64:true});
+      if(i%8===7)await tick();
+    }
+    drawN.free();bt.width=bt.height=0;
+    setp(85,'גב הקלף…');
+  }else if(backOn){
     // גב אחיד לכל הקלפים — קובץ יחיד, לא משוכפל לכל קלף. קנבס זמני נפרד באותו px
     // כמו החזית, לא S.backCanvas (שנשאר CARD_PX לעורך) — אותה סיבה כמו ב-expPDF.
     const backTmp=document.createElement('canvas');backTmp.width=backTmp.height=px;
