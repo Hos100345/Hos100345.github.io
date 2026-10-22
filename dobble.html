@@ -3446,10 +3446,10 @@ window.applyI18n=applyI18n;
       <div data-i18n="back.frameColorTitle" class="og-t" style="margin-top:.5rem">צבע</div>
       <div class="swatch-row" id="back-frame-sw"></div>
       <label class="cp-row"><span data-i18n="back.customColorLabel4">צבע חופשי</span><input type="color" id="back-frame-pick" value="#FFFFFF"></label>
-      <div class="sl-lock" data-sl-lock="back-frame-w"><div class="sl-lbl"><span data-i18n="back.frameWidthLabel">רוחב</span><strong id="lbl-back-frame-w">3 מ"מ</strong></div>
-      <input type="range" id="back-frame-w" min="0" max="15" step="0.5" value="3"></div>
-      <div class="sl-lock" data-sl-lock="back-frame-op"><div class="sl-lbl"><span data-i18n="back.frameOpacityLabel">שקיפות</span><strong id="lbl-back-frame-op">100%</strong></div>
-      <input type="range" id="back-frame-op" min="0" max="100" step="1" value="100"></div>
+      <div class="sl-lock" data-sl-lock="back-frame-w"><div class="sl-lbl"><span id="lbl-t-back-frame-w" data-i18n="back.frameWidthLabel">רוחב</span><strong id="lbl-back-frame-w">3 מ"מ</strong></div>
+      <input type="range" aria-labelledby="lbl-t-back-frame-w" id="back-frame-w" min="0" max="15" step="0.5" value="3"></div>
+      <div class="sl-lock" data-sl-lock="back-frame-op"><div class="sl-lbl"><span id="lbl-t-back-frame-op" data-i18n="back.frameOpacityLabel">שקיפות</span><strong id="lbl-back-frame-op">100%</strong></div>
+      <input type="range" aria-labelledby="lbl-t-back-frame-op" id="back-frame-op" min="0" max="100" step="1" value="100"></div>
     </div>
 
     <div class="back-tabpage" id="back-tab-symbol">
@@ -3458,10 +3458,10 @@ window.applyI18n=applyI18n;
       <div data-i18n="back.symbolColorTitle" class="og-t" style="margin-top:.5rem">צבע</div>
       <div class="swatch-row" id="back-sym-sw"></div>
       <label class="cp-row"><span data-i18n="back.customColorLabel5">צבע חופשי</span><input type="color" id="back-sym-pick" value="#FFFFFF"></label>
-      <div class="sl-lock" data-sl-lock="back-sym-size"><div class="sl-lbl"><span data-i18n="back.symbolSizeLabel">גודל</span><strong id="lbl-back-sym-size">46%</strong></div>
-      <input type="range" id="back-sym-size" min="0" max="90" step="1" value="46"></div>
-      <div class="sl-lock" data-sl-lock="back-sym-dy"><div class="sl-lbl"><span data-i18n="back.symbolOffsetLabel">היסט אנכי</span><strong id="lbl-back-sym-dy">0%</strong></div>
-      <input type="range" id="back-sym-dy" min="-60" max="60" step="1" value="0"></div>
+      <div class="sl-lock" data-sl-lock="back-sym-size"><div class="sl-lbl"><span id="lbl-t-back-sym-size" data-i18n="back.symbolSizeLabel">גודל</span><strong id="lbl-back-sym-size">46%</strong></div>
+      <input type="range" aria-labelledby="lbl-t-back-sym-size" id="back-sym-size" min="0" max="90" step="1" value="46"></div>
+      <div class="sl-lock" data-sl-lock="back-sym-dy"><div class="sl-lbl"><span id="lbl-t-back-sym-dy" data-i18n="back.symbolOffsetLabel">היסט אנכי</span><strong id="lbl-back-sym-dy">0%</strong></div>
+      <input type="range" aria-labelledby="lbl-t-back-sym-dy" id="back-sym-dy" min="-60" max="60" step="1" value="0"></div>
     </div>
 
     <div class="back-tabpage" id="back-tab-text">
@@ -3478,10 +3478,10 @@ window.applyI18n=applyI18n;
       <div data-i18n="back.textColorTitle" class="og-t" style="margin-top:.5rem">צבע</div>
       <div class="swatch-row" id="back-text-sw"></div>
       <label class="cp-row"><span data-i18n="back.customColorLabel6">צבע חופשי</span><input type="color" id="back-text-pick" value="#FFFFFF"></label>
-      <div class="sl-lock" data-sl-lock="back-text-size"><div class="sl-lbl"><span data-i18n="back.textSizeLabel">גודל</span><strong id="lbl-back-text-size">11%</strong></div>
-      <input type="range" id="back-text-size" min="4" max="22" step="0.5" value="11"></div>
-      <div class="sl-lock" data-sl-lock="back-text-dy"><div class="sl-lbl"><span data-i18n="back.textOffsetLabel">היסט אנכי</span><strong id="lbl-back-text-dy">34%</strong></div>
-      <input type="range" id="back-text-dy" min="-60" max="70" step="1" value="34"></div>
+      <div class="sl-lock" data-sl-lock="back-text-size"><div class="sl-lbl"><span id="lbl-t-back-text-size" data-i18n="back.textSizeLabel">גודל</span><strong id="lbl-back-text-size">11%</strong></div>
+      <input type="range" aria-labelledby="lbl-t-back-text-size" id="back-text-size" min="4" max="22" step="0.5" value="11"></div>
+      <div class="sl-lock" data-sl-lock="back-text-dy"><div class="sl-lbl"><span id="lbl-t-back-text-dy" data-i18n="back.textOffsetLabel">היסט אנכי</span><strong id="lbl-back-text-dy">34%</strong></div>
+      <input type="range" aria-labelledby="lbl-t-back-text-dy" id="back-text-dy" min="-60" max="70" step="1" value="34"></div>
       <!-- D-99: מספור קלפים בגב — מנהל בלבד (hidden עד refreshAdminShapeUi) -->
       <div id="back-num-box" data-admin="1" hidden style="margin-top:.8rem;padding-top:.7rem;border-top:1px dashed var(--border)">
         <div data-i18n="back.numTitle" class="og-t">🔢 מספור קלפים</div>
@@ -5687,7 +5687,7 @@ function backNumInside(sz,x,y){   // האם הנקודה בתוך הקלף, 4 מ
 function drawBackNumber(ctx,sz,idx,total){
   const N=S.back.num;if(!N)return;
   const M=sz*0.014,cx=sz/2,cy=sz/2,r=sz/2-M,ppMm=(sz-2*M)/Math.max(1,S.cardSizeMm);
-  const str=backNumText(idx,total),halo=.3*ppMm;
+  const str=backNumText(idx,total),halo=.55*ppMm;
   ctx.save();
   ctx.textAlign='center';ctx.textBaseline='middle';
   // מתחילים בקצה הקלף ונכנסים פנימה לאורך הכיוון עד שהמספר כולו (גבולות הדיו האמיתיים + הילה) בתוך הקלף, 4 מ"מ משפת החיתוך.
@@ -5707,7 +5707,7 @@ function drawBackNumber(ctx,sz,idx,total){
   }
   if(!placed){x=cx;y=cy;}
   const c=N.color||'#FFFFFF',m=/^#?([0-9a-f]{6})$/i.exec(c),lum=m?(parseInt(m[1].slice(0,2),16)*.299+parseInt(m[1].slice(2,4),16)*.587+parseInt(m[1].slice(4,6),16)*.114):255;
-  ctx.lineJoin='round';ctx.lineWidth=halo*2;ctx.strokeStyle=lum>140?'rgba(0,0,0,.65)':'rgba(255,255,255,.8)';
+  ctx.lineJoin='round';ctx.lineWidth=halo*2;ctx.strokeStyle=lum>140?'rgba(0,0,0,.9)':'rgba(255,255,255,.95)';
   ctx.strokeText(str,x,y);ctx.fillStyle=c;ctx.fillText(str,x,y);
   ctx.restore();
 }
