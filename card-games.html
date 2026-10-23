@@ -27,6 +27,15 @@
     .game-details summary::after{content:'←';margin-inline-start:auto;transition:transform .25s}
     .game-details[open] summary::after{transform:rotate(90deg)}
     .game-details-body{margin-top:.6rem;font-size:.95rem}
+    .paths3{display:grid;grid-template-columns:1fr;gap:.8rem;max-width:960px;margin:1.2rem auto 0}
+    @media (min-width:700px){.paths3{grid-template-columns:repeat(3,1fr)}}
+    .paths3 a{display:block;background:var(--white);border:2px solid var(--blue-light);border-radius:var(--radius);padding:1rem 1.1rem;text-decoration:none;color:inherit;box-shadow:0 4px 18px rgba(20,20,60,.07)}
+    .paths3 a:hover,.paths3 a:focus-visible{border-color:var(--indigo)}
+    .paths3 i{font-style:normal;font-size:1.6rem;display:block}
+    .paths3 b{display:block;font-size:1.1rem;color:var(--indigo);margin:.2rem 0}
+    .paths3 span{display:block;color:var(--muted);font-size:.9rem}
+    .paths3 em{display:block;font-style:normal;font-weight:700;margin-top:.4rem;font-size:.9rem}
+    .price-line{font-weight:700;font-size:.9rem;margin-top:.4rem}
   </style>
   <script type="application/ld+json">
 {
@@ -111,6 +120,14 @@
   },
   {
    "@type": "Question",
+   "name": "כמה זה עולה?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "העיצוב והתצוגה המקדימה תמיד בחינם. מאצ׳טו: 7 קלפים בחינם, ומשחק גדול יותר 10–25 ₪ להורדה. בשאר המשחקים ההורדה להדפסה בבית 10 ₪ (קוביות וזיכרון בלי גב — בחינם). משחק מודפס מאיתנו — המחיר מופיע לפני השליחה, ומשלמים רק אחרי שאישרנו יחד."
+   }
+  },
+  {
+   "@type": "Question",
    "name": "אפשר להדפיס בבית?",
    "acceptedAnswer": {
     "@type": "Answer",
@@ -154,7 +171,7 @@
    "name": "אפשר לשחק גם בטלפון?",
    "acceptedAnswer": {
     "@type": "Answer",
-    "text": "כן. בעמוד המשחקים בטלפון מעלים תמונות ומשחקים מיד — זיכרון, פאזל, מצא את הזהה ודומינו."
+    "text": "כן. בעמוד המשחקים בטלפון מעלים תמונות ומשחקים מיד ובחינם — זיכרון, פאזל, מצא את הזהה, מה נעלם? ודומינו."
    }
   }
  ]
@@ -204,7 +221,7 @@
         <p class="hero-subtitle reveal">בוחרים משחק, מעלים תמונות — ומקבלים משחק קלפים אישי להדפסה: מצא את הזהה, משחק זיכרון, רביעיות, דומינו, פאזל וקוביות. משחק שלא ברשימה? מעצבים אותו במחולל הקלפים החופשי.</p>
         <div class="hero-actions reveal">
           <a href="#games" class="btn btn-hero-phone">🃏 לבחירת משחק</a>
-          <a href="play/?demo=hanukkah" class="btn btn-ghost-hero">🎮 נסו עכשיו — משחק לדוגמה</a>
+          <a href="play/?demo=hanukkah" class="btn btn-ghost-hero">🎮 נסו עכשיו — מאצ׳טו של חנוכה בטלפון</a>
 
           <a href="https://wa.me/972505918734?text=%D7%A9%D7%9C%D7%95%D7%9D%20%D7%94%D7%95%D7%A9%D7%A2%D7%99%D7%94%2C%20%D7%94%D7%92%D7%A2%D7%AA%D7%99%20%D7%9E%D7%93%D7%A3%20%D7%9E%D7%97%D7%95%D7%9C%D7%9C%20%D7%9E%D7%A9%D7%97%D7%A7%D7%99%20%D7%94%D7%A7%D7%9C%D7%A4%D7%99%D7%9D%20%D7%95%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%A9%D7%9E%D7%95%D7%A2%20%D7%A4%D7%A8%D7%98%D7%99%D7%9D%20%F0%9F%83%8F" class="btn btn-ghost-hero" target="_blank" rel="noopener noreferrer">💬 שאלות בוואטסאפ</a>
         </div>
@@ -219,11 +236,17 @@
     <section class="section" aria-label="איך זה עובד" style="padding-top:1.6rem;padding-bottom:1.6rem">
       <div class="container">
         <ol class="steps3 reveal">
-          <li><b>1</b><span>מעלים תמונות</span><small>מהטלפון או מהמחשב</small></li>
-          <li><b>2</b><span>בוחרים משחק ועיצוב</span><small>רואים כל קלף לפני ההדפסה</small></li>
-          <li><b>3</b><span>מדפיסים, מזמינים או משחקים</span><small>קובץ להדפסה בבית, משחק מודפס מאיתנו, או בטלפון</small></li>
+          <li><b>1</b><span>בוחרים משחק</span><small>מהרשימה למטה</small></li>
+          <li><b>2</b><span>מעלים תמונות ומעצבים</span><small>רואים כל קלף לפני שמשלמים</small></li>
+          <li><b>3</b><span>מדפיסים, מזמינים או משחקים</span><small>בבית, מודפס מאיתנו, או בטלפון</small></li>
         </ol>
-        <p class="reveal" style="text-align:center;color:var(--muted);margin-top:1rem">🖨️ <b>להדפיס</b> — בוחרים משחק למטה ומעצבים אותו. 📱 <b>לשחק בטלפון</b> — <a href="games/" style="color:var(--indigo);font-weight:700">משחקים בטלפון מהתמונות שלכם</a>.</p>
+        <h2 class="reveal" style="text-align:center;font-size:1.25rem;margin-top:1.6rem">איך תרצו לקבל את המשחק?</h2>
+        <div class="paths3 reveal">
+          <a href="#games"><i aria-hidden="true">🖨️</i><b>להדפיס בבית</b><span>מורידים PDF ומדפיסים במדפסת שלכם</span><em>חלק מהמשחקים בחינם · השאר מ־10 ₪</em></a>
+          <a href="#games"><i aria-hidden="true">📦</i><b>להזמין מודפס</b><span>על נייר עבה, חתוך ומוכן למשחק</span><em>המחיר מופיע לפני השליחה · משלמים רק אחרי אישור</em></a>
+          <a href="games/#photos"><i aria-hidden="true">📱</i><b>לשחק בטלפון</b><span>מעלים תמונות ומשחקים מיד, בלי להדפיס</span><em>בחינם</em></a>
+        </div>
+        <p class="reveal" style="text-align:center;margin-top:1rem">✨ <b>העיצוב והתצוגה המקדימה תמיד בחינם.</b> משלמים רק על ההורדה או ההדפסה.</p>
       </div>
     </section>
 
@@ -238,58 +261,58 @@
           <div class="offer-card reveal">
             <img src="images/games/matchito.webp" alt="קלפים עגולים של משחק מצא את הזהה עם פרצופים של בני המשפחה — סבא, סבתא, הורים וילדים" width="800" height="600" loading="lazy" style="width:100%;height:auto;border-radius:.8rem;margin-bottom:.6rem">
             <h3 class="offer-card-title">מצא את הזהה (מאצ׳טו)</h3>
-            <p>בין כל שני קלפים יש תמונה אחת משותפת — מי מוצא ראשון? 7 עד 91 קלפים מהתמונות שלכם, עם 4 דרכי משחק בחבילה אחת.</p>
-            <p style="color:var(--muted);font-size:.82rem;margin-top:.3rem">נקרא גם: משחק "מי מוצא ראשון", קלפי התאמה, משחק סמל משותף, קלפים עגולים עם תמונות</p>
+            <p>בין כל שני קלפים יש תמונה אחת משותפת — מי מוצא ראשון? בוחרים גודל: 7, 13, 21, 31, 57 (הגודל הרגיל), 73 או 91 קלפים. 4 דרכי משחק בחבילה אחת.</p>
             <p style="color:var(--muted);font-size:.88rem;margin-top:.4rem">מתאים מגיל 4 · 2–8 שחקנים</p>
-            <p style="margin-top:.7rem"><a href="dobble.html" class="btn btn-sm" style="font-weight:700;color:var(--indigo);text-decoration:underline">לעיצוב המשחק ←</a> · <a href="matchito-info.html" style="color:var(--muted);text-decoration:underline">איך משחקים?</a></p>
+            <p class="price-line">7 קלפים — חינם · משחק גדול יותר — 10–25 ₪</p>
+            <p style="margin-top:.7rem"><a href="dobble.html" class="btn btn-sm" style="font-weight:700;color:var(--indigo);text-decoration:underline">צרו מאצ׳טו ←</a> · <a href="matchito-info.html" style="color:var(--muted);text-decoration:underline">איך משחקים?</a></p>
           </div>
           <div class="offer-card reveal">
             <img src="images/games/memory.webp" alt="משחק זיכרון מתמונות להדפסה — זוגות של חנוכייה, סביבון וסופגנייה" width="800" height="600" loading="lazy" style="width:100%;height:auto;border-radius:.8rem;margin-bottom:.6rem">
             <h3 class="offer-card-title">משחק זיכרון מתמונות</h3>
             <p>כל תמונה מודפסת פעמיים ונוצרים זוגות. אפשר גם זוג של תמונה ושם — מעולה לגן וללימוד מילים.</p>
-            <p style="color:var(--muted);font-size:.82rem;margin-top:.3rem">נקרא גם: משחק זוגות, זיכרון אישי, משחק זיכרון משפחתי, זיכרון עם תמונות של הילדים</p>
             <p style="color:var(--muted);font-size:.88rem;margin-top:.4rem">מתאים מגיל 3</p>
-            <p style="margin-top:.7rem"><a href="studio/?p=memory" class="btn btn-sm" style="font-weight:700;color:var(--indigo);text-decoration:underline">לעיצוב המשחק ←</a></p>
+            <p class="price-line">להדפסה בבית: חינם (בלי גב מעוצב) · מודפס מאיתנו: המחיר מופיע לפני השליחה</p>
+            <p style="margin-top:.7rem"><a href="studio/?p=memory" class="btn btn-sm" style="font-weight:700;color:var(--indigo);text-decoration:underline">צרו משחק זיכרון ←</a></p>
           </div>
           <div class="offer-card reveal">
             <img src="images/games/quartets.webp" alt="משחק רביעיות אישי — סדרת סביבונים עם האותיות נ, ג, ה, ש" width="800" height="600" loading="lazy" style="width:100%;height:auto;border-radius:.8rem;margin-bottom:.6rem">
             <h3 class="offer-card-title">רביעיות</h3>
             <p>כל 4 תמונות הן סדרה: משפחה, כיתה, חגים. על כל קלף רשומים כל בני הסדרה. כולל 100 רעיונות לסדרות.</p>
-            <p style="color:var(--muted);font-size:.82rem;margin-top:.3rem">נקרא גם: רביעיות אישיות, רביעיות משפחתיות, משחק רביעיות מתמונות, רביעיות לכיתה</p>
             <p style="color:var(--muted);font-size:.88rem;margin-top:.4rem">מתאים מגיל 5 · 3–6 שחקנים</p>
-            <p style="margin-top:.7rem"><a href="studio/?p=quartets" class="btn btn-sm" style="font-weight:700;color:var(--indigo);text-decoration:underline">לעיצוב המשחק ←</a></p>
+            <p class="price-line">להדפסה בבית: 10 ₪ · מודפס מאיתנו: הצעת מחיר</p>
+            <p style="margin-top:.7rem"><a href="studio/?p=quartets" class="btn btn-sm" style="font-weight:700;color:var(--indigo);text-decoration:underline">עצבו רביעיות ←</a></p>
           </div>
           <div class="offer-card reveal">
             <img src="images/games/domino.webp" alt="דומינו עם תמונות במקום נקודות — אבני דומינו בעיצוב אישי" width="800" height="600" loading="lazy" style="width:100%;height:auto;border-radius:.8rem;margin-bottom:.6rem">
             <h3 class="offer-card-title">דומינו עם תמונות</h3>
             <p>במקום נקודות — תמונות. 7 תמונות הן 28 אבנים, כמו סט רגיל. קלאסי, רכבת מקסיקנית או משולשים.</p>
-            <p style="color:var(--muted);font-size:.82rem;margin-top:.3rem">נקרא גם: דומינו אישי, דומינו מתמונות, דומינו לילדים בעיצוב אישי</p>
             <p style="color:var(--muted);font-size:.88rem;margin-top:.4rem">מתאים מגיל 4</p>
-            <p style="margin-top:.7rem"><a href="studio/?p=domino" class="btn btn-sm" style="font-weight:700;color:var(--indigo);text-decoration:underline">לעיצוב המשחק ←</a></p>
+            <p class="price-line">להדפסה בבית: 10 ₪ · מודפס מאיתנו: המחיר מופיע לפני השליחה</p>
+            <p style="margin-top:.7rem"><a href="studio/?p=domino" class="btn btn-sm" style="font-weight:700;color:var(--indigo);text-decoration:underline">צרו דומינו ←</a></p>
           </div>
           <div class="offer-card reveal">
             <img src="images/games/war.webp" alt="חפיסת קלפים אישית — נסיך, מלכה ומלך עם תמונות של בני המשפחה" width="800" height="600" loading="lazy" style="width:100%;height:auto;border-radius:.8rem;margin-bottom:.6rem">
             <h3 class="offer-card-title">קלפי מלחמה וחפיסה אישית</h3>
-            <p>חפיסת קלפים עם גב בעיצוב אישי, דמויות מהמשפחה על המלך והמלכה.</p>
-            <p style="color:var(--muted);font-size:.82rem;margin-top:.3rem">נקרא גם: חפיסת קלפים אישית, קלפי משחק עם תמונות, קלפים עם גב מעוצב</p>
+            <p>חפיסת קלפים עם גב בעיצוב אישי, דמויות מהמשפחה על המלך והמלכה. במחולל בוחרים „קלפי מלחמה”.</p>
             <p style="color:var(--muted);font-size:.88rem;margin-top:.4rem">לכל הגילים</p>
-            <p style="margin-top:.7rem"><a href="studio/?p=cards" class="btn btn-sm" style="font-weight:700;color:var(--indigo);text-decoration:underline">לעיצוב המשחק ←</a></p>
+            <p class="price-line">להדפסה בבית: 10 ₪ · מודפס מאיתנו: המחיר מופיע לפני השליחה</p>
+            <p style="margin-top:.7rem"><a href="studio/?p=cards" class="btn btn-sm" style="font-weight:700;color:var(--indigo);text-decoration:underline">עצבו חפיסה ←</a></p>
           </div>
           <div class="offer-card reveal">
             <img src="images/games/puzzle.webp" alt="פאזל מתמונה אישית — 24 חלקים להדפסה וחיתוך" width="800" height="600" loading="lazy" style="width:100%;height:auto;border-radius:.8rem;margin-bottom:.6rem">
             <h3 class="offer-card-title">פאזל מתמונה</h3>
             <p>6 עד 200 חלקים מהתמונה שלכם, בכמה סגנונות חיתוך.</p>
-            <p style="color:var(--muted);font-size:.82rem;margin-top:.3rem">נקרא גם: פאזל אישי, פאזל מתמונה משפחתית, הדפסת פאזל מתמונה</p>
             <p style="color:var(--muted);font-size:.88rem;margin-top:.4rem">מגיל 3 ועד סבתא</p>
-            <p style="margin-top:.7rem"><a href="studio/?p=puzzle" class="btn btn-sm" style="font-weight:700;color:var(--indigo);text-decoration:underline">לעיצוב המשחק ←</a></p>
+            <p class="price-line">להדפסה בבית: 10 ₪ · מודפס מאיתנו: המחיר מופיע לפני השליחה</p>
+            <p style="margin-top:.7rem"><a href="studio/?p=puzzle" class="btn btn-sm" style="font-weight:700;color:var(--indigo);text-decoration:underline">הכינו פאזל ←</a></p>
           </div>
           <div class="offer-card reveal">
             <img src="images/games/dice.webp" alt="קובייה עם מספרים לחיתוך וקיפול — פריסה מוכנה להדפסה, אפשר גם תמונות או מילים" width="800" height="600" loading="lazy" style="width:100%;height:auto;border-radius:.8rem;margin-bottom:.6rem">
             <h3 class="offer-card-title">קוביות עם תמונות</h3>
             <p>קובייה לחיתוך וקיפול: 4 עד 20 פאות, עם מספרים, תמונות או מילים.</p>
-            <p style="color:var(--muted);font-size:.82rem;margin-top:.3rem">נקרא גם: קובייה אישית, קוביית משחק להדפסה, קובייה עם תמונות לילדים</p>
             <p style="color:var(--muted);font-size:.88rem;margin-top:.4rem">למשחקים ולימוד</p>
-            <p style="margin-top:.7rem"><a href="studio/?p=dice" class="btn btn-sm" style="font-weight:700;color:var(--indigo);text-decoration:underline">לעיצוב המשחק ←</a></p>
+            <p class="price-line">להדפסה בבית: חינם · מודפס מאיתנו: המחיר מופיע לפני השליחה</p>
+            <p style="margin-top:.7rem"><a href="studio/?p=dice" class="btn btn-sm" style="font-weight:700;color:var(--indigo);text-decoration:underline">עצבו קובייה ←</a></p>
           </div>
         </div>
       </div>
@@ -300,7 +323,8 @@
         <div class="price-card reveal" style="text-align:center;border:2px solid var(--blue-light)">
           <h2 id="free-title" style="font-size:1.3rem;color:var(--indigo)">✏️ משחק שלא ברשימה? מחולל קלפים חופשי</h2>
           <p style="margin-top:.6rem">קלפים עגולים או מלבניים עם תמונה וכיתוב על כל קלף, גב בעיצוב אישי, ומוכן להדפסה. מתאים לכל משחק שאתם ממציאים: משחק שאלות, כרטיסי משימות, קלפי לימוד, טריוויה משפחתית ועוד.</p>
-          <p style="margin-top:.9rem"><a href="studio/?p=cards" class="btn btn-hero-phone">✏️ למחולל הקלפים החופשי</a></p>
+          <p style="margin-top:.4rem;color:var(--muted)">זה אותו מחולל של החפיסה האישית — בפנים בוחרים „קלפים עגולים” או „קלפים מלבניים”.</p>
+          <p style="margin-top:.9rem"><a href="studio/?p=cards" class="btn btn-hero-phone">✏️ עצבו קלפים משלכם</a></p>
         </div>
       </div>
     </section>
@@ -310,9 +334,10 @@
         <header class="section-header">
           <h2 class="section-title reveal" id="phone-title">📱 רוצים לשחק עכשיו, בטלפון?</h2>
           <div class="section-line reveal"></div>
-          <p class="section-sub reveal">מעלים תמונות ומשחקים מיד, בלי להדפיס: זיכרון, פאזל, מצא את הזהה ודומינו.</p>
+          <p class="section-sub reveal">מעלים תמונות ומשחקים מיד, בלי להדפיס ובחינם: זיכרון, פאזל, מצא את הזהה, מה נעלם? ודומינו.</p>
         </header>
-        <p style="text-align:center"><a href="games/" class="btn btn-hero-phone">📱 למשחקים בטלפון (משחק עיצובישי)</a></p>
+        <p style="text-align:center"><a href="games/#photos" class="btn btn-hero-phone">📱 מעלים תמונות ומשחקים</a></p>
+        <p style="text-align:center;margin-top:.8rem;color:var(--muted)">כבר יצרתם מאצ׳טו במחולל? <a href="play/" style="color:var(--indigo);font-weight:700">משחקים בו בטלפון</a> · רוצים לנסות קודם? <a href="play/?demo=hanukkah" style="color:var(--indigo);font-weight:700">מאצ׳טו של חנוכה</a></p>
       </div>
     </section>
 
@@ -330,33 +355,6 @@
       </div>
     </section>
 
-    <section class="section section-alt" aria-labelledby="search-title">
-      <div class="container">
-        <header class="section-header">
-          <h2 class="section-title reveal" id="search-title">🔎 מה אפשר להכין כאן?</h2>
-          <div class="section-line reveal"></div>
-        </header>
-        <div class="offer-grid">
-          <div class="offer-card reveal">
-            <h3 class="offer-card-title">🃏 משחק קלפים מהתמונות שלכם</h3>
-            <p>ה<a href="#games">מחולל משחקי קלפים</a> הופך תמונות של המשפחה, הכיתה או הגן ל<a href="#games">משחק קלפים מותאם אישית</a> — מוכן להדפסה בבית או להזמנה מודפס וחתוך.</p>
-          </div>
-          <div class="offer-card reveal">
-            <h3 class="offer-card-title">🧠 זיכרון ורביעיות</h3>
-            <p><a href="studio/?p=memory">משחק זיכרון מתמונות</a> עם הנכדים או החברים מהגן, ו<a href="studio/?p=quartets">משחק רביעיות אישי</a> לפי בני המשפחה או לפי נושא לימודי.</p>
-          </div>
-          <div class="offer-card reveal">
-            <h3 class="offer-card-title">🎁 מתנה אישית</h3>
-            <p><a href="#gift-title">מתנה לסבא וסבתא</a>, ליום הולדת, לבר ובת מצווה או <a href="#gift-title">מתנת סוף שנה לגננת</a> — משחק שאין לאף אחד אחר.</p>
-          </div>
-          <div class="offer-card reveal">
-            <h3 class="offer-card-title">✏️ כל משחק אחר</h3>
-            <p>ב<a href="studio/?p=cards">מחולל הכרטיסים החופשי</a> מכינים קלפי לימוד, קלפי משימות או <a href="studio/?p=cards">קלפי שאלות לטריוויה משפחתית</a> — עם תמונה וכיתוב על כל קלף.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <section class="section" aria-labelledby="faq-title">
       <div class="container" style="max-width:820px">
         <header class="section-header">
@@ -366,6 +364,10 @@
           <details class="game-details offer-card reveal" style="margin-bottom:.7rem">
             <summary>איך מכינים משחק קלפים מהתמונות שלי?</summary>
             <div class="game-details-body"><p>בוחרים משחק, מעלים תמונות מהטלפון או מהמחשב, והמחולל בונה את כל הקלפים לבד. אפשר לשנות צבעים, מסגרת, גב וכיתוב, ולראות כל קלף לפני ההדפסה.</p></div>
+          </details>
+          <details class="game-details offer-card reveal" style="margin-bottom:.7rem">
+            <summary>כמה זה עולה?</summary>
+            <div class="game-details-body"><p>העיצוב והתצוגה המקדימה תמיד בחינם. מאצ׳טו: 7 קלפים בחינם, ומשחק גדול יותר 10–25 ₪ להורדה. בשאר המשחקים ההורדה להדפסה בבית 10 ₪ (קוביות וזיכרון בלי גב — בחינם). משחק מודפס מאיתנו — המחיר מופיע לפני השליחה, ומשלמים רק אחרי שאישרנו יחד.</p></div>
           </details>
           <details class="game-details offer-card reveal" style="margin-bottom:.7rem">
             <summary>אפשר להדפיס בבית?</summary>
@@ -389,7 +391,7 @@
           </details>
           <details class="game-details offer-card reveal" style="margin-bottom:.7rem">
             <summary>אפשר לשחק גם בטלפון?</summary>
-            <div class="game-details-body"><p>כן. בעמוד המשחקים בטלפון מעלים תמונות ומשחקים מיד — זיכרון, פאזל, מצא את הזהה ודומינו.</p></div>
+            <div class="game-details-body"><p>כן. בעמוד המשחקים בטלפון מעלים תמונות ומשחקים מיד ובחינם — זיכרון, פאזל, מצא את הזהה, מה נעלם? ודומינו.</p></div>
           </details>
       </div>
     </section>
