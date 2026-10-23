@@ -120,6 +120,10 @@
       <p class="hint">מחיר לדף A4 מודפס (בפאזל — מחיר לפאזל שלם). זה המחיר שהלקוח רואה בסטודיו לפני ששולח הזמנה, ואותו השרת רושם בהזמנה. שינוי נכנס לתוקף מיד.</p>
       <table style="margin-top:10px"><thead><tr><th>מוצר</th><th>מחיר ₪</th><th></th></tr></thead><tbody id="price-rows"></tbody></table>
       <p class="msg" id="price-msg"></p>
+      <h3 style="margin-top:22px">מוצרים מוכנים לסובלימציה (קטלוג זיקית) — מחיר למוצר</h3>
+      <p class="hint">כשהלקוח בוחר מוצר מוכן, ההזמנה מחושבת לפי המחיר כאן ולא לפי דף. בטנגרם ולודו לחיתוך — עדיין הצעת מחיר.</p>
+      <table style="margin-top:10px"><thead><tr><th>מוצר</th><th>מחיר ₪</th><th></th></tr></thead><tbody id="blank-rows"></tbody></table>
+      <p class="msg" id="blank-msg"></p>
     </div>
   </section>
 
@@ -147,7 +151,7 @@ function show(tab){
   document.querySelectorAll('nav.tabs [role=tab]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===tab)));
   document.querySelectorAll('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==tab);
   if(history.replaceState)history.replaceState(null,'','#'+tab);
-  if(tab==='orders'){loadOrders();loadGrants();loadDobbleGifts();}if(tab==='prices')loadPrices();if(tab==='stats')loadStats();
+  if(tab==='orders'){loadOrders();loadGrants();loadDobbleGifts();}if(tab==='prices'){loadPrices();loadBlankPrices();}if(tab==='stats')loadStats();
 }
 document.querySelectorAll('nav.tabs [role=tab]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.tab)));
 document.querySelectorAll('[data-go]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();show(a.dataset.go);}));
@@ -256,6 +260,16 @@ async function loadPrices(){
   if(!isAdmin())$('price-msg').textContent='כדי לשנות מחיר צריך להיכנס קודם.';
   tb.querySelectorAll('[data-save]').forEach(b=>b.addEventListener('click',()=>savePrice(b.dataset.save,b)));
 }
+// S-69: מחיר למוצר מוכן (studio_blank_prices)
+async function loadBlankPrices(){const tb=$('blank-rows');tb.innerHTML='<tr><td colspan="3" class="hint">טוען…</td></tr>';
+  const{data,error}=await sb.from('studio_blank_prices').select('key,label,price,updated_at,sort').order('sort');
+  if(error){tb.innerHTML='<tr><td colspan="3" style="color:var(--err)">שגיאה: '+esc(error.message)+'</td></tr>';return;}
+  tb.innerHTML=data.map(r=>`<tr><td>${esc(r.label)}<br><small class="hint">עודכן ${new Date(r.updated_at).toLocaleDateString('he-IL')}</small></td><td><input class="num" type="number" min="1" max="2000" step="1" inputmode="numeric" data-bk="${esc(r.key)}" value="${r.price}" aria-label="מחיר ${esc(r.label)}"></td><td><button class="btn" data-bsave="${esc(r.key)}" ${isAdmin()?'':'disabled'}>שמירה</button></td></tr>`).join('');
+  tb.querySelectorAll('[data-bsave]').forEach(b=>b.addEventListener('click',async()=>{const k=b.dataset.bsave,v=parseInt(document.querySelector(`input[data-bk="${k}"]`).value,10),m=$('blank-msg');
+    if(!(v>=1&&v<=2000)){m.style.color='var(--err)';m.textContent='מחיר בין 1 ל-2000 ₪';return;}
+    b.disabled=true;const{data:d,error:e}=await sb.from('studio_blank_prices').update({price:v,updated_at:new Date().toISOString()}).eq('key',k).select();b.disabled=false;
+    if(e||!d||!d.length){m.style.color='var(--err)';m.textContent='לא נשמר'+(e?': '+e.message:' — אין הרשאה');return;}
+    m.style.color='var(--ok)';m.textContent='✓ נשמר: '+d[0].label+' — '+v+' ₪';}));}
 async function savePrice(k,btn){
   const v=parseInt(tb_val(k),10),m=$('price-msg');
   if(!(v>=1&&v<=1000)){m.style.color='var(--err)';m.textContent='מחיר בין 1 ל-1000 ₪';return;}
