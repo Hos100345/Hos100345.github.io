@@ -11,7 +11,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const BUCKET = 'studio-orders';
-const PRODUCTS = ['stickers', 'cards', 'memory', 'quartets', 'domino', 'dice', 'puzzle']; // quartets = S-31 (v3)
+const PRODUCTS = ['stickers', 'cards', 'memory', 'quartets', 'domino', 'dice', 'puzzle', 'bingo', 'tangram', 'ludo']; // quartets = S-31 (v3) · bingo = S-55 (v4) · tangram/ludo = S-65 (v5, הצעת מחיר — מחיר 0 עד שנקבע)
 const MAX_DESIGN_BYTES = 256 * 1024;
 const CORS = {
   'Access-Control-Allow-Origin': '*',
