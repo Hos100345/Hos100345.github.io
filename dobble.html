@@ -531,7 +531,7 @@ function dcfgSave(patch){
 
     <!-- טאב: יש לי קוד -->
     <div id="lock-panel-code" style="display:flex;flex-direction:column;align-items:center;gap:.9rem;width:100%">
-      <div data-i18n="lock.enterCodeLabel" style="color:#a5b4fc;font-size:.95rem">הזן/י קוד כניסה</div>
+      <div data-i18n="lock.enterCodeLabel" style="color:#a5b4fc;font-size:.95rem">הזינו קוד כניסה</div>
       <input id="lock-inp" type="password" inputmode="text" maxlength="20" placeholder="• • •"
         style="text-align:center;font-size:2rem;letter-spacing:.6rem;width:180px;padding:.7rem .5rem;border-radius:16px;border:2.5px solid rgba(255,255,255,.35);background:rgba(255,255,255,.94);font-family:inherit">
       <button data-i18n="lock.enterBtn" id="lock-go" type="button"
@@ -548,7 +548,7 @@ function dcfgSave(patch){
       <div style="display:flex;align-items:flex-start;gap:.4rem;width:100%"><div data-i18n="lock.freeDesc" style="color:#a5b4fc;font-size:.88rem;line-height:1.6;flex:1">גרסה חינמית מלאה — בנו משחק בכל גודל, עם כל האפשרויות. ההורדה להדפסה בתשלום. הרשמה עם אימייל ובחירת קוד אישי:</div><button type="button" class="help-btn" data-help="free" data-i18n-title="help.btnTitle" title="הסבר" style="color:#a5b4fc;margin-top:.15rem">?</button></div>
       <input id="free-email" type="email" inputmode="email" placeholder="name@example.com"
         style="width:100%;box-sizing:border-box;padding:.65rem .8rem;border-radius:14px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.94);font-family:inherit;font-size:1rem;direction:ltr;text-align:left">
-      <input id="free-code" type="text" maxlength="20" placeholder="בחר/י קוד אישי (4–20 תווים)"
+      <input id="free-code" type="text" maxlength="20" placeholder="בחרו קוד אישי (4–20 תווים)"
         style="width:100%;box-sizing:border-box;padding:.65rem .8rem;border-radius:14px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.94);font-family:inherit;font-size:1rem;direction:ltr;text-align:left" data-i18n-ph="lock.freeCodePh">
       <div data-i18n-html="legal.signupHtml" class="legal-line" style="color:#cbd5e1">בהרשמה אתם מאשרים את <a href="terms.html" target="_blank" rel="noopener">תנאי השימוש</a> ואת <a href="privacy.html" target="_blank" rel="noopener">מדיניות הפרטיות</a>. המשחקים לשימוש אישי בלבד.</div>
       <button data-i18n="lock.freeSignupBtn" id="free-go" type="button" style="width:100%;background:#5a5df0;color:#fff;font-weight:800;font-size:1.02rem;padding:.7rem 2rem;border:none;border-radius:100px;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(99,102,241,.5)">הרשמה וכניסה ✓</button>
@@ -557,7 +557,7 @@ function dcfgSave(patch){
 
     <!-- טאב: רכישת מנוי -->
     <div id="lock-panel-buy" style="display:none;flex-direction:column;align-items:center;gap:.6rem;width:100%">
-      <div style="display:flex;align-items:center;gap:.3rem"><div data-i18n="lock.chooseTierLabel" style="color:#a5b4fc;font-size:.88rem">בחר/י רמת מנוי:</div><button type="button" class="help-btn" data-help="tiers" data-i18n-title="help.btnTitle" title="הסבר" style="color:#a5b4fc">?</button></div>
+      <div style="display:flex;align-items:center;gap:.3rem"><div data-i18n="lock.chooseTierLabel" style="color:#a5b4fc;font-size:.88rem">בחרו רמת מנוי:</div><button type="button" class="help-btn" data-help="tiers" data-i18n-title="help.btnTitle" title="הסבר" style="color:#a5b4fc">?</button></div>
       <div id="lock-tiers" style="display:flex;flex-direction:column;gap:.45rem;width:100%"></div>
       <div id="lock-usd-note" hidden style="font-size:.78rem;opacity:.8;line-height:1.5;margin-top:.4rem"></div>
       <input id="buy-email" type="email" inputmode="email" placeholder="name@example.com" hidden
@@ -606,7 +606,7 @@ function dcfgSave(patch){
     <div id="upg-usd-note" hidden style="font-size:.78rem;color:var(--muted);line-height:1.5;margin:-.4rem 0 .8rem"></div>
     <div id="upg-email-wrap" hidden>
       <div style="text-align:right;margin-bottom:.5rem">
-        <label data-i18n="lock.upgradeEmailLabel" for="upg-email" style="display:block;font-size:.85rem;color:var(--muted);margin-bottom:.3rem">האימייל שאיתו תרצה/י לשלם</label>
+        <label data-i18n="lock.upgradeEmailLabel" for="upg-email" style="display:block;font-size:.85rem;color:var(--muted);margin-bottom:.3rem">האימייל שאיתו תשלמו</label>
         <input id="upg-email" type="email" inputmode="email" placeholder="name@example.com"
           style="width:100%;box-sizing:border-box;padding:.6rem .8rem;border-radius:var(--rs);border:1.5px solid var(--border);font-family:inherit;font-size:1rem;direction:ltr;text-align:left;background:rgba(255,255,255,.85)">
       </div>
@@ -622,10 +622,10 @@ function dcfgSave(patch){
 <div class="modal-bg" id="claim-modal" hidden data-esc="none" style="z-index:10001">
   <div class="modal-card" style="max-width:420px;width:94%;text-align:center">
     <div style="font-size:2.6rem;margin-bottom:.3rem">🎉</div>
-    <div data-i18n="lock.claimTitle" id="claim-title" style="font-size:1.3rem;font-weight:800;margin-bottom:.5rem">התשלום התקבל — בחר/י קוד אישי</div>
+    <div data-i18n="lock.claimTitle" id="claim-title" style="font-size:1.3rem;font-weight:800;margin-bottom:.5rem">התשלום התקבל — בחרו קוד אישי</div>
     <div data-i18n="lock.claimDesc" style="color:var(--muted);font-size:.96rem;line-height:1.6;margin-bottom:1rem">הקוד הזה יהיה מפתח הכניסה שלך בחודש הקרוב. שמרו אותו.</div>
     <div style="text-align:right;margin-bottom:.6rem">
-      <label data-i18n="lock.claimEmailLabel" for="claim-email" style="display:block;font-size:.85rem;color:var(--muted);margin-bottom:.3rem">האימייל ששילמת/ה איתו</label>
+      <label data-i18n="lock.claimEmailLabel" for="claim-email" style="display:block;font-size:.85rem;color:var(--muted);margin-bottom:.3rem">האימייל ששילמתם איתו</label>
       <input id="claim-email" type="email" inputmode="email" placeholder="name@example.com"
         style="width:100%;box-sizing:border-box;padding:.6rem .8rem;border-radius:var(--rs);border:1.5px solid var(--border);font-family:inherit;font-size:1rem;direction:ltr;text-align:left;background:rgba(255,255,255,.85)">
     </div>
@@ -866,12 +866,12 @@ const I18N={
     'lock.tabHaveCode':'יש לי קוד',
     'lock.tabFreeSignup':'הרשמה חינם',
     'lock.tabBuy':'רכישת מנוי',
-    'lock.enterCodeLabel':'הזן/י קוד כניסה',
+    'lock.enterCodeLabel':'הזינו קוד כניסה',
     'lock.enterBtn':'כניסה ✓',
     'lock.forgotCode':'שכחתי את הקוד שלי',
     'lock.freeDesc':'גרסה חינמית מלאה — בנו משחק בכל גודל, עם כל האפשרויות. ההורדה להדפסה בתשלום. הרשמה עם אימייל ובחירת קוד אישי:',
     'lock.freeSignupBtn':'הרשמה וכניסה ✓',
-    'lock.chooseTierLabel':'בחר/י רמת מנוי:',
+    'lock.chooseTierLabel':'בחרו רמת מנוי:',
     'lock.goToPaymentBtn':'מעבר לתשלום',
     'lock.paidChooseCodeBtn':'שילמתי — בחר קוד ✓',
     'lock.cancelBtn':'ביטול',
@@ -879,21 +879,21 @@ const I18N={
     'lock.wrongCodeMsg':'ייתכן שהקוד שגוי או שפג תוקף המנוי.',
     'lock.wrongCodeClose':'סגירה',
     'lock.upgradeTitle':'המשחק הזה דורש שדרוג',
-    'lock.upgradeEmailLabel':'האימייל שאיתו תרצה/י לשלם',
+    'lock.upgradeEmailLabel':'האימייל שאיתו תשלמו',
     'lock.upgradeHaveCodeBtn':'יש לי כבר קוד אחר',
     'lock.upgradeClose':'סגירה',
-    'lock.claimTitle':'התשלום התקבל — בחר/י קוד אישי',
+    'lock.claimTitle':'התשלום התקבל — בחרו קוד אישי',
     'lock.claimDesc':'הקוד הזה יהיה מפתח הכניסה שלך בחודש הקרוב. שמרו אותו.',
-    'lock.claimEmailLabel':'האימייל ששילמת/ה איתו',
+    'lock.claimEmailLabel':'האימייל ששילמתם איתו',
     'lock.claimCodeLabel':'קוד אישי לבחירתך (4–20 תווים, בלי רווחים)',
     'lock.claimSaveBtn':'שמירת הקוד וכניסה ✓',
     'lock.tierUpToCards':'עד {tier} קלפים · {price} ₪',
     'lock.tierIncludesSmaller':'כולל חפיסות של {included} קלפים',
     'lock.tierOneTimePayment':'תשלום חד-פעמי · חודש גישה',
     'onboard.title':'ברוכים הבאים למחולל מאצ׳טו!',
-    'onboard.subtitle':'צור/י משחק מאצ׳טו מותאם אישית בשלושה שלבים פשוטים',
+    'onboard.subtitle':'צרו משחק מאצ׳טו מותאם אישית בשלושה שלבים פשוטים',
     'onboard.step1Title':'שלב 1 — העלאת סמלים',
-    'onboard.step1Desc':'גרור/י תמונות (PNG, JPG, SVG, HEIC) או בחרו חבילה מוכנה. ניתן לחתוך סמלים מתמונות גדולות עם כלי ✂️ וגם לבצע הסרת רקע אוטומטית',
+    'onboard.step1Desc':'גררו תמונות (PNG, JPG, SVG, HEIC) או בחרו חבילה מוכנה. ניתן לחתוך סמלים מתמונות גדולות עם כלי ✂️ וגם לבצע הסרת רקע אוטומטית',
     'onboard.step2Title':'שלב 2 — יצירה ועיצוב',
     'onboard.step2Desc':'המערכת מחשבת קלפים אוטומטית לפי מתמטיקה מדויקת. ניתן לעצב מסגרת, רקע ופריסת סמלים',
     'onboard.step3Title':'שלב 3 — ייצוא',
@@ -931,9 +931,9 @@ const I18N={
     'confirm.defaultTitle':'אישור מחיקה',
     'confirm.defaultOkBtn':'מחק',
     'upload.title':'העלאת סמלים',
-    'upload.desc':'גרור/י תמונות לכאן — כל העלאה נוספת מצטברת למאגר. לחץ/י ✂ על תמונה כדי להפיק ממנה סמלים נוספים.',
-    'upload.dropText':'גרור/י תמונות לכאן',
-    'upload.dropSubtext':'או לחץ/י לבחירת קבצים · כל העלאה מצטברת למאגר',
+    'upload.desc':'גררו תמונות לכאן — כל העלאה נוספת מצטברת למאגר. לחצו ✂ על תמונה כדי להפיק ממנה סמלים נוספים.',
+    'upload.dropText':'גררו תמונות לכאן',
+    'upload.dropSubtext':'או לחצו לבחירת קבצים · כל העלאה מצטברת למאגר',
     'upload.formatsNote':'JPG · PNG · HEIC (אייפון) · WebP · AVIF · GIF · BMP · TIFF · SVG · ניתן לבחור מספר קבצים',
     'upload.multiPickBtn':'📁 בחירת קבצים מרובים (שיאומי / אנדרואיד)',
     'upload.emojiLibBtn':'🔎 ספריית סמלים',
@@ -1065,11 +1065,11 @@ const I18N={
     'edit.saveDesignBtn':'💾 שמור עיצוב',
     'edit.saveDesignNamePrompt':'שם לעיצוב:',
     'edit.editBackBtn':'🎴 עצב את גב הקלף',
-    'edit.stuckBtn':'🆘 תקוע/ה? שלח את העבודה להושעיה',
+    'edit.stuckBtn':'🆘 נתקעתם? שלחו את העבודה להושעיה',
     'edit.backToUploadBtn':'← חזרה להעלאה',
     'edit.goExportBtn':'ייצא / הדפס →',
     'export.title':'ייצוא והדפסה',
-    'export.desc':'בחר/י פריסה ואפשרויות הדפסה, ואז לחץ/י על הפקת הקובץ.',
+    'export.desc':'בחרו פריסה ואפשרויות הדפסה, ואז לחצו על הפקת הקובץ.',
     'export.cardSizeTitle':'גודל קלף',
     'export.perA4Title':'קלפים בדף A4',
     'export.diameterLabel':'קוטר',
@@ -1113,7 +1113,7 @@ const I18N={
     'legal.exportHtml':'🔒 לשימוש אישי, משפחתי וחינוכי בלבד — אסור למכור או להפיץ בחנויות. <a href="terms.html" target="_blank" rel="noopener">תנאי שימוש</a>',
     'legal.printSaleHtml':'הדפסה בכמות למכירה — רק באישור. <a href="#" class="js-legal-wa" target="_blank" rel="noopener">לפנייה</a>',
     'legal.footHtml':'<a href="terms.html" target="_blank" rel="noopener">תנאי שימוש</a> · <a href="privacy.html" target="_blank" rel="noopener">פרטיות</a>',
-    'legal.waMsg':'שלום הושעיה, אני מתעניין/ת בהדפסה בכמות למכירה של משחק מאצ׳טו.',
+    'legal.waMsg':'שלום הושעיה, אשמח לשמוע על הדפסה בכמות למכירה של משחק מאצ׳טו.',
     'upload.cardShapeMenorahCandles':'🕎 חנוכייה עם נרות',
     'upload.cardShapeMenorahSmooth':'🕎 חנוכייה חלקה',
     'upload.cardShapeDreidel':'🪀 סביבון',
@@ -1195,7 +1195,7 @@ const I18N={
     'export.printPreviewTitle':'👁 תצוגה מקדימה לפני הדפסה',
     'export.printPreviewPrevBtn':'‹ הקודם',
     'export.printPreviewNextBtn':'הבא ›',
-    'export.cardTooLargeForA4Warning':'⚠️ הקלף גדול מדי לדף A4 בהגדרות האלה — הקטן/י את גודל הקלף או את המרווח',
+    'export.cardTooLargeForA4Warning':'⚠️ הקלף גדול מדי לדף A4 בהגדרות האלה — הקטינו את גודל הקלף או את המרווח',
     'export.paperPreviewBackPagesSuffix':' · + {n} עמודי גב',
     'export.pagesPlural':'דפים',
     'export.pageSingular':'דף',
@@ -1206,7 +1206,7 @@ const I18N={
     'export.printPreviewBackPageLabel':'גב · עמוד {n}',
     'export.printPreviewPageOfTotal':'עמוד {page} מתוך {total}',
     'export.printPreviewBackSuffix':' (גב)',
-    'export.printQuotaReached':'הגעת למכסת ההדפסות של המנוי שלך ({limit}). פנה/י אלינו לקבלת הדפסות נוספות',
+    'export.printQuotaReached':'הגעת למכסת ההדפסות של המנוי שלך ({limit}). פנו אלינו לקבלת הדפסות נוספות',
     'export.exportErrorAlert':'שגיאה בייצוא:\n{error}\n\nודא שהדף נטען עם חיבור לאינטרנט (נדרש jsPDF / JSZip).',
     'export.pdfPageCardProgress':'עמוד {page} — קלף {i}/{total}…',
     'export.pdfBackPageCardProgress':'גב · עמוד {page} — קלף {i}/{total}…',
@@ -1380,7 +1380,7 @@ const I18N={
     'edit.cropRoundedSquareBtn':'⬜ מרובע מעוגל',
     'edit.removeBgLabel':'✨ הסר רקע',
     'edit.removeBgSensitivityLabel':'רגישות:',
-    'edit.cropDragHint':'לחץ/י וגרור/י על התמונה לבחירת סמלים',
+    'edit.cropDragHint':'לחצו וגררו על התמונה לבחירת סמלים',
     'edit.cropCancelBtn':'ביטול',
     'edit.cropAddBtn':'✅ הוסף למאגר',
     'edit.cutoutButtonTitle':'חיתוך חכם',
@@ -1560,7 +1560,7 @@ const I18N={
     'account.desc':'התחברו כדי לגבות את העיצובים שלכם לחשבון האישי — כך הם לא ייעלמו אם תחליפו מכשיר או תנקו את הדפדפן. הכניסה במייל, בלי סיסמה.',
     'account.emailLabel':'המייל שלכם',
     'account.sendLinkBtn':'✉️ שלחו לי קישור כניסה',
-    'account.signedInAs':'מחובר/ת כ־',
+    'account.signedInAs':'מחוברים כ־',
     'account.syncedNote':'העיצובים והתמונות מגובים לחשבון וזמינים מכל מכשיר.',
     'account.signOutBtn':'התנתקות',
     'account.cloudSaveTitle':'☁️ שמירה בענן — חינם',
@@ -1575,7 +1575,7 @@ const I18N={
     'account.noExpiryLabel':'ללא הגבלה',
     'account.designsInAccountCount':'☁️ {total} עיצובים בחשבון',
     'account.designsUploadedSuffix':' (הועלו {n} כולל תמונות)',
-    'lock.freeCodePh':'בחר/י קוד אישי (4–20 תווים)',
+    'lock.freeCodePh':'בחרו קוד אישי (4–20 תווים)',
     'lock.claimCodePh':'לדוגמה: dana2026',
     'back.mainTextPh':'למשל: מזל טוב',
     'back.subTextPh':'למשל: שם הילד/ה',
@@ -1584,7 +1584,7 @@ const I18N={
     'msg.backLogoMissingFromBackup':'תמונת הגב לא נמצאה בגיבוי — יש להעלות אותה מחדש בעורך הגב',
     'msg.backedUpToAccount':'גובה לחשבון ☁️',
     'msg.calibrationPageReady':'דף הכיול הופק — הדפיסו, הפכו לפי כיוון ההפיכה שבחרתם ומדדו את הסטייה',
-    'msg.cantReachCountWithSpacing':'לא ניתן להגיע למספר הזה עם המרווח הנוכחי — הקטן/י את המרווח',
+    'msg.cantReachCountWithSpacing':'לא ניתן להגיע למספר הזה עם המרווח הנוכחי — הקטינו את המרווח',
     'msg.cardTooLargeForA4':'גודל הקלף גדול מדי לדף A4 — אין מקום אף לקלף אחד.\nהקטן את גודל הקלף ונסה שוב.',
     'msg.cardsReshuffled':'הקלפים עורבבו מחדש ✓',
     'msg.checkingCode':'בודק…',
@@ -1594,7 +1594,7 @@ const I18N={
     'msg.codeSavedEntering':'הקוד נשמר! נכנסים…',
     'msg.codeTakenChooseAnother':'הקוד הזה כבר תפוס. בחרו קוד אחר — עדיף לא מספר טלפון.',
     'msg.communicationError':'שגיאת תקשורת — נסו שוב.',
-    'msg.createCardsFirst':'יש ליצור קלפים תחילה (לחץ/י על כפתור \'צור משחק\')',
+    'msg.createCardsFirst':'יש ליצור קלפים תחילה (לחצו על כפתור \'צור משחק\')',
     'msg.deletedFromAccount':'נמחק מהחשבון',
     'msg.designDeleted':'העיצוב נמחק',
     'msg.designImagesNotOnDevice':'לא נמצאו התמונות של העיצוב הזה במכשיר. הן נשמרות בחשבון בלבד — התחברו במייל כדי לשחזר, או העלו את התמונות מחדש. העבודה הנוכחית שלכם נשמרה ולא נמחקה.',
@@ -1626,7 +1626,7 @@ const I18N={
     'msg.preparingFile':'מכין את הקובץ…',
     'msg.readingFile':'קורא את הקובץ…',
     'msg.registeredSuccessEntering':'נרשמת בהצלחה! נכנסים…',
-    'msg.registering':'נרשם/ת…',
+    'msg.registering':'נרשמים…',
     'msg.registrationFailedGeneric':'לא הצלחנו להשלים את ההרשמה. נסו שוב.',
     'msg.resetToDefault':'אופס לברירת המחדל ↺',
     'msg.saveFailedRetry':'השמירה נכשלה — נסו שוב',
@@ -1659,7 +1659,7 @@ const I18N={
     'header.stepEditHtml':'<span class="n">2</span>עריכה',
     'header.stepExportHtml':'<span class="n">3</span>ייצוא',
     'upload.cropHintTextHtml':'✂️ <strong>מתמונה אחת אפשר להפיק כמה סמלים</strong> — לחצו על ✂ ליד תמונה קבוצתית וחתכו כל פרצוף בנפרד. <strong>כך חמש תמונות מספיקות למשחק שלם.</strong>',
-    'edit.algoCheckBannerHtml':'🔍 <strong>בדיקת אלגוריתם:</strong> לחץ/י על שני קלפים — הסמל המשותף היחיד יסומן אוטומטית',
+    'edit.algoCheckBannerHtml':'🔍 <strong>בדיקת אלגוריתם:</strong> לחצו על שני קלפים — הסמל המשותף היחיד יסומן אוטומטית',
     'export.printShopNotesHtml':'📦 עמוד לכל קלף · הגב: בסוף, או אחרי כל קלף להדפסה דו-צדדית · בליד 3–5 מ"מ לבחירה · 300 DPI.<br>\n          🗞️ גיליון גדול לבית דפוס — דורש חיתוך עצמי.<br>\n          ✂️ חיתוך צורני (מגנטים, מדבקות): ZIP עם 3 קבצים — גרפיקה לבד · הדמיה (עם קו חיתוך) · חיתוך לבד. בכל קובץ עמוד לכל קלף, באותו גודל ומיקום. קו אדום 0.15 מ"מ, סימני חיתוך בפינות, צבעי CMYK. אם הגב מופעל — הוא העמוד האחרון בכל קובץ.',
     'edit.cardEditModalTitleHtml':'✏️ עריכת קלף <span id="ce-idx"></span>',
     'edit.cardEditInstructionsHtml':'לחצו על סמל כדי לבחור אותו · גררו כדי להזיז · הסרגל משנה גודל<br>\n        השינויים חלים על הקלף הזה בלבד',
@@ -1673,7 +1673,7 @@ const I18N={
     'upload.roptSymbolsPerCard':'{spc} סמלים לקלף',
     'edit.deckStatsHtml':'<div class="stat-row"><span>קלפים</span><span class="stat-v">{cards}</span></div>\n     <div class="stat-row"><span>סמלים/קלף</span><span class="stat-v">{spc}</span></div>\n     <div class="stat-row"><span>תמונות</span><span class="stat-v">{total}</span></div>\n     <div class="stat-row"><span>סדר (q)</span><span class="stat-v">{q}</span></div>',
     'export.downloadDoneTitle':'✅ הקובץ ירד למכשיר',
-    'export.downloadDoneFindHint':'חפש/י אותו בתיקיית ההורדות (Downloads) או בהתראות של הדפדפן.',
+    'export.downloadDoneFindHint':'חפשו אותו בתיקיית ההורדות (Downloads) או בהתראות של הדפדפן.',
     'export.downloadDoneCloseBtn':'סגור',
     'export.readyHtmlTitle':'✅ הקובץ מוכן',
     'export.readyClickHint':'לחצו על <strong>{btn}</strong> כדי לשמור אותו.',
@@ -2857,12 +2857,12 @@ window.applyI18n=applyI18n;
     <div style="text-align:center;padding:.3rem 0 1rem">
       <div style="font-size:2.6rem;margin-bottom:.4rem">🎯</div>
       <h2 data-i18n="onboard.title" style="font-size:1.2rem;font-weight:900;color:var(--indigo);margin-bottom:.25rem">ברוכים הבאים למחולל מאצ׳טו!</h2>
-      <p data-i18n="onboard.subtitle" style="color:var(--muted);font-size:.84rem;line-height:1.55">צור/י משחק מאצ׳טו מותאם אישית בשלושה שלבים פשוטים</p>
+      <p data-i18n="onboard.subtitle" style="color:var(--muted);font-size:.84rem;line-height:1.55">צרו משחק מאצ׳טו מותאם אישית בשלושה שלבים פשוטים</p>
     </div>
     <div style="display:flex;flex-direction:column;gap:.55rem;margin-bottom:1rem">
       <div class="ob-step">
         <div class="ob-ico">🖼️</div>
-        <div><strong data-i18n="onboard.step1Title" style="color:var(--indigo)">שלב 1 — העלאת סמלים</strong><div data-i18n="onboard.step1Desc" class="ob-s">גרור/י תמונות (PNG, JPG, SVG, HEIC) או בחרו חבילה מוכנה. ניתן לחתוך סמלים מתמונות גדולות עם כלי ✂️ וגם לבצע הסרת רקע אוטומטית</div></div>
+        <div><strong data-i18n="onboard.step1Title" style="color:var(--indigo)">שלב 1 — העלאת סמלים</strong><div data-i18n="onboard.step1Desc" class="ob-s">גררו תמונות (PNG, JPG, SVG, HEIC) או בחרו חבילה מוכנה. ניתן לחתוך סמלים מתמונות גדולות עם כלי ✂️ וגם לבצע הסרת רקע אוטומטית</div></div>
       </div>
       <div class="ob-step">
         <div class="ob-ico">✨</div>
@@ -2923,13 +2923,13 @@ window.applyI18n=applyI18n;
       <button type="button" id="local-note-act" class="btn btn-ghost" style="padding:.25rem .6rem;min-height:auto;font-size:.86rem;font-weight:700;color:var(--indigo)"></button>
       <button type="button" id="local-note-x" class="btn btn-ghost" hidden style="padding:.25rem .55rem;min-height:auto;margin-inline-start:auto" aria-label="סגירה">✕</button>
     </div>
-    <p data-i18n="upload.desc" class="box-s">גרור/י תמונות לכאן — כל העלאה נוספת מצטברת למאגר. לחץ/י ✂ על תמונה כדי להפיק ממנה סמלים נוספים.</p>
+    <p data-i18n="upload.desc" class="box-s">גררו תמונות לכאן — כל העלאה נוספת מצטברת למאגר. לחצו ✂ על תמונה כדי להפיק ממנה סמלים נוספים.</p>
 
     <!-- ── Single Upload Component ── -->
     <div class="uz" id="uz">
       <div class="uz-ico">🖼️</div>
-      <div data-i18n="upload.dropText" class="uz-t">גרור/י תמונות לכאן</div>
-      <div data-i18n="upload.dropSubtext" class="uz-s">או לחץ/י לבחירת קבצים · כל העלאה מצטברת למאגר</div>
+      <div data-i18n="upload.dropText" class="uz-t">גררו תמונות לכאן</div>
+      <div data-i18n="upload.dropSubtext" class="uz-s">או לחצו לבחירת קבצים · כל העלאה מצטברת למאגר</div>
       <div data-i18n="upload.formatsNote" class="uz-hint">JPG · PNG · HEIC (אייפון) · WebP · AVIF · GIF · BMP · TIFF · SVG · ניתן לבחור מספר קבצים</div>
       <!-- image/* לבדו לא מספיק: בחלק מבוררי הקבצים בנייד ובענן (Drive/OneDrive) HEIC/HEIF/AVIF
            מגיעים בלי MIME ונחסמים מהבחירה. הסיומות המפורשות פותחות אותם. -->
@@ -3169,7 +3169,7 @@ window.applyI18n=applyI18n;
           <button data-i18n="edit.reshuffleBtn" class="btn btn-pur" id="btn-reshuffle" style="width:100%;justify-content:center;margin-bottom:.5rem">🔀 ערבב מחדש</button>
           <button data-i18n="edit.saveDesignBtn" class="btn btn-sec" id="btn-save-design" style="width:100%;justify-content:center;margin-bottom:.5rem">💾 שמור עיצוב</button>
           <button data-i18n="edit.editBackBtn" class="btn btn-pur" id="btn-back-design" style="width:100%;justify-content:center;margin-bottom:.5rem">🎴 עצב את גב הקלף</button>
-          <button data-i18n="edit.stuckBtn" class="btn btn-ghost" id="btn-send-stuck" style="width:100%;justify-content:center;margin-bottom:.5rem">🆘 תקוע/ה? שלח את העבודה להושעיה</button>
+          <button data-i18n="edit.stuckBtn" class="btn btn-ghost" id="btn-send-stuck" style="width:100%;justify-content:center;margin-bottom:.5rem">🆘 נתקעתם? שלחו את העבודה להושעיה</button>
           <button data-i18n="edit.backToUploadBtn" class="btn btn-ghost" id="btn-b1" style="width:100%;justify-content:center;font-size:.82rem">← חזרה להעלאה</button>
         </div>
         <div class="sb-sec">
@@ -3178,7 +3178,7 @@ window.applyI18n=applyI18n;
       </aside>
 
       <div class="cards-main">
-        <div class="vfy-banner"><span data-i18n-html="edit.algoCheckBannerHtml">🔍 <strong>בדיקת אלגוריתם:</strong> לחץ/י על שני קלפים — הסמל המשותף היחיד יסומן אוטומטית</span><button type="button" class="help-btn" data-help="cardedit" data-i18n-title="help.btnTitle" title="הסבר">?</button></div>
+        <div class="vfy-banner"><span data-i18n-html="edit.algoCheckBannerHtml">🔍 <strong>בדיקת אלגוריתם:</strong> לחצו על שני קלפים — הסמל המשותף היחיד יסומן אוטומטית</span><button type="button" class="help-btn" data-help="cardedit" data-i18n-title="help.btnTitle" title="הסבר">?</button></div>
         <div class="cards-grid" id="cgrid"></div>
       </div>
 
@@ -3190,7 +3190,7 @@ window.applyI18n=applyI18n;
 <section id="s3" class="scr">
   <div class="box">
     <h2 data-i18n="export.title" class="box-h">ייצוא והדפסה</h2>
-    <p data-i18n="export.desc" class="box-s">בחר/י פריסה ואפשרויות הדפסה, ואז לחץ/י על הפקת הקובץ.</p>
+    <p data-i18n="export.desc" class="box-s">בחרו פריסה ואפשרויות הדפסה, ואז לחצו על הפקת הקובץ.</p>
 
     <div class="exp-grid">
       <div>
@@ -3800,7 +3800,7 @@ window.applyI18n=applyI18n;
       <canvas id="modal-src-canvas"></canvas>
     </div>
     <div class="crops-strip" id="modal-crops-strip">
-      <span data-i18n="edit.cropDragHint" class="ext-empty">לחץ/י וגרור/י על התמונה לבחירת סמלים</span>
+      <span data-i18n="edit.cropDragHint" class="ext-empty">לחצו וגררו על התמונה לבחירת סמלים</span>
     </div>
     <div class="ext-info" id="modal-crop-count">0 סמלים נבחרו</div>
     <div class="brow" style="justify-content:flex-end;margin-top:.65rem">
@@ -3894,7 +3894,7 @@ window.applyI18n=applyI18n;
     <div id="auth-in" hidden>
       <div style="text-align:center;padding:.3rem 0 1rem">
         <div style="font-size:2.2rem">✅</div>
-        <p data-i18n="account.signedInAs" style="font-size:.9rem;color:var(--muted);margin-top:.3rem">מחובר/ת כ־</p>
+        <p data-i18n="account.signedInAs" style="font-size:.9rem;color:var(--muted);margin-top:.3rem">מחוברים כ־</p>
         <p style="font-weight:700;direction:ltr" id="auth-user"></p>
       </div>
       <div id="auth-sync" style="background:rgba(240,253,244,.85);border:1.5px solid #bbf7d0;border-radius:10px;padding:.7rem 1rem;text-align:center;font-size:.85rem;color:#166534;margin-bottom:1rem"></div>
@@ -8410,7 +8410,7 @@ function updatePaperPrev(){
     t('export.paperPreviewSummary',{perPage,cardMm,spacing:spacingLabel,pages,pageWord,backTxt});
   if(perPage>0&&perPage<3&&S.deck.length>6){
     document.getElementById('prev-info').insertAdjacentHTML('beforeend',
-      `<div style="color:#b45309;font-weight:700;margin-top:.35rem">⚠️ רק ${perPage} בדף — ${pages} דפים. לחצ/י "6" למעלה לפריסה חסכונית</div>`);
+      `<div style="color:#b45309;font-weight:700;margin-top:.35rem">⚠️ רק ${perPage} בדף — ${pages} דפים. לחצו "6" למעלה לפריסה חסכונית</div>`);
   }
 }
 
