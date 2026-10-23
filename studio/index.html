@@ -3105,7 +3105,7 @@ rerender=()=>{cancelAnimationFrame(_raf);_raf=requestAnimationFrame(()=>{
   try{built=cur.build();}catch(e){console.error(e);built={pages:[],summary:'שגיאה: '+e.message};}
   if(curPage>=built.pages.length)curPage=0;drawPreview();drawPagebar();updateOrderBtn();updateExportBtns();save();});};
 rebuild=()=>{const y=ctrls.scrollTop,wy=window.scrollY;ctrls.innerHTML='';
-  ctrls.append(el('p',{class:'intro'},cur.intro),...[].concat(cur.panel()).flat().filter(Boolean),...[shopSection()].filter(Boolean),...(cur.id!=='admin'?[saveLoadSection()]:[]),el('div',{class:'foot'},installBtn(),isAdmin?'':el('button',{type:'button',on:{click:openLogin}},'כניסת מנהל')));ctrls.scrollTop=y;window.scrollTo(0,wy);rerender();};
+  ctrls.append(el('p',{class:'intro'},cur.intro),...[].concat(cur.panel()).flat().filter(Boolean),...[shopSection()].filter(Boolean),...(cur.id!=='admin'?[saveLoadSection()]:[]),el('div',{class:'foot'},installBtn(),(isAdmin||!/[?&]admin\b/.test(location.search))?'':el('button',{type:'button',on:{click:openLogin}},'כניסת מנהל')));ctrls.scrollTop=y;window.scrollTo(0,wy);rerender();};
 function drawPreview(){const ctx=cv.getContext('2d'),pg=built.pages[curPage];
   if(!pg){ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#fff';ctx.fillRect(0,0,cv.width,cv.height);ctx.fillStyle='#5B6878';ctx.textAlign='center';ctx.font=`${cv.width*.045}px Rubik`;
     ctx.fillText(built.tooBig?'הפריט גדול מהשטח שבדף':'אין מה להציג',cv.width/2,cv.height/2);return;}
