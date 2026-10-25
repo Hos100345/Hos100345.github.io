@@ -21,7 +21,7 @@ import subprocess
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-SRC = ROOT / 'dobble.html'
+SRC = ROOT / 'matchito.html'   # D-101: המחולל עבר מ-dobble.html (שנשאר הפניה)
 OUT = ROOT / 'js' / 'play-engine.js'
 
 # הסדר כאן = הסדר בקובץ היוצא. פונקציות מוצהרות (function) מורמות, אבל הקבועים

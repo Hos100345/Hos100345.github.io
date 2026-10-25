@@ -75,7 +75,7 @@
       <a class="tile" href="https://hos100345.github.io/hoshaya-quotes/"><i>🎈</i><b>המחירון</b><span>הצעות מחיר, קטלוג תמונות, רישום, מלאי בלונים</span></a>
       <a class="tile" href="gallery-admin.html"><i>📷</i><b>תמונות האתר</b><span>העלאה, הסתרה, ⭐ נבחרות</span></a>
       <a class="tile" href="studio/"><i>🧩</i><b>הסטודיו</b><span>עיצוב משחקים; לשונית "מנהל" לקבצים של הזמנה</span></a>
-      <a class="tile" href="dobble.html"><i>🎯</i><b>המחולל — מנויים</b><span>לקוחות, קודים, הדפסות (לוח המנהל במחולל)</span></a>
+      <a class="tile" href="matchito.html"><i>🎯</i><b>המחולל — מנויים</b><span>לקוחות, קודים, הדפסות (לוח המנהל במחולל)</span></a>
       <a class="tile" href="stickers-admin.html"><i>🏷️</i><b>הזמנות מדבקות לעפרונות</b><span>מדבקות שם</span></a>
       <a class="tile" href="gallery.html"><i>🌐</i><b>הגלריה באתר</b><span>איך הלקוח רואה את התמונות</span></a>
     </div>
@@ -243,7 +243,7 @@ $('dg-add').addEventListener('click',async()=>{
   const kept=data.download_limit==null&&dl!=null;
   const dlTxt=data.download_limit==null?'ללא הגבלת הורדות':data.download_limit===1?'להורדה אחת':'ל-'+data.download_limit+' הורדות';
   const what=data.download_limit===1?'משחק אחד':'גישה למחולל משחק מאצ׳טו';
-  const wa=`מתנה ממני 🎁 קיבלת במתנה ${what} עד ${data.max_order} קלפים, ${dlTxt}, עד ${fmtDate(data.expires_at)}.\nנכנסים לאתר www.hoshaya.co.il/dobble.html ← "יש לי קוד" ← ${data.code}`;
+  const wa=`מתנה ממני 🎁 קיבלת במתנה ${what} עד ${data.max_order} קלפים, ${dlTxt}, עד ${fmtDate(data.expires_at)}.\nנכנסים לאתר www.hoshaya.co.il/matchito.html ← "יש לי קוד" ← ${data.code}`;
   m.innerHTML=`✓ ${data.extended?'הקוד הקיים של '+esc(email)+' שודרג והוארך':esc(email)+' קיבל גישה'}: <b dir="ltr">${esc(data.code)}</b> · ${data.max_order} קלפים · ${dlTxt} · עד ${fmtDate(data.expires_at)}`+(kept?' <small>(הקוד שלו כבר בלי הגבלת הורדות — לא שונה)</small>':'')+
     ` <a href="https://wa.me/?text=${encodeURIComponent(wa)}" target="_blank" rel="noopener">שלח בוואטסאפ ←</a>`;
   $('dg-email').value='';$('dg-note').value='';loadDobbleGifts();

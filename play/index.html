@@ -238,7 +238,7 @@
     <ol class="steps">
       <li>נכנסים ל<b>מחולל מאצ׳טו</b> ופותחים את המשחק שלכם.</li>
       <li>במסך התמונות, באזור <b>"📦 גיבוי לקובץ"</b>, לוחצים <b>"⬇️ שמור לקובץ"</b>.</li>
-      <li>נשמר קובץ שנגמר ב-<b>.matchito.zip</b> (בקבצים ישנים: <b>.dobble.zip</b>) — בוחרים אותו כאן.</li>
+      <li>נשמר קובץ שנגמר ב-<b>.matchito.zip</b> — בוחרים אותו כאן.</li>
     </ol>
     <p class="muted" style="font-size:.88rem;margin-top:.5rem">💡 כדי שהקלפים כאן יהיו בדיוק כמו המודפסים — שמרו את הקובץ <b>אחרי</b> שיצרתם את הקלפים. הקובץ נשאר אצלכם בטלפון, שום דבר לא נשלח.</p>
   </div>
@@ -348,12 +348,12 @@ async function loadGameFile(file,fromCache){
     setProg(3,'פותח את הקובץ…');
     let zip;
     try{zip=await JSZip.loadAsync(file);}
-    catch(e){throw new Error('זה לא קובץ משחק. צריך את קובץ הגיבוי מהמחולל (נגמר ב-.matchito.zip או .dobble.zip).');}
+    catch(e){throw new Error('זה לא קובץ משחק. צריך את קובץ הגיבוי מהמחולל (נגמר ב-.matchito.zip).');}
     const jf=zip.file('design.json');
     if(!jf){
       if(zip.file(/^(dobble|matchito)-cards\//).length)
         throw new Error('זה קובץ התמונות של הקלפים. צריך את קובץ הגיבוי: במחולל ← "📦 גיבוי לקובץ" ← "⬇️ שמור לקובץ".');
-      throw new Error('זה לא קובץ משחק. צריך את קובץ הגיבוי מהמחולל (נגמר ב-.matchito.zip או .dobble.zip).');
+      throw new Error('זה לא קובץ משחק. צריך את קובץ הגיבוי מהמחולל (נגמר ב-.matchito.zip).');
     }
     const meta=JSON.parse(await jf.async('string'));
     if(meta.app!=='dobble'||!Array.isArray(meta.rows))throw new Error('זה לא קובץ משחק מאצ׳טו.');

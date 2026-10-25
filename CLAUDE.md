@@ -8,7 +8,8 @@
 מחולל קלפי Dobble/Spot-It אישי — אפליקציית ווב חד-קובצית ב-GitHub Pages.
 - **Repo:** `github.com/Hos100345/Hos100345.github.io` (**ציבורי** — ראה כללי אבטחה)
 - **Deploy:** GitHub Pages מ-`main` בלבד. push ל-`main` = לייב מיידי.
-- **URLs:** `hos100345.github.io/dobble.html` == `www.hoshaya.co.il/dobble.html`. בנוסף `matchito-info.html` (לשעבר `dobble-info.html`, שנשאר הפניה) — עמוד שיווקי/הסבר ללקוחות (מקושר מ-`index.html` ומחלון הפתיחה של המחולל).
+- ⛔ **D-101 (25/10/2026): המחולל עצמו הוא `matchito.html`.** `dobble.html` הוא עכשיו דף הפניה בלבד (מעביר search+hash) — **לא לערוך בו קוד**. בכל מקום במסמך הזה ובמרשמים שכתוב `dobble.html` כקובץ המחולל — הכוונה ל-`matchito.html`.
+- **URLs:** `www.hoshaya.co.il/matchito.html` (הישן `dobble.html` מפנה אליו). בנוסף `matchito-info.html` (לשעבר `dobble-info.html`, שנשאר הפניה) — עמוד שיווקי/הסבר ללקוחות (מקושר מ-`index.html` ומחלון הפתיחה של המחולל).
 
 ## ⛔ שם המוצר — "מאצ׳טו", לא "דאבל" (14/10/2026, D-75)
 "Dobble" ו-"Spot It" הם סימני מסחר רשומים של Asmodee. **אסור שיופיעו בשום טקסט שהלקוח רואה** — עברית ("דאבל") ואנגלית כאחד: כותרות, כפתורים, הודעות, וואטסאפ, שמות קבצים להורדה, meta/og. בעברית: **מאצ׳טו** (גרש עברי ׳ ולא ' — כך לא נשבר בתוך מחרוזות JS). באנגלית: **One Match**. מותר: שמות קבצים קיימים ב-URL (`dobble.html`), מזהים פנימיים והערות קוד.
