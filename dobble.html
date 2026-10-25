@@ -492,7 +492,7 @@
 
 <!-- CONFIG (קודים, וואטסאפ, חבילות) -->
 <!-- ?v=N — מעלים את המספר בכל שינוי בקובץ, אחרת הדפדפן יגיש גרסה ישנה מהמטמון -->
-<script src="js/dobble-config.js?v=2"></script>
+<script src="js/dobble-config.js?v=3"></script>
 <script src="js/supabase-config.js?v=3"></script>
 <script src="js/hebrew-fonts.js?v=1"></script>
 <script src="js/latin-fonts.js?v=1"></script>
@@ -541,6 +541,8 @@ function dcfgSave(patch){
         style="background:none;border:none;color:rgba(255,255,255,.55);font-size:.8rem;text-decoration:underline;cursor:pointer;font-family:inherit;padding:.4rem;margin-top:.3rem">
         שכחתי את הקוד שלי
       </button>
+      <button type="button" id="admin-mail-link" hidden
+        style="display:block;margin:.2rem auto 0;background:none;border:none;color:rgba(255,255,255,.55);font-size:.8rem;text-decoration:underline;cursor:pointer;font-family:inherit;padding:.4rem">🔐 כניסת מנהל במייל</button>
     </div>
 
     <!-- טאב: הרשמה חינם -->
@@ -671,11 +673,6 @@ function dcfgSave(patch){
     });
   }
 
-  function doAdminUnlock(){
-    sessionStorage.setItem('dobble_unlocked','1');
-    sessionStorage.setItem('dobble_max_order','91');
-    removeLockScreen(()=>{window._initAdminPanel&&window._initAdminPanel();});
-  }
 
   // מנרמל רשומת קוד: מחרוזת "739154" או אובייקט {code,expiry,label} → {code,expiry}
   window._normCode=function(c){
@@ -683,8 +680,7 @@ function dcfgSave(patch){
     return{code:String(c),expiry:''};
   };
   window._tryCode=function(v){
-    // קוד ניהול: הקוד ההיסטורי וגם הקוד מהקונפיג
-    if(v==='dbl2025adm'||v===String(DCFG.adminCode)){doAdminUnlock();return true;}
+    // D-100: אין יותר קוד ניהול בדפדפן (קוד ניהול גלוי פתח 91 קלפים בלי תשלום). מנהל = התחברות במייל המנהל.
     // קודי משתמש: קודי הקונפיג (גלובליים לכולם) + קודים מנוהלים (מקומיים) — שניהם עם תמיכה בתוקף
     const today=new Date().toISOString().slice(0,10);
     const entries=(DCFG.accessCodes||[]).concat(getManagedCodes());
@@ -2907,7 +2903,7 @@ window.applyI18n=applyI18n;
        לא סרגל צף נפרד, כדי שלא יכסה/יחסום שום דבר. -->
   <button id="support-mini-exit" type="button" hidden title="לחץ ליציאה ממצב תמיכה" style="background:#b45309;color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:100px;padding:.3rem .7rem;cursor:pointer;font-family:inherit;font-size:.74rem;font-weight:700;display:flex;align-items:center;gap:.35rem;white-space:nowrap">🛟 <span id="support-mini-label" style="max-width:9em;overflow:hidden;text-overflow:ellipsis"></span> ✕</button>
   <button class="hdr-gear" id="btn-account" data-i18n-title="header.accountBtnTitle" title="חשבון וסנכרון" aria-label="חשבון וסנכרון" style="position:relative">👤<span id="acct-dot" class="acct-dot" hidden></span></button>
-  <button class="hdr-gear" id="btn-admin" data-i18n-title="header.adminBtnTitle" title="פאנל ניהול" aria-label="פאנל ניהול">⚙️</button>
+  <button class="hdr-gear" id="btn-admin" data-i18n-title="header.adminBtnTitle" title="פאנל ניהול" aria-label="פאנל ניהול" hidden>⚙️</button>
 </header>
 
 <main id="main" tabindex="-1">
@@ -3927,17 +3923,6 @@ window.applyI18n=applyI18n;
 </div>
 
 <!-- ADMIN GATE (כניסה ללוח הבקרה מתוך המחולל) -->
-<div class="modal-bg" id="adm-gate" hidden data-esc="#adm-gate-x">
-  <div class="modal-card" style="max-width:340px;text-align:center">
-    <div class="modal-hdr">
-      <div class="modal-title">🔐 קוד ניהול</div>
-      <button class="modal-x" id="adm-gate-x">✕</button>
-    </div>
-    <input id="adm-gate-inp" type="password" maxlength="20" class="adm-inp" aria-label="קוד ניהול"
-      style="background:rgba(255,255,255,.85);color:var(--text);border-color:var(--border);text-align:center;font-size:1.25rem;letter-spacing:.3rem">
-    <div id="adm-gate-msg" style="color:#b91c1c;font-size:.85rem;min-height:1.3em;margin-top:.5rem"></div>
-  </div>
-</div>
 
 <!-- ADMIN PANEL -->
 <div id="admin-panel" class="adm-ov">
@@ -12212,7 +12197,6 @@ function adminExportConfig(){
     });
     const cfg={
       accessCodes:codes,
-      adminCode:DCFG.adminCode,
       whatsapp:localStorage.getItem('dobble_wa')||DCFG.whatsapp,
       phoneDisplay:DCFG.phoneDisplay,
       contactMessage:DCFG.contactMessage,
@@ -13021,26 +13005,11 @@ document.getElementById('adm-sub-create').addEventListener('click',createSubscri
 (function(){const b=document.getElementById('adm-act-refresh');if(b)b.addEventListener('click',renderActivity);})();
 document.getElementById('adm-sub-login').addEventListener('click',()=>{document.getElementById('auth-modal').hidden=false;});
 
-// ── כניסה ללוח מתוך המחולל (⚙️) ──
+// ── כניסה ללוח מתוך המחולל (⚙️) ── D-100: רק מנהל מחובר במייל. אין קוד בדפדפן.
 let _admAuthed=false;
-const admGate=document.getElementById('adm-gate');
 document.getElementById('btn-admin').addEventListener('click',()=>{
-  if(_admAuthed){openAdminPanel();return;}
-  admGate.hidden=false;
-  const inp=document.getElementById('adm-gate-inp');
-  inp.value='';inp.focus();
-});
-document.getElementById('adm-gate-x').addEventListener('click',()=>{admGate.hidden=true;});
-admGate.addEventListener('click',e=>{if(e.target===e.currentTarget)admGate.hidden=true;});
-document.getElementById('adm-gate-inp').addEventListener('input',function(){
-  if(this.value==='dbl2025adm'||this.value===String(DCFG.adminCode)){
-    _admAuthed=true;
-    admGate.hidden=true;
-    openAdminPanel();
-  }else if(this.value.length>=Math.max(String(DCFG.adminCode).length,10)){
-    document.getElementById('adm-gate-msg').textContent='קוד שגוי';
-    setTimeout(()=>{this.value='';document.getElementById('adm-gate-msg').textContent='';},800);
-  }
+  if(typeof isAdminUser==='function'&&isAdminUser()){_admAuthed=true;openAdminPanel();return;}
+  toast('לוח הבקרה נפתח רק למנהל מחובר — התחברו עם מייל המנהל','err');
 });
 
 // ── שמירה לקבצים באייפון ─────────────────────────────────────────────────
@@ -13146,6 +13115,7 @@ function updateAuthUI(session){
   if(typeof refreshSubscribersUI==='function')refreshSubscribersUI();
   if(typeof window.dobbleRefreshAiButton==='function')window.dobbleRefreshAiButton();
   if(typeof refreshAdminShapeUi==='function')refreshAdminShapeUi();   // D-95
+  {const g=document.getElementById('btn-admin');if(g)g.hidden=!(typeof isAdminUser==='function'&&isAdminUser());}   // D-100
   updateCloudSaveBtn();
 }
 
@@ -13487,7 +13457,14 @@ async function guardedUnlock(session){
     try{if(SB)await SB.auth.signOut();}catch(e){}
     return false;
   }
-  unlockFromSession(session,gate.maxOrder);
+  // D-100: מייל אמיתי (לא מנוי legacy) נכנס עם המסלול שלו בשרת (my_access_tier), לא 91.
+  // לפני התיקון כל מייל שהתחבר ("שכחתי את הקוד") קיבל 91 קלפים. מנהל → 91 (tierFromGate).
+  let tier=gate.maxOrder;
+  if(!isSubscriberEmail((session&&session.user&&session.user.email)||'')){
+    const t=await tierFromGate(session,gate);
+    tier=t!=null?t:7;
+  }
+  unlockFromSession(session,tier);
   return true;
 }
 
@@ -13560,6 +13537,8 @@ async function showMyCodes(){
   }
 }
 
+// D-100: כניסת מנהל = התחברות במייל המנהל. הכפתור מופיע רק ב-dobble.html?admin (ללקוחות אין סיבה לראות אותו).
+(function(){const b=document.getElementById('admin-mail-link');if(!b)return;if(/[?&]admin\b/.test(location.search))b.hidden=false;b.addEventListener('click',()=>startCodeRecovery());})();
 document.getElementById('forgot-code-link')
   .addEventListener('click',startCodeRecovery);
 
@@ -13947,7 +13926,6 @@ if(SB){
 
 // חיבור למסך הנעילה
 window._afterUnlock=()=>{idbLoad();};
-window._initAdminPanel=()=>{_admAuthed=true;openAdminPanel();};
 
 // אם כבר פתוח מהסשן — שחזור המאגר מיד
 // טעינת דף: הלקוחה חזרה לאתר אחרי ששילמה בלשונית אחרת.
