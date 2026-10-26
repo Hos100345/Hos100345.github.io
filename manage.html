@@ -117,13 +117,27 @@
   <section data-panel="prices" hidden>
     <div class="card">
       <h2>💰 מחירי משחקים להדפסה</h2>
-      <p class="hint">מחיר לדף A4 מודפס (בפאזל — מחיר לפאזל שלם). זה המחיר שהלקוח רואה בסטודיו לפני ששולח הזמנה, ואותו השרת רושם בהזמנה. שינוי נכנס לתוקף מיד.</p>
-      <table style="margin-top:10px"><thead><tr><th>מוצר</th><th>מחיר ₪</th><th></th></tr></thead><tbody id="price-rows"></tbody></table>
+      <p class="hint">מחיר לדף A4 מודפס (בפאזל — מחיר לפאזל שלם), ו"מינימום" = הכי פחות שהזמנה של המוצר עולה, גם אם יש מעט דפים. זה המחיר שהלקוח רואה בסטודיו לפני ששולח הזמנה, ואותו השרת רושם בהזמנה. שינוי נכנס לתוקף מיד.</p>
+      <table style="margin-top:10px"><thead><tr><th>מוצר</th><th>לדף ₪</th><th>מינימום ₪</th><th></th></tr></thead><tbody id="price-rows"></tbody></table>
       <p class="msg" id="price-msg"></p>
       <h3 style="margin-top:22px">מוצרים מוכנים לסובלימציה (קטלוג זיקית) — מחיר למוצר</h3>
       <p class="hint">כשהלקוח בוחר מוצר מוכן, ההזמנה מחושבת לפי המחיר כאן ולא לפי דף. בטנגרם ולודו לחיתוך — עדיין הצעת מחיר.</p>
       <table style="margin-top:10px"><thead><tr><th>מוצר</th><th>מחיר ₪</th><th></th></tr></thead><tbody id="blank-rows"></tbody></table>
       <p class="msg" id="blank-msg"></p>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h2>🎟️ קודי הנחה — הדפסה אצלנו</h2>
+      <p class="hint">הלקוח כותב את הקוד בחלון שליחת ההזמנה בסטודיו. השרת בודק אותו ומוריד את האחוז מהמחיר. אפשר להגביל תאריך סיום ומספר שימושים. הקוד נשמר באותיות גדולות.</p>
+      <div class="row" style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-top:10px">
+        <label>קוד<br><input id="cp-code" dir="ltr" style="text-transform:uppercase;width:9em" maxlength="30" autocomplete="off"></label>
+        <label>אחוז הנחה<br><input id="cp-pct" type="number" min="1" max="90" step="1" inputmode="numeric" style="width:6em"></label>
+        <label>עד תאריך (לא חובה)<br><input id="cp-end" type="date"></label>
+        <label>מקסימום שימושים (לא חובה)<br><input id="cp-max" type="number" min="1" step="1" inputmode="numeric" style="width:7em"></label>
+        <label>הערה<br><input id="cp-note" maxlength="80" style="width:12em"></label>
+        <button class="btn" id="cp-add">➕ הוספה</button>
+      </div>
+      <p class="msg" id="cp-msg" aria-live="polite"></p>
+      <table style="margin-top:10px"><thead><tr><th>קוד</th><th>הנחה</th><th>שימושים</th><th>עד</th><th>פעיל</th><th></th></tr></thead><tbody id="cp-rows"></tbody></table>
     </div>
   </section>
 
@@ -151,7 +165,7 @@ function show(tab){
   document.querySelectorAll('nav.tabs [role=tab]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===tab)));
   document.querySelectorAll('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==tab);
   if(history.replaceState)history.replaceState(null,'','#'+tab);
-  if(tab==='orders'){loadOrders();loadGrants();loadDobbleGifts();}if(tab==='prices'){loadPrices();loadBlankPrices();}if(tab==='stats')loadStats();
+  if(tab==='orders'){loadOrders();loadGrants();loadDobbleGifts();}if(tab==='prices'){loadPrices();loadBlankPrices();loadCoupons();}if(tab==='stats')loadStats();
 }
 document.querySelectorAll('nav.tabs [role=tab]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.tab)));
 document.querySelectorAll('[data-go]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();show(a.dataset.go);}));
@@ -253,10 +267,10 @@ $('dg-add').addEventListener('click',async()=>{
 const PRICE_HE=[['cards','🃏 קלפים / חפיסת מלחמה','לדף'],['memory','🧠 משחק זיכרון','לדף'],['quartets','👨‍👩‍👧‍👦 רביעיות','לדף'],['domino','🁫 דומינו','לדף'],['dice','🎲 קוביות','לדף'],['puzzle','🧩 פאזל','לפאזל'],['stickers','🏷️ מדבקות','לדף']];
 async function loadPrices(){
   const tb=$('price-rows');tb.innerHTML='<tr><td colspan="3" class="hint">טוען…</td></tr>';
-  const{data,error}=await sb.from('studio_prices').select('product,per_sheet,updated_at');
+  const{data,error}=await sb.from('studio_prices').select('product,per_sheet,min_price,updated_at');
   if(error){tb.innerHTML='<tr><td colspan="3" style="color:var(--err)">שגיאה: '+esc(error.message)+'</td></tr>';return;}
   const by=Object.fromEntries(data.map(r=>[r.product,r]));
-  tb.innerHTML=PRICE_HE.map(([k,he,unit])=>`<tr><td>${he}<br><small class="hint">${unit}${by[k]?' · עודכן '+new Date(by[k].updated_at).toLocaleDateString('he-IL'):''}</small></td><td><input class="num" type="number" min="1" max="1000" step="1" inputmode="numeric" data-k="${k}" value="${by[k]?by[k].per_sheet:''}" aria-label="מחיר ${he}"></td><td><button class="btn" data-save="${k}" ${isAdmin()?'':'disabled'}>שמירה</button></td></tr>`).join('');
+  tb.innerHTML=PRICE_HE.map(([k,he,unit])=>`<tr><td>${he}<br><small class="hint">${unit}${by[k]?' · עודכן '+new Date(by[k].updated_at).toLocaleDateString('he-IL'):''}</small></td><td><input class="num" type="number" min="1" max="1000" step="1" inputmode="numeric" data-k="${k}" value="${by[k]?by[k].per_sheet:''}" aria-label="מחיר ${he}"></td><td>${k==='puzzle'?'—':`<input class="num" type="number" min="0" max="2000" step="1" inputmode="numeric" data-km="${k}" value="${by[k]?by[k].min_price||0:0}" aria-label="מינימום ${he}">`}</td><td><button class="btn" data-save="${k}" ${isAdmin()?'':'disabled'}>שמירה</button></td></tr>`).join('');
   if(!isAdmin())$('price-msg').textContent='כדי לשנות מחיר צריך להיכנס קודם.';
   tb.querySelectorAll('[data-save]').forEach(b=>b.addEventListener('click',()=>savePrice(b.dataset.save,b)));
 }
@@ -270,14 +284,30 @@ async function loadBlankPrices(){const tb=$('blank-rows');tb.innerHTML='<tr><td 
     b.disabled=true;const{data:d,error:e}=await sb.from('studio_blank_prices').update({price:v,updated_at:new Date().toISOString()}).eq('key',k).select();b.disabled=false;
     if(e||!d||!d.length){m.style.color='var(--err)';m.textContent='לא נשמר'+(e?': '+e.message:' — אין הרשאה');return;}
     m.style.color='var(--ok)';m.textContent='✓ נשמר: '+d[0].label+' — '+v+' ₪';}));}
+// S-84: קודי הנחה (studio_coupons — רק המנהל רואה ועורך, RLS)
+async function loadCoupons(){const tb=$('cp-rows');tb.innerHTML='<tr><td colspan="6" class="hint">טוען…</td></tr>';
+  const{data,error}=await sb.from('studio_coupons').select('*').order('created_at',{ascending:false});
+  if(error){tb.innerHTML='<tr><td colspan="6" style="color:var(--err)">שגיאה: '+esc(error.message)+'</td></tr>';return;}
+  if(!data.length){tb.innerHTML='<tr><td colspan="6" class="hint">אין עדיין קודים</td></tr>';return;}
+  tb.innerHTML=data.map(c=>`<tr><td dir="ltr"><b>${esc(c.code)}</b>${c.note?'<br><small class="hint">'+esc(c.note)+'</small>':''}</td><td>${c.percent}%</td><td>${c.uses}${c.max_uses?' / '+c.max_uses:''}</td><td>${c.ends_at?new Date(c.ends_at).toLocaleDateString('he-IL'):'—'}</td>
+    <td><input type="checkbox" data-cpa="${esc(c.code)}" ${c.active?'checked':''} aria-label="פעיל ${esc(c.code)}" ${isAdmin()?'':'disabled'}></td><td><button class="btn" data-cpd="${esc(c.code)}" ${isAdmin()?'':'disabled'} aria-label="מחיקת ${esc(c.code)}">🗑</button></td></tr>`).join('');
+  tb.querySelectorAll('[data-cpa]').forEach(b=>b.addEventListener('change',async()=>{const{error:e}=await sb.from('studio_coupons').update({active:b.checked,updated_at:new Date().toISOString()}).eq('code',b.dataset.cpa);cpMsg(e?'לא נשמר: '+e.message:'✓ '+b.dataset.cpa+(b.checked?' פעיל':' כבוי'),!e);}));
+  tb.querySelectorAll('[data-cpd]').forEach(b=>b.addEventListener('click',async()=>{if(!confirm('למחוק את הקוד '+b.dataset.cpd+'?'))return;const{error:e}=await sb.from('studio_coupons').delete().eq('code',b.dataset.cpd);cpMsg(e?'לא נמחק: '+e.message:'✓ נמחק',!e);loadCoupons();}));}
+function cpMsg(t,ok){const m=$('cp-msg');m.style.color=ok?'var(--ok)':'var(--err)';m.textContent=t;}
+$('cp-add')&&$('cp-add').addEventListener('click',async()=>{const code=$('cp-code').value.trim().toUpperCase(),pct=parseInt($('cp-pct').value,10),end=$('cp-end').value,mx=parseInt($('cp-max').value,10);
+  if(!/^[A-Z0-9א-ת_-]{3,30}$/.test(code))return cpMsg('קוד: 3–30 אותיות/ספרות, בלי רווחים');if(!(pct>=1&&pct<=90))return cpMsg('אחוז בין 1 ל-90');
+  const row={code,percent:pct,note:$('cp-note').value.trim()||null,ends_at:end?new Date(end+'T23:59:59').toISOString():null,max_uses:mx>0?mx:null};
+  const{error}=await sb.from('studio_coupons').insert(row);if(error)return cpMsg(error.code==='23505'?'הקוד הזה כבר קיים':'לא נשמר: '+error.message);
+  cpMsg('✓ נוסף: '+code+' — '+pct+'%',true);['cp-code','cp-pct','cp-end','cp-max','cp-note'].forEach(i=>$(i).value='');loadCoupons();});
 async function savePrice(k,btn){
   const v=parseInt(tb_val(k),10),m=$('price-msg');
   if(!(v>=1&&v<=1000)){m.style.color='var(--err)';m.textContent='מחיר בין 1 ל-1000 ₪';return;}
   btn.disabled=true;
-  const{data,error}=await sb.from('studio_prices').update({per_sheet:v,updated_at:new Date().toISOString()}).eq('product',k).select();
+  const mi=document.querySelector(`input[data-km="${k}"]`),mn=mi?parseInt(mi.value,10)||0:0;if(mn<0||mn>2000){m.style.color='var(--err)';m.textContent='מינימום בין 0 ל-2000 ₪';return;}
+  const{data,error}=await sb.from('studio_prices').update({per_sheet:v,min_price:mn,updated_at:new Date().toISOString()}).eq('product',k).select();
   btn.disabled=false;
   if(error||!data||!data.length){m.style.color='var(--err)';m.textContent='לא נשמר'+(error?': '+error.message:' — אין הרשאה');return;}
-  m.style.color='var(--ok)';m.textContent='✓ נשמר: '+(PRICE_HE.find(x=>x[0]===k)||[,k])[1]+' — '+v+' ₪';
+  m.style.color='var(--ok)';m.textContent='✓ נשמר: '+(PRICE_HE.find(x=>x[0]===k)||[,k])[1]+' — '+v+' ₪ לדף'+(mn?', מינימום '+mn+' ₪':'');
 }
 const tb_val=k=>document.querySelector(`input[data-k="${k}"]`).value;
 

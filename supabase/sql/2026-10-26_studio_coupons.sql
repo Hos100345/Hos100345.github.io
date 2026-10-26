@@ -1,0 +1,11 @@
+-- S-84 (26/10/2026) — לתיעוד בלבד: כבר הורץ במסד (migration studio_coupons_and_min_price). לא להריץ שוב.
+-- 1) studio_prices.min_price — מחיר מינימום למוצר; studio_price() = greatest(min_price, per_sheet*sheets) (פאזל: per_sheet).
+-- 2) studio_coupons (code PK באותיות גדולות, percent 1–90, active, starts_at, ends_at, max_uses, uses, note) — RLS: רק hoshaya@gmail.com.
+-- 3) check_studio_coupon(p_code) — security definer, anon/authenticated: {ok,code,percent} או {ok:false}. אי אפשר לרשום את כל הקודים.
+-- 4) studio_orders.coupon, studio_orders.price_before.
+-- 5) create_studio_order: p->>'coupon' נבדק שוב בזמן ההזמנה (FOR UPDATE), price = round(price*(100-pct)/100), uses+1.
+-- 6) studio-order edge function v6 מעביר body.coupon ומחזיר price_before/coupon.
+-- מחירים שעודכנו באותו יום (הושעיה: "להעלות באמת את המחירים, סביבות 100–200 ₪, רק הדפסה אצלנו"):
+--   studio_prices per_sheet/min: stickers 25/99, cards 20/149, quartets 20/149, memory 30/129, domino 30/149, dice 40/99, puzzle 119.
+--   studio_blank_prices: 9313-30 99, 9313-80 109, 9312-3 119, 9313-252 149, 9321 179, 9331 199, domino-8801 199, tangram 149,
+--   ludo all 199 / pieces 129 / board 179, tshirt-front 100, tshirt-both 120 (החולצה עוד לא פתוחה ללקוחות).
