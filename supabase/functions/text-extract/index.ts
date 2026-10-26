@@ -83,11 +83,11 @@ async function extract(b64: string, mediaType: string, markUnclear: boolean, lay
 const norm = (c: unknown) => String(c || '').trim().toUpperCase().replace(/\s+/g, '');
 
 async function codeInfo(db: any, code: string) {
-  const { data } = await db.from('studio_ocr_codes').select('code,label,used,usage_limit,active,expires_at').eq('code', code).maybeSingle();
+  const { data } = await db.from('studio_ocr_codes').select('code,label,used,usage_limit,active,expires_at,paid_pages,price_per_page').eq('code', code).maybeSingle();
   if (!data) return null;
   const expired = !!data.expires_at && new Date(data.expires_at) <= new Date();
   const full = data.usage_limit != null && data.used >= data.usage_limit;
-  return { label: data.label, used: data.used, limit: data.usage_limit, ok: data.active && !expired && !full,
+  return { label: data.label, used: data.used, limit: data.usage_limit, paid: data.paid_pages || 0, price: Number(data.price_per_page) || 1, ok: data.active && !expired && !full,
     why: !data.active ? 'הקוד הושבת' : expired ? 'תוקף הקוד הסתיים' : full ? 'נגמרו הדפים בקוד הזה' : '' };
 }
 
