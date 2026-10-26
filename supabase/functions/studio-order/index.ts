@@ -11,7 +11,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const BUCKET = 'studio-orders';
-const PRODUCTS = ['stickers', 'cards', 'memory', 'quartets', 'domino', 'dice', 'puzzle', 'bingo', 'tangram', 'ludo']; // quartets = S-31 (v3) · bingo = S-55 (v4) · tangram/ludo = S-65 (v5, הצעת מחיר — מחיר 0 עד שנקבע)
+const PRODUCTS = ['stickers', 'cards', 'memory', 'quartets', 'domino', 'dice', 'puzzle', 'bingo', 'tangram', 'ludo', 'tshirt']; // tshirt = S-85 (v7, מחיר לפי כמות החולצות) · quartets = S-31 (v3) · bingo = S-55 (v4) · tangram/ludo = S-65 (v5, הצעת מחיר — מחיר 0 עד שנקבע)
 const MAX_DESIGN_BYTES = 256 * 1024;
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -57,6 +57,7 @@ Deno.serve(async (req) => {
       } });
       if (error || !data) {
         if (String(error?.message || '').includes('rate_limited')) return fail('rate_limited', 429);
+        if (String(error?.message || '').includes('invalid_qty')) return fail('invalid_qty', 400);
         console.error('RPC_ERROR', JSON.stringify(error));
         return fail('server_error', 500);
       }

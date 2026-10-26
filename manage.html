@@ -190,7 +190,7 @@ $('logout').addEventListener('click',()=>sb.auth.signOut());
 const isAdmin=()=>session&&(session.user.email||'').toLowerCase()===ADMIN;
 
 // ── הזמנות ──
-const PROD_HE={stickers:'מדבקות',cards:'קלפים',memory:'זיכרון',quartets:'רביעיות',domino:'דומינו',dice:'קוביות',puzzle:'פאזל'};
+const PROD_HE={tshirt:'חולצות',bingo:'בינגו',tangram:'טנגרם',ludo:'לודו',stickers:'מדבקות',cards:'קלפים',memory:'זיכרון',quartets:'רביעיות',domino:'דומינו',dice:'קוביות',puzzle:'פאזל'};
 const STATUS_HE={uploading:'⏳ לא הושלמה',new:'🆕 חדשה',in_progress:'🛠️ בעבודה',done:'✅ הסתיימה',cancelled:'✖ בוטלה'};
 async function countNew(){
   const{count}=await sb.from('studio_orders').select('id',{count:'exact',head:true}).eq('status','new');
