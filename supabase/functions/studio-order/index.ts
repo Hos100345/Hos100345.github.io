@@ -53,13 +53,14 @@ Deno.serve(async (req) => {
       const { data, error } = await admin.rpc('create_studio_order', { p: {
         product, customer_phone: phone, sheets, design,
         customer_name: truncate(body.name, 80), customer_note: truncate(body.note, 300), summary: truncate(body.summary, 200),
+        coupon: truncate(body.coupon, 30), // S-84: קוד הנחה — נבדק ונחשב ב-DB
       } });
       if (error || !data) {
         if (String(error?.message || '').includes('rate_limited')) return fail('rate_limited', 429);
         console.error('RPC_ERROR', JSON.stringify(error));
         return fail('server_error', 500);
       }
-      const { id, code, price } = data as { id: string; code: string; price: number };
+      const { id, code, price, price_before, coupon } = data as { id: string; code: string; price: number; price_before: number | null; coupon: string | null };
       // design.zip = העיצוב המלא (הגדרות + תמונות) — המנהל פותח אותו בסטודיו ומחליט: גיליון לבית דפוס או דפי A4.
       // לא חובה ב-finalize: לקוח עם גרסה ישנה של הדף לא מעלה אותו.
       const names = ['print.pdf', 'preview.jpg', `cut.${cutExt}`, 'design.zip'];
@@ -70,7 +71,7 @@ Deno.serve(async (req) => {
         uploads[n] = s.signedUrl;
       }
       console.log('STUDIO_ORDER_CREATED', code, product, 'sheets=', sheets, 'price=', price);
-      return json({ ok: true, id, code, price, uploads });
+      return json({ ok: true, id, code, price, price_before, coupon, uploads });
     }
 
     if (body.action === 'finalize') {
