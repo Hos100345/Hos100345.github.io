@@ -121,6 +121,16 @@
     .hub span{display:block;font-size:.84rem;color:var(--muted);line-height:1.4;margin-top:.15rem}
     .hub a.new{border-color:var(--gold);background:var(--gold-light)}
     .hub a.wa{background:#DCFCE7;border-color:#22C55E}
+    /* G-26: מתג משחקים / מתנות / בטלפון */
+    .tabs{position:sticky;top:67px;z-index:20;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.3rem;max-width:560px;margin:1.4rem auto 0;padding:.3rem;border-radius:1.25rem;
+      background:rgba(255,255,255,.7);border:1px solid rgba(15,23,42,.08);box-shadow:var(--sh);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+    .tabs button{min-height:48px;border-radius:1rem;font-weight:700;font-size:1.02rem;color:#334155;transition:background .2s,color .2s,box-shadow .2s;white-space:nowrap}
+    .tabs button[aria-selected="true"]{background:var(--indigo);color:#fff;box-shadow:0 4px 14px rgba(67,56,202,.32)}
+    .tabs button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+    #scr-home .tabpanel>h2:first-child{margin-top:1.4rem}
+    .tabpanel{animation:tabIn .25s ease}
+    @keyframes tabIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+    @media (prefers-reduced-motion:reduce){.tabpanel{animation:none}.tabs button{transition:none}}
     html{scroll-behavior:smooth;scroll-padding-top:72px}
     /* ── קטלוג משחקים ── */
     .games{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:.8rem}
@@ -258,22 +268,17 @@
 </section>
 <div class="scr">
 
-  <!-- רכזת: לינק לכל הכלים + האתר. זו הכתובת שמופיעה במודעה (G-2) -->
-  <nav class="hub" aria-label="כל הכלים">
-    <a href="#photos"><i>🎲</i><b>משחקים מהתמונות שלי</b><span>מעלים תמונות ומשחקים עכשיו</span></a>
-    <a href="../studio/?p=tshirt" class="new"><i>👕</i><b>🆕 חולצה עם התמונה שלכם</b><span>מעצבים, רואים בתלת־ממד ומזמינים</span></a>
-    <a href="../card-games.html"><i>🃏</i><b>כל משחקי הקלפים</b><span>הסבר, תמונות ודוגמאות לכל משחק</span></a>
-    <a href="../play/"><i>📱</i><b>משחקי מאצ׳טו בטלפון</b><span>משחקים במשחק שיצרתם במחולל</span></a>
-    <a href="../projection-drawing.html"><i>🎨</i><b>ציור באוויר</b><span>המצלמה קולטת את היד או נקודה אדומה — מציירים בלי לגעת בטלפון, גם בסלפי</span></a>
-    <a href="../"><i>🏠</i><b>האתר של הושעיה</b><span>סדנאות, אירועים ועוד</span></a>
-    <a href="https://wa.me/972505918734?text=%D7%A9%D7%9C%D7%95%D7%9D%20%D7%94%D7%95%D7%A9%D7%A2%D7%99%D7%94%2C%20%D7%94%D7%92%D7%A2%D7%AA%D7%99%20%D7%9E%D7%9E%D7%97%D7%95%D7%9C%D7%9C%20%D7%94%D7%9E%D7%A9%D7%97%D7%A7%D7%99%D7%9D" target="_blank" rel="noopener noreferrer" class="wa"><i>💬</i><b>וואטסאפ להושעיה</b><span>050-591-8734 · הזמנת משחק מעוצב</span></a>
-  </nav>
+  <!-- G-26: מתג שלושה עולמות — משחקים מודפסים / מתנות / משחקים בטלפון. #print · #gifts · #phone (#photos פותח את "בטלפון") -->
+  <div class="tabs" role="tablist" aria-label="מה מחפשים?">
+    <button type="button" role="tab" id="tab-print" aria-controls="pan-print" aria-selected="true">🖨️ משחקים</button>
+    <button type="button" role="tab" id="tab-gifts" aria-controls="pan-gifts" aria-selected="false" tabindex="-1">🎁 מתנות</button>
+    <button type="button" role="tab" id="tab-phone" aria-controls="pan-phone" aria-selected="false" tabindex="-1">📱 בטלפון</button>
+  </div>
 
-  <!-- כל משחק בסטודיו = לינק נפרד (studio/?p=<id>, S-33). מוצר חדש בסטודיו → שורה כאן -->
-  <h2 id="print">🖨️ משחקים מודפסים — מעצבים ומזמינים</h2>
-  <nav class="hub" aria-label="משחקים מהסטודיו">
-    <a href="../studio/?p=tshirt" class="new"><img src="../images/games/tshirt.webp" alt="חולצה לבנה עם הדפסת בלונים צבעוניים והכיתוב יום הולדת שמח" width="800" height="600" loading="lazy"><i>👕</i><b>🆕 חולצה עם התמונה שלכם</b><span>מעצבים, רואים בתלת־ממד ומזמינים — שרוול קצר או ארוך, כל המידות</span></a>
-    <a href="../studio/?p=mug" class="new"><img src="../images/games/mug.webp" alt="ספל לבן עם הדפסת בלונים צבעוניים והכיתוב סבתא" width="800" height="600" loading="lazy"><i>☕</i><b>🆕 ספל עם התמונה שלכם</b><span>תמונה וכיתוב מסביב לספל — רואים בתלת־ממד ומזמינים</span></a>
+  <!-- כל משחק בסטודיו = לינק נפרד (studio/?p=<id>, S-33). מוצר חדש בסטודיו → שורה כאן (או ב"מתנות") -->
+  <section class="tabpanel" id="pan-print" role="tabpanel" aria-labelledby="tab-print">
+  <h2 id="print">משחקים מודפסים — מעצבים ומזמינים</h2>
+  <nav class="hub" aria-label="משחקים מודפסים">
     <a href="../studio/?p=cards"><img src="../images/games/war.webp" alt="חפיסת קלפים אישית — נסיך, מלכה ומלך עם תמונות של בני המשפחה" width="800" height="600" loading="lazy"><i>🃏</i><b>קלפים</b><span>חפיסת מלחמה ו-52 קלפים בעיצוב אישי</span></a>
     <a href="../studio/?p=memory"><img src="../images/games/memory.webp" alt="משחק זיכרון מתמונות" width="800" height="600" loading="lazy"><i>🧠</i><b>משחק זיכרון</b><span>זוגות מהתמונות שלכם</span></a>
     <a href="../studio/?p=quartets"><img src="../images/games/quartets.webp" alt="משחק רביעיות אישי" width="800" height="600" loading="lazy"><i>👨‍👩‍👧‍👦</i><b>רביעיות</b><span>סדרות של 4 — משפחה, כיתה, חגים</span></a>
@@ -285,9 +290,28 @@
     <a href="../studio/?p=ludo"><img src="../images/games/photo-ludo.webp" alt="לוח לודו עם תמונות הילדים וחיילים עם הפנים שלהם" width="800" height="600" loading="lazy"><i>🎲</i><b>לודו</b><span>"אל תכעס" עם התמונות והשמות שלכם</span></a>
     <a href="../studio/?p=ludo&amp;what=pieces"><img src="../images/games/ludo-pieces.webp" alt="חיילי משחק עם הפנים של בני המשפחה" width="800" height="600" loading="lazy"><i>♟️</i><b>חיילים עם הפנים שלכם</b><span>ללודו שיש בבית או לכל משחק לוח</span></a>
     <a href="../matchito.html"><img src="../images/games/matchito.webp" alt="קלפי מאצ׳טו עם פרצופי המשפחה" width="800" height="600" loading="lazy"><i>👀</i><b>מאצ׳טו — מצא את הזהה</b><span>קלפי "מי מוצא ראשון?" להדפסה</span></a>
+    <a href="../card-games.html"><i>🃏</i><b>כל משחקי הקלפים</b><span>הסבר, תמונות ודוגמאות לכל משחק</span></a>
+  </nav>
+  </section>
+
+  <section class="tabpanel" id="pan-gifts" role="tabpanel" aria-labelledby="tab-gifts" hidden>
+  <h2 id="gifts">מתנות עם התמונה שלכם</h2>
+  <nav class="hub" aria-label="מתנות">
+    <a href="../studio/?p=tshirt" class="new"><img src="../images/games/tshirt.webp" alt="חולצה לבנה עם הדפסת בלונים צבעוניים והכיתוב יום הולדת שמח" width="800" height="600" loading="lazy"><i>👕</i><b>🆕 חולצה עם התמונה שלכם</b><span>מעצבים, רואים בתלת־ממד ומזמינים — שרוול קצר או ארוך, כל המידות</span></a>
+    <a href="../studio/?p=mug" class="new"><img src="../images/games/mug.webp" alt="ספל לבן עם הדפסת בלונים צבעוניים והכיתוב סבתא" width="800" height="600" loading="lazy"><i>☕</i><b>🆕 ספל עם התמונה שלכם</b><span>תמונה וכיתוב מסביב לספל — רואים בתלת־ממד ומזמינים</span></a>
     <a href="../studio/?p=photo"><i>✨</i><b>הסרת רקע ועריכת תמונות</b><span>רקע יורד בלחיצה, חיתוך, אור וצבע ופילטרים — ומורידים</span></a>
     <a href="../studio/?p=stickers"><i>🏷️</i><b>מדבקות שם</b><span>לספרים, למחברות ולקלמר</span></a>
     <a href="../studio/?p=blessing"><i>🌄</i><b>מדבקת ברכה</b><span>נוף בצבעי מים ופסוק או ברכה — בכל גודל, PDF להדפסה</span></a>
+  </nav>
+  </section>
+
+  <section class="tabpanel" id="pan-phone" role="tabpanel" aria-labelledby="tab-phone" hidden>
+  <h2 id="phone">משחקים ישר בטלפון</h2>
+  <nav class="hub" aria-label="משחקים בטלפון">
+    <a href="#photos"><i>🎲</i><b>משחקים מהתמונות שלי</b><span>זיכרון, פאזל, דומינו, מה נעלם ומאצ׳טו — מעלים תמונות ומשחקים</span></a>
+    <a href="hebrew.html" class="new"><i>✏️</i><b>🆕 כותבים עברית</b><span>אותיות, ניקוד, זיכרון, חשבון ופאזל — לגן ולכיתה א׳</span></a>
+    <a href="../play/"><i>📱</i><b>מאצ׳טו בטלפון</b><span>משחקים במשחק שיצרתם במחולל</span></a>
+    <a href="../projection-drawing.html"><i>🎨</i><b>ציור באוויר</b><span>המצלמה קולטת את היד או נקודה אדומה — מציירים בלי לגעת בטלפון</span></a>
   </nav>
 
   <h2 id="photos">1. התמונות שלי</h2>
@@ -314,6 +338,7 @@
     <a href="../matchito.html">מחולל מאצ׳טו</a> · זיכרון, דומינו, פאזל, קוביות ועוד:
     <a href="#print">הכרטיסים למעלה</a>.
   </div>
+  </section>
 </div>
 <footer class="site-foot">
   <img src="../images/logo.jpg" alt="הושעיה — עיצוב, יצירה והפעלות" width="48" height="48" loading="lazy">
@@ -1083,6 +1108,33 @@ const GAMES=[
   await loadPhotos();
   renderHome();
   if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(e=>console.warn('sw',e));
+})();
+</script>
+<script>
+/* G-26: המתג. הכתובת זוכרת את הלשונית (#print/#gifts/#phone), ו-#photos פותח את "בטלפון" וגולל לתמונות */
+(function(){
+  var ids=['print','gifts','phone'], map={print:'print',gifts:'gifts',phone:'phone',photos:'phone'};
+  var tabs=ids.map(function(i){return document.getElementById('tab-'+i)});
+  function show(id,focus){
+    ids.forEach(function(i,n){var on=i===id;tabs[n].setAttribute('aria-selected',on);tabs[n].tabIndex=on?0:-1;document.getElementById('pan-'+i).hidden=!on});
+    if(focus)tabs[ids.indexOf(id)].focus();
+  }
+  function fromHash(scroll){
+    var h=location.hash.slice(1), id=map[h]; if(!id)return;
+    show(id);
+    if(scroll){var t=document.getElementById(h);if(t){t.style.scrollMarginTop='140px';t.scrollIntoView({block:'start'})}}
+  }
+  tabs.forEach(function(b,n){
+    b.addEventListener('click',function(){show(ids[n]);try{history.replaceState(null,'','#'+ids[n])}catch(e){}
+      var bar=document.querySelector('.tabs');if(bar.getBoundingClientRect().top<=70){var h=document.getElementById(ids[n]);h.style.scrollMarginTop='140px';h.scrollIntoView({block:'start'})}});
+    b.addEventListener('keydown',function(e){
+      var k=e.key, d=k==='ArrowLeft'?1:k==='ArrowRight'?-1:0, j=k==='Home'?0:k==='End'?2:null;
+      if(d)j=(n+d+3)%3; if(j===null)return; e.preventDefault(); show(ids[j],true);
+      try{history.replaceState(null,'','#'+ids[j])}catch(err){}
+    });
+  });
+  window.addEventListener('hashchange',function(){fromHash(true)});
+  fromHash(true);
 })();
 </script>
 </body>
