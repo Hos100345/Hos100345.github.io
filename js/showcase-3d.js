@@ -42,99 +42,101 @@
   }
   function tex(c) { var T = THREE, t = new T.CanvasTexture(c); t.anisotropy = 4; if (T.sRGBEncoding) t.encoding = T.sRGBEncoding; return t; }
 
-  /* ── החולצה ──
-   * קו המתאר = הנקודות של shOutline בסטודיו (שרוול קצר), ביחידות מ"מ של חולצה L. הצד השמאלי = שיקוף.
-   * הבד: רשת מישורית, כל נקודה מורמת לפי המרחק מהשפה (חזית קדימה, גב אחורה) + גלים עדינים = קפלים; צבע קודקוד מחשיך בעמקים.
-   */
-  var SH_OUT = (function () {
-    var R = [], NECK = { half: 95, front: 85 };
-    for (var i = 0; i <= 10; i++) { var t = i / 10 * Math.PI / 2; R.push([NECK.half * Math.sin(t), NECK.front * Math.cos(t)]); }
+  /* ── החולצה — אותו מנוע כמו בסטודיו (S-77/S-82, studio/index.html: shOutline/shSeams/shDepth/shGeom/shCollar/shFabricMat),
+   * מועתק עם מידה L (k=1) ושרוול קצר. כל הקואורדינטות במ"מ: x ממרכז, y מקו הכתפיים. שינוי בחולצה של הסטודיו → לעדכן גם כאן. ── */
+  var SH_NECK = { front: 85, back: 22, half: 95 }, SH_B = { x0: -410, x1: 410, y0: -6, y1: 740 };
+  function shOutline(back) {
+    var d = back ? SH_NECK.back : SH_NECK.front, R = [], i, t;
+    for (i = 0; i <= 10; i++) { t = i / 10 * Math.PI / 2; R.push([SH_NECK.half * Math.sin(t), d * Math.cos(t)]); }
     R.push([235, 38], [395, 205], [318, 290], [290, 262], [268, 252], [264, 300], [268, 720]);
-    for (var j = 1; j < 10; j++) { var u = j / 10; R.push([268 * (1 - u), 720 + 8 * Math.sin(u * Math.PI / 2)]); }
-    R.push([0, 728]);
-    var pts = R.slice();
-    for (var k = R.length - 2; k > 0; k--) pts.push([-R[k][0], R[k][1]]);
+    for (i = 1; i < 10; i++) { t = i / 10; R.push([268 * (1 - t), 720 + 8 * Math.sin(t * Math.PI / 2)]); }
+    R.push([0, 728]); var pts = R.slice();
+    for (i = R.length - 2; i > 0; i--) pts.push([-R[i][0], R[i][1]]);
     return pts;
-  })();
-  function pip(p, poly) {  // point in polygon
-    var x = p[0], y = p[1], inside = false;
-    for (var i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-      var xi = poly[i][0], yi = poly[i][1], xj = poly[j][0], yj = poly[j][1];
-      if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) inside = !inside;
-    }
-    return inside;
   }
-  function segD(p, a, b) {
-    var dx = b[0] - a[0], dy = b[1] - a[1], l2 = dx * dx + dy * dy, t = l2 ? Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / l2)) : 0;
-    var x = a[0] + t * dx - p[0], y = a[1] + t * dy - p[1]; return Math.sqrt(x * x + y * y);
+  function shSeams() {
+    var R = [[[95, 0], [235, 38]], [[235, 38], [395, 205]], [[318, 290], [290, 262]], [[290, 262], [268, 252]], [[268, 252], [264, 300]], [[264, 300], [268, 720]]], o = [];
+    R.forEach(function (ab) { var a = ab[0], b = ab[1]; o.push([[a[0], a[1]], [b[0], b[1]]]); o.push([[-a[0], a[1]], [-b[0], b[1]]]); });
+    return o;
   }
-  function edgeD(p, poly) { var d = 1e9; for (var i = 0; i < poly.length; i++) { var q = segD(p, poly[i], poly[(i + 1) % poly.length]); if (q < d) d = q; } return d; }
-
-  function shirtSide(sign, decalTex) {
-    var T = THREE, S = 1 / 420;                       // מ"מ → יחידות סצנה (חולצה ≈ 2.4 יח׳ גובה)
-    var X0 = -400, X1 = 400, Y0 = -10, Y1 = 740, step = 9;
-    var nx = Math.round((X1 - X0) / step), ny = Math.round((Y1 - Y0) / step);
-    var g = new T.PlaneGeometry((X1 - X0) * S, (Y1 - Y0) * S, nx, ny), P = g.attributes.position, W = nx + 1;
-    var Z = new Float32Array(P.count), IN = new Uint8Array(P.count), cy = (Y0 + Y1) / 2;
-    for (var i = 0; i < P.count; i++) {
-      var X = P.getX(i) / S, Y = -P.getY(i) / S + cy, p = [X, Y];
-      var inside = pip(p, SH_OUT); IN[i] = inside ? 1 : 0;
-      var d = edgeD(p, SH_OUT), ax = Math.abs(X);
-      // ניפוח: עולה מהר ליד השפה ונשאר שטוח באמצע; הגוף עבה יותר מהשרוולים
-      var body = ax < 268 && Y > 40 ? 1 : 0.62;
-      var z = inside ? 60 * body * (1 - Math.exp(-d / 48)) : 0;
-      // קפלים רכים: גלים אנכיים קלים בגוף + קמט מתחת לבית השחי
-      if (inside) {
-        z += 4 * Math.sin(X / 70) * Math.sin(Y / 150) * (Y > 120 && ax < 240 ? 1 : 0);
-        z -= 10 * Math.exp(-(((ax - 262) / 34) * ((ax - 262) / 34) + ((Y - 258) / 40) * ((Y - 258) / 40)));
-      }
-      Z[i] = z; P.setZ(i, sign * z * S);
+  function shSegD(p, a, b) { var dx = b[0] - a[0], dy = b[1] - a[1], L = dx * dx + dy * dy || 1, t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / L)); return Math.hypot(a[0] + t * dx - p[0], a[1] + t * dy - p[1]); }
+  function shHash(x, y) { var s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return s - Math.floor(s); }
+  function shNoise(x, y) { var i = Math.floor(x), j = Math.floor(y), f = x - i, g = y - j, u = f * f * (3 - 2 * f), v = g * g * (3 - 2 * g), a = shHash(i, j), b = shHash(i + 1, j), c = shHash(i, j + 1), d = shHash(i + 1, j + 1); return (a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v) * 2 - 1; }
+  function shRidge(p, a, b, amp, w) { var dx = b[0] - a[0], dy = b[1] - a[1], L = dx * dx + dy * dy || 1, t = ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / L; if (t <= 0 || t >= 1) return 0; var d = Math.abs((p[0] - a[0]) * dy - (p[1] - a[1]) * dx) / Math.sqrt(L); return amp * Math.pow(Math.sin(Math.PI * t), .9) * Math.exp(-(d / w) * (d / w)); }
+  function shSmooth(e0, e1, x) { var t = Math.max(0, Math.min(1, (x - e0) / (e1 - e0))); return t * t * (3 - 2 * t); }
+  function shPip(p, pts) { var c = false; for (var i = 0, j = pts.length - 1; i < pts.length; j = i++) { var a = pts[i], b = pts[j]; if ((a[1] > p[1]) !== (b[1] > p[1]) && p[0] < (b[0] - a[0]) * (p[1] - a[1]) / (b[1] - a[1]) + a[0]) c = !c; } return c; }
+  function shDepth(X, Y, seams, back) {
+    var D = back ? 70 : 82, Rr = 125, d = 1e9, q;
+    for (var i = 0; i < seams.length; i++) { q = shSegD([X, Y], seams[i][0], seams[i][1]); if (q < d) d = q; }
+    var ax = Math.abs(X), y = Y, t = Math.min(1, d / Rr), base = D * Math.sqrt(1 - (1 - t) * (1 - t)), f = 0;
+    if (ax < 272) {
+      f += shRidge([ax, y], [268, 250], [90, 600], back ? 6 : 9, 34) + shRidge([ax, y], [262, 300], [160, 730], back ? 5 : 7, 30) + shRidge([ax, y], [262, 245], [185, 410], 4, 18) - shRidge([ax, y], [268, 275], [125, 650], back ? 3 : 5, 16);
+      f += 4.5 * Math.sin(X * .032 + 1.9 * shNoise(X * .008, y * .003) + (back ? 1.3 : 0)) * shSmooth(420, 710, y);
+      f -= 2.5 * shSmooth(560, 700, y) * Math.exp(-Math.pow((ax - 60) / 70, 2));
+      f += 2.4 * shNoise(X * .012 + (back ? 9 : 0), y * .009);
+      f += shRidge([ax, y], [120, 95], [200, 140], 1.8, 9);
+    } else { var u = (ax - 262) * .72 + (y - 215) * .69; f += 4.2 * Math.sin(u * .1 + 1.2 * shNoise(ax * .02, y * .02)) * shSmooth(0, 30, u) * (1 - shSmooth(100, 160, u)); }
+    return base + f * Math.min(1, t * 3.5);
+  }
+  function shGeom(pts, B, sign) {
+    var T = THREE, step = 3.2, nx = Math.round((B.x1 - B.x0) / step), ny = Math.round((B.y1 - B.y0) / step), g = new T.PlaneGeometry(B.x1 - B.x0, B.y1 - B.y0, nx, ny), P = g.attributes.position, seams = shSeams(), back = sign < 0, cy = (B.y0 + B.y1) / 2;
+    var Z = new Float32Array(P.count), i, X, Y, z, d, q;
+    for (i = 0; i < P.count; i++) {
+      X = P.getX(i) + (B.x0 + B.x1) / 2; Y = -P.getY(i) + cy;
+      if (shPip([X, Y], pts)) z = shDepth(X, Y, seams, back);
+      else { d = 1e9; for (var k = 0; k < seams.length; k++) { q = shSegD([X, Y], seams[k][0], seams[k][1]); if (q < d) d = q; } z = d < 6 ? 0 : shDepth(X, Y, seams, back); }
+      Z[i] = z; P.setXYZ(i, X, -Y + cy, sign * z);
     }
-    // הצללה בעמקים (AO) + צל צווארון; מחוץ לחולצה — שקוף דרך alphaMap
-    var col = new Float32Array(P.count * 3);
+    var col = new Float32Array(P.count * 3), W = nx + 1;
     for (var j = 0; j <= ny; j++) for (var ii = 0; ii <= nx; ii++) {
-      var n = j * W + ii, z = Z[n], l = Z[j * W + Math.max(0, ii - 1)], r = Z[j * W + Math.min(nx, ii + 1)], u = Z[Math.max(0, j - 1) * W + ii], dn = Z[Math.min(ny, j + 1) * W + ii];
-      var lap = (l + r + u + dn) / 4 - z, a = 1 - Math.max(0, Math.min(.3, lap * .06));
-      var Xn = P.getX(n) / S, Yn = -P.getY(n) / S + cy, axn = Math.abs(Xn);
-      a -= .07 * Math.exp(-(((Yn - 85 * (1 - (axn / 95) * (axn / 95))) / 14) * ((Yn - 85 * (1 - (axn / 95) * (axn / 95))) / 14))) * (axn < 100 ? 1 : 0);
-      col[n * 3] = col[n * 3 + 1] = col[n * 3 + 2] = Math.max(.6, a);
+      var n = j * W + ii, zz = Z[n], l = Z[j * W + Math.max(0, ii - 1)], r = Z[j * W + Math.min(nx, ii + 1)], u = Z[Math.max(0, j - 1) * W + ii], dn = Z[Math.min(ny, j + 1) * W + ii];
+      var lap = (l + r + u + dn) / 4 - zz, Xn = P.getX(n), Yn = -P.getY(n) + cy, ax = Math.abs(Xn), y = Yn;
+      var a = 1 - Math.max(0, Math.min(.32, lap * .9)) - .16 * Math.exp(-(Math.pow((ax - 262) / 34, 2) + Math.pow((y - 258) / 40, 2)));
+      a -= .06 * Math.exp(-Math.pow((y - (back ? 22 : 85) * (1 - Math.pow(ax / 95, 2))) / 14, 2)) * (ax < 100 ? 1 : 0);
+      col[n * 3] = col[n * 3 + 1] = col[n * 3 + 2] = Math.max(.55, a);
     }
-    g.setAttribute('color', new T.BufferAttribute(col, 3)); g.computeVertexNormals();
-    // מסכת צורה (alphaMap) — מצוירת מהמתאר, רזולוציה גבוהה כדי שהשפה תהיה חדה
-    var mc = document.createElement('canvas'); mc.width = 1024; mc.height = 1024; var mx = mc.getContext('2d');
-    mx.fillStyle = '#000'; mx.fillRect(0, 0, 1024, 1024); mx.fillStyle = '#fff'; mx.beginPath();
-    SH_OUT.forEach(function (q, k) { var px = (q[0] - X0) / (X1 - X0) * 1024, py = (q[1] - Y0) / (Y1 - Y0) * 1024; k ? mx.lineTo(px, py) : mx.moveTo(px, py); });
-    mx.closePath(); mx.fill();
-    var am = new T.CanvasTexture(mc);
-    var mat = new T.MeshStandardMaterial({ color: 0xffffff, roughness: 0.94, metalness: 0, vertexColors: true, alphaMap: am, alphaTest: 0.5, side: sign > 0 ? T.FrontSide : T.BackSide });
-    var m = new T.Mesh(g, mat);
-    if (decalTex) {
-      // ההדפסה: אותה רשת (כדי שתעקוב אחרי הקפלים), חתוכה למלבן ההדפסה, קצת מעל הבד
-      var dg = g.clone(), dp = dg.attributes.position, uv = dg.attributes.uv;
-      var DX0 = -150, DX1 = 150, DY0 = 150, DY1 = 450;
-      for (var q = 0; q < dp.count; q++) {
-        var Xq = dp.getX(q) / S, Yq = -dp.getY(q) / S + cy;
-        dp.setZ(q, dp.getZ(q) + sign * 1.2 * S);
-        uv.setXY(q, (Xq - DX0) / (DX1 - DX0), 1 - (Yq - DY0) / (DY1 - DY0));
-      }
-      decalTex.wrapS = decalTex.wrapT = T.ClampToEdgeWrapping;
-      var dm = new T.Mesh(dg, new T.MeshStandardMaterial({ map: decalTex, transparent: true, roughness: .95, vertexColors: true, alphaTest: .02, side: sign > 0 ? T.FrontSide : T.BackSide, polygonOffset: true, polygonOffsetFactor: -2 }));
-      var grp = new T.Group(); grp.add(m); grp.add(dm); return grp;
-    }
-    return m;
+    g.setAttribute('color', new T.BufferAttribute(col, 3)); g.computeVertexNormals(); return g;
+  }
+  function shMask(pts, B, pp) {
+    var sm = shSeams(), c = document.createElement('canvas'); c.width = Math.round((B.x1 - B.x0) * pp); c.height = Math.round((B.y1 - B.y0) * pp);
+    var x = c.getContext('2d'); x.fillStyle = '#000'; x.fillRect(0, 0, c.width, c.height); x.scale(pp, pp); x.translate(-B.x0, -B.y0);
+    x.fillStyle = '#fff'; x.beginPath(); pts.forEach(function (q, i) { i ? x.lineTo(q[0], q[1]) : x.moveTo(q[0], q[1]); }); x.closePath(); x.fill();
+    x.strokeStyle = '#fff'; x.lineCap = x.lineJoin = 'round'; x.lineWidth = 5; x.beginPath(); sm.forEach(function (ab) { x.moveTo(ab[0][0], ab[0][1]); x.lineTo(ab[1][0], ab[1][1]); }); x.stroke();
+    return c;
+  }
+  function shFabric(B, pp, back, print) {
+    var c = document.createElement('canvas'); c.width = Math.round((B.x1 - B.x0) * pp); c.height = Math.round((B.y1 - B.y0) * pp); var x = c.getContext('2d');
+    x.fillStyle = '#FBFBF9'; x.fillRect(0, 0, c.width, c.height); x.scale(pp, pp); x.translate(-B.x0, -B.y0);
+    x.strokeStyle = 'rgba(120,120,115,.35)'; x.lineWidth = .7; x.setLineDash([2.2, 1.6]); var nd = back ? SH_NECK.back : SH_NECK.front;
+    x.beginPath(); x.ellipse(0, 0, SH_NECK.half + 14, nd + 14, 0, 0, Math.PI); x.stroke();
+    x.beginPath(); [-1, 1].forEach(function (s) { x.moveTo(s * 382, 219); x.lineTo(s * 305, 276); }); x.stroke();
+    x.beginPath(); x.moveTo(-268, 700); x.quadraticCurveTo(0, 712, 268, 700); x.stroke(); x.setLineDash([]);
+    x.globalAlpha = .06; for (var i = 0; i < 2600; i++) { x.fillStyle = i % 2 ? '#000' : '#fff'; x.fillRect(B.x0 + shHash(i, 1) * (B.x1 - B.x0), B.y0 + shHash(i, 2) * (B.y1 - B.y0), 1.2, .5); }
+    x.globalAlpha = 1;
+    if (print) x.drawImage(print, -140, 150, 280, 280);   // ההדפסה: 28×28 ס"מ במרכז החזה
+    return c;
+  }
+  function shCollar(B) {
+    var T = THREE, seams = shSeams(), cy = (B.y0 + B.y1) / 2, hw = SH_NECK.half, P = [], n = 28, i, t, x, y;
+    for (i = 0; i <= n; i++) { t = i / n * Math.PI; x = -Math.cos(t) * hw; y = SH_NECK.front * Math.sin(t) + 3; P.push(new T.Vector3(x, -y + cy, i === 0 || i === n ? 0 : shDepth(x, y, seams, false))); }
+    for (i = n - 1; i > 0; i--) { t = i / n * Math.PI; x = -Math.cos(t) * hw; y = SH_NECK.back * Math.sin(t) + 3; P.push(new T.Vector3(x, -y + cy, -shDepth(x, y, seams, true))); }
+    return new T.TubeGeometry(new T.CatmullRomCurve3(P, true), 180, 5.5, 10, true);
+  }
+  function shFabricMat(am, map, side, inside) {
+    var T = THREE, m = new T.MeshPhysicalMaterial({ color: inside ? 0xA7A49E : 0xffffff, roughness: .93, metalness: 0, side: side, alphaMap: am, alphaTest: .5, vertexColors: true, map: inside ? null : map });
+    m.sheen = new T.Color(.42, .42, .42); return m;
   }
   function buildShirt() {
-    var T = THREE, g = new T.Group();
-    var pc = printCanvas(512, 512, 'יום הולדת שמח!', null, 0.84);
-    // ה-UV של ההדפסה הוא רק המלבן — מחוץ לו הטקסטורה חייבת להיות שקופה
-    var tx = tex(pc);
-    g.add(shirtSide(1, tx));
-    g.add(shirtSide(-1, null));
-    // צווארון ריב: טורוס שטוח לאורך הפתח, מעט בולט לפנים ולאחור
-    var collar = new T.Mesh(new T.TorusGeometry(0.23, 0.03, 10, 48, Math.PI), new T.MeshStandardMaterial({ color: 0xF3F4F6, roughness: .9 }));
-    collar.rotation.z = Math.PI; collar.scale.set(1, 0.9, 1); collar.position.set(0, (370 - 85 + 20) / 420, 0.02); g.add(collar);
-    g.position.y = -0.05;
-    return g;
+    var T = THREE, g = new T.Group(), B = SH_B, pp = 2, print = printCanvas(512, 512, 'יום הולדת שמח!', null, 0.84);
+    [false, true].forEach(function (back) {
+      var pts = shOutline(back), am = new T.CanvasTexture(shMask(pts, B, pp)), sign = back ? -1 : 1;
+      var map = new T.CanvasTexture(shFabric(B, pp, back, back ? null : print)); if (T.sRGBEncoding) map.encoding = T.sRGBEncoding; map.anisotropy = 4;
+      var geo = shGeom(pts, B, sign), out = back ? T.BackSide : T.FrontSide, inn = back ? T.FrontSide : T.BackSide;
+      g.add(new T.Mesh(geo, shFabricMat(am, map, out, false)), new T.Mesh(geo, shFabricMat(am, null, inn, true)));
+    });
+    var cm = new T.Mesh(shCollar(B), new T.MeshPhysicalMaterial({ color: 0xF4F3EF, roughness: .95 })); cm.material.sheen = new T.Color(.35, .35, .35); g.add(cm);
+    g.scale.setScalar(1 / 330);   // מ"מ → יחידות סצנה (חולצה ≈ 2.25 יח׳ גובה)
+    var wrap = new T.Group(); wrap.add(g); return wrap;
   }
 
   /* ── הספל ── */
@@ -198,10 +200,11 @@
       });
       var pause = document.createElement('button'); pause.type = 'button'; pause.className = 's3d-pause'; nav.appendChild(pause);
       var scene = new T.Scene(), cam = new T.PerspectiveCamera(28, 1, 0.1, 60);
-      cam.position.set(0, 1.1, 11); cam.lookAt(0, -0.15, 0);
-      scene.add(new T.HemisphereLight(0xffffff, 0xD6D0F0, 0.9));
-      var d1 = new T.DirectionalLight(0xffffff, 0.8); d1.position.set(3, 5, 6); scene.add(d1);
-      var d2 = new T.DirectionalLight(0xffffff, 0.3); d2.position.set(-4, 2, -3); scene.add(d2);
+      cam.position.set(0, 1.0, 10.2); cam.lookAt(0, -0.1, 0);
+      scene.add(new T.HemisphereLight(0xffffff, 0xa89c88, 0.45));
+      var d1 = new T.DirectionalLight(0xffffff, 0.95); d1.position.set(-4, 3, 2.5); scene.add(d1);
+      var d2 = new T.DirectionalLight(0xfff1e0, 0.35); d2.position.set(3.5, 0.8, -2.5); scene.add(d2);
+      var d3 = new T.DirectionalLight(0xe8f0ff, 0.25); d3.position.set(3.5, -0.5, 3); scene.add(d3);
       // המעגל: כל מוצר על נקודה במעגל, המעגל עצמו מסתובב. "מקדימה" = הזווית 0 (מול המצלמה)
       var ring = new T.Group(); scene.add(ring);
       var RAD = N > 1 ? 2.4 : 0;
@@ -246,7 +249,7 @@
       function size() {
         var w = wrap.clientWidth || 300, h = wrap.clientHeight || 240;
         r.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix();
-        cam.position.z = w < 420 ? 12.5 : 11; cam.lookAt(0, -0.15, 0);
+        cam.position.z = w < 420 ? 11.2 : 10.2; cam.lookAt(0, -0.1, 0);
       }
       var shown = false;
       function frame(now) {
@@ -260,7 +263,7 @@
         items.forEach(function (it, i) {
           // המוצר שמקדימה: גדול, מסתובב סביב עצמו ומרחף; מאחור: קטן וכהה יותר
           var a = Math.cos(it.ang + rot), front = (a + 1) / 2;   // 1 מקדימה, 0 מאחור
-          var s = 0.5 + 0.5 * front;
+          var s = 0.55 + 0.6 * front;
           it.h.scale.setScalar(s);
           it.h.position.y = -0.2 + 0.2 * front + Math.sin(now / 900 + i) * 0.04;
           it.h.rotation.y = -rot + (i === cur && !drag ? Math.sin(now / 1400) * 0.55 : 0);  // פונה למצלמה, ומתנדנד קלות
