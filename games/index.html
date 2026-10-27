@@ -142,6 +142,7 @@
     #scr-home .ptitle::after{display:none}
     .psub{text-align:center;color:#4A4566;font-size:1.02rem;line-height:1.5}
     .pcta{display:flex;width:100%;max-width:420px;margin:1rem auto .4rem;background:var(--indigo);color:#fff;text-decoration:none;font-weight:800;font-size:1.05rem;border-radius:1rem;min-height:52px}
+    .defnote{font-style:normal;color:#7C2D12;font-size:.85rem}
     .hub .price{display:inline-block;font-style:normal;font-weight:800;color:#7C2D12;background:#FFEDD5;border-radius:.5rem;padding:.05rem .45rem;margin-top:.25rem;font-size:.85rem}
     /* G-28: במה תלת־ממדית (js/showcase-3d.js) — התמונה נשארת עד שהתלת־ממד מצויר */
     a.game{text-decoration:none;color:inherit}
@@ -349,7 +350,7 @@
   <p class="psub">פותחים ומשחקים — גם עם התמונות שלכם.</p>
   <a class="btn pcta" href="#photos">📷 מתחילים לשחק עם התמונות שלי</a>
   <nav class="hub" aria-label="משחקים בטלפון">
-    <a href="#photos"><i>🎲</i><b>משחקים מהתמונות שלי</b><span>זיכרון, פאזל, דומינו, מה נעלם ומאצ׳טו — מעלים תמונות ומשחקים</span></a>
+    <a href="#photos"><i>🎲</i><b>משחקים מהתמונות שלי</b><span>זיכרון, פאזל, דומינו, מה נעלם ומאצ׳טו — אפשר לשחק מיד עם תמונות חנוכה, או להעלות משלכם</span></a>
     <a href="../play/"><i>📱</i><b>מאצ׳טו בטלפון</b><span>משחקים במשחק שיצרתם במחולל</span></a>
     <a href="../projection-drawing.html"><i>🎨</i><b>ציור באוויר</b><span>המצלמה קולטת את היד או נקודה אדומה — מציירים בלי לגעת בטלפון</span></a>
   </nav>
@@ -364,7 +365,7 @@
     <div class="prog" id="prog" hidden><div class="bar"><i id="bar"></i></div><div class="lbl" id="lbl"></div></div>
     <div class="fails" id="fails" hidden></div>
     <div class="phead" style="margin-top:.8rem">
-      <span>יש <span class="cnt" id="cnt">0</span> תמונות</span>
+      <span>יש <span class="cnt" id="cnt">0</span> תמונות <em id="defnote" class="defnote" hidden>— תמונות חנוכה לדוגמה. העלו תמונות משלכם והן יחליפו אותן</em></span>
       <button class="btn btn-sec btn-sm" id="btn-clear" hidden>🗑 מחיקת הכול</button>
     </div>
     <div class="gal" id="gal"></div>
@@ -523,6 +524,7 @@ async function addFiles(files){
   const fails=[];$('fails').hidden=true;
   setProg(0,`מוסיף תמונות… 0/${files.length}`);
   let ok=0;
+  if(P.length&&P[0].def)P=[];   // תמונות ברירת המחדל יורדות כשמעלים תמונה אמיתית
   for(let i=0;i<files.length;i++){
     const f=files[i];
     try{
@@ -554,6 +556,20 @@ async function loadPhotos(){
     catch(e){console.warn('games: decode',r.id,e);}
   }
   P=out;
+  if(!P.length)await loadDefaultPhotos();
+}
+// G-34: ברירת מחדל — תמונות חנוכה (מהמהדורה של מאצ׳טו, images/games/hanukkah). ככה כל משחק עובד מיד, בלי להעלות כלום.
+// הן לא נשמרות במאגר (def:true): ברגע שהלקוח מעלה תמונה משלו הן יורדות, ואין להן כפתור מחיקה.
+const DEFAULT_PHOTOS=12;
+async function loadDefaultPhotos(){
+  const out=[];
+  for(let i=1;i<=DEFAULT_PHOTOS;i++){
+    try{const img=new Image();img.decoding='async';img.src='../images/games/hanukkah/'+i+'.webp';
+      await withTimeout(img.decode(),8000,'img');const c=document.createElement('canvas');c.width=c.height=420;c.getContext('2d').drawImage(img,0,0,420,420);
+      out.push({id:'def'+i,cv:c,added:i,def:true});}
+    catch(e){console.warn('games: default',i,e);}
+  }
+  if(out.length)P=out;
 }
 async function removePhoto(id){
   P=P.filter(p=>p.id!==id);
@@ -571,14 +587,16 @@ function phEl(cv,css){const d=document.createElement('div');d.className='ph';d.a
 
 // ════════════════ מסך הבית ════════════════
 function renderHome(){
+  const def=!!(P.length&&P[0].def);
   $('cnt').textContent=P.length;
-  $('btn-clear').hidden=P.length<2;
+  $('btn-clear').hidden=P.length<2||def;
+  const note=$('defnote');if(note)note.hidden=!def;
   const g=$('gal');g.innerHTML='';
   P.forEach(p=>{
     const d=phEl(p.cv,90);
-    const x=document.createElement('button');x.className='del';x.textContent='✕';x.setAttribute('aria-label','מחיקת התמונה');
-    x.addEventListener('click',()=>removePhoto(p.id));
-    d.appendChild(x);g.appendChild(d);
+    if(!p.def){const x=document.createElement('button');x.className='del';x.textContent='✕';x.setAttribute('aria-label','מחיקת התמונה');
+    x.addEventListener('click',()=>removePhoto(p.id));d.appendChild(x);}
+    g.appendChild(d);
   });
   const gs=$('games');gs.innerHTML='';
   GAMES.forEach(G=>{
@@ -605,7 +623,7 @@ drop.addEventListener('drop',e=>addFiles(e.dataTransfer.files));
 $('btn-clear').addEventListener('click',async()=>{
   if(!confirm(`למחוק את כל ${P.length} התמונות מהמכשיר?`))return;
   P=[];try{await dbClear();}catch(e){console.warn(e);}
-  renderHome();
+  await loadDefaultPhotos();renderHome();
 });
 
 // ════════════════ מסגרת משחק משותפת ════════════════
