@@ -16,7 +16,7 @@
   <!-- ⛔ js/play-engine.js נוצר ע"י tools/build-play-engine.py מתוך dobble.html — לא לערוך ידנית.
        משמש כאן רק את "מצא את הזהה" (genDeck/drawCard…), כך שהקלף זהה למחולל. שינוי בו = להעלות ?v= כאן וב-sw.js. -->
   <script src="../js/play-engine.js?v=8"></script>
-  <script src="../js/showcase-3d.js?v=3" defer></script>
+  <script src="../js/showcase-3d.js?v=4" defer></script>
   <style>
     :root{
       --blue:#2563EB;--blue-light:#DBEAFE;--indigo:#4338CA;--purple:#7C3AED;--wa:#25D366;--wa-dark:#1DA851;--navy:#0F172A;
@@ -126,8 +126,12 @@
     .intro{text-align:center;padding:1.3rem 16px 0}
     .intro h1{font-size:clamp(1.7rem,6vw,2.4rem);font-weight:900;line-height:1.15;letter-spacing:-.01em}
     .intro p{color:var(--muted);font-size:1.02rem;margin-top:.25rem}
-    .stage{position:relative;margin:1.2rem auto 0;max-width:640px;border-radius:1.5rem;overflow:hidden;padding:1rem;display:flex;justify-content:center;align-items:center;min-height:200px}
-    .st-print{background:#DCD6FB}.st-gifts{background:#FFE0D4}.st-phone{background:#CDEEDD}
+    .stage{position:relative;margin:.8rem auto 0;max-width:640px;border-radius:1.5rem;overflow:hidden;padding:1rem;display:flex;justify-content:center;align-items:center;min-height:220px;box-shadow:0 18px 40px rgba(30,27,75,.18)}
+    /* G-30: צבעים עמוקים ומזמינים במקום פסטל חיוור */
+    .st-print{background:linear-gradient(150deg,#4F46E5 0%,#7C3AED 55%,#A855F7 100%)}
+    .st-gifts{background:linear-gradient(150deg,#F43F5E 0%,#FB923C 60%,#FBBF24 100%)}
+    .st-phone{background:linear-gradient(150deg,#0D9488 0%,#10B981 60%,#84CC16 100%)}
+    .stage .tag{color:#1A1733}
     .stage img{display:block;width:100%;max-width:560px;height:auto;border-radius:1rem;box-shadow:0 14px 30px rgba(20,10,80,.22)}
     .st-gifts img{max-width:320px;box-shadow:none;border-radius:.8rem}
     .phone-frame{display:block;width:172px;padding:8px;border-radius:26px;background:#1A1733;box-shadow:0 14px 30px rgba(20,10,80,.3);transform:rotate(-4deg)}
@@ -144,16 +148,16 @@
     .hub.mini a{padding:.65rem .75rem}.hub.mini i{font-size:1.5rem}.hub.mini b{font-size:.95rem}.hub.mini span{font-size:.8rem}
     /* G-28: במה תלת־ממדית (js/showcase-3d.js) — התמונה נשארת עד שהתלת־ממד מצויר */
     a.game{text-decoration:none;color:inherit}
-    .stage.has-3d{flex-direction:column;padding:.6rem .6rem .8rem}
+    .stage.has-3d{flex-direction:column;padding:.3rem .3rem .7rem}
     .stage.has-3d>a,.stage.has-3d>.tag{display:none}
-    .s3d{position:relative;width:100%;height:clamp(260px,70vw,380px)}
+    .s3d{position:relative;width:100%;height:clamp(340px,92vw,480px)}
     .s3d-cap{position:absolute;bottom:10px;right:12px;padding:.45rem .8rem;border-radius:.8rem;font-size:.95rem;font-weight:800;color:var(--text);text-decoration:none;
       background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.95);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
     .s3d canvas{display:block;width:100%;height:100%;cursor:grab}
     .s3d-nav{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center}
     .s3d-nav button{min-height:44px;padding:.4rem .9rem;border-radius:999px;font-weight:700;font-size:.95rem;color:var(--text);
       background:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.95);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
-    .s3d-nav button[aria-pressed="true"]{background:var(--indigo);color:#fff;border-color:var(--indigo)}
+    .s3d-nav button[aria-pressed="true"]{background:#1A1733;color:#fff;border-color:#1A1733}
     .s3d-nav .s3d-pause{min-width:44px;padding:.4rem}
     .s3d-nav button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
     /* G-26: מתג משחקים / מתנות / בטלפון */
@@ -1183,11 +1187,11 @@ const GAMES=[
   function fromHash(scroll){
     var h=location.hash.slice(1), id=map[h]; if(!id)return;
     show(id);
-    if(scroll){var t=document.getElementById(h);if(t){t.style.scrollMarginTop='140px';t.scrollIntoView({block:'start'})}}
+    if(scroll){var t=document.getElementById(h==='photos'?'photos':'pan-'+id);if(t){t.style.scrollMarginTop='140px';t.scrollIntoView({block:'start'})}}
   }
   tabs.forEach(function(b,n){
     b.addEventListener('click',function(){show(ids[n]);try{history.replaceState(null,'','#'+ids[n])}catch(e){}
-      var bar=document.querySelector('.tabs');if(bar.getBoundingClientRect().top<=70){var h=document.getElementById(ids[n]);h.style.scrollMarginTop='140px';h.scrollIntoView({block:'start'})}});
+      var bar=document.querySelector('.tabs');if(bar.getBoundingClientRect().top<=70){var h=document.getElementById('pan-'+ids[n]);h.style.scrollMarginTop='140px';h.scrollIntoView({block:'start'})}});
     b.addEventListener('keydown',function(e){
       var k=e.key, d=k==='ArrowLeft'?1:k==='ArrowRight'?-1:0, j=k==='Home'?0:k==='End'?2:null;
       if(d)j=(n+d+3)%3; if(j===null)return; e.preventDefault(); show(ids[j],true);
