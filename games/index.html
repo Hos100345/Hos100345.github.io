@@ -143,9 +143,6 @@
     .psub{text-align:center;color:#4A4566;font-size:1.02rem;line-height:1.5}
     .pcta{display:flex;width:100%;max-width:420px;margin:1rem auto .4rem;background:var(--indigo);color:#fff;text-decoration:none;font-weight:800;font-size:1.05rem;border-radius:1rem;min-height:52px}
     .hub .price{display:inline-block;font-style:normal;font-weight:800;color:#7C2D12;background:#FFEDD5;border-radius:.5rem;padding:.05rem .45rem;margin-top:.25rem;font-size:.85rem}
-    .sub-h{font-size:1.1rem;font-weight:800;margin:1.6rem 0 .2rem;text-align:center}
-    .hub.mini{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
-    .hub.mini a{padding:.65rem .75rem}.hub.mini i{font-size:1.5rem}.hub.mini b{font-size:.95rem}.hub.mini span{font-size:.8rem}
     /* G-28: במה תלת־ממדית (js/showcase-3d.js) — התמונה נשארת עד שהתלת־ממד מצויר */
     a.game{text-decoration:none;color:inherit}
     .stage.has-3d{flex-direction:column;padding:.3rem .3rem .7rem}
@@ -355,32 +352,6 @@
     <a href="#photos"><i>🎲</i><b>משחקים מהתמונות שלי</b><span>זיכרון, פאזל, דומינו, מה נעלם ומאצ׳טו — מעלים תמונות ומשחקים</span></a>
     <a href="../play/"><i>📱</i><b>מאצ׳טו בטלפון</b><span>משחקים במשחק שיצרתם במחולל</span></a>
     <a href="../projection-drawing.html"><i>🎨</i><b>ציור באוויר</b><span>המצלמה קולטת את היד או נקודה אדומה — מציירים בלי לגעת בטלפון</span></a>
-  </nav>
-
-  <h3 class="sub-h">✏️ כותבים עברית — כיתה א׳</h3>
-  <nav class="hub mini" aria-label="משחקי כיתה א׳">
-    <a href="hebrew.html?g=puzzle" class="new"><i>🧩</i><b>פאזל</b><span>4, 6 או 9 חלקים — גם מתמונה שלכם</span></a>
-    <a href="hebrew.html?g=letters"><i>אב</i><b>מכירים אותיות</b><span>כתב מרובע וכתב יד</span></a>
-    <a href="hebrew.html?g=words"><i>🍎</i><b>משלימים מילים</b><span>ציור, מילה ואות חסרה</span></a>
-    <a href="hebrew.html?g=memory"><i>🃏</i><b>זיכרון אותיות</b><span>זוגות של אותיות — או של התמונות שלכם</span></a>
-    <a href="hebrew.html?g=listen"><i>🔊</i><b>מצא את האות</b><span>מקשיבים ולוחצים</span></a>
-    <a href="hebrew.html?g=picture"><i>🖼️</i><b>ציור לפי אות</b><span>איזה ציור מתחיל באות?</span></a>
-    <a href="hebrew.html?g=niqqud"><i>אָ</i><b>מכירים ניקוד</b><span>לומדים ומקשיבים</span></a>
-    <a href="hebrew.html?g=niqqud-chain"><i>אֵ</i><b>טבלת ניקוד ושרשרת</b><span>קוראים אותיות מנוקדות</span></a>
-    <a href="hebrew.html?g=math"><i>➕</i><b>חיבור וחיסור</b><span>תרגילים עד 10</span></a>
-    <a href="hebrew.html?g=sequence"><i>🔢</i><b>מה חסר ברצף?</b><span>משלימים את המספר</span></a>
-  </nav>
-  <h3 class="sub-h">🧸 משחקים לגן</h3>
-  <nav class="hub mini" aria-label="משחקי גן">
-    <a href="hebrew.html?g=puzzle-gan" class="new"><i>🧩</i><b>פאזל לגן</b><span>4, 6 או 9 חלקים</span></a>
-    <a href="hebrew.html?g=numbers"><i>🔢</i><b>מצא את המספר</b><span>מקשיבים ובוחרים</span></a>
-    <a href="hebrew.html?g=counting"><i>🐶</i><b>כמה יש בתמונה?</b><span>סופרים חיות ופירות</span></a>
-    <a href="hebrew.html?g=quantity"><i>5️⃣</i><b>מספר וכמות</b><span>מתאימים כמות למספר</span></a>
-    <a href="hebrew.html?g=shapes"><i>🔷</i><b>צבעים וצורות</b><span>מקשיבים ומוצאים</span></a>
-    <a href="hebrew.html?g=shadow"><i>🐰</i><b>מצא את הצל</b><span>ציור וצללית</span></a>
-    <a href="hebrew.html?g=odd"><i>🍌</i><b>יוצא דופן</b><span>מה לא שייך?</span></a>
-    <a href="hebrew.html?g=compare"><i>⚖️</i><b>איפה יש יותר?</b><span>משווים כמויות</span></a>
-    <a href="hebrew.html?g=pairs"><i>🥕</i><b>מצא זוג מתאים</b><span>מי מתאים למי?</span></a>
   </nav>
 
   <h2 id="photos">1. התמונות שלי</h2>
@@ -690,7 +661,7 @@ const pickPhotos=n=>shuffle(P).slice(0,n);
 // ════════════════ משחק 1: זיכרון ════════════════
 function memSetup(){
   const sizes=[3,4,6,8,10,12,15,18];
-  setupScreen(GAMES[0],[
+  setupScreen(GAMES.find(g=>g.id==='memory'),[
     {key:'pairs',label:'כמה זוגות?',def:6,values:sizes.map(n=>({v:n,t:String(n),dis:n>P.length}))},
     {key:'players',label:'כמה משחקים?',def:1,values:[{v:1,t:'לבד'},{v:2,t:'2'},{v:3,t:'3'},{v:4,t:'4'}]},
   ],memStart);
@@ -755,7 +726,7 @@ function memEnd(o,st){
 let pzPick=null;
 function pzSetup(){
   if(!pzPick||!P.find(p=>p.id===pzPick))pzPick=P[P.length-1].id;
-  setupScreen(GAMES[1],[
+  setupScreen(GAMES.find(g=>g.id==='squares'),[
     {key:'photo',label:'איזו תמונה?',custom:val=>{
       val.photo=pzPick;
       const g=document.createElement('div');g.className='pickg';
@@ -824,7 +795,7 @@ function pzStart(o){
 // בין כל שני קלפים יש בדיוק ציור אחד משותף. הקלף שלך למטה, הערימה למעלה — מוצאים ונוגעים.
 function dbSetup(){
   const vals=ORDERS.filter(o=>o.total<=57).map(o=>({v:o.total,t:`${o.total} קלפים · ${o.spc} בכל קלף`,dis:o.total>P.length}));
-  setupScreen(GAMES[2],[
+  setupScreen(GAMES.find(g=>g.id==='dobble'),[
     {key:'total',label:'גודל המשחק (כמה תמונות בשימוש)',def:(bestOrder(Math.min(P.length,57))||ORDERS[0]).total,values:vals},
   ],dbStart);
 }
@@ -895,7 +866,7 @@ async function dbStart(o){
 // רואים כמה תמונות, מכסים עיניים, אחת נעלמת — מי חסר? הבחירה מבין התמונה שנעלמה ושתיים שלא היו על הלוח.
 function goneSetup(){
   const max=P.length-2;
-  setupScreen(GAMES[3],[
+  setupScreen(GAMES.find(g=>g.id==='gone'),[
     {key:'k',label:'כמה תמונות על הלוח?',def:4,values:[3,4,5,6,8].map(k=>({v:k,t:String(k),dis:k>max}))},
     {key:'rounds',label:'כמה סבבים?',def:5,values:[3,5,8,10].map(k=>({v:k,t:String(k)}))},
   ],o=>goneStart(o));
@@ -1166,10 +1137,30 @@ function dmStart(o){
 // משחק חדש = רשומה כאן + פונקציות setup/start. min = כמה תמונות לפחות.
 const GAMES=[
   {id:'memory',icon:'🧠',name:'זיכרון',min:3,desc:'הופכים קלפים ומוצאים זוגות. לבד או עד 4 משחקים.',setup:memSetup},
-  {id:'puzzle',icon:'🧩',name:'פאזל',min:0,desc:'הפאזל של כותבים עברית — תמונות לחגים או התמונות שלכם, 4, 6 או 9 חלקים.',href:'hebrew.html?g=puzzle'},  // G-28: במקום פאזל ההחלפות (pzSetup נשאר בקוד, לא בשימוש)
+  {id:'puzzle',icon:'🧩',name:'פאזל',min:0,desc:'חלקים כמו בפאזל אמיתי — מתמונות לחגים או מהתמונות שלכם. 4, 6 או 9 חלקים.',href:'hebrew.html?g=puzzle'},
+  {id:'squares',icon:'🔲',name:'פאזל ריבועים',min:1,desc:'התמונה נחתכת לריבועים ומתערבבת — מחזירים כל ריבוע למקומו. 4 עד 36 חלקים.',setup:pzSetup},
   {id:'dobble',icon:'👀',name:'מצא את הזהה',min:7,desc:'כמו מאצ׳טו: בין כל שני קלפים יש תמונה אחת משותפת — מי מוצא?',setup:dbSetup},
   {id:'gone',icon:'🙈',name:'מה נעלם?',min:5,desc:'זוכרים את הלוח, מכסים עיניים — ומגלים איזו תמונה חסרה.',setup:goneSetup},
   {id:'domino',icon:'🁫',name:'דומינו',min:5,desc:'קלאסי, חסום או רכבת מקסיקנית — נגד המחשב או עם חברים על אותו טלפון.',setup:dmSetup},
+  // G-33: משחקי הלמידה (hebrew.html) באותה רשימה, בלי כותרת נפרדת — לוחצים ומשחקים
+  {id:'letters',icon:'🔤',name:'מכירים אותיות',min:0,desc:'כתב מרובע וכתב יד — לוחצים ושומעים.',href:'hebrew.html?g=letters'},
+  {id:'words',icon:'🍎',name:'משלימים מילים',min:0,desc:'ציור, מילה ואות חסרה.',href:'hebrew.html?g=words'},
+  {id:'lmemory',icon:'🃏',name:'זיכרון אותיות',min:0,desc:'זוגות של אותיות — או של התמונות שלכם.',href:'hebrew.html?g=memory'},
+  {id:'listen',icon:'🔊',name:'מצא את האות',min:0,desc:'מקשיבים ולוחצים על האות הנכונה.',href:'hebrew.html?g=listen'},
+  {id:'picture',icon:'🖼️',name:'ציור לפי אות',min:0,desc:'איזה ציור מתחיל באות?',href:'hebrew.html?g=picture'},
+  {id:'niqqud',icon:'אָ',name:'מכירים ניקוד',min:0,desc:'לומדים ומקשיבים בהגייה ספרדית.',href:'hebrew.html?g=niqqud'},
+  {id:'chain',icon:'אֵ',name:'טבלת ניקוד ושרשרת',min:0,desc:'קוראים ומחברים אותיות מנוקדות.',href:'hebrew.html?g=niqqud-chain'},
+  {id:'math',icon:'➕',name:'חיבור וחיסור',min:0,desc:'תרגילים עד 10.',href:'hebrew.html?g=math'},
+  {id:'sequence',icon:'🔢',name:'מה חסר ברצף?',min:0,desc:'משלימים את המספר החסר.',href:'hebrew.html?g=sequence'},
+  {id:'numbers',icon:'🔟',name:'מצא את המספר',min:0,desc:'מקשיבים ובוחרים מספר.',href:'hebrew.html?g=numbers'},
+  {id:'counting',icon:'🐶',name:'כמה יש בתמונה?',min:0,desc:'סופרים חיות ופירות.',href:'hebrew.html?g=counting'},
+  {id:'quantity',icon:'5️⃣',name:'מספר וכמות',min:0,desc:'מתאימים כמות למספר.',href:'hebrew.html?g=quantity'},
+  {id:'shapes',icon:'🔷',name:'צבעים וצורות',min:0,desc:'מקשיבים ומוצאים.',href:'hebrew.html?g=shapes'},
+  {id:'shadow',icon:'🐰',name:'מצא את הצל',min:0,desc:'מתאימים ציור לצללית.',href:'hebrew.html?g=shadow'},
+  {id:'odd',icon:'🍌',name:'יוצא דופן',min:0,desc:'מה לא שייך?',href:'hebrew.html?g=odd'},
+  {id:'compare',icon:'⚖️',name:'איפה יש יותר?',min:0,desc:'משווים בין כמויות.',href:'hebrew.html?g=compare'},
+  {id:'pairs',icon:'🥕',name:'מצא זוג מתאים',min:0,desc:'מי מתאים למי?',href:'hebrew.html?g=pairs'},
+  {id:'puzzlegan',icon:'🧩',name:'פאזל לגן',min:0,desc:'פאזל קל — 4, 6 או 9 חלקים.',href:'hebrew.html?g=puzzle-gan'},
 ];
 
 // ════════════════ הפעלה ════════════════
