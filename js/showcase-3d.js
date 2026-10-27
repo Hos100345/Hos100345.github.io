@@ -175,7 +175,107 @@
     return g;
   }
 
-  var BUILD = { shirt: buildShirt, mug: buildMug, puzzle: buildPuzzle };
+  /* ── משחקים מודפסים (G-32): פרצופים מצוירים במקום תמונות לקוח ── */
+  var FACES = [['#F9D5B5', '#4B2E1E', '#F43F5E'], ['#E8B894', '#1F1A17', '#3B82F6'], ['#FBE3C8', '#C2743C', '#22C55E'], ['#D9A078', '#0F0A08', '#F59E0B'], ['#F6CFB0', '#7A4A21', '#A855F7'], ['#EFC39F', '#2B1B10', '#06B6D4']];
+  function face(x, cx, cy, r, i) {
+    var f = FACES[i % FACES.length];
+    x.fillStyle = f[2]; x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.fill();          // רקע צבעוני
+    x.fillStyle = f[1]; x.beginPath(); x.arc(cx, cy - r * .12, r * .62, 0, Math.PI * 2); x.fill();   // שיער
+    x.fillStyle = f[0]; x.beginPath(); x.ellipse(cx, cy + r * .05, r * .5, r * .58, 0, 0, Math.PI * 2); x.fill();  // פנים
+    x.fillStyle = f[1]; x.beginPath(); x.arc(cx, cy - r * .3, r * .5, Math.PI, 0); x.fill();   // פוני
+    x.fillStyle = '#1F1A17'; x.beginPath(); x.arc(cx - r * .18, cy, r * .06, 0, Math.PI * 2); x.arc(cx + r * .18, cy, r * .06, 0, Math.PI * 2); x.fill();
+    x.strokeStyle = '#1F1A17'; x.lineWidth = r * .05; x.beginPath(); x.arc(cx, cy + r * .12, r * .22, .15 * Math.PI, .85 * Math.PI); x.stroke();
+  }
+  function cardCanvas(i, letter) {
+    var c = document.createElement('canvas'); c.width = 512; c.height = 720; var x = c.getContext('2d');
+    x.fillStyle = '#fff'; x.fillRect(0, 0, 512, 720); x.strokeStyle = '#1E1B4B'; x.lineWidth = 10; x.strokeRect(24, 24, 464, 672);
+    face(x, 256, 330, 170, i);
+    x.fillStyle = ['#DC2626', '#1F1A17'][i % 2]; x.font = '900 96px Heebo, Arial, sans-serif'; x.textAlign = 'left'; x.fillText(letter, 48, 130);
+    x.save(); x.translate(464, 600); x.rotate(Math.PI); x.fillText(letter, 0, 0); x.restore();
+    return c;
+  }
+  function cardMesh(cv, w, h) {
+    var T = THREE, white = new T.MeshStandardMaterial({ color: 0xffffff, roughness: .5 });
+    var back = document.createElement('canvas'); back.width = 256; back.height = 360; var bx = back.getContext('2d');
+    bx.fillStyle = '#4338CA'; bx.fillRect(0, 0, 256, 360); bx.strokeStyle = 'rgba(255,255,255,.35)'; bx.lineWidth = 3;
+    for (var i = -360; i < 360; i += 28) { bx.beginPath(); bx.moveTo(i, 0); bx.lineTo(i + 360, 360); bx.stroke(); bx.beginPath(); bx.moveTo(i + 360, 0); bx.lineTo(i, 360); bx.stroke(); }
+    var mats = [white, white, white, white, new T.MeshStandardMaterial({ map: tex(cv), roughness: .5 }), new T.MeshStandardMaterial({ map: tex(back), roughness: .6 })];
+    return new T.Mesh(new T.BoxGeometry(w, h, 0.02), mats);
+  }
+  function buildCards() {   // מניפה של 5 קלפים
+    var T = THREE, g = new T.Group(), L = ['A', 'K', 'Q', 'J', '10'];
+    for (var i = 0; i < 5; i++) {
+      var m = cardMesh(cardCanvas(i, L[i]), 0.95, 1.34), a = (i - 2) * 0.22;
+      m.position.set(Math.sin(a) * 1.1, -1.1 + Math.cos(a) * 1.1 - 0.1, i * 0.022); m.rotation.z = -a; g.add(m);
+    }
+    g.position.y = 0.15; return g;
+  }
+  function buildMemory() {   // לוח 3×2 — שלושה פתוחים עם פרצופים, שלושה הפוכים
+    var T = THREE, g = new T.Group(), W = 0.62, gap = 0.08;
+    var back = document.createElement('canvas'); back.width = 256; back.height = 256; var bx = back.getContext('2d');
+    bx.fillStyle = '#7C3AED'; bx.fillRect(0, 0, 256, 256); bx.fillStyle = 'rgba(255,255,255,.9)'; bx.font = '900 150px Arial'; bx.textAlign = 'center'; bx.fillText('?', 128, 182);
+    var bt = tex(back), white = new T.MeshStandardMaterial({ color: 0xffffff, roughness: .5 });
+    for (var r = 0; r < 2; r++) for (var c = 0; c < 3; c++) {
+      var i = r * 3 + c, open = (i % 2 === 0), fc = document.createElement('canvas'); fc.width = 256; fc.height = 256; var fx = fc.getContext('2d');
+      fx.fillStyle = '#fff'; fx.fillRect(0, 0, 256, 256); face(fx, 128, 128, 100, i >> 1);
+      var mats = [white, white, white, white, new T.MeshStandardMaterial({ map: open ? tex(fc) : bt, roughness: .5 }), white];
+      var m = new T.Mesh(new T.BoxGeometry(W, W, 0.05), mats);
+      m.position.set((c - 1) * (W + gap), (0.5 - r) * (W + gap), 0); g.add(m);
+    }
+    g.rotation.x = -0.45; g.position.y = 0.1; return g;
+  }
+  function buildDomino() {   // שלוש אבני עץ, פרצופים בשני הצדדים
+    var T = THREE, g = new T.Group(), wood = new T.MeshStandardMaterial({ color: 0xE9D5B5, roughness: .75 });
+    for (var i = 0; i < 3; i++) {
+      var c = document.createElement('canvas'); c.width = 256; c.height = 512; var x = c.getContext('2d');
+      x.fillStyle = '#F8EEDC'; x.fillRect(0, 0, 256, 512); face(x, 128, 128, 100, i); face(x, 128, 384, 100, i + 2);
+      x.strokeStyle = '#8B5E34'; x.lineWidth = 8; x.beginPath(); x.moveTo(20, 256); x.lineTo(236, 256); x.stroke();
+      var mats = [wood, wood, wood, wood, new T.MeshStandardMaterial({ map: tex(c), roughness: .6 }), wood];
+      var m = new T.Mesh(new T.BoxGeometry(0.62, 1.24, 0.12), mats);
+      m.position.set((i - 1) * 0.78, (i === 1 ? 0.08 : -0.02), 0); m.rotation.z = (i - 1) * 0.12; g.add(m);
+    }
+    g.rotation.x = -0.25; return g;
+  }
+  function buildLudo() {   // לוח "אל תכעס" עם 4 חיילים עם פרצופים
+    var T = THREE, g = new T.Group();
+    var c = document.createElement('canvas'); c.width = 512; c.height = 512; var x = c.getContext('2d');
+    x.fillStyle = '#FFFDF7'; x.fillRect(0, 0, 512, 512);
+    var cols = ['#EF4444', '#3B82F6', '#22C55E', '#F59E0B'];
+    [[0, 0], [304, 0], [0, 304], [304, 304]].forEach(function (q, i) { x.fillStyle = cols[i]; x.fillRect(q[0], q[1], 208, 208); x.fillStyle = '#fff'; x.beginPath(); x.arc(q[0] + 104, q[1] + 104, 70, 0, Math.PI * 2); x.fill(); });
+    x.fillStyle = '#E5E7EB'; for (var i = 0; i < 11; i++) { x.fillRect(208 + i * 0, 0, 0, 0); }
+    x.strokeStyle = '#9CA3AF'; x.lineWidth = 3;
+    for (var k = 0; k < 6; k++) { x.strokeRect(208, 16 + k * 32, 96, 32); x.strokeRect(208, 304 + k * 32, 96, 32); x.strokeRect(16 + k * 32, 208, 32, 96); x.strokeRect(304 + k * 32, 208, 32, 96); }
+    x.fillStyle = '#1E1B4B'; x.font = '900 60px Arial'; x.textAlign = 'center'; x.fillText('★', 256, 278);
+    var board = new T.Mesh(new T.BoxGeometry(2, 2, 0.08), [0, 1, 2, 3].map(function () { return new T.MeshStandardMaterial({ color: 0xE5E7EB, roughness: .7 }); }).concat([new T.MeshStandardMaterial({ map: tex(c), roughness: .6 }), new T.MeshStandardMaterial({ color: 0xE5E7EB })]));
+    board.rotation.x = -Math.PI / 2 + 0.55; g.add(board);
+    [[-0.7, 0.7, 0], [0.7, 0.7, 1], [-0.7, -0.7, 2], [0.7, -0.7, 3]].forEach(function (q) {
+      var fc = document.createElement('canvas'); fc.width = 128; fc.height = 128; var fx = fc.getContext('2d'); fx.fillStyle = '#fff'; fx.fillRect(0, 0, 128, 128); face(fx, 64, 64, 56, q[2]);
+      var pawn = new T.Group();
+      pawn.add(new T.Mesh(new T.CylinderGeometry(0.18, 0.22, 0.12, 32), new T.MeshStandardMaterial({ color: cols[q[2]], roughness: .5 })));
+      var head = new T.Mesh(new T.CylinderGeometry(0.2, 0.2, 0.04, 32), new T.MeshStandardMaterial({ color: 0xffffff }));
+      var pic = new T.Mesh(new T.CircleGeometry(0.19, 32), new T.MeshStandardMaterial({ map: tex(fc), roughness: .6 }));
+      head.position.y = 0.33; head.rotation.x = Math.PI / 2; pic.position.set(0, 0.33, 0.022); head.add(pic);
+      pic.rotation.x = -Math.PI / 2; pawn.add(head);
+      var v = new T.Vector3(q[0], q[1], 0.06); board.localToWorld(v); pawn.position.copy(v); pawn.rotation.x = board.rotation.x + Math.PI / 2; g.add(pawn);
+    });
+    g.position.y = -0.1; return g;
+  }
+  function buildTangram() {   // ריבוע עץ עם תמונה ו-7 חלקי טנגרם
+    var T = THREE, g = new T.Group(), c = printCanvas(768, 768, 'המשפחה', '#FFF7E6', 0.92), x = c.getContext('2d');
+    x.strokeStyle = '#5B3A1E'; x.lineWidth = 7; x.lineCap = 'round';
+    [[0, 0, 768, 768], [0, 768, 384, 384], [384, 384, 768, 0], [192, 576, 576, 576], [384, 768, 576, 576], [576, 576, 768, 384]].forEach(function (l) { x.beginPath(); x.moveTo(l[0], l[1]); x.lineTo(l[2], l[3]); x.stroke(); });
+    var wood = new T.MeshStandardMaterial({ color: 0xD9B98A, roughness: .8 });
+    g.add(new T.Mesh(new T.BoxGeometry(1.7, 1.7, 0.1), [wood, wood, wood, wood, new T.MeshStandardMaterial({ map: tex(c), roughness: .6 }), wood]));
+    g.rotation.x = -0.35; return g;
+  }
+  function buildDice() {   // קובייה עם פרצוף על כל פאה
+    var T = THREE, mats = [];
+    for (var i = 0; i < 6; i++) { var c = document.createElement('canvas'); c.width = 256; c.height = 256; var x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, 256, 256); face(x, 128, 128, 96, i); mats.push(new T.MeshStandardMaterial({ map: tex(c), roughness: .45 })); }
+    var geo = new T.BoxGeometry(1.25, 1.25, 1.25), g = new T.Group(), m = new T.Mesh(geo, mats);
+    m.rotation.set(0.5, 0.65, 0); g.add(m); return g;
+  }
+
+  var BUILD = { shirt: buildShirt, mug: buildMug, puzzle: buildPuzzle, cards: buildCards, memory: buildMemory, domino: buildDomino, ludo: buildLudo, tangram: buildTangram, dice: buildDice };
 
   function mount(stage) {
     var keys = (stage.getAttribute('data-items') || '').split(',').map(function (k) { return k.trim(); }).filter(function (k) { return BUILD[k]; });
@@ -202,15 +302,15 @@
       var dots = document.createElement('div'); dots.className = 's3d-dots'; dots.setAttribute('aria-hidden', 'true');
       var dotEls = keys.map(function () { var d = document.createElement('i'); dots.appendChild(d); return d; });
       nav.appendChild(next); nav.appendChild(dots); nav.appendChild(prev); nav.appendChild(pause);   // RTL: ▶ מימין
+      var RAD = N > 1 ? Math.max(2.4, 0.78 * N) : 0;   // יותר מוצרים = מעגל רחב יותר, והמצלמה מתרחקת בהתאם
       var scene = new T.Scene(), cam = new T.PerspectiveCamera(28, 1, 0.1, 60);
-      cam.position.set(0, 1.0, 10.2); cam.lookAt(0, -0.1, 0);
+      cam.position.set(0, 1.0, RAD + 7.8); cam.lookAt(0, -0.1, RAD * 0.25);
       scene.add(new T.HemisphereLight(0xffffff, 0xa89c88, 0.45));
       var d1 = new T.DirectionalLight(0xffffff, 0.95); d1.position.set(-4, 3, 2.5); scene.add(d1);
       var d2 = new T.DirectionalLight(0xfff1e0, 0.35); d2.position.set(3.5, 0.8, -2.5); scene.add(d2);
       var d3 = new T.DirectionalLight(0xe8f0ff, 0.25); d3.position.set(3.5, -0.5, 3); scene.add(d3);
       // המעגל: כל מוצר על נקודה במעגל, המעגל עצמו מסתובב. "מקדימה" = הזווית 0 (מול המצלמה)
       var ring = new T.Group(); scene.add(ring);
-      var RAD = N > 1 ? 2.4 : 0;
       var items = keys.map(function (k, i) {
         var holder = new T.Group(), o = BUILD[k]();
         holder.add(o);
@@ -254,7 +354,7 @@
       function size() {
         var w = wrap.clientWidth || 300, h = wrap.clientHeight || 240;
         r.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix();
-        cam.position.z = w < 420 ? 11.2 : 10.2; cam.lookAt(0, -0.1, 0);
+        cam.position.z = RAD + (w < 420 ? 8.8 : 7.8); cam.lookAt(0, -0.1, RAD * 0.25);
       }
       var shown = false;
       function frame(now) {
@@ -268,7 +368,7 @@
         items.forEach(function (it, i) {
           // המוצר שמקדימה: גדול, מסתובב סביב עצמו ומרחף; מאחור: קטן וכהה יותר
           var a = Math.cos(it.ang + rot), front = (a + 1) / 2;   // 1 מקדימה, 0 מאחור
-          var s = 0.55 + 0.6 * front;
+          var s = 0.55 + (0.6 + (N > 4 ? 0.3 : 0)) * front;   // במעגל גדול המוצר שמקדימה גדל קצת יותר
           it.h.scale.setScalar(s);
           it.h.position.y = -0.2 + 0.2 * front + Math.sin(now / 900 + i) * 0.04;
           it.h.rotation.y = -rot + (i === cur && !drag ? Math.sin(now / 1400) * 0.55 : 0);  // פונה למצלמה, ומתנדנד קלות
