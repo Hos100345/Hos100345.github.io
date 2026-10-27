@@ -193,12 +193,15 @@
       var cap = document.createElement('a'); cap.className = 's3d-cap'; wrap.appendChild(cap);
       var nav = document.createElement('div'); nav.className = 's3d-nav';
       var N = keys.length, cur = 0;
-      var btns = keys.map(function (k, i) {
-        var b = document.createElement('button'); b.type = 'button'; b.textContent = names[i] || k;
-        b.addEventListener('click', function () { go(i, true); });
-        nav.appendChild(b); return b;
-      });
-      var pause = document.createElement('button'); pause.type = 'button'; pause.className = 's3d-pause'; nav.appendChild(pause);
+      // G-31: בלי כפתור לכל מוצר — רק דפדוף (◀ ▶), השם והמחיר של המוצר שמקדימה בתגית, ולחיצה על המוצר פותחת אותו בסטודיו
+      var prev = document.createElement('button'), next = document.createElement('button'), pause = document.createElement('button');
+      prev.type = next.type = pause.type = 'button';
+      prev.className = 's3d-arrow'; next.className = 's3d-arrow'; pause.className = 's3d-pause';
+      prev.textContent = '‹'; next.textContent = '›'; prev.setAttribute('aria-label', 'המוצר הקודם'); next.setAttribute('aria-label', 'המוצר הבא');
+      prev.addEventListener('click', function () { go(cur - 1, true); }); next.addEventListener('click', function () { go(cur + 1, true); });
+      var dots = document.createElement('div'); dots.className = 's3d-dots'; dots.setAttribute('aria-hidden', 'true');
+      var dotEls = keys.map(function () { var d = document.createElement('i'); dots.appendChild(d); return d; });
+      nav.appendChild(next); nav.appendChild(dots); nav.appendChild(prev); nav.appendChild(pause);   // RTL: ▶ מימין
       var scene = new T.Scene(), cam = new T.PerspectiveCamera(28, 1, 0.1, 60);
       cam.position.set(0, 1.0, 10.2); cam.lookAt(0, -0.1, 0);
       scene.add(new T.HemisphereLight(0xffffff, 0xa89c88, 0.45));
@@ -220,9 +223,9 @@
       disc.rotation.x = -Math.PI / 2; disc.position.y = -1.25; scene.add(disc);
       var auto = !reduced, drag = null, target = 0, rot = 0, nextAt = performance.now() + 5000, dragged = false;
       function label() {
-        btns.forEach(function (b, i) { b.setAttribute('aria-pressed', i === cur); });
-        cv.setAttribute('aria-label', 'תלת־ממד מסתובב: ' + (names[cur] || keys[cur]));
-        cap.textContent = names[cur] || keys[cur]; cap.href = links[cur] || '#';
+        dotEls.forEach(function (d, i) { d.className = i === cur ? 'on' : ''; });
+        cv.setAttribute('aria-label', 'תלת־ממד מסתובב: ' + (names[cur] || keys[cur]) + ' — לחיצה פותחת את העיצוב');
+        cap.textContent = (names[cur] || keys[cur]) + ' · לעיצוב ←'; cap.href = links[cur] || '#';
         pause.textContent = auto ? '⏸' : '▶'; pause.setAttribute('aria-label', auto ? 'עצירת הסיבוב' : 'הפעלת הסיבוב');
       }
       pause.addEventListener('click', function () { auto = !auto; nextAt = performance.now() + 5000; label(); });
@@ -246,6 +249,8 @@
         go(best, true);
       });
       cap.addEventListener('click', function (e) { if (dragged) e.preventDefault(); });
+      cv.style.cursor = 'pointer';
+      cv.addEventListener('click', function () { if (!dragged && links[cur]) location.href = links[cur]; });   // לחיצה על המוצר = פותחים אותו בסטודיו
       function size() {
         var w = wrap.clientWidth || 300, h = wrap.clientHeight || 240;
         r.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix();
