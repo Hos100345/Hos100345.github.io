@@ -85,6 +85,11 @@ nav a:hover{color:var(--ink)}
 .social a:hover{border-color:var(--ink)}
 .social svg{width:18px;height:18px;fill:currentColor;flex:none}
 .studio{margin:0 0 18px}.studio img{width:100%;display:block;box-shadow:0 10px 24px -14px var(--shade)}.studio figcaption{font-size:.85rem;color:var(--muted);margin-top:6px}
+.sub{font-family:var(--display);font-size:2.1rem;line-height:1;margin:26px 0 10px}
+.timeline{list-style:none;margin:0;padding:0;display:grid;gap:12px;max-width:60ch}
+.timeline li{display:grid;grid-template-columns:7.5rem minmax(0,1fr);gap:14px;border-bottom:1px solid var(--line);padding-bottom:10px}
+.timeline b{color:var(--cobalt);font-weight:600}
+@media (max-width:480px){.timeline li{grid-template-columns:minmax(0,1fr);gap:2px}}
 footer{color:var(--muted);font-size:.85rem;padding-block:20px 30px;border-top:1px solid var(--line)}
 
 /* lightbox */
@@ -150,6 +155,18 @@ footer{color:var(--muted);font-size:.85rem;padding-block:20px 30px;border-top:1p
       <p>דוד אבישר נולד ב־1955. כבר בילדותו מצא בציור מקום של שקט. אחרי השירות הצבאי טייל בסיני, ונופי המדבר הולידו את ציוריו הראשונים. הוא למד במדרשה לאמנות ברמת השרון ובכפר האמנים עין הוד, שם הושפע עמוקות מהצייר מרסל ינקו. בהמשך הציג בגלריות בלוס אנג׳לס, ומשם חזר ליהדות ולארץ.</p>
       <p>היום הוא גר ומצייר בבת עין שבגוש עציון. בציורים שלו רישום מהיר ומתפרץ פוגש צבע עשיר ושכבות של מרקם, ולצד נופי הארץ מופיעים נרות שבת, פסוקים ומוטיבים יהודיים. עבודותיו נמצאות באוספים פרטיים בארץ ובעולם, ונרכשו גם על ידי בנק הפועלים וסונול.</p>
       <p>חלק מיצירותיו מוצגות בסטודיו במצפה יריחו.</p>
+      <h3 class="sub">הסגנון</h3>
+      <p>אבישר מצייר בסגנון אקספרסיוניסטי. הציור מתחיל ברישום מהיר וספונטני, ועליו נבנות שכבות של צבע ומרקם עד לקומפוזיציה רכה ומאוזנת. הציורים נראים פשוטים כמעט כמו של ילד, אבל מאחוריהם עבודה מדויקת של צבע ואיזון. דמות שמרימה ידיים אל העיר או אל השמיים חוזרת אצלו שוב ושוב, כמו תפילה ושמחה שמצוירות בקו אחד.</p>
+      <p>הוא מבקש להעביר לצופה שמחה, רוגע וחום, וחיבור לארץ ולבורא. לצד נופי המדבר, הרי ירושלים והכנרת מופיעים שולחנות שבת, הכותל, קבר רחל ופסוקים בכתב יד.</p>
+      <h3 class="sub">תחנות בדרך</h3>
+      <ol class="timeline">
+        <li><b>1955</b><span>נולד בשם דוד קוזלובסקי. כבר בילדות מצא בציור מקום של שקט.</span></li>
+        <li><b>סיני</b><span>אחרי השירות הצבאי טייל בסיני. נופי המדבר הולידו את ציוריו הראשונים.</span></li>
+        <li><b>לימודים</b><span>המדרשה לאמנות ברמת השרון, ואחריה כפר האמנים עין הוד, בהשפעת מרסל ינקו.</span></li>
+        <li><b>לוס אנג׳לס</b><span>הציג בכמה גלריות בעיר. שם התחילה דרכו בחזרה ליהדות ולארץ.</span></li>
+        <li><b>אוספים</b><span>עבודותיו נמצאות באוספים פרטיים בארץ ובעולם, ונרכשו גם על ידי בנק הפועלים וסונול.</span></li>
+        <li><b>היום</b><span>גר ומצייר בבת עין שבגוש עציון. יצירות מוצגות גם במצפה יריחו, והדפסים נמכרים בגלריה Fine Art Jerusalem בירושלים.</span></li>
+      </ol>
     </div>
     <div>
     <figure class="studio"><img src="img/studio.jpg" alt="ציורים של דוד אבישר בסטודיו" loading="lazy"><figcaption>בסטודיו</figcaption></figure>
