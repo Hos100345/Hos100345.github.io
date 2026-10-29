@@ -3,7 +3,7 @@
 // ספריות מ-CDN ופונטים: מהמטמון מיד, ומתעדכנים ברקע.
 // Supabase (הזמנות, כניסה) לא עובר כאן בכלל.
 // שינוי בקובץ הזה = להעלות את V, כדי לנקות מטמון ישן.
-const V = 'studio-sw-5';
+const V = 'studio-sw-6';
 const SHELL = ['./', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 const CDN = ['cdnjs.cloudflare.com', 'cdn.jsdelivr.net', 'fonts.googleapis.com', 'fonts.gstatic.com'];
 
