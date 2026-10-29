@@ -172,7 +172,7 @@
     .tabs button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
     #scr-home .tabpanel>h2:first-child{margin-top:1.4rem}
     .tabpanel{animation:tabIn .25s ease}
-    @keyframes tabIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+    @keyframes tabIn{from{transform:translateY(6px)}to{transform:none}} /* בלי שקיפות — בזמן המעבר הטקסט נשאר בניגודיות מלאה */
     @media (prefers-reduced-motion:reduce){.tabpanel{animation:none}.tabs button{transition:none}}
     html{scroll-behavior:smooth;scroll-padding-top:72px}
     /* ── קטלוג משחקים ── */
