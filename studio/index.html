@@ -22,6 +22,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="snakes.js?v=1"></script>
 <style>
 :root{
   --navy:#14294D; --navy-2:#1F3A68; --gold:#C6A135; --gold-soft:#F3E8C4;
@@ -327,7 +328,7 @@ body.admin .cust{display:none!important}
 <script>
 const NETS={"d4":{"faces":4,"sides":3,"pos":[[[1.2247,0.9659],[0.2588,1.2247],[0.5176,0.2588]],[[0,2.1907],[0.2588,1.2247],[0.9659,1.9319]],[[0.9659,1.9319],[0.2588,1.2247],[1.2247,0.9659]],[[1.2247,0.9659],[0.5176,0.2588],[1.4836,0]]],"tabs":[{"e":[[0.2588,1.2247],[0.5176,0.2588]],"f":0,"d":0.28,"t":0.25},{"e":[[0.9659,1.9319],[0,2.1907]],"f":1,"d":0.28,"t":0.25},{"e":[[1.2247,0.9659],[0.9659,1.9319]],"f":2,"d":0.28,"t":0.25}],"cuts":[[[0,2.1907],[0.2588,1.2247]],[[0.5176,0.2588],[1.4836,0]],[[1.4836,0],[1.2247,0.9659]]],"folds":[[[1.2247,0.9659],[0.2588,1.2247]],[[0.5176,0.2588],[1.2247,0.9659]],[[0.2588,1.2247],[0.9659,1.9319]]],"w":1.4836,"h":2.3964,"opp":[-1,-1,-1,-1],"maxEdge":104.3},"d6":{"faces":6,"sides":4,"pos":[[[1.1953,4.1008],[0.2557,3.7588],[0.5977,2.8191],[1.5374,3.1611]],[[0,1.5374],[0.342,0.5977],[1.2817,0.9397],[0.9397,1.8794]],[[1.2817,0.9397],[1.6237,0],[2.5634,0.342],[2.2214,1.2817]],[[1.5374,3.1611],[0.5977,2.8191],[0.9397,1.8794],[1.8794,2.2214]],[[2.8191,2.5634],[2.4771,3.5031],[1.5374,3.1611],[1.8794,2.2214]],[[0.9397,1.8794],[1.2817,0.9397],[2.2214,1.2817],[1.8794,2.2214]]],"tabs":[{"e":[[1.1953,4.1008],[0.2557,3.7588]],"f":0,"d":0.28,"t":0.25},{"e":[[0.2557,3.7588],[0.5977,2.8191]],"f":0,"d":0.28,"t":0.25},{"e":[[1.5374,3.1611],[1.1953,4.1008]],"f":0,"d":0.28,"t":0.25},{"e":[[0.342,0.5977],[1.2817,0.9397]],"f":1,"d":0.28,"t":0.25},{"e":[[0.9397,1.8794],[0,1.5374]],"f":1,"d":0.28,"t":0.25},{"e":[[2.5634,0.342],[2.2214,1.2817]],"f":2,"d":0.28,"t":0.25},{"e":[[1.8794,2.2214],[2.8191,2.5634]],"f":4,"d":0.28,"t":0.25}],"cuts":[[[1.6237,0],[2.5634,0.342]],[[0,1.5374],[0.342,0.5977]],[[2.4771,3.5031],[1.5374,3.1611]],[[1.2817,0.9397],[1.6237,0]],[[0.5977,2.8191],[0.9397,1.8794]],[[2.8191,2.5634],[2.4771,3.5031]],[[2.2214,1.2817],[1.8794,2.2214]]],"folds":[[[0.5977,2.8191],[1.5374,3.1611]],[[1.2817,0.9397],[0.9397,1.8794]],[[2.2214,1.2817],[1.2817,0.9397]],[[0.9397,1.8794],[1.8794,2.2214]],[[1.8794,2.2214],[1.5374,3.1611]]],"w":2.8191,"h":4.2784,"opp":[5,4,3,2,1,0],"maxEdge":58.4},"d8":{"faces":8,"sides":3,"pos":[[[0.684,1.172],[1.3268,1.9381],[0.342,2.1117]],[[0.342,2.1117],[1.3268,1.9381],[0.9848,2.8778]],[[1.6688,0.9984],[1.3268,1.9381],[0.684,1.172]],[[0.9848,2.8778],[1.3268,1.9381],[1.9696,2.7041]],[[0.0413,0.406],[1.0261,0.2323],[0.684,1.172]],[[0.9848,2.8778],[0,3.0514],[0.342,2.1117]],[[0.684,1.172],[1.0261,0.2323],[1.6688,0.9984]],[[1.6688,0.9984],[1.0261,0.2323],[2.0109,0.0587]]],"tabs":[{"e":[[0.342,2.1117],[0.684,1.172]],"f":0,"d":0.28,"t":0.25},{"e":[[1.6688,0.9984],[1.3268,1.9381]],"f":2,"d":0.28,"t":0.25},{"e":[[1.9696,2.7041],[0.9848,2.8778]],"f":3,"d":0.28,"t":0.25},{"e":[[0.0413,0.406],[1.0261,0.2323]],"f":4,"d":0.28,"t":0.25},{"e":[[0.9848,2.8778],[0,3.0514]],"f":5,"d":0.28,"t":0.25}],"cuts":[[[0.684,1.172],[0.0413,0.406]],[[1.3268,1.9381],[1.9696,2.7041]],[[2.0109,0.0587],[1.6688,0.9984]],[[0,3.0514],[0.342,2.1117]],[[1.0261,0.2323],[2.0109,0.0587]]],"folds":[[[0.684,1.172],[1.3268,1.9381]],[[1.3268,1.9381],[0.342,2.1117]],[[1.3268,1.9381],[0.9848,2.8778]],[[0.9848,2.8778],[0.342,2.1117]],[[0.684,1.172],[1.6688,0.9984]],[[1.0261,0.2323],[0.684,1.172]],[[1.0261,0.2323],[1.6688,0.9984]]],"w":2.0109,"h":3.2837,"opp":[7,6,5,4,3,2,1,0],"maxEdge":76.1},"d12":{"faces":12,"sides":5,"pos":[[[2.9967,3.8222],[3.0491,4.8209],[2.1155,5.1792],[1.4862,4.4021],[2.0308,3.5634]],[[3.1337,6.4367],[2.1678,6.1778],[2.1155,5.1792],[3.0491,4.8209],[3.6784,5.598]],[[0.5526,4.7604],[1.4862,4.4021],[2.1155,5.1792],[1.5708,6.0179],[0.6049,5.7591]],[[3.5414,2.9836],[2.9967,3.8222],[2.0308,3.5634],[1.9785,2.5648],[2.912,2.2064]],[[1.0125,2.306],[1.9785,2.5648],[2.0308,3.5634],[1.0972,3.9218],[0.4679,3.1446]],[[3.5414,2.9836],[4.5073,3.2424],[4.5596,4.241],[3.626,4.5994],[2.9967,3.8222]],[[3.7631,7.2138],[3.1337,6.4367],[3.6784,5.598],[4.6443,5.8568],[4.6966,6.8554]],[[4.4226,1.6266],[4.4749,2.6252],[3.5414,2.9836],[2.912,2.2064],[3.4567,1.3677]],[[1.3491,1.7876],[0.3832,1.5288],[0.3309,0.5302],[1.2645,0.1718],[1.8938,0.949]],[[0.6896,7.3749],[0.0603,6.5977],[0.6049,5.7591],[1.5708,6.0179],[1.6232,7.0165]],[[2.912,2.2064],[1.9785,2.5648],[1.3491,1.7876],[1.8938,0.949],[2.8597,1.2078]],[[3.4043,0.3691],[4.3379,0.0107],[4.9672,0.7879],[4.4226,1.6266],[3.4567,1.3677]]],"tabs":[{"e":[[2.9967,3.8222],[3.0491,4.8209]],"f":0,"d":0.22,"t":0.3},{"e":[[1.4862,4.4021],[2.0308,3.5634]],"f":0,"d":0.22,"t":0.3},{"e":[[3.1337,6.4367],[2.1678,6.1778]],"f":1,"d":0.28,"t":0.25},{"e":[[2.1678,6.1778],[2.1155,5.1792]],"f":1,"d":0.22,"t":0.3},{"e":[[3.0491,4.8209],[3.6784,5.598]],"f":1,"d":0.28,"t":0.25},{"e":[[0.5526,4.7604],[1.4862,4.4021]],"f":2,"d":0.28,"t":0.25},{"e":[[0.6049,5.7591],[0.5526,4.7604]],"f":2,"d":0.28,"t":0.25},{"e":[[1.0125,2.306],[1.9785,2.5648]],"f":4,"d":0.22,"t":0.3},{"e":[[0.4679,3.1446],[1.0125,2.306]],"f":4,"d":0.28,"t":0.25},{"e":[[3.5414,2.9836],[4.5073,3.2424]],"f":5,"d":0.22,"t":0.3},{"e":[[4.5073,3.2424],[4.5596,4.241]],"f":5,"d":0.28,"t":0.25},{"e":[[3.7631,7.2138],[3.1337,6.4367]],"f":6,"d":0.28,"t":0.25},{"e":[[4.6443,5.8568],[4.6966,6.8554]],"f":6,"d":0.28,"t":0.25},{"e":[[4.6966,6.8554],[3.7631,7.2138]],"f":6,"d":0.28,"t":0.25},{"e":[[2.912,2.2064],[3.4567,1.3677]],"f":7,"d":0.22,"t":0.3},{"e":[[0.3309,0.5302],[1.2645,0.1718]],"f":8,"d":0.28,"t":0.25},{"e":[[1.2645,0.1718],[1.8938,0.949]],"f":8,"d":0.28,"t":0.25},{"e":[[0.6896,7.3749],[0.0603,6.5977]],"f":9,"d":0.28,"t":0.25},{"e":[[1.8938,0.949],[2.8597,1.2078]],"f":10,"d":0.28,"t":0.25}],"cuts":[[[3.626,4.5994],[2.9967,3.8222]],[[2.0308,3.5634],[1.0972,3.9218]],[[1.5708,6.0179],[1.6232,7.0165]],[[2.1155,5.1792],[1.5708,6.0179]],[[4.5596,4.241],[3.626,4.5994]],[[1.0972,3.9218],[0.4679,3.1446]],[[0.3832,1.5288],[0.3309,0.5302]],[[1.9785,2.5648],[1.3491,1.7876]],[[1.3491,1.7876],[0.3832,1.5288]],[[4.4749,2.6252],[3.5414,2.9836]],[[3.6784,5.598],[4.6443,5.8568]],[[1.6232,7.0165],[0.6896,7.3749]],[[4.4226,1.6266],[4.4749,2.6252]],[[4.9672,0.7879],[4.4226,1.6266]],[[2.8597,1.2078],[2.912,2.2064]],[[0.0603,6.5977],[0.6049,5.7591]],[[3.4043,0.3691],[4.3379,0.0107]],[[4.3379,0.0107],[4.9672,0.7879]],[[3.4567,1.3677],[3.4043,0.3691]]],"folds":[[[3.0491,4.8209],[2.1155,5.1792]],[[2.1155,5.1792],[1.4862,4.4021]],[[2.0308,3.5634],[2.9967,3.8222]],[[3.6784,5.598],[3.1337,6.4367]],[[1.5708,6.0179],[0.6049,5.7591]],[[3.5414,2.9836],[2.9967,3.8222]],[[2.0308,3.5634],[1.9785,2.5648]],[[1.9785,2.5648],[2.912,2.2064]],[[2.912,2.2064],[3.5414,2.9836]],[[3.4567,1.3677],[4.4226,1.6266]],[[1.8938,0.949],[1.3491,1.7876]]],"w":4.9672,"h":7.3856,"opp":[11,10,7,9,6,8,4,2,5,3,1,0],"maxEdge":33.6},"d20":{"faces":20,"sides":3,"pos":[[[2.0234,2.2854],[1.0386,2.1117],[1.6814,1.3457]],[[1.6814,1.3457],[1.0386,2.1117],[0.6966,1.172]],[[1.3806,3.0514],[1.0386,2.1117],[2.0234,2.2854]],[[0.7378,3.8175],[0.3958,2.8778],[1.3806,3.0514]],[[0.6966,1.172],[1.0386,2.1117],[0.0538,1.9381]],[[2.0234,2.2854],[1.6814,1.3457],[2.6662,1.5193]],[[2.6662,1.5193],[1.6814,1.3457],[2.3242,0.5796]],[[1.3394,0.406],[1.6814,1.3457],[0.6966,1.172]],[[2.3654,3.2251],[2.0234,2.2854],[3.0082,2.459]],[[1.3806,3.0514],[2.0234,2.2854],[2.3654,3.2251]],[[2.6662,1.5193],[2.3242,0.5796],[3.309,0.7533]],[[0.3546,0.2323],[1.3394,0.406],[0.6966,1.172]],[[2.7075,4.1648],[3.0495,5.1044],[2.0647,4.9308]],[[2.7075,4.1648],[2.3654,3.2251],[3.3502,3.3987]],[[1.3806,3.0514],[2.3654,3.2251],[1.7226,3.9911]],[[1.7226,3.9911],[2.3654,3.2251],[2.7075,4.1648]],[[0.7378,3.8175],[1.3806,3.0514],[1.7226,3.9911]],[[1.0799,4.7571],[0.095,4.5835],[0.7378,3.8175]],[[1.0799,4.7571],[0.7378,3.8175],[1.7226,3.9911]],[[1.7226,3.9911],[2.7075,4.1648],[2.0647,4.9308]]],"tabs":[{"e":[[1.3806,3.0514],[1.0386,2.1117]],"f":2,"d":0.28,"t":0.25},{"e":[[0.7378,3.8175],[0.3958,2.8778]],"f":3,"d":0.28,"t":0.25},{"e":[[0.0538,1.9381],[0.6966,1.172]],"f":4,"d":0.28,"t":0.25},{"e":[[2.6662,1.5193],[2.0234,2.2854]],"f":5,"d":0.28,"t":0.25},{"e":[[1.6814,1.3457],[2.3242,0.5796]],"f":6,"d":0.28,"t":0.25},{"e":[[3.0082,2.459],[2.3654,3.2251]],"f":8,"d":0.28,"t":0.25},{"e":[[2.3242,0.5796],[3.309,0.7533]],"f":10,"d":0.28,"t":0.25},{"e":[[3.309,0.7533],[2.6662,1.5193]],"f":10,"d":0.28,"t":0.25},{"e":[[0.3546,0.2323],[1.3394,0.406]],"f":11,"d":0.28,"t":0.25},{"e":[[0.6966,1.172],[0.3546,0.2323]],"f":11,"d":0.28,"t":0.25},{"e":[[1.7226,3.9911],[1.0799,4.7571]],"f":18,"d":0.28,"t":0.25}],"cuts":[[[0.3958,2.8778],[1.3806,3.0514]],[[1.0386,2.1117],[0.0538,1.9381]],[[0.095,4.5835],[0.7378,3.8175]],[[2.0234,2.2854],[3.0082,2.459]],[[1.3394,0.406],[1.6814,1.3457]],[[2.3654,3.2251],[3.3502,3.3987]],[[2.7075,4.1648],[3.0495,5.1044]],[[3.3502,3.3987],[2.7075,4.1648]],[[3.0495,5.1044],[2.0647,4.9308]],[[1.0799,4.7571],[0.095,4.5835]],[[2.0647,4.9308],[1.7226,3.9911]]],"folds":[[[2.0234,2.2854],[1.0386,2.1117]],[[1.0386,2.1117],[1.6814,1.3457]],[[1.6814,1.3457],[2.0234,2.2854]],[[1.0386,2.1117],[0.6966,1.172]],[[0.6966,1.172],[1.6814,1.3457]],[[2.0234,2.2854],[1.3806,3.0514]],[[1.3806,3.0514],[0.7378,3.8175]],[[1.6814,1.3457],[2.6662,1.5193]],[[2.3242,0.5796],[2.6662,1.5193]],[[0.6966,1.172],[1.3394,0.406]],[[2.3654,3.2251],[2.0234,2.2854]],[[2.3654,3.2251],[1.3806,3.0514]],[[2.0647,4.9308],[2.7075,4.1648]],[[2.7075,4.1648],[2.3654,3.2251]],[[2.3654,3.2251],[1.7226,3.9911]],[[1.7226,3.9911],[1.3806,3.0514]],[[2.7075,4.1648],[1.7226,3.9911]],[[1.7226,3.9911],[0.7378,3.8175]],[[0.7378,3.8175],[1.0799,4.7571]]],"w":3.3628,"h":5.1044,"opp":[19,15,12,10,13,18,16,14,17,11,3,9,2,4,7,1,6,8,5,0],"maxEdge":49}};
 'use strict';
-const VERSION='studio-v0.99';
+const VERSION='studio-v1.00';
 // ═══════════ קבצים משותפים מהריפו (פונטים, עיצובי גב) ═══════════
 // נעוץ לקומיט ספציפי — שינוי בריפו לא ישבור את הקובץ הזה בלי שנעדכן כאן במכוון.
 const SHARED_COMMIT='f196a73a41a063231ba207a4296395f889aac265';
@@ -1118,7 +1119,7 @@ function makeStates(){
       images:[],names:'',count:12,font:'Secular One',capColor:'#FFFFFF',capOutline:'#14294D',front:defDeco({frame:{id:'single',color:'#C6A135',w:1.2}}),back:Object.assign(presetDeco('classic'),{layers:[],photo:[]}),backs:true};
   MM={size:50,shape:'rounded',r:4,images:[],names:'',mode:'same',front:defDeco({frame:{id:'single',color:'#14294D',w:.8}}),back:presetDeco('kids'),font:'Secular One',color:'#14294D',demo:12,backs:true};
   QT={w:63,h:88,r:3,images:[],series:'',font:'Secular One',demo:6,list:true,style:'classic',content:'both',hand:'Gveret Levin',front:defDeco({frame:{id:'single',color:'#14294D',w:.8}}),back:presetDeco('classic'),backs:true};
-  SN={who:'family',players:3,minutes:20,drama:'mid',special:'none',nL:8,nR:7,lenL:'medium',lenR:'medium',nQ:0,nT:0,qF:3,qB:0,tF:2,dice:'one',end:'over',photo:'none',img:[],keep:'',down:'rope',ladder:'gold',pal:'navy',numPos:'corner',numFont:'Heebo',numColor:'#14294D',badge:'circle',theme:'family',name:'',cards:[],cardFont:'Heebo',mode:'blank',mirror:true,board:null};
+  SN=JSON.parse(JSON.stringify(window.SN_DEFAULTS||{})); // S-98: ברירות המחדל ב-studio/snakes.js
   TV={w:63,h:88,r:3,who:'',title:'כמה אתם מכירים את',items:[],mode:'open',where:'back',images:[],font:'Secular One',titleFont:'Secular One',color:'#7C3AED',seed:7,ideaCat:'family',front:defDeco({frame:{id:'single',color:'#7C3AED',w:.6}})};
   DM={variant:'classic',n:7,tile:24,tri:38,triR:0,blank:'diy',boxText:'הדומינו שלנו',lidImg:[],players:4,trainKit:false,r:2.5,images:[],bg:'#FFFFFF',line:'#14294D',backs:false,back:presetDeco('classic')};
   DC={type:'d6',edge:40,mode:'numbers',images:[],texts:'',faceBg:'#FFFFFF',numColor:'#14294D',font:'Secular One',tabColor:'#E5E7EB',count:0};
@@ -2104,227 +2105,7 @@ const Trivia={id:'trivia',printShop:false,adminOnly:true,label:'❓ טריווי
     printSection()];}
 };
 
-// ── S-97: סולמות וחבלים (מנהל בלבד) — לוח לפי סטטיסטיקה + קלפי שאלה/משימה/פעילות ──
-// המנוע (SL) משותף עם אב-הטיפוס: 9 אזורים, התחלה/סוף ייחודיים, חציות מותרות (הושעיה 28/10), עוקף תמונה באמצע ותאי פנים.
-// הסטטיסטיקה: שרשרת מרקוב על 100 משבצות — תורות למנצח לפי קובייה אחת/שתיים, חוק סיום, מספר שחקנים.
-// מנוע סולמות וחבלים — משותף לבדיקה ב-node ולעמוד. בלי תלות ב-DOM.
-(function(root){
-const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
-function rc(n){const i=n-1,r=Math.floor(i/10),c=i%10;return{c:r%2?c:9-c,r:r};} // r=0 שורה תחתונה
-function num(row,c){return row*10+(row%2?c+1:10-c);}
-function shuffle(a){for(let i=a.length-1;i>0;i--){const j=ri(0,i);[a[i],a[j]]=[a[j],a[i]];}return a;}
-// התאים שקטע בין שני מרכזי משבצות עובר דרכם (כולל שוליים קטנים)
-function cellsOf(a,b){const A=rc(a),B=rc(b),s=new Set(),n=40;
-  for(let i=0;i<=n;i++){const x=A.c+(B.c-A.c)*i/n,y=A.r+(B.r-A.r)*i/n;
-    for(const[dx,dy]of[[0,0],[.35,0],[-.35,0],[0,.35],[0,-.35]]){const c=Math.round(x+dx),r=Math.round(y+dy);if(c>=0&&c<10&&r>=0&&r<10)s.add(r*10+c);}}
-  return s;}
-const RANGES={short:[1,2],medium:[2,4],long:[5,8],mixed:[1,8]};
-// cfg: {nL,nR,lenL,lenR,nQ,nT,qF,qB,tF,mid}
-function generate(cfg){
-  let best=null;
-  for(let attempt=0;attempt<60;attempt++){const r=tryOnce(cfg);if(r.complete)return r;if(!best||r.placed>best.placed)best=r;}
-  return best;}
-function tryOnce(cfg){
-  const L={},R={},Q={},T={},used=new Set([1,100]),busy=new Set(),links=[];let placed=0;
-  const blocked=new Set();if(cfg.mid)for(let r=3;r<=6;r++)for(let c=3;c<=6;c++)blocked.add(r*10+c);
-  (cfg.keep||[]).forEach(k=>blocked.add(k)); // תאים שהלקוח סימן (פנים בתמונה) — לא עוברים בהם
-  blocked.forEach(c=>busy.add(c));
-  // אזורים 3×3 — כל קישור מקבל אזור, בסבב מעורבב, כדי שהפיזור יהיה אחיד
-  const zones=shuffle([0,1,2,3,4,5,6,7,8].filter(z=>!(cfg.mid&&z===4)));
-  const jobs=[];for(let i=0;i<cfg.nL;i++)jobs.push({up:true,len:ri(...(RANGES[cfg.lenL]||cfg.lenL))});for(let i=0;i<cfg.nR;i++)jobs.push({up:false,len:ri(...(RANGES[cfg.lenR]||cfg.lenR))});
-  shuffle(jobs).sort((a,b)=>b.len-a.len); // ארוכים קודם — להם הכי קשה למצוא מקום
-  jobs.forEach((j,i)=>{j.zone=zones[i%zones.length];});
-  for(const j of jobs){let ok=false;
-    for(let k=0;k<400&&!ok;k++){const dr=Math.max(1,j.len-(k>250?ri(0,2):0));
-      const zc=j.zone%3,zr=Math.floor(j.zone/3);let c0,r0;
-      if(k<150){c0=zc*3+ri(0,zc===2?3:2);r0=zr*3+ri(0,zr===2?3:2);}else{c0=ri(0,9);r0=ri(0,9);}
-      const r1=j.up?r0+dr:r0-dr;if(r1<0||r1>9)continue;
-      const maxTilt=Math.min(3,dr),tilt=Math.random()<.35?0:ri(1,maxTilt)*(Math.random()<.5?-1:1),c1=c0+tilt;if(c1<0||c1>9)continue;
-      const a=num(r0,c0),b=num(r1,c1);if(a>99||b>99||a<2||b<1||used.has(a)||used.has(b)||blocked.has(r0*10+c0)||blocked.has(r1*10+c1))continue;
-      const cells=cellsOf(a,b);let clash=false;for(const c of cells)if(blocked.has(c)){clash=true;break;}if(clash)continue; // הושעיה 28/10: מותר להצטלב — רק לא אותה משבצת התחלה/סוף, ולא דרך תמונה/פנים
-      for(const c of cells)busy.add(c);used.add(a);used.add(b);links.push({a,b,up:j.up});(j.up?L:R)[a]=b;ok=true;placed++;}}
-  // שאלות ומשימות: לא על סולם/חבל, לא בתא שהקישור עובר בו, ולא כשהיעד שלהן הוא ראש חבל
-  const okT=n=>n>=1&&n<=100&&!R[n];
-  const place=(cnt,obj,fw,bk)=>{let z=[];while(z.length<cnt)z=z.concat(shuffle([0,1,2,3,4,5,6,7,8,9]));
-    for(let i=0;i<cnt;i++){let k=0,n;do{n=z[i]*10+ri(1,10);const p=rc(n);k++;
-      if(n>=2&&n<=99&&!used.has(n)&&!busy.has(p.r*10+p.c)&&okT(n+fw)&&(!bk||okT(n-bk))&&n+fw<=99)break;}while(k<300);
-      if(k<300){obj[n]=1;used.add(n);const p=rc(n);busy.add(p.r*10+p.c);}}};
-  place(cfg.nQ||0,Q,cfg.qF||3,cfg.qB||0);place(cfg.nT||0,T,cfg.tF||2,0);
-  return{L,R,Q,T,links,placed,complete:placed===jobs.length};}
-// ── סטטיסטיקה ──
-const DICE={one:[[1,1/6],[2,1/6],[3,1/6],[4,1/6],[5,1/6],[6,1/6]],two:[2,3,4,5,6,7,8,9,10,11,12].map(s=>[s,(6-Math.abs(s-7))/36])};
-// rules: {dice:'one'|'two', end:'over'|'exact'|'bounce', qF,qB,tF, players}
-function stats(b,rules){const D=DICE[rules.dice||'one'],end=rules.end||'over',land=m=>b.L[m]||b.R[m]||m,qF=rules.qF||3,qB=rules.qB||0,tF=rules.tF||2;
-  const T=[];for(let n=0;n<100;n++){const o={};for(const[s,p]of D){let m=n+s;if(m>100)m=end==='over'?100:end==='exact'?n:200-m;const x=land(m);
-    let outs=[[x,1]];if(b.Q[x]&&x<100)outs=[[land(Math.min(100,x+qF)),.5],[land(Math.max(1,x-qB)),.5]];else if(b.T[x]&&x<100)outs=[[land(Math.min(100,x+tF)),.8],[x,.2]];
-    for(const[y,q]of outs)o[y]=(o[y]||0)+p*q;}T[n]=o;}
-  let dist=new Array(101).fill(0);dist[0]=1;const cdf=[0];let done=0;
-  for(let t=1;t<=700&&done<.995;t++){const nd=new Array(101).fill(0);for(let n=0;n<100;n++)if(dist[n])for(const y in T[n])nd[y]+=dist[n]*T[n][y];done+=nd[100];cdf[t]=done;nd[100]=0;dist=nd;}
-  const P=rules.players||2;let mean=0,p10=0,p50=0,p90=0,prev=0;
-  for(let t=1;t<cdf.length;t++){const F=1-Math.pow(1-cdf[t],P);mean+=t*(F-prev);if(!p10&&F>=.1)p10=t;if(!p50&&F>=.5)p50=t;if(!p90&&F>=.9)p90=t;prev=F;}
-  if(done<.5)return{stuck:true,mean:999,p10:999,p50:999,p90:999,minutes:999,spread:999};
-  const minutes=Math.round(mean*P*20/60);
-  return{mean:Math.round(mean),p10,p50,p90,minutes,spread:p90-p10};}
-// לוח מהיר לחיפוש פרמטרים בלבד (בלי בדיקת חפיפות) — זול פי 50
-function quickBoard(cfg){const L={},R={},Q={},T={},used=new Set([1,100]);const rg=k=>RANGES[k]||k;
-  const mk=(cnt,[lo,hi],up,obj)=>{for(let i=0;i<cnt;i++){for(let k=0;k<200;k++){const dr=ri(lo,hi),r0=up?ri(0,9-dr):ri(dr,9),c0=ri(0,9),r1=up?r0+dr:r0-dr,c1=Math.max(0,Math.min(9,c0+ri(-2,2)));
-    const a=num(r0,c0),b=num(r1,c1);if(a<2||a>99||b>99||used.has(a)||used.has(b))continue;obj[a]=b;used.add(a);used.add(b);break;}}};
-  mk(cfg.nL,rg(cfg.lenL),true,L);mk(cfg.nR,rg(cfg.lenR),false,R);
-  const okT=n=>n>=1&&n<=100&&!R[n];const pl=(cnt,obj,fw,bk)=>{for(let i=0;i<cnt;i++)for(let k=0;k<200;k++){const n=ri(2,99);if(!used.has(n)&&okT(n+fw)&&(!bk||okT(n-bk))&&n+fw<=99){obj[n]=1;used.add(n);break;}}};
-  pl(cfg.nQ||0,Q,cfg.qF||3,cfg.qB||0);pl(cfg.nT||0,T,cfg.tF||2,0);return{L,R,Q,T};}
-root.SL={generate,quickBoard,stats,rc,num,RANGES};
-})(typeof module!=='undefined'?module.exports:window);
-
-const SN_PALS={navy:{n:'כחול וזהב',a:'#fbf9f3',b:'#f1ecdd',l:'#C6A135',d:'#14294D',t:'#14294D'},candy:{n:'סוכריות',a:'#fff7fb',b:'#ffe3f1',l:'#ff8fab',d:'#7c3aed',t:'#5b2a86'},sea:{n:'ים',a:'#f2fbff',b:'#d9f1fb',l:'#f2a93b',d:'#0f6e8c',t:'#0b3d4f'},forest:{n:'יער',a:'#f6fbf2',b:'#e3f1d8',l:'#b7791f',d:'#2f6b3a',t:'#1f4a28'},sunset:{n:'שקיעה',a:'#fff8f1',b:'#ffe6cf',l:'#e05a2b',d:'#5d2e8c',t:'#3b1c5a'},mono:{n:'שחור-לבן',a:'#ffffff',b:'#ececec',l:'#333333',d:'#777777',t:'#111111'}};
-const SN_DOWN={rope:'חבלים',slide:'מגלשות',snake:'נחשים'},SN_LAD={gold:'עץ זהוב',rope:'חבל',neon:'צבעוני'},SN_LEN={short:'קצרים',medium:'בינוניים',long:'ארוכים',mixed:'מעורבים'};
-const SN_THEMES={birthday:'יום הולדת',kids:'ילדים קטנים',party:'משחקי חברה',family:'משפחה',school:'כיתה וגן'},SN_CTYPES={q:'שאלה',t:'משימה',a:'פעילות'};
-// ── קלפי שאלה / משימה / פעילות — מאגר לפי נושא, עם {שם} למי שחוגגים ──
-// כל פריט: [סוג, נושאים, טקסט]. '*' = מתאים לכל נושא
-const SN_BANK=[
- ['q','*','מה הדבר הכי מצחיק שקרה לך השבוע?'],['q','*','אם היית יכול לעוף לכל מקום, לאן היית טס עכשיו?'],['q','*','איזה אוכל היית אוכל כל יום בלי להימאס?'],['q','*','מה הדבר הכי אמיץ שעשית?'],['q','*','איזו חיה היית רוצה להיות ליום אחד, ולמה?'],
- ['q','birthday','מה הזיכרון הכי טוב שלך עם {שם}?'],['q','birthday','מה {שם} הכי אוהב לעשות בשבת?'],['q','birthday','איזו מתנה {שם} הכי שמח לקבל?'],['q','birthday','ספרו משהו ש{שם} עושה יותר טוב מכולם.'],['q','birthday','מה השיר האהוב על {שם}?'],['q','birthday','באיזו שעה {שם} קם בבוקר ביום הולדת?'],
- ['q','kids','איזה צבע יש לשמיים?'],['q','kids','כמה רגליים יש לכלב?'],['q','kids','מה עושים לפני שהולכים לישון?'],['q','kids','איזה קול עושה פרה?'],['q','kids','מה אוכלים בבוקר?'],['q','kids','איזו עונה עכשיו — קיץ או חורף?'],
- ['q','party','מה הדבר הכי מביך שקרה לך בעבודה או בלימודים?'],['q','party','אם היית זוכה במיליון שקל, מה הדבר הראשון שהיית קונה?'],['q','party','מי בחדר הכי מתאים להיות ראש ממשלה, ולמה?'],['q','party','איזה סרט ראית יותר מחמש פעמים?'],['q','party','מה הכישרון הנסתר שלך?'],['q','party','ספרו על ביקור במקום שהיה שונה לגמרי ממה שציפיתם.'],
- ['q','family','איך סבא וסבתא הכירו?'],['q','family','מה המאכל שרק במשפחה שלנו מכינים?'],['q','family','מי במשפחה הכי טוב בלספר בדיחות?'],['q','family','איפה גרנו כשהייתי קטן?'],['q','family','מה הטיול המשפחתי הכי טוב שהיה לנו?'],['q','family','איזה שיר שרים אצלנו בכל חג?'],
- ['q','school','כמה זה 7 ועוד 8?'],['q','school','איזו אות מתחילה את המילה "שמש"?'],['q','school','תגידו שלוש מילים שמתחרזות עם "בית".'],['q','school','כמה ימים יש בשבוע?'],['q','school','איזו חיה הכי גדולה בעולם?'],['q','school','מה ההפך מ"חם"?'],
- ['t','*','עשו 5 קפיצות במקום.'],['t','*','חקו חיה, והשאר ינחשו איזו.'],['t','*','שירו שיר ילדים בקול רם.'],['t','*','ספרו בדיחה.'],['t','*','הסתובבו 3 פעמים ואז לכו ישר.'],['t','*','תנו מחמאה לשחקן שמימינכם.'],['t','*','דברו בקול של רובוט עד התור הבא שלכם.'],
- ['t','birthday','שירו "יום הולדת שמח" ל{שם} בסגנון אופרה.'],['t','birthday','חקו את {שם} כשהוא צוחק.'],['t','birthday','תנו ל{שם} חיבוק גדול.'],['t','birthday','אמרו משפט ברכה ל{שם} שמתחיל באות הראשונה של השם שלכם.'],['t','birthday','צלמו סלפי עם {שם} ועוד שני שחקנים.'],
- ['t','kids','עשו פרצוף מצחיק.'],['t','kids','עמדו על רגל אחת וספרו עד 5.'],['t','kids','מחאו כפיים 10 פעמים.'],['t','kids','חקו צפרדע.'],['t','kids','תגידו את השם שלכם בלחישה ואז בצעקה.'],['t','kids','לכו כמו פינגווין עד הדלת וחזרה.'],
- ['t','party','ספרו בדיחה שאף אחד לא צוחק ממנה — בכוונה.'],['t','party','חקו שחקן אחר בחדר, והשאר מנחשים מי.'],['t','party','דקלמו שיר ילדים בטון של כתב חדשות.'],['t','party','התנהגו כמו שהייתם בגיל 5 עד התור הבא.'],['t','party','הציגו פנטומימה של "מורה כועסת".'],['t','party','החליפו מקום עם מי שמשמאלכם.'],
- ['t','family','חקו את אבא כשהוא מחפש את המפתחות.'],['t','family','תנו חיבוק לבן המשפחה הכי מבוגר בחדר.'],['t','family','שירו את השיר שסבתא שרה לכם.'],['t','family','ספרו סיפור משפחתי בשלושה משפטים.'],['t','family','אמרו משהו טוב על כל אחד מהשחקנים.'],
- ['t','school','אמרו את האלף-בית בקצב כפול.'],['t','school','ספרו עד 20 אחורה.'],['t','school','תגידו 3 שמות של ירקות בירוק.'],['t','school','קפצו כמספר השחקנים בחדר.'],['t','school','לחשו מילה בת 4 אותיות, והשאר מנחשים.'],
- ['a','*','כולם קמים ורוקדים 10 שניות.'],['a','*','כולם מחליפים כיסאות.'],['a','*','סיבוב של מחמאות: כל אחד אומר משהו טוב על השכן.'],['a','*','כולם מחקים את השחקן שתורו — לדקה.'],['a','*','תור חופשי: השחקן בוחר משימה לכולם.'],
- ['a','birthday','כולם שרים ל{שם} ומוחאים כפיים.'],['a','birthday','כל אחד אומר דבר אחד שהוא אוהב ב{שם}.'],['a','birthday','תמונה קבוצתית מצחיקה עם {שם} באמצע.'],
- ['a','kids','כולם קופצים כמו קנגורו.'],['a','kids','כולם עושים "שקט" של שלוש שניות.'],['a','kids','כולם שרים "יונתן הקטן".'],
- ['a','party','כולם מספרים מה היה היום הכי טוב בחיים שלהם — במשפט אחד.'],['a','party','סבב מהיר: כל אחד אומר מילה שמתחילה באות של קודמו.'],['a','party','כולם מצביעים: מי ינצח במשחק?'],
- ['a','family','כולם מספרים זיכרון משותף אחד.'],['a','family','חיבוק משפחתי קבוצתי.'],['a','family','כולם אומרים "תודה" על משהו מהשבוע.'],
- ['a','school','כולם קמים, מתמתחים, ומתיישבים.'],['a','school','כולם סופרים יחד עד 10 בשפה אחרת.'],['a','school','כולם אומרים מילה שמתחילה באות שהשחקן בוחר.'],
-];
-function snCardsFor(type,theme,n,name){const pool=SN_BANK.filter(b=>b[0]===type&&(b[1]==='*'||b[1]===theme)),pri=pool.filter(b=>b[1]===theme),gen=pool.filter(b=>b[1]==='*');
- const sh=a=>a.slice().sort(()=>Math.random()-.5),pick=sh(pri).concat(sh(gen)).slice(0,n);
- return pick.map(b=>({type,text:b[2].replace(/\{שם\}/g,name||'{שם}')}));}
-
-const SN_BOARD={blankW:260,blankH:265,diy:190,card:{w:63,h:88,r:3}}; // לוח לודו זיקית 8805 (שני חצאים 13×26.5) או דף A4
-function snRules(){return{dice:SN.dice,end:SN.end,players:SN.players,qF:SN.qF,qB:SN.qB,tF:SN.tF};}
-function snCfg(){return{nL:SN.nL,nR:SN.nR,lenL:SN.lenL,lenR:SN.lenR,nQ:SN.nQ,nT:SN.nT,qF:SN.qF,qB:SN.qB,tF:SN.tF,mid:SN.photo==='mid',keep:snKeep()};}
-function snKeep(){return String(SN.keep||'').split(/[,\s]+/).map(Number).filter(n=>n>=1&&n<=100).map(n=>{const p=SL.rc(n);return p.r*10+p.c;});}
-// מהתשובות לפרמטרים — אותו חיפוש כמו באב-הטיפוס: ~120 שילובים, בוחר את הקרוב ליעד הדקות ולרמת ההפתעות
-function snPick(){const target=SN.minutes,R=snRules();
- const lensR=SN.drama==='calm'?['short']:SN.drama==='mid'?['short','medium']:['medium','long'],lensL=SN.drama==='calm'?['short','medium']:['medium','long'];
- const ok=s=>SN.drama==='calm'?s<=14:SN.drama==='mid'?(s>=10&&s<=30):s>=24;let best=null;
- for(const nL of[4,6,8,10,12])for(const nR of[2,4,6,8,10,12])for(const lenL of lensL)for(const lenR of lensR){
-  const cfg={nL,nR,lenL,lenR,nQ:SN.special==='q'||SN.special==='both'?6:0,nT:SN.special==='t'||SN.special==='both'?5:0,qF:SN.qF,qB:SN.qB,tF:SN.tF};
-  let sc=0;for(let i=0;i<3;i++){const s=SL.stats(SL.quickBoard(cfg),R);sc+=2*Math.abs(s.minutes-target)/target+(ok(s.spread)?0:.35)+(s.stuck?5:0);}
-  if(!best||sc<best.sc)best={sc,cfg};}
- Object.assign(SN,best.cfg);}
-function snGen(){const b=SL.generate(snCfg());SN.board={L:b.L,R:b.R,Q:b.Q,T:b.T,complete:b.complete};rebuild();}
-function snBoard(){if(!SN.board){const b=SL.generate(snCfg());SN.board={L:b.L,R:b.R,Q:b.Q,T:b.T,complete:b.complete};}return SN.board;}
-function snStats(){const s=SL.stats(snBoard(),snRules());const dram=s.spread<=14?'צפוי':s.spread<=30?'מאוזן':'הרבה הפתעות';
- return el('div',{class:'rules'},el('p',{},el('b',{},'משחק ממוצע: '),s.minutes+' דקות ('+s.mean+' תורות למנצח) · ',el('b',{},'מהיר: '),s.p10+' · ',el('b',{},'ארוך: '),s.p90+' תורות · ',el('b',{},'הפתעות: '),dram),
-  el('p',{class:'hint'},'בלוח: '+Object.keys(snBoard().L).length+' סולמות '+SN_LEN[SN.lenL]+', '+Object.keys(snBoard().R).length+' '+SN_DOWN[SN.down]+' '+SN_LEN[SN.lenR]+(SN.nQ?', '+Object.keys(snBoard().Q).length+' שאלות':'')+(SN.nT?', '+Object.keys(snBoard().T).length+' משימות':'')+' — ל-'+(SN.players===5?'5+':SN.players===3?'3–4':SN.players)+' שחקנים עם '+(SN.dice==='one'?'קובייה אחת':'שתי קוביות')+'.'));}
-// ── ציור הלוח בקנבס, במ"מ. W = צלע הלוח. הכול יחסית לגודל משבצת ──
-function snDrawBoard(ctx,W,{forPrint=false}={}){const B=snBoard(),pal=SN_PALS[SN.pal]||SN_PALS.navy,s=W/10,k=s/10,mid=SN.photo==='mid',full=SN.photo==='full',img=SN.img[0]?SN.img[0].img:null,keep=new Set(snKeep());
- const ctr=n=>{const p=SL.rc(n);return[p.c*s+s/2,(9-p.r)*s+s/2];},numF=`"${fam(SN.numFont)}"`,numC=SN.numColor||pal.t;
- ctx.save();ctx.fillStyle='#fff';ctx.fillRect(0,0,W,W);
- if(full){if(img)drawCover(ctx,img,0,0,W,W);else{ctx.fillStyle=pal.b;ctx.fillRect(0,0,W,W);}ctx.fillStyle='rgba(255,255,255,'+(img?.38:0)+')';ctx.fillRect(0,0,W,W);}
- if(mid){if(img)drawCover(ctx,img,3*s,3*s,4*s,4*s);else{ctx.fillStyle=pal.b;ctx.fillRect(3*s,3*s,4*s,4*s);}}
- for(let n=1;n<=100;n++){const p=SL.rc(n),x=p.c*s,y=(9-p.r)*s,inMid=mid&&p.c>=3&&p.c<=6&&p.r>=3&&p.r<=6;
-  if(!(full||inMid)){ctx.fillStyle=(p.c+p.r)%2?pal.b:pal.a;ctx.fillRect(x,y,s,s);}
-  ctx.strokeStyle=pal.t;ctx.globalAlpha=inMid?.5:.25;ctx.lineWidth=.25*k;ctx.strokeRect(x,y,s,s);ctx.globalAlpha=1;
-  if(!forPrint&&full&&keep.has(p.r*10+p.c)){ctx.setLineDash([1.5*k,1*k]);ctx.strokeStyle=pal.l;ctx.lineWidth=.6*k;ctx.strokeRect(x+.4*k,y+.4*k,s-.8*k,s-.8*k);ctx.setLineDash([]);}}
- if(mid){ctx.strokeStyle=pal.l;ctx.lineWidth=.8*k;ctx.strokeRect(3*s,3*s,4*s,4*s);}
- for(const a in B.L)snLadder(ctx,ctr(+a),ctr(B.L[a]),pal,k);
- for(const a in B.R)snDown(ctx,ctr(+a),ctr(B.R[a]),pal,k,+a);
- // מספרים וסימנים — תמיד מעל הכול
- for(let n=1;n<=100;n++){const p=SL.rc(n),x=p.c*s,y=(9-p.r)*s;
-  ctx.textAlign='center';ctx.textBaseline='alphabetic';
-  if(SN.numPos==='center'){ctx.font=`700 ${(n>=100?3.4:4.4)*k}px ${numF},Heebo,sans-serif`;ctx.lineJoin='round';ctx.strokeStyle='#fff';ctx.lineWidth=.9*k;ctx.strokeText(String(n),x+s/2,y+s*.56);ctx.fillStyle=numC;ctx.fillText(String(n),x+s/2,y+s*.56);}
-  else{const w=(n>=100?6:n>=10?5:3.6)*k;ctx.fillStyle='rgba(255,255,255,.92)';ctx.beginPath();ctx.roundRect(x+.5*k,y+.5*k,w,3.4*k,.7*k);ctx.fill();ctx.font=`700 ${2.9*k}px ${numF},Heebo,sans-serif`;ctx.fillStyle=numC;ctx.fillText(String(n),x+.5*k+w/2,y+3.1*k);}
-  if(n===100||n===1){const lab=n===100?'סיום':'התחלה',c=SN.numPos==='center';ctx.font=`${(c?2.3:3)*k}px 'Secular One',sans-serif`;ctx.strokeStyle='#fff';ctx.lineWidth=.5*k;ctx.strokeText(lab,x+s/2,y+(c?9.2:7.6)*k);ctx.fillStyle=n===100?pal.l:pal.t;ctx.fillText(lab,x+s/2,y+(c?9.2:7.6)*k);}
-  if(B.Q[n]||B.T[n]){if(SN.numPos==='center'){ctx.save();ctx.translate(x+7.6*k,y+7.7*k);ctx.scale(.72,.72);snBadge(ctx,0,0,!!B.Q[n],pal,k);ctx.restore();}else snBadge(ctx,x+s/2,y+6.2*k,!!B.Q[n],pal,k);}}
- ctx.restore();}
-function snBadge(ctx,cx,cy,q,pal,k){const c=q?pal.d:pal.l,ch=q?'?':'!';ctx.textAlign='center';
- if(SN.badge==='fill'){ctx.fillStyle=c;ctx.globalAlpha=.9;ctx.beginPath();ctx.roundRect(cx-5*k+.9*k,cy-5*k+4.2*k,10*k-1.8*k,10*k-5.1*k,1*k);ctx.fill();ctx.globalAlpha=1;ctx.fillStyle='#fff';ctx.font=`${4.8*k}px 'Secular One',sans-serif`;ctx.fillText(ch,cx,cy+2.6*k);return;}
- if(SN.badge==='note'){const r=3.1*k;ctx.save();ctx.translate(cx,cy);ctx.rotate(-8*Math.PI/180);ctx.fillStyle='#fff6c2';ctx.fillRect(-r,-r,2*r,2*r);ctx.strokeStyle='#d9c25a';ctx.lineWidth=.35*k;ctx.strokeRect(-r,-r,2*r,2*r);ctx.fillStyle='#e8d47a';ctx.beginPath();ctx.moveTo(r,r-1.4*k);ctx.lineTo(r-1.4*k,r);ctx.lineTo(r,r);ctx.closePath();ctx.fill();ctx.fillStyle=c;ctx.font=`${4.4*k}px 'Secular One',sans-serif`;ctx.fillText(ch,0,1.5*k);ctx.restore();return;}
- ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(cx,cy,2.7*k,0,Math.PI*2);ctx.fill();ctx.strokeStyle=c;ctx.lineWidth=.5*k;ctx.stroke();ctx.fillStyle=c;ctx.font=`${4.4*k}px 'Secular One',sans-serif`;ctx.fillText(ch,cx,cy+1.5*k);}
-function snLadder(ctx,[x1,y1],[x2,y2],pal,k){const dx=x2-x1,dy=y2-y1,l=Math.hypot(dx,dy),nx=-dy/l*1.6*k,ny=dx/l*1.6*k,st=SN.ladder;
- const col=st==='neon'?['#e63946','#2a9d8f','#f4a261','#8338ec','#06d6a0'][Math.round(x1*7+y1*3)%5]:st==='rope'?'#8b5a2b':pal.l;
- ctx.lineCap='round';const rail=(sg,w,c,dash)=>{ctx.setLineDash(dash?[1.2*k,.8*k]:[]);ctx.strokeStyle=c;ctx.lineWidth=w*k;ctx.beginPath();ctx.moveTo(x1+sg*nx,y1+sg*ny);ctx.lineTo(x2+sg*nx,y2+sg*ny);ctx.stroke();ctx.setLineDash([]);};
- rail(1,2.3,'#fff');rail(-1,2.3,'#fff');rail(1,1.1,col,st==='rope');rail(-1,1.1,col,st==='rope');
- const n=Math.max(2,Math.round(l/(3.2*k)));for(let i=1;i<n;i++){const cx=x1+dx*i/n,cy=y1+dy*i/n;ctx.strokeStyle='#fff';ctx.lineWidth=1.8*k;ctx.beginPath();ctx.moveTo(cx+nx,cy+ny);ctx.lineTo(cx-nx,cy-ny);ctx.stroke();ctx.strokeStyle=st==='rope'?'#8b5a2b':col;ctx.lineWidth=(st==='rope'?.7:.9)*k;ctx.beginPath();ctx.moveTo(cx+nx,cy+ny);ctx.lineTo(cx-nx,cy-ny);ctx.stroke();}}
-// ירידה בצורת S: עקומה אחת מהראש לזנב, מתנדנדת פעם לכל צד, נשארת ברצועה של הקו הישר
-function snSPath(ctx,[x1,y1],[x2,y2],amp,seed,k){const dx=x2-x1,dy=y2-y1,l=Math.hypot(dx,dy),nx=-dy/l,ny=dx/l,sg=seed%2?1:-1,a=Math.min(amp*k,l/4);
- ctx.beginPath();ctx.moveTo(x1,y1);ctx.bezierCurveTo(x1+dx*.3+nx*a*sg,y1+dy*.3+ny*a*sg,x1+dx*.7-nx*a*sg,y1+dy*.7-ny*a*sg,x2,y2);}
-function snDown(ctx,[x1,y1],[x2,y2],pal,k,seed){const dx=x2-x1,dy=y2-y1,l=Math.hypot(dx,dy),nx=-dy/l,ny=dx/l,c=pal.d,ang=Math.atan2(dy,dx);ctx.lineCap='round';
- const stroke=(w,col,dash)=>{ctx.setLineDash(dash||[]);ctx.strokeStyle=col;ctx.lineWidth=w*k;ctx.stroke();ctx.setLineDash([]);};
- if(SN.down==='slide'){snSPath(ctx,[x1,y1],[x2,y2],2.2,seed,k);stroke(4.8,'#fff');stroke(3.4,c);stroke(1,'rgba(255,255,255,.55)');
-  ctx.save();ctx.translate(x1,y1);ctx.rotate(ang);ctx.fillStyle=c;ctx.beginPath();ctx.roundRect(-2.4*k,-1*k,4.8*k,2*k,.6*k);ctx.fill();ctx.restore();
-  ctx.fillStyle=c;ctx.globalAlpha=.5;ctx.beginPath();ctx.ellipse(x2,y2+1*k,2.6*k,1.1*k,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;return;}
- if(SN.down==='snake'){snSPath(ctx,[x1,y1],[x2,y2],3,seed,k);stroke(3.8,'#fff');stroke(2.5,c);stroke(.7,'rgba(255,255,255,.45)',[1.4*k,1.4*k]);
-  ctx.save();ctx.translate(x1,y1);ctx.rotate(ang);ctx.fillStyle=c;ctx.beginPath();ctx.ellipse(0,0,2.4*k,1.8*k,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(-.5*k,.8*k,.45*k,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(-.5*k,-.8*k,.45*k,0,Math.PI*2);ctx.fill();
-  ctx.strokeStyle='#e63946';ctx.lineWidth=.4*k;ctx.beginPath();ctx.moveTo(-2.4*k,0);ctx.lineTo(-3.6*k,.6*k);ctx.moveTo(-2.4*k,0);ctx.lineTo(-3.6*k,-.6*k);ctx.stroke();ctx.restore();return;}
- snSPath(ctx,[x1,y1],[x2,y2],2.4,seed,k);stroke(2.6,'#fff');stroke(1.2,c,[2.2*k,1.1*k]);
- ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(x1,y1,1.5*k,0,Math.PI*2);ctx.fill();ctx.strokeStyle=c;ctx.lineWidth=.7*k;ctx.stroke();ctx.fillStyle=c;ctx.beginPath();ctx.arc(x2,y2,1.2*k,0,Math.PI*2);ctx.fill();}
-// פריטי הדפסה: לוח שלם (A4) או שני חצאים (לוח לודו), וקלפים
-function snBoardItem(W){return{w:W,h:W,pts:shapePts('rect',W,W),draw(ctx){snDrawBoard(ctx,W,{forPrint:true});}};}
-function snHalf(kk){const W=SN_BOARD.blankW,H=SN_BOARD.blankH,hw=W/2;return{w:hw,h:H,pts:shapePts('rect',hw,H),draw(ctx){ctx.save();ctx.beginPath();ctx.rect(0,0,hw,H);ctx.clip();ctx.translate(-kk*hw,(H-W)/2);snDrawBoard(ctx,W,{forPrint:true});ctx.restore();}};}
-function snCardItem(c,i){const d=SN_BOARD.card,pts=shapePts('rounded',d.w,d.h,d.r),pal=SN_PALS[SN.pal]||SN_PALS.navy,col={q:pal.d,t:pal.l,a:'#2f6b3a'}[c.type],sym={q:'?',t:'!',a:'★'}[c.type];
- return{w:d.w,h:d.h,pts,draw(ctx){const P=pathOf(pts),{w,h}=d;ctx.save();ctx.clip(P);ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);const bh=h*.12;ctx.fillStyle=col;ctx.fillRect(0,0,w,bh);
-  drawTextBox(ctx,SN_CTYPES[c.type],{family:'Secular One',weight:400,color:'#fff',x:w*.08,y:bh*.15,w:w*.6,h:bh*.7,maxLines:1});drawTextBox(ctx,sym,{family:'Secular One',weight:400,color:'#fff',x:w*.72,y:bh*.05,w:w*.22,h:bh*.9,maxLines:1});
-  drawTextBox(ctx,c.text||'',{family:SN.cardFont,weight:500,color:'#1a1a1a',x:w*.08,y:bh+h*.1,w:w*.84,h:h*.62,maxLines:7});
-  drawTextBox(ctx,'עיצובישי',{family:'Secular One',weight:400,color:'#8d93a3',x:w*.2,y:h*.9,w:w*.6,h:h*.06,maxLines:1});
-  ctx.restore();ctx.strokeStyle=col;ctx.lineWidth=.6;ctx.stroke(P);}};}
-function snDeck(){const B=snBoard(),nQ=Object.keys(B.Q).length,nT=Object.keys(B.T).length,want={q:Math.max(8,nQ*2),t:Math.max(8,nT*2),a:4};
- SN.cards=[...snCardsFor('q',SN.theme,want.q,SN.name),...snCardsFor('t',SN.theme,want.t,SN.name),...snCardsFor('a',SN.theme,want.a,SN.name)];rebuild();}
-function snCardsEditor(){const list=el('div',{class:'qt-ideas'},...SN.cards.map((c,i)=>{const t=el('textarea',{rows:2,'aria-label':SN_CTYPES[c.type]+' '+(i+1),on:{input:e=>{c.text=e.target.value;save();}}});t.value=c.text||'';
-  return el('div',{class:'row'},el('span',{class:'hint',style:'min-width:4.5em'},({q:'?',t:'!',a:'★'})[c.type]+' '+SN_CTYPES[c.type]),t,el('button',{type:'button',class:'btn ghost','aria-label':'מחיקה',on:{click:()=>{SN.cards.splice(i,1);rebuild();}}},'×'));}));
- return list;}
-const Snakes={id:'snakes',printShop:false,adminOnly:true,label:'🪜 סולמות וחבלים',
- intro:'🪜 לוח סולמות וחבלים שנבנה לפי המשפחה: למי, כמה שחקנים, כמה זמן וכמה הפתעות — והמחולל מסדר את הלוח. עם שאלות ומשימות, תמונה, ונחשים או מגלשות.',
- fonts:()=>[SN.numFont,SN.cardFont,'Secular One'],
- build(){const items=SN.mode==='blank'?[snHalf(0),snHalf(1)]:[snBoardItem(SN_BOARD.diy)];
-  const r=paginate(items,{allowRot:false,label:'לוח'});if(SN.mode==='blank')r.pages.forEach(p=>p.cut=false);
-  if(SN.cards.length){const pc=paginate(SN.cards.map(snCardItem),{allowRot:false,label:'קלפים'});r.pages=r.pages.concat(pc.pages);}
-  r.summary=(SN.mode==='blank'?'לוח לודו 8805 בשני חצאים · ':'לוח 19×19 ס"מ על A4 · ')+(SN.cards.length?SN.cards.length+' קלפים':'בלי קלפים');return r;},
- panel(){const B=snBoard(),pal=SN_PALS[SN.pal]||SN_PALS.navy;return[
-  sec('🎯 בנו לי לוח',true,el('p',{class:'hint'},'עונים על ארבע שאלות, והמחולל בוחר כמה סולמות וחבלים ובאיזה אורך כדי להגיע ליעד.'),
-   el('p',{class:'hint'},'למי המשחק'),seg(SN,'who',[['kids','ילדים קטנים'],['older','ילדים גדולים'],['family','כל המשפחה'],['teens','נוער ומבוגרים']],{rebuildOnChange:false,after:()=>rerender()}),
-   el('p',{class:'hint'},'כמה שחקנים'),seg(SN,'players',[[2,'2'],[3,'3–4'],[5,'5+']],{rebuildOnChange:false,after:()=>rerender()}),
-   el('p',{class:'hint'},'כמה זמן'),seg(SN,'minutes',[[10,'~10 דק׳'],[20,'~20 דק׳'],[35,'30+ דק׳']],{rebuildOnChange:false,after:()=>rerender()}),
-   el('p',{class:'hint'},'כמה הפתעות'),seg(SN,'drama',[['calm','רגוע וצפוי'],['mid','מאוזן'],['wild','דרמטי']],{rebuildOnChange:false,after:()=>rerender()}),
-   el('div',{class:'inline'},el('button',{type:'button',class:'btn gold',on:{click:()=>{snPick();snGen();}}},'🎲 בנו לי לוח לפי התשובות'),el('button',{type:'button',class:'btn',on:{click:snGen}},'🔁 בנו לוח שוב (אותם פרמטרים)')),
-   snStats()),
-  sec('❓ משבצות שאלה ומשימה',false,seg(SN,'special',[['none','רק סולמות וחבלים'],['q','שאלות ?'],['t','משימות !'],['both','גם וגם']],{rebuildOnChange:false,after:v=>{SN.nQ=v==='q'||v==='both'?6:0;SN.nT=v==='t'||v==='both'?5:0;snGen();}}),
-   SN.special==='none'?null:[rng(SN,'qF','תשובה נכונה: קדימה',1,6),rng(SN,'qB','טעות: אחורה (0 = נשארים)',0,6),rng(SN,'tF','ביצעו משימה: קדימה',0,6),el('p',{class:'hint'},'המחולל דואג שאחרי קפיצה קדימה לא יחכה חבל.')]),
-  sec('🎲 קוביות וסיום',false,seg(SN,'dice',[['one','קובייה אחת'],['two','שתי קוביות']],{rebuildOnChange:false,after:v=>{if(v==='two'&&SN.end==='exact')SN.end='bounce';rerender();}}),
-   seg(SN,'end',SN.dice==='two'?[['over','עובר את 100 = ניצח'],['bounce','עובר קופץ אחורה']]:[['over','עובר את 100 = ניצח'],['exact','בדיוק ל-100'],['bounce','עובר קופץ אחורה']],{rebuildOnChange:false,after:()=>rerender()}),
-   el('p',{class:'hint'},SN.dice==='two'?'בשתי קוביות אין "בדיוק ל-100": מי שעומד על 99 לא יסיים לעולם (המינימום הוא 2).':'שתי קוביות = משחק כפול מהיר, ונחיתה על חבל פחות שכיחה (14% במקום 29%).')),
-  sec('🖼️ תמונה',false,seg(SN,'photo',[['none','בלי'],['full','על כל הלוח'],['mid','באמצע הלוח']],{rebuildOnChange:false,after:()=>snGen()}),filesInput(SN,'img','תמונה',{max:1,edit:true,after:()=>rebuild()}),
-   SN.photo==='full'?[txt(SN,'keep','משבצות שבהן יש פנים (מספרים, מופרדים בפסיק)','44, 45, 54, 55'),el('p',{class:'hint'},'הסולמות והחבלים יעקפו את המשבצות האלה — עוברים בין הדמויות, לא עליהן. אחרי שינוי: "בנו לוח שוב".')]:null),
-  sec('🎨 עיצוב',false,el('p',{class:'hint'},'מה יורד למטה'),seg(SN,'down',Object.entries(SN_DOWN),{rebuildOnChange:false,after:()=>rerender()}),
-   el('p',{class:'hint'},'סולמות'),seg(SN,'ladder',Object.entries(SN_LAD),{rebuildOnChange:false,after:()=>rerender()}),
-   el('p',{class:'hint'},'צבעים'),seg(SN,'pal',Object.entries(SN_PALS).map(([v,p])=>[v,p.n]),{rebuildOnChange:false,after:()=>rerender()}),
-   el('p',{class:'hint'},'מספרים'),seg(SN,'numPos',[['corner','בפינה'],['center','על כל המשבצת']],{rebuildOnChange:false,after:()=>rerender()}),fontSel(SN,'numFont','פונט המספרים',()=>'42 · 100'),
-   el('div',{class:'inline'},col(SN,'numColor','צבע המספרים'),el('button',{type:'button',class:'btn ghost',on:{click:()=>{SN.numColor='';rerender();}}},'כמו הפלטה')),
-   el('p',{class:'hint'},'משבצות ? ו-!'),seg(SN,'badge',[['circle','עיגול'],['note','פתק'],['fill','על כל המשבצת']],{rebuildOnChange:false,after:()=>rerender()})),
-  sec('🃏 הקלפים',false,el('p',{class:'hint'},'בלוח יש '+Object.keys(B.Q).length+' משבצות ? ו-'+Object.keys(B.T).length+' משבצות !. החפיסה: פי שניים שאלות ומשימות, ועוד 4 פעילויות לכולם.'),
-   el('p',{class:'hint'},'לאיזה אירוע'),seg(SN,'theme',Object.entries(SN_THEMES),{rebuildOnChange:false,after:()=>rerender()}),
-   SN.theme==='birthday'?txt(SN,'name','מי חוגג? (השם נכנס לקלפים)','נועה'):null,
-   el('div',{class:'inline'},el('button',{type:'button',class:'btn gold',on:{click:snDeck}},SN.cards.length?'🔁 חפיסה חדשה':'🃏 בנו לי חפיסה'),...['q','t','a'].map(t=>el('button',{type:'button',class:'btn',on:{click:()=>{SN.cards.push({type:t,text:''});rebuild();}}},'+ '+SN_CTYPES[t]))),
-   SN.cards.length?[snCardsEditor(),fontSel(SN,'cardFont','פונט הקלפים',()=>(SN.cards[0]||{}).text||'שאלה')]:null),
-  sec('⚙️ כוונון עדין',false,num(SN,'nL','סולמות',{min:0,max:14,after:()=>{SN.board=null;}}),seg(SN,'lenL',Object.entries(SN_LEN),{rebuildOnChange:false,after:()=>snGen()}),
-   num(SN,'nR','חבלים',{min:0,max:14,after:()=>{SN.board=null;}}),seg(SN,'lenR',Object.entries(SN_LEN),{rebuildOnChange:false,after:()=>snGen()}),
-   num(SN,'nQ','משבצות ?',{min:0,max:15,after:()=>{SN.board=null;}}),num(SN,'nT','משבצות !',{min:0,max:15,after:()=>{SN.board=null;}}),
-   el('p',{class:'hint'},'אחרי שינוי מספרים — "בנו לוח שוב".'),el('button',{type:'button',class:'btn',on:{click:snGen}},'🔁 בנו לוח שוב')),
-  sec('🖨️ על מה מדפיסים',true,seg(SN,'mode',[['blank','🪵 לוח לודו מוכן 8805 (26×26.5)'],['diy','✂️ דף A4 — אני גוזר']]),
-   el('p',{class:'hint'},SN.mode==='blank'?'הלוח בשני חצאים 13×26.5 ס"מ לסובלימציה על לוח הלודו של זיקית. הקלפים 63×88 בדפים נפרדים.':'לוח 19×19 ס"מ על דף A4 אחד, והקלפים 63×88 בדפים נפרדים.'),
-   SN.mode==='blank'&&isAdmin?[tog(SN,'mirror','הפוך במראה (לנייר סובלימציה)'),el('button',{type:'button',class:'btn gold',on:{click:()=>sublimationSheetsPDF([snHalf(0),snHalf(1)],'snakes-8805',{mirror:SN.mirror})}},'⬇️ קובץ לסובלימציה (הלוח)')]:null),
-  sec('איך משחקים',false,el('div',{class:'rules'},
-   el('p',{},el('b',{},'המטרה: '),'להגיע ראשונים ל-100.'),
-   el('p',{},el('b',{},'משחקים: '),'מטילים '+(SN.dice==='one'?'קובייה':'שתי קוביות')+' ומתקדמים. תחתית סולם — מטפסים לראשו. ראש '+({rope:'חבל',slide:'מגלשה',snake:'נחש'})[SN.down]+' — יורדים לסופו.'+(SN.nQ?' משבצת ? — מישהו שואל שאלה מהקלפים: נכון = '+SN.qF+' קדימה'+(SN.qB?', טעות = '+SN.qB+' אחורה':', טעות = נשארים')+'.':'')+(SN.nT?' משבצת ! — מבצעים משימה מהקלפים: ביצעתם = '+SN.tF+' קדימה.':'')),
-   el('p',{},el('b',{},'סיום: '),({over:'מי שעובר את 100 ניצח.',exact:'צריך להגיע בדיוק ל-100; מי שעובר נשאר במקום.',bounce:'מי שעובר את 100 קופץ אחורה בעודף.'})[SN.end]))),
-  SN.mode==='blank'?null:printSection()];}
-};
+// ── S-98: סולמות וחבלים — הקוד כולו ב-studio/snakes.js (נטען לפני הסקריפט הזה); מגדיר window.Snakes ו-window.SN_DEFAULTS ──
 
 // ── דומינו ──
 // ארבע גרסאות. קלאסי וחסום מדפיסים אותו סט — ההבדל בחוקים בלבד; רכבת מקסיקנית מוסיפה תחנה וסמנים;
@@ -4315,7 +4096,7 @@ function loadImages(){return _imgLoadOnce||(_imgLoadOnce=(async()=>{
 function clearSavedImages(){_imgReady=false;return withTimeout(new Promise(ok=>{const r=indexedDB.deleteDatabase('studio');r.onsuccess=r.onerror=r.onblocked=()=>ok();}),3000,'idb delete').catch(()=>{});}
 
 // שמירה מקומית — הגדרות ב-localStorage; התמונות בנפרד ב-IndexedDB (למעלה)
-const SKIP=IMG_KEYS;
+const SKIP=new Set([...IMG_KEYS,'photoURL']); // photoURL = תמונת הלוח בסולמות וחבלים (dataURL) — לא נשמרת ב-localStorage
 function snapshot(){const strip=o=>{if(Array.isArray(o))return o.map(strip);if(o&&typeof o==='object'){const r={};for(const k in o)if(!SKIP.has(k))r[k]=strip(o[k]);return r;}return o;};
   return strip({G,ST,CD,MM,QT,DM,DC,PZ,PH:{...PH,peek:false},BL,BG,TG,LD,SH,SB,MG,TV,SN,tab:cur.id});}
 function restore(){try{restoreFrom(JSON.parse(localStorage.getItem('studio.v1')||'null'));}catch(e){}}
@@ -4389,7 +4170,7 @@ function buildTabs(){const t=document.getElementById('tabs');t.innerHTML='';
   PRODUCTS.filter(p=>(!p.adminOnly||isAdmin)&&(!FOCUS||p===FOCUS||p===cur)).forEach(p=>t.append(el('button',{role:FOCUS?undefined:'tab',type:'button','aria-selected':FOCUS?undefined:String(p===cur),'aria-current':FOCUS&&p===cur?'page':undefined,on:{click:()=>{cur=p;curPage=0;buildTabs();rebuild();window.scrollTo(0,0);}}},p.label)));
   if(FOCUS)t.append(isAdmin?el('a',{class:'tab-all',href:'./'},'☰ כל הסטודיו'):el('a',{class:'tab-all',href:'../games/#print'},'← כל המשחקים'));}
 
-async function ensureFonts(){await Promise.all(cur.fonts().filter(Boolean).map(loadFont));if(cur.id==='cards'&&cuUsesIco())await loadCardIcons().catch(()=>{});if(cur.art)await Promise.all(cur.art().map(id=>cardArt(id).p));await document.fonts.ready;} // גם ציורי קלפים — שלא ייצאו ריקים ב-PDF
+async function ensureFonts(){await Promise.all(cur.fonts().filter(Boolean).map(loadFont));if(cur.id==='cards'&&cuUsesIco())await loadCardIcons().catch(()=>{});if(cur.art)await Promise.all(cur.art().map(id=>cardArt(id).p));if(cur.ready)await cur.ready();await document.fonts.ready;} // cur.ready — למשל סולמות וחבלים: הרסטר של הלוח חייב להיות מוכן לפני PDF // גם ציורי קלפים — שלא ייצאו ריקים ב-PDF
 function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.hidden=true;document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},30000);} // 30 שנ׳: באנדרואיד קובץ גדול עוד נשמר כשהקישור כבר בוטל
 const stamp=()=>{const d=new Date(),z=n=>String(n).padStart(2,'0');return d.getFullYear()+z(d.getMonth()+1)+z(d.getDate())+'-'+z(d.getHours())+z(d.getMinutes());};
 // ═══ גיליון לבית דפוס — אותו פורמט של הדאבל (expSheetPDF / PRINT_SHEET): גיליון 330×488 מ"מ, שוליים 12,
