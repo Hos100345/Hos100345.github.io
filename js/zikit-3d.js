@@ -181,6 +181,31 @@
     var mc = document.createElement('canvas'); mc.width = mc.height = 256; var mx = mc.getContext('2d'); mx.fillStyle = '#000'; mx.fillRect(0, 0, 256, 256); mx.fillStyle = '#fff'; mx.beginPath(); mx.ellipse(128, 128, 126, 126, 0, 0, Math.PI * 2); mx.fill(); m.material.alphaMap = new Tt.CanvasTexture(mc); m.material.alphaTest = .5; g.add(m);
     [[-.7, .6], [.7, .6]].forEach(function (q) { var s = cyl(.09, .09, .04, mat({ color: 0xBBBBBB, transparent: true, opacity: .7 })); s.rotation.x = Math.PI / 2; s.position.set(q[0], q[1], -.03); g.add(s); }); return g; });
 
+  /* ── G-36: תמונות הקטלוג כמודל (הושעיה 29/10: "תיקח את התמונות מהקטלוג", זיקית מרשים להשתמש בתמונות).
+   * התמונה מהקטלוג נחתכה מהרקע (rembg) ונשמרה ב-images/games/zikit/<key>.webp עם שקיפות. כאן היא הופכת ל"כרטיס" עם עובי:
+   * שכבת החזית = התמונה; מאחוריה 6 שכבות כהות יותר בהיסט קטן = עובי שנראה כשמסתובבים; צל רך על הרצפה. אחד לאחד עם הקטלוג מהחזית.
+   * מוצר שהתמונה שלו בקטלוג חלשה (קטנה/דהויה) נשאר כמודל שנבנה בקוד (BUILD). ── */
+  var PHOTO = ['backpack','basalt','board','bottle-straw','bottle','carcurtain','clock','crystal','cushion','doormat','doorsign','drawstring','enamel','glass-mirror','glass','hairbrush','hugmug','instagram','keyhanger','leather','makeup','megamug','mug-color','mug-magic','mug-metal','mug-neon','pencil','powerbank','runner','snow','thermo','tin','tote','usb','wine','woodnum','woodphoto','woodshape'];
+  function photoCard(key) {
+    var Tt = T(), g = new Tt.Group(), loader = new Tt.TextureLoader();
+    var geo = new Tt.PlaneGeometry(2, 2), mats = [];
+    // עד שהתמונה נטענת — כלום (לא ריבוע לבן)
+    loader.load('../images/games/zikit/' + key + '.webp', function (t) {
+      if (Tt.sRGBEncoding) t.encoding = Tt.sRGBEncoding; t.anisotropy = 4;
+      var w = t.image.width, h = t.image.height, s = 2.2 / Math.max(w, h), W = w * s, H = h * s;
+      geo.dispose(); geo = new Tt.PlaneGeometry(W, H);
+      for (var i = 6; i >= 0; i--) {
+        var dark = i ? 0.55 + 0.05 * (6 - i) : 1;
+        var m = new Tt.Mesh(geo, new Tt.MeshStandardMaterial({ map: t, transparent: true, alphaTest: .35, roughness: .7, color: new Tt.Color(dark, dark, dark), side: Tt.DoubleSide, depthWrite: true }));
+        m.position.z = -i * 0.012; m.position.x = -i * 0.004; g.add(m);
+      }
+      var sh = new Tt.Mesh(new Tt.CircleGeometry(W * .42, 32), new Tt.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: .18 }));
+      sh.rotation.x = -Math.PI / 2; sh.position.y = -H / 2 + .02; sh.scale.y = .35; g.add(sh);
+    });
+    return g;
+  }
+  PHOTO.forEach(function (k) { S.register(k, function () { return photoCard(k); }); });
+
   /* ── הרשימה לבמה: מפתח → שם לתגית, מק"ט, קישור לעיצוב. המחירים ללקוח עוד לא נקבעו (כלל 125) → בלי מחיר, הצעת מחיר ──
    * שלושת הראשונים (חולצה, ספל, פאזל) כבר קיימים ב-showcase-3d.js. */
   window.ZIKIT = [
