@@ -16,7 +16,8 @@
   <!-- ⛔ js/play-engine.js נוצר ע"י tools/build-play-engine.py מתוך dobble.html — לא לערוך ידנית.
        משמש כאן רק את "מצא את הזהה" (genDeck/drawCard…), כך שהקלף זהה למחולל. שינוי בו = להעלות ?v= כאן וב-sw.js. -->
   <script src="../js/play-engine.js?v=8"></script>
-  <script src="../js/showcase-3d.js?v=6" defer></script>
+  <script src="../js/showcase-3d.js?v=7" defer></script>
+  <script src="../js/zikit-3d.js?v=1" defer></script>
   <style>
     :root{
       --blue:#2563EB;--blue-light:#DBEAFE;--indigo:#4338CA;--purple:#7C3AED;--wa:#25D366;--wa-dark:#1DA851;--navy:#0F172A;
@@ -331,7 +332,7 @@
   </section>
 
   <section class="tabpanel" id="pan-gifts" role="tabpanel" aria-labelledby="tab-gifts" hidden>
-  <div class="stage st-gifts" data-3d-stage data-items="shirt,mug,puzzle" data-names="👕 חולצה · 100 ₪,☕ ספל · 36 ₪,🧩 פאזל עץ · מ-89 ₪" data-links="../studio/?p=tshirt,../studio/?p=mug,../studio/?p=puzzle"><a href="../studio/?p=tshirt"><img src="../images/games/tshirt.webp" alt="חולצה לבנה עם הדפסת בלונים צבעוניים" width="800" height="600"></a><span class="tag">רואים בתלת־ממד לפני ההזמנה</span></div>
+  <div class="stage st-gifts" data-3d-stage data-zikit data-items="shirt,mug,puzzle" data-names="👕 חולצה · 100 ₪,☕ ספל · 36 ₪,🧩 פאזל עץ · מ-89 ₪" data-links="../studio/?p=tshirt,../studio/?p=mug,../studio/?p=puzzle"><a href="../studio/?p=tshirt"><img src="../images/games/tshirt.webp" alt="חולצה לבנה עם הדפסת בלונים צבעוניים" width="800" height="600"></a><span class="tag">רואים בתלת־ממד לפני ההזמנה</span></div>
   <h2 id="gifts" class="ptitle">מתנה עם התמונה שלכם</h2>
   <p class="psub">מעצבים בטלפון, אנחנו מדפיסים ושולחים.</p>
   <a class="btn pcta" href="../studio/?p=tshirt">בואו נעצב מתנה</a>

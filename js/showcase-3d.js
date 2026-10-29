@@ -276,6 +276,8 @@
   }
 
   var BUILD = { shirt: buildShirt, mug: buildMug, puzzle: buildPuzzle, cards: buildCards, memory: buildMemory, domino: buildDomino, ludo: buildLudo, tangram: buildTangram, dice: buildDice };
+  // G-35: מודלים נוספים נרשמים מבחוץ (js/zikit-3d.js — המוצרים מההזמנה מזיקית). register(key, fn) לפני שהבמה נטענת.
+  window.S3D = { register: function (k, fn) { BUILD[k] = fn; }, printCanvas: printCanvas, tex: tex, face: face, balloon: balloon, has: function (k) { return !!BUILD[k]; }, build: function (k) { return BUILD[k](); } };
 
   function mount(stage) {
     var keys = (stage.getAttribute('data-items') || '').split(',').map(function (k) { return k.trim(); }).filter(function (k) { return BUILD[k]; });
@@ -302,26 +304,24 @@
       var dots = document.createElement('div'); dots.className = 's3d-dots'; dots.setAttribute('aria-hidden', 'true');
       var dotEls = keys.map(function () { var d = document.createElement('i'); dots.appendChild(d); return d; });
       nav.appendChild(next); nav.appendChild(dots); nav.appendChild(prev); nav.appendChild(pause);   // RTL: ▶ מימין
-      var RAD = N > 1 ? Math.max(2.4, 0.78 * N) : 0;   // יותר מוצרים = מעגל רחב יותר, והמצלמה מתרחקת בהתאם
+      // G-35: מעגל "וירטואלי" — תמיד עד 7 מקומות על המעגל; ברשימה ארוכה רואים רק את השכנים של המוצר שמקדימה, והשאר ממתינים מאחור.
+      var SLOTS = Math.min(N, 7), STEP = Math.PI * 2 / SLOTS, RAD = N > 1 ? 2.4 + 0.35 * (SLOTS - 3) : 0;
       var scene = new T.Scene(), cam = new T.PerspectiveCamera(28, 1, 0.1, 60);
       cam.position.set(0, 1.0, RAD + 7.8); cam.lookAt(0, -0.1, RAD * 0.25);
       scene.add(new T.HemisphereLight(0xffffff, 0xa89c88, 0.45));
       var d1 = new T.DirectionalLight(0xffffff, 0.95); d1.position.set(-4, 3, 2.5); scene.add(d1);
       var d2 = new T.DirectionalLight(0xfff1e0, 0.35); d2.position.set(3.5, 0.8, -2.5); scene.add(d2);
       var d3 = new T.DirectionalLight(0xe8f0ff, 0.25); d3.position.set(3.5, -0.5, 3); scene.add(d3);
-      // המעגל: כל מוצר על נקודה במעגל, המעגל עצמו מסתובב. "מקדימה" = הזווית 0 (מול המצלמה)
       var ring = new T.Group(); scene.add(ring);
-      var items = keys.map(function (k, i) {
-        var holder = new T.Group(), o = BUILD[k]();
-        holder.add(o);
-        var ang = i / N * Math.PI * 2;
-        holder.position.set(Math.sin(ang) * RAD, 0, Math.cos(ang) * RAD);
-        ring.add(holder); return { h: holder, o: o, ang: ang };
+      var items = keys.map(function (k) {
+        var holder = new T.Group(), o;
+        try { o = BUILD[k](); } catch (e) { console.warn('showcase-3d build', k, e); o = new T.Group(); }
+        holder.add(o); holder.visible = false; ring.add(holder); return { h: holder, o: o };
       });
-      // רצפה־צל עדינה
       var disc = new T.Mesh(new T.CircleGeometry(RAD + 0.9, 64), new T.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.045 }));
       disc.rotation.x = -Math.PI / 2; disc.position.y = -1.25; scene.add(disc);
-      var auto = !reduced, drag = null, target = 0, rot = 0, nextAt = performance.now() + 5000, dragged = false;
+      // pos = "איפה המעגל עומד" במספרים של מוצרים (0 = הראשון מקדימה). target = לאן זורמים. המוצר i יושב בזווית (i - pos) * STEP.
+      var auto = !reduced, drag = null, target = 0, pos = 0, nextAt = performance.now() + 5000, dragged = false;
       function label() {
         dotEls.forEach(function (d, i) { d.className = i === cur ? 'on' : ''; });
         cv.setAttribute('aria-label', 'תלת־ממד מסתובב: ' + (names[cur] || keys[cur]) + ' — לחיצה פותחת את העיצוב');
@@ -331,23 +331,15 @@
       pause.addEventListener('click', function () { auto = !auto; nextAt = performance.now() + 5000; label(); });
       function go(i, user) {
         cur = ((i % N) + N) % N;
-        // הזווית שמביאה את המוצר i לחזית: סיבוב המעגל = -ang(i), בדרך הקצרה
-        var want = -items[cur].ang, k = Math.round((target - want) / (Math.PI * 2));
-        target = want + k * Math.PI * 2;
+        var k = Math.round((target - cur) / N); target = cur + k * N;   // בדרך הקצרה (המעגל סגור)
         if (user) nextAt = performance.now() + 9000;
         label();
       }
       label();
       cv.style.touchAction = 'pan-y';
-      cv.addEventListener('pointerdown', function (e) { drag = { x: e.clientX, r: rot }; dragged = false; nextAt = performance.now() + 9000; });
-      window.addEventListener('pointermove', function (e) { if (drag) { rot = drag.r + (e.clientX - drag.x) * 0.008; target = rot; if (Math.abs(e.clientX - drag.x) > 6) dragged = true; } });
-      window.addEventListener('pointerup', function () {
-        if (!drag) return; drag = null;
-        // בסוף הגרירה — נצמדים למוצר הקרוב ביותר לחזית
-        var best = 0, bd = 1e9;
-        items.forEach(function (it, i) { var a = ((it.ang + rot) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI; if (Math.abs(a) < bd) { bd = Math.abs(a); best = i; } });
-        go(best, true);
-      });
+      cv.addEventListener('pointerdown', function (e) { drag = { x: e.clientX, p: pos }; dragged = false; nextAt = performance.now() + 9000; });
+      window.addEventListener('pointermove', function (e) { if (drag) { pos = drag.p - (e.clientX - drag.x) * 0.008 / STEP; target = pos; if (Math.abs(e.clientX - drag.x) > 6) dragged = true; } });
+      window.addEventListener('pointerup', function () { if (!drag) return; drag = null; go(Math.round(pos), true); });
       cap.addEventListener('click', function (e) { if (dragged) e.preventDefault(); });
       cv.style.cursor = 'pointer';
       cv.addEventListener('click', function () { if (!dragged && links[cur]) location.href = links[cur]; });   // לחיצה על המוצר = פותחים אותו בסטודיו
@@ -363,15 +355,16 @@
         if (!shown) { shown = true; stage.classList.add('has-3d'); size(); }
         if (auto && !drag && now > nextAt && N > 1) { go(cur + 1); nextAt = now + 5000; }
         var dt = Math.min(100, now - (frame.last || now)); frame.last = now;
-        if (!drag) rot += (target - rot) * (1 - Math.exp(-dt / 220));   // לפי זמן, לא לפי פריימים — אותה מהירות בכל טלפון
-        ring.rotation.y = rot;
+        if (!drag) pos += (target - pos) * (1 - Math.exp(-dt / 220));   // לפי זמן, לא לפי פריימים — אותה מהירות בכל טלפון
         items.forEach(function (it, i) {
-          // המוצר שמקדימה: גדול, מסתובב סביב עצמו ומרחף; מאחור: קטן וכהה יותר
-          var a = Math.cos(it.ang + rot), front = (a + 1) / 2;   // 1 מקדימה, 0 מאחור
-          var s = 0.55 + (0.6 + (N > 4 ? 0.3 : 0)) * front;   // במעגל גדול המוצר שמקדימה גדל קצת יותר
+          var d = i - pos; d = d - Math.round(d / N) * N;              // מרחק מהחזית במספרי מוצרים, בדרך הקצרה
+          var ang = d * STEP, vis = N <= SLOTS || Math.abs(d) <= SLOTS / 2;
+          it.h.visible = vis; if (!vis) return;
+          var front = (Math.cos(ang) + 1) / 2;                           // 1 מקדימה, 0 מאחור
+          it.h.position.set(Math.sin(ang) * RAD, -0.2 + 0.2 * front + Math.sin(now / 900 + i) * 0.04, Math.cos(ang) * RAD);
+          var s = 0.5 + (0.6 + (SLOTS > 4 ? 0.3 : 0)) * front;
           it.h.scale.setScalar(s);
-          it.h.position.y = -0.2 + 0.2 * front + Math.sin(now / 900 + i) * 0.04;
-          it.h.rotation.y = -rot + (i === cur && !drag ? Math.sin(now / 1400) * 0.55 : 0);  // פונה למצלמה, ומתנדנד קלות
+          it.h.rotation.y = (i === cur && !drag ? Math.sin(now / 1400) * 0.55 : 0);   // פונה למצלמה, ומתנדנד קלות
         });
         r.render(scene, cam);
       }
