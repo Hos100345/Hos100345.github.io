@@ -22,7 +22,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="../js/mikdash-library.js?v=1"></script>
+<script src="../js/mikdash-library.js?v=2"></script>
 <script src="snakes.js?v=6"></script>
 <style>
 :root{
@@ -329,7 +329,7 @@ body.admin .cust{display:none!important}
 <script>
 const NETS={"d4":{"faces":4,"sides":3,"pos":[[[1.2247,0.9659],[0.2588,1.2247],[0.5176,0.2588]],[[0,2.1907],[0.2588,1.2247],[0.9659,1.9319]],[[0.9659,1.9319],[0.2588,1.2247],[1.2247,0.9659]],[[1.2247,0.9659],[0.5176,0.2588],[1.4836,0]]],"tabs":[{"e":[[0.2588,1.2247],[0.5176,0.2588]],"f":0,"d":0.28,"t":0.25},{"e":[[0.9659,1.9319],[0,2.1907]],"f":1,"d":0.28,"t":0.25},{"e":[[1.2247,0.9659],[0.9659,1.9319]],"f":2,"d":0.28,"t":0.25}],"cuts":[[[0,2.1907],[0.2588,1.2247]],[[0.5176,0.2588],[1.4836,0]],[[1.4836,0],[1.2247,0.9659]]],"folds":[[[1.2247,0.9659],[0.2588,1.2247]],[[0.5176,0.2588],[1.2247,0.9659]],[[0.2588,1.2247],[0.9659,1.9319]]],"w":1.4836,"h":2.3964,"opp":[-1,-1,-1,-1],"maxEdge":104.3},"d6":{"faces":6,"sides":4,"pos":[[[1.1953,4.1008],[0.2557,3.7588],[0.5977,2.8191],[1.5374,3.1611]],[[0,1.5374],[0.342,0.5977],[1.2817,0.9397],[0.9397,1.8794]],[[1.2817,0.9397],[1.6237,0],[2.5634,0.342],[2.2214,1.2817]],[[1.5374,3.1611],[0.5977,2.8191],[0.9397,1.8794],[1.8794,2.2214]],[[2.8191,2.5634],[2.4771,3.5031],[1.5374,3.1611],[1.8794,2.2214]],[[0.9397,1.8794],[1.2817,0.9397],[2.2214,1.2817],[1.8794,2.2214]]],"tabs":[{"e":[[1.1953,4.1008],[0.2557,3.7588]],"f":0,"d":0.28,"t":0.25},{"e":[[0.2557,3.7588],[0.5977,2.8191]],"f":0,"d":0.28,"t":0.25},{"e":[[1.5374,3.1611],[1.1953,4.1008]],"f":0,"d":0.28,"t":0.25},{"e":[[0.342,0.5977],[1.2817,0.9397]],"f":1,"d":0.28,"t":0.25},{"e":[[0.9397,1.8794],[0,1.5374]],"f":1,"d":0.28,"t":0.25},{"e":[[2.5634,0.342],[2.2214,1.2817]],"f":2,"d":0.28,"t":0.25},{"e":[[1.8794,2.2214],[2.8191,2.5634]],"f":4,"d":0.28,"t":0.25}],"cuts":[[[1.6237,0],[2.5634,0.342]],[[0,1.5374],[0.342,0.5977]],[[2.4771,3.5031],[1.5374,3.1611]],[[1.2817,0.9397],[1.6237,0]],[[0.5977,2.8191],[0.9397,1.8794]],[[2.8191,2.5634],[2.4771,3.5031]],[[2.2214,1.2817],[1.8794,2.2214]]],"folds":[[[0.5977,2.8191],[1.5374,3.1611]],[[1.2817,0.9397],[0.9397,1.8794]],[[2.2214,1.2817],[1.2817,0.9397]],[[0.9397,1.8794],[1.8794,2.2214]],[[1.8794,2.2214],[1.5374,3.1611]]],"w":2.8191,"h":4.2784,"opp":[5,4,3,2,1,0],"maxEdge":58.4},"d8":{"faces":8,"sides":3,"pos":[[[0.684,1.172],[1.3268,1.9381],[0.342,2.1117]],[[0.342,2.1117],[1.3268,1.9381],[0.9848,2.8778]],[[1.6688,0.9984],[1.3268,1.9381],[0.684,1.172]],[[0.9848,2.8778],[1.3268,1.9381],[1.9696,2.7041]],[[0.0413,0.406],[1.0261,0.2323],[0.684,1.172]],[[0.9848,2.8778],[0,3.0514],[0.342,2.1117]],[[0.684,1.172],[1.0261,0.2323],[1.6688,0.9984]],[[1.6688,0.9984],[1.0261,0.2323],[2.0109,0.0587]]],"tabs":[{"e":[[0.342,2.1117],[0.684,1.172]],"f":0,"d":0.28,"t":0.25},{"e":[[1.6688,0.9984],[1.3268,1.9381]],"f":2,"d":0.28,"t":0.25},{"e":[[1.9696,2.7041],[0.9848,2.8778]],"f":3,"d":0.28,"t":0.25},{"e":[[0.0413,0.406],[1.0261,0.2323]],"f":4,"d":0.28,"t":0.25},{"e":[[0.9848,2.8778],[0,3.0514]],"f":5,"d":0.28,"t":0.25}],"cuts":[[[0.684,1.172],[0.0413,0.406]],[[1.3268,1.9381],[1.9696,2.7041]],[[2.0109,0.0587],[1.6688,0.9984]],[[0,3.0514],[0.342,2.1117]],[[1.0261,0.2323],[2.0109,0.0587]]],"folds":[[[0.684,1.172],[1.3268,1.9381]],[[1.3268,1.9381],[0.342,2.1117]],[[1.3268,1.9381],[0.9848,2.8778]],[[0.9848,2.8778],[0.342,2.1117]],[[0.684,1.172],[1.6688,0.9984]],[[1.0261,0.2323],[0.684,1.172]],[[1.0261,0.2323],[1.6688,0.9984]]],"w":2.0109,"h":3.2837,"opp":[7,6,5,4,3,2,1,0],"maxEdge":76.1},"d12":{"faces":12,"sides":5,"pos":[[[2.9967,3.8222],[3.0491,4.8209],[2.1155,5.1792],[1.4862,4.4021],[2.0308,3.5634]],[[3.1337,6.4367],[2.1678,6.1778],[2.1155,5.1792],[3.0491,4.8209],[3.6784,5.598]],[[0.5526,4.7604],[1.4862,4.4021],[2.1155,5.1792],[1.5708,6.0179],[0.6049,5.7591]],[[3.5414,2.9836],[2.9967,3.8222],[2.0308,3.5634],[1.9785,2.5648],[2.912,2.2064]],[[1.0125,2.306],[1.9785,2.5648],[2.0308,3.5634],[1.0972,3.9218],[0.4679,3.1446]],[[3.5414,2.9836],[4.5073,3.2424],[4.5596,4.241],[3.626,4.5994],[2.9967,3.8222]],[[3.7631,7.2138],[3.1337,6.4367],[3.6784,5.598],[4.6443,5.8568],[4.6966,6.8554]],[[4.4226,1.6266],[4.4749,2.6252],[3.5414,2.9836],[2.912,2.2064],[3.4567,1.3677]],[[1.3491,1.7876],[0.3832,1.5288],[0.3309,0.5302],[1.2645,0.1718],[1.8938,0.949]],[[0.6896,7.3749],[0.0603,6.5977],[0.6049,5.7591],[1.5708,6.0179],[1.6232,7.0165]],[[2.912,2.2064],[1.9785,2.5648],[1.3491,1.7876],[1.8938,0.949],[2.8597,1.2078]],[[3.4043,0.3691],[4.3379,0.0107],[4.9672,0.7879],[4.4226,1.6266],[3.4567,1.3677]]],"tabs":[{"e":[[2.9967,3.8222],[3.0491,4.8209]],"f":0,"d":0.22,"t":0.3},{"e":[[1.4862,4.4021],[2.0308,3.5634]],"f":0,"d":0.22,"t":0.3},{"e":[[3.1337,6.4367],[2.1678,6.1778]],"f":1,"d":0.28,"t":0.25},{"e":[[2.1678,6.1778],[2.1155,5.1792]],"f":1,"d":0.22,"t":0.3},{"e":[[3.0491,4.8209],[3.6784,5.598]],"f":1,"d":0.28,"t":0.25},{"e":[[0.5526,4.7604],[1.4862,4.4021]],"f":2,"d":0.28,"t":0.25},{"e":[[0.6049,5.7591],[0.5526,4.7604]],"f":2,"d":0.28,"t":0.25},{"e":[[1.0125,2.306],[1.9785,2.5648]],"f":4,"d":0.22,"t":0.3},{"e":[[0.4679,3.1446],[1.0125,2.306]],"f":4,"d":0.28,"t":0.25},{"e":[[3.5414,2.9836],[4.5073,3.2424]],"f":5,"d":0.22,"t":0.3},{"e":[[4.5073,3.2424],[4.5596,4.241]],"f":5,"d":0.28,"t":0.25},{"e":[[3.7631,7.2138],[3.1337,6.4367]],"f":6,"d":0.28,"t":0.25},{"e":[[4.6443,5.8568],[4.6966,6.8554]],"f":6,"d":0.28,"t":0.25},{"e":[[4.6966,6.8554],[3.7631,7.2138]],"f":6,"d":0.28,"t":0.25},{"e":[[2.912,2.2064],[3.4567,1.3677]],"f":7,"d":0.22,"t":0.3},{"e":[[0.3309,0.5302],[1.2645,0.1718]],"f":8,"d":0.28,"t":0.25},{"e":[[1.2645,0.1718],[1.8938,0.949]],"f":8,"d":0.28,"t":0.25},{"e":[[0.6896,7.3749],[0.0603,6.5977]],"f":9,"d":0.28,"t":0.25},{"e":[[1.8938,0.949],[2.8597,1.2078]],"f":10,"d":0.28,"t":0.25}],"cuts":[[[3.626,4.5994],[2.9967,3.8222]],[[2.0308,3.5634],[1.0972,3.9218]],[[1.5708,6.0179],[1.6232,7.0165]],[[2.1155,5.1792],[1.5708,6.0179]],[[4.5596,4.241],[3.626,4.5994]],[[1.0972,3.9218],[0.4679,3.1446]],[[0.3832,1.5288],[0.3309,0.5302]],[[1.9785,2.5648],[1.3491,1.7876]],[[1.3491,1.7876],[0.3832,1.5288]],[[4.4749,2.6252],[3.5414,2.9836]],[[3.6784,5.598],[4.6443,5.8568]],[[1.6232,7.0165],[0.6896,7.3749]],[[4.4226,1.6266],[4.4749,2.6252]],[[4.9672,0.7879],[4.4226,1.6266]],[[2.8597,1.2078],[2.912,2.2064]],[[0.0603,6.5977],[0.6049,5.7591]],[[3.4043,0.3691],[4.3379,0.0107]],[[4.3379,0.0107],[4.9672,0.7879]],[[3.4567,1.3677],[3.4043,0.3691]]],"folds":[[[3.0491,4.8209],[2.1155,5.1792]],[[2.1155,5.1792],[1.4862,4.4021]],[[2.0308,3.5634],[2.9967,3.8222]],[[3.6784,5.598],[3.1337,6.4367]],[[1.5708,6.0179],[0.6049,5.7591]],[[3.5414,2.9836],[2.9967,3.8222]],[[2.0308,3.5634],[1.9785,2.5648]],[[1.9785,2.5648],[2.912,2.2064]],[[2.912,2.2064],[3.5414,2.9836]],[[3.4567,1.3677],[4.4226,1.6266]],[[1.8938,0.949],[1.3491,1.7876]]],"w":4.9672,"h":7.3856,"opp":[11,10,7,9,6,8,4,2,5,3,1,0],"maxEdge":33.6},"d20":{"faces":20,"sides":3,"pos":[[[2.0234,2.2854],[1.0386,2.1117],[1.6814,1.3457]],[[1.6814,1.3457],[1.0386,2.1117],[0.6966,1.172]],[[1.3806,3.0514],[1.0386,2.1117],[2.0234,2.2854]],[[0.7378,3.8175],[0.3958,2.8778],[1.3806,3.0514]],[[0.6966,1.172],[1.0386,2.1117],[0.0538,1.9381]],[[2.0234,2.2854],[1.6814,1.3457],[2.6662,1.5193]],[[2.6662,1.5193],[1.6814,1.3457],[2.3242,0.5796]],[[1.3394,0.406],[1.6814,1.3457],[0.6966,1.172]],[[2.3654,3.2251],[2.0234,2.2854],[3.0082,2.459]],[[1.3806,3.0514],[2.0234,2.2854],[2.3654,3.2251]],[[2.6662,1.5193],[2.3242,0.5796],[3.309,0.7533]],[[0.3546,0.2323],[1.3394,0.406],[0.6966,1.172]],[[2.7075,4.1648],[3.0495,5.1044],[2.0647,4.9308]],[[2.7075,4.1648],[2.3654,3.2251],[3.3502,3.3987]],[[1.3806,3.0514],[2.3654,3.2251],[1.7226,3.9911]],[[1.7226,3.9911],[2.3654,3.2251],[2.7075,4.1648]],[[0.7378,3.8175],[1.3806,3.0514],[1.7226,3.9911]],[[1.0799,4.7571],[0.095,4.5835],[0.7378,3.8175]],[[1.0799,4.7571],[0.7378,3.8175],[1.7226,3.9911]],[[1.7226,3.9911],[2.7075,4.1648],[2.0647,4.9308]]],"tabs":[{"e":[[1.3806,3.0514],[1.0386,2.1117]],"f":2,"d":0.28,"t":0.25},{"e":[[0.7378,3.8175],[0.3958,2.8778]],"f":3,"d":0.28,"t":0.25},{"e":[[0.0538,1.9381],[0.6966,1.172]],"f":4,"d":0.28,"t":0.25},{"e":[[2.6662,1.5193],[2.0234,2.2854]],"f":5,"d":0.28,"t":0.25},{"e":[[1.6814,1.3457],[2.3242,0.5796]],"f":6,"d":0.28,"t":0.25},{"e":[[3.0082,2.459],[2.3654,3.2251]],"f":8,"d":0.28,"t":0.25},{"e":[[2.3242,0.5796],[3.309,0.7533]],"f":10,"d":0.28,"t":0.25},{"e":[[3.309,0.7533],[2.6662,1.5193]],"f":10,"d":0.28,"t":0.25},{"e":[[0.3546,0.2323],[1.3394,0.406]],"f":11,"d":0.28,"t":0.25},{"e":[[0.6966,1.172],[0.3546,0.2323]],"f":11,"d":0.28,"t":0.25},{"e":[[1.7226,3.9911],[1.0799,4.7571]],"f":18,"d":0.28,"t":0.25}],"cuts":[[[0.3958,2.8778],[1.3806,3.0514]],[[1.0386,2.1117],[0.0538,1.9381]],[[0.095,4.5835],[0.7378,3.8175]],[[2.0234,2.2854],[3.0082,2.459]],[[1.3394,0.406],[1.6814,1.3457]],[[2.3654,3.2251],[3.3502,3.3987]],[[2.7075,4.1648],[3.0495,5.1044]],[[3.3502,3.3987],[2.7075,4.1648]],[[3.0495,5.1044],[2.0647,4.9308]],[[1.0799,4.7571],[0.095,4.5835]],[[2.0647,4.9308],[1.7226,3.9911]]],"folds":[[[2.0234,2.2854],[1.0386,2.1117]],[[1.0386,2.1117],[1.6814,1.3457]],[[1.6814,1.3457],[2.0234,2.2854]],[[1.0386,2.1117],[0.6966,1.172]],[[0.6966,1.172],[1.6814,1.3457]],[[2.0234,2.2854],[1.3806,3.0514]],[[1.3806,3.0514],[0.7378,3.8175]],[[1.6814,1.3457],[2.6662,1.5193]],[[2.3242,0.5796],[2.6662,1.5193]],[[0.6966,1.172],[1.3394,0.406]],[[2.3654,3.2251],[2.0234,2.2854]],[[2.3654,3.2251],[1.3806,3.0514]],[[2.0647,4.9308],[2.7075,4.1648]],[[2.7075,4.1648],[2.3654,3.2251]],[[2.3654,3.2251],[1.7226,3.9911]],[[1.7226,3.9911],[1.3806,3.0514]],[[2.7075,4.1648],[1.7226,3.9911]],[[1.7226,3.9911],[0.7378,3.8175]],[[0.7378,3.8175],[1.0799,4.7571]]],"w":3.3628,"h":5.1044,"opp":[19,15,12,10,13,18,16,14,17,11,3,9,2,4,7,1,6,8,5,0],"maxEdge":49}};
 'use strict';
-const VERSION='studio-v1.02';
+const VERSION='studio-v1.09';
 // ═══════════ קבצים משותפים מהריפו (פונטים, עיצובי גב) ═══════════
 // נעוץ לקומיט ספציפי — שינוי בריפו לא ישבור את הקובץ הזה בלי שנעדכן כאן במכוון.
 const SHARED_COMMIT='f196a73a41a063231ba207a4296395f889aac265';
@@ -1591,10 +1591,13 @@ function openMkLib(input){mkLibStyle();document.getElementById('mkLib')?.remove(
     catch(e){go.disabled=false;go.textContent='הוספה';toast('התמונה לא נטענה — נסו שוב');}};
   go.onclick=done;
   const m=el('div',{id:'mkLib',role:'dialog','aria-modal':'true','aria-label':'מאגר התמונות של המקדש'},el('div',{class:'box'},
-    el('header',{},el('h2',{},'🕍 בוחרים תמונה מהמאגר'),el('button',{type:'button',class:'x','aria-label':'סגירה',on:{click:close}},'×')),cats,grid,el('footer',{},n,go)));
+    el('header',{},el('h2',{},'🕍 בוחרים תמונה מהמאגר'),el('button',{type:'button',class:'x','aria-label':'סגירה',on:{click:close}},'×')),cats,grid,el('footer',{},mkOwnOk()?el('button',{type:'button',class:'go',style:'background:#fff;color:#14294D;border:1px solid #C6A135',on:{click:()=>{close();input._mkOwn=true;input.click();}}},'📷 תמונה משלי'):null,n,go)));
   m.addEventListener('click',e=>{if(e.target===m)close();});m.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
   document.body.append(m);document.body.style.overflow='hidden';paint();m.querySelector('.x').focus();}
+// S-107: מוצרים שבהם הלקוח רשאי להוסיף גם תמונה משלו (בלודו — תמונות השחקנים). בכל השאר — רק מהמאגר.
+const MK_OWN=new Set(['ludo']);function mkOwnOk(){try{return MK_OWN.has(cur.id);}catch(e){return false;}}
 if(MIKDASH)document.addEventListener('click',e=>{const t=e.target;if(!(t instanceof HTMLInputElement)||t.type!=='file'||!/image/.test(t.accept||''))return;
+  if(t._mkOwn){t._mkOwn=false;return;}
   e.preventDefault();e.stopImmediatePropagation();openMkLib(t);},true);
 function iconThumb(U,su){const c=el('canvas',{width:44,height:44}),x=c.getContext('2d');x.fillStyle=({h:1,d:1})[su]?U.red:U.black;cuSuit(x,U,su,22,22,16,0,x.fillStyle);return c;}
 // בוחר אייקון: העלאת תמונה (עם חיתוך והסרת רקע), צורות קלאסיות, אייקונים חינמיים (Phosphor/Bootstrap, MIT) בקטגוריות, סמלים ואימוג'י.
@@ -1989,12 +1992,51 @@ function qtIdeas(){const cat=QT_IDEAS.find(c=>c.id===QT.ideaCat)||QT_IDEAS[0],ha
       return el('button',{type:'button',class:'qt-idea'+(added?' added':''),'aria-pressed':added?'true':'false',disabled:(!added&&full)?'':null,title:added?'לחצו שוב כדי להסיר':null,on:{click:()=>added?qtRemoveIdea(name):qtAddIdea(line)}},
         el('b',{},(added?'✓ ':'+ ')+name),el('span',{},cards),note?el('i',{},note):null,added?el('i',{class:'qt-rm'},'✕ לחצו שוב להסרה'):null);})),
     full?el('p',{class:'hint'},'הגעתם למקסימום — '+QT_MAX+' סדרות.'):null);}
+// ── רביעיות המקדש (S-107) ── בחנות המקדש (?set=mikdash) אין העלאה: הלקוח בוחר סדרות מוכנות, כל סדרה = 4 תמונות + שמות.
+const QA='/mikdash/art/qt/';
+const QT_MK_SETS=[
+  {n:'ביכורים מהשדה',c:[['s3-chita','חיטה'],['s3-seora','שעורה'],['s3-zayit','זית'],['peirot-tamar','תמר']]},
+  {n:'ביכורים מהכרם',c:[['peirot-gefen','גפן'],['peirot-teena','תאנה'],['peirot-rimon','רימון'],['mevi-bikurim','סל הביכורים']]},
+  {n:'קורבנות',c:[['s3-par','פר'],['mevi-keves','כבש'],['s3-sair','שעיר עיזים'],['mevi-yonim','תורים ובני יונה']]},
+  {n:'מנחות ונסכים',c:[['s3-lechem','לחם הפנים'],['s3-shtei','שתי הלחם'],['s3-solet','סולת בלולה בשמן'],['s3-yayin','יין לנסכים']]},
+  {n:'מביאים ביכורים',c:[['s3-shor','השור בקרני זהב'],['s3-chalil','החליל מנגן'],['s3-olim','משפחה עם סלים'],['s3-yeled','ילד עם ביכורים']]},
+  {n:'משרתי המקדש',c:[['s3-kg','הכהן הגדול'],['s3-kohen','כהן'],['s3-levi','לוי משורר'],['mevi-shemen','שמן זית זך']]},
+  {n:'כלי המקדש',c:[['kelim-menorah','המנורה'],['kelim-shulchan','שולחן לחם הפנים'],['kelim-ketoret','מזבח הקטורת'],['kelim-aron','ארון הברית']]},
+  {n:'בגדי הכהן הגדול',c:[['kohen-tzitz','הציץ'],['kohen-choshen','החושן'],['kohen-efod','האפוד'],['kohen-meil','המעיל']]},
+  {n:'כלי השיר של הלויים',c:[['levi-kinor','כינור'],['levi-nevel','נבל'],['levi-chatzotzrot','חצוצרות'],['levi-metziltayim','מצלתיים']]},
+  {n:'ארבעת המינים',c:[['minim-lulav','לולב'],['minim-etrog','אתרוג'],['minim-hadas','הדס'],['minim-arava','ערבה']]},
+  {n:'בתוך המקדש',c:[['bait-mizbeach','המזבח'],['bait-kiyor','הכיור'],['bait-nikanor','שער ניקנור'],['bait-heichal','ההיכל']]},
+  {n:'ירושלים',c:[['yrsh-kotel','הכותל המערבי'],['yrsh-david','מגדל דוד'],['yrsh-shaar','שער יפו'],['yrsh-zeitim','הר הזיתים']]},
+  {n:'הבית השני בציורים',c:[['/mikdash/art/wall-oil.webp','שמן ואור'],['/mikdash/art/wall-gold.webp','זהב על כחול'],['/mikdash/art/wall-watercolor.webp','צבעי מים'],['/mikdash/art/wall-papercut.webp','חיתוך נייר']]},
+  {n:'הבית השלישי',c:[['/mikdash/art/third-oil.webp','שמן ואור'],['/mikdash/art/third-gold.webp','זהב על כחול'],['/mikdash/art/third-watercolor.webp','צבעי מים'],['/mikdash/art/third-naive.webp','עולים מכל העמים']]},
+].map(x=>({n:x.n,c:x.c.map(([f,t])=>[f[0]==='/'?f:QA+f+'.webp',t])}));
+const QT_MK={on:QT_MK_SETS.map((x,i)=>i<10),imgs:{}};
+function qtMkImg(src){let im=QT_MK.imgs[src];if(!im){im=new Image();im.onload=()=>{qtMkApply();try{rebuild();}catch(e){}};im.src=src;QT_MK.imgs[src]=im;}return im;}
+function qtMkApply(){const L=QT_MK_SETS.filter((x,i)=>QT_MK.on[i]);
+  QT.images=[];L.forEach(x=>x.c.forEach(([src,t])=>{const im=qtMkImg(src);QT.images.push(im.complete&&im.naturalWidth?{img:im,name:t}:null);}));
+  QT.series=L.map(x=>x.n+': '+x.c.map(c=>c[1]).join(', ')).join('\n');}
+// גב הקלף בחנות המקדש: ציור בית המקדש במסגרת זהב כפולה (כמו בתמונת המוצר)
+const QT_MK_BACK='/mikdash/art/wall-gold.webp';
+function qtMkBackImg(){return qtMkImg(QT_MK_BACK).complete&&QT_MK.imgs[QT_MK_BACK].naturalWidth?QT_MK.imgs[QT_MK_BACK]:null;}
+function qtMkBack(d){const pts=shapePts('rounded',d.w,d.h,d.r);return{w:d.w,h:d.h,pts,draw(ctx){const{w,h}=d,P=pathOf(pts),im=qtMkBackImg();
+  ctx.save();ctx.clip(P);ctx.fillStyle='#0E1D3A';ctx.fillRect(0,0,w,h);if(im)drawCover(ctx,im,0,0,w,h);ctx.restore();
+  ctx.strokeStyle='#C6A135';ctx.lineWidth=w*.02;const m=w*.05;qtRR(ctx,m,m,w-2*m,h-2*m,d.r*.8);ctx.stroke();
+  ctx.lineWidth=w*.008;const m2=w*.075;qtRR(ctx,m2,m2,w-2*m2,h-2*m2,d.r*.6);ctx.stroke();
+  ctx.lineWidth=w*.025;ctx.strokeStyle='#C6A135';ctx.stroke(P);}};}
+function qtMkInit(){qtMkImg(QT_MK_BACK);QT.back=defDeco({bg:{mode:'radial',c1:'#1F3A68',c2:'#0E1D3A'},pattern:{id:'stars',color:'#C6A135',op:14,scale:100},frame:{id:'double',color:'#C6A135',w:1.4},
+  text:{main:'רביעיות',sub:'בית המקדש',font:'Secular One',color:'#E9C46A',size:26,dy:0}});QT.front=defDeco({frame:{id:'single',color:'#C6A135',w:.8}});qtMkApply();}
+function qtMkSec(){const n=QT_MK.on.filter(Boolean).length;
+  return sec('🕍 סדרות המקדש',true,el('p',{class:'hint'},'בחרו אילו סדרות ייכנסו לחפיסה ('+n+' סדרות · '+(n*4)+' קלפים). כל סדרה — 4 קלפים.'),
+    el('div',{style:'display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px'},QT_MK_SETS.map((x,i)=>{const on=QT_MK.on[i];
+      return el('button',{type:'button','aria-pressed':String(on),style:'display:flex;gap:6px;align-items:center;border:2px solid '+(on?'#C6A135':'#E2D8C4')+';background:'+(on?'#FFF9E8':'#fff')+';border-radius:10px;padding:5px;cursor:pointer;font:inherit;font-size:.78rem;text-align:start;opacity:'+(on?1:.6),
+        on:{click:()=>{if(on&&n<=2){toast('צריך לפחות 2 סדרות');return;}QT_MK.on[i]=!on;qtMkApply();rebuild();rerender();}}},
+        el('img',{src:x.c[0][0],alt:'',style:'width:38px;height:38px;object-fit:cover;border-radius:6px;flex:none'}),el('span',{},(on?'✓ ':'')+x.n));})));}
 const Quartets={id:'quartets',printShop:true,label:'רביעיות',
   intro:'משחק רביעיות מהתמונות שלכם: כל 4 תמונות הן סדרה אחת — למשל משפחה (סבא, סבתא, אבא, אמא). על כל קלף רשומים כל בני הסדרה, כדי לדעת את מי לבקש.',
   fonts:()=>[QT.font,QT.back.text.font,QT.style==='polaroid'?QT.hand:null],
   build(){const d={w:QT.w,h:QT.h,r:QT.r},S=qtSeries(),cards=[];
     S.forEach((s,i)=>{for(let k=0;k<4;k++)cards.push(quartetCard(d,s,k,i));});
-    const r=paginate(cards,{allowRot:false,backs:QT.backs?()=>backItem({w:d.w,h:d.h,r:d.r,shape:'rounded'},QT.back):null});
+    const r=paginate(cards,{allowRot:false,backs:QT.backs?()=>(MIKDASH&&qtMkBackImg()?qtMkBack(d):backItem({w:d.w,h:d.h,r:d.r,shape:'rounded'},QT.back)):null});
     r.summary=S.length+' סדרות · '+cards.length+' קלפים';return r;},
   panel(){return[
     sec('איך משחקים',false,el('div',{class:'rules'},
@@ -2005,12 +2047,13 @@ const Quartets={id:'quartets',printShop:true,label:'רביעיות',
       QT.content==='img'?el('p',{class:'hint'},'בלי שמות בכלל — הסדרה מזוהה לפי הצבע והסמל, ובתחתית כל קלף 4 תמונות קטנות של בני הסדרה (הקלף הזה מודגש). מתאים לקטנים שעוד לא קוראים.'):null,
       el('p',{class:'hint'},'עיצוב:'),seg(QT,'style',QT_STYLES),
       QT.style==='polaroid'&&QT.content!=='img'?fontSel(QT,'hand','פונט כתב יד לשם',()=>qtSeries()[0].cards[0].name):null),
-    sec('סדרות ותמונות',true,qtStatus(),filesInput(QT,'images','תמונות — כל 4 ברצף הן סדרה אחת',{max:QT_MAX*4,edit:true,after:()=>rebuild()}),facesBtns(QT,QT_MAX*4,'כל פרצוף = קלף (4 ברצף = סדרה).'),
+    MIKDASH?qtMkSec():null,
+    MIKDASH?null:sec('סדרות ותמונות',true,qtStatus(),filesInput(QT,'images','תמונות — כל 4 ברצף הן סדרה אחת',{max:QT_MAX*4,edit:true,after:()=>rebuild()}),facesBtns(QT,QT_MAX*4,'כל פרצוף = קלף (4 ברצף = סדרה).'),
       area(QT,'series','שמות — שורה לכל סדרה: שם הסדרה, נקודתיים, ואחר כך 4 שמות מופרדים בפסיק','משפחת כהן: סבא משה, סבתא רחל, אבא, אמא\nהנכדים: נועה, איתי, שירה, יונתן',6),
       el('p',{class:'hint'},'בלי שמות — הקלפים נקראים "קלף 1" עד "קלף 4". בלי תמונות — רואים דוגמה עם סמלים.'),
       QT.images.length?null:num(QT,'demo','מספר סדרות לדוגמה (כשאין תמונות)',{min:2,max:QT_MAX}),
       fontSel(QT,'font','פונט',()=>qtSeries()[0].name),QT.content==='img'?null:tog(QT,'list','להדפיס על כל קלף את רשימת בני הסדרה',{rebuildOnChange:true})),
-    qtIdeas(),
+    MIKDASH?null:qtIdeas(),
     sec('גודל הקלף',false,num(QT,'w','רוחב (מ"מ)',{min:40,max:100,step:.5}),num(QT,'h','גובה (מ"מ)',{min:50,max:140,step:.5}),rng(QT,'r','עיגול פינות',0,8,.5),
       el('p',{class:'hint'},'63×88 — גודל קלף משחק רגיל.')),
     decoEditor(QT.front,{title:'רקע הפנים',text:false}),
@@ -2402,6 +2445,7 @@ const Ludo={id:'ludo',label:'לודו',
       el('p',{},el('b',{},'למי זה מתאים: '),'2–4 שחקנים, מגיל 5. צריך קובייה אחת.'))),
     blank?null:printSection()];}
 };
+if(MIKDASH){Quartets.label='רביעיות המקדש';Quartets.intro='רביעיות המקדש: כל סדרה היא 4 קלפים — כלי המקדש, בגדי הכהן הגדול, כלי השיר של הלויים ועוד. בתורך מבקשים קלף מסדרה שכבר יש לך ממנה קלף, ומי שאוסף הכי הרבה סדרות שלמות — מנצח.';}
 if(MIKDASH){Ludo.label='לודו עולים לרגל';Ludo.intro='לודו עולים לרגל: ארבעה שחקנים יוצאים מארבע פינות הארץ בדרך לבית המקדש שבמרכז הלוח. בבית של כל שחקן — תמונה מהמאגר.';}
 // ── קוביות ──
 const DICE_TYPES=[['d6','6 פאות · ריבועים'],['d4','4 פאות · משולשים'],['d8','8 פאות · משולשים'],['d12','12 פאות · מחומשים'],['d20','20 פאות · משולשים']];
@@ -4237,7 +4281,7 @@ async function importDesignZip(file,from){ // from = קוד הזמנה כשהמ�
     for(const id in d.images||{}){const m=d.images[id],f=z.file(m.file);if(!f)continue;
       const b=new Blob([await f.async('arraybuffer')],{type:/\.png$/.test(m.file)?'image/png':'image/jpeg'});
       try{objs[id]={id,img:await withTimeout(blobToImg(b),15000,'decode'),name:m.name,edited:!!m.edited,_blob:b};if(m.la)objs[id].la=m.la;}catch(e){}}
-    makeStates();restoreFrom(d.state);
+    makeStates();restoreFrom(d.state);if(MIKDASH)qtMkInit();
     for(const path in d.lists||{}){const arr=d.lists[path].map(id=>objs[id]).filter(Boolean);if(arr.length)setSlot(path,arr);}
     const p=PRODUCTS.find(x=>x.id===d.tab);if(p&&(!p.adminOnly||isAdmin))cur=p;
     _imgLast='';buildTabs();rebuild();window.scrollTo(0,0);
@@ -4771,7 +4815,7 @@ function ordersSection(){
   document.getElementById('fontClose').onclick=closeFontGallery;document.getElementById('fontModal').addEventListener('click',e=>{if(e.target.id==='fontModal')closeFontGallery();});document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeFontGallery();closeOrder();document.getElementById('loginModal').hidden=true;}});
   await Promise.all([loadShared('hebrew-fonts.js'),loadShared('back-assets.js')]);
   document.getElementById('orderClose').onclick=closeOrder;document.getElementById('loginClose').onclick=()=>document.getElementById('loginModal').hidden=true;document.getElementById('loginSend').onclick=sendLogin;
-  makeStates();restore();blApplyUrl();v3InitInline();try{const q=new URLSearchParams(location.search);if(q.get('p')==='ludo'&&['all','pieces','board'].includes(q.get('what')))LD.what=q.get('what');
+  makeStates();restore();if(MIKDASH)qtMkInit();blApplyUrl();v3InitInline();try{const q=new URLSearchParams(location.search);if(q.get('p')==='ludo'&&['all','pieces','board'].includes(q.get('what')))LD.what=q.get('what');
     if(q.get('p')==='subl'&&q.get('item')){const si=SUB_ITEMS.find(i=>i.id===q.get('item'));if(si){SB.item=si.id;SB.cat=si.cat;SB.mirror=!si.noMirror;}}}catch(e){}if(FOCUS)cur=FOCUS;if(cur.adminOnly){if(cur.id!=='admin')_pendTab=cur;cur=Stickers;}
   buildTabs();sizeCanvas();rebuild();
   if(cuUsesIco())loadCardIcons().then(()=>rebuild()).catch(()=>{});
