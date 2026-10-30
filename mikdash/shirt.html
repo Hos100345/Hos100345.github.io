@@ -131,6 +131,7 @@ pre{white-space:pre-wrap;background:var(--stone);border-radius:12px;padding:10px
       <h2 id="hA"><span>א</span>הוספת איור</h2>
       <div class="tabs" id="libTabs" role="group" aria-label="סוג האיור"></div>
       <div class="lib" id="lib"></div>
+      <p class="hint" id="libNote" hidden>ציורים היסטוריים, נחלת הכלל: ג׳יימס טיסו, 1886–1894 (מוזיאון ברוקלין), ושחזור הר הבית מ-1914.</p>
       <div class="own">
         <div class="row"><label class="btn btn-line btn-sm" for="ownImg">📷 תמונה משלי</label><input type="file" id="ownImg" accept="image/*" hidden></div>
         <p class="hint">תמונה משלכם עוברת אישור עריכה לפני ההדפסה.</p>
@@ -197,6 +198,8 @@ const AREA={x:84,y:62,w:132,h:236}; // אזור ההדפסה על החזית
 
 /* ── ספריות סגורות: הלקוח בוחר רק מתוכן ── */
 const LIB={
+  wall:['תמונות קיר',[['wall-oil','ציור שמן ואור'],['wall-gold','זהב על כחול'],['wall-watercolor','אקוורל בזריחה'],['wall-geometric','מופשט'],['wall-papercut','חיתוך נייר'],['wall-naive','ירושלים הבנויה']]],
+  pd:['שחזורים היסטוריים',[['pd-tissot-1','ירושלים והמקדש',2.04],['pd-tissot-2','הר הבית מדרום',1.83],['pd-1914','הר הבית, 1914',1.65]]],
   temple:['בית המקדש',[['temple','עגול צבעוני'],['temple-watercolor','צבעי מים'],['temple-3d','תלת־ממד'],['temple-line','קווים'],['temple-gold-line','קווי זהב'],['temple-silhouette','צללית'],['temple-glass','ויטראז׳']]],
   scenes:['עם רקע',[['scene-sunrise','זריחה'],['scene-night','לילה וכוכבים'],['scene-watercolor','צבעי מים'],['scene-vintage','פוסטר וינטג׳'],['scene-olim','עולים לרגל'],['scene-rainbow','ילדים וקשת']]],
   symbols:['סמלים',[['menorah','מנורה וזית'],['small-menorah','מנורה קטנה'],['gate','שער העיר'],['shofarot','שופרות ורימונים'],['oleh','עולה לרגל'],['kelim','כלי המקדש']]],
@@ -218,15 +221,16 @@ const libName=id=>{for(const[,[,l]]of Object.entries(LIB))for(const[i,n]of l)if(
 
 /* ── מצב: רשימת שכבות. כל שכבה: {id,type:'img'|'text', src|text, src2:מקור, x,y (מרכז), s (גודל), r (סיבוב), font,color,shape, own} ── */
 let uid=1;
-const D={layers:[],sel:null,scolor:0,sizes:[['M',1]],lib:'temple',cat:'mikdash'};
-try{const o=JSON.parse(localStorage.getItem('mikdash.shirt3')||'null');if(o){Object.assign(D,o);D.layers=D.layers.filter(l=>!(l.type==='img'&&l.own));uid=1+Math.max(0,...D.layers.map(l=>l.id));}}catch(e){}
-if(!D.layers.length)D.layers=[{id:uid++,type:'img',src:'temple',x:150,y:140,s:110,r:0},{id:uid++,type:'text',text:'ועשו לי מקדש ושכנתי בתוכם',src2:'שמות כה, ח',x:150,y:232,s:100,r:0,font:0,color:0,shape:'two'}];
-const save=()=>{try{localStorage.setItem('mikdash.shirt3',JSON.stringify({...D,layers:D.layers.filter(l=>!(l.type==='img'&&l.own))}));}catch(e){}};
+const D={layers:[],sel:null,scolor:0,sizes:[['M',1]],lib:'wall',cat:'mikdash'};
+try{const o=JSON.parse(localStorage.getItem('mikdash.shirt4')||'null');if(o){Object.assign(D,o);D.layers=D.layers.filter(l=>!(l.type==='img'&&l.own));uid=1+Math.max(0,...D.layers.map(l=>l.id));}}catch(e){}
+if(!D.layers.length)D.layers=[{id:uid++,type:'img',src:'wall-oil',x:150,y:140,s:110,r:0},{id:uid++,type:'text',text:'ועשו לי מקדש ושכנתי בתוכם',src2:'שמות כה, ח',x:150,y:232,s:100,r:0,font:0,color:0,shape:'two'}];
+const save=()=>{try{localStorage.setItem('mikdash.shirt4',JSON.stringify({...D,layers:D.layers.filter(l=>!(l.type==='img'&&l.own))}));}catch(e){}};
 const cur=()=>D.layers.find(l=>l.id===D.sel)||null;
 
 /* ── ספרייה ── */
 function renderLib(){
   $('libTabs').innerHTML=Object.entries(LIB).filter(([,[,l]])=>l.length).map(([k,[n]])=>`<button type="button" data-v="${k}" aria-pressed="${D.lib===k}">${n}</button>`).join('');
+  $('libNote').hidden=D.lib!=='pd';
   $('lib').innerHTML=LIB[D.lib][1].map(([id,n])=>`<button type="button" data-v="${id}" aria-label="הוספת ${n}"><img src="art/${id}.webp" alt="" loading="lazy"><span>${n}</span></button>`).join('');
   $('catTabs').innerHTML=Object.entries(CATS).map(([k,[n]])=>`<button type="button" data-v="${k}" aria-pressed="${D.cat===k}">${n}</button>`).join('');
   $('verses').innerHTML=CATS[D.cat][1].map(([t,s],i)=>`<button type="button" data-v="${i}" aria-label="הוספת הכיתוב ${t}"><b>${t}</b><small>${s}</small></button>`).join('');
@@ -234,7 +238,7 @@ function renderLib(){
 $('libTabs').onclick=e=>{const b=e.target.closest('button');if(b){D.lib=b.dataset.v;renderLib();}};
 $('catTabs').onclick=e=>{const b=e.target.closest('button');if(b){D.cat=b.dataset.v;renderLib();}};
 function freeSpot(){const n=D.layers.length;return{x:150+((n*23)%40-20),y:150+((n*37)%60-30)};}
-$('lib').onclick=e=>{const b=e.target.closest('button');if(!b)return;const p=freeSpot();const l={id:uid++,type:'img',src:b.dataset.v,x:p.x,y:p.y,s:D.lib==='small'?50:90,r:0};D.layers.push(l);D.sel=l.id;render();};
+$('lib').onclick=e=>{const b=e.target.closest('button');if(!b)return;const p=freeSpot();const ar=(LIB[D.lib][1].find(x=>x[0]===b.dataset.v)||[])[2]||1;const l={id:uid++,type:'img',src:b.dataset.v,ar,x:p.x,y:p.y,s:D.lib==='small'?50:90,r:0};D.layers.push(l);D.sel=l.id;render();};
 $('verses').onclick=e=>{const b=e.target.closest('button');if(!b)return;const[t,s]=CATS[D.cat][1][+b.dataset.v];const p=freeSpot();const last=[...D.layers].reverse().find(l=>l.type==='text');
   const l={id:uid++,type:'text',text:t,src2:s,x:p.x,y:Math.min(270,p.y+60),s:100,r:0,font:last?last.font:0,color:last?last.color:0,shape:t.length>16?'two':'flat'};D.layers.push(l);D.sel=l.id;render();};
 $('addOwn').onclick=()=>{const t=$('ownText').value.trim();if(!t){$('ownText').focus();return;}const p=freeSpot();
@@ -247,7 +251,7 @@ $('ownImg').onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new Fil
 function textLines(l){if(l.shape==='two'){const w=l.text.split(' ');if(w.length<2)return[l.text];let best=1,diff=1e9;for(let k=1;k<w.length;k++){const d=Math.abs(w.slice(0,k).join(' ').length-w.slice(k).join(' ').length);if(d<diff){diff=d;best=k;}}return[w.slice(0,best).join(' '),w.slice(best).join(' ')];}return[l.text];}
 function layerSvg(l){
   const tf=`translate(${l.x} ${l.y}) rotate(${l.r})`;
-  if(l.type==='img'){const w=l.s,h=l.own?l.s/l.ar:l.s,href=l.own?l.data:`art/${l.src}.webp`;
+  if(l.type==='img'){const w=l.s,h=l.s/(l.ar||1),href=l.own?l.data:`art/${l.src}.webp`;
     return `<g data-id="${l.id}" transform="${tf}"><image href="${href}" x="${-w/2}" y="${-h/2}" width="${w}" height="${h}" preserveAspectRatio="xMidYMid meet"/></g>`;}
   const[ff,,fw]=FONTS[l.font],col=TCOLORS[l.color][1],L=textLines(l),long=Math.max(...L.map(s=>s.length));
   const fs=Math.max(6,Math.min(30,150/(long*.58)))*l.s/100;
