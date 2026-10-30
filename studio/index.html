@@ -22,7 +22,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="snakes.js?v=4"></script>
+<script src="snakes.js?v=5"></script>
 <style>
 :root{
   --navy:#14294D; --navy-2:#1F3A68; --gold:#C6A135; --gold-soft:#F3E8C4;
@@ -4599,7 +4599,7 @@ async function homeDownload(){
   if(homeFree())homeLog('free');else if(homePass())homeLog('repeat');
   return exportA4PDF();
 }
-function updateOrderBtn(){updateHomeBtn();if(cur.id==='admin'||isDlOnly())return;const b=built;document.querySelectorAll('[data-act="order"]').forEach(x=>{x.hidden=HOW_OK.has(cur.id)&&G.how==='home';x.textContent=!b.pages.length?'שלח הזמנה':isQuote()?'בקשת הצעת מחיר':'שלח הזמנה · '+priceFor(cur.id,b)+' ₪';x.disabled=!b.pages.length;});}
+function updateOrderBtn(){updateHomeBtn();if(cur.id==='admin'||isDlOnly())return;if(cur.id==='snakes'&&window.SN_MIKDASH){document.querySelectorAll('[data-act="order"]').forEach(x=>x.hidden=true);return;} /* S-103: חנות המקדש — רק הורדה בתשלום */const b=built;document.querySelectorAll('[data-act="order"]').forEach(x=>{x.hidden=HOW_OK.has(cur.id)&&G.how==='home';x.textContent=!b.pages.length?'שלח הזמנה':isQuote()?'בקשת הצעת מחיר':'שלח הזמנה · '+priceFor(cur.id,b)+' ₪';x.disabled=!b.pages.length;});}
 const oModal=()=>document.getElementById('orderModal'),oBody=()=>document.getElementById('orderBody');
 function closeOrder(){oModal().hidden=true;document.body.style.overflow='';}
 function productDesign(){const snap=snapshot(),map={stickers:'ST',cards:'CD',memory:'MM',quartets:'QT',domino:'DM',dice:'DC',puzzle:'PZ',bingo:'BG',tangram:'TG',ludo:'LD',tshirt:'SH',mug:'MG',snakes:'SN'},st=snap[map[cur.id]];
