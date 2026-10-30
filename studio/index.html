@@ -22,6 +22,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="../js/mikdash-library.js?v=1"></script>
 <script src="snakes.js?v=6"></script>
 <style>
 :root{
@@ -1552,6 +1553,49 @@ function customEditor(){const U=CD.war.cu=Object.assign(customFrom('classic'),CD
     grp('👑 נסיך, מלכה, מלך',r('cBox','גודל התמונה',40,80),t('cLine','קו מסביב (כשאין תמונה)')),
     grp('🖼️ מסגרת',el('p',{class:'hint'},'מסגרת בין שפת הקלף לאייקונים.'),row('סוג',el('div',{class:'seg'},[['none','ללא'],['line','קו'],...FRAME_IDS.slice(1)].map(([v,tx])=>el('button',{type:'button','aria-pressed':String(cuFrameId(U)===v),on:{click:()=>{U.fId=v;U.frame=v!=='none';rebuild();}}},tx)))),
       ...(cuFrameId(U)!=='none'?[c('fColor','צבע המסגרת'),r('fW','עובי',.1,1.5,.05),r('fIn','מרחק מהקצה',2,12)]:[])));}
+// ═══════════ S-105: חנות מוצרי המקדש — ?set=mikdash ═══════════
+// בחנות המקדש הלקוח לא מעלה תמונות משלו: כל לחיצה על בחירת תמונה (בכל מוצר — filesInput, חולצה, ספל, אייקונים, רקע)
+// פותחת את מאגר התמונות (js/mikdash-library.js). הבחירה נכנסת לאותו input כקבצים רגילים ו-change נורה —
+// כך כל מסלולי ההעלאה הקיימים (חיתוך, הסרת רקע, IndexedDB) עובדים בלי שינוי ובלי עותק שני של הקוד.
+const MIKDASH=(()=>{try{return new URLSearchParams(location.search).get('set')==='mikdash';}catch(e){return false;}})();
+function mkLibStyle(){if(document.getElementById('mkLibCss'))return;const s=document.createElement('style');s.id='mkLibCss';s.textContent=`
+#mkLib{position:fixed;inset:0;z-index:9000;background:rgba(15,20,40,.55);display:flex;align-items:center;justify-content:center;padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom))}
+#mkLib .box{background:#FFFDF8;color:#1B2333;border-radius:18px;width:min(760px,100%);max-height:92vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.35);direction:rtl}
+#mkLib header{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid #E2D8C4}
+#mkLib header h2{margin:0;font-size:1.15rem;flex:1}
+#mkLib .cats{display:flex;gap:6px;overflow-x:auto;padding:10px 14px 4px}
+#mkLib .cats button{flex:none;min-height:38px;border:1.5px solid #E2D8C4;background:#fff;border-radius:999px;padding:.2rem .8rem;font:inherit;font-weight:600;cursor:pointer}
+#mkLib .cats button[aria-pressed="true"]{background:#14294D;border-color:#14294D;color:#fff}
+#mkLib .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;padding:10px 14px;overflow-y:auto}
+#mkLib .grid button{border:2px solid #E2D8C4;background:#F3EDE1;border-radius:12px;padding:5px;display:flex;flex-direction:column;align-items:center;gap:3px;font:inherit;font-size:.75rem;cursor:pointer;line-height:1.2}
+#mkLib .grid img{width:100%;aspect-ratio:1;object-fit:contain}
+#mkLib .grid button[aria-pressed="true"]{border-color:#C6A135;background:#F4E9C8;box-shadow:inset 0 0 0 2px #C6A135}
+#mkLib footer{display:flex;gap:8px;align-items:center;padding:10px 14px;border-top:1px solid #E2D8C4}
+#mkLib footer .n{flex:1;color:#5D6371;font-size:.9rem}
+#mkLib .go{min-height:46px;border:0;border-radius:999px;background:#C6A135;color:#14294D;font:inherit;font-weight:800;padding:.4rem 1.2rem;cursor:pointer}
+#mkLib .go:disabled{opacity:.45;cursor:default}
+#mkLib .x{min-width:44px;min-height:44px;border:0;background:none;font-size:1.5rem;cursor:pointer;color:#5D6371}`;document.head.append(s);}
+function openMkLib(input){mkLibStyle();document.getElementById('mkLib')?.remove();
+  const lib=(window.MIKDASH_LIB||[]).filter(c=>c.items.length);if(!lib.length){toast('מאגר התמונות לא נטען — רעננו את הדף');return;}
+  const multi=input.multiple,sel=[];let cat=0;
+  const close=()=>{m.remove();document.body.style.overflow='';},cats=el('div',{class:'cats',role:'group','aria-label':'סוג התמונה'}),grid=el('div',{class:'grid'}),
+    n=el('span',{class:'n'}),go=el('button',{type:'button',class:'go'},'הוספה');
+  const paint=()=>{cats.innerHTML='';lib.forEach((c,i)=>cats.append(el('button',{type:'button','aria-pressed':String(i===cat),on:{click:()=>{cat=i;paint();}}},c.cat)));
+    grid.innerHTML='';lib[cat].items.forEach(([src,name])=>{const on=sel.some(s=>s[0]===src);grid.append(el('button',{type:'button','aria-pressed':String(on),'aria-label':name,
+      on:{click:()=>{const j=sel.findIndex(s=>s[0]===src);if(j>=0)sel.splice(j,1);else{if(!multi)sel.length=0;sel.push([src,name]);}if(!multi&&sel.length){done();return;}paint();}}},
+      el('img',{src,alt:'',loading:'lazy'}),el('span',{},name)));});
+    n.textContent=multi?(sel.length?'נבחרו '+sel.length:'אפשר לבחור כמה תמונות'):'';go.disabled=!sel.length;go.hidden=!multi;};
+  const done=async()=>{go.disabled=true;go.textContent='טוען…';
+    try{const dt=new DataTransfer();for(const[src,name]of sel){const r=await withTimeout(fetch(src),20000,'timeout');const b=await r.blob();dt.items.add(new File([b],name+'.'+(b.type.split('/')[1]||'png'),{type:b.type||'image/png'}));}
+      close();input.files=dt.files;input.dispatchEvent(new Event('change',{bubbles:true}));}
+    catch(e){go.disabled=false;go.textContent='הוספה';toast('התמונה לא נטענה — נסו שוב');}};
+  go.onclick=done;
+  const m=el('div',{id:'mkLib',role:'dialog','aria-modal':'true','aria-label':'מאגר התמונות של המקדש'},el('div',{class:'box'},
+    el('header',{},el('h2',{},'🕍 בוחרים תמונה מהמאגר'),el('button',{type:'button',class:'x','aria-label':'סגירה',on:{click:close}},'×')),cats,grid,el('footer',{},n,go)));
+  m.addEventListener('click',e=>{if(e.target===m)close();});m.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
+  document.body.append(m);document.body.style.overflow='hidden';paint();m.querySelector('.x').focus();}
+if(MIKDASH)document.addEventListener('click',e=>{const t=e.target;if(!(t instanceof HTMLInputElement)||t.type!=='file'||!/image/.test(t.accept||''))return;
+  e.preventDefault();e.stopImmediatePropagation();openMkLib(t);},true);
 function iconThumb(U,su){const c=el('canvas',{width:44,height:44}),x=c.getContext('2d');x.fillStyle=({h:1,d:1})[su]?U.red:U.black;cuSuit(x,U,su,22,22,16,0,x.fillStyle);return c;}
 // בוחר אייקון: העלאת תמונה (עם חיתוך והסרת רקע), צורות קלאסיות, אייקונים חינמיים (Phosphor/Bootstrap, MIT) בקטגוריות, סמלים ואימוג'י.
 // נסגר לבד אחרי הבחירה. cb מקבל אובייקט אייקון; onImg (לא חובה) — פתיחת עורך החיתוך אחרי העלאה.
@@ -4223,7 +4267,7 @@ function buildTabs(){const t=document.getElementById('tabs');t.innerHTML='';
   // S-42: במצב מוצר יחיד יש בשורה גם קישור "כל הסטודיו" — קישור לא יכול לשבת בתוך tablist, אז שם השורה היא ניווט רגיל
   if(FOCUS)t.removeAttribute('role');else t.setAttribute('role','tablist');
   PRODUCTS.filter(p=>(!p.adminOnly||isAdmin)&&(!FOCUS||p===FOCUS||p===cur)).forEach(p=>t.append(el('button',{role:FOCUS?undefined:'tab',type:'button','aria-selected':FOCUS?undefined:String(p===cur),'aria-current':FOCUS&&p===cur?'page':undefined,on:{click:()=>{cur=p;curPage=0;buildTabs();rebuild();window.scrollTo(0,0);}}},p.label)));
-  if(FOCUS)t.append(isAdmin?el('a',{class:'tab-all',href:'./'},'☰ כל הסטודיו'):el('a',{class:'tab-all',href:'../games/#print'},'← כל המשחקים'));}
+  if(FOCUS)t.append(isAdmin?el('a',{class:'tab-all',href:'./'},'☰ כל הסטודיו'):MIKDASH?el('a',{class:'tab-all',href:'../mikdash/'},'← לחנות המקדש'):el('a',{class:'tab-all',href:'../games/#print'},'← כל המשחקים'));}
 
 async function ensureFonts(){await Promise.all(cur.fonts().filter(Boolean).map(loadFont));if(cur.id==='cards'&&cuUsesIco())await loadCardIcons().catch(()=>{});if(cur.art)await Promise.all(cur.art().map(id=>cardArt(id).p));if(cur.ready)await cur.ready();await document.fonts.ready;} // cur.ready — למשל סולמות וחבלים: הרסטר של הלוח חייב להיות מוכן לפני PDF // גם ציורי קלפים — שלא ייצאו ריקים ב-PDF
 function download(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.hidden=true;document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},30000);} // 30 שנ׳: באנדרואיד קובץ גדול עוד נשמר כשהקישור כבר בוטל

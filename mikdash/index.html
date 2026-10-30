@@ -148,7 +148,7 @@ input[type=text],select{min-height:44px;border:1.5px solid var(--line);border-ra
 <main class="wrap">
   <div class="tabs" role="tablist" aria-label="מה מחפשים?">
     <button type="button" role="tab" id="tab-games" aria-controls="pan-games" aria-selected="true"><img src="art/i-kinor.webp" alt=""><span>משחקים</span></button>
-    <button type="button" role="tab" id="tab-shirts" aria-controls="pan-shirts" aria-selected="false" tabindex="-1"><img src="art/small-menorah.webp" alt=""><span>חולצות</span></button>
+    <button type="button" role="tab" id="tab-shirts" aria-controls="pan-shirts" aria-selected="false" tabindex="-1"><img src="art/small-menorah.webp" alt=""><span>מתנות</span></button>
     <button type="button" role="tab" id="tab-phone" aria-controls="pan-phone" aria-selected="false" tabindex="-1"><img src="art/i-shofar.webp" alt=""><span>חידון</span></button>
   </div>
 
@@ -161,12 +161,9 @@ input[type=text],select{min-height:44px;border:1.5px solid var(--line);border-ra
 
   <!-- חולצות ומתנות -->
   <section id="pan-shirts" role="tabpanel" aria-labelledby="tab-shirts" hidden>
-    <h2 class="panel-h">חולצות עם בית המקדש</h2>
-    <p class="panel-sub">איורים של בית המקדש, פסוקים ומשפטים לקידום הבניין — על חולצה, בצבע ובמידה שלכם.</p>
-
-    <a class="btn btn-gold" href="shirt.html" style="align-self:flex-start">👕 למעצב החולצות</a>
-    <p class="note">בוחרים איורים וכיתובים מוכנים של המקדש, גוררים ומגדילים — ושולחים הזמנה.</p>
-
+    <h2 class="panel-h">חולצות, ספלים ומדבקות</h2>
+    <p class="panel-sub">בוחרים תמונה של בית המקדש מהמאגר, מסדרים — ואנחנו מדפיסים.</p>
+    <nav class="hub" id="gifts-hub" aria-label="מתנות"></nav>
   </section>
 
   <!-- בטלפון -->
@@ -211,10 +208,30 @@ const h0=location.hash.slice(1);showTab(TABS.includes(h0)?h0:'games');
 addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(TABS.includes(h))showTab(h);});
 
 /* ── משחקים: כל משחק מהסטודיו בגרסת מקדש ── */
+const ST='../studio/?set=mikdash&p=';
 const GAMES=[
-  {img:'art/third-oil.webp',n:'סולמות וחבלים של בית המקדש',href:'../studio/?p=snakes&set=mikdash',d:'שני לוחות: "עלייה להר הבית" ו"הבית השלישי". בונים לוח, משחקים, ומורידים להדפסה בבית.'},
+  {img:'art/third-oil.webp',n:'סולמות וחבלים של בית המקדש',href:ST+'snakes',d:'שני לוחות: "עלייה להר הבית" ו"הבית השלישי". בונים לוח, משחקים, ומורידים להדפסה בבית.'},
+  {img:'art/wall-papercut.webp',n:'זיכרון המקדש',href:ST+'memory',d:'זוגות של תמונות בית המקדש וכלי המקדש'},
+  {img:'art/wall-gold.webp',n:'קלפים',href:ST+'cards',d:'חפיסת קלפים עם תמונות המקדש'},
+  {img:'art/wall-naive.webp',n:'רביעיות המקדש',href:ST+'quartets',d:'סדרות של 4: הבית השני, הבית השלישי, כלי המקדש, סצנות'},
+  {img:'art/third-naive.webp',n:'בינגו',href:ST+'bingo',d:'לוחות בינגו עם תמונות המקדש — כל לוח שונה'},
+  {img:'art/wall-watercolor.webp',n:'דומינו',href:ST+'domino',d:'אבני דומינו עם תמונות המקדש'},
+  {img:'art/wall-oil.webp',n:'פאזל',href:ST+'puzzle',d:'תמונת קיר של בית המקדש — בקרטון או בעץ'},
+  {img:'art/third-geometric.webp',n:'טנגרם',href:ST+'tangram',d:'7 חלקים עם תמונת המקדש'},
+  {img:'art/scene-olim.webp',n:'לודו עולים לרגל',href:ST+'ludo',d:'"אל תכעס" עם תמונות המקדש'},
+  {img:'art/i-kinor.webp',n:'קוביות',href:ST+'dice',d:'קוביות עם סמלי המקדש'},
+];
+const GIFTS=[
+  {img:'art/third-watercolor.webp',n:'חולצה בתלת־ממד',href:ST+'tshirt',d:'בוחרים תמונה מהמאגר ורואים אותה על החולצה בתלת־ממד'},
+  {img:'art/wall-geometric.webp',n:'ספל',href:ST+'mug',d:'ספל עם תמונת בית המקדש, בתלת־ממד'},
+  {img:'art/temple-watercolor.webp',n:'מדבקות',href:ST+'stickers',d:'מדבקות שם עם סמלי המקדש ומסגרות'},
+  {img:'art/scene-watercolor.webp',n:'מדבקת ברכה',href:ST+'blessing',d:'ברכה או פסוק על רקע של בית המקדש'},
+  {img:'art/wall-oil.webp',n:'חולצה עם פסוק',href:'shirt.html',d:'איורים ופסוקים מוכנים — גוררים ומגדילים'},
 ];
 $('games-hub').innerHTML=GAMES.map(g=>`<a href="${g.href||wa('שלום הושעיה, אשמח להזמין מחנות מוצרי המקדש: '+g.n)}"${g.href?'':' target="_blank" rel="noopener"'}>
+  <div class="pic" aria-hidden="true">${g.img?`<img src="${g.img}" alt="">`:g.i}</div>
+  <b>${g.n}</b><span>${g.d}</span><em>${g.href?'למשחק ←':'להזמנה בוואטסאפ ←'}</em></a>`).join('');
+$('gifts-hub').innerHTML=GIFTS.map(g=>`<a href="${g.href||wa('שלום הושעיה, אשמח להזמין מחנות מוצרי המקדש: '+g.n)}"${g.href?'':' target="_blank" rel="noopener"'}>
   <div class="pic" aria-hidden="true">${g.img?`<img src="${g.img}" alt="">`:g.i}</div>
   <b>${g.n}</b><span>${g.d}</span><em>${g.href?'למשחק ←':'להזמנה בוואטסאפ ←'}</em></a>`).join('');
 
