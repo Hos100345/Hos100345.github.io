@@ -8,17 +8,21 @@
   'use strict';
   var THREE_SRC = '../js/vendor/three-r128.min.js';
   var threeP = null;
-  function loadThree() {
-    if (window.THREE) return Promise.resolve();
-    return threeP || (threeP = new Promise(function (ok, no) {
+  var scriptP = {};
+  function loadScript(src) {   // קובץ מ-js/vendor, פעם אחת, עם timeout (כלל ה-timeout מהמחולל)
+    return scriptP[src] || (scriptP[src] = new Promise(function (ok, no) {
       var s = document.createElement('script');
-      var t = setTimeout(function () { no(new Error('three timeout')); }, 15000);
-      s.src = THREE_SRC;
-      s.onload = function () { clearTimeout(t); ok(); };
-      s.onerror = function () { clearTimeout(t); no(new Error('three load')); };
+      var t = setTimeout(function () { no(new Error('timeout ' + src)); }, 15000);
+      s.src = src; s.onload = function () { clearTimeout(t); ok(); }; s.onerror = function () { clearTimeout(t); no(new Error('load ' + src)); };
       document.head.appendChild(s);
     }));
   }
+  function loadThree() {
+    if (window.THREE && THREE.RoomEnvironment) return Promise.resolve();
+    return threeP || (threeP = (window.THREE ? Promise.resolve() : loadScript(THREE_SRC)).then(function () { return loadScript('../js/vendor/RoomEnvironment-r128.js'); }));
+  }
+  var GLB_SHIRT = '../images/games/zikit/shirt.glb';   // G-37: קובץ חולצה מוכן (Sketchfab/CGTrader) — אם קיים, נכנס לקרוסלה ליד החולצה שבקוד להשוואה
+  function loadGltf() { return loadThree().then(function () { return loadScript('../js/vendor/GLTFLoader-r128.js'); }).then(function () { return loadScript('../js/vendor/DecalGeometry-r128.js'); }); }
 
   /* ── ציור ההדפסה: בלונים + כיתוב (אותו רוח כמו תמונות המוצרים באתר) ── */
   function balloon(ctx, x, y, r, col) {
@@ -126,17 +130,121 @@
     var T = THREE, m = new T.MeshPhysicalMaterial({ color: inside ? 0xA7A49E : 0xffffff, roughness: .93, metalness: 0, side: side, alphaMap: am, alphaTest: .5, vertexColors: true, map: inside ? null : map });
     m.sheen = new T.Color(.42, .42, .42); return m;
   }
+  /* ── G-37: חולצה בנפח אמיתי (במקום שני משטחים מנופחים). גוף = צינור עם חתך "סופר-אליפסה" שמשתנה לאורך הגובה (כתפיים → חזה → שוליים),
+   * שרוולים = צינורות משופעים, פתח צוואר אמיתי עם צווארון ריב, קפלים (אותן נוסחאות קפלים של הסטודיו) כהזזה לאורך הנורמל, AO בקודקודים,
+   * ומפת נורמלים של סריג. מ"מ של חולצה L: x ממרכז, y מקו הכתפיים (0) לשוליים (728). ── */
+  function knitNormalMap() {
+    var N = 256, c = document.createElement('canvas'); c.width = c.height = N; var x = c.getContext('2d'), h = new Float32Array(N * N), i, j;
+    for (j = 0; j < N; j++) for (i = 0; i < N; i++) { var u = i / N * Math.PI * 2 * 10, v = j / N * Math.PI * 2 * 16; h[j * N + i] = 0.5 + 0.08 * Math.sin(u) * Math.sin(v) + 0.07 * Math.sin(v * 1.5) + 0.3 * shNoise(i * .45, j * .45) + 0.12 * shNoise(i * 1.7, j * 1.7); }
+    var img = x.createImageData(N, N), d = img.data;
+    for (j = 0; j < N; j++) for (i = 0; i < N; i++) {
+      var l = h[j * N + (i + N - 1) % N], r = h[j * N + (i + 1) % N], u2 = h[((j + N - 1) % N) * N + i], dn = h[((j + 1) % N) * N + i];
+      var nx = (l - r) * 2, ny = (u2 - dn) * 2, nz = 1, len = Math.hypot(nx, ny, nz), k = (j * N + i) * 4;
+      d[k] = (nx / len * .5 + .5) * 255; d[k + 1] = (ny / len * .5 + .5) * 255; d[k + 2] = (nz / len * .5 + .5) * 255; d[k + 3] = 255;
+    }
+    x.putImageData(img, 0, 0); var t = new (THREE.CanvasTexture)(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; return t;
+  }
+  var SH_HEM = 728;
+  function shHalfW(y) { return (y < 38 ? 95 + 140 * Math.sqrt(y / 38) : y < 250 ? 235 + 35 * (y - 38) / 212 : 270 - 2 * (y - 250) / 478) * (1 - .025 * shSmooth(640, 728, y)); }
+  function shHalfD(y) { return y < 40 ? 55 + 20 * (y / 40) : y < 150 ? 75 + 22 * ((y - 40) / 110) : y < 450 ? 97 : 97 - 20 * ((y - 450) / 278); }
+  function shTop(x, front) { var ax = Math.abs(x); return ax < 95 ? (front ? 85 : 22) * Math.sqrt(1 - (ax / 95) * (ax / 95)) : (ax - 95) / 140 * 50; }
+  function shFold(X, y, back) {   // אותם קפלים כמו shDepth בסטודיו, רק החלק של ה"קפלים" (לא הניפוח)
+    var ax = Math.abs(X), f = 0;
+    if (ax < 272) {
+      f += shRidge([ax, y], [268, 250], [90, 600], back ? 6 : 9, 34) + shRidge([ax, y], [262, 300], [160, 730], back ? 5 : 7, 30) + shRidge([ax, y], [262, 245], [185, 410], 4, 18) - shRidge([ax, y], [268, 275], [125, 650], back ? 3 : 5, 16);
+      f += 4.5 * Math.sin(X * .032 + 1.9 * shNoise(X * .008, y * .003) + (back ? 1.3 : 0)) * shSmooth(420, 710, y);
+      f -= 2.5 * shSmooth(560, 700, y) * Math.exp(-Math.pow((ax - 60) / 70, 2));
+      f += 2.4 * shNoise(X * .012 + (back ? 9 : 0), y * .009);
+      f += shRidge([ax, y], [120, 95], [200, 140], 1.8, 9);
+    }
+    return f;
+  }
+  // גוף: חצי קדמי או אחורי. a ∈ [-π/2, π/2] סביב החצי; superellipse n=2.5
+  function shBodyHalf(front, map, nmap) {
+    var T = THREE, NA = 48, NY = 96, pos = [], uv = [], col = [], idx = [], n = 2.15, i, j;
+    for (j = 0; j <= NY; j++) {
+      var y0 = j / NY * SH_HEM;
+      for (i = 0; i <= NA; i++) {
+        var a = -Math.PI / 2 + i / NA * Math.PI, ca = Math.cos(a), sa = Math.sin(a);
+        var sx = Math.sign(sa) * Math.pow(Math.abs(sa), 2 / n), sz = Math.pow(Math.abs(ca), 2 / n) * (front ? 1 : -1);
+        var hw = shHalfW(y0), x = hw * sx, y = Math.max(y0, shTop(x, front)), hd = shHalfD(y), z = hd * sz;
+        // קפלים: הזזה רדיאלית (קירוב לנורמל) — גדולה יותר בצד שרואים
+        var f = shFold(x, y, !front) * (0.35 + 0.65 * Math.abs(sz));
+        var rr = Math.hypot(x / hw, z / hd) || 1;
+        x += f * (x / hw) / rr * (hw / Math.max(hw, hd)); z += f * (z / hd) / rr;
+        pos.push(x, -y + SH_HEM / 2, z);
+        uv.push((x - SH_B.x0) / (SH_B.x1 - SH_B.x0), 1 - (y - SH_B.y0) / (SH_B.y1 - SH_B.y0));
+        // AO: צווארון, בית שחי, תחתית הקפלים
+        var ao = 1 - .18 * Math.exp(-Math.pow((y - shTop(x, front) - 12) / 16, 2)) - .22 * Math.exp(-(Math.pow((Math.abs(x) - 262) / 40, 2) + Math.pow((y - 258) / 45, 2))) - .35 * Math.max(0, -f) / 9;
+        ao = Math.max(.55, Math.min(1, ao)); col.push(ao, ao, ao);
+      }
+    }
+    for (j = 0; j < NY; j++) for (i = 0; i < NA; i++) { var k = j * (NA + 1) + i, k2 = k + NA + 1; if (front) idx.push(k, k2, k + 1, k + 1, k2, k2 + 1); else idx.push(k, k + 1, k2, k + 1, k2 + 1, k2); }
+    var g = new T.BufferGeometry(); g.setAttribute('position', new T.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new T.Float32BufferAttribute(uv, 2)); g.setAttribute('color', new T.Float32BufferAttribute(col, 3)); g.setIndex(idx); g.computeVertexNormals();
+    var m = new T.MeshPhysicalMaterial({ color: 0xF4F2EE, map: map, normalMap: nmap, normalScale: new T.Vector2(.22, .22), roughness: .92, metalness: 0, vertexColors: true, side: T.DoubleSide });
+    m.sheen = new T.Color(.25, .25, .25); if (nmap) { nmap.repeat.set(40, 60); }
+    return new T.Mesh(g, m);
+  }
+  function shSleeve(side, nmap) {   // side = ±1. ציר מ-(245,135) ל-(356,248) במ"מ; רדיוס 118 → 62, פחוס ב-z
+    var T = THREE, NT = 24, NB = 36, pos = [], col = [], uv = [], idx = [], i, j;
+    var P0 = [232 * side, 128], P1 = [368 * side, 232], dx = P1[0] - P0[0], dy = P1[1] - P0[1], L = Math.hypot(dx, dy), ax = dx / L, ay = dy / L;
+    for (j = 0; j <= NT; j++) {
+      var t = j / NT, cx = P0[0] + dx * t, cy = P0[1] + dy * t, r = 104 - 44 * t, flat = .58 + .1 * t;
+      for (i = 0; i <= NB; i++) {
+        var b = i / NB * Math.PI * 2, nx = -ay * Math.cos(b), ny = ax * Math.cos(b), nz = Math.sin(b) * flat;
+        var fold = 4.2 * Math.sin(t * 9 + b * 2 + 1.2 * shNoise(t * 7, b)) * shSmooth(0, .2, t) * (1 - shSmooth(.75, 1, t)) + 2 * shNoise(t * 5, b * 2);
+        var rr = r + fold;
+        pos.push(cx + rr * nx, -(cy + rr * ny) + SH_HEM / 2, rr * nz);
+        uv.push(t * 2, b / Math.PI * 2);
+        var ao = 1 - .2 * shSmooth(.15, 0, t) * (Math.sin(b) < 0 ? 1 : .4) - .3 * Math.max(0, -fold) / 4; col.push(ao, ao, ao);
+      }
+    }
+    for (j = 0; j < NT; j++) for (i = 0; i < NB; i++) { var k = j * (NB + 1) + i, k2 = k + NB + 1; idx.push(k, k + 1, k2, k + 1, k2 + 1, k2); }
+    var g = new T.BufferGeometry(); g.setAttribute('position', new T.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new T.Float32BufferAttribute(uv, 2)); g.setAttribute('color', new T.Float32BufferAttribute(col, 3)); g.setIndex(idx); g.computeVertexNormals();
+    var m = new T.MeshPhysicalMaterial({ color: 0xF4F2EE, normalMap: nmap, normalScale: new T.Vector2(.22, .22), roughness: .92, vertexColors: true, side: T.DoubleSide }); m.sheen = new T.Color(.25, .25, .25);
+    if (nmap) nmap.repeat.set(10, 12); var mesh = new T.Mesh(g, m);
+    // פתח השרוול: טבעת פנימית כהה (רואים פנימה)
+    var inner = new T.Mesh(g.clone(), new T.MeshStandardMaterial({ color: 0xB9B5AE, roughness: .95, side: T.BackSide, polygonOffset: true, polygonOffsetFactor: 1 }));
+    var grp = new T.Group(); grp.add(mesh); grp.add(inner); return grp;
+  }
+  function shCollarRib() {
+    var T = THREE, P = [], n = 64, i;
+    for (i = 0; i < n; i++) { var t = i / n * Math.PI * 2, x = 95 * Math.cos(t), st = Math.sin(t), front = st > 0, y = (front ? 85 : 22) * Math.abs(st) + 4, z = (front ? 1 : -1) * 62 * Math.pow(Math.abs(st), .55); P.push(new T.Vector3(x, -y + SH_HEM / 2, z)); }
+    var m = new T.MeshPhysicalMaterial({ color: 0xF4F3EF, roughness: .95 }); m.sheen = new T.Color(.35, .35, .35);
+    var rib = new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(P, true), 200, 7, 10, true), m);
+    return rib;
+  }
   function buildShirt() {
     var T = THREE, g = new T.Group(), B = SH_B, pp = 2, print = printCanvas(512, 512, 'יום הולדת שמח!', null, 0.84);
-    [false, true].forEach(function (back) {
-      var pts = shOutline(back), am = new T.CanvasTexture(shMask(pts, B, pp)), sign = back ? -1 : 1;
-      var map = new T.CanvasTexture(shFabric(B, pp, back, back ? null : print)); if (T.sRGBEncoding) map.encoding = T.sRGBEncoding; map.anisotropy = 4;
-      var geo = shGeom(pts, B, sign), out = back ? T.BackSide : T.FrontSide, inn = back ? T.FrontSide : T.BackSide;
-      g.add(new T.Mesh(geo, shFabricMat(am, map, out, false)), new T.Mesh(geo, shFabricMat(am, null, inn, true)));
-    });
-    var cm = new T.Mesh(shCollar(B), new T.MeshPhysicalMaterial({ color: 0xF4F3EF, roughness: .95 })); cm.material.sheen = new T.Color(.35, .35, .35); g.add(cm);
-    g.scale.setScalar(1 / 330);   // מ"מ → יחידות סצנה (חולצה ≈ 2.25 יח׳ גובה)
+    var nmap = knitNormalMap(), nmapB = knitNormalMap(), nmapS = knitNormalMap(), nmapS2 = knitNormalMap();
+    var mapF = new T.CanvasTexture(shFabric(B, pp, false, print)), mapB = new T.CanvasTexture(shFabric(B, pp, true, null));
+    [mapF, mapB].forEach(function (t) { if (T.sRGBEncoding) t.encoding = T.sRGBEncoding; t.anisotropy = 4; });
+    g.add(shBodyHalf(true, mapF, nmap)); g.add(shBodyHalf(false, mapB, nmapB));
+    g.add(shSleeve(1, nmapS)); g.add(shSleeve(-1, nmapS2));
+    g.add(shCollarRib());
+    // הצד הפנימי של הגוף (רואים דרך הצוואר והשוליים): אותו גוף, צד אחורי, כהה
+    [true, false].forEach(function (front) { var inner = shBodyHalf(front, null, null); inner.material = new T.MeshStandardMaterial({ color: 0xB9B5AE, roughness: .95, side: T.BackSide, vertexColors: true, polygonOffset: true, polygonOffsetFactor: 1 }); g.add(inner); });
+    g.scale.setScalar(1 / 400); g.position.y = 0.05;
     var wrap = new T.Group(); wrap.add(g); return wrap;
+  }
+  // G-37: חולצה מקובץ GLB (אם הושעיה הוריד אחת) — מנורמלת לגובה 2.2, ההדפסה מוקרנת על החזה כמדבקה (DecalGeometry)
+  function buildShirtGlb() {
+    var T = THREE, wrap = new T.Group();
+    loadGltf().then(function () {
+      new T.GLTFLoader().load(GLB_SHIRT, function (gl) {
+        var o = gl.scene, box = new T.Box3().setFromObject(o), size = new T.Vector3(); box.getSize(size); var c = new T.Vector3(); box.getCenter(c);
+        var s = 2.2 / Math.max(size.y, 0.001); o.position.sub(c); o.scale.setScalar(s); var inner = new T.Group(); inner.add(o); wrap.add(inner);
+        var big = null; o.traverse(function (m) { if (m.isMesh) { if (m.material) { m.material.side = T.DoubleSide; if (m.material.map && T.sRGBEncoding) m.material.map.encoding = T.sRGBEncoding; } if (!big || m.geometry.attributes.position.count > big.geometry.attributes.position.count) big = m; } });
+        if (big && T.DecalGeometry) {
+          inner.updateMatrixWorld(true);
+          var bb = new T.Box3().setFromObject(inner), ctr = new T.Vector3(); bb.getCenter(ctr);
+          var p = new T.Vector3(ctr.x, ctr.y + 0.15, bb.max.z + 0.2), or = new T.Euler(0, 0, 0), sz = new T.Vector3(1.0, 1.0, 0.6);
+          var dm = new T.Mesh(new T.DecalGeometry(big, p, or, sz), new T.MeshStandardMaterial({ map: tex(printCanvas(512, 512, 'יום הולדת שמח!', null, 0.84)), transparent: true, depthTest: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, roughness: .9 }));
+          wrap.add(dm);
+        }
+      }, undefined, function (e) { console.warn('shirt.glb', e); });
+    }).catch(function (e) { console.warn('gltf', e); });
+    return wrap;
   }
 
   /* ── הספל ── */
@@ -297,7 +405,7 @@
     var dv = new T.Vector3(0.85, -0.95, 0.2); board.localToWorld(dv); die.position.copy(dv); die.rotation.set(0.3, 0.6, 0.1); g.add(die);
     g.position.y = -0.1; return g;
   }
-  var BUILD = { shirt: buildShirt, mug: buildMug, puzzle: buildPuzzle, cards: buildCards, memory: buildMemory, domino: buildDomino, ludo: buildLudo, snakes: buildSnakes, tangram: buildTangram, dice: buildDice };
+  var BUILD = { shirt: buildShirt, 'shirt-glb': buildShirtGlb, mug: buildMug, puzzle: buildPuzzle, cards: buildCards, memory: buildMemory, domino: buildDomino, ludo: buildLudo, snakes: buildSnakes, tangram: buildTangram, dice: buildDice };
   // G-35: מודלים נוספים נרשמים מבחוץ (js/zikit-3d.js — המוצרים מההזמנה מזיקית). register(key, fn) לפני שהבמה נטענת.
   window.S3D = { register: function (k, fn) { BUILD[k] = fn; }, printCanvas: printCanvas, tex: tex, face: face, balloon: balloon, has: function (k) { return !!BUILD[k]; }, build: function (k) { return BUILD[k](); } };
 
@@ -312,6 +420,7 @@
       try { r = new T.WebGLRenderer({ antialias: true, alpha: true }); } catch (e) { return; }
       r.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
       if (T.sRGBEncoding) r.outputEncoding = T.sRGBEncoding;
+      if (T.ACESFilmicToneMapping) { r.toneMapping = T.ACESFilmicToneMapping; r.toneMappingExposure = 1.0; }
       var wrap = document.createElement('div'); wrap.className = 's3d';
       var cv = r.domElement; cv.setAttribute('role', 'img'); wrap.appendChild(cv);
       var cap = document.createElement('a'); cap.className = 's3d-cap'; wrap.appendChild(cap);
@@ -330,16 +439,19 @@
       var SLOTS = Math.min(N, 7), STEP = Math.PI * 2 / SLOTS, RAD = N > 1 ? 2.4 + 0.35 * (SLOTS - 3) : 0;
       var scene = new T.Scene(), cam = new T.PerspectiveCamera(28, 1, 0.1, 60);
       cam.position.set(0, 1.0, RAD + 7.8); cam.lookAt(0, -0.1, RAD * 0.25);
-      scene.add(new T.HemisphereLight(0xffffff, 0xa89c88, 0.45));
-      var d1 = new T.DirectionalLight(0xffffff, 0.95); d1.position.set(-4, 3, 2.5); scene.add(d1);
-      var d2 = new T.DirectionalLight(0xfff1e0, 0.35); d2.position.set(3.5, 0.8, -2.5); scene.add(d2);
-      var d3 = new T.DirectionalLight(0xe8f0ff, 0.25); d3.position.set(3.5, -0.5, 3); scene.add(d3);
+      // G-37: תאורת סטודיו (RoomEnvironment → PMREM) — השתקפויות רכות על בד, קרמיקה ומתכת; האורות הישירים נשארים לצל ולברק
+      try { var pm = new T.PMREMGenerator(r); pm.compileEquirectangularShader(); scene.environment = pm.fromScene(new T.RoomEnvironment(), 0.04).texture; pm.dispose(); } catch (e) { console.warn('env', e); }
+      scene.add(new T.HemisphereLight(0xffffff, 0x8a7f70, 0.2));
+      var d1 = new T.DirectionalLight(0xffffff, 1.05); d1.position.set(-4, 4, 3); scene.add(d1);
+      var d2 = new T.DirectionalLight(0xfff1e0, 0.25); d2.position.set(3.5, 0.8, -2.5); scene.add(d2);
+      var d3 = new T.DirectionalLight(0xe8f0ff, 0.2); d3.position.set(3.5, -0.5, 3); scene.add(d3);
       var ring = new T.Group(); scene.add(ring);
       var items = keys.map(function (k) {
         var holder = new T.Group(), o;
         try { o = BUILD[k](); } catch (e) { console.warn('showcase-3d build', k, e); o = new T.Group(); }
         holder.add(o); holder.visible = false; ring.add(holder); return { h: holder, o: o };
       });
+      ring.traverse(function (m) { if (m.isMesh && m.material && 'envMapIntensity' in m.material) m.material.envMapIntensity = 0.4; });
       var disc = new T.Mesh(new T.CircleGeometry(RAD + 0.9, 64), new T.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.045 }));
       disc.rotation.x = -Math.PI / 2; disc.position.y = -1.25; scene.add(disc);
       // pos = "איפה המעגל עומד" במספרים של מוצרים (0 = הראשון מקדימה). target = לאן זורמים. המוצר i יושב בזווית (i - pos) * STEP.
@@ -386,7 +498,7 @@
           it.h.position.set(Math.sin(ang) * RAD, -0.2 + 0.2 * front + Math.sin(now / 900 + i) * 0.04, Math.cos(ang) * RAD);
           var s = 0.5 + (0.6 + (SLOTS > 4 ? 0.3 : 0)) * front;
           it.h.scale.setScalar(s);
-          it.h.rotation.y = (i === cur && !drag ? Math.sin(now / 1400) * 0.55 : 0);   // פונה למצלמה, ומתנדנד קלות
+          it.h.rotation.y = (N === 1 ? -pos * STEP : 0) + (i === cur && !drag ? Math.sin(now / 1400) * 0.55 : 0);   // פונה למצלמה, ומתנדנד קלות; מוצר יחיד — הגרירה מסובבת אותו
         });
         r.render(scene, cam);
       }
@@ -399,6 +511,12 @@
   function init() {
     var stages = document.querySelectorAll('[data-3d-stage]');
     if (!stages.length) return;
+    // G-37: יש קובץ חולצה? נכנס לקרוסלה מיד אחרי החולצה שבקוד — להשוואה
+    fetch('../images/games/zikit/models.json').then(function (res) { return res.ok ? res.json() : {}; }).then(function (mf) { if (!mf || !mf.shirt) return;   // models.json: {"shirt": true} כשהקובץ shirt.glb קיים
+      stages.forEach(function (st) { var it = (st.getAttribute('data-items') || '').split(','), nm = (st.getAttribute('data-names') || '').split(','), lk = (st.getAttribute('data-links') || '').split(','), i = it.indexOf('shirt');
+        if (i < 0 || it.indexOf('shirt-glb') >= 0) return; it.splice(i + 1, 0, 'shirt-glb'); nm.splice(i + 1, 0, '👕 חולצה (קובץ מוכן)'); lk.splice(i + 1, 0, lk[i] || '');
+        st.setAttribute('data-items', it.join(',')); st.setAttribute('data-names', nm.join(',')); st.setAttribute('data-links', lk.join(',')); });
+    }).catch(function () {});
     var start = function (st) { if (!st._s3d) { st._s3d = 1; mount(st); } };
     if ('IntersectionObserver' in window) {
       var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { start(e.target); io.unobserve(e.target); } }); });
