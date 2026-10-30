@@ -275,7 +275,29 @@
     m.rotation.set(0.5, 0.65, 0); g.add(m); return g;
   }
 
-  var BUILD = { shirt: buildShirt, mug: buildMug, puzzle: buildPuzzle, cards: buildCards, memory: buildMemory, domino: buildDomino, ludo: buildLudo, tangram: buildTangram, dice: buildDice };
+  function buildSnakes() {   // G-37: לוח סולמות וחבלים (ג׳ונגל) עם שני חיילים וקובייה — התמונה מהמחולל עצמו
+    var T = THREE, g = new T.Group(), loader = new T.TextureLoader();
+    var top = new T.MeshStandardMaterial({ color: 0xDDEFD6, roughness: .6 });
+    loader.load('../images/games/snakes-board.webp', function (t) { if (T.sRGBEncoding) t.encoding = T.sRGBEncoding; t.anisotropy = 4; top.map = t; top.color.set(0xffffff); top.needsUpdate = true; });
+    var side = new T.MeshStandardMaterial({ color: 0xE5E7EB, roughness: .7 });
+    var board = new T.Mesh(new T.BoxGeometry(2.1, 2.1, 0.08), [side, side, side, side, top, side]);
+    board.rotation.x = -Math.PI / 2 + 0.55; g.add(board);
+    var cols = [0xEF4444, 0x3B82F6];
+    [[-0.65, -0.75, 0], [0.45, -0.3, 1]].forEach(function (q) {
+      var pawn = new T.Group();
+      pawn.add(new T.Mesh(new T.CylinderGeometry(0.11, 0.15, 0.1, 24), new T.MeshStandardMaterial({ color: cols[q[2]], roughness: .5 })));
+      var body = new T.Mesh(new T.CylinderGeometry(0.07, 0.1, 0.22, 24), new T.MeshStandardMaterial({ color: cols[q[2]], roughness: .5 })); body.position.y = 0.15; pawn.add(body);
+      var head = new T.Mesh(new T.SphereGeometry(0.09, 24, 16), new T.MeshStandardMaterial({ color: cols[q[2]], roughness: .45 })); head.position.y = 0.33; pawn.add(head);
+      var v = new T.Vector3(q[0], q[1], 0.06); board.localToWorld(v); pawn.position.copy(v); pawn.rotation.x = board.rotation.x + Math.PI / 2; g.add(pawn);
+    });
+    // קובייה קטנה ליד הלוח
+    var dc = document.createElement('canvas'); dc.width = 128; dc.height = 128; var dx = dc.getContext('2d'); dx.fillStyle = '#fff'; dx.fillRect(0, 0, 128, 128); dx.fillStyle = '#14294D';
+    [[32, 32], [96, 32], [64, 64], [32, 96], [96, 96]].forEach(function (p) { dx.beginPath(); dx.arc(p[0], p[1], 11, 0, Math.PI * 2); dx.fill(); });
+    var die = new T.Mesh(new T.BoxGeometry(0.26, 0.26, 0.26), new T.MeshStandardMaterial({ map: tex(dc), roughness: .4 }));
+    var dv = new T.Vector3(0.85, -0.95, 0.2); board.localToWorld(dv); die.position.copy(dv); die.rotation.set(0.3, 0.6, 0.1); g.add(die);
+    g.position.y = -0.1; return g;
+  }
+  var BUILD = { shirt: buildShirt, mug: buildMug, puzzle: buildPuzzle, cards: buildCards, memory: buildMemory, domino: buildDomino, ludo: buildLudo, snakes: buildSnakes, tangram: buildTangram, dice: buildDice };
   // G-35: מודלים נוספים נרשמים מבחוץ (js/zikit-3d.js — המוצרים מההזמנה מזיקית). register(key, fn) לפני שהבמה נטענת.
   window.S3D = { register: function (k, fn) { BUILD[k] = fn; }, printCanvas: printCanvas, tex: tex, face: face, balloon: balloon, has: function (k) { return !!BUILD[k]; }, build: function (k) { return BUILD[k](); } };
 
