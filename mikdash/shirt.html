@@ -183,7 +183,7 @@ pre{white-space:pre-wrap;background:var(--stone);border-radius:12px;padding:10px
         <p class="err" id="err" role="alert"></p>
         <button class="btn btn-gold" type="submit">אישור הזמנה</button>
       </form>
-      <div id="done" hidden style="display:flex;flex-direction:column;gap:10px"></div>
+      <div id="done" hidden style="display:none;flex-direction:column;gap:10px"></div>
     </section>
   </div>
 </div>
@@ -384,7 +384,7 @@ $('form').addEventListener('submit',async e=>{e.preventDefault();
     <a class="btn btn-wa" href="https://wa.me/${PHONE}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">📲 שליחה בוואטסאפ</a>
     <pre id="otext"></pre><button type="button" class="chip" id="copy">העתקת פרטי ההזמנה</button>
     <p class="hint">אם הוואטסאפ לא נפתח: העתיקו את הפרטים ושלחו ל-<span dir="ltr">050-591-8734</span>.</p>`;
-  $('done').hidden=false;$('form').hidden=true;
+  $('done').hidden=false;$('done').style.display='flex';$('form').hidden=true;$('form').style.display='none';
   if(!j){$('otext').textContent=txt;$('copy').onclick=()=>{navigator.clipboard.writeText(txt).then(()=>$('copy').textContent='הועתק ✓').catch(()=>{const r=document.createRange();r.selectNodeContents($('otext'));const s=getSelection();s.removeAllRanges();s.addRange(r);});};}
 });
 
