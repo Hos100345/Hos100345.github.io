@@ -336,18 +336,56 @@ ${D.layers.map(layerLine).join('\n')}
 סה"כ: ${qty()} חולצות · ${qty()*PRICE} ₪${D.layers.some(x=>x.own)?'\n⏳ יש בעיצוב כיתוב או תמונה משלי — לאישור עריכה':''}
 שם: ${$('name').value.trim()}
 טלפון: ${$('phone').value.trim()}${$('note').value.trim()?'\nהערה: '+$('note').value.trim():''}`;}
-$('form').addEventListener('submit',e=>{e.preventDefault();
+/* ── שליחת ההזמנה (W-65): לאותו מקום כמו מחולל המשחקים — studio-order, מוצר tshirt. הושעיה רואה אותה בניהול הסטודיו.
+   preview.jpg = החולצה כפי שהלקוח עיצב; print.pdf = אותה תמונה ב-PDF (השרת דורש את שני הקבצים). אם השליחה נכשלת — נשאר הוואטסאפ. */
+const SB_URL='https://sccivxenkyzxolpraexf.supabase.co',SB_KEY='sb_publishable_Ctloh48bIY2Lxm_YmTiSGA_1ADr5FDz',ORDER_FN=SB_URL+'/functions/v1/studio-order';
+const toData=b=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b);});
+async function shirtJpeg(){const sv=$('shirt').cloneNode(true);sv.querySelectorAll('#selBox').forEach(n=>n.remove());
+  for(const im of sv.querySelectorAll('image')){const h=im.getAttribute('href')||im.getAttribute('xlink:href')||'';if(h&&!h.startsWith('data:')){try{im.setAttribute('href',await toData(await (await fetch(h)).blob()));}catch(e){}}}
+  const vb=($('shirt').getAttribute('viewBox')||'0 0 300 330').split(/\s+/).map(Number),W=1200,H=Math.round(W*vb[3]/vb[2]);sv.setAttribute('width',W);sv.setAttribute('height',H);
+  const url=URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(sv)],{type:'image/svg+xml'}));
+  const img=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=url;});
+  const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,W,H);x.drawImage(img,0,0,W,H);URL.revokeObjectURL(url);
+  return{blob:await new Promise(r=>c.toBlob(r,'image/jpeg',.88)),W,H};}
+// PDF של עמוד אחד עם תמונת JPEG — בלי ספרייה
+async function jpegPdf(jpg,W,H){const bytes=new Uint8Array(await jpg.arrayBuffer()),pw=595,ph=Math.round(595*H/W),enc=new TextEncoder(),parts=[],offs=[];let len=0;
+  const add=x=>{const u=typeof x==='string'?enc.encode(x):x;parts.push(u);len+=u.length;},obj=(n,body)=>{offs[n]=len;add(n+' 0 obj\n');body();add('\nendobj\n');};
+  add('%PDF-1.4\n');obj(1,()=>add('<</Type/Catalog/Pages 2 0 R>>'));obj(2,()=>add('<</Type/Pages/Kids[3 0 R]/Count 1>>'));
+  obj(3,()=>add(`<</Type/Page/Parent 2 0 R/MediaBox[0 0 ${pw} ${ph}]/Resources<</XObject<</Im0 4 0 R>>>>/Contents 5 0 R>>`));
+  obj(4,()=>{add(`<</Type/XObject/Subtype/Image/Width ${W}/Height ${H}/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length ${bytes.length}>>\nstream\n`);add(bytes);add('\nendstream');});
+  const cs=`q ${pw} 0 0 ${ph} 0 0 cm /Im0 Do Q`;obj(5,()=>add(`<</Length ${cs.length}>>\nstream\n${cs}\nendstream`));
+  const xref=len;let t='xref\n0 6\n0000000000 65535 f \n';for(let i=1;i<=5;i++)t+=String(offs[i]).padStart(10,'0')+' 00000 n \n';add(t+`trailer\n<</Size 6/Root 1 0 R>>\nstartxref\n${xref}\n%%EOF`);
+  return new Blob(parts,{type:'application/pdf'});}
+async function putSigned(url,blob){const fd=new FormData();fd.append('cacheControl','3600');fd.append('',blob);
+  const r=await fetch(url,{method:'PUT',headers:{'x-upsert':'false',apikey:SB_KEY,authorization:'Bearer '+SB_KEY},body:fd});if(!r.ok)throw new Error('upload '+r.status);}
+async function sendOrder(name,phone,note){const own=D.layers.some(x=>x.own);
+  const design={source:'mikdash-shirt',state:{order:D.sizes.map(([size,qty])=>({size,qty})),backUsed:false},shirtColor:SCOLORS[D.scolor][0],needsApproval:own,
+    layers:D.layers.map(x=>{const o={...x};if(o.data){delete o.data;o.note='תמונה של הלקוח — מופיעה ב-preview.jpg';}return o;}),lines:D.layers.map(layerLine)};
+  const {blob,W,H}=await shirtJpeg(),pdf=await jpegPdf(blob,W,H);
+  const r=await fetch(ORDER_FN,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'create',name,phone,note:(own?'⏳ לאישור עריכה. ':'')+note,product:'tshirt',sheets:1,design,
+    summary:'🕍 חולצת המקדש · '+qty()+' חולצות · '+D.sizes.map(([s,q])=>s+'×'+q).join(', ')+(own?' · ⏳ לאישור':'')})});
+  const j=await r.json().catch(()=>null);if(!j||!j.ok)throw new Error((j&&j.error)||'network');
+  await putSigned(j.uploads['print.pdf'],pdf);await putSigned(j.uploads['preview.jpg'],blob);
+  const f=await fetch(ORDER_FN,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'finalize',id:j.id,code:j.code})}).then(x=>x.json()).catch(()=>null);
+  if(!f||!f.ok)throw new Error((f&&f.error)||'files_missing');return j;}
+$('form').addEventListener('submit',async e=>{e.preventDefault();
   const ph=$('phone').value.replace(/\D/g,'').replace(/^972/,'0');
   if(!D.layers.length){$('err').textContent='הוסיפו לפחות איור או כיתוב אחד';return;}
   if(!$('name').value.trim()){$('err').textContent='כתבו שם';$('name').focus();return;}
   if(!/^05\d{8}$/.test(ph)){$('err').textContent='כתבו מספר נייד תקין, למשל 050-1234567';$('phone').focus();return;}
-  $('err').textContent='';const txt=orderText();
-  $('done').innerHTML=`<p style="margin:0"><b>ההזמנה מוכנה.</b> שלחו אותה בוואטסאפ${D.layers.some(x=>x.own)?' ואת התמונה שלכם':''}, ונאשר איתכם הכול לפני ההדפסה.</p>
+  $('err').textContent='';const btn=$('form').querySelector('button[type=submit]');btn.disabled=true;btn.textContent='שולח את ההזמנה…';
+  let j=null;try{j=await sendOrder($('name').value.trim(),ph,$('note').value.trim());}catch(err){console.warn('order',err);}
+  btn.disabled=false;btn.textContent='אישור הזמנה';
+  const own=D.layers.some(x=>x.own),txt=j?`שלום הושעיה, שלחתי הזמנת חולצה מחנות המקדש. מספר הזמנה: ${j.code}.`:orderText();
+  $('done').innerHTML=j?`<p style="margin:0"><b>ההזמנה התקבלה ✓</b></p><p class="hint" style="margin:0">מספר הזמנה</p><div dir="ltr" style="font-size:1.6rem;font-weight:800">${j.code}</div>
+    <p style="margin:0">${own?'הכיתוב או התמונה שלכם עוברים אישור עריכה — ':''}שלחו לי הודעה בוואטסאפ עם מספר ההזמנה ואחזור אליכם לתשלום ולמועד האיסוף.</p>
+    <a class="btn btn-wa" href="https://wa.me/${PHONE}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">📲 שליחה בוואטסאפ</a>`
+   :`<p style="margin:0"><b>לא הצלחנו לשלוח את ההזמנה מכאן.</b> שלחו אותה בוואטסאפ${own?' ואת התמונה שלכם':''}, ונאשר איתכם הכול לפני ההדפסה.</p>
     <a class="btn btn-wa" href="https://wa.me/${PHONE}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">📲 שליחה בוואטסאפ</a>
     <pre id="otext"></pre><button type="button" class="chip" id="copy">העתקת פרטי ההזמנה</button>
     <p class="hint">אם הוואטסאפ לא נפתח: העתיקו את הפרטים ושלחו ל-<span dir="ltr">050-591-8734</span>.</p>`;
-  $('otext').textContent=txt;$('done').hidden=false;$('form').hidden=true;
-  $('copy').onclick=()=>{navigator.clipboard.writeText(txt).then(()=>$('copy').textContent='הועתק ✓').catch(()=>{const r=document.createRange();r.selectNodeContents($('otext'));const s=getSelection();s.removeAllRanges();s.addRange(r);});};
+  $('done').hidden=false;$('form').hidden=true;
+  if(!j){$('otext').textContent=txt;$('copy').onclick=()=>{navigator.clipboard.writeText(txt).then(()=>$('copy').textContent='הועתק ✓').catch(()=>{const r=document.createRange();r.selectNodeContents($('otext'));const s=getSelection();s.removeAllRanges();s.addRange(r);});};}
 });
 
 renderLib();renderSizes();render();
