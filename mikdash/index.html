@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="חנות מוצרי המקדש — משחקים, חולצות ומתנות סביב בית המקדש: סולמות וחבלים בעלייה להר הבית, חולצות עם פסוקים ועוד.">
+<link rel="icon" href="../favicon.ico">
+<title>חנות מוצרי המקדש</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&family=Frank+Ruhl+Libre:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+/* פריסה: אותו שלד כמו "משחק עיצובישי" — כותרת דביקה, פתיח, שלוש לשוניות, כרטיסי מוצר, פוטר וכפתור וואטסאפ צף. צבעי אבן ירושלמית, כחול-לילה וזהב */
+:root{
+  --stone:#F3EDE1;--card:#FFFDF8;--line:#E2D8C4;
+  --navy:#14294D;--navy-2:#1F3B6B;--gold:#C6A135;--gold-ink:#7A5F12;--gold-soft:#F4E9C8;
+  --text:#1B2333;--muted:#5D6371;--wa:#0E7C3A;--ok:#1F7A4D;--bad:#B3261E;
+  --display:'Frank Ruhl Libre','David Libre',Georgia,serif;
+  --body:'Heebo',system-ui,sans-serif;
+  --r:1.1rem;--sh:0 8px 28px rgba(20,41,77,.10),0 1.5px 4px rgba(20,41,77,.06);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --stone:#10172A;--card:#18223A;--line:#2C3954;--text:#ECE6D8;--muted:#A9B0BF;
+  --gold-ink:#E5C766;--gold-soft:#2E2A1C;--ok:#5CC08A;--bad:#F08A80;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --stone:#10172A;--card:#18223A;--line:#2C3954;--text:#ECE6D8;--muted:#A9B0BF;
+  --gold-ink:#E5C766;--gold-soft:#2E2A1C;--ok:#5CC08A;--bad:#F08A80;color-scheme:dark}
+
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;font-family:var(--body);background:var(--stone);color:var(--text);direction:rtl;-webkit-tap-highlight-color:transparent;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:var(--navy)}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.wrap{max-width:860px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* כותרת */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--navy);color:#fff;border-bottom:2px solid var(--gold)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding-block:8px}
+.brand{display:flex;align-items:center;gap:.55rem;font-weight:800;color:#fff;text-decoration:none}
+.brand svg{width:40px;height:40px;flex:none}
+.brand small{display:block;font-weight:400;font-size:.75rem;opacity:.75}
+.top a.home{color:#fff;text-decoration:none;font-weight:700;font-size:.9rem;padding:.45rem .9rem;border-radius:999px;border:1.5px solid rgba(255,255,255,.4);white-space:nowrap}
+
+/* פתיח */
+.intro{background:linear-gradient(180deg,var(--navy) 0%,var(--navy-2) 100%);color:#fff;text-align:center}
+.intro .wrap{padding-block:1.8rem 2.2rem;display:flex;flex-direction:column;align-items:center;gap:.4rem}
+.intro h1{font-family:var(--display);font-weight:900;font-size:clamp(2.1rem,7vw,3.3rem);margin:0;line-height:1.1;text-wrap:balance}
+.intro p{margin:0;color:rgba(255,255,255,.85);font-size:1.05rem}
+.intro .verse{font-family:var(--display);color:var(--gold);font-size:1.15rem;margin-top:.3rem}
+.intro .verse cite{font-style:normal;font-family:var(--body);font-size:.78rem;color:rgba(255,255,255,.6);margin-inline-start:.4rem}
+
+/* לשוניות */
+.tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:4px;margin:-1.3rem auto 0;max-width:520px;
+  border-radius:16px;background:var(--card);border:1px solid var(--line);box-shadow:var(--sh);position:relative;z-index:2}
+.tabs button{min-height:46px;border:0;border-radius:12px;background:transparent;font-weight:600;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--navy);color:#fff;font-weight:800;box-shadow:0 4px 12px rgba(20,41,77,.25)}
+:root[data-theme="dark"] .tabs button[aria-selected="true"]{background:var(--gold);color:#14294D}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .tabs button[aria-selected="true"]{background:var(--gold);color:#14294D}}
+
+.panel-h{margin:1.6rem 0 .3rem;font-family:var(--display);font-size:1.6rem;font-weight:900;text-wrap:balance}
+.panel-sub{margin:0 0 1rem;color:var(--muted)}
+
+/* כרטיסי מוצר */
+.hub{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;padding-bottom:1rem}
+.hub a{display:flex;flex-direction:column;gap:.35rem;padding:10px 10px 14px;border-radius:var(--r);background:var(--card);
+  border:1px solid var(--line);text-decoration:none;color:var(--text);transition:transform .15s,box-shadow .15s}
+.hub a:hover{transform:translateY(-2px);box-shadow:var(--sh)}
+.hub .pic{height:118px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:2.6rem;position:relative;overflow:hidden}
+.hub .pic svg{width:100%;height:100%}
+.hub b{font-size:1.05rem;padding-inline:4px}
+.hub span{font-size:.9rem;color:var(--muted);padding-inline:4px}
+.hub em{font-style:normal;font-size:.82rem;font-weight:700;color:var(--gold-ink);padding-inline:4px;margin-top:auto}
+
+/* מעצב החולצה */
+.designer{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;box-shadow:var(--sh)}
+@media (max-width:680px){.designer{grid-template-columns:minmax(0,1fr)}}
+.stage{border-radius:14px;background:radial-gradient(circle at 50% 40%,var(--gold-soft),transparent 70%);display:flex;align-items:center;justify-content:center;min-height:300px;position:sticky;top:70px}
+@media (max-width:680px){.stage{position:static}}
+.stage svg{width:100%;max-width:340px;height:auto}
+.ctl{display:flex;flex-direction:column;gap:14px;min-width:0}
+.ctl label,.ctl .lbl{font-weight:700;font-size:.95rem}
+.field{display:flex;flex-direction:column;gap:6px}
+.swatches,.chips{display:flex;flex-wrap:wrap;gap:8px}
+.sw{width:40px;height:40px;border-radius:50%;border:2px solid var(--line)}
+.sw[aria-pressed="true"]{outline:3px solid var(--gold);outline-offset:2px}
+.chip{min-height:40px;padding:.3rem .85rem;border-radius:999px;border:1.5px solid var(--line);background:transparent;font-weight:600}
+.chip[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
+.verses{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow:auto;padding:2px}
+.verses button{text-align:right;border:1.5px solid var(--line);background:transparent;border-radius:12px;padding:.55rem .75rem;display:flex;flex-direction:column}
+.verses button b{font-family:var(--display);font-size:1.08rem;font-weight:700}
+.verses button small{color:var(--muted);font-size:.8rem}
+.verses button[aria-pressed="true"]{border-color:var(--gold);background:var(--gold-soft)}
+input[type=text],select{min-height:44px;border:1.5px solid var(--line);border-radius:12px;padding:.4rem .75rem;background:var(--stone);width:100%}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.price{display:flex;justify-content:space-between;align-items:baseline;border-top:1px dashed var(--line);padding-top:10px;font-weight:700}
+.price strong{font-size:1.4rem;font-variant-numeric:tabular-nums}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;min-height:50px;padding:.6rem 1.2rem;border-radius:999px;font-weight:800;font-size:1.02rem;text-decoration:none;border:0}
+.btn-wa{background:var(--wa);color:#fff}
+.btn-gold{background:var(--gold);color:#14294D}
+.btn-ghost{background:transparent;border:1.5px solid var(--line);color:var(--text)}
+.note{font-size:.85rem;color:var(--muted);margin:0}
+
+/* חידון */
+.quiz{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:var(--sh);display:flex;flex-direction:column;gap:12px}
+.qbar{height:8px;border-radius:99px;background:var(--line);overflow:hidden}.qbar i{display:block;height:100%;background:var(--gold);transition:width .3s}
+.qmeta{display:flex;justify-content:space-between;color:var(--muted);font-size:.9rem;font-variant-numeric:tabular-nums}
+.qtext{font-family:var(--display);font-size:1.45rem;font-weight:700;margin:0;text-wrap:balance}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media (max-width:420px){.opts{grid-template-columns:1fr}}
+.opts button{min-height:52px;border-radius:12px;border:1.5px solid var(--line);background:var(--stone);font-weight:600;padding:.4rem .6rem}
+.opts button.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 15%,transparent);color:var(--ok)}
+.opts button.bad{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent);color:var(--bad)}
+.qexp{margin:0;color:var(--muted);min-height:1.5em}
+
+/* פוטר */
+.foot{background:var(--navy);color:rgba(255,255,255,.85);text-align:center;margin-top:2rem}
+.foot .wrap{padding-block:1.6rem 5rem;display:flex;flex-direction:column;gap:.3rem;align-items:center}
+.foot a{color:var(--gold)}
+.wa-float{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:calc(16px + env(safe-area-inset-left,0px));z-index:35;
+  width:58px;height:58px;border-radius:50%;background:var(--wa);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(14,124,58,.4)}
+.toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--navy);color:#fff;padding:.6rem 1rem;border-radius:12px;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- לוגו המקדש — שרטוט מקורי: שער מקושת, עמודים, מדרגות ומנורה -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="logo" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="48" fill="#14294D" stroke="#C6A135" stroke-width="3"/>
+    <g fill="#C6A135">
+      <rect x="20" y="74" width="60" height="4" rx="1"/><rect x="24" y="69" width="52" height="4" rx="1"/>
+      <path d="M28 68V40h44v28h-9V54a13 13 0 0 0-26 0v14z"/>
+      <rect x="24" y="35" width="52" height="4" rx="1"/>
+      <path d="M50 14l3 4h-6z"/>
+      <path d="M50 16v17M38 22c0 8 6 11 12 11s12-3 12-11M42 24c0 5 4 7 8 7s8-2 8-7M46 26c0 3 2 4 4 4s4-1 4-4" fill="none" stroke="#C6A135" stroke-width="2.2" stroke-linecap="round"/>
+      <rect x="45" y="32" width="10" height="2.5" rx="1"/>
+    </g>
+  </symbol>
+</svg>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#games"><svg role="img" aria-label="לוגו המקדש"><use href="#logo"/></svg><span>חנות מוצרי המקדש<small>מבית הושעיה · עיצוב ויצירה</small></span></a>
+    <a class="home" href="../">לאתר הבית ←</a>
+  </div>
+</header>
+
+<section class="intro" aria-label="חנות מוצרי המקדש">
+  <div class="wrap">
+    <h1>חנות מוצרי המקדש</h1>
+    <p>משחקים, חולצות ומתנות שמקרבים את בניין המקדש</p>
+    <div class="verse">ועשו לי מקדש ושכנתי בתוכם<cite>שמות כה, ח</cite></div>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="tabs" role="tablist" aria-label="מה מחפשים?">
+    <button type="button" role="tab" id="tab-games" aria-controls="pan-games" aria-selected="true">🎲 משחקים</button>
+    <button type="button" role="tab" id="tab-shirts" aria-controls="pan-shirts" aria-selected="false" tabindex="-1">👕 חולצות ומתנות</button>
+    <button type="button" role="tab" id="tab-phone" aria-controls="pan-phone" aria-selected="false" tabindex="-1">📱 בטלפון</button>
+  </div>
+
+  <!-- משחקים -->
+  <section id="pan-games" role="tabpanel" aria-labelledby="tab-games">
+    <h2 class="panel-h">משחקים של בית המקדש</h2>
+    <p class="panel-sub">כל משחק מהסטודיו — בגרסת מקדש. אפשר גם להוסיף את התמונות של המשפחה.</p>
+    <nav class="hub" id="games-hub" aria-label="משחקי מקדש"></nav>
+  </section>
+
+  <!-- חולצות ומתנות -->
+  <section id="pan-shirts" role="tabpanel" aria-labelledby="tab-shirts" hidden>
+    <h2 class="panel-h">חולצות עם בית המקדש</h2>
+    <p class="panel-sub">איורים של בית המקדש, פסוקים ומשפטים לקידום הבניין — על חולצה, בצבע ובמידה שלכם.</p>
+
+    <a class="btn btn-gold" href="shirt.html" style="align-self:flex-start">👕 למעצב החולצות</a>
+    <p class="note">בוחרים איורים וכיתובים מוכנים של המקדש, גוררים ומגדילים — ושולחים הזמנה.</p>
+
+    <h2 class="panel-h">עוד מתנות</h2>
+    <nav class="hub" id="gifts-hub" aria-label="מתנות"></nav>
+  </section>
+
+  <!-- בטלפון -->
+  <section id="pan-phone" role="tabpanel" aria-labelledby="tab-phone" hidden>
+    <h2 class="panel-h">חידון המקדש</h2>
+    <p class="panel-sub">שבע שאלות. משחקים בטלפון, לבד או עם כל המשפחה.</p>
+    <div class="quiz" id="quiz" aria-live="polite"></div>
+    <h2 class="panel-h">עוד משחקים בטלפון</h2>
+    <nav class="hub" aria-label="משחקים בטלפון">
+      <a href="../games/" target="_blank" rel="noopener"><div class="pic" style="background:#1F3B6B">🎲</div><b>משחקים מהתמונות שלי</b><span>זיכרון, פאזל, דומינו ומה נעלם — עם תמונות מביקור בירושלים</span></a>
+      <a href="../play/" target="_blank" rel="noopener"><div class="pic" style="background:#7A5F12">👀</div><b>מאצ׳טו בטלפון</b><span>חפיסת כלי המקדש — מוצאים את הזהה</span></a>
+    </nav>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <svg width="48" height="48" role="img" aria-label="לוגו המקדש"><use href="#logo"/></svg>
+    <p style="margin:0">© 2026 הושעיה וולמן — עיצוב, יצירה והפעלות · בקעת הירדן וצפון ים המלח</p>
+    <p style="margin:0">טלפון ווואטסאפ: <span dir="ltr">050-591-8734</span> · <a href="../">לאתר הבית</a></p>
+  </div>
+</footer>
+<a class="wa-float" id="wa-float" href="#" target="_blank" rel="noopener" aria-label="וואטסאפ להושעיה">
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M12 2a10 10 0 00-8.6 15.1L2 22l5-1.3A10 10 0 1012 2zm0 18.2a8.2 8.2 0 01-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1112 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 01-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 00-.7.3 3 3 0 00-.9 2.2 5.2 5.2 0 001.1 2.7 11.8 11.8 0 004.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2s.2-1.1.2-1.2-.2-.2-.5-.3z"/></svg>
+</a>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+'use strict';
+const PHONE='972505918734';
+const wa=t=>`https://wa.me/${PHONE}?text=${encodeURIComponent(t)}`;
+const $=id=>document.getElementById(id);
+$('wa-float').href=wa('שלום הושעיה, הגעתי מחנות מוצרי המקדש');
+
+/* ── לשוניות (כמו בעיצובישי: #games · #shirts · #phone) ── */
+const TABS=['games','shirts','phone'];
+function showTab(id,focus){
+  TABS.forEach(t=>{const on=t===id;$('tab-'+t).setAttribute('aria-selected',on);$('tab-'+t).tabIndex=on?0:-1;$('pan-'+t).hidden=!on;});
+  if(focus)$('tab-'+id).focus();
+  try{history.replaceState(null,'','#'+id);}catch(e){}
+}
+TABS.forEach((t,i)=>{
+  $('tab-'+t).onclick=()=>showTab(t);
+  $('tab-'+t).onkeydown=e=>{const d=e.key==='ArrowLeft'?1:e.key==='ArrowRight'?-1:0;if(d)showTab(TABS[(i+d+3)%3],true);};
+});
+const h0=location.hash.slice(1);showTab(TABS.includes(h0)?h0:'games');
+addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(TABS.includes(h))showTab(h);});
+
+/* ── משחקים: כל משחק מהסטודיו בגרסת מקדש ── */
+const GAMES=[
+  {i:'🪜',n:'סולמות וחבלים — עולים להר הבית',href:'../studio/?p=snakes&set=mikdash',d:'הלוח מתחיל בשער העיר ומסתיים בבית המקדש. סולם = מצווה, חבל = מכשול בדרך',bg:'#14294D',tag:'חדש'},
+  {i:'🧠',n:'זיכרון כלי המקדש',d:'מנורה, ארון, שולחן לחם הפנים, מזבח הזהב — זוגות להתאים',bg:'#7A5F12'},
+  {i:'👨‍👩‍👧‍👦',n:'רביעיות המקדש',d:'סדרות של 4: בגדי הכהן, כלי המקדש, שלושת הרגלים, שערי ירושלים',bg:'#1F3B6B'},
+  {i:'🎯',n:'בינגו פסוקים',d:'לוחות עם פסוקים על ירושלים והמקדש — כל לוח שונה',bg:'#8C2F39'},
+  {i:'🎲',n:'לודו עולים לרגל',d:'ארבע משפחות יוצאות מארבע פינות הארץ ונפגשות בירושלים',bg:'#1F6B52'},
+  {i:'🁫',n:'דומינו כלי המקדש',d:'אבני דומינו עם ציורי כלי המקדש, בעץ או בנייר',bg:'#5A3E8C'},
+  {i:'🧩',n:'פאזל הר הבית',d:'ציור של בית המקדש על הר הבית — בקרטון או בעץ',bg:'#9A6A12'},
+  {i:'👀',n:'מאצ׳טו המקדש',d:'מוצאים את הסמל הזהה — 57 קלפים עם כלי המקדש',bg:'#2B5C8A'},
+];
+$('games-hub').innerHTML=GAMES.map(g=>`<a href="${g.href||wa('שלום הושעיה, אשמח להזמין מחנות מוצרי המקדש: '+g.n)}"${g.href?'':' target="_blank" rel="noopener"'}>
+  <div class="pic" style="background:${g.bg}" aria-hidden="true">${g.i}</div>
+  <b>${g.tag?'🆕 ':''}${g.n}</b><span>${g.d}</span><em>${g.href?'למחולל ←':'להזמנה בוואטסאפ ←'}</em></a>`).join('');
+
+/* ── מתנות נוספות ── */
+const GIFTS=[
+  {i:'☕',n:'ספל עם לוגו המקדש',d:'פסוק לבחירה ולוגו בזהב',p:'36 ₪',bg:'#14294D'},
+  {i:'🚗',n:'מדבקת פסוק לרכב',d:'"שאלו שלום ירושלים" או פסוק משלכם, חיתוך ויניל',p:'',bg:'#7A5F12'},
+  {i:'👜',n:'תיק בד',d:'לוגו המקדש ופסוק — מתנה לעולים לירושלים',p:'',bg:'#1F6B52'},
+  {i:'🏷️',n:'מדבקות שם לסידור ולחומש',d:'השם של הילד עם מנורה קטנה',p:'',bg:'#8C2F39'},
+];
+$('gifts-hub').innerHTML=GIFTS.map(g=>`<a href="${wa('שלום הושעיה, אשמח להזמין מחנות מוצרי המקדש: '+g.n)}" target="_blank" rel="noopener">
+  <div class="pic" style="background:${g.bg}" aria-hidden="true">${g.i}</div>
+  <b>${g.n}</b><span>${g.d}</span><em>${g.p?g.p+' · ':''}להזמנה בוואטסאפ ←</em></a>`).join('');
+
+/* ── חידון המקדש ── */
+const QZ=[
+  ['כמה קנים יש במנורת המקדש?',['שבעה','שמונה','חמישה','תשעה'],0,'במנורה שבעה קנים: קנה אמצעי ושלושה מכל צד.'],
+  ['מי בנה את בית המקדש הראשון?',['דוד המלך','שלמה המלך','עזרא הסופר','יהושע בן נון'],1,'דוד הכין את הבנייה, ושלמה בנו בנה את הבית.'],
+  ['על איזה הר נבנה בית המקדש?',['הר סיני','הר הכרמל','הר המוריה','הר תבור'],2,'הר המוריה בירושלים, הוא הר הבית.'],
+  ['כמה פעמים בשנה עלו לרגל לירושלים?',['פעם אחת','שלוש','שבע','בכל ראש חודש'],1,'בשלושת הרגלים: פסח, שבועות וסוכות.'],
+  ['מה עמד בקודש הקדשים בבית הראשון?',['המנורה','ארון הברית','מזבח העולה','השולחן'],1,'ארון הברית ובו לוחות הברית.'],
+  ['באיזה יום נחרבו שני בתי המקדש?',['תשעה באב','י״ז בתמוז','צום גדליה','עשרה בטבת'],0,'שני הבתים נחרבו בתשעה באב.'],
+  ['כמה אבנים היו בחושן של הכהן הגדול?',['שבע','עשר','שתים עשרה','עשרים'],2,'שתים עשרה אבנים, אחת לכל שבט.'],
+];
+let qi=0,score=0,answered=false;
+function qRender(){
+  const z=$('quiz');
+  if(qi>=QZ.length){
+    z.innerHTML=`<p class="qtext">ענית נכון על ${score} מתוך ${QZ.length}</p>
+      <p class="qexp">${score===QZ.length?'מושלם! אתם מוכנים לעלות לרגל.':score>=4?'יפה מאוד! עוד סיבוב ואתם שם.':'כל ניסיון מקרב — בואו ננסה שוב.'}</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-gold" id="q-again" type="button">🔄 משחקים שוב</button>
+      <a class="btn btn-wa" href="${wa('שלום הושעיה, שיחקתי בחידון המקדש וקיבלתי '+score+' מתוך '+QZ.length)}" target="_blank" rel="noopener">שיתוף התוצאה</a></div>`;
+    $('q-again').onclick=()=>{qi=0;score=0;qRender();};return;
+  }
+  const [q,opts,ok,exp]=QZ[qi];answered=false;
+  z.innerHTML=`<div class="qmeta"><span>שאלה ${qi+1} מתוך ${QZ.length}</span><span>נקודות: ${score}</span></div>
+    <div class="qbar"><i style="width:${qi/QZ.length*100}%"></i></div>
+    <p class="qtext">${q}</p>
+    <div class="opts">${opts.map((o,i)=>`<button type="button" data-i="${i}">${o}</button>`).join('')}</div>
+    <p class="qexp" id="qexp"></p>
+    <button class="btn btn-ghost" id="q-next" type="button" hidden>לשאלה הבאה ←</button>`;
+  z.querySelector('.opts').onclick=e=>{
+    const b=e.target.closest('button');if(!b||answered)return;answered=true;
+    const i=+b.dataset.i;if(i===ok)score++;
+    z.querySelectorAll('.opts button').forEach(x=>{const j=+x.dataset.i;if(j===ok)x.classList.add('ok');else if(j===i)x.classList.add('bad');x.disabled=true;});
+    $('qexp').textContent=(i===ok?'נכון! ':'לא בדיוק. ')+exp;
+    $('q-next').hidden=false;$('q-next').textContent=qi===QZ.length-1?'לתוצאה ←':'לשאלה הבאה ←';$('q-next').focus();
+  };
+  $('q-next').onclick=()=>{qi++;qRender();};
+}
+qRender();
+</script>
+
+</body>
+</html>
