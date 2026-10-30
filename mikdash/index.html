@@ -209,17 +209,9 @@ addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(TABS.includ
 
 /* ── משחקים: כל משחק מהסטודיו בגרסת מקדש ── */
 const ST='../studio/?set=mikdash&p=';
-const GAMES=[
+const GAMES=[ // רק משחקים שנבנו באמת סביב המקדש (S-106 ואילך). משחק חדש נכנס כאן רק אחרי שיש לו גרסת מקדש
   {img:'art/third-oil.webp',n:'סולמות וחבלים של בית המקדש',href:ST+'snakes',d:'שני לוחות: "עלייה להר הבית" ו"הבית השלישי". בונים לוח, משחקים, ומורידים להדפסה בבית.'},
-  {img:'art/wall-papercut.webp',n:'זיכרון המקדש',href:ST+'memory',d:'זוגות של תמונות בית המקדש וכלי המקדש'},
-  {img:'art/wall-gold.webp',n:'קלפים',href:ST+'cards',d:'חפיסת קלפים עם תמונות המקדש'},
-  {img:'art/wall-naive.webp',n:'רביעיות המקדש',href:ST+'quartets',d:'סדרות של 4: הבית השני, הבית השלישי, כלי המקדש, סצנות'},
-  {img:'art/third-naive.webp',n:'בינגו',href:ST+'bingo',d:'לוחות בינגו עם תמונות המקדש — כל לוח שונה'},
-  {img:'art/wall-watercolor.webp',n:'דומינו',href:ST+'domino',d:'אבני דומינו עם תמונות המקדש'},
-  {img:'art/wall-oil.webp',n:'פאזל',href:ST+'puzzle',d:'תמונת קיר של בית המקדש — בקרטון או בעץ'},
-  {img:'art/third-geometric.webp',n:'טנגרם',href:ST+'tangram',d:'7 חלקים עם תמונת המקדש'},
-  {img:'art/scene-olim.webp',n:'לודו עולים לרגל',href:ST+'ludo',d:'"אל תכעס" עם תמונות המקדש'},
-  {img:'art/i-kinor.webp',n:'קוביות',href:ST+'dice',d:'קוביות עם סמלי המקדש'},
+  {img:'art/game-ludo.webp',n:'לודו עולים לרגל',href:ST+'ludo',d:'ארבעה שחקנים יוצאים מארבע פינות הארץ, ומי שמגיע ראשון לבית המקדש שבמרכז — מנצח.'},
 ];
 const GIFTS=[
   {img:'art/third-watercolor.webp',n:'חולצה בתלת־ממד',href:ST+'tshirt',d:'בוחרים תמונה מהמאגר ורואים אותה על החולצה בתלת־ממד'},
