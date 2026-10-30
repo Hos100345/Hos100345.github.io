@@ -37,7 +37,9 @@ button{cursor:pointer}
 .top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--navy);color:#fff;border-bottom:2px solid var(--gold)}
 .top .wrap{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding-block:8px}
 .brand{display:flex;align-items:center;gap:.55rem;font-weight:800;color:#fff;text-decoration:none}
-.brand svg{width:40px;height:40px;flex:none}
+.brand .logo,.foot .logo{width:44px;height:44px;flex:none;border-radius:50%;object-fit:cover;border:2px solid var(--gold)}
+.foot .logo{width:56px;height:56px}
+.hub .pic img{width:100%;height:100%;object-fit:cover}
 .brand small{display:block;font-weight:400;font-size:.75rem;opacity:.75}
 .top a.home{color:#fff;text-decoration:none;font-weight:700;font-size:.9rem;padding:.45rem .9rem;border-radius:999px;border:1.5px solid rgba(255,255,255,.4);white-space:nowrap}
 
@@ -125,25 +127,11 @@ input[type=text],select{min-height:44px;border:1.5px solid var(--line);border-ra
 </head>
 <body>
 
-<!-- לוגו המקדש — שרטוט מקורי: שער מקושת, עמודים, מדרגות ומנורה -->
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <symbol id="logo" viewBox="0 0 100 100">
-    <circle cx="50" cy="50" r="48" fill="#14294D" stroke="#C6A135" stroke-width="3"/>
-    <g fill="#C6A135">
-      <rect x="20" y="74" width="60" height="4" rx="1"/><rect x="24" y="69" width="52" height="4" rx="1"/>
-      <path d="M28 68V40h44v28h-9V54a13 13 0 0 0-26 0v14z"/>
-      <rect x="24" y="35" width="52" height="4" rx="1"/>
-      <path d="M50 14l3 4h-6z"/>
-      <path d="M50 16v17M38 22c0 8 6 11 12 11s12-3 12-11M42 24c0 5 4 7 8 7s8-2 8-7M46 26c0 3 2 4 4 4s4-1 4-4" fill="none" stroke="#C6A135" stroke-width="2.2" stroke-linecap="round"/>
-      <rect x="45" y="32" width="10" height="2.5" rx="1"/>
-    </g>
-  </symbol>
-</svg>
+
 
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="#games"><svg role="img" aria-label="לוגו המקדש"><use href="#logo"/></svg><span>חנות מוצרי המקדש<small>מבית הושעיה · עיצוב ויצירה</small></span></a>
-    <a class="home" href="../">לאתר הבית ←</a>
+    <a class="brand" href="#games"><img class="logo" src="art/wall-oil.webp" alt="לוגו חנות מוצרי המקדש" width="44" height="44"><span>חנות מוצרי המקדש<small>מבית הושעיה · עיצוב ויצירה</small></span></a>
   </div>
 </header>
 
@@ -165,7 +153,7 @@ input[type=text],select{min-height:44px;border:1.5px solid var(--line);border-ra
   <!-- משחקים -->
   <section id="pan-games" role="tabpanel" aria-labelledby="tab-games">
     <h2 class="panel-h">משחקים של בית המקדש</h2>
-    <p class="panel-sub">כל משחק מהסטודיו — בגרסת מקדש. אפשר גם להוסיף את התמונות של המשפחה.</p>
+    <p class="panel-sub">משחקים שכולם סביב בית המקדש.</p>
     <nav class="hub" id="games-hub" aria-label="משחקי מקדש"></nav>
   </section>
 
@@ -177,8 +165,6 @@ input[type=text],select{min-height:44px;border:1.5px solid var(--line);border-ra
     <a class="btn btn-gold" href="shirt.html" style="align-self:flex-start">👕 למעצב החולצות</a>
     <p class="note">בוחרים איורים וכיתובים מוכנים של המקדש, גוררים ומגדילים — ושולחים הזמנה.</p>
 
-    <h2 class="panel-h">עוד מתנות</h2>
-    <nav class="hub" id="gifts-hub" aria-label="מתנות"></nav>
   </section>
 
   <!-- בטלפון -->
@@ -186,17 +172,12 @@ input[type=text],select{min-height:44px;border:1.5px solid var(--line);border-ra
     <h2 class="panel-h">חידון המקדש</h2>
     <p class="panel-sub">שבע שאלות. משחקים בטלפון, לבד או עם כל המשפחה.</p>
     <div class="quiz" id="quiz" aria-live="polite"></div>
-    <h2 class="panel-h">עוד משחקים בטלפון</h2>
-    <nav class="hub" aria-label="משחקים בטלפון">
-      <a href="../games/" target="_blank" rel="noopener"><div class="pic" style="background:#1F3B6B">🎲</div><b>משחקים מהתמונות שלי</b><span>זיכרון, פאזל, דומינו ומה נעלם — עם תמונות מביקור בירושלים</span></a>
-      <a href="../play/" target="_blank" rel="noopener"><div class="pic" style="background:#7A5F12">👀</div><b>מאצ׳טו בטלפון</b><span>חפיסת כלי המקדש — מוצאים את הזהה</span></a>
-    </nav>
   </section>
 </main>
 
 <footer class="foot">
   <div class="wrap">
-    <svg width="48" height="48" role="img" aria-label="לוגו המקדש"><use href="#logo"/></svg>
+    <img class="logo" src="art/wall-oil.webp" alt="" width="56" height="56">
     <p style="margin:0">© 2026 הושעיה וולמן — עיצוב, יצירה והפעלות · בקעת הירדן וצפון ים המלח</p>
     <p style="margin:0">טלפון ווואטסאפ: <span dir="ltr">050-591-8734</span> · <a href="../">לאתר הבית</a></p>
   </div>
@@ -229,29 +210,13 @@ addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(TABS.includ
 
 /* ── משחקים: כל משחק מהסטודיו בגרסת מקדש ── */
 const GAMES=[
-  {i:'🪜',n:'סולמות וחבלים — עולים להר הבית',href:'../studio/?p=snakes&set=mikdash',d:'הלוח מתחיל בשער העיר ומסתיים בבית המקדש. סולם = מצווה, חבל = מכשול בדרך',bg:'#14294D',tag:'חדש'},
-  {i:'🧠',n:'זיכרון כלי המקדש',d:'מנורה, ארון, שולחן לחם הפנים, מזבח הזהב — זוגות להתאים',bg:'#7A5F12'},
-  {i:'👨‍👩‍👧‍👦',n:'רביעיות המקדש',d:'סדרות של 4: בגדי הכהן, כלי המקדש, שלושת הרגלים, שערי ירושלים',bg:'#1F3B6B'},
-  {i:'🎯',n:'בינגו פסוקים',d:'לוחות עם פסוקים על ירושלים והמקדש — כל לוח שונה',bg:'#8C2F39'},
-  {i:'🎲',n:'לודו עולים לרגל',d:'ארבע משפחות יוצאות מארבע פינות הארץ ונפגשות בירושלים',bg:'#1F6B52'},
-  {i:'🁫',n:'דומינו כלי המקדש',d:'אבני דומינו עם ציורי כלי המקדש, בעץ או בנייר',bg:'#5A3E8C'},
-  {i:'🧩',n:'פאזל הר הבית',d:'ציור של בית המקדש על הר הבית — בקרטון או בעץ',bg:'#9A6A12'},
-  {i:'👀',n:'מאצ׳טו המקדש',d:'מוצאים את הסמל הזהה — 57 קלפים עם כלי המקדש',bg:'#2B5C8A'},
+  {img:'art/third-oil.webp',n:'סולמות וחבלים של בית המקדש',href:'../studio/?p=snakes&set=mikdash',d:'שני לוחות: "עלייה להר הבית" ו"הבית השלישי". בונים לוח, משחקים, ומורידים להדפסה בבית.'},
 ];
 $('games-hub').innerHTML=GAMES.map(g=>`<a href="${g.href||wa('שלום הושעיה, אשמח להזמין מחנות מוצרי המקדש: '+g.n)}"${g.href?'':' target="_blank" rel="noopener"'}>
-  <div class="pic" style="background:${g.bg}" aria-hidden="true">${g.i}</div>
-  <b>${g.tag?'🆕 ':''}${g.n}</b><span>${g.d}</span><em>${g.href?'למחולל ←':'להזמנה בוואטסאפ ←'}</em></a>`).join('');
+  <div class="pic" aria-hidden="true">${g.img?`<img src="${g.img}" alt="">`:g.i}</div>
+  <b>${g.n}</b><span>${g.d}</span><em>${g.href?'למשחק ←':'להזמנה בוואטסאפ ←'}</em></a>`).join('');
 
-/* ── מתנות נוספות ── */
-const GIFTS=[
-  {i:'☕',n:'ספל עם לוגו המקדש',d:'פסוק לבחירה ולוגו בזהב',p:'36 ₪',bg:'#14294D'},
-  {i:'🚗',n:'מדבקת פסוק לרכב',d:'"שאלו שלום ירושלים" או פסוק משלכם, חיתוך ויניל',p:'',bg:'#7A5F12'},
-  {i:'👜',n:'תיק בד',d:'לוגו המקדש ופסוק — מתנה לעולים לירושלים',p:'',bg:'#1F6B52'},
-  {i:'🏷️',n:'מדבקות שם לסידור ולחומש',d:'השם של הילד עם מנורה קטנה',p:'',bg:'#8C2F39'},
-];
-$('gifts-hub').innerHTML=GIFTS.map(g=>`<a href="${wa('שלום הושעיה, אשמח להזמין מחנות מוצרי המקדש: '+g.n)}" target="_blank" rel="noopener">
-  <div class="pic" style="background:${g.bg}" aria-hidden="true">${g.i}</div>
-  <b>${g.n}</b><span>${g.d}</span><em>${g.p?g.p+' · ':''}להזמנה בוואטסאפ ←</em></a>`).join('');
+
 
 /* ── חידון המקדש ── */
 const QZ=[

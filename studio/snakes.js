@@ -463,7 +463,7 @@ function snCardItem(c,i){const d=SN_BOARD.card,pts=shapePts('rounded',d.w,d.h,d.
 function snEnsureStyle(){if(document.getElementById('sn-style'))return;const st=document.createElement('style');st.id='sn-style';st.textContent=SN_CSS;document.head.appendChild(st);}
 function snHost(){snEnsureStyle();if(MK&&A&&!String(A.preset).startsWith('mikdash'))applyPreset('mikdash');HOST=document.createElement('div');HOST.id='sn-app';HOST.addEventListener('click',()=>setTimeout(snTouch,0),true);HOST.addEventListener('input',()=>setTimeout(snTouch,0),true);
  syncSize();mode=A.screen||mode;if(!(B&&P))mode='home';if(mode==='cards')renderCards();else if(mode==='result')renderResult();else if(mode==='style')renderStyle();else if(mode==='game')renderGame();else renderHome();return HOST;}
-window.SN_DEFAULTS=SN_DEFAULTS;
+window.SN_DEFAULTS=SN_DEFAULTS;window.SN_MIKDASH=MK;
 window.Snakes={id:'snakes',printShop:false,adminOnly:false,label:'🪜 סולמות וחבלים',
  intro:'🪜 בוחרים לוח וצבעים, סולמות ונחשים, עונים על שאלות המשחק — והמחולל מסדר את הלוח לפי סטטיסטיקה. אחר כך משדרגים: קלפים, משבצות משלכם, תמונה.',
  fonts:()=>[A&&A.numFont,A&&A.cardFont,'Secular One','Heebo'],
@@ -473,8 +473,8 @@ window.Snakes={id:'snakes',printShop:false,adminOnly:false,label:'🪜 סולמ�
   const r=paginate(items,{allowRot:false,label:'לוח'});if(A.mode==='blank')r.pages.forEach(p=>p.cut=false);
   if(A.cards.length){const pc=paginate(A.cards.map(snCardItem),{allowRot:false,label:'קלפים'});r.pages=r.pages.concat(pc.pages);}
   r.summary=(A.mode==='blank'?'לוח לודו 8805 בשני חצאים · ':'לוח 19×19 ס"מ על A4 · ')+(A.cards.length?A.cards.length+' קלפים':'בלי קלפים')+' · '+SIZES[A.size];return r;},
- panel(){snSync();return[snHost(),
-  sec('🖨️ על מה מדפיסים',false,seg(A,'mode',[['blank','🪵 לוח לודו מוכן 8805 (26×26.5)'],['diy','✂️ דף A4 — אני גוזר']]),
+ panel(){snSync();if(MK)A.mode='diy';return[snHost(),
+  MK?null:sec('🖨️ על מה מדפיסים',false,seg(A,'mode',[['blank','🪵 לוח לודו מוכן 8805 (26×26.5)'],['diy','✂️ דף A4 — אני גוזר']]),
    el('p',{class:'hint'},A.mode==='blank'?'הלוח בשני חצאים 13×26.5 ס"מ לסובלימציה על לוח הלודו של זיקית. הקלפים 63×88 בדפים נפרדים.':'לוח 19×19 ס"מ על דף A4 אחד, והקלפים 63×88 בדפים נפרדים.'),
    A.cards.length?fontSel(A,'cardFont','פונט הקלפים',()=>(A.cards[0]||{}).text||'שאלה'):null,
    A.mode==='blank'&&isAdmin?[tog(A,'mirror','הפוך במראה (לנייר סובלימציה)'),el('button',{type:'button',class:'btn gold',on:{click:()=>sublimationSheetsPDF([snHalf(0),snHalf(1)],'snakes-8805',{mirror:A.mirror})}},'⬇️ קובץ לסובלימציה (הלוח)')]:null),
