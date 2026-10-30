@@ -215,13 +215,14 @@ const GAMES=[ // רק משחקים שנבנו באמת סביב המקדש (S-10
   {img:'art/game-memory.webp',n:'זיכרון המקדש',href:ST+'memory',d:'מחפשים זוגות: כלי המקדש, ביכורים, קורבנות ובגדי הכהן הגדול. במצב "תמונה + שם" — לומדים את השמות תוך כדי משחק.'},
   {img:'art/game-bingo.webp',n:'בינגו המקדש',href:ST+'bingo',d:'לוחות בינגו עם עבודת המקדש — כל לוח שונה, עם קלפי קריאה. לכיתה, לגן ולשולחן השבת.'},
   {img:'art/game-domino.webp',n:'דומינו שבעת המינים',href:ST+'domino',d:'28 אבנים עם שבעת המינים, כלי המקדש או עבודת המקדש — מחברים תמונה לתמונה. גם על דומינו עץ מוכן.'},
+  {img:'art/game-puzzle.webp',n:'פאזל בית המקדש',href:ST+'puzzle',d:'ציור של בית המקדש כפאזל — מקרטון או מעץ, בצורות שונות.'},
   {img:'art/game-ludo.webp',n:'לודו עולים לרגל',href:ST+'ludo',d:'ארבעה שחקנים יוצאים מארבע פינות הארץ, ומי שמגיע ראשון לבית המקדש שבמרכז — מנצח.'},
 ];
 const GIFTS=[
-  {img:'art/third-watercolor.webp',n:'חולצה בתלת־ממד',href:ST+'tshirt',d:'בוחרים תמונה מהמאגר ורואים אותה על החולצה בתלת־ממד'},
-  {img:'art/wall-geometric.webp',n:'ספל',href:ST+'mug',d:'ספל עם תמונת בית המקדש, בתלת־ממד'},
-  {img:'art/temple-watercolor.webp',n:'מדבקות',href:ST+'stickers',d:'מדבקות שם עם סמלי המקדש ומסגרות'},
-  {img:'art/scene-watercolor.webp',n:'מדבקת ברכה',href:ST+'blessing',d:'ברכה או פסוק על רקע של בית המקדש'},
+  {img:'art/gift-tshirt.webp',n:'חולצה בתלת־ממד',href:ST+'tshirt',d:'בוחרים תמונה מהמאגר ורואים אותה על החולצה בתלת־ממד'},
+  {img:'art/gift-mug.webp',n:'ספל',href:ST+'mug',d:'ספל עם תמונת בית המקדש, בתלת־ממד'},
+  {img:'art/gift-stickers.webp',n:'מדבקות',href:ST+'stickers',d:'מדבקות שם עם בית המקדש — לגן, לכיתה ולקייטנה'},
+  {img:'art/gift-blessing.webp',n:'מדבקת ברכה',href:ST+'blessing',d:'"ועשו לי מקדש ושכנתי בתוכם" או פסוק אחר, במסגרת בצבעי מים'},
   {img:'art/wall-oil.webp',n:'חולצה עם פסוק',href:'shirt.html',d:'איורים ופסוקים מוכנים — גוררים ומגדילים'},
 ];
 $('games-hub').innerHTML=GAMES.map(g=>`<a href="${g.href||wa('שלום הושעיה, אשמח להזמין מחנות מוצרי המקדש: '+g.n)}"${g.href?'':' target="_blank" rel="noopener"'}>
