@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="מעצב חולצות המקדש — איורים של בית המקדש ופסוקים מוכנים, גוררים ומגדילים על החולצה ומזמינים.">
+<link rel="icon" href="../favicon.ico">
+<title>מעצב חולצות המקדש</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&family=Frank+Ruhl+Libre:wght@700;900&family=Secular+One&family=Suez+One&family=Karantina:wght@700&family=Amatic+SC:wght@700&family=David+Libre:wght@700&display=swap" rel="stylesheet">
+<style>
+/* פריסה: החולצה (עורך שכבות — גוררים, מגדילים, מסובבים) דביקה מימין; מימין-לשמאל: הוספת איורים וכיתובים, עריכת השכבה הנבחרת, חולצה והזמנה */
+:root{
+  --stone:#F3EDE1;--card:#FFFDF8;--line:#E2D8C4;--line2:#CDBF9F;
+  --navy:#14294D;--gold:#C6A135;--gold-ink:#7A5F12;--gold-soft:#F4E9C8;
+  --text:#1B2333;--muted:#5D6371;--warn-bg:#FFF4D6;--warn:#7A4E00;--wa:#0E7C3A;--bad:#B3261E;--sel:#2563EB;
+  --display:'Frank Ruhl Libre',Georgia,serif;--body:'Heebo',system-ui,sans-serif;
+  --r:16px;--sh:0 8px 28px rgba(20,41,77,.10),0 1.5px 4px rgba(20,41,77,.06);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --stone:#10172A;--card:#18223A;--line:#2C3954;--line2:#3D4C6C;--text:#ECE6D8;--muted:#A9B0BF;
+  --gold-ink:#E5C766;--gold-soft:#2E2A1C;--warn-bg:#3A2E10;--warn:#F2CF73;--bad:#F08A80;--sel:#7FB0FF;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --stone:#10172A;--card:#18223A;--line:#2C3954;--line2:#3D4C6C;--text:#ECE6D8;--muted:#A9B0BF;
+  --gold-ink:#E5C766;--gold-soft:#2E2A1C;--warn-bg:#3A2E10;--warn:#F2CF73;--bad:#F08A80;--sel:#7FB0FF;color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--stone);color:var(--text);font-family:var(--body);direction:rtl;line-height:1.5;
+  padding-block:0 32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{opacity:.45;cursor:default}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.wrap{max-width:1080px;margin:0 auto}
+header.hd{padding-block:18px 10px}
+header.hd h1{margin:0;font-family:var(--display);font-weight:900;font-size:clamp(1.7rem,5vw,2.4rem);text-wrap:balance}
+header.hd p{margin:0;color:var(--muted)}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:18px;align-items:start}
+@media (max-width:780px){.grid{grid-template-columns:minmax(0,1fr)}}
+.stage{position:sticky;top:12px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:10px;display:flex;flex-direction:column;gap:8px}
+@media (max-width:780px){.stage{top:0;z-index:5;border-radius:0 0 var(--r) var(--r);padding:6px}#shirt{max-height:44vh}}
+#shirt{width:100%;height:auto;display:block;touch-action:none;user-select:none;-webkit-user-select:none;
+  background:radial-gradient(circle at 50% 42%,var(--gold-soft),transparent 72%);border-radius:12px}
+.tools{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.tb{min-height:40px;min-width:40px;border:1.5px solid var(--line);background:var(--stone);border-radius:10px;padding:.2rem .6rem;font-weight:600;font-size:.9rem}
+.flag{display:flex;gap:8px;background:var(--warn-bg);color:var(--warn);border-radius:12px;padding:8px 12px;font-size:.9rem}
+.steps{display:flex;flex-direction:column;gap:14px;min-width:0}
+.step{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.step h2{margin:0;font-size:1.08rem;font-weight:800;display:flex;gap:8px;align-items:baseline}
+.step h2 span{font-family:var(--display);color:var(--gold-ink);font-size:1.25rem}
+.hint{margin:0;color:var(--muted);font-size:.88rem}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+.tabs button,.chip{flex:none;min-height:40px;border:1.5px solid var(--line);background:transparent;border-radius:999px;padding:.25rem .85rem;font-weight:600;font-size:.92rem}
+.tabs button[aria-pressed="true"],.chip[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
+:root[data-theme="dark"] .tabs button[aria-pressed="true"],:root[data-theme="dark"] .chip[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:#14294D}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tabs button[aria-pressed="true"],:root:not([data-theme="light"]) .chip[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:#14294D}}
+.lib{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px;max-height:280px;overflow-y:auto;padding:2px}
+.lib button{border:1.5px solid var(--line);background:var(--stone);border-radius:12px;padding:5px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.75rem;line-height:1.2}
+.lib img{width:100%;aspect-ratio:1;object-fit:contain}
+.lib button:hover{border-color:var(--gold)}
+.verses{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow-y:auto;padding:2px}
+.verses button{flex:none;text-align:right;border:1.5px solid var(--line);background:transparent;border-radius:12px;padding:.45rem .75rem;display:flex;flex-direction:column;min-height:44px}
+.verses b{font-family:var(--display);font-size:1.05rem;font-weight:700}
+.verses small{color:var(--muted);font-size:.78rem}
+.verses button:hover{border-color:var(--gold)}
+.own{border:1.5px dashed var(--line2);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.own .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+input[type=text],input[type=tel],select,textarea{min-height:44px;border:1.5px solid var(--line);border-radius:12px;padding:.45rem .75rem;background:var(--stone);width:100%}
+textarea{min-height:70px;resize:vertical}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;min-height:48px;padding:.5rem 1.1rem;border-radius:999px;font-weight:800;font-size:1rem;border:0;text-decoration:none}
+.btn-sm{min-height:42px;font-size:.92rem;padding:.3rem .9rem}
+.btn-gold{background:var(--gold);color:#14294D}
+.btn-line{background:transparent;border:1.5px solid var(--line2)}
+.btn-wa{background:var(--wa);color:#fff}
+.lbl{font-weight:700;font-size:.9rem}
+.fonts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.fonts button{min-height:44px;border:1.5px solid var(--line);background:transparent;border-radius:12px;font-size:1.1rem}
+.fonts button[aria-pressed="true"]{border-color:var(--gold);background:var(--gold-soft)}
+.sws{display:flex;gap:8px;flex-wrap:wrap}
+.sw{width:40px;height:40px;border-radius:50%;border:2px solid var(--line2)}
+.sw[aria-pressed="true"]{outline:3px solid var(--gold);outline-offset:2px}
+.rng{display:grid;grid-template-columns:70px minmax(0,1fr);gap:8px;align-items:center;font-size:.9rem}
+.rng input{width:100%;accent-color:var(--gold)}
+.layers{display:flex;flex-direction:column;gap:6px}
+.layers button{display:flex;gap:8px;align-items:center;text-align:right;border:1.5px solid var(--line);background:transparent;border-radius:10px;padding:.3rem .6rem;min-height:44px}
+.layers button[aria-pressed="true"]{border-color:var(--sel);box-shadow:inset 0 0 0 1px var(--sel)}
+.layers img{width:30px;height:30px;object-fit:contain}
+.layers .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.empty{color:var(--muted);font-size:.9rem;margin:0}
+.sizes{display:flex;flex-direction:column;gap:6px}
+.srow{display:grid;grid-template-columns:minmax(0,1fr) 100px 44px;gap:6px}
+.srow .x{min-height:44px;border:1.5px solid var(--line);border-radius:12px;background:transparent;font-size:1.2rem}
+.add{align-self:flex-start;min-height:40px;border:1.5px dashed var(--line2);background:transparent;border-radius:999px;padding:.25rem .9rem;font-weight:600}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media (max-width:420px){.two{grid-template-columns:1fr}}
+.sum{background:var(--stone);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;font-size:.92rem}
+.total{display:flex;justify-content:space-between;align-items:baseline;font-weight:800;border-top:1px dashed var(--line2);padding-top:8px;margin-top:4px}
+.total strong{font-size:1.4rem;font-variant-numeric:tabular-nums}
+.err{color:var(--bad);margin:0;font-weight:600;min-height:1.2em}
+pre{white-space:pre-wrap;background:var(--stone);border-radius:12px;padding:10px;margin:0;font-family:var(--body);font-size:.88rem}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header class="hd">
+  <a href="./" style="color:var(--gold-ink);font-weight:700;text-decoration:none">→ לחנות מוצרי המקדש</a>
+  <h1>מעצב חולצות המקדש</h1>
+  <p>מוסיפים איורים וכיתובים מוכנים, גוררים, מגדילים ומסובבים — ואנחנו מדפיסים.</p>
+</header>
+
+<div class="grid">
+  <section class="stage" aria-label="החולצה">
+    <svg id="shirt" viewBox="0 0 300 330" role="img" aria-label="החולצה"></svg>
+    <div class="tools" id="tools">
+      <button type="button" class="tb" data-t="smaller" aria-label="הקטנה">−</button>
+      <button type="button" class="tb" data-t="bigger" aria-label="הגדלה">+</button>
+      <button type="button" class="tb" data-t="rotl" aria-label="סיבוב שמאלה">↺</button>
+      <button type="button" class="tb" data-t="rotr" aria-label="סיבוב ימינה">↻</button>
+      <button type="button" class="tb" data-t="center">למרכז</button>
+      <button type="button" class="tb" data-t="front">קדימה</button>
+      <button type="button" class="tb" data-t="dup">שכפול</button>
+      <button type="button" class="tb" data-t="del">מחיקה</button>
+    </div>
+    <p class="hint" id="stageHint">לוחצים על איור או כיתוב כדי לבחור אותו, וגוררים כדי להזיז.</p>
+    <div class="flag" id="flag" hidden>⏳ <span id="flagText"></span></div>
+  </section>
+
+  <div class="steps">
+    <section class="step" aria-labelledby="hA">
+      <h2 id="hA"><span>א</span>הוספת איור</h2>
+      <div class="tabs" id="libTabs" role="group" aria-label="סוג האיור"></div>
+      <div class="lib" id="lib"></div>
+      <p class="hint" id="libNote" hidden>ציורים היסטוריים, נחלת הכלל: ג׳יימס טיסו, 1886–1894 (מוזיאון ברוקלין), ושחזור הר הבית מ-1914.</p>
+      <div class="own">
+        <div class="row"><label class="btn btn-line btn-sm" for="ownImg">📷 תמונה משלי</label><input type="file" id="ownImg" accept="image/*" hidden></div>
+        <p class="hint">תמונה משלכם עוברת אישור עריכה לפני ההדפסה.</p>
+      </div>
+    </section>
+
+    <section class="step" aria-labelledby="hB">
+      <h2 id="hB"><span>ב</span>הוספת כיתוב</h2>
+      <div class="tabs" id="catTabs" role="group" aria-label="סוג הכיתוב"></div>
+      <div class="verses" id="verses"></div>
+      <div class="own">
+        <label class="lbl" for="ownText">כיתוב משלי</label>
+        <div class="row"><input type="text" id="ownText" maxlength="40" placeholder="למשל: משפחת לוי עולה לרגל" style="flex:1;min-width:160px"><button type="button" class="btn btn-line btn-sm" id="addOwn">הוספה</button></div>
+        <p class="hint">כיתוב חדש עובר אישור עריכה לפני ההדפסה.</p>
+      </div>
+    </section>
+
+    <section class="step" aria-labelledby="hC">
+      <h2 id="hC"><span>ג</span>על החולצה</h2>
+      <div class="layers" id="layers"></div>
+      <div id="textEdit" hidden>
+        <div class="lbl" id="lf">גופן</div><div class="fonts" id="fonts" role="group" aria-labelledby="lf"></div>
+        <div class="lbl" id="lc" style="margin-top:8px">צבע</div><div class="sws" id="tcolors" role="group" aria-labelledby="lc"></div>
+        <div class="lbl" id="la" style="margin-top:8px">צורה</div><div class="tabs" id="tshape" role="group" aria-labelledby="la"></div>
+      </div>
+      <div id="anyEdit" hidden>
+        <div class="rng"><label for="rSize">גודל</label><input type="range" id="rSize" min="20" max="250" step="1"></div>
+        <div class="rng"><label for="rRot">סיבוב</label><input type="range" id="rRot" min="-180" max="180" step="1"></div>
+      </div>
+    </section>
+
+    <section class="step" aria-labelledby="hD">
+      <h2 id="hD"><span>ד</span>החולצה</h2>
+      <div class="lbl" id="lsc">צבע</div><div class="sws" id="scolors" role="group" aria-labelledby="lsc"></div>
+      <div class="lbl">מידות וכמויות</div>
+      <div class="sizes" id="sizes"></div>
+      <button type="button" class="add" id="addSize">+ עוד מידה</button>
+    </section>
+
+    <section class="step" aria-labelledby="hE">
+      <h2 id="hE"><span>ה</span>הזמנה</h2>
+      <form id="form" style="display:flex;flex-direction:column;gap:10px" novalidate>
+        <div class="two">
+          <div><label class="lbl" for="name">שם</label><input type="text" id="name" autocomplete="name"></div>
+          <div><label class="lbl" for="phone">טלפון</label><input type="tel" id="phone" autocomplete="tel" dir="ltr" placeholder="050-0000000"></div>
+        </div>
+        <div><label class="lbl" for="note">הערה (לא חובה)</label><textarea id="note" maxlength="300"></textarea></div>
+        <div class="sum" id="sum"></div>
+        <p class="err" id="err" role="alert"></p>
+        <button class="btn btn-gold" type="submit">אישור הזמנה</button>
+      </form>
+      <div id="done" hidden style="display:flex;flex-direction:column;gap:10px"></div>
+    </section>
+  </div>
+</div>
+</div>
+
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const PRICE=100,PHONE='972505918734';
+const AREA={x:84,y:62,w:132,h:236}; // אזור ההדפסה על החזית
+
+/* ── ספריות סגורות: הלקוח בוחר רק מתוכן ── */
+const LIB={
+  wall:['תמונות קיר',[['wall-oil','ציור שמן ואור'],['wall-gold','זהב על כחול'],['wall-watercolor','אקוורל בזריחה'],['wall-geometric','מופשט'],['wall-papercut','חיתוך נייר'],['wall-naive','ירושלים הבנויה']]],
+  third:['הבית השלישי',[['third-oil','שמן ואור'],['third-gold','זהב על כחול'],['third-watercolor','אקוורל'],['third-geometric','מופשט'],['third-papercut','חיתוך נייר'],['third-naive','עולים מכל העמים']]],
+  pd:['שחזורים היסטוריים',[['pd-tissot-1','ירושלים והמקדש',2.04],['pd-tissot-2','הר הבית מדרום',1.83],['pd-1914','הר הבית, 1914',1.65]]],
+  temple:['בית המקדש',[['temple','עגול צבעוני'],['temple-watercolor','צבעי מים'],['temple-3d','תלת־ממד'],['temple-line','קווים'],['temple-gold-line','קווי זהב'],['temple-silhouette','צללית'],['temple-glass','ויטראז׳']]],
+  scenes:['עם רקע',[['scene-sunrise','זריחה'],['scene-night','לילה וכוכבים'],['scene-watercolor','צבעי מים'],['scene-vintage','פוסטר וינטג׳'],['scene-olim','עולים לרגל'],['scene-rainbow','ילדים וקשת']]],
+  symbols:['סמלים',[['menorah','מנורה וזית'],['small-menorah','מנורה קטנה'],['gate','שער העיר'],['shofarot','שופרות ורימונים'],['oleh','עולה לרגל'],['kelim','כלי המקדש']]],
+  small:['קטנים',[['i-shofar','שופר'],['i-kinor','כינור'],['i-rimon','רימון'],['i-kad','כד שמן'],['i-anavim','ענבים'],['i-yona','יונה'],['i-shaar','שער']]],
+};
+const CATS={
+  mikdash:['על המקדש',[['ועשו לי מקדש ושכנתי בתוכם','שמות כה, ח'],['כי ביתי בית תפלה יקרא לכל העמים','ישעיהו נו, ז'],['גדול יהיה כבוד הבית הזה האחרון מן הראשון','חגי ב, ט'],['נכון יהיה הר בית ה׳ בראש ההרים','ישעיהו ב, ב'],['לכו ונעלה אל הר ה׳','ישעיהו ב, ג'],['אחת שאלתי מאת ה׳ אותה אבקש','תהלים כז, ד']]],
+  yerushalayim:['ירושלים',[['שאלו שלום ירושלים ישליו אהביך','תהלים קכב, ו'],['עמדות היו רגלינו בשעריך ירושלים','תהלים קכב, ב'],['אם אשכחך ירושלים תשכח ימיני','תהלים קלז, ה'],['שישו את ירושלים וגילו בה כל אהביה','ישעיהו סו, י'],['ירושלים הבנויה כעיר שחברה לה יחדו','תהלים קכב, ג'],['בונה ירושלים ה׳','תהלים קמז, ב']]],
+  regel:['עלייה לרגל',[['שמחתי באמרים לי בית ה׳ נלך','תהלים קכב, א'],['שלוש פעמים בשנה יראה כל זכורך','דברים טז, טז'],['מה טבו אהליך יעקב משכנתיך ישראל','במדבר כד, ה'],['השיבנו ה׳ אליך ונשובה חדש ימינו כקדם','איכה ה, כא']]],
+  tefila:['מן התפילה',[['שיבנה בית המקדש במהרה בימינו','מן התפילה'],['ותחזינה עינינו בשובך לציון ברחמים','מן התפילה'],['בנה ביתך כבתחילה','מן התפילה'],['לשנה הבאה בירושלים הבנויה','מן ההגדה']]],
+  kidum:['לקידום הבניין',[['מקדש אבנה','משפט לקידום'],['בונים את בית המקדש','משפט לקידום'],['עולים להר הבית','משפט לקידום'],['מחכים לבית המקדש','משפט לקידום'],['הדור של הבית השלישי','משפט לקידום']]],
+};
+const FONTS=[['Frank Ruhl Libre','קלאסי',900],['David Libre','ספר',700],['Secular One','מודגש',400],['Suez One','חגיגי',400],['Karantina','צר',700],['Amatic SC','כתב יד',700]];
+const TCOLORS=[['כחול כהה','#14294D'],['זהב','#B8901F'],['לבן','#FFFFFF'],['שחור','#1B1B1F'],['בורדו','#7A1F2B'],['ירוק זית','#556B2F']];
+const SHAPES=[['flat','ישר'],['two','שתי שורות'],['arc','קשת למעלה'],['smile','קשת למטה']];
+const SCOLORS=[['לבן','#FFFFFF'],['שמנת','#EFE4CC'],['תכלת','#BFD8F0'],['כחול כהה','#14294D'],['שחור','#1B1B1F']];
+const SIZE_LIST=['2','4','6','8','10','12','14','16','S','M','L','XL','XXL'];
+const libName=id=>{for(const[,[,l]]of Object.entries(LIB))for(const[i,n]of l)if(i===id)return n;return id;};
+
+/* ── מצב: רשימת שכבות. כל שכבה: {id,type:'img'|'text', src|text, src2:מקור, x,y (מרכז), s (גודל), r (סיבוב), font,color,shape, own} ── */
+let uid=1;
+const D={layers:[],sel:null,scolor:0,sizes:[['M',1]],lib:'wall',cat:'mikdash'};
+try{const o=JSON.parse(localStorage.getItem('mikdash.shirt4')||'null');if(o){Object.assign(D,o);D.layers=D.layers.filter(l=>!(l.type==='img'&&l.own));uid=1+Math.max(0,...D.layers.map(l=>l.id));}}catch(e){}
+if(!D.layers.length)D.layers=[{id:uid++,type:'img',src:'wall-oil',x:150,y:140,s:110,r:0},{id:uid++,type:'text',text:'ועשו לי מקדש ושכנתי בתוכם',src2:'שמות כה, ח',x:150,y:232,s:100,r:0,font:0,color:0,shape:'two'}];
+const save=()=>{try{localStorage.setItem('mikdash.shirt4',JSON.stringify({...D,layers:D.layers.filter(l=>!(l.type==='img'&&l.own))}));}catch(e){}};
+const cur=()=>D.layers.find(l=>l.id===D.sel)||null;
+
+/* ── ספרייה ── */
+function renderLib(){
+  $('libTabs').innerHTML=Object.entries(LIB).filter(([,[,l]])=>l.length).map(([k,[n]])=>`<button type="button" data-v="${k}" aria-pressed="${D.lib===k}">${n}</button>`).join('');
+  $('libNote').hidden=D.lib!=='pd';
+  $('lib').innerHTML=LIB[D.lib][1].map(([id,n])=>`<button type="button" data-v="${id}" aria-label="הוספת ${n}"><img src="art/${id}.webp" alt="" loading="lazy"><span>${n}</span></button>`).join('');
+  $('catTabs').innerHTML=Object.entries(CATS).map(([k,[n]])=>`<button type="button" data-v="${k}" aria-pressed="${D.cat===k}">${n}</button>`).join('');
+  $('verses').innerHTML=CATS[D.cat][1].map(([t,s],i)=>`<button type="button" data-v="${i}" aria-label="הוספת הכיתוב ${t}"><b>${t}</b><small>${s}</small></button>`).join('');
+}
+$('libTabs').onclick=e=>{const b=e.target.closest('button');if(b){D.lib=b.dataset.v;renderLib();}};
+$('catTabs').onclick=e=>{const b=e.target.closest('button');if(b){D.cat=b.dataset.v;renderLib();}};
+function freeSpot(){const n=D.layers.length;return{x:150+((n*23)%40-20),y:150+((n*37)%60-30)};}
+$('lib').onclick=e=>{const b=e.target.closest('button');if(!b)return;const p=freeSpot();const ar=(LIB[D.lib][1].find(x=>x[0]===b.dataset.v)||[])[2]||1;const l={id:uid++,type:'img',src:b.dataset.v,ar,x:p.x,y:p.y,s:D.lib==='small'?50:90,r:0};D.layers.push(l);D.sel=l.id;render();};
+$('verses').onclick=e=>{const b=e.target.closest('button');if(!b)return;const[t,s]=CATS[D.cat][1][+b.dataset.v];const p=freeSpot();const last=[...D.layers].reverse().find(l=>l.type==='text');
+  const l={id:uid++,type:'text',text:t,src2:s,x:p.x,y:Math.min(270,p.y+60),s:100,r:0,font:last?last.font:0,color:last?last.color:0,shape:t.length>16?'two':'flat'};D.layers.push(l);D.sel=l.id;render();};
+$('addOwn').onclick=()=>{const t=$('ownText').value.trim();if(!t){$('ownText').focus();return;}const p=freeSpot();
+  const l={id:uid++,type:'text',text:t,src2:'כיתוב משלי',own:true,x:p.x,y:Math.min(270,p.y+60),s:100,r:0,font:0,color:0,shape:t.length>16?'two':'flat'};D.layers.push(l);D.sel=l.id;$('ownText').value='';render();};
+$('ownImg').onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{const im=new Image();im.onload=()=>{
+  const c=document.createElement('canvas'),k=Math.min(1,900/Math.max(im.width,im.height));c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+  const p=freeSpot();const l={id:uid++,type:'img',own:true,data:c.toDataURL('image/jpeg',.88),ar:c.width/c.height,name:f.name,x:p.x,y:p.y,s:90,r:0};D.layers.push(l);D.sel=l.id;render();};im.src=rd.result;};rd.readAsDataURL(f);e.target.value='';};
+
+/* ── ציור ── */
+function textLines(l){if(l.shape==='two'){const w=l.text.split(' ');if(w.length<2)return[l.text];let best=1,diff=1e9;for(let k=1;k<w.length;k++){const d=Math.abs(w.slice(0,k).join(' ').length-w.slice(k).join(' ').length);if(d<diff){diff=d;best=k;}}return[w.slice(0,best).join(' '),w.slice(best).join(' ')];}return[l.text];}
+function layerSvg(l){
+  const tf=`translate(${l.x} ${l.y}) rotate(${l.r})`;
+  if(l.type==='img'){const w=l.s,h=l.s/(l.ar||1),href=l.own?l.data:`art/${l.src}.webp`;
+    return `<g data-id="${l.id}" transform="${tf}"><image href="${href}" x="${-w/2}" y="${-h/2}" width="${w}" height="${h}" preserveAspectRatio="xMidYMid meet"/></g>`;}
+  const[ff,,fw]=FONTS[l.font],col=TCOLORS[l.color][1],L=textLines(l),long=Math.max(...L.map(s=>s.length));
+  const fs=Math.max(6,Math.min(30,150/(long*.58)))*l.s/100;
+  if(l.shape==='arc'||l.shape==='smile'){const R=Math.max(40,l.text.length*fs*.33),up=l.shape==='arc',pid='p'+l.id;
+    const d=up?`M${-R} ${R*.35} A${R} ${R} 0 0 1 ${R} ${R*.35}`:`M${-R} ${-R*.35} A${R} ${R} 0 0 0 ${R} ${-R*.35}`;
+    return `<g data-id="${l.id}" transform="${tf}"><path id="${pid}" d="${d}" fill="none"/><text font-family="${ff},serif" font-weight="${fw}" font-size="${fs.toFixed(1)}" fill="${col}" text-anchor="middle" direction="rtl"><textPath href="#${pid}" startOffset="50%">${esc(l.text)}</textPath></text></g>`;}
+  const lh=fs*1.18,y0=-(L.length-1)*lh/2+fs*.35;
+  return `<g data-id="${l.id}" transform="${tf}">${L.map((s,i)=>`<text x="0" y="${(y0+i*lh).toFixed(1)}" text-anchor="middle" direction="rtl" font-family="${ff},serif" font-weight="${fw}" font-size="${fs.toFixed(1)}" fill="${col}">${esc(s)}</text>`).join('')}</g>`;
+}
+function render(){
+  const sc=SCOLORS[D.scolor][1],dark=sc==='#14294D'||sc==='#1B1B1F',stroke=dark?'rgba(255,255,255,.22)':'#C9BFA8';
+  $('shirt').innerHTML=`<defs><clipPath id="body"><path d="M100 22 L40 48 L8 112 L50 132 L68 102 L68 318 L232 318 L232 102 L250 132 L292 112 L260 48 L200 22 C193 40 174 52 150 52 C126 52 107 40 100 22 Z"/></clipPath></defs>
+    <path d="M100 22 L40 48 L8 112 L50 132 L68 102 L68 318 L232 318 L232 102 L250 132 L292 112 L260 48 L200 22 C193 40 174 52 150 52 C126 52 107 40 100 22 Z" fill="${sc}" stroke="${stroke}" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M100 22 C107 40 126 52 150 52 C174 52 193 40 200 22" fill="none" stroke="${stroke}" stroke-width="2.5"/>
+    <rect x="${AREA.x}" y="${AREA.y}" width="${AREA.w}" height="${AREA.h}" fill="none" stroke="${dark?'rgba(255,255,255,.25)':'rgba(20,41,77,.18)'}" stroke-dasharray="3 3" stroke-width=".8" rx="4"/>
+    <g clip-path="url(#body)">${D.layers.map(layerSvg).join('')}</g><g id="selBox"></g>`;
+  drawSel();renderPanel();renderSum();save();
+}
+function drawSel(){const g=$('selBox');if(!g)return;const l=cur();if(!l){g.innerHTML='';return;}
+  const el=$('shirt').querySelector(`g[data-id="${l.id}"]`);if(!el){g.innerHTML='';return;}
+  let b;try{b=el.getBBox();}catch(e){b={x:-20,y:-20,width:40,height:40};}
+  g.innerHTML=`<g transform="translate(${l.x} ${l.y}) rotate(${l.r})" pointer-events="none"><rect x="${b.x-3}" y="${b.y-3}" width="${b.width+6}" height="${b.height+6}" fill="none" stroke="var(--sel)" stroke-width="1.2" stroke-dasharray="4 3" rx="3"/></g>`;}
+
+/* ── גרירה על החולצה ── */
+const svg=$('shirt');let drag=null;
+function pt(e){const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;return p.matrixTransform(svg.getScreenCTM().inverse());}
+svg.addEventListener('pointerdown',e=>{const g=e.target.closest('g[data-id]');
+  if(!g){D.sel=null;render();return;}
+  const l=D.layers.find(x=>x.id===+g.dataset.id);if(!l)return;D.sel=l.id;const p=pt(e);drag={l,dx:p.x-l.x,dy:p.y-l.y};svg.setPointerCapture(e.pointerId);renderPanel();drawSel();e.preventDefault();});
+svg.addEventListener('pointermove',e=>{if(!drag)return;const p=pt(e);
+  drag.l.x=Math.max(AREA.x,Math.min(AREA.x+AREA.w,p.x-drag.dx));drag.l.y=Math.max(AREA.y,Math.min(AREA.y+AREA.h,p.y-drag.dy));
+  const g=svg.querySelector(`g[data-id="${drag.l.id}"]`);if(g)g.setAttribute('transform',`translate(${drag.l.x} ${drag.l.y}) rotate(${drag.l.r})`);drawSel();});
+const endDrag=()=>{if(drag){drag=null;save();}};svg.addEventListener('pointerup',endDrag);svg.addEventListener('pointercancel',endDrag);
+
+/* ── כלי עריכה ── */
+$('tools').onclick=e=>{const b=e.target.closest('button');const l=cur();if(!b||!l)return;const t=b.dataset.t;
+  if(t==='smaller')l.s=Math.max(20,l.s*.88);else if(t==='bigger')l.s=Math.min(250,l.s*1.12);
+  else if(t==='rotl')l.r-=15;else if(t==='rotr')l.r+=15;else if(t==='center'){l.x=150;}
+  else if(t==='front'){D.layers=D.layers.filter(x=>x!==l);D.layers.push(l);}
+  else if(t==='dup'){const c={...l,id:uid++,x:Math.min(AREA.x+AREA.w,l.x+12),y:Math.min(AREA.y+AREA.h,l.y+12)};D.layers.push(c);D.sel=c.id;}
+  else if(t==='del'){D.layers=D.layers.filter(x=>x!==l);D.sel=null;}
+  render();};
+$('layers').onclick=e=>{const b=e.target.closest('button');if(b){D.sel=+b.dataset.id;render();}};
+$('rSize').oninput=()=>{const l=cur();if(l){l.s=+$('rSize').value;render();}};
+$('rRot').oninput=()=>{const l=cur();if(l){l.r=+$('rRot').value;render();}};
+$('fonts').innerHTML=FONTS.map(([f,n,w],i)=>`<button type="button" data-v="${i}" style="font-family:'${f}',serif;font-weight:${w}">${n}</button>`).join('');
+$('tcolors').innerHTML=TCOLORS.map(([n,c],i)=>`<button type="button" class="sw" data-v="${i}" style="background:${c}" aria-label="${n}"></button>`).join('');
+$('tshape').innerHTML=SHAPES.map(([v,n])=>`<button type="button" data-v="${v}">${n}</button>`).join('');
+$('scolors').innerHTML=SCOLORS.map(([n,c],i)=>`<button type="button" class="sw" data-v="${i}" style="background:${c}" aria-label="${n}"></button>`).join('');
+const onPick=(id,fn)=>$(id).addEventListener('click',e=>{const b=e.target.closest('button[data-v]');const l=cur();if(b&&l&&l.type==='text'){fn(l,b.dataset.v);render();}});
+onPick('fonts',(l,v)=>l.font=+v);onPick('tcolors',(l,v)=>l.color=+v);onPick('tshape',(l,v)=>l.shape=v);
+$('scolors').onclick=e=>{const b=e.target.closest('button[data-v]');if(b){D.scolor=+b.dataset.v;render();}};
+
+function renderPanel(){const l=cur();
+  $('layers').innerHTML=D.layers.length?[...D.layers].reverse().map(x=>`<button type="button" data-id="${x.id}" aria-pressed="${x.id===D.sel}">${x.type==='img'?`<img src="${x.own?x.data:`art/${x.src}.webp`}" alt="">`:'<span aria-hidden="true" style="width:30px;text-align:center;font-weight:800">א</span>'}<span class="t">${x.type==='img'?(x.own?'תמונה משלי':libName(x.src)):esc(x.text)}</span>${x.own?'<span title="ממתין לאישור">⏳</span>':''}</button>`).join(''):'<p class="empty">החולצה ריקה — הוסיפו איור או כיתוב.</p>';
+  $('textEdit').hidden=!(l&&l.type==='text');$('anyEdit').hidden=!l;
+  $('tools').querySelectorAll('button').forEach(b=>b.disabled=!l);
+  $('stageHint').textContent=l?'גוררים כדי להזיז. הכפתורים למטה משנים גודל, סיבוב וסדר.':'לוחצים על איור או כיתוב כדי לבחור אותו, וגוררים כדי להזיז.';
+  if(l){$('rSize').value=Math.round(l.s);$('rRot').value=Math.round(((l.r+180)%360+360)%360-180);
+    if(l.type==='text'){const press=(id,v)=>$(id).querySelectorAll('button[data-v]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===String(v))));press('fonts',l.font);press('tcolors',l.color);press('tshape',l.shape);}}
+  $('scolors').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.v===D.scolor)));
+  const own=D.layers.filter(x=>x.own);$('flag').hidden=!own.length;
+  $('flagText').textContent=own.length?`${own.some(x=>x.type==='text')?'כיתוב':''}${own.some(x=>x.type==='text')&&own.some(x=>x.type==='img')?' ו':''}${own.some(x=>x.type==='img')?'תמונה':''} משלכם עוברים אישור עריכה לפני ההדפסה. נחזור אליכם אם צריך תיקון.`:'';
+}
+
+/* ── מידות והזמנה ── */
+function renderSizes(){$('sizes').innerHTML=D.sizes.map(([s,q],i)=>`<div class="srow"><select aria-label="מידה" data-i="${i}" data-k="s">${SIZE_LIST.map(x=>`<option${x===s?' selected':''}>${x}</option>`).join('')}</select><select aria-label="כמות" data-i="${i}" data-k="q">${Array.from({length:30},(_,k)=>`<option${k+1===q?' selected':''}>${k+1}</option>`).join('')}</select><button type="button" class="x" data-i="${i}" aria-label="הסרת מידה" ${D.sizes.length<2?'disabled':''}>×</button></div>`).join('');}
+$('sizes').addEventListener('change',e=>{const s=e.target;if(!s.dataset.i)return;const r=D.sizes[+s.dataset.i];if(s.dataset.k==='s')r[0]=s.value;else r[1]=+s.value;renderSum();save();});
+$('sizes').addEventListener('click',e=>{const b=e.target.closest('.x');if(!b||D.sizes.length<2)return;D.sizes.splice(+b.dataset.i,1);renderSizes();renderSum();save();});
+$('addSize').onclick=()=>{D.sizes.push(['L',1]);renderSizes();renderSum();save();};
+const qty=()=>D.sizes.reduce((a,r)=>a+r[1],0);
+function layerLine(x){return x.type==='img'?(x.own?'תמונה משלי ('+(x.name||'')+') ⏳':'איור: '+libName(x.src)):`כיתוב: ${x.text} — ${FONTS[x.font][1]}, ${TCOLORS[x.color][0]}${x.own?' ⏳':''}`;}
+function renderSum(){$('sum').innerHTML=`${D.layers.map(x=>`<div>${esc(layerLine(x))}</div>`).join('')||'<div>החולצה ריקה</div>'}
+  <div><b>חולצה:</b> ${SCOLORS[D.scolor][0]} · <b>מידות:</b> ${D.sizes.map(([s,q])=>s+' × '+q).join(', ')}</div>
+  ${D.layers.some(x=>x.own)?'<div>⏳ חלק מהעיצוב ממתין לאישור עריכה</div>':''}
+  <div class="total"><span>${qty()} חולצות</span><strong>${(qty()*PRICE).toLocaleString('he-IL')} ₪</strong></div>`;}
+function orderText(){return `הזמנה מחנות מוצרי המקדש 👕
+${D.layers.map(layerLine).join('\n')}
+חולצה: ${SCOLORS[D.scolor][0]}
+מידות: ${D.sizes.map(([s,q])=>s+' × '+q).join(', ')}
+סה"כ: ${qty()} חולצות · ${qty()*PRICE} ₪${D.layers.some(x=>x.own)?'\n⏳ יש בעיצוב כיתוב או תמונה משלי — לאישור עריכה':''}
+שם: ${$('name').value.trim()}
+טלפון: ${$('phone').value.trim()}${$('note').value.trim()?'\nהערה: '+$('note').value.trim():''}`;}
+$('form').addEventListener('submit',e=>{e.preventDefault();
+  const ph=$('phone').value.replace(/\D/g,'').replace(/^972/,'0');
+  if(!D.layers.length){$('err').textContent='הוסיפו לפחות איור או כיתוב אחד';return;}
+  if(!$('name').value.trim()){$('err').textContent='כתבו שם';$('name').focus();return;}
+  if(!/^05\d{8}$/.test(ph)){$('err').textContent='כתבו מספר נייד תקין, למשל 050-1234567';$('phone').focus();return;}
+  $('err').textContent='';const txt=orderText();
+  $('done').innerHTML=`<p style="margin:0"><b>ההזמנה מוכנה.</b> שלחו אותה בוואטסאפ${D.layers.some(x=>x.own)?' ואת התמונה שלכם':''}, ונאשר איתכם הכול לפני ההדפסה.</p>
+    <a class="btn btn-wa" href="https://wa.me/${PHONE}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">📲 שליחה בוואטסאפ</a>
+    <pre id="otext"></pre><button type="button" class="chip" id="copy">העתקת פרטי ההזמנה</button>
+    <p class="hint">אם הוואטסאפ לא נפתח: העתיקו את הפרטים ושלחו ל-<span dir="ltr">050-591-8734</span>.</p>`;
+  $('otext').textContent=txt;$('done').hidden=false;$('form').hidden=true;
+  $('copy').onclick=()=>{navigator.clipboard.writeText(txt).then(()=>$('copy').textContent='הועתק ✓').catch(()=>{const r=document.createRange();r.selectNodeContents($('otext'));const s=getSelection();s.removeAllRanges();s.addRange(r);});};
+});
+
+renderLib();renderSizes();render();
+document.fonts&&document.fonts.ready.then(()=>drawSel());
+</script>
+
+</body>
+</html>
