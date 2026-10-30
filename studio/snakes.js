@@ -453,6 +453,8 @@ function snRaster(){const svg=draw(null,10);if(svg===_raster.key&&_raster.img)re
 const SN_BOARD={blankW:260,blankH:265,diy:190,card:{w:63,h:88,r:3}}; // לוח לודו זיקית 8805 (שני חצאים 13×26.5) או דף A4
 function snDrawBoard(ctx,W){const im=snRaster();if(im){ctx.drawImage(im,0,0,W,W);return;}ctx.fillStyle='#f1ecdd';ctx.fillRect(0,0,W,W);ctx.fillStyle='#14294D';ctx.font=(W*.05)+'px Heebo';ctx.textAlign='center';ctx.fillText('מצייר את הלוח…',W/2,W/2);}
 function snBoardItem(W){return{w:W,h:W,pts:shapePts('rect',W,W),draw(ctx){snDrawBoard(ctx,W);}};}
+// S-104: הלוח השלם על דף A3 (הושעיה 30/10: "כבר לא צריך לחלק לשניים — יש לי דף A3")
+function snFull(){const W=SN_BOARD.blankW,H=SN_BOARD.blankH;return{w:W,h:H,pts:shapePts('rect',W,H),draw(ctx){ctx.save();ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);ctx.translate(0,(H-W)/2);snDrawBoard(ctx,W);ctx.restore();}};}
 function snHalf(kk){const W=SN_BOARD.blankW,H=SN_BOARD.blankH,hw=W/2;return{w:hw,h:H,pts:shapePts('rect',hw,H),draw(ctx){ctx.save();ctx.beginPath();ctx.rect(0,0,hw,H);ctx.clip();ctx.translate(-kk*hw,(H-W)/2);snDrawBoard(ctx,W);ctx.restore();}};}
 function snCardItem(c,i){const d=SN_BOARD.card,pts=shapePts('rounded',d.w,d.h,d.r),pal=PALS[A.pal]||PALS.navy,col={q:pal.d,t:pal.l,a:'#2f6b3a'}[c.type],sym={q:'?',t:'!',a:'★'}[c.type];
  return{w:d.w,h:d.h,pts,draw(ctx){const P=pathOf(pts),{w,h}=d;ctx.save();ctx.clip(P);ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);const bh=h*.12;ctx.fillStyle=col;ctx.fillRect(0,0,w,bh);
@@ -463,7 +465,7 @@ function snCardItem(c,i){const d=SN_BOARD.card,pts=shapePts('rounded',d.w,d.h,d.
 function snEnsureStyle(){if(document.getElementById('sn-style'))return;const st=document.createElement('style');st.id='sn-style';st.textContent=SN_CSS;document.head.appendChild(st);}
 function snHost(){snEnsureStyle();if(MK&&A&&!String(A.preset).startsWith('mikdash'))applyPreset('mikdash');HOST=document.createElement('div');HOST.id='sn-app';HOST.addEventListener('click',()=>setTimeout(snTouch,0),true);HOST.addEventListener('input',()=>setTimeout(snTouch,0),true);
  syncSize();mode=A.screen||mode;if(!(B&&P))mode='home';if(mode==='cards')renderCards();else if(mode==='result')renderResult();else if(mode==='style')renderStyle();else if(mode==='game')renderGame();else renderHome();return HOST;}
-window.SN_DEFAULTS=SN_DEFAULTS;window.SN_MIKDASH=MK;
+window.SN_DEFAULTS=SN_DEFAULTS;window.SN_MIKDASH=MK;window.snFullItem=snFull;
 window.Snakes={id:'snakes',printShop:false,adminOnly:false,label:'🪜 סולמות וחבלים',
  intro:'🪜 בוחרים לוח וצבעים, סולמות ונחשים, עונים על שאלות המשחק — והמחולל מסדר את הלוח לפי סטטיסטיקה. אחר כך משדרגים: קלפים, משבצות משלכם, תמונה.',
  fonts:()=>[A&&A.numFont,A&&A.cardFont,'Secular One','Heebo'],
@@ -472,12 +474,12 @@ window.Snakes={id:'snakes',printShop:false,adminOnly:false,label:'🪜 סולמ�
   const items=A.mode==='blank'?[snHalf(0),snHalf(1)]:[snBoardItem(SN_BOARD.diy)];
   const r=paginate(items,{allowRot:false,label:'לוח'});if(A.mode==='blank')r.pages.forEach(p=>p.cut=false);
   if(A.cards.length){const pc=paginate(A.cards.map(snCardItem),{allowRot:false,label:'קלפים'});r.pages=r.pages.concat(pc.pages);}
-  r.summary=(A.mode==='blank'?'לוח לודו 8805 בשני חצאים · ':'לוח 19×19 ס"מ על A4 · ')+(A.cards.length?A.cards.length+' קלפים':'בלי קלפים')+' · '+SIZES[A.size];return r;},
+  r.summary=(A.mode==='blank'?'לוח לודו 8805 שלם (A3) · ':'לוח 19×19 ס"מ על A4 · ')+(A.cards.length?A.cards.length+' קלפים':'בלי קלפים')+' · '+SIZES[A.size];return r;},
  panel(){snSync();if(MK)A.mode='diy';return[snHost(),
   MK?null:sec('🖨️ על מה מדפיסים',false,seg(A,'mode',[['blank','🪵 לוח לודו מוכן 8805 (26×26.5)'],['diy','✂️ דף A4 — אני גוזר']]),
-   el('p',{class:'hint'},A.mode==='blank'?'הלוח בשני חצאים 13×26.5 ס"מ לסובלימציה על לוח הלודו של זיקית. הקלפים 63×88 בדפים נפרדים.':'לוח 19×19 ס"מ על דף A4 אחד, והקלפים 63×88 בדפים נפרדים.'),
+   el('p',{class:'hint'},A.mode==='blank'?'הלוח שלם, 26×26.5 ס"מ על דף A3, לסובלימציה על לוח הלודו של זיקית. הקלפים 63×88 בדפים נפרדים.':'לוח 19×19 ס"מ על דף A4 אחד, והקלפים 63×88 בדפים נפרדים.'),
    A.cards.length?fontSel(A,'cardFont','פונט הקלפים',()=>(A.cards[0]||{}).text||'שאלה'):null,
-   A.mode==='blank'&&isAdmin?[tog(A,'mirror','הפוך במראה (לנייר סובלימציה)'),el('button',{type:'button',class:'btn gold',on:{click:()=>sublimationSheetsPDF([snHalf(0),snHalf(1)],'snakes-8805',{mirror:A.mirror})}},'⬇️ קובץ לסובלימציה (הלוח)')]:null),
+   A.mode==='blank'&&isAdmin?[tog(A,'mirror','הפוך במראה (לנייר סובלימציה)'),el('button',{type:'button',class:'btn gold',on:{click:()=>sublimationSheetsPDF([snFull()],'snakes-8805',{auto:true,mirror:A.mirror})}},'⬇️ קובץ לסובלימציה (הלוח)')]:null),
   sec('איך משחקים',false,el('div',{class:'rules'},
    el('p',{},el('b',{},'המטרה: '),'להגיע ראשונים ל-'+(A.size*A.size)+'.'),
    el('p',{},el('b',{},'משחקים: '),'מטילים '+(A.dice==='one'?'קובייה':'שתי קוביות')+' ומתקדמים. תחתית סולם — מטפסים לראשו. ראש '+({rope:'חבל',slide:'מגלשה',snake:'נחש'})[A.down]+' — יורדים לסופו.'+A.sq.map(q=>' משבצת '+(q.sym||'★')+' ('+(q.name||'')+') — '+ruleText(q.rule)+'.').join('')),
