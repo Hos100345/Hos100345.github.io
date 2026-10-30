@@ -54,8 +54,10 @@ button{cursor:pointer}
 /* לשוניות */
 .tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:4px;margin:-1.3rem auto 0;max-width:520px;
   border-radius:16px;background:var(--card);border:1px solid var(--line);box-shadow:var(--sh);position:relative;z-index:2}
-.tabs button{min-height:46px;border:0;border-radius:12px;background:transparent;font-weight:600;color:var(--muted)}
-.tabs button[aria-selected="true"]{background:var(--navy);color:#fff;font-weight:800;box-shadow:0 4px 12px rgba(20,41,77,.25)}
+.tabs button{min-height:64px;border:1.5px solid transparent;border-radius:40px 40px 10px 10px;background:transparent;font-weight:700;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px 4px 4px;font-family:var(--display);font-size:1.02rem}
+.tabs button img{width:30px;height:30px;object-fit:contain;filter:saturate(.75)}
+.tabs button[aria-selected="true"] img{filter:none}
+.tabs button[aria-selected="true"]{background:linear-gradient(180deg,#F7EBC6,#E9D7A6);border-color:var(--gold);color:#14294D;font-weight:900;box-shadow:inset 0 -3px 0 var(--gold),0 4px 12px rgba(122,95,18,.25)}
 :root[data-theme="dark"] .tabs button[aria-selected="true"]{background:var(--gold);color:#14294D}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .tabs button[aria-selected="true"]{background:var(--gold);color:#14294D}}
 
@@ -145,9 +147,9 @@ input[type=text],select{min-height:44px;border:1.5px solid var(--line);border-ra
 
 <main class="wrap">
   <div class="tabs" role="tablist" aria-label="מה מחפשים?">
-    <button type="button" role="tab" id="tab-games" aria-controls="pan-games" aria-selected="true">🎲 משחקים</button>
-    <button type="button" role="tab" id="tab-shirts" aria-controls="pan-shirts" aria-selected="false" tabindex="-1">👕 חולצות ומתנות</button>
-    <button type="button" role="tab" id="tab-phone" aria-controls="pan-phone" aria-selected="false" tabindex="-1">📱 בטלפון</button>
+    <button type="button" role="tab" id="tab-games" aria-controls="pan-games" aria-selected="true"><img src="art/i-kinor.webp" alt=""><span>משחקים</span></button>
+    <button type="button" role="tab" id="tab-shirts" aria-controls="pan-shirts" aria-selected="false" tabindex="-1"><img src="art/small-menorah.webp" alt=""><span>חולצות</span></button>
+    <button type="button" role="tab" id="tab-phone" aria-controls="pan-phone" aria-selected="false" tabindex="-1"><img src="art/i-shofar.webp" alt=""><span>חידון</span></button>
   </div>
 
   <!-- משחקים -->
