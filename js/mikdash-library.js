@@ -17,6 +17,21 @@ window.MIKDASH_LIB=[
   {cat:'סצנות',items:[
     ['/mikdash/art/scene-sunrise.webp','זריחה'],['/mikdash/art/scene-night.webp','לילה וכוכבים'],['/mikdash/art/scene-watercolor.webp','צבעי מים'],
     ['/mikdash/art/scene-vintage.webp','פוסטר וינטג׳'],['/mikdash/art/scene-olim.webp','עולים לרגל'],['/mikdash/art/scene-rainbow.webp','ילדים וקשת']]},
+  {cat:'ביכורים וקורבנות',items:[
+    ['/mikdash/art/qt/s3-chita.webp','חיטה'],['/mikdash/art/qt/s3-seora.webp','שעורה'],['/mikdash/art/qt/s3-zayit.webp','זית'],['/mikdash/art/qt/peirot-tamar.webp','תמר'],
+    ['/mikdash/art/qt/peirot-gefen.webp','גפן'],['/mikdash/art/qt/peirot-teena.webp','תאנה'],['/mikdash/art/qt/peirot-rimon.webp','רימון'],['/mikdash/art/qt/mevi-bikurim.webp','סל הביכורים'],
+    ['/mikdash/art/qt/s3-par.webp','פר'],['/mikdash/art/qt/mevi-keves.webp','כבש'],['/mikdash/art/qt/s3-sair.webp','שעיר עיזים'],['/mikdash/art/qt/mevi-yonim.webp','תורים ובני יונה'],
+    ['/mikdash/art/qt/s3-lechem.webp','לחם הפנים'],['/mikdash/art/qt/s3-shtei.webp','שתי הלחם'],['/mikdash/art/qt/s3-solet.webp','סולת בלולה בשמן'],['/mikdash/art/qt/s3-yayin.webp','יין לנסכים'],
+    ['/mikdash/art/qt/s3-shor.webp','השור בקרני זהב'],['/mikdash/art/qt/s3-chalil.webp','החליל'],['/mikdash/art/qt/s3-olim.webp','משפחה עם סלים'],['/mikdash/art/qt/s3-yeled.webp','ילד עם ביכורים'],['/mikdash/art/qt/mevi-shemen.webp','שמן זית']]},
+  {cat:'כלים, בגדים וכלי שיר',items:[
+    ['/mikdash/art/qt/kelim-menorah.webp','המנורה'],['/mikdash/art/qt/kelim-shulchan.webp','שולחן לחם הפנים'],['/mikdash/art/qt/kelim-ketoret.webp','מזבח הקטורת'],['/mikdash/art/qt/kelim-aron.webp','ארון הברית'],
+    ['/mikdash/art/qt/kohen-tzitz.webp','הציץ'],['/mikdash/art/qt/kohen-choshen.webp','החושן'],['/mikdash/art/qt/kohen-efod.webp','האפוד'],['/mikdash/art/qt/kohen-meil.webp','המעיל'],
+    ['/mikdash/art/qt/s3-kg.webp','הכהן הגדול'],['/mikdash/art/qt/s3-kohen.webp','כהן'],['/mikdash/art/qt/s3-levi.webp','לוי משורר'],
+    ['/mikdash/art/qt/levi-kinor.webp','כינור'],['/mikdash/art/qt/levi-nevel.webp','נבל'],['/mikdash/art/qt/levi-chatzotzrot.webp','חצוצרות'],['/mikdash/art/qt/levi-metziltayim.webp','מצלתיים'],
+    ['/mikdash/art/qt/minim-lulav.webp','לולב'],['/mikdash/art/qt/minim-etrog.webp','אתרוג'],['/mikdash/art/qt/minim-hadas.webp','הדס'],['/mikdash/art/qt/minim-arava.webp','ערבה']]},
+  {cat:'המקדש וירושלים',items:[
+    ['/mikdash/art/qt/bait-mizbeach.webp','המזבח'],['/mikdash/art/qt/bait-kiyor.webp','הכיור'],['/mikdash/art/qt/bait-nikanor.webp','שער ניקנור'],['/mikdash/art/qt/bait-heichal.webp','ההיכל'],
+    ['/mikdash/art/qt/yrsh-kotel.webp','הכותל המערבי'],['/mikdash/art/qt/yrsh-david.webp','מגדל דוד'],['/mikdash/art/qt/yrsh-shaar.webp','שער יפו'],['/mikdash/art/qt/yrsh-zeitim.webp','הר הזיתים']]},
   {cat:'סמלים',items:[
     ['/mikdash/art/menorah.webp','מנורה וזית'],['/mikdash/art/small-menorah.webp','מנורה'],['/mikdash/art/gate.webp','שער העיר'],['/mikdash/art/shofarot.webp','שופרות ורימונים'],
     ['/mikdash/art/oleh.webp','עולה לרגל'],['/mikdash/art/kelim.webp','כלי המקדש'],['/mikdash/art/i-shofar.webp','שופר'],['/mikdash/art/i-kinor.webp','כינור'],
