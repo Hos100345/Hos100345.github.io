@@ -214,7 +214,21 @@
     var rib = new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(P, true), 200, 7, 10, true), m);
     return rib;
   }
+  // G-38: החולצה של הסטודיו חזרה להיות ברירת המחדל (הושעיה: "הקודם שלך היה יותר טוב"). הוולומטרית נשארת כ-buildShirtVolume לניסויים.
   function buildShirt() {
+    var T = THREE, g = new T.Group(), B = SH_B, pp = 2, print = printCanvas(512, 512, 'יום הולדת שמח!', null, 0.84);
+    [false, true].forEach(function (back) {
+      var pts = shOutline(back), am = new T.CanvasTexture(shMask(pts, B, pp)), sign = back ? -1 : 1;
+      var map = new T.CanvasTexture(shFabric(B, pp, back, back ? null : print)); if (T.sRGBEncoding) map.encoding = T.sRGBEncoding; map.anisotropy = 4;
+      var geo = shGeom(pts, B, sign), out = back ? T.BackSide : T.FrontSide, inn = back ? T.FrontSide : T.BackSide;
+      g.add(new T.Mesh(geo, shFabricMat(am, map, out, false)), new T.Mesh(geo, shFabricMat(am, null, inn, true)));
+    });
+    var cm = new T.Mesh(shCollar(B), new T.MeshPhysicalMaterial({ color: 0xF4F3EF, roughness: .95 })); cm.material.sheen = new T.Color(.35, .35, .35); g.add(cm);
+    g.scale.setScalar(1 / 330);   // מ"מ → יחידות סצנה (חולצה ≈ 2.25 יח׳ גובה)
+    var wrap = new T.Group(); wrap.add(g); return wrap;
+  }
+
+  function buildShirtVolume() {
     var T = THREE, g = new T.Group(), B = SH_B, pp = 2, print = printCanvas(512, 512, 'יום הולדת שמח!', null, 0.84);
     var nmap = knitNormalMap(), nmapB = knitNormalMap(), nmapS = knitNormalMap(), nmapS2 = knitNormalMap();
     var mapF = new T.CanvasTexture(shFabric(B, pp, false, print)), mapB = new T.CanvasTexture(shFabric(B, pp, true, null));
@@ -405,7 +419,7 @@
     var dv = new T.Vector3(0.85, -0.95, 0.2); board.localToWorld(dv); die.position.copy(dv); die.rotation.set(0.3, 0.6, 0.1); g.add(die);
     g.position.y = -0.1; return g;
   }
-  var BUILD = { shirt: buildShirt, 'shirt-glb': buildShirtGlb, mug: buildMug, puzzle: buildPuzzle, cards: buildCards, memory: buildMemory, domino: buildDomino, ludo: buildLudo, snakes: buildSnakes, tangram: buildTangram, dice: buildDice };
+  var BUILD = { shirt: buildShirt, 'shirt-volume': buildShirtVolume, 'shirt-glb': buildShirtGlb, mug: buildMug, puzzle: buildPuzzle, cards: buildCards, memory: buildMemory, domino: buildDomino, ludo: buildLudo, snakes: buildSnakes, tangram: buildTangram, dice: buildDice };
   // G-35: מודלים נוספים נרשמים מבחוץ (js/zikit-3d.js — המוצרים מההזמנה מזיקית). register(key, fn) לפני שהבמה נטענת.
   window.S3D = { register: function (k, fn) { BUILD[k] = fn; }, printCanvas: printCanvas, tex: tex, face: face, balloon: balloon, has: function (k) { return !!BUILD[k]; }, build: function (k) { return BUILD[k](); } };
 
