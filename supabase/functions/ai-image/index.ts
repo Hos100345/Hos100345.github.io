@@ -6,6 +6,7 @@
 //   S-117: command {text,doc} → ניתוב (ops/image/unsupported/ask) · feedback {id,good,note?,undone?,applied?} · requests (מנהל)
 //   S-118: design_img {design_id?,img_id,data} · design_save {id?,title,state,status,for_code?} · design_list {all?} · design_load {id}
 //   עיצובים בענן לפי קוד (studio_ad_designs + bucket studio-ad). מנהל עובד על עיצוב של שותף עם for_code — ויצירות AI נרשמות על הקוד הזה.
+//   S-119: generate/edit {compare:true} → שני מודלים במקביל (ai_tasks.model + alt_model), נספר כ-2 · img_feedback {log_id,good?,note?,chosen?} · model_stats (מנהל)
 //   כל command נרשם ב-studio_ai_requests — זה התיעוד לשיפור העורך. command לא נספר ביצירות ולא נרשם לחיוב (עלות של שבריר אגורה).
 //   edit: image = התמונה המקורית, mark = אותה תמונה עם האזור צבוע באדום שקוף. הדפדפן מדביק חזרה רק את האזור —
 //   כך כל השאר נשאר זהה בפיקסלים גם אם המודל צייר מחדש את כל התמונה.
@@ -48,7 +49,7 @@ async function callModel(model: string, params: any, prompt: string, images: str
   const ac = new AbortController(), t = setTimeout(() => ac.abort(), 140000);
   const h = { Authorization: `Bearer ${OR_KEY}`, 'Content-Type': 'application/json', 'HTTP-Referer': 'https://www.hoshaya.co.il', 'X-Title': 'Hoshaya Studio' };
   try {
-    if (params?.api === 'images') { // ה-Image API (למשל gpt-image) — רק יצירה מטקסט
+    if (params?.api === 'images' || /^openai\/gpt-image/.test(model)) { // ה-Image API (למשל gpt-image) — רק יצירה מטקסט (S-119: לפי שם המודל)
       const r = await fetch(`${OR}/images`, { method: 'POST', headers: h, signal: ac.signal, body: JSON.stringify({ model, prompt, n: 1, aspect_ratio: aspect, ...(params.extra || {}) }) });
       const j = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(j?.error?.message || `OpenRouter ${r.status}`);
@@ -192,6 +193,33 @@ Deno.serve(async (req) => {
       return json({ error: 'לא הצלחתי להבין את הבקשה: ' + msg }, 502);
     }
   }
+  // ── S-119: משוב על תמונה + סיכום מודלים ──
+  if (action === 'img_feedback') {
+    const id = Number(body.log_id) || 0, patch: any = {};
+    if (body.good === true) patch.feedback = 'good'; else if (body.good === false) patch.feedback = 'bad';
+    if (typeof body.note === 'string' && body.note.trim()) patch.note = body.note.trim().slice(0, 500);
+    if (typeof body.chosen === 'boolean') patch.chosen = body.chosen;
+    if (!id || !Object.keys(patch).length) return json({ error: 'חסר מה לעדכן' }, 400);
+    let q = db.from('studio_ai_log').update(patch).eq('id', id);
+    if (!isAdmin) q = q.eq('who', code); // שותף — רק על השורות שלו; מנהל — גם על שורות שנרשמו לשותף (עבד בשבילו)
+    await q;
+    return json({ ok: true });
+  }
+  if (action === 'model_stats') {
+    if (!isAdmin) return json({ error: 'מנהל בלבד' }, 403);
+    const { data } = await db.from('studio_ai_log').select('task,model,ms,cost_ils,feedback,note,compare_group,chosen,created_at').eq('ok', true).order('id', { ascending: false }).limit(2000);
+    const st: Record<string, any> = {};
+    (data || []).forEach((r: any) => {
+      const k = r.task + '|' + r.model, s = st[k] || (st[k] = { task: r.task, model: r.model, n: 0, good: 0, bad: 0, cmp: 0, won: 0, ms: 0, ils: 0, notes: [] as string[] });
+      s.n++; s.ms += r.ms || 0; s.ils += Number(r.cost_ils || 0);
+      if (r.feedback === 'good') s.good++; if (r.feedback === 'bad') s.bad++;
+      if (r.compare_group) { s.cmp++; if (r.chosen) s.won++; }
+      if (r.note && s.notes.length < 5) s.notes.push(r.note);
+    });
+    const { data: fails } = await db.from('studio_ai_log').select('model').eq('ok', false).not('model', 'is', null);
+    const f: Record<string, number> = {}; (fails || []).forEach((r: any) => f[r.model] = (f[r.model] || 0) + 1);
+    return json({ stats: Object.values(st).map((s: any) => ({ ...s, ms: Math.round(s.ms / s.n), ils: Math.round(s.ils / s.n * 1000) / 1000, fails: f[s.model] || 0 })) });
+  }
   // ── S-118: עיצובים בענן ──
   const forCode = isAdmin && body.for_code ? norm(body.for_code) : '';
   const owner = isAdmin ? (forCode || 'HOSHAYA') : code; // של מי העיצוב; העיצובים של הושעיה עצמו תחת HOSHAYA (קוד מושבת — אי אפשר להיכנס איתו)
@@ -248,8 +276,9 @@ Deno.serve(async (req) => {
   const aspect = ASPECTS.includes(body.aspect) ? body.aspect : '1:1';
   let taskId = action === 'edit' ? 'image_edit' : (body.task === 'image_with_text' ? 'image_with_text' : 'image_from_text');
   if (action === 'edit' && (!isImg(body.image) || !isImg(body.mark))) return json({ error: 'התמונה חסרה או גדולה מדי' }, 400);
-  const { data: task } = await db.from('ai_tasks').select('id,model,params,active').eq('id', taskId).maybeSingle();
+  const { data: task } = await db.from('ai_tasks').select('id,model,alt_model,params,active').eq('id', taskId).maybeSingle();
   if (!task || !task.active) return json({ error: 'המשימה לא פעילה בטבלת ai_tasks: ' + taskId }, 500);
+  const compare = body.compare === true && !!task.alt_model && task.alt_model !== task.model;
 
   const fullPrompt = action === 'edit'
     ? 'Edit the FIRST image. The SECOND image is the same picture with the area to change highlighted in semi-transparent red. '
@@ -262,21 +291,38 @@ Deno.serve(async (req) => {
   let billCode = code;
   if (isAdmin && forCode && forCode !== 'HOSHAYA') { const { data: fc } = await db.from('studio_ai_codes').select('code').eq('code', forCode).maybeSingle(); if (fc) billCode = forCode; }
   const who = billCode || 'admin';
-  const t0 = Date.now();
-  try {
-    const out = await callModel(task.model, task.params || {}, fullPrompt, action === 'edit' ? [body.image, body.mark] : [], aspect);
-    if (billCode) { // נספר רק אחרי הצלחה, אטומית
-      const { data: okc } = await db.rpc('studio_ai_consume', { p_code: billCode });
-      if (okc === false) return json({ error: 'נגמרו היצירות בקוד הזה' }, 403);
-    }
-    const costIls = ils(out.cost);
-    let chargeIls: number | null = null;
-    if (billCode) { const { data: c } = await db.from('studio_ai_codes').select('markup').eq('code', billCode).maybeSingle(); chargeIls = charge(costIls, Number(c?.markup || 1.2)); }
-    await db.from('studio_ai_log').insert({ who, task: taskId, model: task.model, ok: true, ms: Date.now() - t0, cost_usd: out.cost, cost_ils: costIls, charge_ils: chargeIls });
-    return json({ image: out.image, model: task.model, task: taskId, ...(isAdmin ? { cost_ils: costIls, billed_to: billCode || null } : { charge_ils: chargeIls }) });
-  } catch (e) {
-    const msg = String((e as Error)?.message || e).slice(0, 300);
-    await db.from('studio_ai_log').insert({ who, task: taskId, model: task.model, ok: false, ms: Date.now() - t0, error: msg });
-    return json({ error: msg }, 502);
+  // S-119: בהשוואה צריך 2 יצירות פנויות לפני שמתחילים
+  if (compare && billCode) {
+    const { data: c } = await db.from('studio_ai_codes').select('usage_limit,used').eq('code', billCode).maybeSingle();
+    if (c && c.usage_limit != null && c.usage_limit - c.used < 2) return json({ error: 'להשוואה צריך 2 יצירות פנויות — נשארה ' + Math.max(0, c.usage_limit - c.used) }, 403);
   }
+  const models = compare ? [task.model, task.alt_model] : [task.model];
+  const group = compare ? crypto.randomUUID() : null;
+  const runOne = async (model: string) => {
+    const t0 = Date.now();
+    // מודל של Image API לא מקבל תמונות — בעריכה הוא לא יכול להשתתף
+    if (action === 'edit' && /^openai\/gpt-image/.test(model)) throw Object.assign(new Error('המודל הזה לא תומך בעריכת תמונה קיימת'), { model, ms: 0 });
+    try {
+      const out = await callModel(model, model === task.model ? (task.params || {}) : {}, fullPrompt, action === 'edit' ? [body.image, body.mark] : [], aspect);
+      if (billCode) { // נספר רק אחרי הצלחה, אטומית
+        const { data: okc } = await db.rpc('studio_ai_consume', { p_code: billCode });
+        if (okc === false) throw Object.assign(new Error('נגמרו היצירות בקוד הזה'), { model, ms: Date.now() - t0, quota: true });
+      }
+      const costIls = ils(out.cost);
+      let chargeIls: number | null = null;
+      if (billCode) { const { data: c } = await db.from('studio_ai_codes').select('markup').eq('code', billCode).maybeSingle(); chargeIls = charge(costIls, Number(c?.markup || 1.2)); }
+      const { data: lg } = await db.from('studio_ai_log').insert({ who, task: taskId, model, ok: true, ms: Date.now() - t0, cost_usd: out.cost, cost_ils: costIls, charge_ils: chargeIls, compare_group: group }).select('id').single();
+      return { image: out.image, model, log_id: lg?.id, ms: Date.now() - t0, ...(isAdmin ? { cost_ils: costIls } : { charge_ils: chargeIls }) };
+    } catch (e) {
+      const msg = String((e as Error)?.message || e).slice(0, 300);
+      await db.from('studio_ai_log').insert({ who, task: taskId, model, ok: false, ms: Date.now() - t0, error: msg, compare_group: group });
+      throw Object.assign(new Error(msg), { model });
+    }
+  };
+  const settled = await Promise.allSettled(models.map(runOne));
+  const results = settled.filter((s) => s.status === 'fulfilled').map((s: any) => s.value);
+  const errors = settled.filter((s) => s.status === 'rejected').map((s: any) => ({ model: s.reason?.model, error: String(s.reason?.message || s.reason) }));
+  if (!results.length) return json({ error: errors[0]?.error || 'היצירה נכשלה', errors }, 502);
+  const first = results[0];
+  return json({ ...first, task: taskId, results, errors, billed_to: isAdmin ? (billCode || null) : undefined });
 });
