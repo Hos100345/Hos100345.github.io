@@ -80,7 +80,7 @@ const CMD_SYS = `You are the command router of a Hebrew ad editor (RTL). The use
 You receive the current document as JSON: canvas size W×H in units (x grows right, y grows down, layer x,y = CENTER of the layer), selected layer id, and layers (bottom to top).
 Text layer fields: text, font (family id), color, outline ("none" or color), fs (letter height in units), rot (degrees). Image layer fields: w (width in units), rot, name, first image is usually the background.
 Return ONLY a JSON object:
-{"route":"ops"|"image"|"unsupported"|"ask","ops":[...],"say":"short Hebrew sentence to the user","image_prompt":"...","target":"layer id","missing":"..."}
+{"route":"ops"|"generate"|"image"|"unsupported"|"ask","ops":[...],"with_text":false,"say":"short Hebrew sentence to the user","image_prompt":"...","target":"layer id","missing":"..."}
 route "ops" — the request can be done with these operations (apply to the selected layer when the user says "it"/"this"; otherwise pick the layer the words point to):
  {"op":"set","id":"..","text"?,"font"?,"color"?,"outline"?}  font must be an "f" value from the fonts list; colors as #RRGGBB
  {"op":"move","id":"..","dx":n,"dy":n}   relative, in units ("a bit" ≈ 5% of W)
@@ -91,18 +91,19 @@ route "ops" — the request can be done with these operations (apply to the sele
  {"op":"add_text","text":"..","x"?:n,"y"?:n,"color"?,"font"?,"size"?:n}
  {"op":"bg","color":"#RRGGBB"}  background color behind images
  {"op":"format","fmt":"post"|"story"|"wide"|"a4"}
-route "image" — the pixels of a photo must change (add/remove/replace objects, people, style, lighting, colors inside the photo). Put a clear Hebrew instruction in image_prompt and the image layer id in target.
+route "generate" — the user asks to CREATE a new picture/object/scene that is not in the document (e.g. "make me a jar with ... written on it"). Put a clear Hebrew description in image_prompt, and "with_text":true if the picture itself must contain written words (then quote the exact words in image_prompt).
+route "image" — the pixels of an EXISTING photo must change (add/remove/replace objects, people, style, lighting, colors inside the photo). Put a clear Hebrew instruction in image_prompt and the image layer id in target.
 route "unsupported" — a design feature these operations cannot do (shadow, gradient, frame, curved text, line spacing, effects...). Put in "missing" a short Hebrew name of the missing feature, and in "say" tell the user it was recorded for improving the editor. If part of the request IS possible, use route "ops" for that part and still fill "missing".
 route "ask" — truly ambiguous; ask one short Hebrew question in "say".
-Never invent layer ids. Keep "say" under 15 words.`;
+Never invent layer ids. Keep "say" under 15 words. The output must be valid JSON: escape any double quote (") inside strings as \\".`;
 
-async function routeCommand(model: string, text: string, doc: any) {
+async function routeCommand(model: string, text: string, doc: any, retry = false): Promise<any> {
   const ac = new AbortController(), tm = setTimeout(() => ac.abort(), 30000);
   try {
     const r = await fetch(`${OR}/chat/completions`, { method: 'POST', signal: ac.signal,
       headers: { Authorization: `Bearer ${OR_KEY}`, 'Content-Type': 'application/json', 'HTTP-Referer': 'https://www.hoshaya.co.il', 'X-Title': 'Hoshaya Studio' },
       body: JSON.stringify({ model, temperature: 0, max_tokens: 900, response_format: { type: 'json_object' },
-        messages: [{ role: 'system', content: CMD_SYS }, { role: 'user', content: 'DOCUMENT:\n' + JSON.stringify(doc) + '\n\nREQUEST:\n' + text }] }) });
+        messages: [{ role: 'system', content: CMD_SYS + (retry ? '\nYour previous answer was not valid JSON. Return strictly valid JSON this time.' : '') }, { role: 'user', content: 'DOCUMENT:\n' + JSON.stringify(doc) + '\n\nREQUEST:\n' + text }] }) });
     const j = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(j?.error?.message || `OpenRouter ${r.status}`);
     let s = String(j?.choices?.[0]?.message?.content || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '');
@@ -111,6 +112,7 @@ async function routeCommand(model: string, text: string, doc: any) {
     return { out, cost: j?.usage?.cost ?? null };
   } catch (e) {
     if ((e as Error).name === 'AbortError') throw new Error('הניתוח לא ענה בזמן — נסו שוב');
+    if (!retry && e instanceof SyntaxError) return routeCommand(model, text, doc, true); // S-122: JSON שבור (למשל מירכאות בפסוק) — עוד ניסיון אחד
     throw e;
   } finally { clearTimeout(tm); }
 }
@@ -182,11 +184,11 @@ Deno.serve(async (req) => {
     const t0 = Date.now();
     try {
       const { out, cost } = await routeCommand(task.model, text, doc);
-      const route = ['ops', 'image', 'unsupported', 'ask'].includes(out.route) ? out.route : 'ask';
+      const route = ['ops', 'generate', 'image', 'unsupported', 'ask'].includes(out.route) ? out.route : 'ask';
       const ops = Array.isArray(out.ops) ? out.ops.slice(0, 30) : [];
       const row = { who: who0, text, route, ops, say: String(out.say || '').slice(0, 300), missing: out.missing ? String(out.missing).slice(0, 200) : null, model: task.model, ms: Date.now() - t0, cost_ils: ils(cost) };
       const { data: ins } = await db.from('studio_ai_requests').insert(row).select('id').single();
-      return json({ id: ins?.id, route, ops, say: row.say, missing: row.missing, image_prompt: out.image_prompt ? String(out.image_prompt).slice(0, 600) : '', target: out.target || null });
+      return json({ id: ins?.id, route, ops, say: row.say, missing: row.missing, image_prompt: out.image_prompt ? String(out.image_prompt).slice(0, 600) : '', with_text: out.with_text === true, target: out.target || null });
     } catch (e) {
       const msg = String((e as Error)?.message || e).slice(0, 300);
       await db.from('studio_ai_requests').insert({ who: who0, text, route: 'error', say: msg, model: task.model, ms: Date.now() - t0 });
@@ -289,7 +291,14 @@ Deno.serve(async (req) => {
 
   // S-118: מנהל שעובד על עיצוב של שותף (for_code) — היצירה נרשמת ונספרת על חשבון השותף
   let billCode = code;
-  if (isAdmin && forCode && forCode !== 'HOSHAYA') { const { data: fc } = await db.from('studio_ai_codes').select('code').eq('code', forCode).maybeSingle(); if (fc) billCode = forCode; }
+  let billNote = '';
+  if (isAdmin && forCode && forCode !== 'HOSHAYA') {
+    // S-122: רושמים על השותף רק אם הקוד פעיל ויש בו מספיק יצירות — אחרת על המנהל (לא זורקים תמונה ששולם עליה)
+    const fi = await codeInfo(db, forCode);
+    const need = body.compare === true ? 2 : 1;
+    if (fi && fi.ok && (fi.limit == null || fi.limit - fi.used >= need)) billCode = forCode;
+    else billNote = fi ? 'החשבון של ' + (fi.label || forCode) + ' לא פעיל או בלי מספיק יצירות — נרשם עליך' : '';
+  }
   const who = billCode || 'admin';
   // S-119: בהשוואה צריך 2 יצירות פנויות לפני שמתחילים
   if (compare && billCode) {
@@ -300,18 +309,19 @@ Deno.serve(async (req) => {
   const group = compare ? crypto.randomUUID() : null;
   const runOne = async (model: string) => {
     const t0 = Date.now();
+    let overQuota = false;
     // מודל של Image API לא מקבל תמונות — בעריכה הוא לא יכול להשתתף
     if (action === 'edit' && /^openai\/gpt-image/.test(model)) throw Object.assign(new Error('המודל הזה לא תומך בעריכת תמונה קיימת'), { model, ms: 0 });
     try {
       const out = await callModel(model, model === task.model ? (task.params || {}) : {}, fullPrompt, action === 'edit' ? [body.image, body.mark] : [], aspect);
       if (billCode) { // נספר רק אחרי הצלחה, אטומית
         const { data: okc } = await db.rpc('studio_ai_consume', { p_code: billCode });
-        if (okc === false) throw Object.assign(new Error('נגמרו היצירות בקוד הזה'), { model, ms: Date.now() - t0, quota: true });
+        if (okc === false) overQuota = true; // S-122: התמונה כבר שולמה — מחזירים אותה ורושמים, לא זורקים
       }
       const costIls = ils(out.cost);
       let chargeIls: number | null = null;
       if (billCode) { const { data: c } = await db.from('studio_ai_codes').select('markup').eq('code', billCode).maybeSingle(); chargeIls = charge(costIls, Number(c?.markup || 1.2)); }
-      const { data: lg } = await db.from('studio_ai_log').insert({ who, task: taskId, model, ok: true, ms: Date.now() - t0, cost_usd: out.cost, cost_ils: costIls, charge_ils: chargeIls, compare_group: group }).select('id').single();
+      const { data: lg } = await db.from('studio_ai_log').insert({ who, task: taskId, model, ok: true, ms: Date.now() - t0, cost_usd: out.cost, cost_ils: costIls, charge_ils: chargeIls, compare_group: group, note: overQuota ? 'מעבר למכסה — לא נספר' : null }).select('id').single();
       return { image: out.image, model, log_id: lg?.id, ms: Date.now() - t0, ...(isAdmin ? { cost_ils: costIls } : { charge_ils: chargeIls }) };
     } catch (e) {
       const msg = String((e as Error)?.message || e).slice(0, 300);
@@ -324,5 +334,5 @@ Deno.serve(async (req) => {
   const errors = settled.filter((s) => s.status === 'rejected').map((s: any) => ({ model: s.reason?.model, error: String(s.reason?.message || s.reason) }));
   if (!results.length) return json({ error: errors[0]?.error || 'היצירה נכשלה', errors }, 502);
   const first = results[0];
-  return json({ ...first, task: taskId, results, errors, billed_to: isAdmin ? (billCode || null) : undefined });
+  return json({ ...first, task: taskId, results, errors, billed_to: isAdmin ? (billCode || null) : undefined, bill_note: isAdmin ? billNote : undefined });
 });
