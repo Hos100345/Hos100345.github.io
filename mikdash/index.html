@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="description" content="חנות מוצרי המקדש — משחקים, חולצות ומתנות סביב בית המקדש: סולמות וחבלים בעלייה להר הבית, חולצות עם פסוקים ועוד.">
-<link rel="icon" href="../favicon.ico">
+<link rel="icon" href="art/wall-oil.webp">
 <title>חנות מוצרי המקדש</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&family=Frank+Ruhl+Libre:wght@500;700;900&display=swap" rel="stylesheet">
@@ -133,7 +133,7 @@ input[type=text],select{min-height:44px;border:1.5px solid var(--line);border-ra
 
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="#games"><img class="logo" src="art/wall-oil.webp" alt="לוגו חנות מוצרי המקדש" width="44" height="44"><span>חנות מוצרי המקדש<small>מבית הושעיה · עיצוב ויצירה</small></span></a>
+    <a class="brand" href="#games"><img class="logo" src="art/wall-oil.webp" alt="לוגו חנות מוצרי המקדש" width="44" height="44"><span>חנות מוצרי המקדש<small>משחקים, חולצות ומתנות</small></span></a>
   </div>
 </header>
 
@@ -177,8 +177,8 @@ input[type=text],select{min-height:44px;border:1.5px solid var(--line);border-ra
 <footer class="foot">
   <div class="wrap">
     <img class="logo" src="art/wall-oil.webp" alt="" width="56" height="56">
-    <p style="margin:0">© 2026 הושעיה וולמן — עיצוב, יצירה והפעלות · בקעת הירדן וצפון ים המלח</p>
-    <p style="margin:0">טלפון ווואטסאפ: <span dir="ltr">050-591-8734</span> · <a href="../">לאתר הבית</a></p>
+    <p style="margin:0">© 2026 חנות מוצרי המקדש</p>
+    <p style="margin:0">טלפון ווואטסאפ: <span dir="ltr">050-591-8734</span></p>
   </div>
 </footer>
 <a class="wa-float" id="wa-float" href="#" target="_blank" rel="noopener" aria-label="וואטסאפ להושעיה">
@@ -229,7 +229,7 @@ $('games-hub').innerHTML=GAMES.map(g=>`<a href="${g.href||wa('שלום הושע�
   <b>${g.n}</b><span>${g.d}</span><em>${g.href?'למשחק ←':'להזמנה בוואטסאפ ←'}</em></a>`).join('');
 $('gifts-hub').innerHTML=GIFTS.map(g=>`<a href="${g.href||wa('שלום הושעיה, אשמח להזמין מחנות מוצרי המקדש: '+g.n)}"${g.href?'':' target="_blank" rel="noopener"'}>
   <div class="pic" aria-hidden="true">${g.img?`<img src="${g.img}" alt="">`:g.i}</div>
-  <b>${g.n}</b><span>${g.d}</span><em>${g.href?'למשחק ←':'להזמנה בוואטסאפ ←'}</em></a>`).join('');
+  <b>${g.n}</b><span>${g.d}</span><em>${g.href?'לעיצוב ←':'להזמנה בוואטסאפ ←'}</em></a>`).join('');
 
 
 

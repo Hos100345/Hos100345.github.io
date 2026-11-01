@@ -5084,6 +5084,7 @@ function ordersSection(){
   await Promise.all([loadShared('hebrew-fonts.js'),loadShared('back-assets.js')]);
   document.getElementById('orderClose').onclick=closeOrder;document.getElementById('loginClose').onclick=()=>document.getElementById('loginModal').hidden=true;document.getElementById('loginSend').onclick=sendLogin;
   if(MIKDASH){Domino.label='דומינו המקדש';}
+  if(MIKDASH){document.title='חנות מוצרי המקדש — משחקים, חולצות ומתנות';const h=document.querySelector('header.top .brand h1');if(h)h.innerHTML='🕍 חנות <b>מוצרי המקדש</b>';const fi=document.querySelector('link[rel~="icon"]');if(fi)fi.href='../mikdash/art/wall-oil.webp';} // S-113: חנות המקדש נפרדת מאתר הבית
   if(MIKDASH){Blessing.intro='🕍 מדבקת ברכה של המקדש: בוחרים תמונה של בית המקדש מהמאגר, בוחרים פסוק, פונט וגודל — ומורידים PDF מוכן להדפסה.';}
   if(MIKDASH){Bingo.label='בינגו המקדש';Bingo.intro='🎯 בינגו המקדש: לוחות עם כלי המקדש, ביכורים, קורבנות ובגדי הכהן הגדול — כל לוח שונה, ויש קלפי קריאה לגזירה. מתאים לכיתה, לגן ולשולחן השבת.';}
   makeStates();restore();if(MIKDASH){qtMkInit();mmMkInit();bgMkInit();dmMkInit();giftMkInit();v3Page=false;}blApplyUrl();v3InitInline();try{const q=new URLSearchParams(location.search);if(q.get('p')==='ludo'&&['all','pieces','board'].includes(q.get('what')))LD.what=q.get('what');
