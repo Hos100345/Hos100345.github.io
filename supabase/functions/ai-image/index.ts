@@ -4,6 +4,8 @@
 // Secrets: OPENROUTER_API_KEY (חובה), ADMIN_EMAILS (ברירת מחדל hoshaya@gmail.com).
 // פעולות: check {code} · codes (מנהל) · generate {task?,prompt,aspect} · edit {image,mark,prompt,aspect}
 //   S-117: command {text,doc} → ניתוב (ops/image/unsupported/ask) · feedback {id,good,note?,undone?,applied?} · requests (מנהל)
+//   S-118: design_img {design_id?,img_id,data} · design_save {id?,title,state,status,for_code?} · design_list {all?} · design_load {id}
+//   עיצובים בענן לפי קוד (studio_ad_designs + bucket studio-ad). מנהל עובד על עיצוב של שותף עם for_code — ויצירות AI נרשמות על הקוד הזה.
 //   כל command נרשם ב-studio_ai_requests — זה התיעוד לשיפור העורך. command לא נספר ביצירות ולא נרשם לחיוב (עלות של שבריר אגורה).
 //   edit: image = התמונה המקורית, mark = אותה תמונה עם האזור צבוע באדום שקוף. הדפדפן מדביק חזרה רק את האזור —
 //   כך כל השאר נשאר זהה בפיקסלים גם אם המודל צייר מחדש את כל התמונה.
@@ -135,7 +137,9 @@ Deno.serve(async (req) => {
     const info = await codeInfo(db, code);
     if (!info) { await db.from('studio_ai_log').insert({ who: code.slice(0, 40), ok: false, error: 'bad_code' }); return json({ error: 'הקוד לא נמצא' }, 403); }
     if (action === 'check') return json(info);
-    if (!info.ok) return json({ error: info.why, ...info }, 403);
+    // S-118: כשנגמרו היצירות — עדיין אפשר לשמור, לפתוח ולשלוח עיצובים ולבקש עריכה במילים. רק יצירת תמונה נחסמת.
+    const outOfAi = info.why === 'נגמרו היצירות בקוד הזה';
+    if (!info.ok && !(outOfAi && action !== 'generate' && action !== 'edit')) return json({ error: info.why, ...info }, 403);
   }
 
   if (action === 'check') return json({ ok: true, admin: true });
@@ -188,6 +192,54 @@ Deno.serve(async (req) => {
       return json({ error: 'לא הצלחתי להבין את הבקשה: ' + msg }, 502);
     }
   }
+  // ── S-118: עיצובים בענן ──
+  const forCode = isAdmin && body.for_code ? norm(body.for_code) : '';
+  const owner = isAdmin ? (forCode || 'HOSHAYA') : code; // של מי העיצוב; העיצובים של הושעיה עצמו תחת HOSHAYA (קוד מושבת — אי אפשר להיכנס איתו)
+  const BK = 'studio-ad';
+  if (action === 'design_img') {
+    if (!owner) return json({ error: 'חסר של מי העיצוב' }, 400);
+    const m = /^data:image\/(png|jpeg|webp);base64,(.+)$/.exec(String(body.data || ''));
+    const iid = String(body.img_id || '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 60);
+    if (!m || !iid || body.data.length > 11_000_000) return json({ error: 'תמונה לא תקינה או גדולה מדי' }, 400);
+    const ext = m[1] === 'jpeg' ? 'jpg' : m[1], path = `${owner}/img/${iid}.${ext}`;
+    const bin = Uint8Array.from(atob(m[2]), (c) => c.charCodeAt(0));
+    const { error } = await db.storage.from(BK).upload(path, bin, { contentType: 'image/' + m[1], upsert: true });
+    if (error) return json({ error: 'העלאת התמונה נכשלה: ' + error.message }, 500);
+    return json({ ok: true, path });
+  }
+  if (action === 'design_save') {
+    if (!owner) return json({ error: 'חסר של מי העיצוב' }, 400);
+    const state = body.state && typeof body.state === 'object' ? body.state : null;
+    if (!state || JSON.stringify(state).length > 200000) return json({ error: 'עיצוב לא תקין' }, 400);
+    (state.imgs || []).forEach((g: any) => { if (!String(g.path || '').startsWith(owner + '/')) g.path = ''; }); // רק תמונות של אותו חשבון
+    const status = ['saved', 'sent', 'returned'].includes(body.status) ? body.status : 'saved';
+    const row = { code: owner, title: String(body.title || 'עיצוב').slice(0, 80), state, status, last_by: isAdmin ? 'admin' : 'partner', updated_at: new Date().toISOString() };
+    if (body.id) {
+      const { data, error } = await db.from('studio_ad_designs').update(row).eq('id', body.id).eq('code', owner).select('id').maybeSingle();
+      if (error || !data) return json({ error: 'העיצוב לא נמצא בחשבון הזה' }, 404);
+      return json({ id: data.id });
+    }
+    const { data, error } = await db.from('studio_ad_designs').insert(row).select('id').single();
+    if (error) return json({ error: error.message }, 500);
+    return json({ id: data.id });
+  }
+  if (action === 'design_list') {
+    let q = db.from('studio_ad_designs').select('id,code,title,status,last_by,updated_at').order('updated_at', { ascending: false }).limit(60);
+    if (!isAdmin) q = q.eq('code', code); else if (forCode) q = q.eq('code', forCode);
+    const { data } = await q;
+    let labels: Record<string, string> = {};
+    if (isAdmin) { const { data: cs } = await db.from('studio_ai_codes').select('code,label'); (cs || []).forEach((c: any) => labels[c.code] = c.label || c.code); }
+    return json({ designs: (data || []).map((d: any) => ({ ...d, label: labels[d.code] })) });
+  }
+  if (action === 'design_load') {
+    let q = db.from('studio_ad_designs').select('id,code,title,state,status,last_by,updated_at').eq('id', body.id);
+    if (!isAdmin) q = q.eq('code', code);
+    const { data: d } = await q.maybeSingle();
+    if (!d) return json({ error: 'העיצוב לא נמצא' }, 404);
+    const imgs = d.state?.imgs || [];
+    for (const g of imgs) { if (g.path) { const { data: s } = await db.storage.from(BK).createSignedUrl(g.path, 3600); g.url = s?.signedUrl || ''; } }
+    return json({ design: d });
+  }
   if (action !== 'generate' && action !== 'edit') return json({ error: 'פעולה לא מוכרת' }, 400);
   if (!OR_KEY) return json({ error: 'חסר מפתח OpenRouter בשרת' }, 500);
 
@@ -206,19 +258,22 @@ Deno.serve(async (req) => {
       + 'Do not draw the red highlight in the output. If the instruction contains text to write, write it exactly as given (Hebrew is right-to-left).'
     : prompt + (taskId === 'image_with_text' ? '' : '\n(If the description asks for written text, render it exactly as given; Hebrew is right-to-left.)');
 
-  const who = isAdmin ? 'admin' : code;
+  // S-118: מנהל שעובד על עיצוב של שותף (for_code) — היצירה נרשמת ונספרת על חשבון השותף
+  let billCode = code;
+  if (isAdmin && forCode && forCode !== 'HOSHAYA') { const { data: fc } = await db.from('studio_ai_codes').select('code').eq('code', forCode).maybeSingle(); if (fc) billCode = forCode; }
+  const who = billCode || 'admin';
   const t0 = Date.now();
   try {
     const out = await callModel(task.model, task.params || {}, fullPrompt, action === 'edit' ? [body.image, body.mark] : [], aspect);
-    if (!isAdmin) { // נספר רק אחרי הצלחה, אטומית
-      const { data: okc } = await db.rpc('studio_ai_consume', { p_code: code });
+    if (billCode) { // נספר רק אחרי הצלחה, אטומית
+      const { data: okc } = await db.rpc('studio_ai_consume', { p_code: billCode });
       if (okc === false) return json({ error: 'נגמרו היצירות בקוד הזה' }, 403);
     }
     const costIls = ils(out.cost);
     let chargeIls: number | null = null;
-    if (!isAdmin) { const { data: c } = await db.from('studio_ai_codes').select('markup').eq('code', code).maybeSingle(); chargeIls = charge(costIls, Number(c?.markup || 1.2)); }
+    if (billCode) { const { data: c } = await db.from('studio_ai_codes').select('markup').eq('code', billCode).maybeSingle(); chargeIls = charge(costIls, Number(c?.markup || 1.2)); }
     await db.from('studio_ai_log').insert({ who, task: taskId, model: task.model, ok: true, ms: Date.now() - t0, cost_usd: out.cost, cost_ils: costIls, charge_ils: chargeIls });
-    return json({ image: out.image, model: task.model, task: taskId, ...(isAdmin ? { cost_ils: costIls } : { charge_ils: chargeIls }) });
+    return json({ image: out.image, model: task.model, task: taskId, ...(isAdmin ? { cost_ils: costIls, billed_to: billCode || null } : { charge_ils: chargeIls }) });
   } catch (e) {
     const msg = String((e as Error)?.message || e).slice(0, 300);
     await db.from('studio_ai_log').insert({ who, task: taskId, model: task.model, ok: false, ms: Date.now() - t0, error: msg });
