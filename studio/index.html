@@ -2663,6 +2663,7 @@ function pzBlankPanel(){const b=pzBlank(),groups=[...new Set(PZ_BLANKS.map(x=>x.
       el('p',{class:'hint'},'הקו האדום המקווקו = קצה המוצר'+(b.shape==='hamsa'?' (בחמסה — קירוב; הצורה המדויקת לפי המוצר)':'')+'. בהדפסה נוסף בליד '+PZ_BLEED+' מ"מ מכל צד.'),
       isAdmin?[tog(PZ,'mirror','הפוך במראה (לנייר סובלימציה)',{rebuildOnChange:true}),
         el('button',{type:'button',class:'btn gold',on:{click:()=>pzSublimationPDF()}},'⬇️ קובץ לסובלימציה ('+b.id+')')]:null].flat():null);}
+function PZ_BLANKS_MK(){const i=PZ_BLANKS.findIndex(x=>x.id==='9321-5');if(i>=0)PZ_BLANKS.splice(i,1);} // S-114: בחנות המקדש — בלי פאזל הכדורגל
 const Puzzle={id:'puzzle',label:'פאזל',
   intro:'פאזל מהתמונה שלכם. בוחרים סגנון ומספר חלקים. פאזל גדול אפשר לפרוס על שני דפים, וכל חלק נשאר שלם.',
   fonts:()=>[PZ.font],
@@ -5084,6 +5085,7 @@ function ordersSection(){
   await Promise.all([loadShared('hebrew-fonts.js'),loadShared('back-assets.js')]);
   document.getElementById('orderClose').onclick=closeOrder;document.getElementById('loginClose').onclick=()=>document.getElementById('loginModal').hidden=true;document.getElementById('loginSend').onclick=sendLogin;
   if(MIKDASH){Domino.label='דומינו המקדש';}
+  if(MIKDASH){Puzzle.label='פאזל בית המקדש';DOM_RULES.classic.who='ילדים צעירים ומשחק משפחתי — לומדים להכיר את שבעת המינים וכלי המקדש תוך כדי משחק.';PZ_BLANKS_MK();} // S-114
   if(MIKDASH){document.title='חנות מוצרי המקדש — משחקים, חולצות ומתנות';const h=document.querySelector('header.top .brand h1');if(h)h.innerHTML='🕍 חנות <b>מוצרי המקדש</b>';const fi=document.querySelector('link[rel~="icon"]');if(fi)fi.href='../mikdash/art/wall-oil.webp';} // S-113: חנות המקדש נפרדת מאתר הבית
   if(MIKDASH){Blessing.intro='🕍 מדבקת ברכה של המקדש: בוחרים תמונה של בית המקדש מהמאגר, בוחרים פסוק, פונט וגודל — ומורידים PDF מוכן להדפסה.';}
   if(MIKDASH){Bingo.label='בינגו המקדש';Bingo.intro='🎯 בינגו המקדש: לוחות עם כלי המקדש, ביכורים, קורבנות ובגדי הכהן הגדול — כל לוח שונה, ויש קלפי קריאה לגזירה. מתאים לכיתה, לגן ולשולחן השבת.';}
