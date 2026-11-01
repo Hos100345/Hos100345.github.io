@@ -3,6 +3,8 @@
 // הרשאה: מנהל (JWT + ADMIN_EMAILS) או קוד מ-studio_ai_codes (נספר רק כשהקריאה הצליחה).
 // Secrets: OPENROUTER_API_KEY (חובה), ADMIN_EMAILS (ברירת מחדל hoshaya@gmail.com).
 // פעולות: check {code} · codes (מנהל) · generate {task?,prompt,aspect} · edit {image,mark,prompt,aspect}
+//   S-117: command {text,doc} → ניתוב (ops/image/unsupported/ask) · feedback {id,good,note?,undone?,applied?} · requests (מנהל)
+//   כל command נרשם ב-studio_ai_requests — זה התיעוד לשיפור העורך. command לא נספר ביצירות ולא נרשם לחיוב (עלות של שבריר אגורה).
 //   edit: image = התמונה המקורית, mark = אותה תמונה עם האזור צבוע באדום שקוף. הדפדפן מדביק חזרה רק את האזור —
 //   כך כל השאר נשאר זהה בפיקסלים גם אם המודל צייר מחדש את כל התמונה.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -69,6 +71,47 @@ async function callModel(model: string, params: any, prompt: string, images: str
   } finally { clearTimeout(t); }
 }
 
+
+// ── S-117: בקשה במילים → פקודות עריכה. המודל רואה רק את רשימת השכבות (לא את התמונה).
+const CMD_SYS = `You are the command router of a Hebrew ad editor (RTL). The user writes a request in Hebrew, often dictated by voice with transcription mistakes — understand by context.
+You receive the current document as JSON: canvas size W×H in units (x grows right, y grows down, layer x,y = CENTER of the layer), selected layer id, and layers (bottom to top).
+Text layer fields: text, font (family id), color, outline ("none" or color), fs (letter height in units), rot (degrees). Image layer fields: w (width in units), rot, name, first image is usually the background.
+Return ONLY a JSON object:
+{"route":"ops"|"image"|"unsupported"|"ask","ops":[...],"say":"short Hebrew sentence to the user","image_prompt":"...","target":"layer id","missing":"..."}
+route "ops" — the request can be done with these operations (apply to the selected layer when the user says "it"/"this"; otherwise pick the layer the words point to):
+ {"op":"set","id":"..","text"?,"font"?,"color"?,"outline"?}  font must be an "f" value from the fonts list; colors as #RRGGBB
+ {"op":"move","id":"..","dx":n,"dy":n}   relative, in units ("a bit" ≈ 5% of W)
+ {"op":"place","id":"..","x"?:n,"y"?:n}  absolute center (top ≈ 12% of H, bottom ≈ 88% of H, center = W/2)
+ {"op":"scale","id":"..","factor":n}     ("bigger" ≈ 1.2, "much bigger" ≈ 1.5)
+ {"op":"rotate","id":"..","deg":n}       absolute angle, 0 = straight
+ {"op":"front","id":".."} {"op":"back","id":".."} {"op":"delete","id":".."}
+ {"op":"add_text","text":"..","x"?:n,"y"?:n,"color"?,"font"?,"size"?:n}
+ {"op":"bg","color":"#RRGGBB"}  background color behind images
+ {"op":"format","fmt":"post"|"story"|"wide"|"a4"}
+route "image" — the pixels of a photo must change (add/remove/replace objects, people, style, lighting, colors inside the photo). Put a clear Hebrew instruction in image_prompt and the image layer id in target.
+route "unsupported" — a design feature these operations cannot do (shadow, gradient, frame, curved text, line spacing, effects...). Put in "missing" a short Hebrew name of the missing feature, and in "say" tell the user it was recorded for improving the editor. If part of the request IS possible, use route "ops" for that part and still fill "missing".
+route "ask" — truly ambiguous; ask one short Hebrew question in "say".
+Never invent layer ids. Keep "say" under 15 words.`;
+
+async function routeCommand(model: string, text: string, doc: any) {
+  const ac = new AbortController(), tm = setTimeout(() => ac.abort(), 30000);
+  try {
+    const r = await fetch(`${OR}/chat/completions`, { method: 'POST', signal: ac.signal,
+      headers: { Authorization: `Bearer ${OR_KEY}`, 'Content-Type': 'application/json', 'HTTP-Referer': 'https://www.hoshaya.co.il', 'X-Title': 'Hoshaya Studio' },
+      body: JSON.stringify({ model, temperature: 0, max_tokens: 900, response_format: { type: 'json_object' },
+        messages: [{ role: 'system', content: CMD_SYS }, { role: 'user', content: 'DOCUMENT:\n' + JSON.stringify(doc) + '\n\nREQUEST:\n' + text }] }) });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j?.error?.message || `OpenRouter ${r.status}`);
+    let s = String(j?.choices?.[0]?.message?.content || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '');
+    const a = s.indexOf('{'), b = s.lastIndexOf('}');
+    const out = JSON.parse(a >= 0 ? s.slice(a, b + 1) : s);
+    return { out, cost: j?.usage?.cost ?? null };
+  } catch (e) {
+    if ((e as Error).name === 'AbortError') throw new Error('הניתוח לא ענה בזמן — נסו שוב');
+    throw e;
+  } finally { clearTimeout(tm); }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   if (req.method !== 'POST') return json({ error: 'POST only' }, 405);
@@ -103,6 +146,47 @@ Deno.serve(async (req) => {
     const cost: Record<string, number> = {}, charged: Record<string, number> = {};
     (spent || []).forEach((r: any) => { cost[r.who] = (cost[r.who] || 0) + Number(r.cost_ils || 0); charged[r.who] = (charged[r.who] || 0) + Number(r.charge_ils || 0); });
     return json({ codes: data || [], cost, charged, rate: USD_ILS });
+  }
+  const who0 = isAdmin ? 'admin' : code;
+  if (action === 'requests') {
+    if (!isAdmin) return json({ error: 'מנהל בלבד' }, 403);
+    const { data } = await db.from('studio_ai_requests').select('id,created_at,who,text,route,say,missing,applied,feedback,note,undone').order('id', { ascending: false }).limit(40);
+    return json({ requests: data || [] });
+  }
+  if (action === 'feedback') {
+    const id = Number(body.id) || 0, patch: any = {};
+    if (body.good === true) patch.feedback = 'good'; else if (body.good === false) patch.feedback = 'bad';
+    if (typeof body.note === 'string' && body.note.trim()) patch.note = body.note.trim().slice(0, 500);
+    if (body.undone === true) patch.undone = true;
+    if (Number.isInteger(body.applied)) patch.applied = body.applied;
+    if (!id || !Object.keys(patch).length) return json({ error: 'חסר מה לעדכן' }, 400);
+    await db.from('studio_ai_requests').update(patch).eq('id', id).eq('who', who0);
+    return json({ ok: true });
+  }
+  if (action === 'command') {
+    if (!OR_KEY) return json({ error: 'חסר מפתח OpenRouter בשרת' }, 500);
+    const text = String(body.text || '').trim().slice(0, 600);
+    if (!text) return json({ error: 'כתבו מה לשנות' }, 400);
+    const doc = body.doc && typeof body.doc === 'object' ? body.doc : {};
+    if (JSON.stringify(doc).length > 20000) return json({ error: 'יותר מדי שכבות' }, 400);
+    const since = new Date(Date.now() - 86400000).toISOString();
+    const { count } = await db.from('studio_ai_requests').select('id', { count: 'exact', head: true }).eq('who', who0).gte('created_at', since);
+    if (!isAdmin && (count || 0) >= 300) return json({ error: 'הגעתם ל-300 בקשות היום — נסו מחר' }, 429);
+    const { data: task } = await db.from('ai_tasks').select('model,active').eq('id', 'edit_command').maybeSingle();
+    if (!task || !task.active) return json({ error: 'המשימה edit_command לא פעילה' }, 500);
+    const t0 = Date.now();
+    try {
+      const { out, cost } = await routeCommand(task.model, text, doc);
+      const route = ['ops', 'image', 'unsupported', 'ask'].includes(out.route) ? out.route : 'ask';
+      const ops = Array.isArray(out.ops) ? out.ops.slice(0, 30) : [];
+      const row = { who: who0, text, route, ops, say: String(out.say || '').slice(0, 300), missing: out.missing ? String(out.missing).slice(0, 200) : null, model: task.model, ms: Date.now() - t0, cost_ils: ils(cost) };
+      const { data: ins } = await db.from('studio_ai_requests').insert(row).select('id').single();
+      return json({ id: ins?.id, route, ops, say: row.say, missing: row.missing, image_prompt: out.image_prompt ? String(out.image_prompt).slice(0, 600) : '', target: out.target || null });
+    } catch (e) {
+      const msg = String((e as Error)?.message || e).slice(0, 300);
+      await db.from('studio_ai_requests').insert({ who: who0, text, route: 'error', say: msg, model: task.model, ms: Date.now() - t0 });
+      return json({ error: 'לא הצלחתי להבין את הבקשה: ' + msg }, 502);
+    }
   }
   if (action !== 'generate' && action !== 'edit') return json({ error: 'פעולה לא מוכרת' }, 400);
   if (!OR_KEY) return json({ error: 'חסר מפתח OpenRouter בשרת' }, 500);
