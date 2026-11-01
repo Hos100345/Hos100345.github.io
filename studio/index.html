@@ -195,6 +195,7 @@ details.face>.body{padding:0 12px 12px;display:grid;gap:8px}
 .shpad{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:8px 0}.shpad button{min-height:48px;border:1px solid #D6CFC2;border-radius:10px;background:#fff;font-size:1.15rem;cursor:pointer}.shpad button:disabled{opacity:.4}
 .swatches{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.swatches button{width:40px;height:40px;border-radius:50%;border:2px solid #D6CFC2;cursor:pointer}.swatches button[aria-pressed=true]{outline:3px solid var(--gold);outline-offset:2px}.swmore{display:inline-flex;align-items:center;gap:4px;font-size:1.3rem}.swmore input{width:40px;height:40px;padding:0;border:none}
 .sheditor:focus-visible{outline:3px solid var(--gold);outline-offset:2px}.shpad button{min-width:44px;min-height:44px;font-size:1.05rem}
+#adbar{flex-wrap:wrap;justify-content:center;border-radius:18px;width:max-content}#adbar button{min-width:34px}
 .mgbar{position:absolute;z-index:3;top:8px;left:50%;transform:translateX(-50%);display:flex;gap:1px;background:rgba(255,255,255,.95);border-radius:999px;box-shadow:0 4px 14px rgba(20,41,77,.18);padding:3px;max-width:calc(100% - 12px)}.mgbar[hidden]{display:none}
 .mgbar button{min-width:36px;min-height:40px;padding:0 6px;border:0;background:none;border-radius:999px;font:inherit;font-size:1.02rem;color:#14294D;cursor:pointer}.mgbar button:hover{background:#EEF2FF}.mgbar button:disabled{opacity:.35;cursor:default}
 .mgtext{border:1px solid #E2DACB;border-radius:12px;padding:.5rem .6rem;margin:.45rem 0}.mgmore[hidden]{display:none}.mgtext.sel{border-color:#2563EB;box-shadow:0 0 0 2px rgba(37,99,235,.15)}.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
@@ -329,7 +330,7 @@ body.admin .cust{display:none!important}
 <script>
 const NETS={"d4":{"faces":4,"sides":3,"pos":[[[1.2247,0.9659],[0.2588,1.2247],[0.5176,0.2588]],[[0,2.1907],[0.2588,1.2247],[0.9659,1.9319]],[[0.9659,1.9319],[0.2588,1.2247],[1.2247,0.9659]],[[1.2247,0.9659],[0.5176,0.2588],[1.4836,0]]],"tabs":[{"e":[[0.2588,1.2247],[0.5176,0.2588]],"f":0,"d":0.28,"t":0.25},{"e":[[0.9659,1.9319],[0,2.1907]],"f":1,"d":0.28,"t":0.25},{"e":[[1.2247,0.9659],[0.9659,1.9319]],"f":2,"d":0.28,"t":0.25}],"cuts":[[[0,2.1907],[0.2588,1.2247]],[[0.5176,0.2588],[1.4836,0]],[[1.4836,0],[1.2247,0.9659]]],"folds":[[[1.2247,0.9659],[0.2588,1.2247]],[[0.5176,0.2588],[1.2247,0.9659]],[[0.2588,1.2247],[0.9659,1.9319]]],"w":1.4836,"h":2.3964,"opp":[-1,-1,-1,-1],"maxEdge":104.3},"d6":{"faces":6,"sides":4,"pos":[[[1.1953,4.1008],[0.2557,3.7588],[0.5977,2.8191],[1.5374,3.1611]],[[0,1.5374],[0.342,0.5977],[1.2817,0.9397],[0.9397,1.8794]],[[1.2817,0.9397],[1.6237,0],[2.5634,0.342],[2.2214,1.2817]],[[1.5374,3.1611],[0.5977,2.8191],[0.9397,1.8794],[1.8794,2.2214]],[[2.8191,2.5634],[2.4771,3.5031],[1.5374,3.1611],[1.8794,2.2214]],[[0.9397,1.8794],[1.2817,0.9397],[2.2214,1.2817],[1.8794,2.2214]]],"tabs":[{"e":[[1.1953,4.1008],[0.2557,3.7588]],"f":0,"d":0.28,"t":0.25},{"e":[[0.2557,3.7588],[0.5977,2.8191]],"f":0,"d":0.28,"t":0.25},{"e":[[1.5374,3.1611],[1.1953,4.1008]],"f":0,"d":0.28,"t":0.25},{"e":[[0.342,0.5977],[1.2817,0.9397]],"f":1,"d":0.28,"t":0.25},{"e":[[0.9397,1.8794],[0,1.5374]],"f":1,"d":0.28,"t":0.25},{"e":[[2.5634,0.342],[2.2214,1.2817]],"f":2,"d":0.28,"t":0.25},{"e":[[1.8794,2.2214],[2.8191,2.5634]],"f":4,"d":0.28,"t":0.25}],"cuts":[[[1.6237,0],[2.5634,0.342]],[[0,1.5374],[0.342,0.5977]],[[2.4771,3.5031],[1.5374,3.1611]],[[1.2817,0.9397],[1.6237,0]],[[0.5977,2.8191],[0.9397,1.8794]],[[2.8191,2.5634],[2.4771,3.5031]],[[2.2214,1.2817],[1.8794,2.2214]]],"folds":[[[0.5977,2.8191],[1.5374,3.1611]],[[1.2817,0.9397],[0.9397,1.8794]],[[2.2214,1.2817],[1.2817,0.9397]],[[0.9397,1.8794],[1.8794,2.2214]],[[1.8794,2.2214],[1.5374,3.1611]]],"w":2.8191,"h":4.2784,"opp":[5,4,3,2,1,0],"maxEdge":58.4},"d8":{"faces":8,"sides":3,"pos":[[[0.684,1.172],[1.3268,1.9381],[0.342,2.1117]],[[0.342,2.1117],[1.3268,1.9381],[0.9848,2.8778]],[[1.6688,0.9984],[1.3268,1.9381],[0.684,1.172]],[[0.9848,2.8778],[1.3268,1.9381],[1.9696,2.7041]],[[0.0413,0.406],[1.0261,0.2323],[0.684,1.172]],[[0.9848,2.8778],[0,3.0514],[0.342,2.1117]],[[0.684,1.172],[1.0261,0.2323],[1.6688,0.9984]],[[1.6688,0.9984],[1.0261,0.2323],[2.0109,0.0587]]],"tabs":[{"e":[[0.342,2.1117],[0.684,1.172]],"f":0,"d":0.28,"t":0.25},{"e":[[1.6688,0.9984],[1.3268,1.9381]],"f":2,"d":0.28,"t":0.25},{"e":[[1.9696,2.7041],[0.9848,2.8778]],"f":3,"d":0.28,"t":0.25},{"e":[[0.0413,0.406],[1.0261,0.2323]],"f":4,"d":0.28,"t":0.25},{"e":[[0.9848,2.8778],[0,3.0514]],"f":5,"d":0.28,"t":0.25}],"cuts":[[[0.684,1.172],[0.0413,0.406]],[[1.3268,1.9381],[1.9696,2.7041]],[[2.0109,0.0587],[1.6688,0.9984]],[[0,3.0514],[0.342,2.1117]],[[1.0261,0.2323],[2.0109,0.0587]]],"folds":[[[0.684,1.172],[1.3268,1.9381]],[[1.3268,1.9381],[0.342,2.1117]],[[1.3268,1.9381],[0.9848,2.8778]],[[0.9848,2.8778],[0.342,2.1117]],[[0.684,1.172],[1.6688,0.9984]],[[1.0261,0.2323],[0.684,1.172]],[[1.0261,0.2323],[1.6688,0.9984]]],"w":2.0109,"h":3.2837,"opp":[7,6,5,4,3,2,1,0],"maxEdge":76.1},"d12":{"faces":12,"sides":5,"pos":[[[2.9967,3.8222],[3.0491,4.8209],[2.1155,5.1792],[1.4862,4.4021],[2.0308,3.5634]],[[3.1337,6.4367],[2.1678,6.1778],[2.1155,5.1792],[3.0491,4.8209],[3.6784,5.598]],[[0.5526,4.7604],[1.4862,4.4021],[2.1155,5.1792],[1.5708,6.0179],[0.6049,5.7591]],[[3.5414,2.9836],[2.9967,3.8222],[2.0308,3.5634],[1.9785,2.5648],[2.912,2.2064]],[[1.0125,2.306],[1.9785,2.5648],[2.0308,3.5634],[1.0972,3.9218],[0.4679,3.1446]],[[3.5414,2.9836],[4.5073,3.2424],[4.5596,4.241],[3.626,4.5994],[2.9967,3.8222]],[[3.7631,7.2138],[3.1337,6.4367],[3.6784,5.598],[4.6443,5.8568],[4.6966,6.8554]],[[4.4226,1.6266],[4.4749,2.6252],[3.5414,2.9836],[2.912,2.2064],[3.4567,1.3677]],[[1.3491,1.7876],[0.3832,1.5288],[0.3309,0.5302],[1.2645,0.1718],[1.8938,0.949]],[[0.6896,7.3749],[0.0603,6.5977],[0.6049,5.7591],[1.5708,6.0179],[1.6232,7.0165]],[[2.912,2.2064],[1.9785,2.5648],[1.3491,1.7876],[1.8938,0.949],[2.8597,1.2078]],[[3.4043,0.3691],[4.3379,0.0107],[4.9672,0.7879],[4.4226,1.6266],[3.4567,1.3677]]],"tabs":[{"e":[[2.9967,3.8222],[3.0491,4.8209]],"f":0,"d":0.22,"t":0.3},{"e":[[1.4862,4.4021],[2.0308,3.5634]],"f":0,"d":0.22,"t":0.3},{"e":[[3.1337,6.4367],[2.1678,6.1778]],"f":1,"d":0.28,"t":0.25},{"e":[[2.1678,6.1778],[2.1155,5.1792]],"f":1,"d":0.22,"t":0.3},{"e":[[3.0491,4.8209],[3.6784,5.598]],"f":1,"d":0.28,"t":0.25},{"e":[[0.5526,4.7604],[1.4862,4.4021]],"f":2,"d":0.28,"t":0.25},{"e":[[0.6049,5.7591],[0.5526,4.7604]],"f":2,"d":0.28,"t":0.25},{"e":[[1.0125,2.306],[1.9785,2.5648]],"f":4,"d":0.22,"t":0.3},{"e":[[0.4679,3.1446],[1.0125,2.306]],"f":4,"d":0.28,"t":0.25},{"e":[[3.5414,2.9836],[4.5073,3.2424]],"f":5,"d":0.22,"t":0.3},{"e":[[4.5073,3.2424],[4.5596,4.241]],"f":5,"d":0.28,"t":0.25},{"e":[[3.7631,7.2138],[3.1337,6.4367]],"f":6,"d":0.28,"t":0.25},{"e":[[4.6443,5.8568],[4.6966,6.8554]],"f":6,"d":0.28,"t":0.25},{"e":[[4.6966,6.8554],[3.7631,7.2138]],"f":6,"d":0.28,"t":0.25},{"e":[[2.912,2.2064],[3.4567,1.3677]],"f":7,"d":0.22,"t":0.3},{"e":[[0.3309,0.5302],[1.2645,0.1718]],"f":8,"d":0.28,"t":0.25},{"e":[[1.2645,0.1718],[1.8938,0.949]],"f":8,"d":0.28,"t":0.25},{"e":[[0.6896,7.3749],[0.0603,6.5977]],"f":9,"d":0.28,"t":0.25},{"e":[[1.8938,0.949],[2.8597,1.2078]],"f":10,"d":0.28,"t":0.25}],"cuts":[[[3.626,4.5994],[2.9967,3.8222]],[[2.0308,3.5634],[1.0972,3.9218]],[[1.5708,6.0179],[1.6232,7.0165]],[[2.1155,5.1792],[1.5708,6.0179]],[[4.5596,4.241],[3.626,4.5994]],[[1.0972,3.9218],[0.4679,3.1446]],[[0.3832,1.5288],[0.3309,0.5302]],[[1.9785,2.5648],[1.3491,1.7876]],[[1.3491,1.7876],[0.3832,1.5288]],[[4.4749,2.6252],[3.5414,2.9836]],[[3.6784,5.598],[4.6443,5.8568]],[[1.6232,7.0165],[0.6896,7.3749]],[[4.4226,1.6266],[4.4749,2.6252]],[[4.9672,0.7879],[4.4226,1.6266]],[[2.8597,1.2078],[2.912,2.2064]],[[0.0603,6.5977],[0.6049,5.7591]],[[3.4043,0.3691],[4.3379,0.0107]],[[4.3379,0.0107],[4.9672,0.7879]],[[3.4567,1.3677],[3.4043,0.3691]]],"folds":[[[3.0491,4.8209],[2.1155,5.1792]],[[2.1155,5.1792],[1.4862,4.4021]],[[2.0308,3.5634],[2.9967,3.8222]],[[3.6784,5.598],[3.1337,6.4367]],[[1.5708,6.0179],[0.6049,5.7591]],[[3.5414,2.9836],[2.9967,3.8222]],[[2.0308,3.5634],[1.9785,2.5648]],[[1.9785,2.5648],[2.912,2.2064]],[[2.912,2.2064],[3.5414,2.9836]],[[3.4567,1.3677],[4.4226,1.6266]],[[1.8938,0.949],[1.3491,1.7876]]],"w":4.9672,"h":7.3856,"opp":[11,10,7,9,6,8,4,2,5,3,1,0],"maxEdge":33.6},"d20":{"faces":20,"sides":3,"pos":[[[2.0234,2.2854],[1.0386,2.1117],[1.6814,1.3457]],[[1.6814,1.3457],[1.0386,2.1117],[0.6966,1.172]],[[1.3806,3.0514],[1.0386,2.1117],[2.0234,2.2854]],[[0.7378,3.8175],[0.3958,2.8778],[1.3806,3.0514]],[[0.6966,1.172],[1.0386,2.1117],[0.0538,1.9381]],[[2.0234,2.2854],[1.6814,1.3457],[2.6662,1.5193]],[[2.6662,1.5193],[1.6814,1.3457],[2.3242,0.5796]],[[1.3394,0.406],[1.6814,1.3457],[0.6966,1.172]],[[2.3654,3.2251],[2.0234,2.2854],[3.0082,2.459]],[[1.3806,3.0514],[2.0234,2.2854],[2.3654,3.2251]],[[2.6662,1.5193],[2.3242,0.5796],[3.309,0.7533]],[[0.3546,0.2323],[1.3394,0.406],[0.6966,1.172]],[[2.7075,4.1648],[3.0495,5.1044],[2.0647,4.9308]],[[2.7075,4.1648],[2.3654,3.2251],[3.3502,3.3987]],[[1.3806,3.0514],[2.3654,3.2251],[1.7226,3.9911]],[[1.7226,3.9911],[2.3654,3.2251],[2.7075,4.1648]],[[0.7378,3.8175],[1.3806,3.0514],[1.7226,3.9911]],[[1.0799,4.7571],[0.095,4.5835],[0.7378,3.8175]],[[1.0799,4.7571],[0.7378,3.8175],[1.7226,3.9911]],[[1.7226,3.9911],[2.7075,4.1648],[2.0647,4.9308]]],"tabs":[{"e":[[1.3806,3.0514],[1.0386,2.1117]],"f":2,"d":0.28,"t":0.25},{"e":[[0.7378,3.8175],[0.3958,2.8778]],"f":3,"d":0.28,"t":0.25},{"e":[[0.0538,1.9381],[0.6966,1.172]],"f":4,"d":0.28,"t":0.25},{"e":[[2.6662,1.5193],[2.0234,2.2854]],"f":5,"d":0.28,"t":0.25},{"e":[[1.6814,1.3457],[2.3242,0.5796]],"f":6,"d":0.28,"t":0.25},{"e":[[3.0082,2.459],[2.3654,3.2251]],"f":8,"d":0.28,"t":0.25},{"e":[[2.3242,0.5796],[3.309,0.7533]],"f":10,"d":0.28,"t":0.25},{"e":[[3.309,0.7533],[2.6662,1.5193]],"f":10,"d":0.28,"t":0.25},{"e":[[0.3546,0.2323],[1.3394,0.406]],"f":11,"d":0.28,"t":0.25},{"e":[[0.6966,1.172],[0.3546,0.2323]],"f":11,"d":0.28,"t":0.25},{"e":[[1.7226,3.9911],[1.0799,4.7571]],"f":18,"d":0.28,"t":0.25}],"cuts":[[[0.3958,2.8778],[1.3806,3.0514]],[[1.0386,2.1117],[0.0538,1.9381]],[[0.095,4.5835],[0.7378,3.8175]],[[2.0234,2.2854],[3.0082,2.459]],[[1.3394,0.406],[1.6814,1.3457]],[[2.3654,3.2251],[3.3502,3.3987]],[[2.7075,4.1648],[3.0495,5.1044]],[[3.3502,3.3987],[2.7075,4.1648]],[[3.0495,5.1044],[2.0647,4.9308]],[[1.0799,4.7571],[0.095,4.5835]],[[2.0647,4.9308],[1.7226,3.9911]]],"folds":[[[2.0234,2.2854],[1.0386,2.1117]],[[1.0386,2.1117],[1.6814,1.3457]],[[1.6814,1.3457],[2.0234,2.2854]],[[1.0386,2.1117],[0.6966,1.172]],[[0.6966,1.172],[1.6814,1.3457]],[[2.0234,2.2854],[1.3806,3.0514]],[[1.3806,3.0514],[0.7378,3.8175]],[[1.6814,1.3457],[2.6662,1.5193]],[[2.3242,0.5796],[2.6662,1.5193]],[[0.6966,1.172],[1.3394,0.406]],[[2.3654,3.2251],[2.0234,2.2854]],[[2.3654,3.2251],[1.3806,3.0514]],[[2.0647,4.9308],[2.7075,4.1648]],[[2.7075,4.1648],[2.3654,3.2251]],[[2.3654,3.2251],[1.7226,3.9911]],[[1.7226,3.9911],[1.3806,3.0514]],[[2.7075,4.1648],[1.7226,3.9911]],[[1.7226,3.9911],[0.7378,3.8175]],[[0.7378,3.8175],[1.0799,4.7571]]],"w":3.3628,"h":5.1044,"opp":[19,15,12,10,13,18,16,14,17,11,3,9,2,4,7,1,6,8,5,0],"maxEdge":49}};
 'use strict';
-const VERSION='studio-v1.14';
+const VERSION='studio-v1.15';
 // ═══════════ קבצים משותפים מהריפו (פונטים, עיצובי גב) ═══════════
 // נעוץ לקומיט ספציפי — שינוי בריפו לא ישבור את הקובץ הזה בלי שנעדכן כאן במכוון.
 const SHARED_COMMIT='f196a73a41a063231ba207a4296395f889aac265';
@@ -4230,7 +4231,7 @@ const Mug={id:'mug',label:'☕ ספל',
     isAdmin?sec('🔒 למנהל — קובץ',true,tog(MG,'mirror','הפוך במראה'),el('p',{class:'hint'},'כבישה: מכבש ST-210 כפול 30 שנ\' ב-200°C · עטיפת פרו בתנור 180–240 שנ\'.'),
       el('button',{type:'button',class:'btn gold',on:{click:()=>sublimationSheetsPDF(mugPieces(),'mug-'+MG.type,{mirror:MG.mirror!==false,auto:true})}},'⬇️ קובץ לסובלימציה')):null];}
 };
-// ── S-110: 📣 עורך פרסומת (מנהל בלבד) — חלק 1, בלי AI ──
+// ── S-110: 📣 עורך פרסומת — חלק 1 (שכבות). S-115: AI, חיתוך וגישה עם קוד ──
 // אותו עורך שכבות של הספל (S-93), מועתק ומותאם לקנבס בגודל פרסומת. הספל עצמו לא השתנה.
 // עיקרון: כל תמונה וכל כיתוב = שכבה נפרדת. תיקון כיתוב או הזזה לא מייצרים שום דבר מחדש.
 // יחידות: רוחב הפרסומת תמיד 200, הגובה לפי היחס. בהורדה מגדילים לפיקסלים האמיתיים של הפורמט.
@@ -4259,7 +4260,8 @@ function adArt(ctx){adEnsure();ctx.fillStyle=AD.bg||'#FFFFFF';ctx.fillRect(0,0,a
 function adSetFmt(f){if(f===AD.fmt||!AD_FMTS[f])return;adEnsure();const h0=adH();AD.fmt=f;const k=adH()/h0;
   AD.layers.forEach(L=>{L.y*=k;if(L.k==='text')L.fs=Math.min(L.fs,adH()*.3);});AD_UNDO.length=0;rebuild();}
 function adDraw(){if(!ADE||!ADE.c||!document.body.contains(ADE.c)||ADE.c.hidden)return;adEnsure();const c=ADE.c,dpr=Math.min(2,window.devicePixelRatio||1),cw=c.clientWidth||320,ch=c.clientHeight||420;
-  const W0=adW(),H0=adH(),s=Math.min(cw*.92/W0,(ch-64-34)/H0),W=W0*s,H=H0*s,ox=(cw-W)/2,oy=64+Math.max(0,(ch-64-34-H)/2);ADE.v={s,ox,oy};
+  const ab=document.getElementById('adbar'),top=Math.max(64,ab&&!ab.hidden?ab.offsetHeight+18:0); // הסרגל יכול להיות בשתי שורות בטלפון
+  const W0=adW(),H0=adH(),s=Math.min(cw*.92/W0,(ch-top-34)/H0),W=W0*s,H=H0*s,ox=(cw-W)/2,oy=top+Math.max(0,(ch-top-34-H)/2);ADE.v={s,ox,oy};
   c.width=Math.round(cw*dpr);c.height=Math.round(ch*dpr);const x=c.getContext('2d');x.scale(dpr,dpr);x.save();x.translate(ox,oy);x.scale(s,s);
   const L0=adSel();
   if(L0){x.save();x.globalAlpha=.22;adDrawLayer(x,L0);x.restore();} // מה שיוצא מהגבול נראה חלש — לא נכנס להורדה
@@ -4276,7 +4278,7 @@ function adDraw(){if(!ADE||!ADE.c||!document.body.contains(ADE.c)||ADE.c.hidden)
     if(G&&G.rot){x.fillStyle='#2563EB';x.font=`700 ${13/s}px Rubik`;x.textAlign='center';x.textBaseline='bottom';x.fillText(Math.round(L0.rot)+'°',Hd.rot[0],Hd.rot[1]-15/s);}}
   x.restore();adBar();}
 // הורדה: PNG בגודל האמיתי של הפורמט (A4 = 2480×3508, ‏300 DPI)
-async function adDownload(){adEnsure();if(!(AD.img||[]).length&&!AD.layers.some(o=>o.text)){toast('אין עדיין מה להוריד');return;}
+async function adDownload(){if(adLocked()){toast('קודם נכנסים עם קוד');return;}adEnsure();if(!(AD.img||[]).length&&!AD.layers.some(o=>o.text)){toast('אין עדיין מה להוריד');return;}
   await ensureFonts();const[pw,ph]=adFmt().px,c=document.createElement('canvas');c.width=pw;c.height=ph;const x=c.getContext('2d');x.scale(pw/adW(),pw/adW());adArt(x);
   c.toBlob(b=>{if(!b){toast('ההורדה נכשלה — נסו שוב');return;}download(b,`ad-${AD.fmt}-${stamp()}.png`);toast('התמונה מוכנה · '+adPx());},'image/png');}
 const adLid=()=>'L'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
@@ -4354,12 +4356,14 @@ function adHandles(L){const[w,h]=adSize(L),s=ADE.v.s,a=(L.rot||0)*Math.PI/180,P=
 function adHitHandle(x,y){const L=adSel();if(!L||!ADE.v)return null;const H=adHandles(L),r=22/ADE.v.s;for(const k of['del','rot','scale'])if(Math.hypot(x-H[k][0],y-H[k][1])<r)return k;return null;}
 // סרגל קטן מעל הפרסומת — מופיע רק כשמשהו נבחר
 function adBar(){const st=ADE&&ADE.c&&ADE.c.parentElement;if(!st)return;let b=document.getElementById('adbar');
-  if(!b){b=el('div',{class:'adbar',id:'adbar',role:'toolbar','aria-label':'פעולות על מה שנבחר'});st.append(b);}
+  if(!b){b=el('div',{class:'mgbar',id:'adbar',role:'toolbar','aria-label':'פעולות על מה שנבחר'});st.append(b);}
   const L=adSel(),show=!ADE.c.hidden&&(L||AD_UNDO.length);b.hidden=!show;if(!show)return;const k=(L?L.id:'')+'|'+AD_UNDO.length+'|'+(L?L.k:'');if(b._k===k)return;b._k=k;b.innerHTML='';
   const B=(t,a,f,dis)=>el('button',{type:'button','aria-label':a,title:a,disabled:dis?'':null,on:{click:()=>{f();ADE.c.focus({preventScroll:true});}}},t);
   b.append(B('↶','ביטול',adUndo,!AD_UNDO.length));
   if(L)b.append(B('⟲','סיבוב שמאלה',()=>adRot(adSel(),-15)),B('ישר','ישר — בלי סיבוב',()=>adRot(adSel(),null)),B('⟳','סיבוב ימינה',()=>adRot(adSel(),15)),
-    B('−','הקטנה',()=>adScale(adSel(),1/1.1)),B('+','הגדלה',()=>adScale(adSel(),1.1)),B('⧉','שכפול',()=>adDup(adSel())),B('⬆','להעביר מעל השאר',()=>adFront(adSel())),B('🗑','מחיקה',()=>adRemove(adSel())));}
+    B('−','הקטנה',()=>adScale(adSel(),1/1.1)),B('+','הגדלה',()=>adScale(adSel(),1.1)),B('⧉','שכפול',()=>adDup(adSel())),B('⬆','להעביר מעל השאר',()=>adFront(adSel())),
+    ...(L.k==='img'?[B('✂️','חיתוך ועריכת התמונה',()=>adEditImg(adImgsSel())),B('🪄','שינוי חלק מהתמונה ב-AI',()=>openAdAI(adImgsSel()))]:[]),B('🗑','מחיקה',()=>adRemove(adSel())));
+  if(b._h!==b.offsetHeight){b._h=b.offsetHeight;requestAnimationFrame(adDraw);}}
 const adTexts=()=>{adEnsure();return AD.layers.filter(L=>L.k==='text');};
 function adTextCard(L,i){const t=txt(L,'text',adTexts().length>1?'כיתוב '+(i+1):'כיתוב','מבצע לחנוכה'),inp=t.querySelector('input');inp.addEventListener('focus',()=>adSelect(L.id));inp.addEventListener('input',()=>adFit(L));inp.addEventListener('keydown',e=>{if(e.key==='Enter')inp.blur();});
   const on=!!ADE&&ADE.sel===L.id||adTexts().length===1;
@@ -4370,20 +4374,123 @@ function adTextCard(L,i){const t=txt(L,'text',adTexts().length>1?'כיתוב '+(
 function adFit(L){if(L.k!=='text'||(L.rot||0)%180)return;const m=adW()*.94,w=adSize(L)[0];if(w>m)L.fs=Math.max(3,L.fs*m/w);}
 function adAddText(){adSnap();n=adNewText('כיתוב');if(adTexts().some(o=>Math.abs(o.y-n.y)<adH()*.15))n.y=adH()*.2;AD.layers.push(n);if(ADE)ADE.sel=n.id;rebuild();
   setTimeout(()=>{const inp=document.querySelector(`[data-adl="${n.id}"] input[type=text]`);if(inp){inp.focus();inp.select();}},80);}
-const Ad={id:'ad',printShop:false,adminOnly:true,label:'📣 פרסומת',
+const Ad={id:'ad',printShop:false,label:'📣 פרסומת', // S-115: לא adminOnly — שותף נכנס ב-studio/?p=ad עם קוד (studio_ai_codes)
   intro:'📣 עורך פרסומות — לפוסט, לסטורי או להדפסה. כל תמונה וכל כיתוב הם שכבה נפרדת: מזיזים, מגדילים, מסובבים ומחליפים פונט בלי לבנות הכול מחדש. בסוף — הורדה כתמונה בגודל האמיתי.',
   fonts:()=>{adEnsure();return AD.layers.filter(L=>L.k==='text').map(L=>L.font);},
   build(){const U=usable(),W0=adW(),H0=adH(),s=Math.min(U.w/W0,U.h/H0),w=W0*s,h=H0*s;
     const item={w,h,draw(ctx){ctx.save();ctx.scale(s,s);ctx.beginPath();ctx.rect(0,0,W0,H0);ctx.clip();adArt(ctx);ctx.restore();}};
     return{pages:[{kind:'front',label:'הפרסומת',cut:false,placed:[{X:U.x+(U.w-w)/2,Y:U.y,rot:0,item}]}],summary:adFmt().label.replace(/^\S+\s/,'')+' · '+adPx()};},
-  panel(){return[
+  panel(){if(adLocked())return[adLoginSec()];return[adAcct(),
     sec('📐 גודל',true,el('div',{class:'seg'},Object.entries(AD_FMTS).map(([k,v])=>el('button',{type:'button','aria-pressed':String(AD.fmt===k),on:{click:()=>adSetFmt(k)}},v.label+' · '+v.sub))),
       el('p',{class:'hint'},'החלפת גודל שומרת את מה שכבר עיצבתם — רק בודקים שהכול עדיין בפנים.')),
     sec('🖼️ תמונות',true,filesInput(AD,'img','עד '+AD_MAXIMG+' תמונות',{max:AD_MAXIMG,edit:true}),col(AD,'bg','צבע רקע'),
       el('p',{class:'hint'},'התמונה הראשונה ממלאת את כל הפרסומת (רקע). לוחצים על תמונה וגוררים. ⤡ בפינה — גודל, ↻ למעלה — סיבוב. בטלפון: שתי אצבעות. ⬆ בסרגל מעביר שכבה מעל השאר.')),
+    adImgToolsSec(),adGenSec(),
     sec('✏️ כיתובים',true,...adTexts().map(adTextCard),el('button',{type:'button','class':'btn ghost',on:{click:adAddText}},'➕ עוד כיתוב')),
-    sec('⬇️ הורדה',true,el('p',{class:'hint'},'PNG בגודל '+adPx()+'. מה שיוצא מהגבול לא נכנס לתמונה.'),el('button',{type:'button',class:'btn gold',on:{click:adDownload}},'⬇️ הורדת הפרסומת'))];}
+    sec('⬇️ הורדה',true,el('p',{class:'hint'},'PNG בגודל '+adPx()+'. מה שיוצא מהגבול לא נכנס לתמונה.'),el('button',{type:'button',class:'btn gold',on:{click:adDownload}},'⬇️ הורדת הפרסומת')),adCodesSec()];}
 };
+// ── S-115: בינה מלאכותית בעורך הפרסומת + גישה עם קוד (לשותף, בלי חשבון מנהל) ──
+// שרת: Edge Function ai-image ← המודל לכל משימה מ-public.ai_tasks ← OpenRouter. קודים: studio_ai_codes (נספר רק מה שהצליח).
+// שינוי אזור: שולחים את התמונה + עותק עם האזור באדום. מה שחוזר מודבק רק בתוך הסימון (קצוות רכים) — כל השאר נשאר זהה בפיקסלים.
+const AI_URL=()=>SB_URL+'/functions/v1/ai-image';
+let AD_CODE=(()=>{try{return localStorage.getItem('studio_ad_code')||'';}catch(e){return '';}})(),AD_INFO=null;
+const AD_GEN={prompt:'',task:'image_from_text',busy:false,msg:''};
+const adAspect=()=>({post:'1:1',story:'9:16',wide:'16:9',a4:'3:4'})[AD.fmt]||'1:1';
+async function adCall(body){const h={'Content-Type':'application/json',apikey:SB_KEY};
+  if(isAdmin){const {data}=await sb.auth.getSession(),tok=data&&data.session&&data.session.access_token;if(!tok)throw new Error('צריך להיכנס כמנהל');h.Authorization='Bearer '+tok;}
+  else{if(!AD_CODE)throw new Error('צריך קוד גישה');body=Object.assign({},body,{code:AD_CODE});}
+  const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),150000);
+  try{const r=await fetch(AI_URL(),{method:'POST',headers:h,body:JSON.stringify(body),signal:ctl.signal});const j=await r.json().catch(()=>({}));if(!r.ok||j.error){const e=new Error(j.error||('שגיאה '+r.status));e.info=j;throw e;}return j;}
+  catch(e){if(e.name==='AbortError')throw new Error('לא התקבלה תשובה — נסו שוב');throw e;}finally{clearTimeout(t);}}
+async function adLogin(code){code=String(code||'').trim().toUpperCase().replace(/\s+/g,'');if(!code){toast('הקלידו את הקוד');return;}
+  try{const was=AD_CODE;AD_CODE=code;let j;try{j=await adCall({action:'check'});}catch(e){AD_CODE=was;throw e;}
+    AD_INFO=j;try{localStorage.setItem('studio_ad_code',code);}catch(e){}toast(j.ok?'✓ ברוכים הבאים':'⚠ '+j.why);rebuild();}
+  catch(e){toast('⚠ '+e.message);}}
+function adLogout(){AD_CODE='';AD_INFO=null;try{localStorage.removeItem('studio_ad_code');}catch(e){}rebuild();}
+const adLocked=()=>!isAdmin&&!AD_CODE;
+function adRefreshInfo(){if(isAdmin||!AD_CODE)return;adCall({action:'check'}).then(j=>{AD_INFO=j;if(cur===Ad)rebuild();},e=>{AD_INFO={ok:false,why:e.message,used:0};if(cur===Ad)rebuild();});}
+const dataImg=src=>new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=()=>no(new Error('התמונה שחזרה לא נפתחה'));im.src=src;});
+// תמונה → dataURL קטן מספיק לשליחה (צלע ארוכה עד 1536)
+function adToData(src,maxSide=1536,overlay){const W=natW(src),H=natH(src),k=Math.min(1,maxSide/Math.max(W,H)),c=document.createElement('canvas');c.width=Math.round(W*k);c.height=Math.round(H*k);
+  const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(src,0,0,c.width,c.height);if(overlay){x.globalAlpha=.55;x.drawImage(overlay,0,0,c.width,c.height);x.globalAlpha=1;}
+  return c.toDataURL('image/jpeg',.9);}
+function adNearAspect(W,H){const L=[['1:1',1],['2:3',2/3],['3:2',1.5],['3:4',.75],['4:3',4/3],['4:5',.8],['5:4',1.25],['9:16',9/16],['16:9',16/9],['21:9',21/9]],r=W/H;let b=L[0];L.forEach(a=>{if(Math.abs(Math.log(a[1]/r))<Math.abs(Math.log(b[1]/r)))b=a;});return b[0];}
+// מדביק את התוצאה על הבסיס רק בתוך הסימון, עם קצה רך (הקטנה והגדלה = טשטוש שעובד בכל דפדפן, גם בספארי)
+function adComposite(base,res,mask){const W=natW(base),H=natH(base),o=document.createElement('canvas');o.width=W;o.height=H;const x=o.getContext('2d');x.drawImage(base,0,0,W,H);
+  const s=document.createElement('canvas'),k=1/14;s.width=Math.max(2,Math.round(W*k));s.height=Math.max(2,Math.round(H*k));const sx=s.getContext('2d');sx.imageSmoothingQuality='high';sx.drawImage(mask,0,0,s.width,s.height);sx.drawImage(s,0,0);
+  const m=document.createElement('canvas');m.width=W;m.height=H;const mx=m.getContext('2d');mx.imageSmoothingQuality='high';for(let i=0;i<3;i++)mx.drawImage(s,0,0,W,H); // 3 פעמים = הסימון מתרחב קצת וקצה רך
+  const t=document.createElement('canvas');t.width=W;t.height=H;const tx=t.getContext('2d');tx.drawImage(res,0,0,W,H);tx.globalCompositeOperation='destination-in';tx.drawImage(m,0,0);
+  x.drawImage(t,0,0);return o;}
+function adReplaceImg(f,out){const L=AD.img||[],j=L.indexOf(f),n=[].concat(out||[])[0];if(j<0||!n)return;adSnap();AD.img=L.slice(0,j).concat([n],L.slice(j+1));rebuild();}
+const adImgsSel=()=>{const L=adSel();return L&&L.k==='img'?adImgOf(L):null;};
+function adEditImg(f){if(!f)return;openImageEditor(f,out=>adReplaceImg(f,out));}
+async function adGenerate(){const p=AD_GEN.prompt.trim();if(!p){toast('כתבו מה לצייר');return;}if((AD.img||[]).length>=AD_MAXIMG){toast('יש כבר '+AD_MAXIMG+' תמונות — מחקו אחת קודם');return;}
+  AD_GEN.busy=true;AD_GEN.msg='🪄 מצייר… בדרך כלל 10–30 שניות';rebuild();
+  try{const j=await adCall({action:'generate',task:AD_GEN.task,prompt:p,aspect:adAspect()}),im=await dataImg(j.image);
+    AD.img=(AD.img||[]).concat([{img:im,name:'AI — '+p.slice(0,40)}]);AD_GEN.msg='✓ נוסף לפרסומת'+(AD.img.length===1?' כרקע':' כשכבה — גוררים למקום');adRefreshInfo();}
+  catch(e){AD_GEN.msg='⚠ '+e.message;}
+  AD_GEN.busy=false;rebuild();}
+// ── חלון "שינוי חלק מהתמונה": מסמנים באצבע, כותבים מה לעשות. 🪄 = AI בשרת; 🧽 = מחיקה בחינם במכשיר (אותו MI-GAN של עריכת התמונה)
+function openAdAI(f){if(!f)return;const orig=f;let m=document.getElementById('adaiModal');if(m)m.remove();let cur=orig.img,ac=null,busy=false,brush=30,before=false,changed=false;const hist=[];
+  const sw=()=>natW(cur),sh=()=>natH(cur);let mask=null,marks=0;const newMask=()=>{mask=document.createElement('canvas');mask.width=sw();mask.height=sh();marks=0;};newMask();
+  const cv=el('canvas',{class:'lacv ipcv','aria-label':'התמונה — צובעים באצבע את האזור לשינוי'});
+  let k=1;const draw=()=>{const W=Math.min(420,innerWidth-40),H=Math.min(innerHeight*.45,460);k=Math.min(W/sw(),H/sh());cv.width=Math.round(sw()*k);cv.height=Math.round(sh()*k);
+    const x=cv.getContext('2d');x.drawImage(before?orig.img:cur,0,0,cv.width,cv.height);if(!before){x.globalAlpha=.5;x.drawImage(mask,0,0,cv.width,cv.height);x.globalAlpha=1;}};
+  let down=false,last=null;const pt=e=>{const r=cv.getBoundingClientRect();return[(e.clientX-r.left)*cv.width/r.width/k,(e.clientY-r.top)*cv.height/r.height/k];};
+  const stroke=(a,b2)=>{const x=mask.getContext('2d');x.strokeStyle='rgb(230,40,60)';x.lineCap='round';x.lineJoin='round';x.lineWidth=brush/k;x.beginPath();x.moveTo(a[0],a[1]);x.lineTo(b2[0],b2[1]);x.stroke();};
+  cv.addEventListener('pointerdown',e=>{if(busy||before)return;e.preventDefault();cv.setPointerCapture(e.pointerId);down=true;hist.push(mask.getContext('2d').getImageData(0,0,mask.width,mask.height));if(hist.length>15)hist.shift();marks++;last=pt(e);stroke(last,last);draw();});
+  cv.addEventListener('pointermove',e=>{if(!down)return;e.preventDefault();const p=pt(e);stroke(last,p);last=p;draw();});
+  ['pointerup','pointercancel'].forEach(t=>cv.addEventListener(t,()=>{down=false;}));
+  const ta=el('textarea',{rows:2,dir:'auto',placeholder:'למשל: להוסיף כאן אשכול בלונים זהובים · להוציא את האיש ברקע · לשנות את החולצה לאדומה','aria-label':'מה לעשות באזור המסומן'});
+  const bar=el('div',{class:'labar',hidden:''},el('div',{class:'lafill'})),msg=el('p',{class:'hint lamsg',role:'status'});
+  const btn=(t,fn,cls='btn ghost')=>el('button',{type:'button',class:cls,on:{click:fn}},t);
+  const ba=el('div',{class:'seg'},[['before','המקור'],['after','עכשיו']].map(([v,t])=>el('button',{type:'button','aria-pressed':String(v==='after'),on:{click:e=>{before=v==='before';ba.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b===e.currentTarget)));draw();}}},t)));
+  const done=t=>{busy=false;goAI.disabled=false;goFree.disabled=false;bar.hidden=true;bar.classList.remove('busy');if(t!=null)msg.textContent=t;};
+  const goAI=btn('🪄 לבצע ב-AI',async()=>{if(busy)return;const p=ta.value.trim();if(!p){msg.textContent='כתבו מה לעשות באזור.';ta.focus();return;}
+    busy=true;goAI.disabled=true;goFree.disabled=true;bar.hidden=false;bar.classList.add('busy');msg.textContent='🪄 עובד… בדרך כלל 10–40 שניות';
+    try{const full=!marks;if(full){const x=mask.getContext('2d');x.fillStyle='rgb(230,40,60)';x.fillRect(0,0,mask.width,mask.height);}
+      const j=await adCall({action:'edit',prompt:p,image:adToData(cur),mark:adToData(cur,1536,mask),aspect:adNearAspect(sw(),sh())}),res=await dataImg(j.image);
+      cur=adComposite(cur,res,mask);newMask();hist.length=0;changed=true;okb.disabled=false;done(full?'✓ בוצע על כל התמונה (לא היה סימון). אפשר לסמן ולהמשיך, או "אישור".':'✓ בוצע — רק האזור המסומן השתנה. אפשר לסמן עוד, או "אישור".');adRefreshInfo();draw();}
+    catch(e){if(!marks)newMask();done('⚠ '+e.message);draw();}},'btn gold');
+  const goFree=btn('🧽 למחוק בחינם (במכשיר)',()=>{if(busy)return;if(!marks){msg.textContent='קודם מסמנים באצבע את מה שרוצים למחוק.';return;}busy=true;goAI.disabled=true;goFree.disabled=true;ac=new AbortController();bar.hidden=false;msg.textContent='מכין…';const fill=bar.firstChild;
+    loadAI().then(()=>AIImage.inpaint(cur,mask,{signal:ac.signal,onProgress:p=>{if(p.phase==='download'){const pc=p.total?Math.round(p.loaded/p.total*100):0;fill.style.width=pc+'%';msg.textContent='מוריד את המנוע — '+pc+'% (פעם אחת בלבד)';}else if(p.phase==='process'){bar.classList.add('busy');msg.textContent='מוחק…';}}}))
+      .then(r=>{ac=null;cur=r.canvas;newMask();hist.length=0;changed=true;okb.disabled=false;done('✓ נמחק. אפשר לסמן עוד, או "אישור".');draw();})
+      .catch(e=>{ac=null;done(e&&e.name==='AbortError'?'בוטל':'⚠ '+(window.AIImage?AIImage.heMessage(e):'לא הצלחנו לטעון את הכלי — בדקו את החיבור ונסו שוב.'));});});
+  const okb=btn('אישור',()=>{if(!changed)return;const n={img:cur,name:(orig.name||'תמונה').replace(/\.[^.]+$/,'')+' — אחרי שינוי',aiSrc:[orig]};m.remove();adReplaceImg(orig,[n]);toast('נשמר — ↶ בסרגל מחזיר אחורה');},'btn gold');okb.disabled=true;
+  const close=()=>{if(ac)ac.abort();m.remove();};
+  m=el('div',{class:'fmodal',id:'adaiModal',style:'z-index:70',role:'dialog','aria-modal':'true','aria-label':'שינוי חלק מהתמונה'},el('div',{class:'fsheet'},
+    el('div',{class:'fhead'},el('h2',{},'🪄 שינוי חלק מהתמונה'),el('span',{style:'flex:1'}),el('button',{type:'button','aria-label':'סגירה',on:{click:close}},'✕')),
+    el('div',{class:'obody'},el('p',{class:'hint',style:'text-align:center'},'1. צובעים באצבע את האזור. 2. כותבים מה לעשות שם — להוסיף, להוציא או לשנות. רק האזור הצבוע ישתנה.'),
+      el('div',{class:'lawrap'},cv),
+      row('גודל המכחול',el('input',{type:'range',min:8,max:90,value:brush,on:{input:e=>{brush=+e.target.value;}}})),
+      el('div',{class:'inline'},btn('↶ בטל סימון',()=>{const h=hist.pop();if(h){marks=Math.max(0,marks-1);mask.getContext('2d').putImageData(h,0,0);draw();}}),btn('🧹 נקה סימון',()=>{newMask();draw();}),ba),
+      ta,el('div',{class:'inline'},goAI,goFree),bar,msg,
+      el('div',{class:'inline',style:'justify-content:flex-end'},btn('ביטול',close),okb),
+      el('p',{class:'hint',style:'font-size:.72rem'},'🪄 נשלח לשרת ונספר כיצירה. 🧽 רץ במכשיר בחינם ולא נשלח לשום מקום (MI-GAN, MIT).'))));
+  document.body.append(m);requestAnimationFrame(draw);setTimeout(()=>{try{cv.focus();}catch(e){}},50);}
+// ── הקטעים בפאנל ──
+function adLoginSec(){const ci=el('input',{type:'text',dir:'ltr',autocomplete:'off',autocapitalize:'characters',placeholder:'קוד גישה','aria-label':'קוד גישה',style:'font-size:1.1rem;letter-spacing:2px;text-align:center',on:{keydown:e=>{if(e.key==='Enter')adLogin(ci.value);}}});
+  return sec('🔑 כניסה עם קוד',true,el('p',{class:'hint'},'הקלידו את הקוד שקיבלתם מהושעיה.'),ci,el('div',{class:'inline'},el('button',{type:'button',class:'btn',on:{click:()=>adLogin(ci.value)}},'כניסה')));}
+function adAcct(){if(isAdmin)return null;if(!AD_INFO)adRefreshInfo();const I=AD_INFO;
+  return el('div',{class:'ocacct',role:'status'},el('span',{},'🔑 '+((I&&I.label)||AD_CODE)+' · יצירות AI: '+(I?I.used:'…')+(I&&I.limit!=null?' מתוך '+I.limit:'')),
+    I&&I.ok===false?el('b',{style:'color:#b91c1c'},' ⚠ '+I.why):null,el('button',{type:'button',class:'linkbtn',on:{click:adLogout}},'יציאה'));}
+function adGenSec(){const ta=el('textarea',{rows:3,dir:'auto','aria-label':'מה לצייר',placeholder:'למשל: קשת בלונים בצבעי זהב ולבן בכניסה לאולם, תאורה חמה, בלי טקסט',on:{input:e=>{AD_GEN.prompt=e.target.value;}}});ta.value=AD_GEN.prompt;
+  return sec('🪄 תמונה חדשה מ-AI',false,ta,
+    seg(AD_GEN,'task',[['image_from_text','🖼️ תמונה'],['image_with_text','🔤 תמונה עם כיתוב בתוכה']]),
+    el('p',{class:'hint'},AD_GEN.task==='image_with_text'?'כותבים בתיאור את הכיתוב המדויק במירכאות — למשל: כותרת "מבצע חנוכה". כיתוב קצר יוצא הכי טוב.':'נכנסת כשכבה בגודל ה'+adFmt().label.replace(/^\S+\s/,'')+'. אם אין עדיין תמונות — היא הופכת לרקע. את הכיתובים עדיף לכתוב למטה, כשכבה — כך מתקנים בלי לייצר מחדש.'),
+    el('div',{class:'inline'},el('button',{type:'button',class:'btn gold',disabled:AD_GEN.busy?'':null,on:{click:adGenerate}},AD_GEN.busy?'⏳ מצייר…':'🪄 צור תמונה')),
+    AD_GEN.msg?el('p',{class:'hint',role:'status'},AD_GEN.msg):null);}
+function adImgToolsSec(){const imgs=AD.img||[];if(!imgs.length)return null;
+  return sec('✂️ עריכת תמונה',true,el('p',{class:'hint'},'✂️ חיתוך, הסרת רקע, הגדלה ומחיקה במכשיר. 🪄 מסמנים חלק מהתמונה ואומרים מה לשנות.'),
+    ...imgs.map((f,i)=>el('div',{class:'inline',style:'align-items:center'},el('b',{style:'min-width:5.5em'},'תמונה '+(i+1)+(i===0?' (רקע)':'')),
+      el('button',{type:'button',class:'btn ghost',on:{click:()=>adEditImg(f)}},'✂️ חיתוך ועריכה'),
+      el('button',{type:'button',class:'btn ghost',on:{click:()=>openAdAI(f)}},'🪄 שינוי חלק'))));}
+function adCodesSec(){if(!isAdmin)return null;const box=el('div',{});
+  const load=()=>{box.textContent='טוען…';adCall({action:'codes'}).then(j=>{box.innerHTML='';if(!j.codes.length){box.append(el('p',{class:'hint'},'אין עדיין קודים. בקשו מ-Claude ליצור קוד (שם, כמה יצירות, עד מתי).'));return;}
+    box.append(...j.codes.map(c=>el('p',{class:'hint',dir:'rtl'},el('b',{dir:'ltr'},c.code),' · '+(c.label||'')+' · '+c.used+(c.usage_limit!=null?'/'+c.usage_limit:'')+' יצירות'+(c.active?'':' · ⛔ מושבת')+(c.expires_at?' · עד '+new Date(c.expires_at).toLocaleDateString('he-IL'):'')+' · '+'$'+(j.cost[c.code]||0).toFixed(2))),
+      el('p',{class:'hint'},'שלך (מנהל): $'+(j.cost.admin||0).toFixed(2)+' · קישור לשותף: www.hoshaya.co.il/studio/?p=ad'));},e=>{box.textContent='⚠ '+e.message;});};
+  return sec('🔒 קודי גישה לעורך (רק מנהל רואה)',false,el('div',{class:'inline'},el('button',{type:'button',class:'btn ghost',on:{click:load}},'הצג קודים ועלויות')),box);}
+
 function mugPieces(){const M=mugType(),n=Math.max(1,Math.min(99,MG.qty|0||1)),out=[];for(let i=0;i<n;i++)out.push({w:MUG_W,h:M.ph,draw(ctx){mugArt(ctx,0);}});return out;}
 // ── תלת־ממד של הספל (three.js, אותו קובץ מקומי כמו בחולצה) ──
 const MG3={r:null,raf:0,ry:-1.1,rx:.18,spin:true,key:'',sig:''};
@@ -4548,7 +4655,7 @@ rerender=()=>{cancelAnimationFrame(_raf);_raf=requestAnimationFrame(()=>{
   try{built=cur.build();}catch(e){console.error(e);built={pages:[],summary:'שגיאה: '+e.message};}
   if(curPage>=built.pages.length)curPage=0;renderHow();drawPreview();showStage();drawPagebar();updateOrderBtn();updateExportBtns();save();});};
 rebuild=()=>{const y=ctrls.scrollTop,wy=window.scrollY;ctrls.innerHTML='';
-  ctrls.append(el('p',{class:'intro'},cur.intro),...[].concat(cur.panel()).flat().filter(Boolean),...[shopSection()].filter(Boolean),...(!['admin','ocr'].includes(cur.id)?[saveLoadSection()]:[]),el('div',{class:'foot'},installBtn(),(isAdmin||!/[?&]admin\b/.test(location.search))?'':el('button',{type:'button',on:{click:openLogin}},'כניסת מנהל')));ctrls.scrollTop=y;window.scrollTo(0,wy);rerender();};
+  ctrls.append(el('p',{class:'intro'},cur.intro),...[].concat(cur.panel()).flat().filter(Boolean),...[shopSection()].filter(Boolean),...(!['admin','ocr'].includes(cur.id)&&!(cur.id==='ad'&&adLocked())?[saveLoadSection()]:[]),el('div',{class:'foot'},installBtn(),(isAdmin||!/[?&]admin\b/.test(location.search))?'':el('button',{type:'button',on:{click:openLogin}},'כניסת מנהל')));ctrls.scrollTop=y;window.scrollTo(0,wy);rerender();};
 function drawPreview(){const ctx=cv.getContext('2d'),pg=built.pages[curPage];
   if(!pg){ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#fff';ctx.fillRect(0,0,cv.width,cv.height);ctx.fillStyle='#5B6878';ctx.textAlign='center';ctx.font=`${cv.width*.045}px Rubik`;
     if(built.emptyMsg){const fs=cv.width*.06,maxW=cv.width*.86,out=[];let ln='';ctx.font=`${fs}px Rubik`; // S-95: הודעה ארוכה בכמה שורות
