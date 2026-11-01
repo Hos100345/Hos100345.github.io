@@ -2814,6 +2814,21 @@ function adminOnlySec(title,...kids){if(!isAdmin)return null;return sec('🔒 '+
 // ומוגדל/מוקטן ב-scale לגודל שהלקוח בוחר — כך כל גודל נראה אותו דבר, רק חד יותר.
 // בלי הזמנה ובלי תשלום: מורידים PDF בגודל שבחרו (מדבקה אחת, או דף A4 מלא בעותקים).
 const BL_W=1181;
+// S-111: בחנות המקדש — משפטים מוכנים על בית המקדש וירושלים בלבד
+const BL_MK_PRESETS=[
+  {t:'ועשו לי מקדש\nושכנתי בתוכם',c:'(שמות כ״ה)'},
+  {t:'שיבנה בית המקדש\nבמהרה בימינו',c:'(מתוך התפילה)'},
+  {t:'בנה ביתך כבתחלה\nוכונן מקדשך\nעל מכונו',c:'(מתוך תפילת מוסף)'},
+  {t:'גדול יהיה\nכבוד הבית הזה\nהאחרון מן הראשון',c:'(חגי ב׳)'},
+  {t:'כי ביתי\nבית תפלה יקרא\nלכל העמים',c:'(ישעיהו נ״ו)'},
+  {t:'שמחתי באמרים לי\nבית ה׳ נלך',c:'(תהלים קכ״ב)'},
+  {t:'מי יעלה בהר ה׳\nומי יקום\nבמקום קדשו',c:'(תהלים כ״ד)'},
+  {t:'אם אשכחך ירושלים\nתשכח ימיני',c:'(תהלים קל״ז)'},
+  {t:'שאלו שלום\nירושלים\nישליו אהביך',c:'(תהלים קכ״ב)'},
+  {t:'השיבנו ה׳ אליך\nונשובה\nחדש ימינו כקדם',c:'(איכה ה׳)'},
+  {t:'לשנה הבאה\n*בירושלים הבנויה',c:'(מתוך ההגדה)'},
+];
+function blPresets(){return MIKDASH?BL_MK_PRESETS:BL_PRESETS;}
 const BL_PRESETS=[
   {t:'הדבר הכי גדול\nבעולם הוא\nלעשות טובה\nלמישהו אחר',c:''},
   {t:'להגיד בבקר\nחסדך\nואמונתך בלילות',c:'(תהלים צ״ב)'},
@@ -3174,8 +3189,8 @@ const Blessing={id:'blessing',label:'מדבקת ברכה',
     const U={x:12,y:12,w:186,h:273},s=Math.min(U.w,U.h);
     return{pages:[{kind:'front',label:'מדבקה',cut:false,placed:[{X:U.x+(U.w-s)/2,Y:U.y+(U.h-s)/2,rot:0,item:mk(s)}]}],summary:'מדבקה אחת · '+cm+'×'+cm+' ס"מ · בתצוגה מוגדלת'};},
   panel(){const B=BL,btn=(t,fn,cls='btn ghost',attrs={})=>el('button',{type:'button',class:cls,...attrs,on:{click:fn}},t);
-    const preset=el('select',{'aria-label':'משפטים מוכנים',on:{change:e=>{const p=BL_PRESETS[+e.target.value];if(!p)return;B.preset=+e.target.value;B.text=p.t;B.credit=p.c;rebuild();}}},
-      el('option',{value:''},'— בחרו משפט מוכן —'),BL_PRESETS.map((p,i)=>el('option',{value:i},p.t.replace(/\*/g,'').replace(/\n/g,' '))));
+    const preset=el('select',{'aria-label':'משפטים מוכנים',on:{change:e=>{const p=blPresets()[+e.target.value];if(!p)return;B.preset=+e.target.value;B.text=p.t;B.credit=p.c;rebuild();}}},
+      el('option',{value:''},'— בחרו משפט מוכן —'),blPresets().map((p,i)=>el('option',{value:i},p.t.replace(/\*/g,'').replace(/\n/g,' '))));
     const sw=(o,label)=>el('div',{},el('p',{class:'hint'},label),el('div',{class:'blsw',role:'group','aria-label':label},BL_TEXT_COLORS.map(([c,n])=>el('button',{type:'button',class:'blswatch','aria-label':n,'aria-pressed':String(String(o.color).toLowerCase()===c),style:'background:'+c,on:{click:()=>{o.color=c;rebuild();}}}))));
     const scenes=el('div',{class:'blscenes',role:'group','aria-label':'סגנון הציור'},BL_SCENES.map(([id,ic,name])=>el('button',{type:'button',class:'blscene','aria-pressed':String(B.scene===id),on:{click:()=>{
       const wasDark=B.scene==='night'||B.scene==='photo';B.scene=id;if(id==='clear'){B.o.gold=false;B.o.frame=false;}if(id==='frames'){B.mx=0;B.vpos=0;if(B.color==='#ffffff')B.color='#3a2e26';}if(id==='lineart'){B.o.gold=true;B.o.hand=true;B.o.tree=true;B.o.goldtop=true;B.o.tint=true;B.o.frame=false;if(B.color==='#ffffff'||B.color==='#3a2e26')B.color='#3f4650';} // שקוף = רק כיתוב, בלי נצנצים (חיים 21/10)
@@ -3193,6 +3208,28 @@ const Blessing={id:'blessing',label:'מדבקת ברכה',
         area(t,'text','הטקסט (אפשר כמה שורות; * בתחילת שורה = גדולה)','מזל טוב!',2),fontSel(t,'font','פונט',()=>firstOf(t.text)),sw(t,'צבע'),
         rng(t,'size','גודל',20,170),rng(t,'x','מיקום לרוחב (ימין ← → שמאל)',0,100),rng(t,'y','מיקום לגובה (למעלה ← → למטה)',0,100),tog(t,'glow','הילה סביב הטקסט'))),
       el('div',{class:'inline'},btn('➕ הוספת כיתוב',()=>{const n=(B.texts||[]).length;B.texts=(B.texts||[]).concat([{text:'כיתוב חדש',font:B.font,color:B.color,size:64,x:50,y:Math.min(90,72+n*8)%100||50,glow:B.glow}]);rebuild();},'btn gold')));
+    const sizeSec=()=>sec('📐 גודל ו-PDF',true,el('p',{class:'hint'},'גודל המדבקה בס"מ (ריבוע):'),seg(B.out,'size',BL_SIZES),
+        B.out.size==='custom'?num(B.out,'cm','צלע בס"מ (2 עד 28)',{min:2,max:28,step:.5}):null,
+        el('p',{class:'hint'},'מה יהיה ב-PDF:'),seg(B.out,'layout',[['single','מדבקה אחת בגודל הזה'],['sheet','דף A4 מלא במדבקות']]),
+        B.out.layout==='sheet'?num(B.out,'gap','רווח בין המדבקות (מ"מ)',{min:0,max:10,step:.5}):null,
+        el('div',{class:'inline'},btn('⬇️ הורדת PDF',blDownload,'btn gold'),btn('🖼️ הורדת תמונה (PNG)',blDownloadPng)),
+        el('p',{class:'hint'},'300 DPI. מדפיסים בגודל 100% — בלי "התאם לדף".'));
+    // S-111: חנות המקדש — רק תמונות המקדש מהמאגר, בלי סגנונות ציור, צבעי רקע ו"ציור אחר"
+    if(MIKDASH){if(B.scene!=='photo'){B.scene='photo';}
+      bgIn.hidden=true;
+      return[
+        sec('🕍 תמונת המקדש',true,el('p',{class:'hint'},'בוחרים תמונה של בית המקדש מהמאגר — ושמים עליה פסוק או ברכה.'),
+          el('div',{class:'inline'},btn('🕍 בחירת תמונה מהמאגר',()=>bgIn.click(),'btn gold'),bgIn),
+          el('p',{class:'hint'},'איך התמונה נכנסת לריבוע:'),seg(B,'fit',[['cover','ממלאת את כל הריבוע (חותכת קצוות)'],['contain','כל התמונה, בלי חיתוך']]),
+          blImgAlpha(B.img[0])?tog(B,'photoClear','לשמור את הרקע השקוף של התמונה',{rebuildOnChange:true}):null,
+          rng(B,'veil','הכהיה ← → הבהרה של התמונה (שהכיתוב יבלוט)',-60,60)),
+        sec('✍️ הפסוק',true,row('פסוקים מוכנים',preset),area(B,'text','הטקסט — כל שורה כאן היא שורה במדבקה. שורה שמתחילה בכוכבית * יוצאת גדולה ובולטת.','ועשו לי מקדש',4),
+          txt(B,'credit','מקור (שורה קטנה)','(שמות כ״ה)'),txt(B,'footer','הקדשה בתחתית','למשל: באהבה ובתודה')),
+        sec('🔤 פונט, צבע ומקום',true,fontSel(B,'font','פונט — לוחצים ורואים את הטקסט שלכם בכל הפונטים',()=>firstOf(B.text)),sw(B,'צבע הטקסט'),
+          rng(B,'size','גודל הטקסט',30,140),rng(B,'spacing','רווח בין שורות',95,160),rng(B,'mx','מיקום לרוחב (ימין ← → שמאל)',-45,45),rng(B,'vpos','מיקום לגובה (למעלה ← → למטה)',-45,45),tog(B,'glow','הילה בהירה סביב הטקסט'),
+          el('p',{class:'hint'},'✋ אפשר גם לגרור את הטקסט באצבע או בעכבר על התצוגה.')),
+        textsSec,
+        sizeSec()];}
     return[
       sec('🖼️ סגנון הציור',true,scenes,
         isPhoto?el('div',{},el('p',{class:'hint'},'מעלים תמונה — ושמים עליה כיתוב. תמונה ריבועית נראית הכי טוב.'),el('div',{class:'inline'},bgIn),
@@ -3212,12 +3249,7 @@ const Blessing={id:'blessing',label:'מדבקת ברכה',
       isPhoto||BL_CLEAR.has(B.scene)?null:sec('🎨 צבעי הרקע',true,pals),
       sec('✨ מה יופיע בציור',true,opts,noSeed?null:el('div',{class:'inline'},btn('🎲 ציור אחר',()=>{B.seed=Math.floor(Math.random()*1e6)+1;rerender();})),
         noSeed?null:el('p',{class:'hint'},'"ציור אחר" מצייר את הסצנה בצורה חדשה. מה שרואים זה מה שיורד.')),
-      sec('📐 גודל ו-PDF',true,el('p',{class:'hint'},'גודל המדבקה בס"מ (ריבוע):'),seg(B.out,'size',BL_SIZES),
-        B.out.size==='custom'?num(B.out,'cm','צלע בס"מ (2 עד 28)',{min:2,max:28,step:.5}):null,
-        el('p',{class:'hint'},'מה יהיה ב-PDF:'),seg(B.out,'layout',[['single','מדבקה אחת בגודל הזה'],['sheet','דף A4 מלא במדבקות']]),
-        B.out.layout==='sheet'?num(B.out,'gap','רווח בין המדבקות (מ"מ)',{min:0,max:10,step:.5}):null,
-        el('div',{class:'inline'},btn('⬇️ הורדת PDF',blDownload,'btn gold'),btn('🖼️ הורדת תמונה (PNG)',blDownloadPng)),
-        el('p',{class:'hint'},'300 DPI. מדפיסים בגודל 100% — בלי "התאם לדף".')),
+      sizeSec(),
     ];}
 };
 // גרירת כיתוב בתצוגה: מצביע → מ"מ בדף → נקודה במדבקה (מרחב 1181) → תיבת הטקסט שנלחצה. עובד גם בדף A4 מלא (כל עותק).
@@ -3240,7 +3272,8 @@ function blApplyUrl(){try{const q=new URLSearchParams(location.search);if(q.get(
   const sc=q.get('s'),t=q.get('t');
   if(sc&&BL_SCENES.some(x=>x[0]===sc)){BL.scene=sc;if(sc==='lineart'){Object.assign(BL.o,{gold:true,hand:true,tree:true,goldtop:true,tint:true,frame:false});BL.color='#3f4650';BL.font='Heebo';}
     if(sc==='clear'){BL.o.gold=false;BL.o.frame=false;}}
-  if(t!=null&&BL_PRESETS[+t]){const pr=BL_PRESETS[+t];BL.text=pr.t;BL.credit=sc==='lineart'?'':pr.c;BL.preset=+t;BL.mx=0;BL.vpos=0;}
+  if(MIKDASH)BL.scene='photo';
+  if(t!=null&&blPresets()[+t]){const pr=blPresets()[+t];BL.text=pr.t;BL.credit=sc==='lineart'?'':pr.c;BL.preset=+t;BL.mx=0;BL.vpos=0;}
   if(q.get('cm')&&+q.get('cm')>=2&&+q.get('cm')<=28){const v=+q.get('cm');if(BL_SIZES.some(x=>x[0]===v))BL.out.size=v;else{BL.out.size='custom';BL.out.cm=v;}}
 }catch(e){}}
 // PNG עם 300 DPI בתוך הקובץ (chunk pHYs) — כך תוכנות הדפסה ועיצוב פותחות אותו בגודל האמיתי (10 ס"מ = 10 ס"מ)
@@ -5039,6 +5072,7 @@ function ordersSection(){
   await Promise.all([loadShared('hebrew-fonts.js'),loadShared('back-assets.js')]);
   document.getElementById('orderClose').onclick=closeOrder;document.getElementById('loginClose').onclick=()=>document.getElementById('loginModal').hidden=true;document.getElementById('loginSend').onclick=sendLogin;
   if(MIKDASH){Domino.label='דומינו המקדש';}
+  if(MIKDASH){Blessing.intro='🕍 מדבקת ברכה של המקדש: בוחרים תמונה של בית המקדש מהמאגר, בוחרים פסוק, פונט וגודל — ומורידים PDF מוכן להדפסה.';}
   if(MIKDASH){Bingo.label='בינגו המקדש';Bingo.intro='🎯 בינגו המקדש: לוחות עם כלי המקדש, ביכורים, קורבנות ובגדי הכהן הגדול — כל לוח שונה, ויש קלפי קריאה לגזירה. מתאים לכיתה, לגן ולשולחן השבת.';}
   makeStates();restore();if(MIKDASH){qtMkInit();mmMkInit();bgMkInit();dmMkInit();giftMkInit();v3Page=false;}blApplyUrl();v3InitInline();try{const q=new URLSearchParams(location.search);if(q.get('p')==='ludo'&&['all','pieces','board'].includes(q.get('what')))LD.what=q.get('what');
     if(q.get('p')==='subl'&&q.get('item')){const si=SUB_ITEMS.find(i=>i.id===q.get('item'));if(si){SB.item=si.id;SB.cat=si.cat;SB.mirror=!si.noMirror;}}}catch(e){}if(FOCUS)cur=FOCUS;if(cur.adminOnly){if(cur.id!=='admin')_pendTab=cur;cur=Stickers;}
