@@ -11,6 +11,11 @@ const ADMIN_EMAILS = (Deno.env.get('ADMIN_EMAILS') || 'hoshaya@gmail.com').toLow
 const OR_KEY = Deno.env.get('OPENROUTER_API_KEY') || '';
 const OR = 'https://openrouter.ai/api/v1';
 const ASPECTS = ['1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'];
+// S-116: שקלים. העלות מ-OpenRouter בדולרים; USD_ILS = שער לחישוב (לעדכן כשהשער זז הרבה).
+// לשותף נרשם חיוב = עלות × markup של הקוד (ברירת מחדל 1.2), מעוגל למעלה ל-10 אגורות, לפחות 10 אגורות — כדי שלא ייכנס הפסד.
+const USD_ILS = 3.11;
+const ils = (usd: number | null) => usd == null ? null : Math.round(usd * USD_ILS * 1000) / 1000;
+const charge = (costIls: number | null, markup: number) => Math.max(0.1, Math.ceil(((costIls ?? 0.25) * (markup || 1.2)) * 10 - 1e-9) / 10); // בלי עלות ידועה — 25 אג׳ כבסיס
 const MAX_IMG = 6_000_000; // תו dataURL — בערך 4.5MB תמונה
 
 const cors = {
@@ -23,13 +28,15 @@ const norm = (c: unknown) => String(c || '').trim().toUpperCase().replace(/\s+/g
 const isImg = (s: unknown) => typeof s === 'string' && /^data:image\/(png|jpeg|webp);base64,/.test(s) && s.length < MAX_IMG;
 
 async function codeInfo(db: any, code: string) {
-  const { data } = await db.from('studio_ai_codes').select('code,label,active,expires_at,usage_limit,used').eq('code', code).maybeSingle();
+  const { data } = await db.from('studio_ai_codes').select('code,label,active,expires_at,usage_limit,used,markup').eq('code', code).maybeSingle();
   if (!data) return null;
+  const { data: ch } = await db.from('studio_ai_log').select('charge_ils').eq('who', code).eq('ok', true);
+  const charged = Math.round((ch || []).reduce((s: number, r: any) => s + Number(r.charge_ils || 0), 0) * 100) / 100;
   let why = '';
   if (!data.active) why = 'הקוד הושבת';
   else if (data.expires_at && new Date(data.expires_at) < new Date()) why = 'תוקף הקוד הסתיים';
   else if (data.usage_limit != null && data.used >= data.usage_limit) why = 'נגמרו היצירות בקוד הזה';
-  return { ok: !why, why, label: data.label || '', used: data.used, limit: data.usage_limit };
+  return { ok: !why, why, label: data.label || '', used: data.used, limit: data.usage_limit, charged, markup: Number(data.markup || 1.2) };
 }
 
 // קריאה ל-OpenRouter. מחזיר {image (dataURL), cost}
@@ -91,11 +98,11 @@ Deno.serve(async (req) => {
   if (action === 'check') return json({ ok: true, admin: true });
   if (action === 'codes') {
     if (!isAdmin) return json({ error: 'מנהל בלבד' }, 403);
-    const { data } = await db.from('studio_ai_codes').select('code,label,active,expires_at,usage_limit,used,created_at').order('created_at', { ascending: false });
-    const { data: spent } = await db.from('studio_ai_log').select('who,cost_usd').eq('ok', true);
-    const cost: Record<string, number> = {};
-    (spent || []).forEach((r: any) => { cost[r.who] = (cost[r.who] || 0) + Number(r.cost_usd || 0); });
-    return json({ codes: data || [], cost });
+    const { data } = await db.from('studio_ai_codes').select('code,label,active,expires_at,usage_limit,used,markup,created_at').order('created_at', { ascending: false });
+    const { data: spent } = await db.from('studio_ai_log').select('who,cost_ils,charge_ils').eq('ok', true);
+    const cost: Record<string, number> = {}, charged: Record<string, number> = {};
+    (spent || []).forEach((r: any) => { cost[r.who] = (cost[r.who] || 0) + Number(r.cost_ils || 0); charged[r.who] = (charged[r.who] || 0) + Number(r.charge_ils || 0); });
+    return json({ codes: data || [], cost, charged, rate: USD_ILS });
   }
   if (action !== 'generate' && action !== 'edit') return json({ error: 'פעולה לא מוכרת' }, 400);
   if (!OR_KEY) return json({ error: 'חסר מפתח OpenRouter בשרת' }, 500);
@@ -123,8 +130,11 @@ Deno.serve(async (req) => {
       const { data: okc } = await db.rpc('studio_ai_consume', { p_code: code });
       if (okc === false) return json({ error: 'נגמרו היצירות בקוד הזה' }, 403);
     }
-    await db.from('studio_ai_log').insert({ who, task: taskId, model: task.model, ok: true, ms: Date.now() - t0, cost_usd: out.cost });
-    return json({ image: out.image, model: task.model, task: taskId, cost: out.cost });
+    const costIls = ils(out.cost);
+    let chargeIls: number | null = null;
+    if (!isAdmin) { const { data: c } = await db.from('studio_ai_codes').select('markup').eq('code', code).maybeSingle(); chargeIls = charge(costIls, Number(c?.markup || 1.2)); }
+    await db.from('studio_ai_log').insert({ who, task: taskId, model: task.model, ok: true, ms: Date.now() - t0, cost_usd: out.cost, cost_ils: costIls, charge_ils: chargeIls });
+    return json({ image: out.image, model: task.model, task: taskId, ...(isAdmin ? { cost_ils: costIls } : { charge_ils: chargeIls }) });
   } catch (e) {
     const msg = String((e as Error)?.message || e).slice(0, 300);
     await db.from('studio_ai_log').insert({ who, task: taskId, model: task.model, ok: false, ms: Date.now() - t0, error: msg });
