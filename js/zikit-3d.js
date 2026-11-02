@@ -209,11 +209,9 @@
   /* ── הרשימה לבמה: מפתח → שם לתגית, מק"ט, קישור לעיצוב. המחירים ללקוח עוד לא נקבעו (כלל 125) → בלי מחיר, הצעת מחיר ──
    * שלושת הראשונים (חולצה, ספל, פאזל) כבר קיימים ב-showcase-3d.js. */
   window.ZIKIT = [
-    ['mug-color', '☕ ספל עם פנים וידית בצבע', '8506', '../studio/?p=mug'],
     ['mug-neon', '☕ ספל נאון', '8514', '../studio/?p=mug'],
     ['mug-magic', '🪄 ספל פלא — ההדפסה מתגלה בחום', '8503-1', '../studio/?p=mug'],
     ['mug-spoon', '🥄 ספל עם כפית', '8510', '../studio/?p=mug'],
-    ['mug-metal', '✨ ספל מטאלי כחול/אדום', '8507', '../studio/?p=mug'],
     ['enamel', '🏕️ ספל אמייל ענק עם מכסה', '8724-3', '../studio/?p=subl&item=8724-3'],
     ['hugmug', '🤗 האג מאג טרמי', '8714', '../studio/?p=subl&item=8714-1'],
     ['wine', '🍷 גביע יין נירוסטה', '8714-3', '../studio/?p=subl&item=8714-3'],
@@ -223,27 +221,35 @@
     ['bottle-straw', '🧃 בקבוק עם קשית', '8703-1', '../studio/?p=subl&item=8703-1'],
     ['basalt', '🪨 אבן בזלת עם תמונה', '8580', '../studio/?p=subl&item=8582'],
     ['woodphoto', '🖼️ תמונה על עץ עם רגל', '8360', '../studio/?p=subl&item=8360-4'],
-    ['acrylic', '🖼️ מעמד אקריל לשתי תמונות', '8193', '../studio/?p=subl&item=8193'],
     ['glass', '🪟 תמונה על זכוכית עם מעמד', '6452', '../studio/?p=subl&item=6452'],
-    ['glass-mirror', '🪞 זכוכית עם מסגרת מראה', '6443', '../studio/?p=subl&item=6443'],
     ['board', '🔪 לוח חיתוך זכוכית', '6458', '../studio/?p=subl&item=6458'],
     ['crystal', '💎 מגן קריסטל', '6424', '../studio/?p=subl&item=6424'],
     ['clock', '🕰️ שעון עמוד LOVE', '8022-3', '../studio/?p=subl&item=8022-3'],
     ['woodshape', '❤️ לב מעץ מבריק', '6101-H20', '../studio/?p=subl&item=6101-H20'],
-    ['instagram', '🖼️ לוח עץ ל-9 תמונות', '6115-1', '../studio/?p=subl&item=6115-1'],
-    ['keyhanger', '🔑 מפתח ברכה FAMILY', '8310-4', '../studio/?p=subl&item=8310-4'],
-    ['doorsign', '🚪 שלט עץ לדלת', '8201', '../studio/?p=subl&item=8201'],
     ['tin', '🍪 קופסת מתכת עגולה', '8707-3', '../studio/?p=subl&item=8707-3'],
     ['bracelet', '📿 צמיד אלומיניום', '9172-1', '../studio/?p=subl&item=9172-1'],
-    ['woodnum', '🔢 ספרה מעץ עם רגל', '6111', '../studio/?p=subl&item=6111'],
-    ['usb', '💾 דיסק און קי מעץ מואר', '9613', '../studio/?p=subl&item=9613'],
-    ['powerbank', '🔋 סוללת גיבוי עם תמונה', '9609', '../studio/?p=subl&item=9609'],
     ['hairbrush', '💇 מברשת שיער', '8670-1', '../studio/?p=subl&item=8670-1'],
-    ['snow', '❄️ מלבן שלג עם תמונה', '9802-4', '../studio/?p=subl&item=9802-4'],
     ['magnet', '🧲 מגנט עץ 10×15', '8381', '../studio/?p=subl&item=8381'],
     ['leather', '📷 תמונה מעור עם מעמד', '8609', '../studio/?p=subl&item=8609'],
     ['scale', '⚖️ משקל זכוכית', '9608', '../studio/?p=subl&item=9608'],
     ['apron', '👩‍🍳 סינר', '7602', '../studio/?p=subl&item=7602'],
+    ['runner', '🕯️ ראנר שולחן פשתן', '7410-17', '../studio/?p=subl&item=7410-17'],
+    ['doormat', '🚪 שטיחון כניסה', '7413', '../studio/?p=subl&item=7413'],
+    ['giftbag', '🎁 אריזת מתנה מבד', '7362', '../studio/?p=subl&item=7362-5']
+  ];
+  // G-41 (02/11/2026): בקרוסלה רק מה שהגיע מזיקית (לפי "הזמנה מזיקית – רשימה סופית", עמודת "הגיע"). מה שעוד לא הגיע ("לבדוק") — כאן, להחזיר כשמגיע:
+  window.ZIKIT_NOT_YET = [
+    ['mug-color', '☕ ספל עם פנים וידית בצבע', '8506', '../studio/?p=mug'],
+    ['mug-metal', '✨ ספל מטאלי כחול/אדום', '8507', '../studio/?p=mug'],
+    ['acrylic', '🖼️ מעמד אקריל לשתי תמונות', '8193', '../studio/?p=subl&item=8193'],
+    ['glass-mirror', '🪞 זכוכית עם מסגרת מראה', '6443', '../studio/?p=subl&item=6443'],
+    ['instagram', '🖼️ לוח עץ ל-9 תמונות', '6115-1', '../studio/?p=subl&item=6115-1'],
+    ['keyhanger', '🔑 מפתח ברכה FAMILY', '8310-4', '../studio/?p=subl&item=8310-4'],
+    ['doorsign', '🚪 שלט עץ לדלת', '8201', '../studio/?p=subl&item=8201'],
+    ['woodnum', '🔢 ספרה מעץ עם רגל', '6111', '../studio/?p=subl&item=6111'],
+    ['usb', '💾 דיסק און קי מעץ מואר', '9613', '../studio/?p=subl&item=9613'],
+    ['powerbank', '🔋 סוללת גיבוי עם תמונה', '9609', '../studio/?p=subl&item=9609'],
+    ['snow', '❄️ מלבן שלג עם תמונה', '9802-4', '../studio/?p=subl&item=9802-4'],
     ['tote', '👜 תיק קניות קנווס', '7315-9', '../studio/?p=subl&item=7315-9'],
     ['drawstring', '🎒 תיק שרוכים', '7307-4', '../studio/?p=subl&item=7307-4'],
     ['backpack', '🎒 תיק גב לגן', '7309', '../studio/?p=subl&item=7309-1'],
@@ -251,9 +257,6 @@
     ['makeup', '💄 תיק איפור פשתן', '7331-3', '../studio/?p=subl&item=7331-3'],
     ['pencil', '✏️ קלמר 3 תאים', '7326', '../studio/?p=subl&item=7326-1'],
     ['cushion', '🛋️ כרית כיסא 40×40', '7175', '../studio/?p=subl&item=7175-11'],
-    ['runner', '🕯️ ראנר שולחן פשתן', '7410-17', '../studio/?p=subl&item=7410-17'],
-    ['doormat', '🚪 שטיחון כניסה', '7413', '../studio/?p=subl&item=7413'],
-    ['giftbag', '🎁 אריזת מתנה מבד', '7362', '../studio/?p=subl&item=7362-5'],
     ['carcurtain', '🚗 וילון צד לרכב', '7611', '../studio/?p=subl&item=7611']
   ];
   // הבמה: data-items/data-names/data-links נבנים מהרשימה (אחרי חולצה/ספל/פאזל שכבר שם), כדי שלא יהיה צורך לכתוב 46 שמות ב-HTML
