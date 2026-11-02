@@ -568,6 +568,7 @@ function dcfgSave(patch){
       <div data-i18n-html="legal.buyHtml" class="legal-line" style="color:#cbd5e1">ברכישה אתם מאשרים את <a href="terms.html" target="_blank" rel="noopener">תנאי השימוש</a> ואת <a href="privacy.html" target="_blank" rel="noopener">מדיניות הפרטיות</a>. המשחקים לשימוש אישי בלבד.</div>
       <button data-i18n="lock.goToPaymentBtn" id="buy-go" type="button" hidden style="width:100%;background:#6366f1;color:#fff;font-weight:800;font-size:1.02rem;padding:.7rem 2rem;border:none;border-radius:100px;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(99,102,241,.5)">מעבר לתשלום</button>
       <div id="buy-msg" style="color:#fca5a5;font-size:.85rem;min-height:1.2em"></div>
+      <div style="margin-top:.2rem"><button data-i18n="cpn.link" type="button" class="cpn-open" style="background:none;border:none;color:#c7d2fe;cursor:pointer;font-family:inherit;font-size:.88rem;text-decoration:underline;padding:.3rem .5rem">יש לי קוד הנחה</button></div>
     </div>
 
     <div style="width:min(320px,80vw);height:1px;background:rgba(255,255,255,.18);margin-block:.3rem"></div>
@@ -616,8 +617,34 @@ function dcfgSave(patch){
       <button data-i18n="lock.goToPaymentBtn" class="btn btn-ok" id="upg-pay" style="width:100%;justify-content:center">מעבר לתשלום</button>
       <div id="upg-msg" style="font-size:.85rem;min-height:1.3em;margin-top:.5rem"></div>
     </div>
+    <div style="margin-top:.2rem"><button data-i18n="cpn.link" type="button" class="cpn-open" style="background:none;border:none;color:var(--indigo);cursor:pointer;font-family:inherit;font-size:.88rem;text-decoration:underline;padding:.3rem .5rem">יש לי קוד הנחה</button></div>
     <div style="margin-top:.6rem"><button data-i18n="lock.upgradeHaveCodeBtn" id="upg-havecode" type="button" style="background:none;border:none;color:var(--indigo);cursor:pointer;font-family:inherit;font-size:.9rem;text-decoration:underline">יש לי כבר קוד אחר</button></div>
     <div style="margin-top:.5rem"><button data-i18n="lock.upgradeClose" id="upg-close" type="button" style="background:none;border:none;color:var(--muted);cursor:pointer;font-family:inherit;font-size:.9rem;text-decoration:underline">סגירה</button></div>
+  </div>
+</div>
+
+<!-- D-101: חלון קוד הנחה (קופון) — השרת מחליט אם הקוד פעיל (RPC apply_coupon); אין כאן לוגיקת תאריכים ואין קישור תשלום בקוד -->
+<div class="modal-bg" id="coupon-modal" hidden data-esc="#cpn-close" style="z-index:10002">
+  <div class="modal-card" style="max-width:420px;width:94%;text-align:center;padding:1.2rem">
+    <h2 data-i18n="cpn.title" id="cpn-title" style="font-size:1.25rem;font-weight:800;margin:0 0 .6rem">קוד הנחה</h2>
+    <form id="cpn-form" novalidate style="text-align:right">
+      <label data-i18n="cpn.codeLabel" for="cpn-code" style="display:block;font-size:.88rem;color:var(--text);margin-bottom:.25rem">קוד הנחה</label>
+      <input id="cpn-code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" data-autofocus
+        style="width:100%;box-sizing:border-box;padding:.6rem .8rem;border-radius:var(--rs);border:1.5px solid var(--border);font-family:inherit;font-size:1rem;direction:ltr;text-align:left;margin-bottom:.6rem">
+      <label data-i18n="cpn.emailLabel" for="cpn-email" style="display:block;font-size:.88rem;color:var(--text);margin-bottom:.25rem">האימייל שאיתו תשלמו</label>
+      <input id="cpn-email" type="email" inputmode="email" autocomplete="email" placeholder="name@example.com"
+        style="width:100%;box-sizing:border-box;padding:.6rem .8rem;border-radius:var(--rs);border:1.5px solid var(--border);font-family:inherit;font-size:1rem;direction:ltr;text-align:left;margin-bottom:.7rem">
+      <button data-i18n="cpn.apply" class="btn btn-ok" id="cpn-apply" type="submit" style="width:100%;justify-content:center">להפעיל את הקוד</button>
+    </form>
+    <div id="cpn-result" hidden style="text-align:right">
+      <div id="cpn-ok" style="font-size:1.02rem;font-weight:800;color:#065f46;text-align:center;margin-bottom:.7rem"></div>
+      <div id="cpn-warn" style="font-size:.95rem;font-weight:800;line-height:1.55;color:#7c2d12;background:#ffedd5;border:2px solid #c2410c;border-radius:12px;padding:.6rem .75rem;margin-bottom:.5rem"></div>
+      <button data-i18n="cpn.copy" id="cpn-copy" type="button" class="btn" style="width:100%;justify-content:center;margin-bottom:.6rem">להעתיק את המייל</button>
+      <button class="btn btn-ok" id="cpn-pay" type="button" style="width:100%;justify-content:center"></button>
+    </div>
+    <div id="cpn-msg" role="status" aria-live="polite" style="font-size:.88rem;min-height:1.3em;margin-top:.5rem;color:#b91c1c;font-weight:600"></div>
+    <div style="margin-top:.3rem"><button data-i18n="cpn.change" id="cpn-change" type="button" hidden style="background:none;border:none;color:var(--indigo);cursor:pointer;font-family:inherit;font-size:.9rem;text-decoration:underline;padding:.3rem">שינוי קוד או מייל</button></div>
+    <div><button data-i18n="cpn.close" id="cpn-close" type="button" style="background:none;border:none;color:var(--muted);cursor:pointer;font-family:inherit;font-size:.9rem;text-decoration:underline;padding:.3rem">סגירה</button></div>
   </div>
 </div>
 
@@ -870,6 +897,26 @@ const I18N={
     'lock.freeSignupBtn':'הרשמה וכניסה ✓',
     'lock.chooseTierLabel':'בחרו רמת מנוי:',
     'lock.goToPaymentBtn':'מעבר לתשלום',
+    'cpn.link':'יש לי קוד הנחה',
+    'cpn.title':'קוד הנחה',
+    'cpn.codeLabel':'קוד הנחה',
+    'cpn.emailLabel':'האימייל שאיתו תשלמו',
+    'cpn.apply':'להפעיל את הקוד',
+    'cpn.applying':'בודקים…',
+    'cpn.ok':'המנוי הגדול (עד {tier} קלפים) ב-{amount} ₪ במקום {orig} ₪',
+    'cpn.warnPre':'חשוב: בתשלום יש להשתמש באותה כתובת מייל — ',
+    'cpn.warnPost':'. תשלום עם מייל אחר לא יקבל את ההנחה.',
+    'cpn.copy':'להעתיק את המייל',
+    'cpn.copied':'המייל הועתק',
+    'cpn.copyFail':'לא הצלחנו להעתיק — אפשר לסמן ולהעתיק ידנית',
+    'cpn.pay':'לתשלום {amount} ₪',
+    'cpn.opened':'נפתח חלון תשלום בכרטיסייה חדשה. יש לשלם עם המייל המוצג למעלה.',
+    'cpn.badEmail':'כתובת המייל לא תקינה',
+    'cpn.invalid':'הקוד לא נמצא או שהתוקף שלו עבר',
+    'cpn.net':'לא הצלחנו להתחבר, נסי שוב',
+    'cpn.needCode':'יש להקליד קוד',
+    'cpn.change':'שינוי קוד או מייל',
+    'cpn.close':'סגירה',
     'lock.paidChooseCodeBtn':'שילמתי — בחר קוד ✓',
     'lock.cancelBtn':'ביטול',
     'lock.wrongCodeTitle':'הקוד לא התקבל',
@@ -1692,6 +1739,26 @@ const I18N={
     'lock.freeSignupBtn':'Sign up and enter ✓',
     'lock.chooseTierLabel':'Choose a plan:',
     'lock.goToPaymentBtn':'Go to payment',
+    'cpn.link':'I have a discount code',
+    'cpn.title':'Discount code',
+    'cpn.codeLabel':'Discount code',
+    'cpn.emailLabel':'The email you will pay with',
+    'cpn.apply':'Apply code',
+    'cpn.applying':'Checking…',
+    'cpn.ok':'The large plan (up to {tier} cards) for ₪{amount} instead of ₪{orig}',
+    'cpn.warnPre':'Important: pay with the same email address — ',
+    'cpn.warnPost':'. A payment with a different email will not get the discount.',
+    'cpn.copy':'Copy the email',
+    'cpn.copied':'Email copied',
+    'cpn.copyFail':'Could not copy — select and copy it manually',
+    'cpn.pay':'Pay ₪{amount}',
+    'cpn.opened':'A payment window opened in a new tab. Pay with the email shown above.',
+    'cpn.badEmail':'The email address is not valid',
+    'cpn.invalid':'The code was not found or has expired',
+    'cpn.net':'We could not connect, please try again',
+    'cpn.needCode':'Please enter a code',
+    'cpn.change':'Change code or email',
+    'cpn.close':'Close',
     'lock.paidChooseCodeBtn':'I’ve paid — choose a code ✓',
     'lock.cancelBtn':'Cancel',
     'lock.wrongCodeTitle':'Code not accepted',
@@ -2663,6 +2730,69 @@ window.applyI18n=applyI18n;
     msgEl.textContent='נפתח חלון תשלום בכרטיסייה חדשה — חשוב להזין שם את אותו אימייל ('+email+'). אחרי התשלום, חזרו לכאן ולחצו שוב.';
     return true;
   };
+
+  // ── D-101: קוד הנחה (קופון). ⛔ אין כאן תאריכים ואין קישור תשלום: השרת (RPC apply_coupon) מחליט אם הקוד פעיל ומחזיר url.
+  // הטריגר בשרת מזהה את הלקוחה לפי המייל בעסקה ב-Morning — לכן המייל המנורמל מוצג באזהרה ומועתק בלחיצה.
+  // משתמשים בלקוח הקיים window.SB (נוצר בבלוק 4) — ⛔ לא ליצור client שני.
+  (function(){
+    const m=document.getElementById('coupon-modal');if(!m)return;
+    const $=id=>document.getElementById(id);
+    const form=$('cpn-form'),res=$('cpn-result'),msg=$('cpn-msg'),apply=$('cpn-apply'),chg=$('cpn-change');
+    let busy=false,opener=null,payUrl='',normEmail='';
+    const EMAIL_RE=/^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+    function say(txt,err){msg.style.color=err===false?'#065f46':'#b91c1c';msg.textContent=txt||'';}
+    function showForm(){form.hidden=false;res.hidden=true;chg.hidden=true;payUrl='';say('');}
+    function open(e){
+      opener=e&&e.currentTarget||null;
+      showForm();m.hidden=false;
+    }
+    function close(){m.hidden=true;if(opener&&opener.focus&&document.contains(opener))try{opener.focus();}catch(e){}}
+    document.querySelectorAll('.cpn-open').forEach(b=>b.addEventListener('click',open));
+    $('cpn-close').addEventListener('click',close);
+    m.addEventListener('click',e=>{if(e.target===m)close();});
+    chg.addEventListener('click',()=>{showForm();$('cpn-code').focus();});
+    form.addEventListener('submit',async ev=>{
+      ev.preventDefault();
+      if(busy)return;
+      const code=($('cpn-code').value||'').trim().toUpperCase();
+      const email=($('cpn-email').value||'').trim().toLowerCase();
+      if(!code){say(t('cpn.needCode'));$('cpn-code').focus();return;}
+      if(!EMAIL_RE.test(email)){say(t('cpn.badEmail'));$('cpn-email').focus();return;}   // לא פונים לשרת על מייל שבוודאות לא תקין
+      busy=true;apply.disabled=true;apply.setAttribute('aria-busy','true');apply.textContent=t('cpn.applying');say('');
+      try{
+        if(!window.SB)throw new Error('no-client');
+        const {data,error}=await window.SB.rpc('apply_coupon',{p_code:code,p_email:email});
+        if(error)throw error;
+        const r=data||{};
+        if(r.ok===true&&typeof r.url==='string'&&/^https:\/\//.test(r.url)){
+          payUrl=r.url;normEmail=email;
+          $('cpn-ok').textContent=t('cpn.ok',{tier:r.grant_tier,amount:r.amount,orig:r.orig});
+          const w=$('cpn-warn');w.textContent='';
+          const bdi=document.createElement('bdi');bdi.dir='ltr';bdi.textContent=email;
+          w.append(t('cpn.warnPre'),bdi,t('cpn.warnPost'));
+          $('cpn-pay').textContent=t('cpn.pay',{amount:r.amount});
+          form.hidden=true;res.hidden=false;chg.hidden=false;say('');
+          $('cpn-pay').focus();
+        }else if(r.ok===false&&r.reason==='bad_email'){say(t('cpn.badEmail'));}
+        else if(r.ok===false){say(t('cpn.invalid'));}
+        else throw new Error('bad-response');
+      }catch(e){console.warn('apply_coupon:',e);say(t('cpn.net'));}
+      finally{busy=false;apply.disabled=false;apply.removeAttribute('aria-busy');apply.textContent=t('cpn.apply');}
+    });
+    $('cpn-copy').addEventListener('click',async()=>{
+      let ok=false;
+      try{await navigator.clipboard.writeText(normEmail);ok=true;}catch(e){
+        try{const ta=document.createElement('textarea');ta.value=normEmail;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();ok=document.execCommand('copy');ta.remove();}catch(e2){}
+      }
+      say(ok?t('cpn.copied'):t('cpn.copyFail'),ok?false:true);
+    });
+    $('cpn-pay').addEventListener('click',()=>{
+      if(!payUrl)return;
+      try{localStorage.setItem('dobble_pay_email',normEmail);}catch(e){}   // כמו payForTier — מסך "שילמתי" ימלא אותו
+      window.open(payUrl,'_blank','noopener');
+      say(t('cpn.opened'),false);   // החלון והאזהרה נשארים על המסך
+    });
+  })();
 
   // ── טאב "רכישת מנוי" במסך הנעילה ──
   let lockTier=null,lockPaid=false;
