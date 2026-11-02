@@ -177,7 +177,7 @@ input[type=text],select{min-height:44px;border:1.5px solid var(--line);border-ra
 <footer class="foot">
   <div class="wrap">
     <img class="logo" src="art/wall-oil.webp" alt="" width="56" height="56">
-    <p style="margin:0">© 2026 חנות מוצרי המקדש</p>
+    <p style="margin:0">© <span data-year>2026</span> חנות מוצרי המקדש</p>
     <p style="margin:0">טלפון ווואטסאפ: <span dir="ltr">050-591-8734</span></p>
   </div>
 </footer>
@@ -272,5 +272,6 @@ function qRender(){
 qRender();
 </script>
 
+<script>document.querySelectorAll('[data-year]').forEach(function(el){el.textContent=String(new Date().getFullYear());});</script>
 </body>
 </html>
