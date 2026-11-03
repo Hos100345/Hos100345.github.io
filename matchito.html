@@ -276,6 +276,13 @@
     .g-sh.on{background:var(--indigo)}
     .g-sh:hover{transform:scale(1.15)}
     .g-check{position:absolute;top:-5px;inset-inline-start:-5px;width:18px;height:18px;margin:0;cursor:pointer;accent-color:var(--indigo)}
+    /* D-102: שורת "שם מתחת לתמונה" — display בגיליון ולא inline, כדי ש-hidden ימשיך לעבוד */
+    #lab-opts{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+    #lab-font-wrap{display:flex;align-items:center;gap:.4rem}
+    #lab-opts[hidden],#lab-font-wrap[hidden]{display:none}
+    .g-lab{display:block;max-width:100%;margin:.15rem auto 0;padding:.15rem .4rem;border-radius:8px;border:1.5px solid var(--border);background:var(--glass-strong);color:var(--text);font-family:inherit;font-size:.66rem;font-weight:700;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .g-lab.empty{border-color:#d97706;background:#fffbeb;color:#92400e}
+    .g-lab-in{width:100%;box-sizing:border-box;margin-top:.15rem;padding:.2rem .3rem;font-family:inherit;font-size:.75rem;border:2px solid var(--indigo);border-radius:8px}
     .g-name{font-size:.58rem;color:var(--muted);margin-top:.2rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:72px}
     .gallery-bulk{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem}
     .g-bulk-btn{font-size:.75rem;font-weight:700;padding:.32rem .75rem;border-radius:100px;border:1.5px solid var(--border);background:rgba(255,255,255,.6);color:var(--muted);cursor:pointer;transition:all var(--tr);font-family:inherit}
@@ -648,13 +655,13 @@ function dcfgSave(patch){
   </div>
 </div>
 
-<!-- D-100: עריכת שמות הסמלים — רשימה אחת, בלי חלון לכל תמונה -->
+<!-- D-102: עריכת שמות הסמלים — רשימה אחת, בלי חלון לכל תמונה -->
 <div class="modal-bg" id="lab-modal" hidden data-esc="#lab-close" style="z-index:10001">
   <div class="modal-card" style="max-width:520px;width:94%;padding:1.1rem">
     <h2 data-i18n="lab.editTitle" id="lab-title" style="font-size:1.2rem;font-weight:800;margin:0 0 .3rem">שמות הסמלים</h2>
     <p data-i18n="lab.editHint" style="font-size:.85rem;color:var(--muted);margin:0 0 .6rem">אפשר לכתוב עם ניקוד. Enter עובר לשם הבא. סמל בלי שם נשאר בלי פס.</p>
     <div id="lab-list" style="display:flex;flex-direction:column;gap:.4rem;max-height:60vh;overflow-y:auto;padding:.1rem"></div>
-    <div style="text-align:center;margin-top:.7rem"><button data-i18n="lab.done" id="lab-close" type="button" class="btn btn-ok">סיימתי</button></div>
+    <div style="text-align:center;margin-top:.7rem"><button data-i18n="lab.done" id="lab-close" type="button" class="btn btn-ok" style="min-width:8rem;justify-content:center">סיום</button></div>
   </div>
 </div>
 
@@ -910,12 +917,14 @@ const I18N={
     'lab.label':'שם מתחת לתמונה:',
     'lab.on':'להציג שם מתחת לכל סמל',
     'lab.font':'גופן',
+    'lab.fontLink':'🔤 להחליף פונט',
+    'lab.cardName':'שם הסמל שנבחר',
     'lab.edit':'✏️ עריכת השמות',
     'lab.editTitle':'שמות הסמלים',
     'lab.editHint':'אפשר לכתוב עם ניקוד. Enter עובר לשם הבא. סמל בלי שם נשאר בלי פס.',
-    'lab.done':'סיימתי',
+    'lab.done':'סיום',
     'lab.nqGood':'ניקוד מדויק',
-    'lab.missing':'חסר שם',
+    'lab.missing':'✏️ חסר שם',
     'lab.rowPh':'שם הסמל',
     'lab.warn':'השם ארוך או הסמלים קטנים — קצרו את השם או הגדילו את הסמלים: {names}',
     'cpn.link':'יש לי קוד הנחה',
@@ -1763,12 +1772,14 @@ const I18N={
     'lab.label':'Name under the image:',
     'lab.on':'Show a name under every symbol',
     'lab.font':'Font',
+    'lab.fontLink':'🔤 Change font',
+    'lab.cardName':'Name of the selected symbol',
     'lab.edit':'✏️ Edit names',
     'lab.editTitle':'Symbol names',
     'lab.editHint':'You can type with vowel marks. Enter moves to the next name. A symbol without a name stays without a strip.',
     'lab.done':'Done',
     'lab.nqGood':'good vowel marks',
-    'lab.missing':'name missing',
+    'lab.missing':'✏️ name missing',
     'lab.rowPh':'Symbol name',
     'lab.warn':'The name is long or the symbols are small — shorten the name or enlarge the symbols: {names}',
     'cpn.link':'I have a discount code',
@@ -3213,12 +3224,13 @@ window.applyI18n=applyI18n;
         <button data-i18n="upload.symbolShapeCard" class="sbt admin-shape" id="symshp-card" data-s="shape" hidden>🕎 בצורת הקלף</button>
       </div>
     </div>
-    <!-- D-100: שם מתחת לכל תמונה ("לומדים לקרוא") — כבוי כברירת מחדל -->
+    <!-- D-102: שם מתחת לכל תמונה ("לומדים לקרוא") — כבוי כברירת מחדל -->
     <div class="shape-row" id="lab-row" style="flex-wrap:wrap">
       <span data-i18n="lab.label" class="shape-lbl">שם מתחת לתמונה:</span>
       <label style="display:flex;align-items:center;gap:.4rem;font-size:.9rem;font-weight:700"><input type="checkbox" id="lab-on"><span data-i18n="lab.on">להציג שם מתחת לכל סמל</span></label>
-      <span id="lab-opts" hidden style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
-        <label for="lab-font" data-i18n="lab.font" style="font-size:.85rem;font-weight:700">גופן</label><select id="lab-font"></select>
+      <span id="lab-opts" hidden>
+        <button type="button" id="lab-font-toggle" aria-expanded="false" aria-controls="lab-font-wrap" data-i18n="lab.fontLink" style="background:none;border:none;color:var(--indigo);cursor:pointer;font-family:inherit;font-size:.85rem;text-decoration:underline;padding:.3rem .2rem">🔤 להחליף פונט</button>
+        <span id="lab-font-wrap" hidden><label for="lab-font" data-i18n="lab.font" style="font-size:.85rem;font-weight:700">גופן</label><select id="lab-font"></select></span>
         <button type="button" class="btn btn-ghost" id="lab-edit" data-i18n="lab.edit" style="font-size:.85rem;padding:.35rem .8rem">✏️ עריכת השמות</button>
       </span>
       <div id="lab-warn" role="status" aria-live="polite" hidden style="flex-basis:100%;font-size:.85rem;font-weight:700;color:#92400e;background:#fef3c7;border:1.5px solid #d97706;border-radius:10px;padding:.4rem .6rem"></div>
@@ -3821,9 +3833,10 @@ window.applyI18n=applyI18n;
       </div>
       <div data-i18n="edit.cardEditOverlapWarning" id="ce-warn" style="display:none;font-size:.8rem;font-weight:800;color:#B91C1C;text-align:center">⚠️ יש חפיפה בין סמלים בקלף</div>
       <div id="ce-ctl" style="display:none;width:100%">
+        <div id="ce-lab-wrap" hidden style="margin-bottom:.5rem"><label data-i18n="lab.cardName" for="ce-lab" style="display:block;font-size:.85rem;font-weight:700;margin-bottom:.25rem">שם הסמל שנבחר</label><input id="ce-lab" type="text" autocomplete="off" enterkeyhint="done" style="width:100%;box-sizing:border-box;padding:.5rem .7rem;border-radius:10px;border:2px solid var(--border);font-family:inherit;font-size:1rem"></div>
         <div class="sl-row" data-sl-lock="ce-sl">
-          <div class="sl-lbl"><span data-i18n="edit.cardEditSizeLabel">גודל הסמל שנבחר</span><strong id="ce-lbl">100%</strong></div>
-          <input type="range" id="ce-sl" min="30" max="220" step="5" value="100">
+          <div class="sl-lbl"><span id="lbl-t-ce-sl" data-i18n="edit.cardEditSizeLabel">גודל הסמל שנבחר</span><strong id="ce-lbl">100%</strong></div>
+          <input type="range" aria-labelledby="lbl-t-ce-sl" id="ce-sl" min="30" max="220" step="5" value="100">
         </div>
       </div>
       <div style="display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;width:100%">
@@ -4381,7 +4394,7 @@ function buildLayouts(deck,seed,sMin,sMax){
     const sh=[...syms];
     for(let i=sh.length-1;i>0;i--){const j=Math.floor(sr(base*100+i)*(i+1));[sh[i],sh[j]]=[sh[j],sh[i]];}
     const upright=S.symShape==='shape'&&!!CARD_SHAPES[S.shape];   // D-95C: סמל בצורת חנוכייה/סביבון נשאר כמעט זקוף (±15°)
-    const lab=!!(S.labels&&S.labels.on);   // D-100: עם שמות מתחת לסמלים — סיבוב אקראי עד ±20° בלבד, שהשם יישאר קריא
+    const lab=!!(S.labels&&S.labels.on);   // D-102: עם שמות מתחת לסמלים — סיבוב אקראי עד ±20° בלבד, שהשם יישאר קריא
     const tr=sh.map((_,si)=>({sc:sMin+sr(base*200+si*7)*range,ro:upright?(sr(base*300+si*13+7)*2-1)*Math.PI/12:lab?(sr(base*300+si*13+7)*2-1)*Math.PI/9:sr(base*300+si*13+7)*Math.PI*2}));
     return{syms:sh,tr,ci};   // ci = אינדקס הקלף — נדרש לשליפת התאמות ידניות (S.cardEdits)
   });
@@ -6020,7 +6033,7 @@ const S={
   symPad:2,   // D-60b: בגודל האוטומטי הסמלים מגיעים עד rSym — 0 היה מצמיד אותם לקו החיתוך. legacy נטען עם הערך השמור
   bg:{color:'#FFFEF5',op:100},
   idSeq:0,
-  labels:{on:false,font:'Varela Round',ready:{}},   // D-100: שם מתחת לכל סמל (כבוי כברירת מחדל). ready = זמני, לא נשמר
+  labels:{on:false,font:'Fredoka',ready:{}},   // D-102: שם מתחת לכל סמל (כבוי כברירת מחדל). ready = זמני, לא נשמר
   back:backDefaults(),backCanvas:null,   // backCanvas לעולם לא נשמר — נגזר תמיד מ-back דרך markBackDirty()
 };
 
@@ -6876,14 +6889,14 @@ function sharpenCanvas(src,{amt,rad}){
   x.putImageData(img,0,0);
   return cv;
 }
-// ══ D-100: שם מתחת לסמל ("לומדים לקרוא") ══
+// ══ D-102: שם מתחת לסמל ("לומדים לקרוא") ══
 // הסמל והשם הם יחידה אחת: קנבס ריבועי שקוף — התמונה מוקטנת ל-75% וצמודה למעלה, ומתחתיה פס בהיר עם השם.
 // לקנבס יש שקיפות, ולכן הפריסה, הגבול מול הקלף ומניעת החפיפה (D-87, D-93) רואים את הצללית המלאה (תמונה+פס) כמו כל סמל חתוך.
 // ⛔ בלי S.labels.on (או בלי שם לסמל) הפונקציה לא נקראת — הציור זהה בייט-לבייט למה שהיה.
 const LABEL_SZ=320,LABEL_IMG=.75,LABEL_MIN_MM=3;
-function labelFontStack(f){return `"${f||'Varela Round'}", "Varela Round", Arimo, Arial, "Arial Hebrew", sans-serif`;}
+function labelFontStack(f){return `"${f||'Fredoka'}", Arimo, Arial, "Arial Hebrew", sans-serif`;}
 function labelSymCanvas(a,base){
-  const L=S.labels,font=L.font||'Varela Round',ready=L.ready&&L.ready[font]?1:0,sq=S.symShape==='square';
+  const L=S.labels,font=L.font||'Fredoka',ready=L.ready&&L.ready[font]?1:0,sq=S.symShape==='square';
   const key=a.label+'|'+font+'|'+ready+'|'+(sq?'s':'c');
   const c0=a._lab;
   if(c0&&c0.src===base&&c0.key===key)return c0.cv;
@@ -6931,7 +6944,7 @@ function symImg(a){
     else{base=sharpenCanvas(a.imgEl,shStrength(a));a._sh={src:a.imgEl,cv:base};}
   }
   const out=S.symShape==='shape'?shapedSymCanvas(a,base):base;   // D-95C
-  return (S.labels&&S.labels.on&&a.label)?labelSymCanvas(a,out):out;   // D-100
+  return (S.labels&&S.labels.on&&a.label)?labelSymCanvas(a,out):out;   // D-102
 }
 // D-95C: "סמל בתוך סמל" — בקלף בצורה מיוחדת כל תמונה אטומה נחתכת לצורת הקלף, מוקטנת (drawCover בתוך נתיב הצורה). התוצאה קנבס עם שקיפות,
 // ולכן הפריסה, הגבול מול הקלף ומניעת החפיפה (D-87, D-93) עובדים עליו כמו על כל סמל חתוך. סמל שכבר שקוף — לא נחתך שוב.
@@ -7008,9 +7021,9 @@ document.getElementById('btn-sh-selected').addEventListener('click',()=>{
   toast(t('sh.bulkDone',{n:sel.length}),'ok');
 });
 
-// ══ D-100: שם מתחת לכל סמל — ממשק ══
-// פונטים: ✓ = ניקוד מוצג נכון (נבדק בעין על "סָבְתָא כֶּלֶב"). ברירת מחדל: Varela Round — עגול וברור.
-const LAB_FONTS=[['Varela Round',0],['Heebo',1],['Assistant',0],['Rubik',0],['Alef',1],['Noto Sans Hebrew',1],['Frank Ruhl Libre',1],['David Libre',1],['Noto Serif Hebrew',1]];
+// ══ D-102: שם מתחת לכל סמל — ממשק ══
+// פונטים: ✓ = ניקוד מוצג נכון (נבדק בעין על "סָבְתָא כֶּלֶב שָׁלוֹם"). ברירת מחדל: Fredoka — בולט, עגול וברור, עם ניקוד תקין (גם החולם).
+const LAB_FONTS=[['Fredoka',1],['M PLUS Rounded 1c',1],['Varela Round',0],['Heebo',1],['Assistant',0],['Rubik',0],['Alef',1],['Noto Sans Hebrew',1],['Frank Ruhl Libre',1],['David Libre',1],['Noto Serif Hebrew',1]];
 // שם ברירת מחדל משם הקובץ: בלי סיומת; בלי מספרים/סימנים בקצוות ("סבתא רחל (2).jpg" ← "סבתא רחל"); בלי אות עברית — ריק (לא "IMG_2034").
 function labDerive(name){
   let n=String(name||'').replace(/\.[A-Za-z0-9]{2,5}$/,'').replace(/\(.*?\)|\[.*?\]/g,' ').replace(/[_\-.]+/g,' ');
@@ -7059,10 +7072,17 @@ function labSync(fromSettings){
   if(!S.labels.on)document.getElementById('lab-warn').hidden=true;
   else if(fromSettings){labEnsure();labLoadFont().then(()=>labRefresh());}
 }
+document.getElementById('lab-font-toggle').addEventListener('click',()=>{
+  const w=document.getElementById('lab-font-wrap'),btn=document.getElementById('lab-font-toggle');
+  w.hidden=!w.hidden;btn.setAttribute('aria-expanded',String(!w.hidden));
+  if(!w.hidden)document.getElementById('lab-font').focus();
+});
 document.getElementById('lab-on').addEventListener('change',async e=>{
   S.labels.on=e.target.checked;
   if(S.labels.on)labEnsure();
   labSync();
+  renderGallery();   // שבבי השם בגלריה
+  if(S.labels.on)labOpenList();   // הדלקה = לחיצה אחת: הרשימה נפתחת לבד והמיקוד על השדה הריק הראשון (סינכרוני — כדי שהמקלדת תיפתח בטלפון)
   if(S.labels.on)await labLoadFont();
   await labRefresh();
   schedSettingsSave();schedIdbSave();
@@ -7077,25 +7097,37 @@ function labList(){
   items.sort((x,y)=>(y.empty?1:0)-(x.empty?1:0));   // ריקים קודם — את מה שחסר רואים מיד
   items.forEach(({a,empty},i)=>{
     const row=document.createElement('div');row.style.cssText='display:flex;align-items:center;gap:.5rem';
-    const th=document.createElement('canvas');th.width=th.height=40;th.style.cssText='width:40px;height:40px;border-radius:50%;flex:none';
-    try{drawCover(th.getContext('2d'),a.imgEl,0,0,40);}catch(e){}
+    const th=document.createElement('canvas');th.width=th.height=44;th.style.cssText='width:44px;height:44px;border-radius:50%;flex:none';
+    try{drawCover(th.getContext('2d'),a.imgEl,0,0,44);}catch(e){}
     th.setAttribute('aria-hidden','true');
     const inp=document.createElement('input');inp.type='text';inp.value=a.label||'';inp.id='lab-in-'+a.id;
-    inp.placeholder=t('lab.rowPh');inp.setAttribute('aria-label',(t('lab.rowPh')+' '+(i+1)+(empty?' — '+t('lab.missing'):'')));
-    inp.style.cssText='flex:1;min-width:0;padding:.45rem .6rem;border-radius:10px;font-family:inherit;font-size:1rem;border:2px solid '+(empty?'#d97706':'var(--border)');
+    inp.enterKeyHint=i===items.length-1?'done':'next';inp.autocomplete='off';
+    const mark=()=>{const e=!inp.value.trim();inp.placeholder=t('lab.missing');inp.style.borderColor=e?'#d97706':'var(--border)';inp.style.background=e?'#fffbeb':'';};
+    inp.setAttribute('aria-label',t('lab.rowPh')+' '+(i+1));
+    inp.style.cssText='flex:1;min-width:0;padding:.55rem .7rem;border-radius:10px;font-family:inherit;font-size:1rem;border:2px solid var(--border)';
+    mark();
     inp.addEventListener('input',()=>{
       a.label=inp.value.replace(/\s+/g,' ').trim();
-      inp.style.borderColor=a.label?'var(--border)':'#d97706';
+      mark();
       clearTimeout(_labT);_labT=setTimeout(()=>{labRefresh();schedIdbSave();},450);
     });
-    inp.addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();const n=row.nextElementSibling;if(n)n.querySelector('input').focus();else document.getElementById('lab-close').focus();}});
+    inp.addEventListener('keydown',ev=>{if(ev.key==='Enter'){ev.preventDefault();const n=row.nextElementSibling;if(n)n.querySelector('input').focus();else document.getElementById('lab-close').click();}});
     row.append(th,inp);box.appendChild(row);
   });
 }
-document.getElementById('lab-edit').addEventListener('click',()=>{
-  labEnsure();labList();document.getElementById('lab-modal').hidden=false;
-  const f=document.querySelector('#lab-list input');if(f)f.focus();
+document.getElementById('ce-lab').addEventListener('input',e=>{
+  const lay=S.layouts[CE.idx],as=lay&&labSymbolAssets()[lay.syms[CE.slot]];if(!as)return;
+  as.label=e.target.value.replace(/\s+/g,' ').trim();
+  clearTimeout(_labT);_labT=setTimeout(async()=>{await labRefresh();ceRender();schedIdbSave();},450);
 });
+document.getElementById('ce-lab').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.target.blur();}});
+function labOpenList(){
+  labEnsure();labList();document.getElementById('lab-modal').hidden=false;
+  const f=document.querySelector('#lab-list input');
+  const focus=()=>{const e=document.querySelector('#lab-list input:placeholder-shown')||document.querySelector('#lab-list input');if(e)e.focus();};
+  focus();setTimeout(focus,80);   // אחרי שמנגנון המודלים סיים להזיז מיקוד
+}
+document.getElementById('lab-edit').addEventListener('click',labOpenList);
 document.getElementById('lab-close').addEventListener('click',()=>{
   document.getElementById('lab-modal').hidden=true;
   clearTimeout(_labT);labRefresh();schedIdbSave();schedSettingsSave();
@@ -7436,6 +7468,22 @@ function makeThumb(imgEl){
   return c;
 }
 
+// D-102: שבב שם בגלריה — לחיצה הופכת אותו לשדה אחד (Enter/יציאה = שמירה). שם ריק בולט ולא חוסם.
+function labChip(a){
+  const chip=document.createElement('button');chip.type='button';
+  const paint=()=>{const v=(a.label||'').trim();chip.className='g-lab'+(v?'':' empty');chip.textContent=v||t('lab.missing');chip.title=t('lab.cardName');};
+  paint();
+  chip.addEventListener('click',()=>{
+    const inp=document.createElement('input');inp.type='text';inp.className='g-lab-in';inp.value=a.label||'';inp.enterKeyHint='done';inp.autocomplete='off';
+    inp.setAttribute('aria-label',t('lab.rowPh'));
+    let done=false;
+    const fin=()=>{if(done)return;done=true;a.label=inp.value.replace(/\s+/g,' ').trim();if(inp.parentNode)inp.replaceWith(chip);paint();clearTimeout(_labT);_labT=setTimeout(()=>{labRefresh();schedIdbSave();},300);};
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();fin();}else if(e.key==='Escape'){e.stopPropagation();done=true;inp.replaceWith(chip);}});
+    inp.addEventListener('blur',fin);
+    chip.replaceWith(inp);inp.focus();inp.select();
+  });
+  return chip;
+}
 function buildGalleryItem(a){
   const item=document.createElement('div');
   const isOn=a.selected!==false;
@@ -7482,7 +7530,11 @@ function buildGalleryItem(a){
     item.appendChild(edit);
   }
   const nm=document.createElement('div');nm.className='g-name';nm.textContent=a.name;
-  item.appendChild(nm);
+  if(S.labels.on&&isSymbolAsset(a)&&!a.isCropSource){   // D-102: לחיצה על התמונה או על השם — עריכת שם בשדה אחד, במקום
+    nm.hidden=true;item.appendChild(nm);
+    const chip=labChip(a);item.appendChild(chip);
+    thumbCv.style.cursor='pointer';thumbCv.addEventListener('click',()=>chip.click());
+  }else item.appendChild(nm);
   if(a.isCropSource){
     const lbl=document.createElement('div');lbl.className='g-source-lbl';lbl.textContent=t('upload.gallerySourceLabel');
     item.appendChild(lbl);
@@ -8234,7 +8286,7 @@ async function generate(){
   setSymSizeLabels();                   // מספר הסמלים לקלף משפיע על המ"מ
   S.seed=Math.floor(Math.random()*90000)+10000;
   S.cardEdits={};
-  if(S.labels.on)labEnsure();   // D-100: סמלים חדשים מקבלים שם ברירת מחדל משם הקובץ
+  if(S.labels.on)labEnsure();   // D-102: סמלים חדשים מקבלים שם ברירת מחדל משם הקובץ
   S.layouts=buildLayouts(S.deck,S.seed,S.sMin,S.sMax);
   setp(15,'מכין תמונות…');
   S.imgEls=S.assets.filter(a=>isSymbolAsset(a)&&a.selected!==false).slice(0,S.order.total).map(symImg);   // symImg — 🔍 חידוד (D-61)
@@ -8390,7 +8442,10 @@ function ceRender(){
     const s=Math.round(((ceEdits()[CE.slot]||{}).s||1)*100);
     document.getElementById('ce-sl').value=String(s);
     document.getElementById('ce-lbl').textContent=s+'%';
-  }else ctl.style.display='none';
+    {const w=document.getElementById('ce-lab-wrap'),lay=S.layouts[CE.idx],as=labSymbolAssets()[lay.syms[CE.slot]];   // D-102: שם הסמל שנבחר, בשדה אחד
+     w.hidden=!(S.labels.on&&as);
+     const inp=document.getElementById('ce-lab');if(as&&document.activeElement!==inp)inp.value=as.label||'';inp.dataset.slot=String(CE.slot);}
+  }else{ctl.style.display='none';document.getElementById('ce-lab-wrap').hidden=true;}
 }
 
 // מונע חריגה מגבול הקלף: מושכים את הסמל פנימה במקום לאפשר לו לצאת (דרישה 4 באפיון)
@@ -11827,7 +11882,7 @@ function assetsToRows(){
     id:a.id,type:a.type,name:a.name,
     srcAssetId:a.srcAssetId||null,isCropSource:a.isCropSource||false,selected:a.selected!==false,
     af:a.af||null,                           // זיהוי פנים אוטומטי: {x,y,s} — מיקום החיתוך במקור, בשברים (לשחזור רקע)
-    ...(a.label!==undefined?{label:a.label}:{})   // D-100: שם מתחת לסמל — נכנס רק כשהוגדר, כך שעיצוב בלי שמות נשאר זהה בייט-לבייט
+    ...(a.label!==undefined?{label:a.label}:{})   // D-102: שם מתחת לסמל — נכנס רק כשהוגדר, כך שעיצוב בלי שמות נשאר זהה בייט-לבייט
   }));
 }
 
@@ -11861,7 +11916,7 @@ function assetsToRowsWithImages(){
                                              // והתמונה שהמשתמש חיפש בתיקייה שלה פשוט נעלמת משם
     srcAssetId:a.srcAssetId||null,isCropSource:a.isCropSource||false,selected:a.selected!==false,
     af:a.af||null,                           // זיהוי פנים אוטומטי: {x,y,s} — מיקום החיתוך במקור, בשברים (לשחזור רקע)
-    ...(a.label!==undefined?{label:a.label}:{})   // D-100: שם מתחת לסמל — נכנס רק כשהוגדר, כך שעיצוב בלי שמות נשאר זהה בייט-לבייט
+    ...(a.label!==undefined?{label:a.label}:{})   // D-102: שם מתחת לסמל — נכנס רק כשהוגדר, כך שעיצוב בלי שמות נשאר זהה בייט-לבייט
   }));
 }
 
@@ -12048,7 +12103,7 @@ function buildSettingsObject(){
     frame:Object.assign({},S.frame),bg:Object.assign({},S.bg),symPad:S.symPad,overlap:S.overlap,
     tightPack:S.tightPack,tightFill:S.tightFill,shapeArt:Object.assign({},S.shapeArt),
     ...(S.sizeMode==='auto'?{sizeMode:'auto',sizeK:S.sizeK}:{}),   // D-60 — legacy שלא נגעו בו נשמר בלי השדה
-    ...(S.labels&&S.labels.on?{labels:{on:true,font:S.labels.font}}:{}),   // D-100 — כבוי = בלי השדה (זהה בייט-לבייט)
+    ...(S.labels&&S.labels.on?{labels:{on:true,font:S.labels.font}}:{}),   // D-102 — כבוי = בלי השדה (זהה בייט-לבייט)
     back:JSON.parse(JSON.stringify(S.back)),
     cardEdits:JSON.parse(JSON.stringify(S.cardEdits||{})),
     orderTotal:S.order?S.order.total:null};
@@ -12276,7 +12331,7 @@ function applySettingsObject(st){
   if(st.frame)S.frame=Object.assign({},st.frame);
   if(typeof syncShapeArtUi==='function')syncShapeArtUi();
   if(st.bg)S.bg=Object.assign({},st.bg);
-  S.labels=Object.assign({on:false,font:'Varela Round'},st.labels||{},{ready:(S.labels&&S.labels.ready)||{}});   // D-100: תמיד מאופס — לא יורשים מעיצוב קודם
+  S.labels=Object.assign({on:false,font:'Fredoka'},st.labels||{},{ready:(S.labels&&S.labels.ready)||{}});   // D-102: תמיד מאופס — לא יורשים מעיצוב קודם
   S.back=mergeBack(st.back);
   // אם ה-asset של הלוגו לא שרד (למשל עיצוב ישן/גיבוי חלקי) — מנתקים את ההפניה בלי לשבור את הטעינה
   if(S.back.logoAssetId&&!S.assets.some(a=>a.id===S.back.logoAssetId&&a.type==='backlogo')){
@@ -12286,7 +12341,7 @@ function applySettingsObject(st){
   document.getElementById('chk-back-enabled').checked=!!S.back.enabled;
   markBackDirty();
   applySettingsToUI(S);
-  if(typeof labSync==='function')labSync(true);   // D-100
+  if(typeof labSync==='function')labSync(true);   // D-102
 }
 
 // טעינת מבנה עיצוב {name,rows,settings} לתוך מצב האפליקציה
