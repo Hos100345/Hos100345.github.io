@@ -45,7 +45,7 @@ NAMES = [
     'rrect', 'drawCard', 'drawWatermark', 'imgNatW', 'imgNatH', 'drawCover',
     'symbolShapeMeta', 'prepareSymbolMeta',
     # מיפוי תמונות → סמלים (כמו generate)
-    'isSymbolAsset', 'isFaceSym', 'SH_LIM', 'shStrength', 'sharpenCanvas', 'symImg',
+    'isSymbolAsset', 'isFaceSym', 'SH_LIM', 'shStrength', 'sharpenCanvas', 'LABEL_SZ', 'labelFontStack', 'labelSymCanvas', 'symImg',
 ]
 
 START_RE = {
