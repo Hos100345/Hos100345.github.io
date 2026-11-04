@@ -26,7 +26,7 @@ window.MIKDASH_LIB=[
   {cat:'כלים, בגדים וכלי שיר',items:[
     ['/mikdash/art/qt/kelim-menorah.webp','המנורה'],['/mikdash/art/qt/kelim-shulchan.webp','שולחן לחם הפנים'],['/mikdash/art/qt/kelim-ketoret.webp','מזבח הקטורת'],['/mikdash/art/qt/kelim-aron.webp','ארון הברית'],
     ['/mikdash/art/qt/kohen-tzitz.webp','הציץ'],['/mikdash/art/qt/kohen-choshen2.webp','החושן'],['/mikdash/art/qt/kohen-efod2.webp','האפוד'],['/mikdash/art/qt/kohen-meil.webp','המעיל'],
-    ['/mikdash/art/qt/s3-kg.webp','הכהן הגדול'],['/mikdash/art/qt/s3-kohen.webp','כהן'],['/mikdash/art/qt/s3-levi.webp','לוי משורר'],
+    ['/mikdash/art/qt/s3-kg.webp','הכהן הגדול'],['/mikdash/art/qt/s3-kohen.webp','כהן'],['/mikdash/art/qt/s3-levi.webp','לוי משורר'],['/mikdash/art/qt/s3-shoer.webp','לוי שוער'],
     ['/mikdash/art/qt/levi-kinor.webp','כינור'],['/mikdash/art/qt/levi-nevel.webp','נבל'],['/mikdash/art/qt/levi-chatzotzrot.webp','חצוצרות'],['/mikdash/art/qt/levi-metziltayim.webp','מצלתיים'],
     ['/mikdash/art/qt/minim-lulav.webp','לולב'],['/mikdash/art/qt/minim-etrog.webp','אתרוג'],['/mikdash/art/qt/minim-hadas.webp','הדס'],['/mikdash/art/qt/minim-arava.webp','ערבה']]},
   {cat:'המקדש וירושלים',items:[
