@@ -21,10 +21,10 @@ window.MIKDASH_LIB=[
     ['/mikdash/art/qt/s3-chita.webp','חיטה'],['/mikdash/art/qt/s3-seora.webp','שעורה'],['/mikdash/art/qt/s3-zayit.webp','זית'],['/mikdash/art/qt/peirot-tamar.webp','תמר'],
     ['/mikdash/art/qt/peirot-gefen.webp','גפן'],['/mikdash/art/qt/peirot-teena.webp','תאנה'],['/mikdash/art/qt/peirot-rimon.webp','רימון'],['/mikdash/art/qt/mevi-bikurim.webp','סל הביכורים'],
     ['/mikdash/art/qt/s3-par.webp','פר'],['/mikdash/art/qt/mevi-keves.webp','כבש'],['/mikdash/art/qt/s3-sair.webp','שעיר עיזים'],['/mikdash/art/qt/mevi-yonim.webp','תורים ובני יונה'],
-    ['/mikdash/art/qt/s3-lechem.webp','לחם הפנים'],['/mikdash/art/qt/s3-shtei.webp','שתי הלחם'],['/mikdash/art/qt/s3-solet.webp','סולת בלולה בשמן'],['/mikdash/art/qt/s3-yayin.webp','יין לנסכים'],
+    ['/mikdash/art/qt/s3-lechem2.webp','לחם הפנים'],['/mikdash/art/qt/s3-shtei.webp','שתי הלחם'],['/mikdash/art/qt/s3-solet.webp','סולת בלולה בשמן'],['/mikdash/art/qt/s3-yayin.webp','יין לנסכים'],
     ['/mikdash/art/qt/s3-shor.webp','השור בקרני זהב'],['/mikdash/art/qt/s3-chalil.webp','החליל'],['/mikdash/art/qt/s3-olim.webp','משפחה עם סלים'],['/mikdash/art/qt/s3-yeled.webp','ילד עם ביכורים'],['/mikdash/art/qt/mevi-shemen.webp','שמן זית']]},
   {cat:'כלים, בגדים וכלי שיר',items:[
-    ['/mikdash/art/qt/kelim-menorah.webp','המנורה'],['/mikdash/art/qt/kelim-shulchan.webp','שולחן לחם הפנים'],['/mikdash/art/qt/kelim-ketoret.webp','מזבח הקטורת'],['/mikdash/art/qt/kelim-aron.webp','ארון הברית'],
+    ['/mikdash/art/qt/kelim-menorah.webp','המנורה'],['/mikdash/art/qt/kelim-shulchan2.webp','שולחן לחם הפנים'],['/mikdash/art/qt/kelim-ketoret.webp','מזבח הקטורת'],['/mikdash/art/qt/kelim-aron.webp','ארון הברית'],
     ['/mikdash/art/qt/kohen-tzitz.webp','הציץ'],['/mikdash/art/qt/kohen-choshen2.webp','החושן'],['/mikdash/art/qt/kohen-efod2.webp','האפוד'],['/mikdash/art/qt/kohen-meil.webp','המעיל'],
     ['/mikdash/art/qt/s3-kg.webp','הכהן הגדול'],['/mikdash/art/qt/s3-kohen.webp','כהן'],['/mikdash/art/qt/s3-levi.webp','לוי משורר'],['/mikdash/art/qt/s3-shoer.webp','לוי שומר על השערים'],
     ['/mikdash/art/qt/levi-kinor.webp','כינור'],['/mikdash/art/qt/levi-nevel.webp','נבל'],['/mikdash/art/qt/levi-chatzotzrot.webp','חצוצרות'],['/mikdash/art/qt/levi-metziltayim.webp','מצלתיים'],
