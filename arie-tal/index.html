@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="אריה טל – הנדימן באזור הדרום: שדרות, אופקים, אשקלון, נתיבות, קריית גת ובאר שבע. תיקונים, הרכבות והתקנות בביקור אחד. 052-810-9570">
+<meta property="og:title" content="אריה טל · הנדימן באזור הדרום">
+<meta property="og:description" content="כל מה שצריך לתקן בבית – אריה מגיע ומסדר. עבודה עברית, מחיר נוח וברור.">
+<meta property="og:locale" content="he_IL">
+<link rel="icon" href="../favicon.ico">
+<style>[hidden]{display:none!important}body{margin:0}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}</style>
+<title>אריה טל הנדימן</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Secular+One&family=Heebo:wght@400;500;700&display=swap">
+<style>
+/* Layout: full-width bands, one centered 1040px column; hero split text/illustration, stacks on phone. */
+:root{
+  --bg:#f6f4ee;          /* warm plaster white */
+  --bg2:#ebe7dc;         /* raw-plaster band */
+  --ink:#1c2433;         /* deep workwear navy */
+  --ink2:#4b5566;
+  --accent:#e2731b;      /* safety orange */
+  --accent-ink:#ffffff;
+  --card:#ffffff;
+  --line:#d9d3c4;
+  --wa:#1f9d55;
+  --navy:#1c2433;       /* dark bands – stays dark in both themes */
+  --navy2:#28313f;
+  --display:"Secular One","Heebo",system-ui,sans-serif;
+  --body:"Heebo",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#161a22;--bg2:#1e2430;--ink:#eef0f3;--ink2:#aeb6c4;--accent:#f0862e;--accent-ink:#161a22;--card:#232a37;--line:#343c4b;--wa:#2ec46e;--navy:#0f131a;--navy2:#1b2230;color-scheme:dark}
+}
+:root[data-theme="dark"]{
+  --bg:#161a22;--bg2:#1e2430;--ink:#eef0f3;--ink2:#aeb6c4;--accent:#f0862e;--accent-ink:#161a22;--card:#232a37;--line:#343c4b;--wa:#2ec46e;--navy:#0f131a;--navy2:#1b2230;color-scheme:dark}
+
+*{box-sizing:border-box}
+html{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6;direction:rtl;text-align:right}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--navy)}
+h1,h2,h3{font-family:var(--display);font-weight:400;line-height:1.15;margin:0;text-wrap:balance}
+p{margin:0}
+a{color:inherit}
+.wrap{max-width:1040px;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.band{padding-block:64px}
+.band.alt{background:var(--bg2)}
+.eyebrow{font-size:.85rem;letter-spacing:.08em;color:var(--accent);font-weight:700;text-transform:uppercase}
+.h2{font-size:clamp(1.8rem,4vw,2.5rem);margin-top:6px}
+.lead{color:var(--ink2);max-width:60ch;margin-top:12px}
+
+/* top bar */
+.top{background:var(--navy);color:#fff;position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:12px}
+.brand{font-family:var(--display);font-size:1.35rem;display:flex;align-items:center;gap:10px}
+.brand svg{width:28px;height:28px}
+.top a.call{color:#fff;text-decoration:none;font-weight:700;font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:8px}
+.top a.call svg{width:18px;height:18px}
+
+/* hero */
+.hero{background:var(--navy);color:#fff;padding-block:56px 72px;position:relative;overflow:hidden}
+.hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center}
+.hero h1{font-size:clamp(2.4rem,6vw,4rem)}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero .sub{font-size:1.15rem;color:#cfd5e0;margin-top:16px;max-width:48ch}
+.area{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.area span{border:1px solid #3a4454;border-radius:999px;padding:4px 12px;font-size:.9rem;color:#dfe4ec}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:14px 22px;border-radius:8px;font-weight:700;text-decoration:none;font-size:1.05rem;border:2px solid transparent}
+.btn svg{width:20px;height:20px;flex:none}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.wa{background:var(--wa);color:#fff}
+.btn.ghost{border-color:var(--line);color:var(--ink)}
+.btn:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.hero .num{margin-top:14px;color:#aeb6c4;font-size:.95rem}
+.hero .num b{color:#fff;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.illus{max-width:100%;width:100%;height:auto;display:block}
+
+/* services */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px;margin-top:32px}
+.svc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px 20px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.svc .ic{width:44px;height:44px;border-radius:10px;background:var(--bg2);display:grid;place-items:center;color:var(--accent)}
+.svc .ic svg{width:26px;height:26px}
+.svc h3{font-size:1.25rem}
+.svc p{color:var(--ink2);font-size:.97rem}
+
+/* why */
+.why{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:28px;margin-top:32px}
+.why div{min-width:0;border-top:3px solid var(--accent);padding-top:14px}
+.why h3{font-size:1.2rem}
+.why p{color:var(--ink2);margin-top:6px}
+
+/* steps (a real sequence) */
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;margin-top:32px;counter-reset:s}
+.step{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px;min-width:0;position:relative}
+.step::before{counter-increment:s;content:counter(s);font-family:var(--display);font-size:2.2rem;color:var(--accent);line-height:1;display:block;margin-bottom:8px}
+.step h3{font-size:1.2rem}
+.step p{color:var(--ink2);margin-top:6px}
+
+/* area map-ish list */
+.cities{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px 24px;margin-top:24px;font-weight:500}
+.cities li{list-style:none;padding:8px 0;border-bottom:1px solid var(--line)}
+.cities{padding:0;margin-bottom:0}
+
+/* contact */
+.contact{background:var(--navy);color:#fff}
+.contact .wrap{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center}
+.contact .h2{color:#fff}
+.contact p{color:#cfd5e0}
+.phonebox{background:var(--navy2);border-radius:14px;padding:26px;display:flex;flex-direction:column;gap:14px}
+.phonebox .big{font-family:var(--display);font-size:clamp(1.8rem,5vw,2.6rem);font-variant-numeric:tabular-nums;letter-spacing:.03em;direction:ltr;text-align:right}
+.copy{align-self:flex-start;background:transparent;border:1px solid #4a5567;color:#fff;border-radius:8px;padding:8px 14px;font:inherit;font-size:.95rem;cursor:pointer}
+.copy:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+footer{padding-block:20px;font-size:.9rem;color:var(--ink2);text-align:center}
+
+@media (max-width:760px){
+  .hero .wrap,.contact .wrap{grid-template-columns:1fr}
+  .illus{max-width:360px;margin-inline:auto}
+  .band{padding-block:48px}
+  .top a.call span{display:none}
+}
+@media (prefers-reduced-motion:no-preference){
+  .hero h1,.hero .sub,.cta{animation:up .6s ease both}
+  .hero .sub{animation-delay:.1s}.cta{animation-delay:.2s}
+  @keyframes up{from{opacity:.001;transform:translateY(10px)}to{opacity:1;transform:none}}
+}
+</style>
+
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.2-.6-.6-2.2z"/></svg>
+      אריה טל · הנדימן
+    </div>
+    <a class="call" href="tel:+972528109570">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.6a2 2 0 0 1-.5 2.1L8.1 9.7a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.8.3 1.7.5 2.6.7a2 2 0 0 1 1.7 2z"/></svg>
+      <span>052-810-9570</span>
+    </a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <p class="eyebrow">הנדימן לבית ולעסק · אזור הדרום</p>
+      <h1>כל מה שצריך לתקן בבית – <em>אריה מגיע ומסדר.</em></h1>
+      <p class="sub">תיקונים, התקנות, הרכבות וכל העבודות הקטנות שמחכות כבר חודשים. איש מקצוע אחד לכל הבית, מחיר ברור מראש, ועבודה נקייה.</p>
+      <div class="area">
+        <span>שדרות</span><span>אופקים</span><span>אשקלון</span><span>נתיבות</span><span>קריית גת</span><span>והסביבה</span>
+      </div>
+      <div class="cta">
+        <a class="btn wa" href="https://wa.me/972528109570?text=%D7%A9%D7%9C%D7%95%D7%9D%20%D7%90%D7%A8%D7%99%D7%94%2C%20%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%94%D7%A6%D7%A2%D7%AA%20%D7%9E%D7%97%D7%99%D7%A8%20%D7%9C%D7%A2%D7%91%D7%95%D7%93%D7%94" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 12 12 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z"/></svg>
+          שלחו הודעה בוואטסאפ
+        </a>
+        <a class="btn primary" href="tel:+972528109570">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.6a2 2 0 0 1-.5 2.1L8.1 9.7a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.8.3 1.7.5 2.6.7a2 2 0 0 1 1.7 2z"/></svg>
+          התקשרו עכשיו
+        </a>
+      </div>
+      <p class="num">טלפון ישיר: <b>052-810-9570</b></p>
+    </div>
+    <svg class="illus" viewBox="0 0 400 320" role="img" aria-label="איור של ארגז כלים עם פטיש, מברג ומפלס">
+      <defs>
+        <linearGradient id="g1" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#2b3445"/><stop offset="1" stop-color="#1c2433"/></linearGradient>
+      </defs>
+      <circle cx="200" cy="170" r="140" fill="url(#g1)" stroke="#3a4454"/>
+      <!-- toolbox -->
+      <rect x="95" y="170" width="210" height="110" rx="10" fill="#e2731b"/>
+      <rect x="95" y="170" width="210" height="26" rx="6" fill="#c45f12"/>
+      <rect x="170" y="150" width="60" height="26" rx="8" fill="none" stroke="#f3c9a4" stroke-width="8"/>
+      <rect x="110" y="215" width="180" height="8" rx="4" fill="#f3b27a" opacity=".6"/>
+      <circle cx="120" cy="250" r="7" fill="#1c2433"/><circle cx="280" cy="250" r="7" fill="#1c2433"/>
+      <!-- hammer -->
+      <g transform="rotate(-30 150 120)">
+        <rect x="143" y="60" width="14" height="110" rx="4" fill="#d8b98c"/>
+        <rect x="118" y="46" width="64" height="26" rx="6" fill="#aeb6c4"/>
+        <rect x="118" y="46" width="22" height="26" rx="6" fill="#8f99a8"/>
+      </g>
+      <!-- screwdriver -->
+      <g transform="rotate(25 260 110)">
+        <rect x="255" y="40" width="10" height="70" rx="2" fill="#aeb6c4"/>
+        <rect x="248" y="105" width="24" height="60" rx="8" fill="#2f78c4"/>
+        <rect x="252" y="112" width="16" height="44" rx="6" fill="#4a90dc"/>
+      </g>
+      <!-- level -->
+      <rect x="40" y="290" width="320" height="16" rx="4" fill="#f6c65a"/>
+      <rect x="180" y="286" width="40" height="24" rx="6" fill="#dfe9c8" stroke="#8aa36a" stroke-width="2"/>
+      <circle cx="200" cy="298" r="5" fill="#8fd16a"/>
+      <!-- sparkle dots -->
+      <circle cx="80" cy="90" r="4" fill="#f0862e"/><circle cx="330" cy="70" r="3" fill="#f0862e"/><circle cx="345" cy="200" r="3" fill="#f0862e"/>
+    </svg>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <p class="eyebrow">מה אני עושה</p>
+    <h2 class="h2">איש מקצוע אחד לכל העבודות בבית</h2>
+    <p class="lead">במקום לחפש בעל מקצוע אחר לכל דבר קטן – שולחים רשימה אחת, ואריה סוגר הכול בביקור אחד.</p>
+    <div class="grid">
+      <div class="svc"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.2-.6-.6-2.2z"/></svg></div><h3>תיקונים כלליים</h3><p>ידיות, צירים, ארונות שנשברו, רעשים ודברים שלא נסגרים טוב.</p></div>
+      <div class="svc"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></div><h3>עבודות חשמל קלות</h3><p>החלפת שקעים ומפסקים, גופי תאורה, מאווררי תקרה, פעמון דלת.</p></div>
+      <div class="svc"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c-3 4-6 7.5-6 11a6 6 0 0 0 12 0c0-3.5-3-7-6-11z"/></svg></div><h3>אינסטלציה קלה</h3><p>ברזים שמטפטפים, ראשי מקלחת, ניאגרה, סיפונים, פתיחת סתימות קלות.</p></div>
+      <div class="svc"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 12h18M12 3v18"/></svg></div><h3>הרכבת רהיטים</h3><p>איקאה וכל רהיט בקופסה – ארונות, מיטות, שולחנות, מדפים. מהר ובלי ברגים מיותרים.</p></div>
+      <div class="svc"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div><h3>תלייה והתקנה</h3><p>טלוויזיות על הקיר, מדפים, תמונות, מראות, וילונות, מתלים ומוטות.</p></div>
+      <div class="svc"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 3H5a2 2 0 0 0-2 2v4h18V5a2 2 0 0 0-2-2zM3 9v2a2 2 0 0 0 2 2h6v3a2 2 0 0 0 2 2 2 2 0 0 0 2-2v-1"/></svg></div><h3>צבע וגבס</h3><p>תיקוני צבע, סתימת חורים וסדקים, תיקוני גבס, רענון קיר אחד או חדר שלם.</p></div>
+      <div class="svc"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="15" cy="12" r="1.5"/></svg></div><h3>דלתות, חלונות ותריסים</h3><p>כיוון דלתות, החלפת מנעולים וידיות, תריסים תקועים, רשתות נגד יתושים.</p></div>
+      <div class="svc"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c4-4 7-7.5 7-11a7 7 0 0 0-14 0c0 3.5 3 7 7 11z"/><circle cx="12" cy="11" r="2.5"/></svg></div><h3>חצר ומרפסת</h3><p>הרכבת פרגולה קלה, תיקון גדר, שער, מחסן גינה, והתקנות בחוץ.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band alt">
+  <div class="wrap">
+    <p class="eyebrow">למה אריה</p>
+    <h2 class="h2">מגיע בזמן, אומר מחיר, ועושה את זה טוב</h2>
+    <div class="why">
+      <div><h3>עבודה עברית</h3><p>אריה עובד בעצמו, מההתחלה ועד הסוף. בלי קבלני משנה ובלי הפתעות.</p></div>
+      <div><h3>מחיר נוח וברור</h3><p>מסתכלים על העבודה, סוגרים מחיר הוגן – ואז עובדים. בלי הפתעות בסוף.</p></div>
+      <div><h3>ביקור אחד, הרבה עבודות</h3><p>רשימה של עשרה דברים קטנים? מצוין. זה בדיוק מה שהנדימן עושה.</p></div>
+      <div><h3>עבודה נקייה</h3><p>מכסים, עובדים, ומשאירים את הבית כמו שהיה – רק מתוקן.</p></div>
+      <div><h3>זמינות באזור</h3><p>גר ועובד בדרום. נגיע מהר גם לקריאה דחופה.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <p class="eyebrow">איך זה עובד</p>
+    <h2 class="h2">שלושה שלבים ובסוף הבית מסודר</h2>
+    <div class="steps">
+      <div class="step"><h3>שולחים הודעה</h3><p>כותבים בוואטסאפ מה צריך לתקן. תמונה קצרה עוזרת מאוד להבין את העבודה.</p></div>
+      <div class="step"><h3>מקבלים מחיר ומועד</h3><p>אריה חוזר עם הערכת מחיר ושעה שנוחה לכם, בדרך כלל באותו יום.</p></div>
+      <div class="step"><h3>אריה מגיע ומסדר</h3><p>מגיע עם הכלים והחומרים, מבצע הכול בביקור אחד ומנקה אחריו.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band alt">
+  <div class="wrap">
+    <p class="eyebrow">אזור שירות</p>
+    <h2 class="h2">כל הדרום – מאשקלון ועד באר שבע</h2>
+    <p class="lead">לא רואים את היישוב שלכם? שלחו הודעה, רוב הסיכויים שאריה מגיע גם אליכם.</p>
+    <ul class="cities">
+      <li>שדרות</li><li>אופקים</li><li>אשקלון</li><li>נתיבות</li>
+      <li>קריית גת</li><li>באר שבע</li><li>קריית מלאכי</li><li>שדות נגב</li>
+      <li>שער הנגב</li><li>אשכול</li><li>מרחבים</li><li>בני שמעון</li>
+    </ul>
+  </div>
+</section>
+
+<section class="band contact" id="contact">
+  <div class="wrap">
+    <div>
+      <p class="eyebrow">דברו עם אריה</p>
+      <h2 class="h2">יש משהו שמחכה לתיקון? בואו נסגור את זה.</h2>
+      <p style="margin-top:12px">הודעה קצרה בוואטסאפ עם מה שצריך, ותקבלו תשובה מהר. אפשר גם פשוט להתקשר.</p>
+      <div class="cta">
+        <a class="btn wa" href="https://wa.me/972528109570?text=%D7%A9%D7%9C%D7%95%D7%9D%20%D7%90%D7%A8%D7%99%D7%94%2C%20%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%94%D7%A6%D7%A2%D7%AA%20%D7%9E%D7%97%D7%99%D7%A8%20%D7%9C%D7%A2%D7%91%D7%95%D7%93%D7%94" target="_blank" rel="noopener">וואטסאפ</a>
+        <a class="btn primary" href="tel:+972528109570">התקשרו</a>
+      </div>
+    </div>
+    <div class="phonebox">
+      <p style="color:#aeb6c4;font-size:.95rem">אריה טל · הנדימן</p>
+      <div class="big" id="phone">052-810-9570</div>
+      <button class="copy" id="copyBtn" type="button">העתקת המספר</button>
+      <p style="color:#aeb6c4;font-size:.9rem">ימים א׳–ה׳ 7:00–19:00 · שישי עד 13:00</p>
+    </div>
+  </div>
+</section>
+
+<footer>© אריה טל – הנדימן לאזור הדרום</footer>
+
+<script>
+(function(){
+  var b=document.getElementById('copyBtn'),t=document.getElementById('phone');
+  if(!b)return;
+  b.addEventListener('click',function(){
+    var s=t.textContent.trim();
+    function done(){b.textContent='הועתק ✓';setTimeout(function(){b.textContent='העתקת המספר'},1800)}
+    function fallback(){try{var r=document.createRange();r.selectNodeContents(t);var sel=window.getSelection();sel.removeAllRanges();sel.addRange(r)}catch(e){}}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(s).then(done,fallback)}else fallback();
+  });
+})();
+</script>
+</body>
+</html>
