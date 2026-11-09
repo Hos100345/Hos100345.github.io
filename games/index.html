@@ -284,7 +284,9 @@
     @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
     @keyframes pop{0%{transform:scale(.7);opacity:0}100%{transform:scale(1);opacity:1}}
     @media(prefers-reduced-motion:reduce){.card.shake,.card.pop,.mc.done,.fin .panel{animation:none}.mc .in{transition:none}}
-  </style>
+      .share-btn{display:inline-flex;align-items:center;gap:.35rem;margin-top:.6rem;min-height:40px;padding:.35rem 1rem;border-radius:999px;
+      background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.5);color:inherit;font:inherit;font-weight:800;font-size:.92rem;cursor:pointer}
+</style>
 </head>
 <body>
 
@@ -299,6 +301,7 @@
 <section class="intro" aria-label="משחק עיצובישי">
   <h1>משחק עיצובישי</h1>
   <p>משחקים ומתנות עם התמונות שלכם</p>
+  <button type="button" class="share-btn" data-share data-share-text="משחק עיצובישי — משחקים ומתנות עם התמונות שלכם 🎲">📤 שלחו לחבר</button>
 </section>
 <div class="scr">
 
@@ -1226,5 +1229,6 @@ const GAMES=[
   fromHash(true);
 })();
 </script>
+<script src="../js/share-link.js?v=1"></script>
 </body>
 </html>

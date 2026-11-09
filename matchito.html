@@ -507,6 +507,7 @@
 <script src="js/back-assets.js?v=1"></script>
 <script src="js/cmyk-jpeg.js?v=1"></script>
 <script src="js/a11y-modal.js?v=1"></script>
+<script src="js/share-link.js?v=1"></script>
 <script src="js/matchito-tour.js?v=1" defer></script>   <!-- D-103: 🎬 סרטון הסבר מקיף -->
 <script>
 // קונפיג בזמן ריצה: ברירות מחדל ← קובץ הקונפיג ← עריכות מקומיות מפאנל הניהול
@@ -1345,6 +1346,8 @@ const I18N={
     'help.free.title':'מה חינם ועל מה משלמים?',
     'help.free.bodyHtml':'<b>חינם:</b> הכול. העלאת תמונות, חיתוך, בניית משחק <b>בכל גודל</b> — 7 עד 91 קלפים — עיצוב הגב, עריכת כל קלף, ותצוגה מקדימה מלאה.\n\n<b>בתשלום:</b> ההורדה להדפסה בלבד (PDF / ZIP). המחיר נקבע לפי גודל המשחק שמורידים, חד-פעמי, ופותח חודש של הורדות. המשחק שבניתם נשמר אצלכם גם בלי לשלם.',
     'header.langToggle':'EN',
+    'header.share':'📤 שלחו לחבר',
+    'header.shareText':'משחק מאצ׳טו אישי מהתמונות שלכם 🎯',
     'lang.switchConfirm':'החלפת שפה טוענת את הדף מחדש — תמונות שהועלו ולא נשמרו יאבדו. להמשיך?',
     'lock.usdNote':'המחירים בשקלים (₪). הכרטיס מחויב בשקלים והבנק ממיר אוטומטית — כ-<strong>${usd}</strong> לתוכנית של {ils} ₪. ייתכן שתחול עמלת המרה קטנה.',
     'back.textColorTitle':'צבע',
@@ -2200,6 +2203,8 @@ const I18N={
     'help.free.title':'What is free and what is paid?',
     'help.free.bodyHtml':'<b>Free:</b> everything. Uploading images, cropping, building a game <b>of any size</b> — 7 to 91 cards — designing the back, editing every card, and a full preview.\n\n<b>Paid:</b> only the download for printing (PDF / ZIP). The price depends on the size of the game you download, one-time, and unlocks a month of downloads. The game you built stays yours even without paying.',
     'header.langToggle':'עב',
+    'header.share':'📤 Share',
+    'header.shareText':'A personal One Match card game from your own photos 🎯',
     'lang.switchConfirm':'Switching language reloads the page — uploaded images that were not saved will be lost. Continue?',
     'lock.usdNote':'Prices are in Israeli Shekels (₪). Your card is charged in ILS and your bank converts automatically — about <strong>${usd}</strong> for the {ils} ₪ plan. A small foreign-transaction fee may apply.',
     'back.textColorTitle':'Color',
@@ -3063,6 +3068,7 @@ window.applyI18n=applyI18n;
   <a data-i18n="header.homeLink" href="index.html" class="hdr-back">→ האתר</a>
   <!-- מתג שפה: התווית תמיד מראה לאן הלחיצה תוביל (בעברית "EN", באנגלית "עב") -->
   <button type="button" id="btn-lang" class="hdr-back" data-i18n="header.langToggle" style="border:none;background:none;font:inherit;cursor:pointer">EN</button>
+  <button type="button" id="btn-share" class="hdr-back" data-share data-share-text-key="header.shareText" data-i18n="header.share" style="border:none;background:none;font:inherit;cursor:pointer">📤 שלחו לחבר</button>
   <div class="hdr-title">
     <h1 data-i18n="header.title">🎯 מחולל משחק מאצ׳טו</h1>
     <div class="sub">One Match · Finite Projective Plane</div>
