@@ -3856,9 +3856,10 @@ function shGo(n){if(n===3)shOrderInit();SH.step=n;shView=n===2?'2d':'3d';shPage=
 function shBarBtn(){const st=SH.step||1;if(st<3)shGo(st+1);else shConfirm();} // הכפתור הקבוע למטה = הצעד הבא
 // ── התלת־ממד של החולצה ──
 // ── S-121: מתנות מזיקית בתלת־ממד (js/subl-3d.js) — המוצר עצמו, בגודל אמיתי, עם העיצוב של הלקוח. מוצר בלי מודל = הדף השטוח כמו קודם
-const SUBL3D_IDS=new Set(["7318-4", "7331-3", "7331-2", "7318-7", "7324-1", "7324-2", "7324-4", "7324-5", "7622", "7410-13", "7410-16", "7410-14", "7410-11", "7410-23", "7410-22", "7410-24", "7410-25", "7410-32", "7410-33", "8501", "8517", "8672", "8671", "8678", "7611", "6442"]);let sbPage=false;const SB3={st:null,key:'',t:0,p:null};
+const SUBL3D_IDS=new Set(["7318-4", "7331-3", "7331-2", "7318-7", "7324-1", "7324-2", "7324-4", "7324-5", "7622", "7410-13", "7410-16", "7410-14", "7410-11", "7410-23", "7410-22", "7410-24", "7410-25", "7410-32", "7410-33", "8501", "8517", "8672", "8671", "8678", "7611", "6442","8724-3","8514","8503-1","8510","8714-1","8714-3","8715-1","8706-1","8703-2","8703-1","8582","8589","8360-4","6452","6458","6424","8022-3","6101-H20","8707-3","9172-1","8670-1","8381","8609","9608","7603","7410-17","7413"]); /* S-131: המתנות מזיקית עם תמונה נקייה — js/print-fit.js */let sbPage=false;const SB3={st:null,key:'',t:0,p:null};
 const sb3dOk=()=>SUBL3D_IDS.has(SB.item);
-function loadSubl3d(){return SB3.p||(SB3.p=loadThree().then(()=>window.SUBL3D?0:new Promise((ok,no)=>{const s=document.createElement('script');s.src='../js/subl-3d.js?v=1';s.onload=ok;s.onerror=()=>{SB3.p=null;no(new Error('subl3d'));};document.head.append(s);})));}
+function loadScriptOnce(src){return new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=()=>no(new Error(src));document.head.append(s);});}
+function loadSubl3d(){return SB3.p||(SB3.p=loadThree().then(()=>window.PRINTFIT?0:loadScriptOnce('../js/print-fit.js?v=1')).then(()=>window.SUBL3D?0:new Promise((ok,no)=>{const s=document.createElement('script');s.src='../js/subl-3d.js?v=2';s.onload=ok;s.onerror=()=>{SB3.p=null;no(new Error('subl3d'));};document.head.append(s);})));}
 function sbArt(w,h,side){if(side==null)return null;const it=subItem();if(side==='back'&&!(it.two&&SB.both))return null;const pp=Math.min(12,1400/Math.max(it.w,it.h)),c=document.createElement('canvas');c.width=Math.round(it.w*pp);c.height=Math.round(it.h*pp);const x=c.getContext('2d');x.scale(pp,pp);subArt(x,it);return c;}
 function sb3dShow(){const box=document.getElementById('sb3d');loadSubl3d().then(()=>{if(!SB3.st)SB3.st=SUBL3D.stage(box,{keep:true});sb3dUpdate();}).catch(()=>{box.textContent='לא הצלחתי לטעון את התלת־ממד — בדקו חיבור ונסו שוב';});}
 function sb3dUpdate(){if(!SB3.st)return;const sig=[SB.item,SB.bg,SB.text,SB.font,SB.color,SB.tpos,SB.tsize,SB.outline,SB.zoom,SB.ox,SB.oy,SB.both,(SB.img||[]).map(phId).join(',')].join('|');if(sig===SB3.key)return;
@@ -4056,6 +4057,9 @@ const SUB_CATS=[['mugs','🍵 ספלים ובקבוקים'],['photo','🖼️ ת
 const SUB_ITEMS=[
   // ── S-99 (29/10/2026): המוצרים שהוזמנו מזיקית ("עדכון הזמנה לזיקית") — פתוח ללקוחות, הצעת מחיר. שטח ההדפסה במ"מ מהקטלוג.
   {id:'8724-3',cat:'mugs',name:'ספל אמייל ענק 700 מ"ל עם מכסה',w:200,h:70,shape:'rect',two:false,mug:true,time:360,temp:200,cost:'24',size:'גובה 10 · קוטר 9.5',color:'לבן',note:'עטיפת פרו 360 שנ\''},
+  {id:'8514',cat:'mugs',name:'ספל נאון (כתום/צהוב/ירוק)',w:200,h:95,shape:'rect',two:false,mug:true,time:180,temp:200,cost:'6',size:'300 מ"ל',color:'לבן + נאון',note:'צבע הפנים והידית לפי המלאי'},
+  {id:'8503-1',cat:'mugs',name:'ספל פלא שחור — ההדפסה מתגלה בחום',w:190,h:80,shape:'rect',two:false,mug:true,time:180,temp:200,cost:'8',size:'300 מ"ל',color:'שחור',note:'ההדפסה נראית רק עם משקה חם'},
+  {id:'8510',cat:'mugs',name:'ספל לבן עם כפית',w:200,h:95,shape:'rect',two:false,mug:true,time:180,temp:200,cost:'7',size:'300 מ"ל',color:'לבן',note:'צבע הכפית לפי המלאי'},
   {id:'8714-1',cat:'mugs',name:'האג מאג טרמי (לבן)',w:200,h:90,shape:'rect',two:false,mug:true,time:180,temp:200,cost:'19',size:'גובה 12 · קוטר 8',color:'לבן',note:''},
   {id:'8714-2',cat:'mugs',name:'האג מאג טרמי — פנינה נוצצים',w:200,h:90,shape:'rect',two:false,mug:true,time:180,temp:200,cost:'24',size:'גובה 12 · קוטר 8',color:'פנינה',note:''},
   {id:'8714-3',cat:'mugs',name:'גביע יין נירוסטה לבן',w:200,h:70,shape:'rect',two:false,mug:true,time:180,temp:200,cost:'39',size:'קוטר 8.5',color:'לבן',note:''},
@@ -4063,15 +4067,16 @@ const SUB_ITEMS=[
   {id:'8706-1',cat:'mugs',name:'ספל נירוסטה טרמי לבן 400 מ"ל',w:200,h:90,shape:'rect',two:false,mug:true,time:180,temp:200,cost:'19',size:'גובה 16.4 · קוטר 8.2',color:'לבן',note:''},
   {id:'8703-2',cat:'mugs',name:'בקבוק אלומיניום 600 מ"ל (פקק + שאקל)',w:200,h:110,shape:'rect',two:false,mug:true,time:180,temp:200,cost:'9',size:'קוטר 7.2',color:'לבן',note:''},
   {id:'8703-1',cat:'mugs',name:'בקבוק אלומיניום 600 מ"ל עם קשית',w:200,h:110,shape:'rect',two:false,mug:true,time:180,temp:200,cost:'13',size:'קוטר 7.2',color:'לבן',note:''},
-  {id:'8582',cat:'photo',name:'אבן בזלת 22×12',w:200,h:100,shape:'rounded',two:false,time:300,temp:200,cost:'12',size:'22×12',color:'שחור',note:'שטח ההדפסה לפי האבן'},
+  {id:'8589',cat:'photo',name:'אבן בזלת לב 20×20',w:200,h:200,shape:'heart',two:false,time:300,temp:200,cost:'19',size:'20×20',color:'שחור',note:'שטח ההדפסה לפי האבן'},
+  {id:'8582',cat:'photo',name:'אבן בזלת 22×12',w:100,h:200,shape:'rounded',two:false,time:300,temp:200,cost:'12',size:'22×12',color:'שחור',note:'שטח ההדפסה לפי האבן'},
   {id:'8585',cat:'photo',name:'אבן בזלת 30×20',w:280,h:180,shape:'rounded',two:false,time:300,temp:200,cost:'19',size:'30×20',color:'שחור',note:''},
   {id:'8360-1',cat:'photo',name:'תמונה מעץ עם רגל ניקל (קטן)',w:150,h:100,shape:'rect',two:false,time:60,temp:200,cost:'10',size:'15×10',color:'לבן',note:''},
-  {id:'8360-4',cat:'photo',name:'תמונה מעץ עם רגל ניקל (גדול)',w:200,h:150,shape:'rect',two:false,time:60,temp:200,cost:'16',size:'20×15',color:'לבן',note:''},
+  {id:'8360-4',cat:'photo',name:'תמונה מעץ עם רגל ניקל (גדול)',w:150,h:200,shape:'rect',two:false,time:60,temp:200,cost:'16',size:'20×15',color:'לבן',note:''},
   {id:'8193',cat:'photo',name:'מעמד אקריל לשתי תמונות 10×15',w:150,h:80,shape:'rect',two:true,time:60,temp:200,cost:'18',size:'10×15 ×2',color:'לבן',note:'שתי תמונות — אותו עיצוב או שניים'},
   {id:'6452',cat:'photo',name:'זכוכית דקה 23×18 עם מעמד יהלום',w:230,h:180,shape:'rect',two:false,time:240,temp:180,cost:'12',size:'23×18',color:'לבן',note:'⚠ הדפסה ללא מראה',noMirror:true},
   {id:'6451',cat:'photo',name:'זכוכית דקה 30×16 עם מעמד יהלום',w:300,h:160,shape:'rect',two:false,time:240,temp:180,cost:'24',size:'30×16',color:'לבן',note:'⚠ הדפסה ללא מראה',noMirror:true},
   {id:'6443',cat:'photo',name:'זכוכית 23×18 עם מסגרת מראה',w:230,h:180,shape:'rect',two:false,time:240,temp:180,cost:'12',size:'23×18',color:'לבן',note:'⚠ הדפסה ללא מראה',noMirror:true},
-  {id:'6458',cat:'home',name:'לוח חיתוך זכוכית 20×28',w:200,h:280,shape:'rounded',two:false,time:240,temp:180,cost:'16',size:'20×28',color:'שקוף על לבן',note:'⚠ הדפסה ללא מראה',noMirror:true},
+  {id:'6458',cat:'home',name:'לוח חיתוך זכוכית 20×28',w:280,h:200,shape:'rounded',two:false,time:240,temp:180,cost:'16',size:'20×28',color:'שקוף על לבן',note:'⚠ הדפסה ללא מראה',noMirror:true},
   {id:'6422',cat:'photo',name:'מגן קריסטל 10×15',w:100,h:150,shape:'rect',two:false,time:240,temp:180,cost:'22',size:'10×15',color:'שקוף',note:'⚠ הדפסה ללא מראה',noMirror:true},
   {id:'6424',cat:'photo',name:'מגן קריסטל 15×20',w:150,h:200,shape:'rect',two:false,time:240,temp:180,cost:'45',size:'15×20',color:'שקוף',note:'⚠ הדפסה ללא מראה',noMirror:true},
   {id:'8022-3',cat:'wood',name:'שעון עמוד LOVE',w:200,h:200,shape:'circle',two:false,time:60,temp:200,cost:'49',size:'60×29 · לוח 20×20',color:'עץ',note:''},
