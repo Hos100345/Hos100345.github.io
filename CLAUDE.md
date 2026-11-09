@@ -211,6 +211,7 @@
 | `js/cmyk-jpeg.js` | `dobble.html` (חיתוך צורני, D-77), `studio/index.html` (חיתוך צורני לכל המשחקים, S-61 — נטען בלחיצה כ-`../js/cmyk-jpeg.js?v=1`) | חיתוך צורני בשני הדפים: קובץ הגרפיקה CMYK נפתח בצבעים נכונים (לא בתשליל) · ⛔ שינוי = להעלות `?v=` **בשני הדפים** |
 | `js/a11y-modal.js` | `dobble.html`, `pencil-stickers.html` (נטען כ-`js/a11y-modal.js?v=N`) | כל חלון (`.modal-bg`/`.modal-overlay`): מיקוד נכנס, Tab לכוד, `inert` לרקע, Esc לפי `data-esc`, חזרת מיקוד, role/aria; skip-link. חלון חדש = להוסיף `data-esc` · ⛔ שינוי = להעלות `?v=` **בשני הדפים** |
 | `js/share-link.js` | `index.html`, `card-games.html`, `matchito-info.html`, `matchito.html`, `games/`, `play/`, `studio/` (W-67; נטען כ-`js/share-link.js?v=N` או `../js/…`) | בכל דף: כפתור `[data-share]` אחד, בטלפון `navigator.share` עם הכתובת בלי פרמטרים (חוץ מ-`data-share-keep`), במחשב חלון וואטסאפ **אחד** · ⛔ שינוי = להעלות `?v=` **בכל שבעת הדפים** |
+| `js/print-fit.js` | `games/index.html` (דף המוצר, `js/zikit-products.js`), `studio/index.html` (`subl-3d.js` סוג `photo`; נטען עצל מ-`loadSubl3d`) | שטחי ההדפסה של 27 המתנות מזיקית וההלבשה בקוד. בשני הדפים: ההדפסה יושבת בשטח הנכון, לא גולשת מחוץ לגוף המוצר, ספלים/בקבוקים עוטפים חזית בלבד · ⛔ שינוי = להעלות `?v=` **בשני הדפים** (`games/index.html` + `loadSubl3d` בסטודיו) |
 
 הרשימה תגדל — הסטודיו צפוי לטעון את `back-assets.js` ו-`hebrew-fonts.js`. **מי שמוסיף דף לרשימה מעדכן את הטבלה הזו באותו PR.**
 

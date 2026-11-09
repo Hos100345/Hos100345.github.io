@@ -39,6 +39,34 @@
     '8671': { kind: 'opener', name: 'פותחן מחזיק מפתחות', w: 30, h: 30, style: 'key' },
     '8678': { kind: 'opener', name: 'פותחן מלבני', w: 55, h: 55, style: 'rect' },
     '7611': { kind: 'shade', name: 'וילון צד לרכב — זוג', w: 430, h: 365 },
+    // S-131: המתנות מזיקית עם תמונה נקייה (js/print-fit.js) — ההדפסה מולבשת בקוד על שטח ההדפסה האמיתי, כרטיס עם עובי במקום מודל
+    '8724-3': { kind: 'photo', key: 'enamel', w: 200, h: 70 },
+    '8514': { kind: 'photo', key: 'mug-neon', w: 200, h: 95 },
+    '8503-1': { kind: 'photo', key: 'mug-magic', w: 190, h: 80 },
+    '8510': { kind: 'photo', key: 'mug-spoon', w: 200, h: 95 },
+    '8714-1': { kind: 'photo', key: 'hugmug', w: 200, h: 90 },
+    '8714-3': { kind: 'photo', key: 'wine', w: 200, h: 70 },
+    '8715-1': { kind: 'photo', key: 'megamug', w: 220, h: 210 },
+    '8706-1': { kind: 'photo', key: 'thermo', w: 200, h: 90 },
+    '8703-2': { kind: 'photo', key: 'bottle', w: 200, h: 110 },
+    '8703-1': { kind: 'photo', key: 'bottle-straw', w: 200, h: 110 },
+    '8582': { kind: 'photo', key: 'basalt', w: 100, h: 200 },
+    '8589': { kind: 'photo', key: 'basalt-heart', w: 200, h: 200 },
+    '8360-4': { kind: 'photo', key: 'woodphoto', w: 150, h: 200 },
+    '6452': { kind: 'photo', key: 'glass', w: 230, h: 180 },
+    '6458': { kind: 'photo', key: 'board', w: 280, h: 200 },
+    '6424': { kind: 'photo', key: 'crystal', w: 150, h: 200 },
+    '8022-3': { kind: 'photo', key: 'clock', w: 200, h: 200 },
+    '6101-H20': { kind: 'photo', key: 'woodshape', w: 198, h: 198 },
+    '8707-3': { kind: 'photo', key: 'tin', w: 150, h: 150 },
+    '9172-1': { kind: 'photo', key: 'bracelet', w: 180, h: 35 },
+    '8670-1': { kind: 'photo', key: 'hairbrush', w: 65, h: 105 },
+    '8381': { kind: 'photo', key: 'magnet', w: 100, h: 150 },
+    '8609': { kind: 'photo', key: 'leather', w: 200, h: 250 },
+    '9608': { kind: 'photo', key: 'scale', w: 260, h: 260 },
+    '7603': { kind: 'photo', key: 'apron', w: 570, h: 777 },
+    '7410-17': { kind: 'photo', key: 'runner', w: 1200, h: 320 },
+    '7413': { kind: 'photo', key: 'doormat', w: 560, h: 250 },
     '6442': { kind: 'glass', name: 'זכוכית עם מעמד יהלום', w: 180, h: 130 },
   };
   const LEATHER = { white: ['לבן', '#F7F5F0'], pink: ['ורוד עתיק', '#D9A3A8'], turq: ['טורקיז', '#4FB3B0'], tan: ['חום בהיר', '#C49A6C'] };
@@ -411,7 +439,22 @@
     return { group: G, spin: 'sway', tilt: 0 };
   }
 
-  const BUILD = { pouch: buildPouch, tote: buildTote, diecut: buildDiecut, mitt: buildMitt, mat: buildFlat, coaster: buildFlat, mug: buildMug, opener: buildOpener, shade: buildShade, glass: buildGlass };
+  /* S-131: מוצר מתמונה נקייה + הדפסה מולבשת בקוד (PRINTFIT). קנבס 900×900 → כרטיס עם 6 שכבות עובי מאחור (כמו photoCard בעמוד המשחקים). */
+  function buildPhoto(it, art) {
+    const TH = T(), G = new TH.Group(), PF = W.PRINTFIT, spec = PF && PF.P[it.key]; if (!spec) throw new Error('subl-3d: no PRINTFIT ' + it.key);
+    const mm = spec.mm || 200, c = cv(900, 900), t = tex(c); t.anisotropy = 4;
+    const geo = new TH.PlaneGeometry(mm, mm);
+    for (let i = 6; i >= 0; i--) {
+      const dark = i ? .55 + .05 * (6 - i) : 1;
+      const m = new TH.Mesh(geo, new TH.MeshStandardMaterial({ map: t, transparent: true, alphaTest: .35, roughness: .6, color: new TH.Color(dark, dark, dark), side: TH.DoubleSide }));
+      m.position.z = -i * mm * .006; m.position.x = -i * mm * .002; G.add(m);
+    }
+    const pr = art(it.w, it.h, 'front');
+    PF.load(it.key, (W.PRINTFIT_BASE || '../images/games/zikit/')).then(im => { PF.render(c, spec, im, pr); t.needsUpdate = true; }).catch(() => {});
+    return { group: G, spin: 'sway', tilt: 0 };
+  }
+
+  const BUILD = { pouch: buildPouch, tote: buildTote, diecut: buildDiecut, mitt: buildMitt, mat: buildFlat, coaster: buildFlat, mug: buildMug, opener: buildOpener, shade: buildShade, glass: buildGlass, photo: buildPhoto };
 
   function build(id, art, opt = {}) {
     const it = ITEMS[id]; if (!it) throw new Error('subl-3d: unknown ' + id);

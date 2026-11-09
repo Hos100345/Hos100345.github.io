@@ -3,7 +3,7 @@
 // הדף והמנוע: רשת קודם (כל עדכון מגיע מיד), ומהמטמון רק כשאין רשת. פונטים מ-CDN: מהמטמון מיד, ומתעדכנים ברקע.
 // התמונות של הלקוחה לא עוברות כאן בכלל — הן ב-IndexedDB.
 // שינוי בקובץ הזה = להעלות את V, כדי לנקות מטמון ישן.
-const V = 'games-sw-29';
+const V = 'games-sw-30';
 const SHELL = ['./', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', '../js/play-engine.js?v=10'];
 const CDN = ['fonts.googleapis.com', 'fonts.gstatic.com'];
 
