@@ -43,6 +43,7 @@ header.top{background:var(--navy);color:#fff;padding:10px 14px 0;position:relati
 .brand h1{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:0;letter-spacing:.2px}
 .brand h1 b{color:var(--gold);font-weight:400}
 .brand .ver{font-size:.75rem;color:#AFC0DA}
+.share-top{margin-inline-start:auto;border:1.5px solid rgba(255,255,255,.4);background:transparent;color:#fff;border-radius:999px;padding:.3rem .8rem;font:inherit;font-size:.85rem;font-weight:700;cursor:pointer;min-height:36px}
 nav.tabs{display:flex;gap:4px;overflow-x:auto;margin-top:10px;scrollbar-width:none}
 nav.tabs::-webkit-scrollbar{display:none}
 nav.tabs button{flex:0 0 auto;border:0;background:transparent;color:#C9D5E8;padding:10px 14px 11px;border-radius:10px 10px 0 0;cursor:pointer;font-weight:500;font-size:.95rem}
@@ -290,7 +291,7 @@ body.admin .cust{display:none!important}
 </head>
 <body>
 <header class="top">
-  <div class="brand"><h1>סטודיו <b>הדפסה וחיתוך</b></h1><span class="ver" id="ver"></span></div>
+  <div class="brand"><h1>סטודיו <b>הדפסה וחיתוך</b></h1><span class="ver" id="ver"></span><button type="button" class="share-top" data-share data-share-keep="p" data-share-text="סטודיו משחקים ומדבקות מהתמונות שלכם ✂️">📤 שלחו לחבר</button></div>
   <nav class="tabs" role="tablist" id="tabs"></nav>
 </header>
 <main>
@@ -5494,5 +5495,6 @@ function ordersSection(){
   document.fonts.ready.then(rerender);[ST.font,'Secular One'].forEach(f=>loadFont(f).then(rerender));
 })();
 </script>
+<script src="../js/share-link.js?v=1"></script>
 </body>
 </html>
