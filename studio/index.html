@@ -5286,7 +5286,7 @@ const ORDER_FN=SB_URL+'/functions/v1/studio-order',ORDER_WA='972505918734';
 const PRICE={stickers:25,cards:20,memory:30,quartets:20,domino:30,dice:40,puzzle:119},PRICE_MIN={stickers:99,cards:149,memory:129,quartets:149,domino:149,dice:99}; // S-84: גיבוי בלבד — המחירים האמיתיים מהשרת
 const QUOTE_ONLY=new Set(['quartets','bingo','tangram','ludo','mug','trivia','snakes','subl']); // S-99: subl — מתנות מזיקית, הצעת מחיר // S-97: טריוויה וסולמות — הצעת מחיר עד שהושעיה קובע
 // S-69: מוצר מוכן מזיקית = מחיר קבוע למוצר (טבלה studio_blank_prices, השרת מחשב אותו דבר — studio_blank_key). כאן: גיבוי כשאין חיבור.
-const BLANK_PRICE={'puzzle-9313-30':99,'puzzle-9313-80':109,'puzzle-9312-3':119,'puzzle-9313-252':149,'puzzle-9321':179,'puzzle-9331':199,'domino-8801':199,'tangram-8811':149,'ludo-8805-all':199,'ludo-8805-pieces':129,'ludo-8805-board':179,'tshirt-front':100,'tshirt-both':120,'mug-8501':36,'mug-8517':36}; // S-92: ספל 36 ₪
+const BLANK_PRICE={'puzzle-9313-30':59,'puzzle-9313-80':59,'puzzle-9312-3':69,'puzzle-9313-252':79,'puzzle-9321':89,'puzzle-9331':149,'domino-8801':139,'tangram-8811':59,'ludo-8805-all':199,'ludo-8805-pieces':129,'ludo-8805-board':179,'tshirt-front':100,'tshirt-both':120,'mug-8501':45,'mug-8517':49}; // G-45 (09/11/2026): מחירון לפי סקר השוק — המקור האמיתי הוא studio_blank_prices, זה רק גיבוי
 function blankKey(id=cur.id){
   if(id==='puzzle'&&PZ.blank&&PZ.blank!=='diy')return 'puzzle-'+(/^9321-/.test(PZ.blank)?'9321':/^9331-/.test(PZ.blank)?'9331':PZ.blank);
   if(id==='domino'&&DM.blank==='8801'&&DM.variant!=='tri')return 'domino-8801';

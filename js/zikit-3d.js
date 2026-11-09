@@ -185,7 +185,7 @@
    * התמונה מהקטלוג נחתכה מהרקע (rembg) ונשמרה ב-images/games/zikit/<key>.webp עם שקיפות. כאן היא הופכת ל"כרטיס" עם עובי:
    * שכבת החזית = התמונה; מאחוריה 6 שכבות כהות יותר בהיסט קטן = עובי שנראה כשמסתובבים; צל רך על הרצפה. אחד לאחד עם הקטלוג מהחזית.
    * מוצר שהתמונה שלו בקטלוג חלשה (קטנה/דהויה) נשאר כמודל שנבנה בקוד (BUILD). ── */
-  var PHOTO = ['backpack','basalt','board','bottle-straw','bottle','carcurtain','clock','crystal','cushion','doormat','doorsign','drawstring','enamel','glass-mirror','glass','hairbrush','hugmug','instagram','keyhanger','leather','makeup','megamug','mug-color','mug-magic','mug-metal','mug-neon','pencil','powerbank','runner','snow','thermo','tin','tote','usb','wine','woodnum','woodphoto','woodshape'];
+  var PHOTO = ['backpack','basalt','basalt-heart','board','bottle-straw','bottle','carcurtain','clock','crystal','cushion','doormat','doorsign','drawstring','enamel','glass-mirror','glass','hairbrush','hugmug','instagram','keyhanger','leather','makeup','megamug','mug-color','mug-magic','mug-metal','mug-neon','pencil','powerbank','runner','snow','thermo','tin','tote','usb','wine','woodnum','woodphoto','woodshape'];
   function photoCard(key) {
     var Tt = T(), g = new Tt.Group(), loader = new Tt.TextureLoader();
     var geo = new Tt.PlaneGeometry(2, 2), mats = [];
@@ -213,13 +213,14 @@
     ['mug-magic', '🪄 ספל פלא — ההדפסה מתגלה בחום', '8503-1', '../studio/?p=mug'],
     ['mug-spoon', '🥄 ספל עם כפית', '8510', '../studio/?p=mug'],
     ['enamel', '🏕️ ספל אמייל ענק עם מכסה', '8724-3', '../studio/?p=subl&item=8724-3'],
-    ['hugmug', '🤗 האג מאג טרמי', '8714', '../studio/?p=subl&item=8714-1'],
+    ['hugmug', '🤗 האג מאג טרמי', '8714-1', '../studio/?p=subl&item=8714-1'],
     ['wine', '🍷 גביע יין נירוסטה', '8714-3', '../studio/?p=subl&item=8714-3'],
     ['megamug', '🥤 מגה מאג עם קשית', '8715-1', '../studio/?p=subl&item=8715-1'],
     ['thermo', '☕ ספל טרמי נירוסטה', '8706', '../studio/?p=subl&item=8706-1'],
     ['bottle', '🚰 בקבוק אלומיניום 600 מ"ל', '8703-2', '../studio/?p=subl&item=8703-2'],
     ['bottle-straw', '🧃 בקבוק עם קשית', '8703-1', '../studio/?p=subl&item=8703-1'],
-    ['basalt', '🪨 אבן בזלת עם תמונה', '8580', '../studio/?p=subl&item=8582'],
+    ['basalt', '🪨 אבן בזלת עם תמונה', '8582', '../studio/?p=subl&item=8582'],
+    ['basalt-heart', '🪨 אבן בזלת לב', '8589', '../studio/?p=subl&item=8589'],
     ['woodphoto', '🖼️ תמונה על עץ עם רגל', '8360', '../studio/?p=subl&item=8360-4'],
     ['glass', '🪟 תמונה על זכוכית עם מעמד', '6452', '../studio/?p=subl&item=6452'],
     ['board', '🔪 לוח חיתוך זכוכית', '6458', '../studio/?p=subl&item=6458'],
@@ -232,7 +233,7 @@
     ['magnet', '🧲 מגנט עץ 10×15', '8381', '../studio/?p=subl&item=8381'],
     ['leather', '📷 תמונה מעור עם מעמד', '8609', '../studio/?p=subl&item=8609'],
     ['scale', '⚖️ משקל זכוכית', '9608', '../studio/?p=subl&item=9608'],
-    ['apron', '👩‍🍳 סינר', '7602', '../studio/?p=subl&item=7602'],
+    ['apron', '👩‍🍳 סינר', '7603', '../studio/?p=subl&item=7603'],
     ['runner', '🕯️ ראנר שולחן פשתן', '7410-17', '../studio/?p=subl&item=7410-17'],
     ['doormat', '🚪 שטיחון כניסה', '7413', '../studio/?p=subl&item=7413'],
     ['giftbag', '🎁 אריזת מתנה מבד', '7362', '../studio/?p=subl&item=7362-5']
