@@ -40,14 +40,14 @@
     '8678': { kind: 'opener', name: 'פותחן מלבני', w: 55, h: 55, style: 'rect' },
     '7611': { kind: 'shade', name: 'וילון צד לרכב — זוג', w: 430, h: 365 },
     // S-131: המתנות מזיקית עם תמונה נקייה (js/print-fit.js) — ההדפסה מולבשת בקוד על שטח ההדפסה האמיתי, כרטיס עם עובי במקום מודל
-    '8724-3': { kind: 'photo', key: 'enamel', w: 200, h: 70 },
-    '8514': { kind: 'photo', key: 'mug-neon', w: 200, h: 95 },
-    '8503-1': { kind: 'photo', key: 'mug-magic', w: 190, h: 80 },
-    '8510': { kind: 'photo', key: 'mug-spoon', w: 200, h: 95 },
-    '8714-1': { kind: 'photo', key: 'hugmug', w: 200, h: 90 },
+    '8724-3': { kind: 'mug', name: 'ספל אמייל ענק עם מכסה', w: 200, h: 70, mh: 100, r: 47, top: 48, rimColor: '#1A1A1A', lid: 'dome', knob: '#1A1A1A', hr: .26, ht: 5 },
+    '8514': { kind: 'mug', name: 'ספל נאון', w: 200, h: 95, mh: 98, r: 40, top: 40, inner: '#FF6A1F', handle: '#FF6A1F' },
+    '8503-1': { kind: 'mug', name: 'ספל פלא שחור סאטן', w: 190, h: 80, mh: 98, r: 40, top: 40, body: '#1C1C1E', inner: '#111', handle: '#1C1C1E', matte: true },
+    '8510': { kind: 'mug', name: 'ספל עם כפית', w: 200, h: 95, mh: 98, r: 40, top: 40, spoon: '#2B5FD9' },
+    '8714-1': { kind: 'mug', name: 'האג מאג טרמי', w: 200, h: 90, mh: 120, r: 40, top: 43, metal: true, lid: 'clear', hr: .24 },
     '8714-3': { kind: 'photo', key: 'wine', w: 200, h: 70 },
     '8715-1': { kind: 'photo', key: 'megamug', w: 220, h: 210 },
-    '8706-1': { kind: 'photo', key: 'thermo', w: 200, h: 90 },
+    '8706-1': { kind: 'mug', name: 'ספל טרמי נירוסטה', w: 200, h: 90, mh: 164, r: 38, top: 42, metal: true, lid: 'dome', lidColor: '#1A1A1A', knob: '#1A1A1A', handle: '#1A1A1A', hr: .2, hy: 8 },
     '8703-2': { kind: 'photo', key: 'bottle', w: 200, h: 110 },
     '8703-1': { kind: 'photo', key: 'bottle-straw', w: 200, h: 110 },
     '8582': { kind: 'photo', key: 'basalt', w: 100, h: 200 },
@@ -361,19 +361,41 @@
     return { group: G, spin: 'full', tilt: -1.12 };
   }
 
+  /* ספל: גליל + ידית טורוס. S-132 — פרמטרים לכל ספלי זיקית: body/inner/handle (צבעים), matte (ספל פלא סאטן), metal (נירוסטה),
+   * rimColor (אמייל — שפה שחורה), lid: 'dome' (אמייל/טרמי) | 'clear' (האג-מאג), spoon (צבע כפית בחריץ הידית), taper (טרמי צר למטה) */
   function buildMug(it, art) {
     const TH = T(), G = new TH.Group(), C = 2 * PI * it.r, pp = 6, c = cv(C * pp, it.mh * pp), x = c.getContext('2d');
-    x.fillStyle = '#FDFDFB'; x.fillRect(0, 0, c.width, c.height); x.scale(pp, pp);
+    const bodyCol = it.body || '#FDFDFB', metal = !!it.metal, matte = !!it.matte;
+    x.fillStyle = bodyCol; x.fillRect(0, 0, c.width, c.height); x.scale(pp, pp);
     const y0 = (it.mh - it.h) / 2, pr = art(it.w, it.h, 'front'), o0 = C * .75 - it.w / 2;
     [o0, o0 - C].forEach(off => x.drawImage(pr, off, y0, it.w, it.h));
-    const side = new TH.MeshPhysicalMaterial({ map: tex(c), roughness: .2, clearcoat: 1, clearcoatRoughness: .1 });
-    const white = new TH.MeshPhysicalMaterial({ color: 0xffffff, roughness: .18, clearcoat: 1, clearcoatRoughness: .08 });
+    const phys = (o) => new TH.MeshPhysicalMaterial(Object.assign(matte ? { roughness: .55, clearcoat: .15, clearcoatRoughness: .5 } : metal ? { roughness: .28, metalness: .35, clearcoat: .8, clearcoatRoughness: .15 } : { roughness: .2, clearcoat: 1, clearcoatRoughness: .1 }, o));
+    const side = phys({ map: tex(c) });
+    const solid = phys({ color: new TH.Color(it.handle || bodyCol) });
+    const innerCol = new TH.Color(it.inner || (matte ? '#222' : metal ? '#D9DCDF' : '#F2F2EE'));
     G.add(new TH.Mesh(new TH.CylinderGeometry(it.top, it.r, it.mh, 96, 1, true), side));
-    const inner = new TH.Mesh(new TH.CylinderGeometry(it.top - 3, it.r - 3, it.mh - 4, 96, 1, true), new TH.MeshPhysicalMaterial({ color: 0xF2F2EE, roughness: .25, side: TH.BackSide, clearcoat: .6 })); inner.position.y = 2; G.add(inner);
-    const bi = new TH.Mesh(new TH.CircleGeometry(it.r - 3, 64), new TH.MeshPhysicalMaterial({ color: 0xE9E8E3, roughness: .3 })); bi.rotation.x = -PI / 2; bi.position.y = -it.mh / 2 + 6; G.add(bi);
-    const rim = new TH.Mesh(new TH.TorusGeometry(it.top - 1.5, 1.6, 12, 96), white); rim.rotation.x = PI / 2; rim.position.y = it.mh / 2; G.add(rim);
-    const base = new TH.Mesh(new TH.CircleGeometry(it.r, 64), white); base.rotation.x = PI / 2; base.position.y = -it.mh / 2; G.add(base);
-    const R = it.mh * .29, arc = PI * 1.3, hd = new TH.Mesh(new TH.TorusGeometry(R, 5.5, 20, 48, arc), white); hd.rotation.z = -arc / 2; hd.position.set(it.r + R * .42, 2, 0); G.add(hd);
+    const inner = new TH.Mesh(new TH.CylinderGeometry(it.top - 3, it.r - 3, it.mh - 4, 96, 1, true), new TH.MeshPhysicalMaterial({ color: innerCol, roughness: .25, side: TH.BackSide, clearcoat: .6 })); inner.position.y = 2; G.add(inner);
+    const bi = new TH.Mesh(new TH.CircleGeometry(it.r - 3, 64), new TH.MeshPhysicalMaterial({ color: innerCol.clone().multiplyScalar(.96), roughness: .3 })); bi.rotation.x = -PI / 2; bi.position.y = -it.mh / 2 + 6; G.add(bi);
+    const rimMat = it.rimColor ? phys({ color: new TH.Color(it.rimColor) }) : phys({ color: new TH.Color(it.inner && !it.lid ? it.inner : bodyCol) });
+    const rim = new TH.Mesh(new TH.TorusGeometry(it.top - 1.5, it.rimColor ? 2.2 : 1.6, 12, 96), rimMat); rim.rotation.x = PI / 2; rim.position.y = it.mh / 2; G.add(rim);
+    const base = new TH.Mesh(new TH.CircleGeometry(it.r, 64), phys({ color: new TH.Color(bodyCol) })); base.rotation.x = PI / 2; base.position.y = -it.mh / 2; G.add(base);
+    const R = it.mh * (it.hr || .29), arc = PI * 1.3, hd = new TH.Mesh(new TH.TorusGeometry(R, it.ht || 5.5, 20, 48, arc), solid); hd.rotation.z = -arc / 2; hd.position.set(it.r + R * .42, it.hy || 2, 0); G.add(hd);
+    if (it.lid === 'dome') {   // מכסה כיפה (אמייל / טרמי)
+      const lc = new TH.Color(it.lidColor || bodyCol), lm = phys({ color: lc });
+      const dome = new TH.Mesh(new TH.SphereGeometry(it.top + 1, 64, 24, 0, PI * 2, 0, PI * .42), lm); dome.scale.y = .45; dome.position.y = it.mh / 2 + 1; G.add(dome);
+      const lr = new TH.Mesh(new TH.TorusGeometry(it.top + 1, 2.4, 12, 96), it.rimColor ? phys({ color: new TH.Color(it.rimColor) }) : lm); lr.rotation.x = PI / 2; lr.position.y = it.mh / 2 + 1.5; G.add(lr);
+      const knob = new TH.Mesh(new TH.SphereGeometry(5, 24, 16), phys({ color: new TH.Color(it.knob || it.rimColor || '#222') })); knob.position.y = it.mh / 2 + 1 + (it.top + 1) * .45 + 2; G.add(knob);
+    } else if (it.lid === 'clear') {   // מכסה שקוף (האג-מאג)
+      const cm = new TH.MeshPhysicalMaterial({ color: 0xDDE8EE, roughness: .05, transparent: true, opacity: .45, clearcoat: 1, clearcoatRoughness: .03 });
+      const disc = new TH.Mesh(new TH.CylinderGeometry(it.top + .5, it.top + .5, 7, 96), cm); disc.position.y = it.mh / 2 + 3.5; G.add(disc);
+      const lip = new TH.Mesh(new TH.CylinderGeometry(it.top + 1.5, it.top + 1.5, 3, 96), phys({ color: new TH.Color('#EEF0F2') })); lip.position.y = it.mh / 2 + 1.5; G.add(lip);
+    }
+    if (it.spoon) {   // כפית: הכף בתוך הספל, הידית נשענת בחריץ הידית ויוצאת החוצה
+      const sm = phys({ color: new TH.Color(it.spoon) });
+      const L = it.mh * 1.25, stem = new TH.Mesh(new TH.CylinderGeometry(2.4, 2.8, L, 16), sm);
+      const tip = new TH.Mesh(new TH.SphereGeometry(3.2, 16, 12), sm); tip.position.y = L / 2;
+      const sp = new TH.Group(); sp.add(stem, tip); sp.position.set(it.r * .55, it.mh * .1, 0); sp.rotation.z = -.4; G.add(sp);
+    }
     G.rotation.y = PI / 2; // ההדפסה (מול הידית) — מול המצלמה
     const wrap = new TH.Group(); wrap.add(G); return { group: wrap, spin: 'full' };
   }

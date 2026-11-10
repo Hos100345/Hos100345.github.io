@@ -185,7 +185,8 @@
    * התמונה מהקטלוג נחתכה מהרקע (rembg) ונשמרה ב-images/games/zikit/<key>.webp עם שקיפות. כאן היא הופכת ל"כרטיס" עם עובי:
    * שכבת החזית = התמונה; מאחוריה 6 שכבות כהות יותר בהיסט קטן = עובי שנראה כשמסתובבים; צל רך על הרצפה. אחד לאחד עם הקטלוג מהחזית.
    * מוצר שהתמונה שלו בקטלוג חלשה (קטנה/דהויה) נשאר כמודל שנבנה בקוד (BUILD). ── */
-  var PHOTO = ['backpack','basalt','basalt-heart','board','bottle-straw','bottle','carcurtain','clock','crystal','cushion','doormat','doorsign','drawstring','enamel','glass-mirror','glass','hairbrush','hugmug','instagram','keyhanger','leather','makeup','megamug','mug-color','mug-magic','mug-metal','mug-neon','pencil','powerbank','runner','snow','thermo','tin','tote','usb','wine','woodnum','woodphoto','woodshape'];
+  // S-132: הספלים (enamel/mug-neon/mug-magic/hugmug/thermo) חזרו למודל התלת־ממדי הבנוי — כמו בסטודיו
+  var PHOTO = ['backpack','basalt','basalt-heart','board','bottle-straw','bottle','carcurtain','clock','crystal','cushion','doormat','doorsign','drawstring','glass-mirror','glass','hairbrush','instagram','keyhanger','leather','makeup','megamug','mug-color','mug-metal','pencil','powerbank','runner','snow','tin','tote','usb','wine','woodnum','woodphoto','woodshape'];
   function photoCard(key) {
     var Tt = T(), g = new Tt.Group(), loader = new Tt.TextureLoader();
     var geo = new Tt.PlaneGeometry(2, 2), mats = [];
