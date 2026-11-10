@@ -185,20 +185,17 @@
    * התמונה מהקטלוג נחתכה מהרקע (rembg) ונשמרה ב-images/games/zikit/<key>.webp עם שקיפות. כאן היא הופכת ל"כרטיס" עם עובי:
    * שכבת החזית = התמונה; מאחוריה 6 שכבות כהות יותר בהיסט קטן = עובי שנראה כשמסתובבים; צל רך על הרצפה. אחד לאחד עם הקטלוג מהחזית.
    * מוצר שהתמונה שלו בקטלוג חלשה (קטנה/דהויה) נשאר כמודל שנבנה בקוד (BUILD). ── */
-  var PHOTO = ['mug-spoon','thermo','mug-neon','mug-magic','hugmug','enamel','backpack','basalt','basalt-heart','board','bottle-straw','bottle','carcurtain','clock','crystal','cushion','doormat','doorsign','drawstring','glass-mirror','glass','hairbrush','instagram','keyhanger','leather','makeup','megamug','mug-color','mug-metal','pencil','powerbank','runner','snow','tin','tote','usb','wine','woodnum','woodphoto','woodshape'];
+  var PHOTO = ['scale','magnet','bracelet','apron','mug-spoon','thermo','mug-neon','mug-magic','hugmug','enamel','backpack','basalt','basalt-heart','board','bottle-straw','bottle','carcurtain','clock','crystal','cushion','doormat','doorsign','drawstring','glass-mirror','glass','hairbrush','instagram','keyhanger','leather','makeup','megamug','mug-color','mug-metal','pencil','powerbank','runner','snow','tin','tote','usb','wine','woodnum','woodphoto','woodshape'];
   function photoCard(key) {
-    var Tt = T(), g = new Tt.Group(), loader = new Tt.TextureLoader();
-    var geo = new Tt.PlaneGeometry(2, 2), mats = [];
+    var Tt = T(), g = new Tt.Group(), loader = new Tt.TextureLoader(); g.userData.flat = true;
+    var geo = new Tt.PlaneGeometry(2, 2);
     // עד שהתמונה נטענת — כלום (לא ריבוע לבן)
     loader.load('../images/games/zikit/' + key + '.webp', function (t) {
       if (Tt.sRGBEncoding) t.encoding = Tt.sRGBEncoding; t.anisotropy = 4;
       var w = t.image.width, h = t.image.height, s = 2.2 / Math.max(w, h), W = w * s, H = h * s;
       geo.dispose(); geo = new Tt.PlaneGeometry(W, H);
-      for (var i = 6; i >= 0; i--) {
-        var dark = i ? 0.55 + 0.05 * (6 - i) : 1;
-        var m = new Tt.Mesh(geo, new Tt.MeshStandardMaterial({ map: t, transparent: true, alphaTest: .35, roughness: .7, color: new Tt.Color(dark, dark, dark), side: Tt.DoubleSide, depthWrite: true }));
-        m.position.z = -i * 0.012; m.position.x = -i * 0.004; g.add(m);
-      }
+      // G-49: שכבה אחת, בלי עובי מדומה — התמונה מוצגת דו־ממדית (ו-userData.flat מבטל את הנדנוד בבמה)
+      g.add(new Tt.Mesh(geo, new Tt.MeshBasicMaterial({ map: t, transparent: true, alphaTest: .2, side: Tt.DoubleSide, depthWrite: true })));
       var sh = new Tt.Mesh(new Tt.CircleGeometry(W * .42, 32), new Tt.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: .18 }));
       sh.rotation.x = -Math.PI / 2; sh.position.y = -H / 2 + .02; sh.scale.y = .35; g.add(sh);
     });
