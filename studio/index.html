@@ -191,6 +191,7 @@ details.face>.body{padding:0 12px 12px;display:grid;gap:8px}
 .shqty{display:flex;align-items:center;gap:4px}.shqty span{min-width:26px;text-align:center;font-weight:700}.shsum{background:#FFF8E6;border:1px solid var(--gold);border-radius:12px;padding:10px 14px;margin:10px 0}.shsum ul{margin:6px 0 0;padding-inline-start:18px}
 .linkish{background:none;border:none;color:#1D4ED8;text-decoration:underline;font:inherit;cursor:pointer;padding:6px 0;min-height:44px}.cpbox input{min-height:44px;font:inherit;padding:0 10px;border:1px solid #D6CFC2;border-radius:10px;width:9em}
 .price s.was{color:#6B7280;font-weight:400;margin-inline-end:6px}.price .off{color:#15803D}
+.subvars{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:6px 0}.subvars button{width:30px;height:30px;border-radius:50%;border:2px solid #D6CFC2;background:var(--c);cursor:pointer;box-shadow:inset 0 0 0 2px #fff}.subvars button[aria-pressed="true"]{border-color:#14294D;box-shadow:inset 0 0 0 2px #fff,0 0 0 2px #14294D}
 .sublist{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin:8px 0}.sublist button{text-align:start;border:1px solid #D6CFC2;border-radius:10px;background:#fff;padding:8px;font:inherit;cursor:pointer;min-height:56px}.sublist button[aria-pressed=true]{border-color:var(--gold);background:#FFF8E6}.sublist b{display:block;font-size:.88rem}.sublist small{display:block;color:#4B5563;font-size:.75rem;margin-top:2px}
 .subinfo{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:8px 12px;font-size:.88rem}.subinfo p{margin:3px 0}
 .shtools{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}.shtools button{min-height:56px;border:1px solid #D6CFC2;border-radius:12px;background:#fff;font:inherit;font-size:1rem;cursor:pointer}
@@ -1117,7 +1118,7 @@ function makeStates(){
   TG={img:[],mode:'blank',size:190,zoom:100,ox:0,oy:0,text:'',font:'Secular One',textColor:'#FFFFFF',mirror:true};
   SH={img:[],size:'L',sleeve:'short',iw:250,ix:null,iy:0,text:'',font:'Secular One',color:'#14294D',outline:'#FFFFFF',ts:30,tpx:.5,tpy:null,tfree:false,tx:null,ty:null,ih:null,eff:{},step:1,v:0,mirror:true,side:'front',alt:shSideDefaults(),order:[],osel:0};
   MG={type:'8501',img:[],zoom:100,ox:0,oy:0,bg:'#FFFFFF',text:'',font:'Secular One',color:'#14294D',tpos:'bottom',tsize:22,outline:'none',qty:1,mirror:true,layers:null};
-  SB={cat:'mugs',item:'8724-3',img:[],zoom:100,ox:0,oy:0,bg:'#FFFFFF',text:'',font:'Secular One',color:'#14294D',tpos:'bottom',tsize:16,outline:'none',both:true,qty:1,mirror:true};
+  SB={cat:'mugs',item:'8724-3',variant:'',picked:false,img:[],zoom:100,ox:0,oy:0,bg:'#FFFFFF',text:'',font:'Secular One',color:'#14294D',tpos:'bottom',tsize:16,outline:'none',both:true,qty:1,mirror:true};
   LD={images:[],names:'',mode:'blank',what:'all',perPlayer:4,colors:['#E53935','#43A047','#FDD835','#1E88E5'],mirror:true};
   PZ={img:[],style:'classic',pieces:24,split:false,text:'',font:'Secular One',textColor:'#FFFFFF',seed:7,blank:'diy',land:true,mirror:true,zoom:100,ox:0,oy:0,lines:true};
   CD={type:'war',war:{w:63,h:88,r:3,red:'#C62828',black:'#16202E',bg:'#FFFFFF',jokers:true,fronts:true,style:'classic',faces:defFaces(),faceFont:'Secular One',font:'',pip:1,artSet:'fr',artTone:'none',pics:'',cu:customFrom('classic')},round:{d:71},rect:{w:63,h:88,r:3},
@@ -3859,11 +3860,11 @@ function shBarBtn(){const st=SH.step||1;if(st<3)shGo(st+1);else shConfirm();} //
 const SUBL3D_IDS=new Set(["7318-4", "7331-3", "7331-2", "7318-7", "7324-1", "7324-2", "7324-4", "7324-5", "7622", "7410-13", "7410-16", "7410-14", "7410-11", "7410-23", "7410-22", "7410-24", "7410-25", "7410-32", "7410-33", "8501", "8517", "8672", "8671", "8678", "7611", "6442","8724-3","8514","8503-1","8510","8714-1","8714-3","8715-1","8706-1","8703-2","8703-1","8582","8589","8360-4","6452","6458","6424","8022-3","6101-H20","8707-3","9172-1","8670-1","8381","8609","9608","7603","7410-17","7413"]); /* S-131: המתנות מזיקית עם תמונה נקייה — js/print-fit.js */let sbPage=false;const SB3={st:null,key:'',t:0,p:null};
 const sb3dOk=()=>SUBL3D_IDS.has(SB.item);
 function loadScriptOnce(src){return new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=()=>no(new Error(src));document.head.append(s);});}
-function loadSubl3d(){return SB3.p||(SB3.p=loadThree().then(()=>window.PRINTFIT?0:loadScriptOnce('../js/print-fit.js?v=1')).then(()=>window.SUBL3D?0:new Promise((ok,no)=>{const s=document.createElement('script');s.src='../js/subl-3d.js?v=3';s.onload=ok;s.onerror=()=>{SB3.p=null;no(new Error('subl3d'));};document.head.append(s);})));}
+function loadSubl3d(){return SB3.p||(SB3.p=loadThree().then(()=>window.PRINTFIT?0:loadScriptOnce('../js/print-fit.js?v=1')).then(()=>window.SUBL3D?0:new Promise((ok,no)=>{const s=document.createElement('script');s.src='../js/subl-3d.js?v=4';s.onload=ok;s.onerror=()=>{SB3.p=null;no(new Error('subl3d'));};document.head.append(s);})));}
 function sbArt(w,h,side){if(side==null)return null;const it=subItem();if(side==='back'&&!(it.two&&SB.both))return null;const pp=Math.min(12,1400/Math.max(it.w,it.h)),c=document.createElement('canvas');c.width=Math.round(it.w*pp);c.height=Math.round(it.h*pp);const x=c.getContext('2d');x.scale(pp,pp);subArt(x,it);return c;}
 function sb3dShow(){const box=document.getElementById('sb3d');loadSubl3d().then(()=>{if(!SB3.st)SB3.st=SUBL3D.stage(box,{keep:true});sb3dUpdate();}).catch(()=>{box.textContent='לא הצלחתי לטעון את התלת־ממד — בדקו חיבור ונסו שוב';});}
-function sb3dUpdate(){if(!SB3.st)return;const sig=[SB.item,SB.bg,SB.text,SB.font,SB.color,SB.tpos,SB.tsize,SB.outline,SB.zoom,SB.ox,SB.oy,SB.both,(SB.img||[]).map(phId).join(',')].join('|');if(sig===SB3.key)return;
-  const same=SB3.key&&SB3.key.split('|')[0]===SB.item;clearTimeout(SB3.t);SB3.t=setTimeout(()=>{SB3.key=sig;try{SB3.st.set(SB.item,sbArt);}catch(e){console.error(e);}},same?250:0);}
+function sb3dUpdate(){if(!SB3.st)return;const sig=[SB.item,SB.variant,SB.bg,SB.text,SB.font,SB.color,SB.tpos,SB.tsize,SB.outline,SB.zoom,SB.ox,SB.oy,SB.both,(SB.img||[]).map(phId).join(',')].join('|');if(sig===SB3.key)return;
+  const same=SB3.key&&SB3.key.split('|')[0]===SB.item;clearTimeout(SB3.t);SB3.t=setTimeout(()=>{SB3.key=sig;try{SB3.st.set(SB.item,sbArt,{color:SB.variant});}catch(e){console.error(e);}},same?250:0);}
 let _threeP=null;function loadThree(){if(window.THREE)return Promise.resolve();return _threeP||(_threeP=new Promise((ok,no)=>{const s=document.createElement('script');s.src='../js/vendor/three-r128.min.js';s.onload=ok;s.onerror=()=>{_threeP=null;no(new Error('three'));};document.head.append(s);}));}
 const SH3={r:null,raf:0,ry:-.35,rx:.16,spin:true,kind:'',sig:''};
 function shPip(p,pts){let c=false;for(let i=0,j=pts.length-1;i<pts.length;j=i++){const a=pts[i],b=pts[j];if((a[1]>p[1])!==(b[1]>p[1])&&p[0]<(b[0]-a[0])*(p[1]-a[1])/(b[1]-a[1])+a[0])c=!c;}return c;}
@@ -4057,9 +4058,9 @@ const SUB_CATS=[['mugs','🍵 ספלים ובקבוקים'],['photo','🖼️ ת
 const SUB_ITEMS=[
   // ── S-99 (29/10/2026): המוצרים שהוזמנו מזיקית ("עדכון הזמנה לזיקית") — פתוח ללקוחות, הצעת מחיר. שטח ההדפסה במ"מ מהקטלוג.
   {id:'8724-3',cat:'mugs',name:'ספל אמייל ענק 700 מ"ל עם מכסה',w:200,h:70,shape:'rect',two:false,mug:true,time:360,temp:200,cost:'24',size:'גובה 10 · קוטר 9.5',color:'לבן',note:'עטיפת פרו 360 שנ\''},
-  {id:'8514',cat:'mugs',name:'ספל נאון (כתום/צהוב/ירוק)',w:200,h:95,shape:'rect',two:false,mug:true,time:180,temp:200,cost:'6',size:'300 מ"ל',color:'לבן + נאון',note:'צבע הפנים והידית לפי המלאי'},
+  {id:'8514',cat:'mugs',name:'ספל נאון',variants:[['8514-3','כתום','#FF6A1F'],['8514-4','צהוב','#FFD60A'],['8514-5','ירוק','#3DBE4E']],w:200,h:95,shape:'rect',two:false,mug:true,time:180,temp:200,cost:'6',size:'300 מ"ל',color:'לבן + נאון',note:'צבע הפנים והידית לפי המלאי'},
   {id:'8503-1',cat:'mugs',name:'ספל פלא שחור — ההדפסה מתגלה בחום',w:190,h:80,shape:'rect',two:false,mug:true,time:180,temp:200,cost:'8',size:'300 מ"ל',color:'שחור',note:'ההדפסה נראית רק עם משקה חם'},
-  {id:'8510',cat:'mugs',name:'ספל לבן עם כפית',w:200,h:95,shape:'rect',two:false,mug:true,time:180,temp:200,cost:'7',size:'300 מ"ל',color:'לבן',note:'צבע הכפית לפי המלאי'},
+  {id:'8510',cat:'mugs',name:'ספל לבן עם כפית',variants:[['8510-1','כחול','#2B5FD9'],['8510-2','תכלת','#5BC0EB'],['8510-3','אדום','#E03131'],['8510-4','ורוד','#F06595']],w:200,h:95,shape:'rect',two:false,mug:true,time:180,temp:200,cost:'7',size:'300 מ"ל',color:'לבן',note:'צבע הכפית לפי המלאי'},
   {id:'8714-1',cat:'mugs',name:'האג מאג טרמי (לבן)',w:200,h:90,shape:'rect',two:false,mug:true,time:180,temp:200,cost:'19',size:'גובה 12 · קוטר 8',color:'לבן',note:''},
   {id:'8714-2',cat:'mugs',name:'האג מאג טרמי — פנינה נוצצים',w:200,h:90,shape:'rect',two:false,mug:true,time:180,temp:200,cost:'24',size:'גובה 12 · קוטר 8',color:'פנינה',note:''},
   {id:'8714-3',cat:'mugs',name:'גביע יין נירוסטה לבן',w:200,h:70,shape:'rect',two:false,mug:true,time:180,temp:200,cost:'39',size:'קוטר 8.5',color:'לבן',note:''},
@@ -4136,6 +4137,7 @@ const SUB_ITEMS=[
   {id:'8678',cat:'openers',name:'פותחן מלבני בציפוי עור',w:55,h:55,shape:'rounded',two:true,time:60,temp:200,cost:'8',size:'9.5×5.5',color:'לבן / טורקיז / חום בהיר',note:''},
   {id:'7611',cat:'other',name:'וילון צד לרכב — זוג',w:430,h:365,shape:'oval',two:false,pair:true,time:30,temp:200,cost:'3 לזוג',size:'43×36.5',color:'לבן',note:'כולל מדבקות ואקום'},
   {id:'6442',cat:'other',name:'זכוכית דקה 13×18 עם מעמד יהלום',w:180,h:130,shape:'rect',two:false,time:240,temp:180,cost:'9',size:'13×18',color:'לבן',note:'⚠ הדפסה ללא מראה',noMirror:true}];
+function subVariant(){const it=subItem();if(!it||!it.variants)return null;return it.variants.find(v=>v[0]===SB.variant)||it.variants[0];}
 function subItem(){return SUB_ITEMS.find(i=>i.id===SB.item)||SUB_ITEMS[0];}
 function subPts(it){const r=it.shape==='rounded'?Math.min(it.w,it.h)*.06:0;
   if(it.shape==='heart'){const w=it.w,h=it.h,P=[];for(let i=0;i<=60;i++){const t=i/60*Math.PI*2,x=16*Math.pow(Math.sin(t),3),y=13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t);P.push([w/2+x/17*w/2,h/2-y/17*h/2]);}return P;}
@@ -4159,12 +4161,14 @@ const Sublim={id:'subl',label:'🎁 מתנה עם התמונה שלכם',
     const item={w,h,pts:it.mug?null:pts.map(p=>[p[0]*s,p[1]*s]),draw(ctx){ctx.save();ctx.scale(s,s);ctx.save();ctx.clip(pathOf(it.mug?shapePts('rect',it.w,it.h):pts));subArt(ctx,it);ctx.restore();
       ctx.strokeStyle='#9AA5B1';ctx.lineWidth=.5/s;ctx.setLineDash([3/s,2/s]);if(it.mug){ctx.strokeRect(0,0,it.w,it.h);ctx.beginPath();ctx.moveTo(it.w/2,0);ctx.lineTo(it.w/2,it.h);ctx.stroke();}else ctx.stroke(pathOf(pts));ctx.restore();}};
     const page={kind:'front',label:it.name.split(' (')[0],cut:false,placed:[{X:U.x+(U.w-w)/2,Y:U.y+(U.h-h)/2,rot:0,item}]};
-    return{pages:[page],summary:'זיקית '+it.id+' · הדפסה ⁦'+(it.w/10)+'×'+(it.h/10)+'⁩ ס"מ'+(s<1?' · התצוגה מוקטנת':'')+(it.mug?' · הקו באמצע = מול הידית':'')};},
+    return{pages:[page],summary:'זיקית '+(subVariant()?subVariant()[0]+' ('+subVariant()[1]+')':it.id)+' · הדפסה ⁦'+(it.w/10)+'×'+(it.h/10)+'⁩ ס"מ'+(s<1?' · התצוגה מוקטנת':'')+(it.mug?' · הקו באמצע = מול הידית':'')};},
   panel(){const it=subItem(),list=SUB_ITEMS.filter(i=>i.cat===SB.cat),big=!((it.w+20<=297&&it.h+20<=420)||(it.w+20<=420&&it.h+20<=297));
     return[
-    sec('🗂️ איזה מוצר',true,el('div',{class:'seg'},SUB_CATS.map(([v,t])=>el('button',{type:'button','aria-pressed':String(SB.cat===v),on:{click:()=>{SB.cat=v;const f=SUB_ITEMS.find(i=>i.cat===v);if(f)SB.item=f.id;rebuild();}}},t))),
-      el('div',{class:'sublist'},list.map(i=>el('button',{type:'button','aria-pressed':String(SB.item===i.id),on:{click:()=>{SB.item=i.id;SB.mirror=!i.noMirror;rebuild();}}},el('b',{},i.name),el('small',{},i.id+' · '+i.size+' ס"מ'+(BLANK_PRICE['subl-'+i.id]>0?' · '+BLANK_PRICE['subl-'+i.id]+' ₪':'')+(isAdmin?' · '+i.cost+' ₪':''))))),
-      el('div',{class:'subinfo'},el('p',{},el('b',{},it.name),' — מק"ט '+it.id),BLANK_PRICE['subl-'+it.id]>0?el('p',{},el('b',{},BLANK_PRICE['subl-'+it.id]+' ₪'),' ליחידה'+(it.pair?' (זוג)':'')):null,
+    sec('🗂️ איזה מוצר',true,...(SB.picked?[el('button',{type:'button',class:'btn ghost',style:'margin:4px 0 8px',on:{click:()=>{SB.picked=false;rebuild();}}},'🔁 להחליף מוצר')]:[   // S-133: הגיעו מדף המוצר — רואים רק אותו
+      el('div',{class:'seg'},SUB_CATS.map(([v,t])=>el('button',{type:'button','aria-pressed':String(SB.cat===v),on:{click:()=>{SB.cat=v;const f=SUB_ITEMS.find(i=>i.cat===v);if(f){SB.item=f.id;SB.variant='';}rebuild();}}},t))),
+      el('div',{class:'sublist'},list.map(i=>el('button',{type:'button','aria-pressed':String(SB.item===i.id),on:{click:()=>{SB.item=i.id;SB.variant='';SB.mirror=!i.noMirror;rebuild();}}},el('b',{},i.name),el('small',{},i.id+' · '+i.size+' ס"מ'+(BLANK_PRICE['subl-'+i.id]>0?' · '+BLANK_PRICE['subl-'+i.id]+' ₪':'')))))]),
+      el('div',{class:'subinfo'},el('p',{},el('b',{},it.name),' — מק"ט '+it.id),
+        it.variants?el('div',{class:'subvars'},el('span',{},'צבע: '),...it.variants.map(v=>el('button',{type:'button',title:v[1],'aria-label':v[1],'aria-pressed':String((SB.variant||it.variants[0][0])===v[0]),style:'--c:'+v[2],on:{click:()=>{SB.variant=v[0];rebuild();}}})),el('b',{},(subVariant()||it.variants[0])[1])):null,BLANK_PRICE['subl-'+it.id]>0?el('p',{},el('b',{},BLANK_PRICE['subl-'+it.id]+' ₪'),' ליחידה'+(it.pair?' (זוג)':'')):null,
         el('p',{},'שטח הדפסה: ⁦'+(it.w/10)+'×'+(it.h/10)+'⁩ ס"מ'+(it.two?' · דו־צדדי':'')+(it.mug?' · עוטף את הספל':'')+(it.pair?' · זוג':'')),
         isAdmin?el('p',{},'כבישה: '+it.time+' שניות ב-'+it.temp+'°C'+(it.note?' · '+it.note:'')):(it.note?el('p',{},it.note):null),el('p',{},'צבעים: '+it.color+(isAdmin?' · עלות: '+it.cost+' ₪ (לפני מע"מ)':'')),
         big&&isAdmin?el('p',{style:'color:#B42318'},'⚠ גדול מדף A3 — המדפסת שלך לא תדפיס את זה בדף אחד. הקובץ יוצא בגודל המוצר; צריך נייר גדול יותר או להקטין את העיצוב.'):null)),
@@ -5479,7 +5483,7 @@ function ordersSection(){
   if(MIKDASH){Blessing.intro='🕍 מדבקת ברכה של המקדש: בוחרים תמונה של בית המקדש מהמאגר, בוחרים פסוק, פונט וגודל — ומורידים PDF מוכן להדפסה.';}
   if(MIKDASH){Bingo.label='בינגו המקדש';Bingo.intro='🎯 בינגו המקדש: לוחות עם כלי המקדש, ביכורים, קורבנות ובגדי הכהן הגדול — כל לוח שונה, ויש קלפי קריאה לגזירה. מתאים לכיתה, לגן ולשולחן השבת.';}
   makeStates();restore();if(MIKDASH){qtMkInit();mmMkInit();bgMkInit();dmMkInit();giftMkInit();v3Page=false;}blApplyUrl();v3InitInline();try{const q=new URLSearchParams(location.search);if(q.get('p')==='ludo'&&['all','pieces','board'].includes(q.get('what')))LD.what=q.get('what');
-    if(q.get('p')==='subl'&&q.get('item')){const si=SUB_ITEMS.find(i=>i.id===q.get('item'));if(si){SB.item=si.id;SB.cat=si.cat;SB.mirror=!si.noMirror;}}}catch(e){}if(FOCUS)cur=FOCUS;if(cur.adminOnly){if(cur.id!=='admin')_pendTab=cur;cur=Stickers;}
+    if(q.get('p')==='subl'&&q.get('item')){const si=SUB_ITEMS.find(i=>i.id===q.get('item'));if(si){SB.item=si.id;SB.cat=si.cat;SB.mirror=!si.noMirror;SB.picked=true;}}}catch(e){}if(FOCUS)cur=FOCUS;if(cur.adminOnly){if(cur.id!=='admin')_pendTab=cur;cur=Stickers;}
   buildTabs();sizeCanvas();rebuild();
   if(cuUsesIco())loadCardIcons().then(()=>rebuild()).catch(()=>{});
   loadImages().then(n=>{if(n){rebuild();toast(n===1?'התמונה שלכם נטענה מחדש':n+' תמונות נטענו מחדש');}});

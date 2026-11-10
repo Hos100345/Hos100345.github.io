@@ -41,9 +41,9 @@
     '7611': { kind: 'shade', name: 'וילון צד לרכב — זוג', w: 430, h: 365 },
     // S-131: המתנות מזיקית עם תמונה נקייה (js/print-fit.js) — ההדפסה מולבשת בקוד על שטח ההדפסה האמיתי, כרטיס עם עובי במקום מודל
     '8724-3': { kind: 'mug', name: 'ספל אמייל ענק עם מכסה', w: 200, h: 70, mh: 100, r: 47, top: 48, rimColor: '#1A1A1A', lid: 'dome', knob: '#1A1A1A', hr: .26, ht: 5 },
-    '8514': { kind: 'mug', name: 'ספל נאון', w: 200, h: 95, mh: 98, r: 40, top: 40, inner: '#FF6A1F', handle: '#FF6A1F' },
+    '8514': { kind: 'mug', name: 'ספל נאון', w: 200, h: 95, mh: 98, r: 40, top: 40, inner: '#FF6A1F', handle: '#FF6A1F', colors: { '8514-3': ['כתום', '#FF6A1F', { inner: '#FF6A1F', handle: '#FF6A1F' }], '8514-4': ['צהוב', '#FFD60A', { inner: '#FFD60A', handle: '#FFD60A' }], '8514-5': ['ירוק', '#3DBE4E', { inner: '#3DBE4E', handle: '#3DBE4E' }] } },
     '8503-1': { kind: 'mug', name: 'ספל פלא שחור סאטן', w: 190, h: 80, mh: 98, r: 40, top: 40, body: '#1C1C1E', inner: '#111', handle: '#1C1C1E', matte: true },
-    '8510': { kind: 'mug', name: 'ספל עם כפית', w: 200, h: 95, mh: 98, r: 40, top: 40, spoon: '#2B5FD9' },
+    '8510': { kind: 'mug', name: 'ספל עם כפית', w: 200, h: 95, mh: 98, r: 40, top: 40, spoon: '#2B5FD9', colors: { '8510-1': ['כחול', '#2B5FD9', { spoon: '#2B5FD9' }], '8510-2': ['תכלת', '#5BC0EB', { spoon: '#5BC0EB' }], '8510-3': ['אדום', '#E03131', { spoon: '#E03131' }], '8510-4': ['ורוד', '#F06595', { spoon: '#F06595' }] } },
     '8714-1': { kind: 'mug', name: 'האג מאג טרמי', w: 200, h: 90, mh: 120, r: 40, top: 43, metal: true, lid: 'clear', hr: .24 },
     '8714-3': { kind: 'photo', key: 'wine', w: 200, h: 70 },
     '8715-1': { kind: 'photo', key: 'megamug', w: 220, h: 210 },
@@ -363,8 +363,10 @@
 
   /* ספל: גליל + ידית טורוס. S-132 — פרמטרים לכל ספלי זיקית: body/inner/handle (צבעים), matte (ספל פלא סאטן), metal (נירוסטה),
    * rimColor (אמייל — שפה שחורה), lid: 'dome' (אמייל/טרמי) | 'clear' (האג-מאג), spoon (צבע כפית בחריץ הידית), taper (טרמי צר למטה) */
-  function buildMug(it, art) {
+  function buildMug(it, art, opt) {
     const TH = T(), G = new TH.Group(), C = 2 * PI * it.r, pp = 6, c = cv(C * pp, it.mh * pp), x = c.getContext('2d');
+    const vr = (it.colors && opt && opt.color && it.colors[opt.color]) || null;   // S-133: וריאנט צבע מהמלאי (מק"ט-בן)
+    if (vr) it = Object.assign({}, it, vr[2] || {});
     const bodyCol = it.body || '#FDFDFB', metal = !!it.metal, matte = !!it.matte;
     x.fillStyle = bodyCol; x.fillRect(0, 0, c.width, c.height); x.scale(pp, pp);
     const y0 = (it.mh - it.h) / 2, pr = art(it.w, it.h, 'front'), o0 = C * .75 - it.w / 2;
@@ -390,11 +392,12 @@
       const disc = new TH.Mesh(new TH.CylinderGeometry(it.top + .5, it.top + .5, 7, 96), cm); disc.position.y = it.mh / 2 + 3.5; G.add(disc);
       const lip = new TH.Mesh(new TH.CylinderGeometry(it.top + 1.5, it.top + 1.5, 3, 96), phys({ color: new TH.Color('#EEF0F2') })); lip.position.y = it.mh / 2 + 1.5; G.add(lip);
     }
-    if (it.spoon) {   // כפית: הכף בתוך הספל, הידית נשענת בחריץ הידית ויוצאת החוצה
+    if (it.spoon) {   // כפית עומדת בתוך לולאת הידית (כמו בצילום הקטלוג): ידית הכפית לאורך הידית, הכף מעל
       const sm = phys({ color: new TH.Color(it.spoon) });
-      const L = it.mh * 1.25, stem = new TH.Mesh(new TH.CylinderGeometry(2.4, 2.8, L, 16), sm);
-      const tip = new TH.Mesh(new TH.SphereGeometry(3.2, 16, 12), sm); tip.position.y = L / 2;
-      const sp = new TH.Group(); sp.add(stem, tip); sp.position.set(it.r * .55, it.mh * .1, 0); sp.rotation.z = -.4; G.add(sp);
+      const L = it.mh * .78, sx = it.r + R * .30;
+      const stem = new TH.Mesh(new TH.CylinderGeometry(2.6, 3.2, L, 20), sm); stem.position.set(sx, -it.mh * .1, 0); stem.rotation.z = -.06;
+      const bowl = new TH.Mesh(new TH.SphereGeometry(10, 32, 24), sm); bowl.scale.set(1, 1.35, .42); bowl.position.set(sx + 4, it.mh * .29 + 13, 0); bowl.rotation.y = PI / 2; bowl.rotation.x = -.15;
+      G.add(stem, bowl);
     }
     G.rotation.y = PI / 2; // ההדפסה (מול הידית) — מול המצלמה
     const wrap = new TH.Group(); wrap.add(G); return { group: wrap, spin: 'full' };
