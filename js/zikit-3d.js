@@ -185,8 +185,7 @@
    * התמונה מהקטלוג נחתכה מהרקע (rembg) ונשמרה ב-images/games/zikit/<key>.webp עם שקיפות. כאן היא הופכת ל"כרטיס" עם עובי:
    * שכבת החזית = התמונה; מאחוריה 6 שכבות כהות יותר בהיסט קטן = עובי שנראה כשמסתובבים; צל רך על הרצפה. אחד לאחד עם הקטלוג מהחזית.
    * מוצר שהתמונה שלו בקטלוג חלשה (קטנה/דהויה) נשאר כמודל שנבנה בקוד (BUILD). ── */
-  // S-132: הספלים (enamel/mug-neon/mug-magic/hugmug/thermo) חזרו למודל התלת־ממדי הבנוי — כמו בסטודיו
-  var PHOTO = ['backpack','basalt','basalt-heart','board','bottle-straw','bottle','carcurtain','clock','crystal','cushion','doormat','doorsign','drawstring','glass-mirror','glass','hairbrush','instagram','keyhanger','leather','makeup','megamug','mug-color','mug-metal','pencil','powerbank','runner','snow','tin','tote','usb','wine','woodnum','woodphoto','woodshape'];
+  var PHOTO = ['mug-spoon','thermo','mug-neon','mug-magic','hugmug','enamel','backpack','basalt','basalt-heart','board','bottle-straw','bottle','carcurtain','clock','crystal','cushion','doormat','doorsign','drawstring','glass-mirror','glass','hairbrush','instagram','keyhanger','leather','makeup','megamug','mug-color','mug-metal','pencil','powerbank','runner','snow','tin','tote','usb','wine','woodnum','woodphoto','woodshape'];
   function photoCard(key) {
     var Tt = T(), g = new Tt.Group(), loader = new Tt.TextureLoader();
     var geo = new Tt.PlaneGeometry(2, 2), mats = [];
@@ -207,17 +206,7 @@
   }
   PHOTO.forEach(function (k) { S.register(k, function () { return photoCard(k); }); });
 
-  /* G-47: המודלים האמיתיים מהסטודיו (js/subl-3d.js) גם בקרוסלה — חוץ מהספלים הרגילים והחולצה (נשארים כפי שהם). שעון LOVE נשאר תמונה. */
-  var SUBL = { enamel: '8724-3', 'mug-neon': '8514', 'mug-magic': '8503-1', 'mug-spoon': '8510', hugmug: '8714-1', thermo: '8706-1', wine: '8714-3', megamug: '8715-1', bottle: '8703-2', 'bottle-straw': '8703-1',
-    basalt: '8582', 'basalt-heart': '8589', woodphoto: '8360-4', glass: '6452', board: '6458', crystal: '6424', woodshape: '6101-H20', tin: '8707-3', bracelet: '9172-1', hairbrush: '8670-1', magnet: '8381', leather: '8609', scale: '9608', apron: '7603', runner: '7410-17', doormat: '7413' };
-  var SUBL_TXT = { enamel: 'קפה', 'mug-neon': 'יום הולדת', 'mug-magic': 'הפתעה!', 'mug-spoon': 'בוקר טוב', hugmug: 'חיבוק חם', thermo: 'קפה בדרך', wine: 'לחיים', megamug: 'קיץ', bottle: 'מים', 'bottle-straw': 'שלי!', basalt: 'המשפחה', 'basalt-heart': 'אהבה', woodphoto: 'ביחד', glass: 'החתונה שלנו', board: 'המטבח של אמא', crystal: 'אהבה', woodshape: 'אמא', tin: 'מתוק', bracelet: 'נועה', hairbrush: 'נסיכה', magnet: 'סבא וסבתא', leather: 'זיכרונות', scale: 'בוקר טוב', apron: 'השף', runner: 'שבת שלום', doormat: 'ברוכים הבאים' };
-  Object.keys(SUBL).forEach(function (k) {
-    S.register(k, function () {
-      if (!window.SUBL3D) return photoCard(k);
-      var r = window.SUBL3D.build(SUBL[k], function (w, h) { return art(Math.round(w * 3), Math.round(h * 3), SUBL_TXT[k] || 'באהבה', '#ffffff'); });
-      return window.SUBL3D.fit(r.group, 1.8);
-    });
-  });
+  /* G-48: בקרוסלה — תמונות (דו־ממד) לכל המתנות; המודלים התלת־ממדיים מהסטודיו נשארים רק לעריכה. רק חולצה וספל קלאסי תלת־ממד (הושעיה, 10/11) */
 
   /* ── הרשימה לבמה: מפתח → שם לתגית, מק"ט, קישור לעיצוב. המחירים ללקוח עוד לא נקבעו (כלל 125) → בלי מחיר, הצעת מחיר ──
    * שלושת הראשונים (חולצה, ספל, פאזל) כבר קיימים ב-showcase-3d.js. */
