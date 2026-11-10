@@ -1265,7 +1265,7 @@ const I18N={
     'export.printOrderDesc':'לא חייבים להדפיס לבד — נדפיס את המשחק שלכם בבית דפוס איכותי, נחתוך כל קלף בצורה מדויקת ונכין אותו לאיסוף.',
     'export.printOrderFeature1':'🖨️ הדפסה מקצועית על נייר קשיח',
     'export.printOrderFeature2':'✂️ חיתוך מדויק לכל קלף',
-    'export.printOrderFeature3':'📍 איסוף עצמי מבית חוגלה (כרגע בלי משלוח)',
+    'export.printOrderFeature3':'📍 איסוף עצמי מדפוס קשת, בית שמש — מורדי הגטאות 7, מתחם השוקניון (כרגע בלי משלוח)',
     'export.printOrderBtn':'💬 להזמנת הדפסה בוואטסאפ',
     'export.printOrderNote':'עד 57 קלפים — 80 ₪ · 73 או 91 קלפים — 110 ₪. ההודעה תישלח עם פרטי המשחק; נחזור אליכם לאישור סופי וזמן הכנה, ומשלמים רק אחרי האישור.',
     'export.printPreviewTitle':'👁 תצוגה מקדימה לפני הדפסה',
@@ -2122,7 +2122,7 @@ const I18N={
     'export.printOrderDesc':'No need to print it yourself — we’ll print your game at a quality print shop, cut each card precisely, and have it ready for pickup.',
     'export.printOrderFeature1':'🖨️ Professional printing on card stock',
     'export.printOrderFeature2':'✂️ Precise cutting for every card',
-    'export.printOrderFeature3':'📍 Pickup from Beit Hogla (no delivery for now)',
+    'export.printOrderFeature3':'📍 Pickup from Keshet Print, Beit Shemesh — 7 Mordei HaGeta’ot St., Shukanyon complex (no delivery for now)',
     'export.printOrderBtn':'💬 Order printing on WhatsApp',
     'export.printOrderNote':'Up to 57 cards — ₪80 · 73 or 91 cards — ₪110. The message includes your game’s details; we’ll confirm the order and preparation time, and you pay only after confirmation.',
     'export.printPreviewTitle':'👁 Preview before printing',
@@ -3561,7 +3561,7 @@ window.applyI18n=applyI18n;
     <ul class="po-list">
       <li data-i18n="export.printOrderFeature1">🖨️ הדפסה מקצועית על נייר קשיח</li>
       <li data-i18n="export.printOrderFeature2">✂️ חיתוך מדויק לכל קלף</li>
-      <li data-i18n="export.printOrderFeature3">📍 איסוף עצמי מבית חוגלה (כרגע בלי משלוח)</li>
+      <li data-i18n="export.printOrderFeature3">📍 איסוף עצמי מדפוס קשת, בית שמש — מורדי הגטאות 7, מתחם השוקניון (כרגע בלי משלוח)</li>
     </ul>
     <div class="brow" style="margin-top:1rem">
       <button data-i18n="export.printOrderBtn" class="btn btn-wa" id="btn-print-order">💬 להזמנת הדפסה בוואטסאפ</button>
@@ -13438,7 +13438,7 @@ document.getElementById('dl-share').addEventListener('click',async()=>{
 
 // ══ הזמנת הדפסה ומשלוח עד הבית ══
 // D-105 (10/11/2026, הושעיה): פתוח. מחיר למשחק מודפס — עד 57 קלפים 80 ₪, 73/91 קלפים 110 ₪.
-// כרגע בלי משלוח — איסוף עצמי מבית חוגלה. המחיר בהודעה הוא הצעה; הושעיה מאשר סופית בוואטסאפ.
+// כרגע בלי משלוח — איסוף עצמי מדפוס קשת, בית שמש (מורדי הגטאות 7, מתחם השוקניון). המחיר בהודעה הוא הצעה; הושעיה מאשר סופית בוואטסאפ.
 const PRINT_ORDER_ENABLED=true;
 function printOrderPrice(cards){return cards>57?110:80;}
 function orderPrint(){
@@ -13448,7 +13448,7 @@ function orderPrint(){
     ?`\nפרטי המשחק: ${S.deck.length} קלפים · ${S.order.spc} סמלים בקלף · קוטר ${S.cardSizeMm} מ"מ · קלף ${shape}`
     :'';
   const n=S.deck.length||(S.order&&S.order.total)||0;
-  const price=n?`\nמחיר: ${printOrderPrice(n)} ₪ למשחק · איסוף עצמי מבית חוגלה`:'';
+  const price=n?`\nמחיר: ${printOrderPrice(n)} ₪ למשחק · איסוף עצמי מדפוס קשת, בית שמש (מורדי הגטאות 7, מתחם השוקניון)`:'';
   const msg=`שלום! סיימתי לעצב משחק מאצ׳טו במחולל ואשמח להזמין הדפסה אצלכם 🖨️${specs}${price}\nשם: \nטלפון: \nכמות עותקים: `;
   logGame({total:S.order?S.order.total:'',cards:S.deck.length||'',sizeMm:S.cardSizeMm,filename:'🚚 בקשת הדפסה ומשלוח',type:'print-order'});
   window.track&&window.track('print-order',{cards:S.deck.length||'',symbols:S.order?S.order.spc:'',detail:`קוטר ${S.cardSizeMm}מ"מ · ${shape}`});
