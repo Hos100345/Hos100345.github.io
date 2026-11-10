@@ -47,7 +47,7 @@
     '8714-1': { kind: 'mug', name: 'האג מאג טרמי', w: 200, h: 90, mh: 120, r: 40, top: 43, metal: true, lid: 'clear', hr: .24 },
     '8714-3': { kind: 'vessel', style: 'goblet', name: 'גביע יין נירוסטה', w: 200, h: 70, r: 30, top: 36, bh: 100, stem: 70, metal: true },
     '8715-1': { kind: 'vessel', style: 'mega', name: 'מגה מאג טרמי עם קשית', w: 220, h: 210, r: 42, top: 46, bh: 215, metal: true },
-    '8706-1': { kind: 'mug', name: 'ספל טרמי נירוסטה', w: 200, h: 90, mh: 164, r: 38, top: 42, metal: true, lid: 'dome', lidColor: '#1A1A1A', knob: '#1A1A1A', handle: '#1A1A1A', hr: .2, hy: 8 },
+    '8706-1': { kind: 'mug', name: 'ספל טרמי נירוסטה', w: 200, h: 90, mh: 164, r: 38, top: 42, metal: true, inner: '#D9DCDF', handle: '#1A1A1A', hr: .2, hy: 8 },
     '8703-2': { kind: 'vessel', style: 'bottle', name: 'בקבוק אלומיניום 600 מ״ל', w: 200, h: 110, r: 36, bh: 170, neck: 14, metal: true },
     '8703-1': { kind: 'vessel', style: 'bottle-straw', name: 'בקבוק עם קשית', w: 200, h: 110, r: 36, bh: 165, neck: 22, metal: true },
     '8582': { kind: 'panel', name: 'אבן בזלת 12×22', w: 100, h: 200, bw: 120, bh: 220, t: 10, shape: 'stone', mat: 'stone', base: '#F4F4F2', stand: 'clear', gloss: .5 },
@@ -591,16 +591,23 @@
   }
 
   /* מברשת שיער עם פלטת אלומיניום מודפסת על הגב */
-  function buildBrush(it, art) {
-    const TH = T(), G = new TH.Group(), bw = it.w + 8, bh = it.h + 10, black = PHYS(TH, { color: 0x15161A, roughness: .45, clearcoat: .6 });
-    const P = ellipsePts(bw / 2, bh / 2, 96).map(([x, y]) => [x, y * (1 + .08 * Math.sign(y))]);
-    const head = new TH.Group(); head.add(slab(P, 16, black, { bevel: 3 }));
-    const pr = faceCanvas(it.w, it.h, '#FFFFFF', art(it.w, it.h, 'front'), it.w, it.h, null, { pp: 8, clip: ellipsePts(it.w / 2, it.h / 2) });
-    head.add(capFace(ellipsePts(it.w / 2, it.h / 2, 96), null, PHYS(TH, { map: tex(pr), roughness: .25, clearcoat: .9 }), 8 + 3.1));
-    head.add(capFace(P, null, PHYS(TH, { color: 0x101114, roughness: .9 }), -8 - .05, true)); // צד הסיבים
-    head.position.y = bh * .18; G.add(head);
-    const handle = new TH.Mesh(new TH.CylinderGeometry(11, 9, 110, 24), black); handle.position.y = -bh / 2 - 40 + bh * .18; G.add(handle);
-    return { group: G, spin: 'sway', tilt: 0 };
+  function buildBrush(it, art) {   // מברשת פדל מלבנית: פלטה מודפסת בחזית, סיבים (שיניים) בגב, ידית
+    const TH = T(), G = new TH.Group(), bw = it.w + 10, bh = it.h + 10, T2 = 18, black = PHYS(TH, { color: 0x15161A, roughness: .45, clearcoat: .6 });
+    const P = roundRectPts(bw, bh, 12, 8), head = new TH.Group(); head.add(slab(P, T2, black, { bevel: 2 }));
+    const pr = faceCanvas(it.w, it.h, '#FFFFFF', art(it.w, it.h, 'front'), it.w, it.h, null, { pp: 8 });
+    head.add(capFace(roundRectPts(it.w, it.h, 6, 6), null, PHYS(TH, { map: tex(pr), roughness: .25, clearcoat: .9 }), T2 / 2 + 2.1));
+    // גב: כרית שחורה רכה + שיניים בשורות
+    const pad = new TH.Mesh(new TH.BoxGeometry(bw - 8, bh - 8, 3), PHYS(TH, { color: 0x202226, roughness: .95 })); pad.position.z = -T2 / 2 - 2 - 1.5; head.add(pad);
+    const pin = new TH.CylinderGeometry(.9, .9, 14, 6), tip = new TH.SphereGeometry(1.6, 8, 6), pm = PHYS(TH, { color: 0x2A2C30, roughness: .6 });
+    for (let i = -3; i <= 3; i++) for (let j = -5; j <= 5; j++) {
+      const x = i * (bw - 22) / 6, y = j * (bh - 24) / 10;
+      const p = new TH.Mesh(pin, pm); p.rotation.x = PI / 2; p.position.set(x, y, -T2 / 2 - 5 - 7); head.add(p);
+      const q = new TH.Mesh(tip, pm); q.position.set(x, y, -T2 / 2 - 5 - 14); head.add(q);
+    }
+    head.position.y = bh * .22; G.add(head);
+    const handle = new TH.Mesh(new TH.CylinderGeometry(10, 8, 105, 24), black); handle.position.y = -bh / 2 - 44 + bh * .22; G.add(handle);
+    const cap = new TH.Mesh(new TH.SphereGeometry(8, 16, 12), black); cap.position.y = -bh / 2 - 96 + bh * .22; G.add(cap);
+    return { group: G, spin: 'full', tilt: 0 };
   }
 
   /* סינר: בד שטוח בצורת סינר, ההדפסה על כולו, רצועת צוואר וקשירה */
