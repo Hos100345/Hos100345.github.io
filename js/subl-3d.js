@@ -45,28 +45,28 @@
     '8503-1': { kind: 'mug', name: 'ספל פלא שחור סאטן', w: 190, h: 80, mh: 98, r: 40, top: 40, body: '#1C1C1E', inner: '#111', handle: '#1C1C1E', matte: true },
     '8510': { kind: 'mug', name: 'ספל עם כפית', w: 200, h: 95, mh: 98, r: 40, top: 40, spoon: '#2B5FD9', colors: { '8510-1': ['כחול', '#2B5FD9', { spoon: '#2B5FD9' }], '8510-2': ['תכלת', '#5BC0EB', { spoon: '#5BC0EB' }], '8510-3': ['אדום', '#E03131', { spoon: '#E03131' }], '8510-4': ['ורוד', '#F06595', { spoon: '#F06595' }] } },
     '8714-1': { kind: 'mug', name: 'האג מאג טרמי', w: 200, h: 90, mh: 120, r: 40, top: 43, metal: true, lid: 'clear', hr: .24 },
-    '8714-3': { kind: 'photo', key: 'wine', w: 200, h: 70 },
-    '8715-1': { kind: 'photo', key: 'megamug', w: 220, h: 210 },
+    '8714-3': { kind: 'vessel', style: 'goblet', name: 'גביע יין נירוסטה', w: 200, h: 70, r: 30, top: 36, bh: 100, stem: 70, metal: true },
+    '8715-1': { kind: 'vessel', style: 'mega', name: 'מגה מאג טרמי עם קשית', w: 220, h: 210, r: 42, top: 46, bh: 215, metal: true },
     '8706-1': { kind: 'mug', name: 'ספל טרמי נירוסטה', w: 200, h: 90, mh: 164, r: 38, top: 42, metal: true, lid: 'dome', lidColor: '#1A1A1A', knob: '#1A1A1A', handle: '#1A1A1A', hr: .2, hy: 8 },
-    '8703-2': { kind: 'photo', key: 'bottle', w: 200, h: 110 },
-    '8703-1': { kind: 'photo', key: 'bottle-straw', w: 200, h: 110 },
-    '8582': { kind: 'photo', key: 'basalt', w: 100, h: 200 },
-    '8589': { kind: 'photo', key: 'basalt-heart', w: 200, h: 200 },
-    '8360-4': { kind: 'photo', key: 'woodphoto', w: 150, h: 200 },
-    '6452': { kind: 'photo', key: 'glass', w: 230, h: 180 },
-    '6458': { kind: 'photo', key: 'board', w: 280, h: 200 },
-    '6424': { kind: 'photo', key: 'crystal', w: 150, h: 200 },
+    '8703-2': { kind: 'vessel', style: 'bottle', name: 'בקבוק אלומיניום 600 מ״ל', w: 200, h: 110, r: 36, bh: 170, neck: 14, metal: true },
+    '8703-1': { kind: 'vessel', style: 'bottle-straw', name: 'בקבוק עם קשית', w: 200, h: 110, r: 36, bh: 165, neck: 22, metal: true },
+    '8582': { kind: 'panel', name: 'אבן בזלת 12×22', w: 100, h: 200, bw: 120, bh: 220, t: 10, shape: 'stone', mat: 'stone', base: '#F4F4F2', stand: 'clear', gloss: .5 },
+    '8589': { kind: 'panel', name: 'אבן בזלת לב 20×20', w: 200, h: 200, bw: 210, bh: 200, t: 10, shape: 'heart', mat: 'stone', base: '#F4F4F2', stand: 'clear', gloss: .5, printClip: 'heart' },
+    '8360-4': { kind: 'panel', name: 'תמונה על עץ עם רגל ניקל', w: 150, h: 200, t: 15, mat: 'wood', edge: '#F3EEE2', stand: 'nickel', radius: .01 },
+    '6452': { kind: 'glass', name: 'זכוכית עם מעמד יהלום 18×23', w: 230, h: 180 },
+    '6458': { kind: 'panel', name: 'לוח חיתוך זכוכית', w: 280, h: 200, t: 4, mat: 'glass', radius: .08, stand: 'feet', hole: true, spin: 'full', tilt: -1.0 },
+    '6424': { kind: 'panel', name: 'מגן קריסטל', w: 150, h: 200, bw: 160, bh: 210, t: 40, mat: 'crystal', radius: .02 },
     '8022-3': { kind: 'photo', key: 'clock', w: 200, h: 200 },
-    '6101-H20': { kind: 'photo', key: 'woodshape', w: 198, h: 198 },
-    '8707-3': { kind: 'photo', key: 'tin', w: 150, h: 150 },
-    '9172-1': { kind: 'photo', key: 'bracelet', w: 180, h: 35 },
-    '8670-1': { kind: 'photo', key: 'hairbrush', w: 65, h: 105 },
-    '8381': { kind: 'photo', key: 'magnet', w: 100, h: 150 },
-    '8609': { kind: 'photo', key: 'leather', w: 200, h: 250 },
-    '9608': { kind: 'photo', key: 'scale', w: 260, h: 260 },
-    '7603': { kind: 'photo', key: 'apron', w: 570, h: 777 },
-    '7410-17': { kind: 'photo', key: 'runner', w: 1200, h: 320 },
-    '7413': { kind: 'photo', key: 'doormat', w: 560, h: 250 },
+    '6101-H20': { kind: 'panel', name: 'לב מעץ מבריק', w: 198, h: 198, t: 6, shape: 'heart', mat: 'wood', edge: '#E8E2D6', ribbon: '#C9A227', printClip: 'heart' },
+    '8707-3': { kind: 'tin', name: 'קופסת מתכת עגולה', w: 150, h: 150, r: 78, bh: 50 },
+    '9172-1': { kind: 'cuff', name: 'צמיד אלומיניום', w: 180, h: 35, r: 31 },
+    '8670-1': { kind: 'brush', name: 'מברשת שיער', w: 65, h: 105 },
+    '8381': { kind: 'panel', name: 'מגנט עץ 10×15', w: 100, h: 150, t: 3, mat: 'wood', edge: '#E9E2D2', gloss: .5, radius: .02 },
+    '8609': { kind: 'panel', name: 'תמונה מעור עם מעמד', w: 200, h: 250, bw: 210, bh: 260, t: 8, mat: 'leather', edge: '#F3F1EC', stand: 'easel', radius: .05 },
+    '9608': { kind: 'panel', name: 'משקל זכוכית דיגיטלי', w: 260, h: 260, bw: 280, bh: 280, t: 22, mat: 'glass', radius: .06, stand: 'feet', display: true, spin: 'full', tilt: -1.0 },
+    '7603': { kind: 'apron', name: 'סינר סובלימציה', w: 570, h: 777 },
+    '7410-17': { kind: 'panel', name: 'ראנר שולחן פשתן', w: 1200, h: 320, t: 2.5, mat: 'fabric', fabric: 'linen', base: '#EFE8DA', edge: '#EFE8DA', radius: .005, spin: 'sway', tilt: -.5 },
+    '7413': { kind: 'doormat', name: 'שטיחון כניסה', w: 560, h: 250 },
     '6442': { kind: 'glass', name: 'זכוכית עם מעמד יהלום', w: 180, h: 130 },
   };
   const LEATHER = { white: ['לבן', '#F7F5F0'], pink: ['ורוד עתיק', '#D9A3A8'], turq: ['טורקיז', '#4FB3B0'], tan: ['חום בהיר', '#C49A6C'] };
@@ -479,7 +479,157 @@
     return { group: G, spin: 'sway', tilt: 0 };
   }
 
-  const BUILD = { pouch: buildPouch, tote: buildTote, diecut: buildDiecut, mitt: buildMitt, mat: buildFlat, coaster: buildFlat, mug: buildMug, opener: buildOpener, shade: buildShade, glass: buildGlass, photo: buildPhoto };
+  /* ───────── S-134: שאר המתנות מזיקית — מודלים בקוד (לוחות, בקבוקים, לב, קופסה, צמיד, מברשת, סינר, שטיחון) ───────── */
+  function heartPts(w, h, n = 96) { // לב ממורכז, y למטה; מתאים לתיבה w×h
+    const P = []; for (let i = 0; i < n; i++) { const t = i / n * PI * 2, x = 16 * Math.pow(Math.sin(t), 3), y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)); P.push([x, y]); }
+    const xs = P.map(p => p[0]), ys = P.map(p => p[1]), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+    return P.map(([x, y]) => [(x - x0) / (x1 - x0) * w - w / 2, (y - y0) / (y1 - y0) * h - h / 2]);
+  }
+  function stonePts(w, h) { // אבן בזלת: מתאר לא סדיר עם שוליים שבורים
+    const P = roundRectPts(w, h, Math.min(w, h) * .08, 6); return P.map(([x, y], i) => { const k = 1 + .035 * noise(i * .7, 3) + .02 * (hash(i, 9) - .5); return [x * k, y * k]; });
+  }
+  const PHYS = (TH, o) => new TH.MeshPhysicalMaterial(o);
+  function nickelFoot(TH, G, w, h, t) { // רגל ניקל מאחור (תמונת עץ)
+    const m = PHYS(TH, { color: 0xD8DBDF, roughness: .2, metalness: .9 });
+    const bar = new TH.Mesh(new TH.CylinderGeometry(5, 5, h * .62, 24), m); bar.rotation.x = -.55; bar.position.set(0, -h * .18, -t / 2 - h * .16); G.add(bar);
+    const peg = new TH.Mesh(new TH.CylinderGeometry(4, 4, 14, 16), m); peg.rotation.x = PI / 2; peg.position.set(-w * .3, -h * .36, -t / 2 - 6); G.add(peg);
+  }
+  function easel(TH, G, w, h, t, col) { // רגל נפתחת מאחור (עור)
+    const m = PHYS(TH, { color: col, roughness: .7 });
+    const leg = new TH.Mesh(new TH.BoxGeometry(w * .42, h * .78, 2.5), m); leg.rotation.x = -.42; leg.position.set(0, -h * .1, -t / 2 - h * .16); G.add(leg);
+  }
+  /* לוח מודפס: פני ההדפסה בחזית, עובי, חומר לפי הסוג, מעמד לפי הסוג */
+  function buildPanel(it, art) {
+    const TH = T(), G = new TH.Group(), w = it.bw || it.w, h = it.bh || it.h, t = it.t || 6, mat = it.mat || 'wood';
+    const P = it.shape === 'heart' ? heartPts(w, h) : it.shape === 'stone' ? stonePts(w, h) : it.shape === 'circle' ? ellipsePts(w / 2, h / 2, 96) : roundRectPts(w, h, Math.min(w, h) * (it.radius != null ? it.radius : .04), 8);
+    const base = it.base || '#FFFFFF', edge = it.edge || base;
+    const front = faceCanvas(w, h, base, art(it.w, it.h, 'front'), it.w, it.h, it.fabric || null, { pp: ppFor(w, h, 1600), cx: it.cx || 0, cy: it.cy || 0, clip: it.printClip === 'heart' ? heartPts(it.w, it.h) : (it.printClip || null), after: it.after ? x => it.after(x, w, h) : null });
+    const gloss = it.gloss == null ? .25 : it.gloss;
+    if (mat === 'glass' || mat === 'crystal') {
+      const glass = PHYS(TH, { color: mat === 'crystal' ? 0xE8F4FF : 0xBFE0D8, roughness: .03, transparent: true, opacity: mat === 'crystal' ? .42 : .5, clearcoat: 1, clearcoatRoughness: .02, reflectivity: .9 });
+      G.add(slab(P, t, glass, { bevel: mat === 'crystal' ? 3 : 1.2 }));
+      G.add(capFace(P, null, new TH.MeshStandardMaterial({ map: tex(front), roughness: .35 }), mat === 'crystal' ? -t / 2 + 2 : -t / 2 + .3)); // ההדפסה מאחור, נראית דרך הזכוכית
+    } else {
+      const side = PHYS(TH, mat === 'stone' ? { color: 0x15161A, roughness: .95, flatShading: true } : mat === 'leather' ? { color: edge, roughness: .75, bumpMap: bumpTex('leather', 8, w, h), bumpScale: .4 } : mat === 'rubber' ? { color: edge, roughness: .95 } : { color: edge, roughness: .6 });
+      const bv = mat === 'stone' ? 2.5 : it.bevel || 0; G.add(slab(P, t, side, { bevel: bv }));
+      const faceMat = mat === 'leather' ? PHYS(TH, { map: tex(front), roughness: .55, bumpMap: bumpTex('leather', 8, w, h), bumpScale: .25 }) : mat === 'fabric' ? PHYS(TH, { map: tex(front), roughness: .95, bumpMap: bumpTex(it.fabric || 'canvas', 5, w, h), bumpScale: .35 }) : PHYS(TH, { map: tex(front), roughness: gloss, clearcoat: mat === 'wood' ? .9 : 0, clearcoatRoughness: .15 });
+      G.add(capFace(mat === 'stone' ? P.map(([x, y]) => [x * .93, y * .93]) : P, null, faceMat, t / 2 + bv + .05));   // באבן: הפן הלבן קטן מהאבן, השוליים השבורים נשארים שחורים
+      G.add(capFace(P, null, PHYS(TH, { color: it.back || edge, roughness: .8 }), -t / 2 - bv - .05, true));
+    }
+    if (it.stand === 'nickel') nickelFoot(TH, G, w, h, t);
+    if (it.stand === 'easel') easel(TH, G, w, h, t, edge);
+    if (it.stand === 'clear') { const m = PHYS(TH, { color: 0xF4FBFF, roughness: .05, transparent: true, opacity: .45, clearcoat: 1 }); [-1, 1].forEach(s => { const c = new TH.Mesh(new TH.BoxGeometry(14, 26, 22), m); c.position.set(s * w * .3, -h / 2 - 6, 0); G.add(c); }); }
+    if (it.stand === 'feet') [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([a, b]) => { const f = new TH.Mesh(new TH.CylinderGeometry(6, 6, 4, 16), PHYS(TH, { color: 0x222, roughness: .9 })); f.rotation.x = PI / 2; f.position.set(a * w * .4, b * h * .4, -t / 2 - 2); G.add(f); });
+    if (it.ribbon) { const rm = PHYS(TH, { color: it.ribbon, roughness: .6 }); const r = tube([[-w * .08, -h / 2 - 2], [0, -h / 2 - 34], [w * .08, -h / 2 - 2]], 1.6, rm, false, 0); G.add(r); }
+    if (it.display) { const d = new TH.Mesh(new TH.PlaneGeometry(w * .22, h * .09), PHYS(TH, { color: 0x111318, roughness: .3 })); d.position.set(0, h * .36, t / 2 + .2); G.add(d); }
+    if (it.hole) { const hm = new TH.Mesh(new TH.TorusGeometry(5, 1.6, 10, 32), PHYS(TH, { color: 0xE5E7EB, roughness: .4 })); hm.position.set(w * .4, h * .38, 0); G.add(hm); }
+    return { group: G, spin: it.spin || 'sway', tilt: it.tilt || 0 };
+  }
+
+  /* גליל־הדפסה כללי: גוף (אפשר מחודד) עם ההדפסה עוטפת, בלי ידית; בסיס לבקבוקים/גביע/מגה-מאג */
+  function printedBody(TH, it, art, o) {
+    const r = o.r, top = o.top || o.r, hh = o.h, C = 2 * PI * Math.max(r, top), pp = 6, c = cv(C * pp, hh * pp), x = c.getContext('2d');
+    x.fillStyle = o.color || '#FDFDFB'; x.fillRect(0, 0, c.width, c.height); x.scale(pp, pp);
+    const pr = art(it.w, it.h, 'front'), y0 = o.py != null ? o.py : (hh - it.h) / 2, o0 = C * .75 - it.w / 2;
+    [o0, o0 - C].forEach(off => x.drawImage(pr, off, y0, it.w, it.h));
+    const m = PHYS(TH, Object.assign({ map: tex(c), roughness: .22, metalness: o.metal || 0, clearcoat: .9, clearcoatRoughness: .12 }, o.matOpt || {}));
+    return new TH.Mesh(new TH.CylinderGeometry(top, r, hh, 96, 1, true), m);
+  }
+  function buildVessel(it, art) {
+    const TH = T(), G = new TH.Group(), white = PHYS(TH, { color: 0xFDFDFB, roughness: .22, metalness: it.metal ? .3 : 0, clearcoat: .9, clearcoatRoughness: .12 }), dark = PHYS(TH, { color: 0x1F2124, roughness: .5 }), steel = PHYS(TH, { color: 0xC9CDD3, roughness: .25, metalness: .9 });
+    const body = printedBody(TH, it, art, { r: it.r, top: it.top || it.r, h: it.bh, metal: it.metal ? .3 : 0 }); G.add(body);
+    const bot = new TH.Mesh(new TH.CircleGeometry(it.r, 64), white); bot.rotation.x = PI / 2; bot.position.y = -it.bh / 2; G.add(bot);
+    const topY = it.bh / 2;
+    if (it.style === 'bottle' || it.style === 'bottle-straw') {
+      const sh = new TH.Mesh(new TH.CylinderGeometry(it.neck, it.top || it.r, 26, 96, 1, true), white); sh.position.y = topY + 13; G.add(sh);
+      const nk = new TH.Mesh(new TH.CylinderGeometry(it.neck, it.neck, 10, 64), white); nk.position.y = topY + 31; G.add(nk);
+      if (it.style === 'bottle') {
+        const cap = new TH.Mesh(new TH.CylinderGeometry(it.neck + 3, it.neck + 3, 22, 64), dark); cap.position.y = topY + 47; G.add(cap);
+        const ring = new TH.Mesh(new TH.TorusGeometry(10, 2, 10, 40), steel); ring.position.set(it.neck + 6, topY + 52, 0); ring.rotation.y = PI / 2; G.add(ring);
+        const hook = new TH.Mesh(new TH.TorusGeometry(16, 2.4, 10, 48, PI * 1.7), steel); hook.position.set(it.neck + 22, topY + 50, 0); hook.rotation.y = PI / 2; hook.rotation.x = .4; G.add(hook);
+      } else {
+        const cap = new TH.Mesh(new TH.CylinderGeometry(it.neck + 5, it.neck + 5, 20, 64), dark); cap.position.y = topY + 46; G.add(cap);
+        const lid = new TH.Mesh(new TH.CylinderGeometry(it.neck + 5, it.neck + 5, 6, 64), dark); lid.position.set(-8, topY + 60, 0); lid.rotation.z = .9; G.add(lid);
+        const straw = new TH.Mesh(new TH.CylinderGeometry(3.5, 3.5, 34, 20), PHYS(TH, { color: 0x3A3D42, roughness: .4 })); straw.position.set(6, topY + 68, 0); straw.rotation.z = -.35; G.add(straw);
+      }
+    } else if (it.style === 'goblet') {
+      const stem = new TH.Mesh(new TH.CylinderGeometry(5, 7, it.stem, 32), white); stem.position.y = -it.bh / 2 - it.stem / 2; G.add(stem);
+      const foot = new TH.Mesh(new TH.CylinderGeometry(it.r * 1.05, it.r * 1.1, 4, 64), white); foot.position.y = -it.bh / 2 - it.stem - 2; G.add(foot);
+      const rim = new TH.Mesh(new TH.TorusGeometry(it.top - 1, 1.2, 10, 96), white); rim.rotation.x = PI / 2; rim.position.y = topY; G.add(rim);
+      const inner = new TH.Mesh(new TH.CylinderGeometry(it.top - 2, it.r - 2, it.bh - 4, 96, 1, true), PHYS(TH, { color: 0xE6E8EB, roughness: .3, side: TH.BackSide, metalness: .4 })); inner.position.y = 1; G.add(inner);
+    } else if (it.style === 'mega') {
+      const lidM = PHYS(TH, { color: it.lidColor || 0xFDFDFB, roughness: .2, clearcoat: .9 });
+      const lid = new TH.Mesh(new TH.CylinderGeometry(it.top + 2, it.top + 2, 12, 96), lidM); lid.position.y = topY + 6; G.add(lid);
+      const dome = new TH.Mesh(new TH.SphereGeometry(it.top + 1, 64, 24, 0, PI * 2, 0, PI * .4), lidM); dome.scale.y = .35; dome.position.y = topY + 12; G.add(dome);
+      const straw = new TH.Mesh(new TH.CylinderGeometry(4, 4, 70, 20), PHYS(TH, { color: it.strawColor || 0xFDFDFB, roughness: .3 })); straw.position.set(it.top * .4, topY + 40, 0); straw.rotation.z = -.12; G.add(straw);
+      const R = it.bh * .2, arc = PI * 1.3, hd = new TH.Mesh(new TH.TorusGeometry(R, 6, 20, 48, arc), white); hd.rotation.z = -arc / 2; hd.position.set(it.r + R * .45, 0, 0); G.add(hd);
+    }
+    G.rotation.y = PI / 2; const wrap = new TH.Group(); wrap.add(G); return { group: wrap, spin: 'full' };
+  }
+
+  /* קופסת מתכת עגולה עם פלטת אלומיניום מודפסת על המכסה */
+  function buildTin(it, art) {
+    const TH = T(), G = new TH.Group(), r = it.r, hh = it.bh, steel = PHYS(TH, { color: 0xD4D7DB, roughness: .28, metalness: .9 });
+    const box = new TH.Mesh(new TH.CylinderGeometry(r, r, hh, 96), steel); box.position.y = -6; G.add(box);
+    const lid = new TH.Mesh(new TH.CylinderGeometry(r + 1.5, r + 1.5, 12, 96), steel); lid.position.y = hh / 2; G.add(lid);
+    const pr = faceCanvas(it.w, it.h, '#FFFFFF', art(it.w, it.h, 'front'), it.w, it.h, null, { pp: 8, clip: ellipsePts(it.w / 2, it.h / 2) });
+    const plate = new TH.Mesh(new TH.CircleGeometry(it.w / 2, 96), PHYS(TH, { map: tex(pr), roughness: .25, clearcoat: .8 })); plate.rotation.x = -PI / 2; plate.position.y = hh / 2 + 6.1; G.add(plate);
+    const lip = new TH.Mesh(new TH.TorusGeometry(it.w / 2 + 1.5, 1.5, 10, 96), steel); lip.rotation.x = PI / 2; lip.position.y = hh / 2 + 6; G.add(lip);
+    G.rotation.x = .95; // רואים את המכסה
+    const wrap = new TH.Group(); wrap.add(G); return { group: wrap, spin: 'sway', tilt: 0 };
+  }
+
+  /* צמיד אלומיניום פתוח — ההדפסה עוטפת את החוץ */
+  function buildCuff(it, art) {
+    const TH = T(), G = new TH.Group(), r = it.r, hh = it.h, span = PI * 1.55, C = span * r, pp = 8, c = cv(C * pp, hh * pp), x = c.getContext('2d');
+    x.fillStyle = '#FDFDFB'; x.fillRect(0, 0, c.width, c.height); x.scale(pp, pp); x.drawImage(art(it.w, it.h, 'front'), (C - it.w) / 2, 0, it.w, it.h);
+    const outer = new TH.Mesh(new TH.CylinderGeometry(r, r, hh, 96, 1, true, -span / 2 + PI, span), PHYS(TH, { map: tex(c), roughness: .25, metalness: .35, clearcoat: .9 })); G.add(outer);
+    const inner = new TH.Mesh(new TH.CylinderGeometry(r - 1.5, r - 1.5, hh, 96, 1, true, -span / 2 + PI, span), PHYS(TH, { color: 0xE3E5E8, roughness: .3, metalness: .8, side: TH.BackSide })); G.add(inner);
+    const edgeM = PHYS(TH, { color: 0xF2F3F4, roughness: .3, metalness: .6 });
+    [hh / 2, -hh / 2].forEach(y => { const e = new TH.Mesh(new TH.TorusGeometry(r - .75, .8, 8, 96, span), edgeM); e.rotation.x = PI / 2; e.rotation.z = -span / 2 + PI; e.position.y = y; G.add(e); });
+    const wrap = new TH.Group(); wrap.add(G); return { group: wrap, spin: 'full' };
+  }
+
+  /* מברשת שיער עם פלטת אלומיניום מודפסת על הגב */
+  function buildBrush(it, art) {
+    const TH = T(), G = new TH.Group(), bw = it.w + 8, bh = it.h + 10, black = PHYS(TH, { color: 0x15161A, roughness: .45, clearcoat: .6 });
+    const P = ellipsePts(bw / 2, bh / 2, 96).map(([x, y]) => [x, y * (1 + .08 * Math.sign(y))]);
+    const head = new TH.Group(); head.add(slab(P, 16, black, { bevel: 3 }));
+    const pr = faceCanvas(it.w, it.h, '#FFFFFF', art(it.w, it.h, 'front'), it.w, it.h, null, { pp: 8, clip: ellipsePts(it.w / 2, it.h / 2) });
+    head.add(capFace(ellipsePts(it.w / 2, it.h / 2, 96), null, PHYS(TH, { map: tex(pr), roughness: .25, clearcoat: .9 }), 8 + 3.1));
+    head.add(capFace(P, null, PHYS(TH, { color: 0x101114, roughness: .9 }), -8 - .05, true)); // צד הסיבים
+    head.position.y = bh * .18; G.add(head);
+    const handle = new TH.Mesh(new TH.CylinderGeometry(11, 9, 110, 24), black); handle.position.y = -bh / 2 - 40 + bh * .18; G.add(handle);
+    return { group: G, spin: 'sway', tilt: 0 };
+  }
+
+  /* סינר: בד שטוח בצורת סינר, ההדפסה על כולו, רצועת צוואר וקשירה */
+  function buildApron(it, art) {
+    const TH = T(), G = new TH.Group(), w = it.w, h = it.h;
+    const P = [[-w * .22, -h / 2], [w * .22, -h / 2], [w * .26, -h / 2 + h * .2], [w / 2, -h / 2 + h * .38], [w / 2, h / 2 - w * .03], [w / 2 - w * .03, h / 2], [-w / 2 + w * .03, h / 2], [-w / 2, h / 2 - w * .03], [-w / 2, -h / 2 + h * .38], [-w * .26, -h / 2 + h * .2]];
+    const front = faceCanvas(w, h, '#FFFFFF', art(w, h, 'front'), w, h, 'canvas', { weave: .3, pp: ppFor(w, h, 1600) });
+    const m = PHYS(TH, { map: tex(front), roughness: .95, bumpMap: bumpTex('canvas', 5, w, h), bumpScale: .3, side: TH.DoubleSide });
+    G.add(capFace(P, null, m, 0));
+    const str = PHYS(TH, { color: 0xF4F4F2, roughness: .9 });
+    G.add(tube([[-w * .2, -h / 2], [-w * .22, -h / 2 - h * .14], [0, -h / 2 - h * .2], [w * .22, -h / 2 - h * .14], [w * .2, -h / 2]], 4, str, false, -1));
+    G.add(tube([[w / 2, -h / 2 + h * .4], [w / 2 + w * .18, -h / 2 + h * .36], [w / 2 + w * .3, -h / 2 + h * .46]], 3.5, str, false, -1));
+    G.add(tube([[-w / 2, -h / 2 + h * .4], [-w / 2 - w * .18, -h / 2 + h * .36], [-w / 2 - w * .3, -h / 2 + h * .46]], 3.5, str, false, -1));
+    return { group: G, spin: 'sway', tilt: 0 };
+  }
+
+  /* שטיחון כניסה: מסגרת גומי שחורה עם אינסרט בד מודפס */
+  function buildDoormat(it, art) {
+    const TH = T(), G = new TH.Group(), bw = it.w + 60, bh = it.h + 60, t = 9;
+    const rubber = PHYS(TH, { color: 0x1A1A1A, roughness: .98 });
+    G.add(slab(roundRectPts(bw, bh, 14, 8), t, rubber));
+    const frame = faceCanvas(bw, bh, '#1A1A1A', null, 1, 1, null, { pp: 4, after: x => { x.strokeStyle = '#2E2E2E'; x.lineWidth = 2; for (let i = 10; i < bw - 10; i += 14) { x.beginPath(); x.arc(i, 14, 5, 0, PI * 2); x.arc(i, bh - 14, 5, 0, PI * 2); x.stroke(); } for (let j = 10; j < bh - 10; j += 14) { x.beginPath(); x.arc(14, j, 5, 0, PI * 2); x.arc(bw - 14, j, 5, 0, PI * 2); x.stroke(); } } });
+    G.add(capFace(roundRectPts(bw, bh, 14, 8), null, PHYS(TH, { map: tex(frame), roughness: .98 }), t / 2 + .05));
+    const ins = faceCanvas(it.w, it.h, '#FFFFFF', art(it.w, it.h, 'front'), it.w, it.h, 'canvas', { weave: .35 });
+    const panel = capFace(roundRectPts(it.w, it.h, 4, 4), null, PHYS(TH, { map: tex(ins), roughness: .95, bumpMap: bumpTex('canvas', 5, it.w, it.h), bumpScale: .35 }), t / 2 + .6); G.add(panel);
+    return { group: G, spin: 'full', tilt: -1.05 };
+  }
+
+  const BUILD = { pouch: buildPouch, tote: buildTote, diecut: buildDiecut, mitt: buildMitt, mat: buildFlat, coaster: buildFlat, mug: buildMug, opener: buildOpener, shade: buildShade, glass: buildGlass, photo: buildPhoto, panel: buildPanel, vessel: buildVessel, tin: buildTin, cuff: buildCuff, brush: buildBrush, apron: buildApron, doormat: buildDoormat };
 
   function build(id, art, opt = {}) {
     const it = ITEMS[id]; if (!it) throw new Error('subl-3d: unknown ' + id);
