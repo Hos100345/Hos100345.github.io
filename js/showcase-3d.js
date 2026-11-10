@@ -515,7 +515,7 @@
           it.h.position.set(Math.sin(ang) * RAD, -0.2 + 0.2 * front + Math.sin(now / 900 + i) * 0.04, Math.cos(ang) * RAD);
           var s = 0.5 + (0.6 + (SLOTS > 4 ? 0.3 : 0)) * front;
           it.h.scale.setScalar(s);
-          it.h.rotation.y = (N === 1 ? -pos * STEP : 0) + (i === cur && !drag ? Math.sin(now / 1400) * 0.55 : 0);   // פונה למצלמה, ומתנדנד קלות; מוצר יחיד — הגרירה מסובבת אותו
+          it.h.rotation.y = (N === 1 ? -pos * STEP : 0) + (i === cur && !drag && !(it.o.userData && it.o.userData.flat) ? Math.sin(now / 1400) * 0.55 : 0);   // G-49: תמונה דו־ממדית (userData.flat) לא מתנדנדת — שלא יראו עובי   // פונה למצלמה, ומתנדנד קלות; מוצר יחיד — הגרירה מסובבת אותו
         });
         r.render(scene, cam);
       }
