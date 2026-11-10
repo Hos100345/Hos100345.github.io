@@ -207,7 +207,7 @@
   }
   PHOTO.forEach(function (k) { S.register(k, function () { return photoCard(k); }); });
 
-  /* G-46: המודלים האמיתיים מהסטודיו (js/subl-3d.js) גם בקרוסלה — חוץ מהספלים הרגילים והחולצה (נשארים כפי שהם). שעון LOVE נשאר תמונה. */
+  /* G-47: המודלים האמיתיים מהסטודיו (js/subl-3d.js) גם בקרוסלה — חוץ מהספלים הרגילים והחולצה (נשארים כפי שהם). שעון LOVE נשאר תמונה. */
   var SUBL = { enamel: '8724-3', 'mug-neon': '8514', 'mug-magic': '8503-1', 'mug-spoon': '8510', hugmug: '8714-1', thermo: '8706-1', wine: '8714-3', megamug: '8715-1', bottle: '8703-2', 'bottle-straw': '8703-1',
     basalt: '8582', 'basalt-heart': '8589', woodphoto: '8360-4', glass: '6452', board: '6458', crystal: '6424', woodshape: '6101-H20', tin: '8707-3', bracelet: '9172-1', hairbrush: '8670-1', magnet: '8381', leather: '8609', scale: '9608', apron: '7603', runner: '7410-17', doormat: '7413' };
   var SUBL_TXT = { enamel: 'קפה', 'mug-neon': 'יום הולדת', 'mug-magic': 'הפתעה!', 'mug-spoon': 'בוקר טוב', hugmug: 'חיבוק חם', thermo: 'קפה בדרך', wine: 'לחיים', megamug: 'קיץ', bottle: 'מים', 'bottle-straw': 'שלי!', basalt: 'המשפחה', 'basalt-heart': 'אהבה', woodphoto: 'ביחד', glass: 'החתונה שלנו', board: 'המטבח של אמא', crystal: 'אהבה', woodshape: 'אמא', tin: 'מתוק', bracelet: 'נועה', hairbrush: 'נסיכה', magnet: 'סבא וסבתא', leather: 'זיכרונות', scale: 'בוקר טוב', apron: 'השף', runner: 'שבת שלום', doormat: 'ברוכים הבאים' };
