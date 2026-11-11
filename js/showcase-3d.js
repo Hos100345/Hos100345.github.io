@@ -474,7 +474,9 @@
         dotEls.forEach(function (d, i) { d.className = i === cur ? 'on' : ''; });
         cv.setAttribute('aria-label', 'תלת־ממד מסתובב: ' + (names[cur] || keys[cur]) + ' — לחיצה פותחת את העיצוב');
         var zp = window.ZK && window.ZK.price(keys[cur]);   // G-45: מחיר מהשרת לצד השם
-        cap.textContent = (names[cur] || keys[cur]) + (zp ? ' · ' + zp + ' ₪' : '') + ' · לעיצוב ←'; cap.href = links[cur] || '#';
+        var hs = window.HSALE, nm = names[cur] || keys[cur];   // G-50: מבצע — מחיר אחרי הנחה בכיתוב
+        if (hs && hs.pct > 0) { nm = hs.text(nm); if (zp) zp = hs.p(zp) + ' ₪ במקום ' + zp; }
+        cap.textContent = nm + (zp ? ' · ' + zp + ' ₪' : '') + ' · לעיצוב ←'; cap.href = links[cur] || '#';
         pause.textContent = auto ? '⏸' : '▶'; pause.setAttribute('aria-label', auto ? 'עצירת הסיבוב' : 'הפעלת הסיבוב');
       }
       pause.addEventListener('click', function () { auto = !auto; nextAt = performance.now() + 5000; label(); });
@@ -493,7 +495,7 @@
       cv.style.cursor = 'pointer';
       cv.addEventListener('click', function () { if (dragged) return; if (window.ZK && window.ZK.open(keys[cur])) return; if (links[cur]) location.href = links[cur]; });   // לחיצה על המוצר = דף המוצר (G-45), ואם אין — הסטודיו
       cap.addEventListener('click', function (e) { if (!dragged && window.ZK && window.ZK.P[keys[cur]]) { e.preventDefault(); window.ZK.open(keys[cur]); } });
-      window.addEventListener('zk-prices', label);
+      window.addEventListener('zk-prices', label); window.addEventListener('hsale', label);
       function size() {
         var w = wrap.clientWidth || 300, h = wrap.clientHeight || 240;
         r.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix();
