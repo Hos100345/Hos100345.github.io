@@ -16,6 +16,8 @@
 
   function priceKey(key) { var p = P[key]; return p ? 'subl-' + p.sku : null; }
   function price(key) { var k = priceKey(key); return k ? prices[k] : undefined; }
+  /* G-50: מבצע (window.HSALE מ-games/index.html) — מחיר מקורי מחוק + מחיר אחרי הנחה. המספרים מהשרת, לכן innerHTML בטוח */
+  function priceHTML(v) { var S = window.HSALE; return S && S.pct > 0 ? '<s>' + v + ' ₪</s> ' + S.p(v) + ' ₪' : v + ' ₪'; }
   function link(key) { return '../studio/?p=subl&item=' + P[key].sku; }
 
   /* ── תמונת הדמו: תמונה של הלקוח מהעמוד (IndexedDB) או חנוכה ── */
@@ -74,7 +76,7 @@
     modal.querySelector('#zk-name').textContent = prod.name; modal.querySelector('.zk-size').textContent = prod.size;
     modal.querySelector('.zk-go').href = link(key);
     var pr = modal.querySelector('.zk-price'); pr.textContent = '';
-    pricesReady.then(function () { var v = price(key); pr.textContent = v ? v + ' ₪' : 'מחיר לפי בקשה'; });
+    pricesReady.then(function () { if (state.key !== key) return; var v = price(key); if (v) pr.innerHTML = priceHTML(v); else pr.textContent = 'מחיר לפי בקשה'; });
     if (modal.hidden) { lastFocus = document.activeElement; modal.hidden = false; document.body.style.overflow = 'hidden'; }
     try { history.replaceState(null, '', '#gift=' + key); } catch (e) {}
     draw(); modal.querySelector('.zk-x').focus();
@@ -94,7 +96,9 @@
     var ks = keys();
     el.innerHTML = ks.map(function (k) { return '<button type="button" class="zk-card" data-key="' + k + '"><img src="' + IMG + k + '.webp" alt="" loading="lazy" width="300" height="300"><span class="zk-cn">' + P[k].name + '</span><span class="zk-cp" data-pk="' + k + '"></span></button>'; }).join('');
     el.addEventListener('click', function (e) { var b = e.target.closest('[data-key]'); if (b) open(b.dataset.key); });
-    pricesReady.then(function () { el.querySelectorAll('[data-pk]').forEach(function (s) { var v = price(s.dataset.pk); s.textContent = v ? v + ' ₪' : ''; }); });
+    var fill = function () { el.querySelectorAll('[data-pk]').forEach(function (s) { var v = price(s.dataset.pk); if (v) s.innerHTML = priceHTML(v); else s.textContent = ''; }); };
+    pricesReady.then(fill);
+    window.addEventListener('hsale', function () { pricesReady.then(function () { fill(); if (modal && !modal.hidden && state.key) open(state.key); }); });
   }
   function init() {
     var g = document.getElementById('zk-grid'); if (g) grid(g);

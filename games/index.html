@@ -16,10 +16,12 @@
   <!-- ⛔ js/play-engine.js נוצר ע"י tools/build-play-engine.py מתוך dobble.html — לא לערוך ידנית.
        משמש כאן רק את "מצא את הזהה" (genDeck/drawCard…), כך שהקלף זהה למחולל. שינוי בו = להעלות ?v= כאן וב-sw.js. -->
   <script src="../js/play-engine.js?v=10"></script>
-  <script src="../js/showcase-3d.js?v=11" defer></script>
+  <script>/* G-50: מבצע כללי (studio_sales). pct=0 עד שהשרת עונה; p = מחיר אחרי הנחה (אותו עיגול כמו בשרת); text = מחליף "N ₪" בכיתוב */
+  window.HSALE={pct:0,title:'',p:function(v){return this.pct>0&&v>0?Math.round(v*(100-this.pct)/100):v},text:function(s){var t=this;return t.pct>0?String(s).replace(/(\d+) ₪/g,function(m,n){return t.p(+n)+' ₪ במקום '+n+' ₪'}):s}};</script>
+  <script src="../js/showcase-3d.js?v=12" defer></script>
   <script src="../js/zikit-3d.js?v=9" defer></script>
   <script src="../js/print-fit.js?v=1" defer></script>
-  <script src="../js/zikit-products.js?v=2" defer></script>
+  <script src="../js/zikit-products.js?v=3" defer></script>
   <style>
     :root{
       --blue:#2563EB;--blue-light:#DBEAFE;--indigo:#4338CA;--purple:#7C3AED;--wa:#25D366;--wa-dark:#1DA851;--navy:#0F172A;
@@ -296,6 +298,21 @@
     .zk-cn{font-weight:800;font-size:.92rem;line-height:1.25}
     .zk-cp{font-weight:800;color:#7C2D12;background:#FFEDD5;border-radius:.5rem;padding:.05rem .45rem;font-size:.85rem;min-height:1.2em}
     .zk-modal{position:fixed;inset:0;z-index:60;background:rgba(15,23,42,.62);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:12px}
+    /* G-50: חלון מבצע + פס מבצע + מחיר מחוק */
+    .zk-price s,.zk-cp s,.hub .price s{opacity:.6;font-weight:600;font-size:.82em;margin-inline-end:.25em}
+    .sale-strip{display:flex;align-items:center;justify-content:center;gap:.4rem;width:100%;margin:.6rem 0 0;padding:.55rem .8rem;border-radius:999px;background:linear-gradient(135deg,#1E3A8A,#4C1D95);color:#FDE68A;font-weight:800;font-size:.95rem;min-height:44px;box-shadow:0 4px 14px rgba(30,58,138,.3)}
+    .sale-modal{position:fixed;inset:0;z-index:70;background:rgba(15,23,42,.66);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:16px}
+    .sale-box{position:relative;width:min(420px,100%);border-radius:24px;padding:1.6rem 1.3rem 1.3rem;text-align:center;color:#fff;background:radial-gradient(120% 90% at 50% 0%,#3B2A8C 0%,#1E2A6B 55%,#111B4D 100%);box-shadow:0 24px 60px rgba(0,0,0,.45);border:2px solid #FACC15;animation:salein .35s ease-out}
+    @keyframes salein{from{transform:translateY(18px) scale(.94);opacity:0}to{transform:none;opacity:1}}
+    @media (prefers-reduced-motion:reduce){.sale-box{animation:none}}
+    .sale-box .sale-ic{font-size:2.6rem;line-height:1}
+    .sale-box h2{margin:.3rem 0 0;font-size:1.15rem;font-weight:800;color:#FDE68A}
+    .sale-box .sale-big{font-size:3.4rem;font-weight:900;line-height:1.05;color:#FACC15;margin:.2rem 0;text-shadow:0 3px 0 rgba(0,0,0,.25)}
+    .sale-box p{margin:.35rem 0;font-size:1rem;line-height:1.45}
+    .sale-box .sale-sm{font-size:.88rem;opacity:.85}
+    .sale-box .sale-go{width:100%;margin-top:.8rem;background:#FACC15;color:#1E1B4B;box-shadow:0 6px 18px rgba(250,204,21,.35)}
+    .sale-box .sale-x{position:absolute;top:8px;inset-inline-end:8px;width:44px;height:44px;border-radius:50%;color:#fff;font-size:1.2rem;background:rgba(255,255,255,.14)}
+    .sale-box .sale-x:focus-visible,.sale-box .sale-go:focus-visible,.sale-strip:focus-visible{outline:3px solid #fff;outline-offset:2px}
     .zk-modal[hidden]{display:none}
     .zk-box{position:relative;background:#fff;border-radius:1.4rem;max-width:880px;width:100%;max-height:94vh;overflow:auto;display:grid;grid-template-columns:1.1fr 1fr;box-shadow:0 30px 70px rgba(15,23,42,.4)}
     .zk-media{position:relative;background:radial-gradient(circle at 50% 35%,#fff 0%,#F4F1FF 60%,#E9E4FF 100%);padding:1rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6rem}
@@ -1255,6 +1272,39 @@ const GAMES=[
   });
   window.addEventListener('hashchange',function(){fromHash(true)});
   fromHash(true);
+})();
+</script>
+<script>
+/* G-50: מבצע (20% עד שבוע לפני חנוכה). המקור: studio_sale() בשרת — אותו מבצע שהשרת מחיל בהזמנה (create_studio_order).
+   כשהמבצע נגמר בשרת — החלון, הפס והמחירים המחוקים נעלמים לבד. החלון קופץ פעם אחת למכשיר; הפס פותח אותו שוב. */
+(function(){
+  var URL_='https://sccivxenkyzxolpraexf.supabase.co/rest/v1/rpc/studio_sale',KEY='sb_publishable_Ctloh48bIY2Lxm_YmTiSGA_1ADr5FDz';
+  var modal=null,last=null;
+  function close(){if(!modal||modal.hidden)return;modal.hidden=true;document.body.style.overflow='';if(last&&last.focus)last.focus();}
+  function open(s,until){
+    if(!modal){
+      modal=document.createElement('div');modal.className='sale-modal';modal.hidden=true;modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');modal.setAttribute('aria-labelledby','sale-t');
+      modal.innerHTML='<div class="sale-box"><button type="button" class="sale-x" aria-label="סגירה">✕</button><div class="sale-ic" aria-hidden="true">🕎</div><h2 id="sale-t">מתנות לחנוכה עם התמונות שלכם</h2><div class="sale-big"></div><p class="sale-l1"></p><p class="sale-sm">ההנחה כבר בתוך המחיר — לא צריך קוד.</p><button type="button" class="btn sale-go">🎁 לבחור מתנה</button></div>';
+      document.body.appendChild(modal);
+      modal.addEventListener('click',function(e){if(e.target===modal||e.target.classList.contains('sale-x'))close();});
+      modal.querySelector('.sale-go').addEventListener('click',function(){close();var t=document.getElementById('tab-gifts');if(t)t.click();var p=document.getElementById('pan-gifts');if(p){p.style.scrollMarginTop='140px';p.scrollIntoView({block:'start',behavior:'smooth'});}});
+      document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
+    }
+    modal.querySelector('.sale-big').textContent=s.percent+'% הנחה';
+    modal.querySelector('.sale-l1').textContent='על כל המשחקים והמתנות · עד '+until+', כדי שהמתנה תגיע בזמן לחג';
+    last=document.activeElement;modal.hidden=false;document.body.style.overflow='hidden';modal.querySelector('.sale-go').focus();
+  }
+  fetch(URL_,{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'},body:'{}'}).then(function(r){return r.json()}).then(function(s){
+    if(!s||!s.ok||!(s.percent>0))return;
+    var H=window.HSALE;H.pct=s.percent;H.title=s.title||'מבצע';
+    var until='';try{until=new Date(s.ends_at).toLocaleDateString('he-IL',{timeZone:'Asia/Jerusalem',weekday:'long',day:'numeric',month:'numeric'});}catch(e){}
+    document.querySelectorAll('.hub .price').forEach(function(el){var t=el.textContent,m=/^(.*?)(\d+) ₪$/.exec(t);if(m)el.innerHTML=m[1]+'<s>'+m[2]+' ₪</s> '+H.p(+m[2])+' ₪';});
+    var tabs=document.querySelector('.tabs');
+    if(tabs){var b=document.createElement('button');b.type='button';b.className='sale-strip';b.textContent='🕎 '+s.percent+'% הנחה על הכול · עד '+until.replace(/^יום /,'');b.addEventListener('click',function(){open(s,until)});tabs.parentNode.insertBefore(b,tabs);}
+    try{window.dispatchEvent(new Event('hsale'));}catch(e){}
+    var k='games.sale.seen.'+s.id,seen=false;try{seen=!!localStorage.getItem(k);}catch(e){}
+    if(!seen)setTimeout(function(){var zk=document.querySelector('.zk-modal');if(zk&&!zk.hidden)return;open(s,until);try{localStorage.setItem(k,'1');}catch(e){}},1200);
+  }).catch(function(){});
 })();
 </script>
 <script src="../js/share-link.js?v=1"></script>
