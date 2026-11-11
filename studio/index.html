@@ -201,6 +201,7 @@ details.face>.body{padding:0 12px 12px;display:grid;gap:8px}
 .mgtext .row>*{min-width:0}.mgtext .fontbtn{max-width:100%;overflow:hidden}.mgtext .fontbtn .fsample{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%} /* S-118: כיתוב ארוך לא מרחיב את הדף בטלפון */
 #adbar{flex-wrap:wrap;justify-content:center;border-radius:18px;width:max-content}#adbar button{min-width:34px}
 .mgbar{position:absolute;z-index:3;top:8px;left:50%;transform:translateX(-50%);display:flex;gap:1px;background:rgba(255,255,255,.95);border-radius:999px;box-shadow:0 4px 14px rgba(20,41,77,.18);padding:3px;max-width:calc(100% - 12px)}.mgbar[hidden]{display:none}
+.mgbar .brk{display:none}.mgbar.two{flex-wrap:wrap;justify-content:center;border-radius:24px;width:max-content}.mgbar.two .brk{display:block;flex-basis:100%;height:0}
 .mgbar button{min-width:36px;min-height:40px;padding:0 6px;border:0;background:none;border-radius:999px;font:inherit;font-size:1.02rem;color:#14294D;cursor:pointer}.mgbar button:hover{background:#EEF2FF}.mgbar button:disabled{opacity:.35;cursor:default}
 .mgtext{border:1px solid #E2DACB;border-radius:12px;padding:.5rem .6rem;margin:.45rem 0}.mgmore[hidden]{display:none}.mgtext.sel{border-color:#2563EB;box-shadow:0 0 0 2px rgba(37,99,235,.15)}.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .sh3d.inset{position:absolute;z-index:2;left:10px;bottom:10px;width:32%;height:40%;max-width:260px;flex:none;border:2px solid #fff;box-shadow:0 6px 18px rgba(20,41,77,.25);cursor:zoom-in}
@@ -273,7 +274,7 @@ body.admin .cust{display:none!important}
   .preview .actions{display:flex}
   body>.actions{display:none}
 }
-@media(max-width:899px){.preview .actions{display:none}}
+@media(max-width:899px){.preview .actions{display:none}body.lay .preview{height:56vh}body.lay .st-tab{top:auto;bottom:84px}} /* S-140: כפתור הסרטון לא מכסה את קצה המוצר בזמן עריכה */
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 .bgopts{display:grid;gap:.5rem}
 .blsw{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 8px}.blswatch{width:40px;height:40px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px var(--line);cursor:pointer;padding:0}.blswatch[aria-pressed=true]{box-shadow:0 0 0 3px var(--navy)}
@@ -3643,7 +3644,7 @@ function shXRemove(E){if(!E)return;shSnap();SH.ex=(SH.ex||[]).filter(o=>o!==E);i
 function shXRot(E,d){if(!E)return;shSnap();E.rot=d==null?0:mgSnapRot((E.rot||0)+d);shCommit();shSyncInputs();}
 function shXFront(E){if(!E)return;shSnap();SH.ex=SH.ex.filter(o=>o!==E).concat([E]);shCommit();}
 function shXLocal(q,px,py){const a=-(q.E.rot||0)*Math.PI/180,dx=px-q.x,dy=py-q.y;return[dx*Math.cos(a)-dy*Math.sin(a),dx*Math.sin(a)+dy*Math.cos(a)];}
-function shXHandles(q,sl){const a=(q.E.rot||0)*Math.PI/180,P=(lx,ly)=>[q.x+lx*Math.cos(a)-ly*Math.sin(a),q.y+lx*Math.sin(a)+ly*Math.cos(a)];return{size:P(q.w/2,q.h/2),rot:P(0,-q.h/2-26*(sl||1)),del:P(-q.w/2,-q.h/2),top:P(0,-q.h/2)};}
+function shXHandles(q,sl){const a=(q.E.rot||0)*Math.PI/180,P=(lx,ly)=>[q.x+lx*Math.cos(a)-ly*Math.sin(a),q.y+lx*Math.sin(a)+ly*Math.cos(a)];const o=12*(sl||1);return{size:P(q.w/2+o,q.h/2+o),rot:P(0,-q.h/2-o-22*(sl||1)),del:P(-q.w/2-o,-q.h/2-o),top:P(0,-q.h/2)};}
 // המסגרת = התמונה (ix,iy פינה; iw/ih). הכיתוב בתוך המסגרת: tpx/tpy = מיקום יחסי (0–1), ts = גובה אות במ"מ
 function shLayers(src){if(SH.v!==3){SH.ix=SH.iy=null;SH.tpx=.5;SH.tpy=null;SH.ih=null;SH.v=3;} // גרסה קודמת → מתחילים באמצע
   const K=shKind(),Z=shZone(),img=src||shImg(),has=!!img,zw=Z.x1-Z.x0,zh=Z.y1-Z.y0,MW=Math.min(SH_MAX.w,zw),MH=Math.min(SH_MAX.h,zh);
@@ -3738,8 +3739,8 @@ async function shirtWorkPDF(){if(!window.jspdf){toast('ספריית ה-PDF לא 
 // ── העורך השטוח — יושב בתצוגה הגדולה (בצעדים 1–2). גרירה, צביטה בשתי אצבעות, ידיות, מקלדת ──
 let SHE=null; // {c,sel,drag,pinch}
 function shHit(L,px,py,sl){const H=14*(sl||1),near=(a,b)=>Math.hypot(px-a,py-b)<H;
-  {const X=shXSel(),q=X&&L.ex.find(o=>o.E===X);if(q){const Hd=shXHandles(q,sl);for(const k of['del','rot','size'])if(near(Hd[k][0],Hd[k][1]))return['x:'+X.id,k];}
-    for(let i=L.ex.length-1;i>=0;i--){const o=L.ex[i],[lx,ly]=shXLocal(o,px,py);if(Math.abs(lx)<=o.w/2+4&&Math.abs(ly)<=o.h/2+4)return['x:'+o.E.id,'move'];}}
+  {const X=shXSel(),q=X&&L.ex.find(o=>o.E===X);if(q){const Hd=shXHandles(q,sl),[ix,iy]=shXLocal(q,px,py);if(!(Math.abs(ix)<=q.w/2&&Math.abs(iy)<=q.h/2))for(const k of['del','rot','size'])if(near(Hd[k][0],Hd[k][1]))return['x:'+X.id,k];}
+    for(let i=L.ex.length-1;i>=0;i--){const o=L.ex[i],[lx,ly]=shXLocal(o,px,py);if(Math.abs(lx)<=Math.max(o.w/2+4,20*(sl||0))&&Math.abs(ly)<=Math.max(o.h/2+4,20*(sl||0)))return['x:'+o.E.id,'move'];}}
   if(L.t&&SHE.sel==='text'&&near(L.t.x+L.t.w/2,L.t.y+L.t.h/2))return['text','size'];
   if(SHE.sel==='img'&&L.frame){if(near(L.ix+L.iw,L.iy+L.ih))return['img','size'];if(near(L.ix+L.iw,L.iy+L.ih/2))return['img','w'];if(near(L.ix+L.iw/2,L.iy+L.ih))return['img','h'];}
   if(L.t&&px>L.t.x-L.t.w/2-4&&px<L.t.x+L.t.w/2+4&&py>L.t.y-L.t.h/2-4&&py<L.t.y+L.t.h/2+4)return['text','move'];
@@ -3791,7 +3792,9 @@ function shEditor(){const c=el('canvas',{class:'sheditor',tabindex:'0',role:'app
   c.addEventListener('keydown',e=>{const s=e.shiftKey?10:2,m={ArrowLeft:[-s,0],ArrowRight:[s,0],ArrowUp:[0,-s],ArrowDown:[0,s]}[e.key];
     if(m){shNudge(...m);e.preventDefault();}else if(e.key==='+'||e.key==='='){shScale(1.05);e.preventDefault();}else if(e.key==='-'){shScale(1/1.05);e.preventDefault();}
     else if('tTא'.includes(e.key)&&SH.text){SHE.sel=SHE.sel==='text'?'img':'text';shSelUi();e.preventDefault();}else if('zZז'.includes(e.key)){shUndo();e.preventDefault();}
-    else if(shXSel()&&(e.key==='Delete'||e.key==='Backspace')){shXRemove(shXSel());e.preventDefault();}else if(shXSel()&&e.key===']'){shXRot(shXSel(),5);e.preventDefault();}else if(shXSel()&&e.key==='['){shXRot(shXSel(),-5);e.preventDefault();}});
+    else if(shXSel()&&(e.key==='Delete'||e.key==='Backspace')){shXRemove(shXSel());e.preventDefault();}else if(shXSel()&&e.key===']'){shXRot(shXSel(),5);e.preventDefault();}else if(shXSel()&&e.key==='['){shXRot(shXSel(),-5);e.preventDefault();}
+    else if('nNמ'.includes(e.key)&&!e.ctrlKey&&!e.metaKey){const ids=['img'].concat(SH.text?['text']:[],shExValid().map(E=>'x:'+E.id)),i=ids.indexOf(SHE.sel);SHE.sel=ids[(i+1)%ids.length];shSelUi();shDrawEditor();e.preventDefault();}
+    else if(shXSel()&&e.key==='0'){shXRot(shXSel(),null);e.preventDefault();}});
   new ResizeObserver(()=>shDrawEditor()).observe(c);return c;}
 // מצייר את העורך: החולצה ממלאת את השטח, המסגרת מקווקוות, ידיות כחולות על מה שנבחר
 function shDrawEditor(){if(!SHE||!SHE.c||!document.body.contains(SHE.c)||SHE.c.hidden)return;const c=SHE.c,K=shKind(),L=shLayers(),pts=shOutline(SH.side==='back'),dpr=Math.min(2,window.devicePixelRatio||1);
@@ -4287,13 +4290,14 @@ function mgDup(L){if(!L)return;if(L.k==='img'&&MG.layers.filter(o=>o.k==='img').
 function mgFront(L){if(!L)return;mgSnap();MG.layers=MG.layers.filter(o=>o!==L).concat([L]);mgCommit();mgSay('הועבר למעלה — מעל השאר');}
 function mgRot(L,d){if(!L)return;mgSnap();L.rot=d==null?0:Math.round(((L.rot||0)+d)%360);mgCommit();mgSay('סיבוב '+Math.round(L.rot)+'°');}
 function mgScale(L,f){if(!L)return;mgSnap();if(L.k==='img')L.w=Math.max(8,Math.min(600,L.w*f));else L.fs=Math.max(3,Math.min(90,L.fs*f));mgCommit();}
-function mgMove(L,dx,dy){if(!L)return;mgSnap();L.x+=dx;L.y+=dy;mgCommit();}
+function mgMove(L,dx,dy,ns){if(!L)return;if(!ns)mgSnap();L.x+=dx;L.y+=dy;mgCommit();}
+function mgCenter(L){if(!L)return;mgSnap();L.x=MUG_W/2;L.y=mugType().ph/2;mgCommit();mgSay('באמצע');}
 function mgSay(t){const n=document.getElementById('mgLive');if(n)n.textContent=t;}
 const mgName=L=>L.k==='img'?'תמונה '+((L.si|0)+1):'כיתוב "'+(L.text||'')+'"';
 function mgSelect(id){if(!MGE)return;MGE.sel=id;mgDraw();mgPanelSync();const L=mgSel();if(L)mgSay('נבחר: '+mgName(L));}
 function mgPanelSync(){const one=document.querySelectorAll('[data-mgl]').length===1;document.querySelectorAll('[data-mgl]').forEach(n=>{const on=one||!!MGE&&n.dataset.mgl===MGE.sel;n.classList.toggle('sel',on);const m=n.querySelector('.mgmore');if(m)m.hidden=!on;});}
 // ── העורך: הפס השטוח של הספל, גדול ונקי. אצבע על תמונה/כיתוב = עריכה; בכל מקום אחר = גלילה רגילה של הדף
-function mgEditor(){const c=el('canvas',{class:'sheditor mged',id:'mg2d',tabindex:'0',role:'application','aria-label':'עריכה על הספל. לוחצים על תמונה או כיתוב ואז גוררים. הפינה הכחולה משנה גודל, העיגול שלמעלה מסובב. שתי אצבעות: גודל וסיבוב. במקלדת: N בוחר את הבא, חיצים מזיזים, פלוס ומינוס גודל, סוגריים [ ] מסובבים, Delete מוחק, Z מבטל'});
+function mgEditor(){const c=el('canvas',{class:'sheditor mged',id:'mg2d',tabindex:'0',role:'application','aria-label':'עריכה על הספל. לוחצים על תמונה או כיתוב ואז גוררים. הפינה הכחולה משנה גודל, העיגול שלמעלה מסובב. שתי אצבעות: גודל וסיבוב. במקלדת: N בוחר את הבא, חיצים מזיזים, פלוס ומינוס גודל, סוגריים [ ] מסובבים, 0 מיישר, C לאמצע, D משכפל, F מעל השאר, Delete מוחק, Z מבטל, Escape מבטל בחירה. כל הפעולות גם בכפתורים שמעל המוצר'});
   MGE={c,sel:MGE?MGE.sel:null,drag:null,pinch:null,v:null};
   const toMm=e=>{const r=c.getBoundingClientRect(),v=MGE.v;return v?[(e.clientX-r.left-v.ox)/v.s,(e.clientY-r.top-v.oy)/v.s]:[0,0];};
   const dist=(a,b)=>Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY),ang=(a,b)=>Math.atan2(b.clientY-a.clientY,b.clientX-a.clientX)*180/Math.PI;
@@ -4307,7 +4311,7 @@ function mgEditor(){const c=el('canvas',{class:'sheditor mged',id:'mg2d',tabinde
   c.addEventListener('pointerdown',e=>{if(MGE.pinch)return;const[x,y]=toMm(e),hd=mgHitHandle(x,y);
     if(hd==='del'){e.preventDefault();mgRemove(mgSel());return;}
     const L=hd?mgSel():mgHitLayer(x,y);if(!L){if(MGE.sel){MGE.sel=null;mgDraw();mgPanelSync();}return;}
-    e.preventDefault();c.setPointerCapture(e.pointerId);mgSnap();const was=MGE.sel===L.id;MGE.sel=L.id;mgPanelSync();
+    e.preventDefault();c.setPointerCapture(e.pointerId);if(document.activeElement!==c&&!(document.activeElement&&document.activeElement.matches&&document.activeElement.matches('input[type=text]')))c.focus({preventScroll:true});mgSnap();const was=MGE.sel===L.id;MGE.sel=L.id;mgPanelSync();
     MGE.drag={mode:hd||'move',L,x0:x,y0:y,o:{x:L.x,y:L.y,w:L.w,fs:L.fs,rot:L.rot||0},moved:false,was,t:Date.now()};mgDraw();});
   c.addEventListener('pointermove',e=>{const D=MGE.drag;if(!D||MGE.pinch)return;const[x,y]=toMm(e),L=D.L,M=mugType();
     if(Math.hypot(x-D.x0,y-D.y0)*MGE.v.s>3)D.moved=true;if(!D.moved)return;
@@ -4324,19 +4328,20 @@ function mgEditor(){const c=el('canvas',{class:'sheditor mged',id:'mg2d',tabinde
     if('nNמ'.includes(e.key)&&MG.layers.length){const vis=MG.layers.filter(o=>o.k==='img'||o.text),i=vis.indexOf(L);const n=vis[(i+1)%vis.length];if(n)mgSelect(n.id);e.preventDefault();return;}
     if('zZז'.includes(e.key)){mgUndo();e.preventDefault();return;}
     if(!L)return;if(m){mgMove(L,...m);e.preventDefault();}else if(e.key==='+'||e.key==='='){mgScale(L,1.05);e.preventDefault();}else if(e.key==='-'){mgScale(L,1/1.05);e.preventDefault();}
-    else if(e.key===']'){mgRot(L,5);e.preventDefault();}else if(e.key==='['){mgRot(L,-5);e.preventDefault();}else if(e.key==='Delete'||e.key==='Backspace'){mgRemove(L);e.preventDefault();}});
+    else if(e.key===']'){mgRot(L,5);e.preventDefault();}else if(e.key==='['){mgRot(L,-5);e.preventDefault();}else if(e.key==='Delete'||e.key==='Backspace'){mgRemove(L);e.preventDefault();}
+    else if(e.ctrlKey||e.metaKey||e.altKey)return;else if('dDג'.includes(e.key)){mgDup(L);e.preventDefault();}else if('fFכ'.includes(e.key)){mgFront(L);e.preventDefault();}else if('cCב'.includes(e.key)){mgCenter(L);e.preventDefault();}else if(e.key==='0'){mgRot(L,null);e.preventDefault();}else if(e.key==='Escape'){MGE.sel=null;mgDraw();mgPanelSync();}});
   c.addEventListener('focus',()=>{if(!mgSel()){const n=MG.layers.find(o=>o.k==='img'||o.text);if(n)mgSelect(n.id);}});
   new ResizeObserver(()=>mgDraw()).observe(c);return c;}
 // סיבוב נצמד ל-0°, 45°, 90°… כשמתקרבים (4°) — כך קל לקבל "ישר" או "אלכסון" מדויק
 function mgSnapRot(r){r=((r%360)+540)%360-180;const q=Math.round(r/45)*45;return Math.abs(r-q)<4?q:Math.round(r);}
 function mgLocal(L,x,y){const a=-(L.rot||0)*Math.PI/180,dx=x-L.x,dy=y-L.y;return[dx*Math.cos(a)-dy*Math.sin(a),dx*Math.sin(a)+dy*Math.cos(a)];}
-function mgHitLayer(x,y){const pad=MGE&&MGE.v?6/MGE.v.s:2;for(let i=MG.layers.length-1;i>=0;i--){const L=MG.layers[i];if(L.k==='text'&&!L.text)continue;const[w,h]=mgSize(L),[lx,ly]=mgLocal(L,x,y);if(Math.abs(lx)<=w/2+pad&&Math.abs(ly)<=h/2+pad)return L;}return null;}
+function mgHitLayer(x,y){const pad=MGE&&MGE.v?6/MGE.v.s:2;for(let i=MG.layers.length-1;i>=0;i--){const L=MG.layers[i];if(L.k==='text'&&!L.text)continue;const[w,h]=mgSize(L),[lx,ly]=mgLocal(L,x,y);if(Math.abs(lx)<=Math.max(w/2+pad,pad*3.6)&&Math.abs(ly)<=Math.max(h/2+pad,pad*3.6))return L;}return null;}
 function mgHandles(L){const[w,h]=mgSize(L),s=MGE.v.s,a=(L.rot||0)*Math.PI/180,P=(lx,ly)=>[L.x+lx*Math.cos(a)-ly*Math.sin(a),L.y+lx*Math.sin(a)+ly*Math.cos(a)];
-  return{scale:P(w/2,h/2),rot:P(0,-h/2-30/s),del:P(-w/2,-h/2),top:P(0,-h/2)};}
-function mgHitHandle(x,y){const L=mgSel();if(!L||!MGE.v)return null;const H=mgHandles(L),r=22/MGE.v.s;for(const k of['del','rot','scale'])if(Math.hypot(x-H[k][0],y-H[k][1])<r)return k;return null;}
+  /* S-140: הידיות מחוץ לתיבה — כיתוב קטן נשאר פנוי לגרירה; ידית שנופלת מתחת לסרגל העליון יורדת לתחתית */const o=16/s,lim=((MGE.v.tb||0)+14-MGE.v.oy)/s;let rot=P(0,-h/2-o-28/s),top=P(0,-h/2),del=P(-w/2-o,-h/2-o);if(rot[1]<lim){rot=P(0,h/2+o+28/s);top=P(0,h/2);}if(del[1]<lim)del=P(-w/2-o,h/2+o);return{scale:P(w/2+o,h/2+o),rot,del,top};}
+function mgHitHandle(x,y){const L=mgSel();if(!L||!MGE.v)return null;const H=mgHandles(L),r=22/MGE.v.s;{const[w,h]=mgSize(L),[lx,ly]=mgLocal(L,x,y);if(Math.abs(lx)<=w/2&&Math.abs(ly)<=h/2)return null;}for(const k of['del','rot','scale'])if(Math.hypot(x-H[k][0],y-H[k][1])<r)return k;return null;}
 function mgDraw(){if(!MGE||!MGE.c||!document.body.contains(MGE.c)||MGE.c.hidden)return;mgEnsure();const c=MGE.c,M=mugType(),dpr=Math.min(2,window.devicePixelRatio||1),cw=c.clientWidth||320,ch=c.clientHeight||420;
   /* מלמעלה: סרגל (64px) · הפס · שורת סימון · למטה: הספל בתלת־ממד, חי, בלי לכסות את הפס */
-  const res=Math.max(96,Math.min(ch*.36,230)),s=Math.min(cw*.9/MUG_W,(ch-res-64-30)/M.ph),W=MUG_W*s,H=M.ph*s,ox=(cw-W)/2,oy=64+Math.max(0,(ch-res-64-30-H)/2);MGE.v={s,ox,oy};
+  const tb=cw<560?112:64,res=Math.max(84,Math.min(ch*(cw<560?.26:.36),230)),s=Math.min(cw*.9/MUG_W,(ch-res-tb-30)/M.ph),W=MUG_W*s,H=M.ph*s,ox=(cw-W)/2,oy=tb+Math.max(0,(ch-res-tb-30-H)/2);MGE.v={s,ox,oy,tb};
   const b3=document.getElementById('mg3d');if(b3&&b3.classList.contains('inset')){const top=oy+H+30,hh=Math.max(80,ch-top-8);Object.assign(b3.style,{height:hh+'px',width:Math.min(cw*.6,hh*1.3)+'px',maxWidth:'none',left:'50%',bottom:'8px',transform:'translateX(-50%)'});}
   c.width=Math.round(cw*dpr);c.height=Math.round(ch*dpr);const x=c.getContext('2d');x.scale(dpr,dpr);x.save();x.translate(ox,oy);x.scale(s,s);
   const L0=mgSel();
@@ -4359,11 +4364,14 @@ function mgDraw(){if(!MGE||!MGE.c||!document.body.contains(MGE.c)||MGE.c.hidden)
 // סרגל קטן מעל הספל — מופיע רק כשמשהו נבחר
 function mgBar(){const st=MGE&&MGE.c&&MGE.c.parentElement;if(!st)return;let b=document.getElementById('mgbar');
   if(!b){b=el('div',{class:'mgbar',id:'mgbar',role:'toolbar','aria-label':'פעולות על מה שנבחר'});st.append(b);}
-  const L=mgSel(),show=!MGE.c.hidden&&(L||MG_UNDO.length);b.hidden=!show;if(!show)return;const k=(L?L.id:'')+'|'+MG_UNDO.length+'|'+(L?L.k:'');if(b._k===k)return;b._k=k;b.innerHTML='';
+  const L=mgSel(),show=!MGE.c.hidden&&(L||MG_UNDO.length);b.hidden=!show;if(!show)return;const two=(MGE.c.clientWidth||0)<560;b.classList.toggle('two',two);const k=(L?L.id:'')+'|'+!!MG_UNDO.length+'|'+(L?L.k:'')+'|'+two;if(b._k===k)return;b._k=k;b.innerHTML='';
   const B=(t,a,f,dis)=>el('button',{type:'button','aria-label':a,title:a,disabled:dis?'':null,on:{click:()=>{f();MGE.c.focus({preventScroll:true});}}},t);
   b.append(B('↶','ביטול',mgUndo,!MG_UNDO.length));
   if(L)b.append(B('⟲','סיבוב שמאלה',()=>mgRot(mgSel(),-15)),B('ישר','ישר — בלי סיבוב',()=>mgRot(mgSel(),null)),B('⟳','סיבוב ימינה',()=>mgRot(mgSel(),15)),
-    B('−','הקטנה',()=>mgScale(mgSel(),1/1.1)),B('+','הגדלה',()=>mgScale(mgSel(),1.1)),B('⧉','שכפול',()=>mgDup(mgSel())),B('⬆','להעביר מעל השאר',()=>mgFront(mgSel())),B('🗑','מחיקה',()=>mgRemove(mgSel())));}
+    B('−','הקטנה',()=>mgScale(mgSel(),1/1.1)),B('+','הגדלה',()=>mgScale(mgSel(),1.1)),B('⧉','שכפול',()=>mgDup(mgSel())),B('⬆','להעביר מעל השאר',()=>mgFront(mgSel())),B('🗑','מחיקה',()=>mgRemove(mgSel())),el('span',{class:'brk'}),
+    ...[['▶','להזיז ימינה',1,0],['▲','להזיז למעלה',0,-1],['▼','להזיז למטה',0,1],['◀','להזיז שמאלה',-1,0]].map(([t,a,dx,dy])=>{const st=1;let held=false;const bt=B(t,a,()=>{if(held){held=false;return;}mgMove(mgSel(),dx*st*2,dy*st*2);});
+      bt.addEventListener('pointerdown',()=>{let iv=0;const tm=setTimeout(()=>{held=true;mgSnap();iv=setInterval(()=>mgMove(mgSel(),dx*st,dy*st,1),60);},350),stop=()=>{clearTimeout(tm);clearInterval(iv);window.removeEventListener('pointerup',stop);window.removeEventListener('pointercancel',stop);};window.addEventListener('pointerup',stop);window.addEventListener('pointercancel',stop);});return bt;}),
+    B('⌖','לאמצע',()=>mgCenter(mgSel())));}
 const mgTexts=()=>{mgEnsure();return MG.layers.filter(L=>L.k==='text');};
 function mgTextCard(L,i){const t=txt(L,'text',mgTexts().length>1?'כיתוב '+(i+1):'כיתוב','סבתא הכי טובה'),inp=t.querySelector('input');inp.addEventListener('focus',()=>mgSelect(L.id));inp.addEventListener('keydown',e=>{if(e.key==='Enter')inp.blur();});
   const on=!!MGE&&MGE.sel===L.id||mgTexts().length===1;
@@ -4409,7 +4417,7 @@ function sgSize(L){if(L.k==='draw')return[0,0];
 function sgNewImg(f,i,first){const M=subItem(),im=f.img,a=im?natW(im)/natH(im):1;
   if(first){const w=Math.max(SGW(),M.h*a);return{id:sgLid(),k:'img',src:phId(f),si:i,x:SGW()/2,y:M.h/2,w,rot:0};}
   const h=M.h*.62,w=Math.min(SGW()*.42,h*a),xs=[.5,.76,.24];return{id:sgLid(),k:'img',src:phId(f),si:i,x:SGW()*xs[i%3],y:M.h*.45,w,rot:0};}
-const sgNewText=(t='כיתוב')=>({id:sgLid(),k:'text',text:t,font:'Secular One',color:'#14294D',outline:'none',x:SGW()/2,y:subItem().h*.82,fs:subItem().h*.14,rot:0});
+const sgNewText=(t='כיתוב')=>({id:sgLid(),k:'text',text:t,font:'Secular One',color:'#14294D',outline:'none',x:SGW()/2,y:subItem().h*.82,fs:Math.max(subItem().h*.14,Math.min(subItem().h*.4,SGW()*.06)),rot:0});
 // מסנכרן שכבות מול רשימת התמונות: תמונה חדשה = שכבה חדשה; תמונה שהוחלפה (חיתוך/רקע) שומרת מקום, גודל וסיבוב; תמונה שנמחקה — השכבה שלה יורדת
 function sgEnsure(){const M=subItem();
   if(Array.isArray(SB.layers)&&SB.lw&&(SB.lw!==M.w||SB.lh!==M.h)){const kx=M.w/SB.lw,ky=M.h/SB.lh,k=Math.sqrt(kx*ky),ow=SB.lw,oh=SB.lh;SB.lw=M.w;SB.lh=M.h;SG_UNDO.length=0;
@@ -4444,13 +4452,14 @@ function sgDup(L){if(!L)return;if(L.k==='img'&&SB.layers.filter(o=>o.k==='img').
 function sgFront(L){if(!L)return;sgSnap();SB.layers=SB.layers.filter(o=>o!==L).concat([L]);sgCommit();sgSay('הועבר למעלה — מעל השאר');}
 function sgRot(L,d){if(!L)return;sgSnap();L.rot=d==null?0:Math.round(((L.rot||0)+d)%360);sgCommit();sgSay('סיבוב '+Math.round(L.rot)+'°');}
 function sgScale(L,f){if(!L)return;sgSnap();if(L.k==='img')L.w=Math.max(3,Math.min(sgMaxW(),L.w*f));else L.fs=Math.max(1.5,Math.min(sgMaxFs(),L.fs*f));sgCommit();}
-function sgMove(L,dx,dy){if(!L)return;sgSnap();L.x+=dx;L.y+=dy;sgCommit();}
+function sgMove(L,dx,dy,ns){if(!L)return;if(!ns)sgSnap();L.x+=dx;L.y+=dy;sgCommit();}
+function sgCenter(L){if(!L)return;sgSnap();L.x=SGW()/2;L.y=subItem().h/2;sgCommit();sgSay('באמצע');}
 function sgSay(t){const n=document.getElementById('sgLive');if(n)n.textContent=t;}
 const sgName=L=>L.k==='draw'?'ציור':L.k==='img'?'תמונה '+((L.si|0)+1):'כיתוב "'+(L.text||'')+'"';
 function sgSelect(id){if(!SGE)return;SGE.sel=id;sgDraw();sgPanelSync();const L=sgSel();if(L)sgSay('נבחר: '+sgName(L));}
 function sgPanelSync(){const one=document.querySelectorAll('[data-sgl]').length===1;document.querySelectorAll('[data-sgl]').forEach(n=>{const on=one||!!SGE&&n.dataset.sgl===SGE.sel;n.classList.toggle('sel',on);const m=n.querySelector('.mgmore');if(m)m.hidden=!on;});}
 // ── העורך: שטח ההדפסה של המוצר, גדול ונקי. אצבע על תמונה/כיתוב = עריכה; בכל מקום אחר = גלילה רגילה של הדף
-function sgEditor(){const c=el('canvas',{class:'sheditor mged',id:'sg2d',tabindex:'0',role:'application','aria-label':'עריכה על המוצר. לוחצים על תמונה או כיתוב ואז גוררים. הפינה הכחולה משנה גודל, העיגול שלמעלה מסובב. שתי אצבעות: גודל וסיבוב. במקלדת: N בוחר את הבא, חיצים מזיזים, פלוס ומינוס גודל, סוגריים [ ] מסובבים, Delete מוחק, Z מבטל'});
+function sgEditor(){const c=el('canvas',{class:'sheditor mged',id:'sg2d',tabindex:'0',role:'application','aria-label':'עריכה על המוצר. לוחצים על תמונה או כיתוב ואז גוררים. הפינה הכחולה משנה גודל, העיגול שלמעלה מסובב. שתי אצבעות: גודל וסיבוב. במקלדת: N בוחר את הבא, חיצים מזיזים, פלוס ומינוס גודל, סוגריים [ ] מסובבים, 0 מיישר, C לאמצע, D משכפל, F מעל השאר, Delete מוחק, Z מבטל, Escape מבטל בחירה. כל הפעולות גם בכפתורים שמעל המוצר'});
   SGE={c,sel:SGE?SGE.sel:null,drag:null,pinch:null,v:null};
   const toMm=e=>{const r=c.getBoundingClientRect(),v=SGE.v;return v?[(e.clientX-r.left-v.ox)/v.s,(e.clientY-r.top-v.oy)/v.s]:[0,0];};
   const dist=(a,b)=>Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY),ang=(a,b)=>Math.atan2(b.clientY-a.clientY,b.clientX-a.clientX)*180/Math.PI;
@@ -4466,7 +4475,7 @@ function sgEditor(){const c=el('canvas',{class:'sheditor mged',id:'sg2d',tabinde
     const[x,y]=toMm(e),hd=sgHitHandle(x,y);
     if(hd==='del'){e.preventDefault();sgRemove(sgSel());return;}
     const L=hd?sgSel():sgHitLayer(x,y);if(!L){if(SGE.sel){SGE.sel=null;sgDraw();sgPanelSync();}return;}
-    e.preventDefault();c.setPointerCapture(e.pointerId);sgSnap();const was=SGE.sel===L.id;SGE.sel=L.id;sgPanelSync();
+    e.preventDefault();c.setPointerCapture(e.pointerId);if(document.activeElement!==c&&!(document.activeElement&&document.activeElement.matches&&document.activeElement.matches('input[type=text]')))c.focus({preventScroll:true});sgSnap();const was=SGE.sel===L.id;SGE.sel=L.id;sgPanelSync();
     SGE.drag={mode:hd||'move',L,x0:x,y0:y,o:{x:L.x,y:L.y,w:L.w,fs:L.fs,rot:L.rot||0},moved:false,was,t:Date.now()};sgDraw();});
   c.addEventListener('pointermove',e=>{const K=SGE.stroke;if(K){const[bx,by]=toMm(e);if(K.erase){const n=sgErase(bx,by);if(n){K.n+=n;sgCommit();}}else{const p=K.st.p,n=p.length;if(Math.hypot(bx-p[n-2],by-p[n-1])>.3){p.push(Math.round(bx*100)/100,Math.round(by*100)/100);sgDraw();}}return;}
     const D=SGE.drag;if(!D||SGE.pinch)return;const[x,y]=toMm(e),L=D.L,M=subItem();
@@ -4484,19 +4493,20 @@ function sgEditor(){const c=el('canvas',{class:'sheditor mged',id:'sg2d',tabinde
     if('nNמ'.includes(e.key)&&SB.layers.length){const vis=SB.layers.filter(o=>o.k==='img'||o.text),i=vis.indexOf(L);const n=vis[(i+1)%vis.length];if(n)sgSelect(n.id);e.preventDefault();return;}
     if('zZז'.includes(e.key)){sgUndo();e.preventDefault();return;}
     if(!L)return;if(m){sgMove(L,...m);e.preventDefault();}else if(e.key==='+'||e.key==='='){sgScale(L,1.05);e.preventDefault();}else if(e.key==='-'){sgScale(L,1/1.05);e.preventDefault();}
-    else if(e.key===']'){sgRot(L,5);e.preventDefault();}else if(e.key==='['){sgRot(L,-5);e.preventDefault();}else if(e.key==='Delete'||e.key==='Backspace'){sgRemove(L);e.preventDefault();}});
+    else if(e.key===']'){sgRot(L,5);e.preventDefault();}else if(e.key==='['){sgRot(L,-5);e.preventDefault();}else if(e.key==='Delete'||e.key==='Backspace'){sgRemove(L);e.preventDefault();}
+    else if(e.ctrlKey||e.metaKey||e.altKey)return;else if('dDג'.includes(e.key)){sgDup(L);e.preventDefault();}else if('fFכ'.includes(e.key)){sgFront(L);e.preventDefault();}else if('cCב'.includes(e.key)){sgCenter(L);e.preventDefault();}else if(e.key==='0'){sgRot(L,null);e.preventDefault();}else if(e.key==='Escape'){SGE.sel=null;sgDraw();sgPanelSync();}});
   c.addEventListener('focus',()=>{if(!sgSel()){const n=SB.layers.find(o=>o.k==='img'||o.text);if(n)sgSelect(n.id);}});
   new ResizeObserver(()=>sgDraw()).observe(c);return c;}
 // סיבוב נצמד ל-0°, 45°, 90°… כשמתקרבים (4°) — כך קל לקבל "ישר" או "אלכסון" מדויק
 function sgSnapRot(r){r=((r%360)+540)%360-180;const q=Math.round(r/45)*45;return Math.abs(r-q)<4?q:Math.round(r);}
 function sgLocal(L,x,y){const a=-(L.rot||0)*Math.PI/180,dx=x-L.x,dy=y-L.y;return[dx*Math.cos(a)-dy*Math.sin(a),dx*Math.sin(a)+dy*Math.cos(a)];}
-function sgHitLayer(x,y){const pad=SGE&&SGE.v?6/SGE.v.s:2;for(let i=SB.layers.length-1;i>=0;i--){const L=SB.layers[i];if(L.k==='draw'||(L.k==='text'&&!L.text))continue;const[w,h]=sgSize(L),[lx,ly]=sgLocal(L,x,y);if(Math.abs(lx)<=w/2+pad&&Math.abs(ly)<=h/2+pad)return L;}return null;}
+function sgHitLayer(x,y){const pad=SGE&&SGE.v?6/SGE.v.s:2;for(let i=SB.layers.length-1;i>=0;i--){const L=SB.layers[i];if(L.k==='draw'||(L.k==='text'&&!L.text))continue;const[w,h]=sgSize(L),[lx,ly]=sgLocal(L,x,y);if(Math.abs(lx)<=Math.max(w/2+pad,pad*3.6)&&Math.abs(ly)<=Math.max(h/2+pad,pad*3.6))return L;}return null;}
 function sgHandles(L){const[w,h]=sgSize(L),s=SGE.v.s,a=(L.rot||0)*Math.PI/180,P=(lx,ly)=>[L.x+lx*Math.cos(a)-ly*Math.sin(a),L.y+lx*Math.sin(a)+ly*Math.cos(a)];
-  return{scale:P(w/2,h/2),rot:P(0,-h/2-30/s),del:P(-w/2,-h/2),top:P(0,-h/2)};}
-function sgHitHandle(x,y){const L=sgSel();if(!L||!SGE.v)return null;const H=sgHandles(L),r=22/SGE.v.s;for(const k of['del','rot','scale'])if(Math.hypot(x-H[k][0],y-H[k][1])<r)return k;return null;}
+  /* S-140: הידיות מחוץ לתיבה — כיתוב קטן נשאר פנוי לגרירה; ידית שנופלת מתחת לסרגל העליון יורדת לתחתית */const o=16/s,lim=((SGE.v.tb||0)+14-SGE.v.oy)/s;let rot=P(0,-h/2-o-28/s),top=P(0,-h/2),del=P(-w/2-o,-h/2-o);if(rot[1]<lim){rot=P(0,h/2+o+28/s);top=P(0,h/2);}if(del[1]<lim)del=P(-w/2-o,h/2+o);return{scale:P(w/2+o,h/2+o),rot,del,top};}
+function sgHitHandle(x,y){const L=sgSel();if(!L||!SGE.v)return null;const H=sgHandles(L),r=22/SGE.v.s;{const[w,h]=sgSize(L),[lx,ly]=sgLocal(L,x,y);if(Math.abs(lx)<=w/2&&Math.abs(ly)<=h/2)return null;}for(const k of['del','rot','scale'])if(Math.hypot(x-H[k][0],y-H[k][1])<r)return k;return null;}
 function sgDraw(){if(!SGE||!SGE.c||!document.body.contains(SGE.c)||SGE.c.hidden)return;sgEnsure();{const b=sgBrushOn();SGE.c.style.touchAction=b?'none':'';SGE.c.style.cursor=b?'crosshair':'';}const c=SGE.c,M=subItem(),dpr=Math.min(2,window.devicePixelRatio||1),cw=c.clientWidth||320,ch=c.clientHeight||420;
   /* מלמעלה: סרגל (64px) · הפס · שורת סימון · למטה: המוצר בתלת־ממד, חי, בלי לכסות את שטח ההדפסה */
-  const res=sb3dOk()?Math.max(96,Math.min(ch*.36,230)):0,s=Math.min(cw*.9/SGW(),(ch-res-64-30)/M.h),W=SGW()*s,H=M.h*s,ox=(cw-W)/2,oy=64+Math.max(0,(ch-res-64-30-H)/2);SGE.v={s,ox,oy};
+  const tb=cw<560?112:64,res=sb3dOk()?Math.max(84,Math.min(ch*(cw<560?.26:.36),230)):0,s=Math.min(cw*.9/SGW(),(ch-res-tb-30)/M.h),W=SGW()*s,H=M.h*s,ox=(cw-W)/2,oy=tb+Math.max(0,(ch-res-tb-30-H)/2);SGE.v={s,ox,oy,tb};
   const b3=document.getElementById('sb3d');if(b3&&b3.classList.contains('inset')){const top=oy+H+30,hh=Math.max(80,ch-top-8);Object.assign(b3.style,{height:hh+'px',width:Math.min(cw*.6,hh*1.3)+'px',maxWidth:'none',left:'50%',bottom:'8px',transform:'translateX(-50%)'});}
   c.width=Math.round(cw*dpr);c.height=Math.round(ch*dpr);const x=c.getContext('2d');x.scale(dpr,dpr);x.save();x.translate(ox,oy);x.scale(s,s);
   const L0=sgSel();
@@ -4519,11 +4529,14 @@ function sgDraw(){if(!SGE||!SGE.c||!document.body.contains(SGE.c)||SGE.c.hidden)
 // סרגל קטן מעל המוצר — מופיע רק כשמשהו נבחר
 function sgBar(){const st=SGE&&SGE.c&&SGE.c.parentElement;if(!st)return;let b=document.getElementById('sgbar');
   if(!b){b=el('div',{class:'mgbar',id:'sgbar',role:'toolbar','aria-label':'פעולות על מה שנבחר'});st.append(b);}
-  const L=sgSel(),show=!SGE.c.hidden&&(L||SG_UNDO.length);b.hidden=!show;if(!show)return;const k=(L?L.id:'')+'|'+SG_UNDO.length+'|'+(L?L.k:'');if(b._k===k)return;b._k=k;b.innerHTML='';
+  const L=sgSel(),show=!SGE.c.hidden&&(L||SG_UNDO.length);b.hidden=!show;if(!show)return;const two=(SGE.c.clientWidth||0)<560;b.classList.toggle('two',two);const k=(L?L.id:'')+'|'+!!SG_UNDO.length+'|'+(L?L.k:'')+'|'+two;if(b._k===k)return;b._k=k;b.innerHTML='';
   const B=(t,a,f,dis)=>el('button',{type:'button','aria-label':a,title:a,disabled:dis?'':null,on:{click:()=>{f();SGE.c.focus({preventScroll:true});}}},t);
   b.append(B('↶','ביטול',sgUndo,!SG_UNDO.length));
   if(L)b.append(B('⟲','סיבוב שמאלה',()=>sgRot(sgSel(),-15)),B('ישר','ישר — בלי סיבוב',()=>sgRot(sgSel(),null)),B('⟳','סיבוב ימינה',()=>sgRot(sgSel(),15)),
-    B('−','הקטנה',()=>sgScale(sgSel(),1/1.1)),B('+','הגדלה',()=>sgScale(sgSel(),1.1)),B('⧉','שכפול',()=>sgDup(sgSel())),B('⬆','להעביר מעל השאר',()=>sgFront(sgSel())),B('🗑','מחיקה',()=>sgRemove(sgSel())));}
+    B('−','הקטנה',()=>sgScale(sgSel(),1/1.1)),B('+','הגדלה',()=>sgScale(sgSel(),1.1)),B('⧉','שכפול',()=>sgDup(sgSel())),B('⬆','להעביר מעל השאר',()=>sgFront(sgSel())),B('🗑','מחיקה',()=>sgRemove(sgSel())),el('span',{class:'brk'}),
+    ...[['▶','להזיז ימינה',1,0],['▲','להזיז למעלה',0,-1],['▼','להזיז למטה',0,1],['◀','להזיז שמאלה',-1,0]].map(([t,a,dx,dy])=>{const st=Math.max(.25,SGW()/200);let held=false;const bt=B(t,a,()=>{if(held){held=false;return;}sgMove(sgSel(),dx*st*2,dy*st*2);});
+      bt.addEventListener('pointerdown',()=>{let iv=0;const tm=setTimeout(()=>{held=true;sgSnap();iv=setInterval(()=>sgMove(sgSel(),dx*st,dy*st,1),60);},350),stop=()=>{clearTimeout(tm);clearInterval(iv);window.removeEventListener('pointerup',stop);window.removeEventListener('pointercancel',stop);};window.addEventListener('pointerup',stop);window.addEventListener('pointercancel',stop);});return bt;}),
+    B('⌖','לאמצע',()=>sgCenter(sgSel())));}
 const sgImgs=()=>{sgEnsure();return SB.layers.filter(L=>L.k==='img'&&sgImgOf(L));};
 function sgEffRow(L,k,label){return row(label,el('input',{type:'range',min:-100,max:100,step:1,value:(L.eff||{})[k]||0,on:{pointerdown:sgSnap,input:e=>{L.eff=Object.assign({},L.eff,{[k]:+e.target.value});sgCommit();}}}));}
 function sgImgCard(L,i){const many=sgImgs().length>1,on=!!SGE&&SGE.sel===L.id||(!many&&sgTexts().length===0),B=(t,f)=>el('button',{type:'button',class:'btn ghost',on:{click:f}},t);
@@ -4664,10 +4677,10 @@ function adEditor(){const c=el('canvas',{class:'sheditor mged',id:'ad2d',tabinde
 // סיבוב נצמד ל-0°, 45°, 90°… כשמתקרבים (4°) — כך קל לקבל "ישר" או "אלכסון" מדויק
 function adSnapRot(r){r=((r%360)+540)%360-180;const q=Math.round(r/45)*45;return Math.abs(r-q)<4?q:Math.round(r);}
 function adLocal(L,x,y){const a=-(L.rot||0)*Math.PI/180,dx=x-L.x,dy=y-L.y;return[dx*Math.cos(a)-dy*Math.sin(a),dx*Math.sin(a)+dy*Math.cos(a)];}
-function adHitLayer(x,y){const pad=ADE&&ADE.v?6/ADE.v.s:2;for(let i=AD.layers.length-1;i>=0;i--){const L=AD.layers[i];if(L.k==='text'&&!L.text)continue;const[w,h]=adSize(L),[lx,ly]=adLocal(L,x,y);if(Math.abs(lx)<=w/2+pad&&Math.abs(ly)<=h/2+pad)return L;}return null;}
+function adHitLayer(x,y){const pad=ADE&&ADE.v?6/ADE.v.s:2;for(let i=AD.layers.length-1;i>=0;i--){const L=AD.layers[i];if(L.k==='text'&&!L.text)continue;const[w,h]=adSize(L),[lx,ly]=adLocal(L,x,y);if(Math.abs(lx)<=Math.max(w/2+pad,pad*3.6)&&Math.abs(ly)<=Math.max(h/2+pad,pad*3.6))return L;}return null;}
 function adHandles(L){const[w,h]=adSize(L),s=ADE.v.s,a=(L.rot||0)*Math.PI/180,P=(lx,ly)=>[L.x+lx*Math.cos(a)-ly*Math.sin(a),L.y+lx*Math.sin(a)+ly*Math.cos(a)];
-  return{scale:P(w/2,h/2),rot:P(0,-h/2-30/s),del:P(-w/2,-h/2),top:P(0,-h/2)};}
-function adHitHandle(x,y){const L=adSel();if(!L||!ADE.v)return null;const H=adHandles(L),r=22/ADE.v.s;for(const k of['del','rot','scale'])if(Math.hypot(x-H[k][0],y-H[k][1])<r)return k;return null;}
+  /* S-140: הידיות מחוץ לתיבה — כיתוב קטן נשאר פנוי לגרירה; ידית שנופלת מתחת לסרגל העליון יורדת לתחתית */const o=16/s,lim=((ADE.v.tb||0)+14-ADE.v.oy)/s;let rot=P(0,-h/2-o-28/s),top=P(0,-h/2),del=P(-w/2-o,-h/2-o);if(rot[1]<lim){rot=P(0,h/2+o+28/s);top=P(0,h/2);}if(del[1]<lim)del=P(-w/2-o,h/2+o);return{scale:P(w/2+o,h/2+o),rot,del,top};}
+function adHitHandle(x,y){const L=adSel();if(!L||!ADE.v)return null;const H=adHandles(L),r=22/ADE.v.s;{const[w,h]=adSize(L),[lx,ly]=adLocal(L,x,y);if(Math.abs(lx)<=w/2&&Math.abs(ly)<=h/2)return null;}for(const k of['del','rot','scale'])if(Math.hypot(x-H[k][0],y-H[k][1])<r)return k;return null;}
 // סרגל קטן מעל הפרסומת — מופיע רק כשמשהו נבחר
 function adBar(){const st=ADE&&ADE.c&&ADE.c.parentElement;if(!st)return;let b=document.getElementById('adbar');
   if(!b){b=el('div',{class:'mgbar',id:'adbar',role:'toolbar','aria-label':'פעולות על מה שנבחר'});st.append(b);}
@@ -5448,7 +5461,7 @@ function giftMkInit(){
 // S-109: בחנות המקדש — כל מוצר נפתח בתלת־ממד (גם סולמות וחבלים, מדבקות ומדבקת ברכה)
 const MK3D=new Set(['snakes','stickers','blessing']);
 function mk3d(){return MIKDASH&&(MK3D.has(cur.id)||(HOW_OK.has(cur.id)&&V3_OK.has(cur.id)))&&!!(built&&built.pages.length);}
-function showStage(){const shb=document.getElementById('sh3d'),mgb=document.getElementById('mg3d');
+function showStage(){const shb=document.getElementById('sh3d'),mgb=document.getElementById('mg3d');document.body.classList.toggle('lay',(cur.id==='mug'&&mgView==='edit')||(cur.id==='subl'&&sbV()==='edit'));
   if(cur.id!=='ad'){const ae=document.getElementById('ad2d'),abar=document.getElementById('adbar');if(ae)ae.hidden=true;if(abar)abar.hidden=true;}
   const me=document.getElementById('mg2d'),mbar=document.getElementById('mgbar');
   if(cur.id!=='subl'){const se=document.getElementById('sg2d'),sbar=document.getElementById('sgbar'),sbb=document.getElementById('sb3d');if(se)se.hidden=true;if(sbar)sbar.hidden=true;sbb.classList.remove('inset');sbb.style.cssText='';}
