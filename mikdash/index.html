@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="description" content="חנות מוצרי המקדש — משחקים, חולצות ומתנות סביב בית המקדש: סולמות וחבלים בעלייה להר הבית, חולצות עם פסוקים ועוד.">
+<meta name="description" content="חנות מודעות לבנין המקדש — ללמוד על בית המקדש, לראות איך ייראה הבית השלישי, לשחק בחידון, ובחנות: משחקים, חולצות ומתנות סביב בית המקדש.">
 <link rel="icon" href="art/wall-oil.webp">
 <title>חנות מודעות לבנין המקדש</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -52,7 +52,7 @@ button{cursor:pointer}
 .intro .verse cite{font-style:normal;font-family:var(--body);font-size:.78rem;color:rgba(255,255,255,.6);margin-inline-start:.4rem}
 
 /* לשוניות */
-.tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:4px;margin:-1.3rem auto 0;max-width:520px;
+.tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;padding:4px;margin:-1.3rem auto 0;max-width:420px;
   border-radius:16px;background:var(--card);border:1px solid var(--line);box-shadow:var(--sh);position:relative;z-index:2}
 .tabs button{min-height:64px;border:1.5px solid transparent;border-radius:40px 40px 10px 10px;background:transparent;font-weight:700;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px 4px 4px;font-family:var(--display);font-size:1.02rem}
 .tabs button img{width:30px;height:30px;object-fit:contain;filter:saturate(.75)}
@@ -99,6 +99,7 @@ input[type=text],select{min-height:44px;border:1.5px solid var(--line);border-ra
 .price{display:flex;justify-content:space-between;align-items:baseline;border-top:1px dashed var(--line);padding-top:10px;font-weight:700}
 .price strong{font-size:1.4rem;font-variant-numeric:tabular-nums}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;min-height:50px;padding:.6rem 1.2rem;border-radius:999px;font-weight:800;font-size:1.02rem;text-decoration:none;border:0}
+.btn[hidden]{display:none}
 .btn-wa{background:var(--wa);color:#fff}
 .btn-gold{background:var(--gold);color:#14294D}
 .btn-ghost{background:transparent;border:1.5px solid var(--line);color:var(--text)}
@@ -115,6 +116,18 @@ input[type=text],select{min-height:44px;border:1.5px solid var(--line);border-ra
 .opts button.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 15%,transparent);color:var(--ok)}
 .opts button.bad{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent);color:var(--bad)}
 .qexp{margin:0;color:var(--muted);min-height:1.5em}
+
+
+/* מודעות: גלריה והצגה */
+.sec-h{margin:2rem 0 .3rem;font-family:var(--display);font-size:1.35rem;font-weight:900;text-wrap:balance}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin:0;padding:0 0 1rem;list-style:none}
+.gal figure{margin:0;border-radius:var(--r);overflow:hidden;background:var(--card);border:1px solid var(--line)}
+.gal img{display:block;width:100%;aspect-ratio:1/1;object-fit:cover}
+.gal figcaption{padding:.4rem .6rem;font-size:.85rem;color:var(--muted);text-align:center}
+.show{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:var(--sh);display:flex;flex-direction:column;gap:.6rem;align-items:flex-start}
+.show b{font-family:var(--display);font-size:1.25rem}
+.show p{margin:0;color:var(--muted)}
+.store-sep{margin-top:2.2rem;border-top:2px solid var(--gold);padding-top:.2rem}
 
 /* פוטר */
 .foot{background:var(--navy);color:rgba(255,255,255,.85);text-align:center;margin-top:2rem}
@@ -133,51 +146,68 @@ input[type=text],select{min-height:44px;border:1.5px solid var(--line);border-ra
 
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="#games"><img class="logo" src="art/wall-oil.webp" alt="לוגו חנות מוצרי המקדש" width="44" height="44"><span>חנות מודעות לבנין המקדש<small>משחקים, חולצות ומתנות</small></span></a>
+    <a class="brand" href="#games"><img class="logo" src="art/wall-oil.webp" alt="לוגו חנות מוצרי המקדש" width="44" height="44"><span>חנות מודעות לבנין המקדש<small>מודעות, משחקים ומתנות</small></span></a>
   </div>
 </header>
 
 <section class="intro" aria-label="חנות מודעות לבנין המקדש">
   <div class="wrap">
     <h1>חנות מודעות לבנין המקדש</h1>
-    <p>משחקים, חולצות ומתנות שמקרבים את בניין המקדש</p>
+    <p>ללמוד, לראות, לשחק ולהביא הביתה — הכול כדי לקרב את בניין המקדש</p>
     <div class="verse">ועשו לי מקדש ושכנתי בתוכם<cite>שמות כה, ח</cite></div>
   </div>
 </section>
 
 <main class="wrap">
   <div class="tabs" role="tablist" aria-label="מה מחפשים?">
-    <button type="button" role="tab" id="tab-games" aria-controls="pan-games" aria-selected="true"><img src="art/i-kinor.webp" alt=""><span>משחקים</span></button>
-    <button type="button" role="tab" id="tab-shirts" aria-controls="pan-shirts" aria-selected="false" tabindex="-1"><img src="art/small-menorah.webp" alt=""><span>מתנות</span></button>
-    <button type="button" role="tab" id="tab-phone" aria-controls="pan-phone" aria-selected="false" tabindex="-1"><img src="art/i-shofar.webp" alt=""><span>חידון</span></button>
+    <button type="button" role="tab" id="tab-aware" aria-controls="pan-aware" aria-selected="true"><img src="art/i-shofar.webp" alt=""><span>מודעות</span></button>
+    <button type="button" role="tab" id="tab-store" aria-controls="pan-store" aria-selected="false" tabindex="-1"><img src="art/small-menorah.webp" alt=""><span>חנות</span></button>
   </div>
 
-  <!-- משחקים -->
-  <section id="pan-games" role="tabpanel" aria-labelledby="tab-games">
+  <!-- מודעות -->
+  <section id="pan-aware" role="tabpanel" aria-labelledby="tab-aware">
+    <h2 class="panel-h">מודעות לבנין המקדש</h2>
+    <p class="panel-sub">להכיר, לראות ולהתקרב — לפני שבונים.</p>
+
+    <h3 class="sec-h">איך ייראה הבית השלישי</h3>
+    <p class="panel-sub">שישה איורים לפי חזון יחזקאל — כל אחד בסגנון אחר.</p>
+    <ul class="gal" aria-label="איורי הבית השלישי">
+      <li><figure><img src="art/third-oil.webp" alt="הבית השלישי, שמן ואור" loading="lazy"><figcaption>שמן ואור</figcaption></figure></li>
+      <li><figure><img src="art/third-gold.webp" alt="הבית השלישי, זהב על כחול" loading="lazy"><figcaption>זהב על כחול</figcaption></figure></li>
+      <li><figure><img src="art/third-watercolor.webp" alt="הבית השלישי, אקוורל" loading="lazy"><figcaption>אקוורל</figcaption></figure></li>
+      <li><figure><img src="art/third-geometric.webp" alt="הבית השלישי, מופשט" loading="lazy"><figcaption>מופשט</figcaption></figure></li>
+      <li><figure><img src="art/third-papercut.webp" alt="הבית השלישי, חיתוך נייר" loading="lazy"><figcaption>חיתוך נייר</figcaption></figure></li>
+      <li><figure><img src="art/third-naive.webp" alt="הבית השלישי, עולים מכל העמים" loading="lazy"><figcaption>עולים מכל העמים</figcaption></figure></li>
+    </ul>
+
+    <h3 class="sec-h" id="quiz-h">חידון המקדש</h3>
+    <p class="panel-sub">שבע שאלות. משחקים בטלפון, לבד או עם כל המשפחה.</p>
+    <div class="quiz" id="quiz" aria-live="polite"></div>
+
+    <h3 class="sec-h">הצגה על בניין המקדש</h3>
+    <div class="show">
+      <b>הצגה — בקרוב</b>
+      <p>הצגה שמקרבת את בניין המקדש. הפרטים יתפרסמו כאן. לשאלות ולהזמנות:</p>
+      <a class="btn btn-wa" id="show-wa" href="#" target="_blank" rel="noopener">שאלו בוואטסאפ</a>
+    </div>
+  </section>
+
+  <!-- חנות -->
+  <section id="pan-store" role="tabpanel" aria-labelledby="tab-store" hidden>
     <h2 class="panel-h">משחקים של בית המקדש</h2>
     <p class="panel-sub">משחקים שכולם סביב בית המקדש.</p>
     <nav class="hub" id="games-hub" aria-label="משחקי מקדש"></nav>
-  </section>
 
-  <!-- חולצות ומתנות -->
-  <section id="pan-shirts" role="tabpanel" aria-labelledby="tab-shirts" hidden>
-    <h2 class="panel-h">חולצות, ספלים ומדבקות</h2>
+    <h2 class="panel-h store-sep">חולצות, ספלים ומדבקות</h2>
     <p class="panel-sub">בוחרים תמונה של בית המקדש מהמאגר, מסדרים — ואנחנו מדפיסים.</p>
     <nav class="hub" id="gifts-hub" aria-label="מתנות"></nav>
-  </section>
-
-  <!-- בטלפון -->
-  <section id="pan-phone" role="tabpanel" aria-labelledby="tab-phone" hidden>
-    <h2 class="panel-h">חידון המקדש</h2>
-    <p class="panel-sub">שבע שאלות. משחקים בטלפון, לבד או עם כל המשפחה.</p>
-    <div class="quiz" id="quiz" aria-live="polite"></div>
   </section>
 </main>
 
 <footer class="foot">
   <div class="wrap">
     <img class="logo" src="art/wall-oil.webp" alt="" width="56" height="56">
-    <p style="margin:0">© 2026 חנות מוצרי המקדש</p>
+    <p style="margin:0">© 2026 חנות מודעות לבנין המקדש</p>
     <p style="margin:0">טלפון ווואטסאפ: <span dir="ltr">050-591-8734</span></p>
   </div>
 </footer>
@@ -191,10 +221,12 @@ input[type=text],select{min-height:44px;border:1.5px solid var(--line);border-ra
 const PHONE='972505918734';
 const wa=t=>`https://wa.me/${PHONE}?text=${encodeURIComponent(t)}`;
 const $=id=>document.getElementById(id);
-$('wa-float').href=wa('שלום הושעיה, הגעתי מחנות מוצרי המקדש');
+$('wa-float').href=wa('שלום הושעיה, הגעתי מחנות מודעות לבנין המקדש');
 
-/* ── לשוניות (כמו בעיצובישי: #games · #shirts · #phone) ── */
-const TABS=['games','shirts','phone'];
+/* ── לשוניות: #aware (מודעות, ברירת מחדל) · #store (חנות). קישורים ישנים: #games ו-#shirts → חנות, #phone → מודעות ── */
+const TABS=['aware','store'];
+const LEGACY={games:'store',shirts:'store',phone:'aware'};
+const tabFromHash=()=>{const h=location.hash.slice(1);return TABS.includes(h)?h:(LEGACY[h]||'aware');};
 function showTab(id,focus){
   TABS.forEach(t=>{const on=t===id;$('tab-'+t).setAttribute('aria-selected',on);$('tab-'+t).tabIndex=on?0:-1;$('pan-'+t).hidden=!on;});
   if(focus)$('tab-'+id).focus();
@@ -202,10 +234,11 @@ function showTab(id,focus){
 }
 TABS.forEach((t,i)=>{
   $('tab-'+t).onclick=()=>showTab(t);
-  $('tab-'+t).onkeydown=e=>{const d=e.key==='ArrowLeft'?1:e.key==='ArrowRight'?-1:0;if(d)showTab(TABS[(i+d+3)%3],true);};
+  $('tab-'+t).onkeydown=e=>{const d=e.key==='ArrowLeft'?1:e.key==='ArrowRight'?-1:0;if(d)showTab(TABS[(i+d+TABS.length)%TABS.length],true);};
 });
-const h0=location.hash.slice(1);showTab(TABS.includes(h0)?h0:'games');
-addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(TABS.includes(h))showTab(h);});
+showTab(tabFromHash());
+addEventListener('hashchange',()=>showTab(tabFromHash()));
+$('show-wa').href=wa('שלום הושעיה, אשמח לשמוע על ההצגה על בניין המקדש');
 
 /* ── משחקים: כל משחק מהסטודיו בגרסת מקדש ── */
 const ST='../studio/?set=mikdash&p=';
