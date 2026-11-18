@@ -58,7 +58,7 @@
     .hdr-gear:hover{background:rgba(255,255,255,.28);transform:rotate(40deg)}
     #btn-account:hover{transform:none;background:rgba(255,255,255,.28)}
     .acct-dot{position:absolute;top:5px;inset-inline-end:5px;width:9px;height:9px;border-radius:50%;background:#34d399;border:1.5px solid #fff}
-    .hdr-title{flex:1}
+    .hdr-title{flex:1;min-width:0}
     .hdr-title h1{font-size:1.35rem;font-weight:900;line-height:1.2}
     .hdr-title .sub{font-size:.72rem;opacity:.7}
     .step-ind{display:flex;align-items:center;gap:0}
@@ -454,6 +454,10 @@
     .adm-g2{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.6rem}
     .adm-hint2{font-size:.7rem;color:#64748b;margin-top:.4rem;line-height:1.5}
     @media(max-width:480px){.adm-g2{grid-template-columns:1fr}.adm-ov{padding:1rem}}
+    /* D-104: כפתור היציאה ממצב תמיכה (#support-mini-exit) הוצג תמיד (display:flex inline גבר על hidden) — לקח 70px מהכותרת וגרם לגלילה אופקית בטלפון, כולל בלוח הבקרה */
+    #btn-share{font:inherit}
+    @media(max-width:480px){#btn-share{font-size:0}#btn-share::before{content:'📤';font-size:1.15rem}}   /* בטלפון — אייקון בלבד, כדי שהשם לא ייחנק */
+    #support-mini-exit:not([hidden]){display:flex}   /* display בגיליון ולא inline — אחרת hidden לא עבד והכפתור האדום הוצג תמיד */
 
     /* ── RESPONSIVE (Mobile First) ── */
     @media(max-width:680px){
@@ -3068,7 +3072,7 @@ window.applyI18n=applyI18n;
   <a data-i18n="header.homeLink" href="index.html" class="hdr-back">→ האתר</a>
   <!-- מתג שפה: התווית תמיד מראה לאן הלחיצה תוביל (בעברית "EN", באנגלית "עב") -->
   <button type="button" id="btn-lang" class="hdr-back" data-i18n="header.langToggle" style="border:none;background:none;font:inherit;cursor:pointer">EN</button>
-  <button type="button" id="btn-share" class="hdr-back" data-share data-share-text-key="header.shareText" data-i18n="header.share" style="border:none;background:none;font:inherit;cursor:pointer">📤 שלחו לחבר</button>
+  <button type="button" id="btn-share" class="hdr-back" data-share data-share-text-key="header.shareText" data-i18n="header.share" style="border:none;background:none;cursor:pointer">📤 שלחו לחבר</button>
   <div class="hdr-title">
     <h1 data-i18n="header.title">🎯 מחולל משחק מאצ׳טו</h1>
     <div class="sub">One Match · Finite Projective Plane</div>
@@ -3082,7 +3086,7 @@ window.applyI18n=applyI18n;
   </nav>
   <!-- מצב תמיכה: מנהל צופה בעיצוב לקוח (בזיכרון, לא נשמר) — כפתור קומפקטי בתוך ה-header עצמו,
        לא סרגל צף נפרד, כדי שלא יכסה/יחסום שום דבר. -->
-  <button id="support-mini-exit" type="button" hidden title="לחץ ליציאה ממצב תמיכה" style="background:#b45309;color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:100px;padding:.3rem .7rem;cursor:pointer;font-family:inherit;font-size:.74rem;font-weight:700;display:flex;align-items:center;gap:.35rem;white-space:nowrap">🛟 <span id="support-mini-label" style="max-width:9em;overflow:hidden;text-overflow:ellipsis"></span> ✕</button>
+  <button id="support-mini-exit" type="button" hidden title="לחץ ליציאה ממצב תמיכה" style="background:#b45309;color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:100px;padding:.3rem .7rem;cursor:pointer;font-family:inherit;font-size:.74rem;font-weight:700;align-items:center;gap:.35rem;white-space:nowrap">🛟 <span id="support-mini-label" style="max-width:9em;overflow:hidden;text-overflow:ellipsis"></span> ✕</button>
   <button class="hdr-gear" id="btn-account" data-i18n-title="header.accountBtnTitle" title="חשבון וסנכרון" aria-label="חשבון וסנכרון" style="position:relative">👤<span id="acct-dot" class="acct-dot" hidden></span></button>
   <button class="hdr-gear" id="btn-admin" data-i18n-title="header.adminBtnTitle" title="פאנל ניהול" aria-label="פאנל ניהול" hidden>⚙️</button>
 </header>
@@ -12806,6 +12810,19 @@ function refreshAdminShapeUi(){
   if(typeof syncShapeArtUi==='function')syncShapeArtUi();   // השורה מוצגת רק כשנבחרה צורה מיוחדת
 }
 
+// D-104: הדפדפן שומר סשן Auth ישן; אם השרת כבר ביטל אותו, ה-JWT עדיין עובר את השער אבל auth.getUser נכשל ← 403 "not authorized".
+// בלי זה הלוח נפתח (הבדיקה בדף רק על המייל השמור) וכל הרשימות מציגות "לא ניתן לטעון כרגע" בלי לומר למה.
+function admSessionError(){const e=new Error('ההתחברות כמנהל פגה בשרת — צריך להתנתק ולהתחבר מחדש');e.sessionDead=true;return e;}
+async function admRelogin(){
+  try{await SB.auth.signOut();}catch(e){}
+  try{localStorage.removeItem('dobble_pay_email');}catch(e){}
+  location.href=location.pathname+'?admin';
+}
+function admLoadFailHtml(e,retry){
+  const btn='background:none;border:none;color:#93c5fd;cursor:pointer;font-family:inherit;font-size:.85rem;text-decoration:underline;padding:0';
+  if(e&&e.sessionDead)return '<div style="color:#fbbf24;font-size:.88rem;padding:.5rem 0;line-height:1.6" role="alert">⚠️ ההתחברות כמנהל פגה בשרת. <button onclick="admRelogin()" style="'+btn+'">התנתקו והתחברו מחדש</button> (קישור חדש יישלח למייל)</div>';
+  return '<div style="color:#94a3b8;font-size:.85rem;padding:.4rem 0">לא ניתן לטעון כרגע. <button onclick="'+retry+'" style="'+btn+'">נסה שוב</button></div>';
+}
 async function callManageSubscriber(payload){
   if(!SB||!authSession)throw new Error('צריך להתחבר כמנהל');
   const base=(window.SUPABASE_CONFIG&&window.SUPABASE_CONFIG.url)||'';
@@ -12825,6 +12842,7 @@ async function callManageSubscriber(payload){
   }
   const data=await res.json().catch(()=>({}));
   if(res.status===404)throw new Error('הפונקציה manage-subscriber לא נמצאה (404) — כנראה לא פרוסה או פרוסה בשם אחר ב-Supabase → Edge Functions.');
+  if(res.status===403)throw admSessionError();   // D-104: 403 = הסשן שבדפדפן כבר לא קיים בשרת (Session not found), לא שחסרות הרשאות
   if(!res.ok)throw new Error(data.error||('שגיאה '+res.status));
   return data;
 }
@@ -12969,7 +12987,7 @@ async function renderSubscribers(){
     // תצוגה בלבד — fail-open: לא שוברים את שאר הדשבורד, לא מציגים בלוק אדום מפחיד.
     // פעולות כתיבה (createSubscriber/deleteSubscriber/הפעולות בלחיצה למטה) ממשיכות להיכשל בבירור, בלי לגעת בהן.
     console.warn('renderSubscribers:',e);
-    el.innerHTML='<div style="color:#94a3b8;font-size:.85rem;padding:.4rem 0">לא ניתן לטעון כרגע. <button onclick="renderSubscribers()" style="background:none;border:none;color:#93c5fd;cursor:pointer;font-family:inherit;font-size:.85rem;text-decoration:underline;padding:0">נסה שוב</button></div>';
+    el.innerHTML=admLoadFailHtml(e,'renderSubscribers()');
   }
 }
 
@@ -13080,7 +13098,7 @@ async function openSubscriberDesigns(code){
     // תצוגה בלבד — fail-open, אותו עיקרון כמו renderSubscribers.
     console.warn('openSubscriberDesigns:',e);
     const esc=String(code).replace(/'/g,"\\'");
-    box.innerHTML=`<div style="color:#94a3b8;font-size:.85rem;padding:.5rem 0">לא ניתן לטעון כרגע. <button onclick="openSubscriberDesigns('${esc}')" style="background:none;border:none;color:#93c5fd;cursor:pointer;font-family:inherit;font-size:.85rem;text-decoration:underline;padding:0">נסה שוב</button></div>`;
+    box.innerHTML=admLoadFailHtml(e,`openSubscriberDesigns('${esc}')`);
   }
 }
 
@@ -13206,6 +13224,7 @@ async function callManageCustomers(payload){
   }
   const data=await res.json().catch(()=>({}));
   if(res.status===404)throw new Error('הפונקציה manage-customers לא נמצאה (404) — כנראה לא פרוסה או פרוסה בשם אחר ב-Supabase → Edge Functions.');
+  if(res.status===403)throw admSessionError();   // D-104: 403 = הסשן שבדפדפן כבר לא קיים בשרת (Session not found), לא שחסרות הרשאות
   if(!res.ok)throw new Error(data.error||('שגיאה '+res.status));
   return data;
 }
@@ -13232,7 +13251,7 @@ async function renderCustomers(){
     renderCustomersTable();
   }catch(e){
     console.warn('renderCustomers:',e);
-    el.innerHTML='<div style="color:#94a3b8;font-size:.85rem;padding:.4rem 0">לא ניתן לטעון כרגע. <button onclick="renderCustomers()" style="background:none;border:none;color:#93c5fd;cursor:pointer;font-family:inherit;font-size:.85rem;text-decoration:underline;padding:0">נסה שוב</button></div>';
+    el.innerHTML=admLoadFailHtml(e,'renderCustomers()');
   }
 }
 
