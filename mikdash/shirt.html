@@ -234,7 +234,7 @@ function renderLib(){
   $('libNote').hidden=D.lib!=='pd';
   $('lib').innerHTML=LIB[D.lib][1].map(([id,n])=>`<button type="button" data-v="${id}" aria-label="הוספת ${n}"><img src="art/${id}.webp" alt="" loading="lazy"><span>${n}</span></button>`).join('');
   $('catTabs').innerHTML=Object.entries(CATS).map(([k,[n]])=>`<button type="button" data-v="${k}" aria-pressed="${D.cat===k}">${n}</button>`).join('');
-  $('verses').innerHTML=CATS[D.cat][1].map(([t,s],i)=>`<button type="button" data-v="${i}" aria-label="הוספת הכיתוב ${t}"><b>${t}</b><small>${s}</small></button>`).join('');
+  $('verses').innerHTML=CATS[D.cat][1].map(([t,s],i)=>`<button type="button" data-v="${i}" aria-label="הוספת הכיתוב ${t} ${s}"><b>${t}</b> <small>${s}</small></button>`).join('');
 }
 $('libTabs').onclick=e=>{const b=e.target.closest('button');if(b){D.lib=b.dataset.v;renderLib();}};
 $('catTabs').onclick=e=>{const b=e.target.closest('button');if(b){D.cat=b.dataset.v;renderLib();}};

@@ -1,0 +1,68 @@
+/* ═══════════════════════════════════════════════════════════════════
+   tokens.css — השפה העיצובית האחידה של האתר (S-171). הכללים המלאים: DESIGN.md
+   קובץ אחד לכל הדפים. דף לא מגדיר צבעים/גדלים משלו — רק משתמש במשתנים כאן.
+   בנוי לפי המוסכמות של Open Props / Material 3 (סולם קבוע, שמות סמנטיים),
+   כך שאפשר להחליף ערכים במקום אחד בלי לגעת בדפים.
+   ═══════════════════════════════════════════════════════════════════ */
+:root{
+  /* ── צבעים סמנטיים (כל זוג טקסט/רקע עומד ב-4.5:1 לפחות — WCAG 1.4.3) ── */
+  --c-brand:#14294D;        /* כחול כהה — כותרות, כפתור משני, סרגלים */
+  --c-brand-2:#1F3A68;
+  --c-accent:#C6A135;       /* זהב — הכפתור הראשי, הבחירה הנוכחית */
+  --c-accent-ink:#5E4708;   /* טקסט על רקע זהב בהיר (7:1) */
+  --c-accent-soft:#F3E8C4;
+  --c-accent-line:#8C6E12;  /* זהב כהה לקווי בחירה — 4.6:1 על לבן (WCAG 1.4.11). זהב רגיל = 2.5:1, לא לטקסט ולא לסימון יחיד */
+  --c-text:#16202E;         /* 15:1 על לבן */
+  --c-muted:#556070;        /* 6.2:1 על לבן — הכי בהיר שמותר לטקסט */
+  --c-line:#D9E1E7;         /* קווים בלבד, לא טקסט */
+  --c-bg:#F7F9FA;
+  --c-surface:#FFFFFF;
+  --c-ok:#1F7A4D;  --c-ok-soft:#E3F4EA;
+  --c-warn:#8A5A00; --c-warn-soft:#FFF4DB;
+  --c-bad:#B3261E; --c-bad-soft:#FDE7E5;
+  --c-wa:#0E7C3A;           /* וואטסאפ — גרסה כהה שעומדת בניגודיות עם טקסט לבן */
+  --c-focus:#1D4ED8;        /* טבעת מיקוד — תמיד גלויה */
+
+  /* ── טיפוגרפיה: שני גופנים בלבד ── */
+  --font-ui:'Rubik','Heebo',system-ui,sans-serif;
+  --font-display:'Secular One','Rubik',system-ui,sans-serif;
+  /* סולם קבוע (יחס 1.2). גוף טקסט לא קטן מ-16px; הערות לא קטנות מ-13px */
+  --fs-xs:.8125rem; --fs-sm:.875rem; --fs-md:1rem; --fs-lg:1.2rem; --fs-xl:1.44rem; --fs-2xl:1.728rem; --fs-3xl:2.074rem;
+  --lh-tight:1.2; --lh-body:1.6;
+
+  /* ── מרווחים: סולם של 4px ── */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-7:48px; --sp-8:64px;
+
+  /* ── פינות וצללים ── */
+  --r-sm:8px; --r-md:12px; --r-lg:18px; --r-pill:999px;
+  --sh-1:0 1px 3px rgba(20,41,77,.10);
+  --sh-2:0 6px 20px rgba(20,41,77,.12);
+  --sh-3:0 16px 40px rgba(20,41,77,.18);
+
+  /* ── מגע ותנועה ── */
+  --tap:44px;               /* יעד מגע מינימלי (WCAG 2.5.5 / הנחיות אפל וגוגל) */
+  --dur:.18s; --ease:cubic-bezier(.2,.7,.3,1);
+}
+/* חנות המקדש — אותם שמות, ערכים אחרים */
+.theme-mikdash{--c-bg:#F3EDE1;--c-surface:#FFFDF8;--c-line:#E2D8C4;--font-display:'Frank Ruhl Libre','David Libre',Georgia,serif}
+
+/* ── בסיס לכל דף ── */
+:where(:focus-visible){outline:3px solid var(--c-focus);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+.sr-only{position:absolute!important;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.skip-link{position:absolute;inset-inline-start:var(--sp-2);top:-60px;z-index:1000;background:var(--c-brand);color:#fff;padding:var(--sp-2) var(--sp-4);border-radius:var(--r-sm)}
+.skip-link:focus{top:var(--sp-2)}
+
+/* ── רכיבים משותפים (שמות ds-*, כדי לא להתנגש בקוד הקיים) ── */
+.ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-2);min-height:var(--tap);padding:0 var(--sp-5);border-radius:var(--r-pill);border:2px solid transparent;font:700 var(--fs-md)/1 var(--font-ui);cursor:pointer;text-decoration:none;transition:transform var(--dur) var(--ease),box-shadow var(--dur) var(--ease)}
+.ds-btn:active{transform:scale(.97)}
+.ds-btn[disabled]{opacity:.55;cursor:not-allowed}
+.ds-btn--primary{background:var(--c-accent);color:var(--c-brand)}
+.ds-btn--secondary{background:var(--c-surface);color:var(--c-brand);border-color:var(--c-brand)}
+.ds-btn--ghost{background:transparent;color:var(--c-brand)}
+.ds-card{background:var(--c-surface);border:1.5px solid var(--c-line);border-radius:var(--r-lg);box-shadow:var(--sh-1);padding:var(--sp-4)}
+/* כרטיס בחירה — כל בחירה אינטראקטיבית (צורה, גודל, חומר) */
+.ds-choice{display:flex;flex-direction:column;align-items:center;gap:var(--sp-1);min-height:var(--tap);padding:var(--sp-3);border:2px solid var(--c-line);border-radius:var(--r-md);background:var(--c-surface);color:var(--c-text);font:inherit;cursor:pointer;transition:border-color var(--dur),box-shadow var(--dur),transform var(--dur)}
+.ds-choice:hover{border-color:var(--c-brand-2)}
+.ds-choice[aria-pressed="true"],.ds-choice[aria-checked="true"]{border-color:var(--c-accent-line);box-shadow:0 0 0 3px var(--c-accent-soft);font-weight:700}
+.ds-choice small{color:var(--c-muted);font-size:var(--fs-xs)}
