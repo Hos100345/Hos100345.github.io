@@ -73,7 +73,7 @@
 | `<html lang>` (+`dir="rtl"` לעברית), `<title>`, viewport | חסר, או viewport שחוסם הגדלה |
 | `alt` לכל `<img>` | תמונה בלי alt |
 | axe-core (WCAG 2.1 AA) על כל דף ציבורי ועל כל 16 מוצרי הסטודיו, בגודל טלפון | בעיה בדרגת serious/critical, או שגיאת JS בטעינה |
-| קישור להצהרת נגישות בדף ציבורי | אזהרה (עוד לא כשל) |
+| קישור להצהרת נגישות בדף ציבורי | חסר |
 
 **הרצה מקומית:** `npm i --no-save playwright@1 axe-core@4 && npx playwright install chromium && node tools/site-check.mjs`
 

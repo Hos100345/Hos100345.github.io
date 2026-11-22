@@ -56,7 +56,7 @@ for (const f of pages) {
   else if (/user-scalable\s*=\s*(no|0)|maximum-scale\s*=\s*1(\.0)?\b/i.test(vp)) err(f, 'ה-viewport חוסם הגדלה (WCAG 1.4.4)');
   const markup = s.replace(/<script\b[\s\S]*?<\/script>|<style\b[\s\S]*?<\/style>|<!--[\s\S]*?-->/gi, '');
   for (const img of markup.match(/<img\b[^>]*>/gi) || []) if (!/\balt=/.test(img)) err(f, 'תמונה בלי alt: ' + img.slice(0, 90));
-  if (!INTERNAL.test(path.basename(f)) && !/accessibility\.html|נגישות/.test(s)) warn(f, 'אין קישור להצהרת הנגישות');
+  if (!INTERNAL.test(path.basename(f)) && !/accessibility\.html/.test(s)) err(f, 'אין קישור להצהרת הנגישות (חובה לפי החוק)');
 }
 for (const f of fs.readdirSync(path.join(ROOT, 'js')).filter(x => x.endsWith('.js'))) {
   const code = fs.readFileSync(path.join(ROOT, 'js', f), 'utf8');
