@@ -53,7 +53,12 @@
 /* קישור לגופנים (בכל דף שמחובר): https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Rubik:wght@400;500;700;800&display=swap */
 
 /* חנות המקדש — סגנון משלה */
-.theme-mikdash{--c-brand:#14294D;--c-primary:#C6A135;--c-on-primary:#14294D;--c-bg:#F3EDE1;--c-surface:#FFFDF8;--c-line:#E2D8C4;--font-display:'Frank Ruhl Libre','David Libre',Georgia,serif}
+.theme-mikdash{ /* חנות המקדש — הסגנון שלה (כחול כהה וזהב), זהה למראה הסטודיו לפני S-177 */
+  --c-brand:#14294D; --c-primary:#C6A135; --c-primary-2:#1F3A68; --c-on-primary:#14294D; --c-primary-soft:#F3E8C4;
+  --c-accent:#C6A135; --c-accent-soft:#FFF8E6; --c-accent-line:#14294D; --c-ink-dark:#14294D;
+  --c-text:#16202E; --c-muted:#5B6878; --c-line:#D9E1E7; --c-bg:#F7F9FA; --c-surface:#FFFFFF; --c-focus:#14294D;
+  --font-ui:'Rubik',system-ui,sans-serif; --font-display:'Secular One','Rubik',sans-serif;
+}
 
 /* ── בסיס לכל דף ── */
 :where(:focus-visible){outline:3px solid var(--c-focus);outline-offset:2px}
