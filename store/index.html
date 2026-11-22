@@ -13,9 +13,9 @@
   <meta name="apple-mobile-web-app-title" content="משחק עיצובישי">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../css/tokens.css?v=1">
-  <script>/* S-174: תצוגה מקדימה של נושא צבעים — store/?theme=logo או ?theme=144 (לא נשמר, לא משפיע על לקוחות) */
-  (function(){var t=new URLSearchParams(location.search).get('theme');if(t!=='logo'&&t!=='144')return;document.documentElement.classList.add('theme-'+t);
+  <link rel="stylesheet" href="../css/tokens.css?v=2">
+  <script>/* S-174: תצוגה מקדימה של נושא צבעים — store/?theme=logo / 144 / sky (לא נשמר, לא משפיע על לקוחות) */
+  (function(){var t=new URLSearchParams(location.search).get('theme');if(t!=='logo'&&t!=='144'&&t!=='sky')return;document.documentElement.classList.add('theme-'+t);
    var l=document.createElement('link');l.rel='stylesheet';l.href='https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Rubik:wght@400;500;700&display=swap';document.head.appendChild(l);})();</script>
   <!-- ⛔ js/play-engine.js נוצר ע"י tools/build-play-engine.py מתוך dobble.html — לא לערוך ידנית.
        משמש כאן רק את "מצא את הזהה" (genDeck/drawCard…), כך שהקלף זהה למחולל. שינוי בו = להעלות ?v= כאן וב-sw.js. -->
