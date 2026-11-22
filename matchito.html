@@ -566,7 +566,7 @@ function dcfgSave(patch){
         style="width:100%;box-sizing:border-box;padding:.65rem .8rem;border-radius:14px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.94);font-family:inherit;font-size:1rem;direction:ltr;text-align:left">
       <input id="free-code" type="text" maxlength="20" placeholder="בחרו קוד אישי (4–20 תווים)"
         style="width:100%;box-sizing:border-box;padding:.65rem .8rem;border-radius:14px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.94);font-family:inherit;font-size:1rem;direction:ltr;text-align:left" data-i18n-ph="lock.freeCodePh">
-      <div data-i18n-html="legal.signupHtml" class="legal-line" style="color:#cbd5e1">בהרשמה אתם מאשרים את <a href="terms.html" target="_blank" rel="noopener">תנאי השימוש</a> ואת <a href="privacy.html" target="_blank" rel="noopener">מדיניות הפרטיות</a>. המשחקים לשימוש אישי בלבד.</div>
+      <div data-i18n-html="legal.signupHtml" class="legal-line" style="color:#cbd5e1">בהרשמה אתם מאשרים את <a href="terms.html" target="_blank" rel="noopener">תנאי השימוש</a> ואת <a href="privacy.html" target="_blank" rel="noopener">מדיניות הפרטיות</a>. המשחקים לשימוש אישי בלבד. · <a href="accessibility.html" target="_blank" rel="noopener">הצהרת נגישות</a></div>
       <button data-i18n="lock.freeSignupBtn" id="free-go" type="button" style="width:100%;background:#5a5df0;color:#fff;font-weight:800;font-size:1.02rem;padding:.7rem 2rem;border:none;border-radius:100px;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(99,102,241,.5)">הרשמה וכניסה ✓</button>
       <div id="free-msg" style="color:#fca5a5;font-size:.85rem;min-height:1.2em"></div>
     </div>
@@ -578,7 +578,7 @@ function dcfgSave(patch){
       <div id="lock-usd-note" hidden style="font-size:.78rem;opacity:.8;line-height:1.5;margin-top:.4rem"></div>
       <input id="buy-email" type="email" inputmode="email" placeholder="name@example.com" hidden
         style="width:100%;box-sizing:border-box;padding:.65rem .8rem;border-radius:14px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.94);font-family:inherit;font-size:1rem;direction:ltr;text-align:left">
-      <div data-i18n-html="legal.buyHtml" class="legal-line" style="color:#cbd5e1">ברכישה אתם מאשרים את <a href="terms.html" target="_blank" rel="noopener">תנאי השימוש</a> ואת <a href="privacy.html" target="_blank" rel="noopener">מדיניות הפרטיות</a>. המשחקים לשימוש אישי בלבד.</div>
+      <div data-i18n-html="legal.buyHtml" class="legal-line" style="color:#cbd5e1">ברכישה אתם מאשרים את <a href="terms.html" target="_blank" rel="noopener">תנאי השימוש</a> ואת <a href="privacy.html" target="_blank" rel="noopener">מדיניות הפרטיות</a>. המשחקים לשימוש אישי בלבד. · <a href="accessibility.html" target="_blank" rel="noopener">הצהרת נגישות</a></div>
       <button data-i18n="lock.goToPaymentBtn" id="buy-go" type="button" hidden style="width:100%;background:#6366f1;color:#fff;font-weight:800;font-size:1.02rem;padding:.7rem 2rem;border:none;border-radius:100px;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px rgba(99,102,241,.5)">מעבר לתשלום</button>
       <div id="buy-msg" style="color:#fca5a5;font-size:.85rem;min-height:1.2em"></div>
       <div style="margin-top:.2rem"><button data-i18n="cpn.link" type="button" class="cpn-open" style="background:none;border:none;color:#c7d2fe;cursor:pointer;font-family:inherit;font-size:.88rem;text-decoration:underline;padding:.3rem .5rem">יש לי קוד הנחה</button></div>
@@ -1188,8 +1188,8 @@ const I18N={
     'paid.noOrder':'צריך לפחות 7 תמונות כדי ליצור משחק',
     'paid.failed':'לא הצלחנו לפתוח את שלב ההורדה — עברו ל"שלב 3" ידנית',
     'export.stepsLine':'1. צור PDF ← 2. הורד קובץ',
-    'legal.signupHtml':'בהרשמה אתם מאשרים את <a href="terms.html" target="_blank" rel="noopener">תנאי השימוש</a> ואת <a href="privacy.html" target="_blank" rel="noopener">מדיניות הפרטיות</a>. המשחקים לשימוש אישי בלבד.',
-    'legal.buyHtml':'ברכישה אתם מאשרים את <a href="terms.html" target="_blank" rel="noopener">תנאי השימוש</a> ואת <a href="privacy.html" target="_blank" rel="noopener">מדיניות הפרטיות</a>. המשחקים לשימוש אישי בלבד.',
+    'legal.signupHtml':'בהרשמה אתם מאשרים את <a href="terms.html" target="_blank" rel="noopener">תנאי השימוש</a> ואת <a href="privacy.html" target="_blank" rel="noopener">מדיניות הפרטיות</a>. המשחקים לשימוש אישי בלבד. · <a href="accessibility.html" target="_blank" rel="noopener">הצהרת נגישות</a>',
+    'legal.buyHtml':'ברכישה אתם מאשרים את <a href="terms.html" target="_blank" rel="noopener">תנאי השימוש</a> ואת <a href="privacy.html" target="_blank" rel="noopener">מדיניות הפרטיות</a>. המשחקים לשימוש אישי בלבד. · <a href="accessibility.html" target="_blank" rel="noopener">הצהרת נגישות</a>',
     'legal.exportHtml':'🔒 לשימוש אישי, משפחתי וחינוכי בלבד — אסור למכור או להפיץ בחנויות. <a href="terms.html" target="_blank" rel="noopener">תנאי שימוש</a>',
     'legal.printSaleHtml':'הדפסה בכמות למכירה — רק באישור. <a href="#" class="js-legal-wa" target="_blank" rel="noopener">לפנייה</a>',
     'legal.footHtml':'<a href="terms.html" target="_blank" rel="noopener">תנאי שימוש</a> · <a href="privacy.html" target="_blank" rel="noopener">פרטיות</a>',
@@ -2045,8 +2045,8 @@ const I18N={
     'paid.noOrder':'You need at least 7 images to create a game',
     'paid.failed':'We could not open the download step — go to "Step 3" manually',
     'export.stepsLine':'1. Create the PDF → 2. Download the file',
-    'legal.signupHtml':'By signing up you agree to the <a href="terms.html" target="_blank" rel="noopener">Terms of Use</a> and the <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>. Games are for personal use only.',
-    'legal.buyHtml':'By purchasing you agree to the <a href="terms.html" target="_blank" rel="noopener">Terms of Use</a> and the <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>. Games are for personal use only.',
+    'legal.signupHtml':'By signing up you agree to the <a href="terms.html" target="_blank" rel="noopener">Terms of Use</a> and the <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>. Games are for personal use only. · <a href="accessibility.html" target="_blank" rel="noopener">Accessibility</a>',
+    'legal.buyHtml':'By purchasing you agree to the <a href="terms.html" target="_blank" rel="noopener">Terms of Use</a> and the <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>. Games are for personal use only. · <a href="accessibility.html" target="_blank" rel="noopener">Accessibility</a>',
     'legal.exportHtml':'🔒 For personal, family and educational use only — no selling or distributing in stores. <a href="terms.html" target="_blank" rel="noopener">Terms of Use</a>',
     'legal.printSaleHtml':'Printing in quantity for sale — by approval only. <a href="#" class="js-legal-wa" target="_blank" rel="noopener">Contact us</a>',
     'legal.footHtml':'<a href="terms.html" target="_blank" rel="noopener">Terms of Use</a> · <a href="privacy.html" target="_blank" rel="noopener">Privacy</a>',

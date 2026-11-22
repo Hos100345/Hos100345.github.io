@@ -1457,4 +1457,5 @@ document.addEventListener('DOMContentLoaded',()=>{const profile=getProfile();if(
   const _show=show;show=function(id){if(id==='__games__'||id==='home'||id==='profile'||id==='grade1'||id==='kindergarten'){location.href='./#phone';return}return _show(id)};
   const open=()=>{try{f()}catch(e){console.error(e)}};open();setTimeout(()=>{if(currentScreen==='home'||currentScreen==='profile')open()},800);
 }else if(profile)showHomeWithGreeting(true);else openProfileManager();history.replaceState({screen:currentScreen},'',location.href);historyReady=true});
-</script></body></html>
+</script><p style="text-align:center;font-size:.85rem;margin:16px 0 24px"><a href="../accessibility.html" style="color:inherit">הצהרת נגישות</a></p>
+</body></html>
