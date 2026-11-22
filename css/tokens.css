@@ -5,32 +5,39 @@
    כך שאפשר להחליף ערכים במקום אחד בלי לגעת בדפים.
    ═══════════════════════════════════════════════════════════════════ */
 :root{
-  /* ── צבעים — מהלוגו של עיצובישי (images/brand/itzuvishi-logo-*.webp) ──
-     כל זוג טקסט/רקע עומד ב-4.5:1 לפחות (WCAG 1.4.3) */
-  --c-brand:#0A2A5C;        /* כחול כהה של המסגרת והאותיות — כותרות, טקסט חזק, קווי בחירה. 13:1 על השמנת */
-  --c-brand-2:#163E7A;
-  --c-accent:#FDC010;       /* צהוב של הטבעת והקו — רקע לכפתור הראשי בלבד, עם טקסט כחול כהה (8.5:1) */
-  --c-accent-ink:#5E4708;   /* טקסט על רקע צהוב בהיר */
-  --c-accent-soft:#FFF1C2;
-  --c-accent-line:#0A2A5C;  /* קו של בחירה = כחול כהה. ⛔ צהוב על לבן = 1.65:1 — לא לטקסט ולא לקו */
-  --c-red:#C3141B;          /* אדום של חלק הפאזל עם הלב — מבצע, לב, הדגשה. טקסט לבן עליו 6:1 */
-  --c-blue:#0067BC;         /* כחול של חלק הפאזל — קישורים ואייקונים. 5.7:1 על לבן */
-  --c-text:#0F1E36;
-  --c-muted:#5A6478;        /* 5.5:1 על השמנת — הכי בהיר שמותר לטקסט */
-  --c-line:#E4DCC8;         /* קווים בלבד, לא טקסט */
-  --c-bg:#FCF6EA;           /* שמנת של רקע הלוגו */
-  --c-surface:#FFFFFF;
-  --c-ok:#1F7A4D;  --c-ok-soft:#E3F4EA;
-  --c-warn:#8A5A00; --c-warn-soft:#FFF4DB;
-  --c-bad:#B3261E; --c-bad-soft:#FDE7E5;
-  --c-wa:#0E7C3A;           /* וואטסאפ — גרסה כהה שעומדת בניגודיות עם טקסט לבן */
-  --c-focus:#0067BC;        /* טבעת מיקוד — תמיד גלויה */
+  /* ⚠️ החלטה פתוחה (22/11/2026): הושעיה בוחר לוגו וצבעים. עד אז :root = המראה של האתר היום (כחול/סגול/כתום, Heebo),
+     והאפשרויות מוכנות למטה כ-.theme-logo ו-.theme-144. לתצוגה מקדימה בחנות: store/?theme=logo או store/?theme=144.
+     בחירה סופית = להעתיק את הערכים של הנושא שנבחר לכאן. */
 
-  /* ── טיפוגרפיה: שני גופנים בלבד ──
-     Fredoka = עגול ועבה כמו האותיות בלוגו (תומך עברית, Google Fonts). Rubik לטקסט רץ */
-  --font-ui:'Rubik','Heebo',system-ui,sans-serif;
-  --font-display:'Fredoka','Rubik',system-ui,sans-serif;
-  /* סולם קבוע (יחס 1.2). גוף טקסט לא קטן מ-16px; הערות לא קטנות מ-13px */
+  /* ── צבעים סמנטיים. כל זוג טקסט/רקע עומד ב-4.5:1 לפחות (WCAG 1.4.3) ── */
+  --c-brand:#0F172A;        /* כותרות וטקסט חזק */
+  --c-primary:#2563EB;      /* הפעולה הראשית (כפתור, קישור) */
+  --c-primary-2:#4338CA;
+  --c-on-primary:#FFFFFF;   /* טקסט על --c-primary */
+  --c-primary-soft:#DBEAFE;
+  --c-accent:#F59E0B;       /* הדגשה משנית / תגים. רקע בלבד */
+  --c-accent-soft:#FEF3C7;
+  --c-accent-2:#7C3AED;
+  --c-accent-line:#4338CA;  /* קו של בחירה (3:1 לפחות) */
+  --c-text:#0F172A;
+  --c-muted:#5B6472;        /* הכי בהיר שמותר לטקסט */
+  --c-line:rgba(15,23,42,.1);
+  --c-bg:#EEF1FB;
+  --c-surface:#FFFFFF;
+  --c-ok:#059669;  --c-ok-soft:#ECFDF5;
+  --c-warn:#8A5A00; --c-warn-soft:#FFF4DB;
+  --c-bad:#DC2626; --c-bad-soft:#FDE7E5;
+  --c-sale:#DC2626;
+  --c-wa:#25D366; --c-wa-dark:#1DA851;
+  --c-focus:#1D4ED8;
+  --c-ink-dark:#1A1733;     /* משטחים כהים קטנים (נקודות, כפתור לחוץ, מסגרת טלפון) */
+  --grad-hero:linear-gradient(145deg,#0F1035 0%,#1E3A8A 28%,#3730A3 58%,#7C3AED 100%);
+  --grad-print:linear-gradient(150deg,#4F46E5 0%,#7C3AED 55%,#A855F7 100%);
+  --grad-sale:linear-gradient(135deg,#1E3A8A,#4C1D95); --c-on-sale:#FDE68A;
+
+  /* ── טיפוגרפיה ── */
+  --font-ui:'Heebo',system-ui,sans-serif;
+  --font-display:'Heebo',system-ui,sans-serif;
   --fs-xs:.8125rem; --fs-sm:.875rem; --fs-md:1rem; --fs-lg:1.2rem; --fs-xl:1.44rem; --fs-2xl:1.728rem; --fs-3xl:2.074rem;
   --lh-tight:1.2; --lh-body:1.6;
 
@@ -38,17 +45,38 @@
   --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-7:48px; --sp-8:64px;
 
   /* ── פינות וצללים ── */
-  --r-sm:10px; --r-md:16px; --r-lg:24px; --r-pill:999px;   /* פינות עגולות — כמו חלקי הפאזל בלוגו */
-  --sh-1:0 1px 3px rgba(20,41,77,.10);
-  --sh-2:0 6px 20px rgba(20,41,77,.12);
-  --sh-3:0 16px 40px rgba(20,41,77,.18);
+  --r-sm:10px; --r-md:14px; --r-lg:1.15rem; --r-pill:999px;
+  --sh-1:0 1px 3px rgba(30,27,75,.08);
+  --sh-2:0 8px 32px rgba(30,27,75,.10),0 1.5px 4px rgba(30,27,75,.06);
+  --sh-3:0 16px 40px rgba(30,27,75,.18);
 
   /* ── מגע ותנועה ── */
-  --tap:44px;               /* יעד מגע מינימלי (WCAG 2.5.5 / הנחיות אפל וגוגל) */
+  --tap:44px;
   --dur:.18s; --ease:cubic-bezier(.2,.7,.3,1);
 }
-/* חנות המקדש — אותם שמות, ערכים אחרים */
-.theme-mikdash{--c-brand:#14294D;--c-accent:#C6A135;--c-bg:#F3EDE1;--c-surface:#FFFDF8;--c-line:#E2D8C4;--font-display:'Frank Ruhl Libre','David Libre',Georgia,serif} /* חנות המקדש נשארת בסגנון שלה */
+
+/* ── אפשרות א: הלוגו של עיצובישי (images/brand/itzuvishi-logo-*.webp) ── */
+.theme-logo{
+  --c-brand:#0A2A5C; --c-primary:#FDC010; --c-primary-2:#163E7A; --c-on-primary:#0A2A5C; --c-primary-soft:#FFF1C2;
+  --c-accent:#0067BC; --c-accent-soft:#E3F0FB; --c-accent-2:#C3141B; --c-accent-line:#0A2A5C;
+  --c-text:#0F1E36; --c-muted:#5A6478; --c-line:#E4DCC8; --c-bg:#FCF6EA; --c-sale:#C3141B; --c-focus:#0067BC;
+  --c-ink-dark:#0A2A5C; --grad-hero:linear-gradient(145deg,#06203F 0%,#0A2A5C 45%,#0067BC 100%); --grad-print:linear-gradient(150deg,#0A2A5C 0%,#0067BC 70%,#3B8FD6 100%); --grad-sale:linear-gradient(135deg,#C3141B,#8E0E13); --c-on-sale:#FFFFFF;
+  --font-ui:'Rubik','Heebo',system-ui,sans-serif; --font-display:'Fredoka','Rubik',system-ui,sans-serif;
+  --r-sm:10px; --r-md:16px; --r-lg:24px;
+  --sh-2:0 6px 20px rgba(10,42,92,.12);
+}
+/* ── אפשרות ב: פלטה 144 (פטל · מנטה · טורקיז · ירוק כהה) ── */
+.theme-144{
+  --c-brand:#112F2C; --c-primary:#B71F57; --c-primary-2:#8E1743; --c-on-primary:#FFFFFF; --c-primary-soft:#F8E1EA;
+  --c-accent:#96D1AA; --c-accent-soft:#E6F4EB; --c-accent-2:#0A6E75; --c-accent-line:#112F2C;
+  --c-text:#112F2C; --c-muted:#4E625F; --c-line:#CFE3D7; --c-bg:#F3F9F5; --c-sale:#B71F57; --c-focus:#0A6E75;
+  --c-ink-dark:#112F2C; --grad-hero:linear-gradient(145deg,#0B1F1D 0%,#112F2C 45%,#099197 100%); --grad-print:linear-gradient(150deg,#112F2C 0%,#0A6E75 60%,#099197 100%); --grad-sale:linear-gradient(135deg,#B71F57,#8E1743); --c-on-sale:#FFFFFF;
+  --font-ui:'Rubik','Heebo',system-ui,sans-serif; --font-display:'Fredoka','Rubik',system-ui,sans-serif;
+  --r-sm:10px; --r-md:16px; --r-lg:22px;
+  --sh-2:0 6px 20px rgba(17,47,44,.12);
+}
+/* חנות המקדש — סגנון משלה */
+.theme-mikdash{--c-brand:#14294D;--c-primary:#C6A135;--c-on-primary:#14294D;--c-bg:#F3EDE1;--c-surface:#FFFDF8;--c-line:#E2D8C4;--font-display:'Frank Ruhl Libre','David Libre',Georgia,serif}
 
 /* ── בסיס לכל דף ── */
 :where(:focus-visible){outline:3px solid var(--c-focus);outline-offset:2px}
@@ -61,16 +89,16 @@
 .ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-2);min-height:var(--tap);padding:0 var(--sp-5);border-radius:var(--r-pill);border:2px solid transparent;font:700 var(--fs-md)/1 var(--font-ui);cursor:pointer;text-decoration:none;transition:transform var(--dur) var(--ease),box-shadow var(--dur) var(--ease)}
 .ds-btn:active{transform:scale(.97)}
 .ds-btn[disabled]{opacity:.55;cursor:not-allowed}
-.ds-btn--primary{background:var(--c-accent);color:var(--c-brand);box-shadow:0 3px 0 var(--c-brand)} /* צל תחתון כחול — כמו המסגרת בלוגו */
+.ds-btn--primary{background:var(--c-primary);color:var(--c-on-primary);box-shadow:0 3px 0 var(--c-brand)}
 .ds-btn--primary:active{box-shadow:0 1px 0 var(--c-brand);transform:translateY(2px)}
-.ds-btn--sale{background:var(--c-red);color:#fff}
+.ds-btn--sale{background:var(--c-sale);color:#fff}
 .ds-btn--secondary{background:var(--c-surface);color:var(--c-brand);border-color:var(--c-brand)}
 .ds-btn--ghost{background:transparent;color:var(--c-brand)}
 .ds-card{background:var(--c-surface);border:1.5px solid var(--c-line);border-radius:var(--r-lg);box-shadow:var(--sh-1);padding:var(--sp-4)}
 /* כרטיס בחירה — כל בחירה אינטראקטיבית (צורה, גודל, חומר) */
 .ds-choice{display:flex;flex-direction:column;align-items:center;gap:var(--sp-1);min-height:var(--tap);padding:var(--sp-3);border:2px solid var(--c-line);border-radius:var(--r-md);background:var(--c-surface);color:var(--c-text);font:inherit;cursor:pointer;transition:border-color var(--dur),box-shadow var(--dur),transform var(--dur)}
 .ds-choice:hover{border-color:var(--c-brand-2)}
-.ds-choice[aria-pressed="true"],.ds-choice[aria-checked="true"]{border-color:var(--c-accent-line);box-shadow:0 0 0 4px var(--c-accent);font-weight:700} /* בחירה = מסגרת כחולה + טבעת צהובה, כמו הלוגו */
+.ds-choice[aria-pressed="true"],.ds-choice[aria-checked="true"]{border-color:var(--c-accent-line);box-shadow:0 0 0 4px var(--c-primary-soft);font-weight:700}
 .ds-logo{display:block;width:auto;height:56px}
 .ds-title{font-family:var(--font-display);font-weight:700;color:var(--c-brand);line-height:var(--lh-tight)}
 .ds-choice small{color:var(--c-muted);font-size:var(--fs-xs)}

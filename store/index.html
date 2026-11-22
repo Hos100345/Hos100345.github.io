@@ -13,6 +13,10 @@
   <meta name="apple-mobile-web-app-title" content="משחק עיצובישי">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/tokens.css?v=1">
+  <script>/* S-174: תצוגה מקדימה של נושא צבעים — store/?theme=logo או ?theme=144 (לא נשמר, לא משפיע על לקוחות) */
+  (function(){var t=new URLSearchParams(location.search).get('theme');if(t!=='logo'&&t!=='144')return;document.documentElement.classList.add('theme-'+t);
+   var l=document.createElement('link');l.rel='stylesheet';l.href='https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Rubik:wght@400;500;700&display=swap';document.head.appendChild(l);})();</script>
   <!-- ⛔ js/play-engine.js נוצר ע"י tools/build-play-engine.py מתוך dobble.html — לא לערוך ידנית.
        משמש כאן רק את "מצא את הזהה" (genDeck/drawCard…), כך שהקלף זהה למחולל. שינוי בו = להעלות ?v= כאן וב-sw.js. -->
   <script src="../js/play-engine.js?v=10"></script>
@@ -23,22 +27,23 @@
   <script src="../js/print-fit.js?v=1" defer></script>
   <script src="../js/zikit-products.js?v=3" defer></script>
   <style>
+    /* S-174: הצבעים מגיעים מ-css/tokens.css (שפה עיצובית אחידה). השמות הישנים נשארים ככינויים כדי לא לשבור את הקוד */
     :root{
-      --blue:#2563EB;--blue-light:#DBEAFE;--indigo:#4338CA;--purple:#7C3AED;--wa:#25D366;--wa-dark:#1DA851;--navy:#0F172A;
-      --gold:#F59E0B;--gold-light:#FEF3C7;--green:#059669;--red:#DC2626;
-      --text:#0F172A;--muted:#5B6472;--line:rgba(15,23,42,.1);
-      --r:1.15rem;--sh:0 8px 32px rgba(30,27,75,.10),0 1.5px 4px rgba(30,27,75,.06);
+      --blue:var(--c-primary);--blue-light:var(--c-primary-soft);--indigo:var(--c-primary-2);--purple:var(--c-accent-2);--wa:var(--c-wa);--wa-dark:var(--c-wa-dark);--navy:var(--c-brand);
+      --gold:var(--c-accent);--gold-light:var(--c-accent-soft);--green:var(--c-ok);--red:var(--c-sale);
+      --text:var(--c-text);--muted:var(--c-muted);--line:var(--c-line);
+      --r:var(--r-lg);--sh:var(--sh-2);
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     html,body{min-height:100%}
     body{
       touch-action:manipulation;
-      font-family:'Heebo',system-ui,sans-serif;color:var(--text);direction:rtl;
+      font-family:var(--font-ui);color:var(--text);direction:rtl;
       background:
-        radial-gradient(ellipse 65% 50% at 12% 5%,rgba(37,99,235,.20) 0%,transparent 55%),
-        radial-gradient(ellipse 55% 55% at 90% 12%,rgba(124,58,237,.18) 0%,transparent 55%),
-        radial-gradient(ellipse 70% 45% at 50% 100%,rgba(245,158,11,.12) 0%,transparent 55%),
-        #EEF1FB;
+        radial-gradient(ellipse 65% 50% at 12% 5%,color-mix(in srgb,var(--c-primary) 20%,transparent) 0%,transparent 55%),
+        radial-gradient(ellipse 55% 55% at 90% 12%,color-mix(in srgb,var(--c-accent-2) 18%,transparent) 0%,transparent 55%),
+        radial-gradient(ellipse 70% 45% at 50% 100%,color-mix(in srgb,var(--c-accent) 12%,transparent) 0%,transparent 55%),
+        var(--c-bg);
       background-attachment:fixed;
       -webkit-tap-highlight-color:transparent;
       overscroll-behavior-y:none;
@@ -56,7 +61,7 @@
       border-radius:999px;font-weight:800;font-size:1rem;transition:transform .15s,box-shadow .15s}
     .btn:active{transform:scale(.97)}
     .btn[disabled]{opacity:.45;pointer-events:none}
-    .btn-main{background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff;box-shadow:0 6px 18px rgba(37,99,235,.35)}
+    .btn-main{background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff;box-shadow:0 6px 18px color-mix(in srgb,var(--c-primary) 35%,transparent)}
     .btn-sec{background:#fff;border:1.5px solid var(--line)}
     .btn-sm{min-height:40px;padding:.35rem .9rem;font-size:.92rem}
     .btn-block{width:100%}
@@ -69,7 +74,7 @@
     .site-top .brand img{width:42px;height:42px;border-radius:50%;background:#fff;padding:2px;object-fit:contain}
     .site-top .home{color:rgba(255,255,255,.9);text-decoration:none;font-weight:700;font-size:.92rem;padding:.45rem .9rem;border-radius:999px;border:1.5px solid rgba(255,255,255,.35)}
     .hero{position:relative;overflow:hidden;text-align:center;color:#fff;padding:2.6rem 16px 2.8rem;
-      background:linear-gradient(145deg,#0F1035 0%,#1E3A8A 28%,#3730A3 58%,#7C3AED 100%)}
+      background:var(--grad-hero)}
     .hero .in{position:relative;z-index:1;max-width:680px;margin:0 auto}
     .hero .eyebrow{font-size:.92rem;font-weight:500;letter-spacing:.12em;color:rgba(255,255,255,.75);margin-bottom:.5rem}
     .hero h1{font-size:clamp(2.3rem,8vw,4rem);font-weight:900;line-height:1.15;text-shadow:0 2px 20px rgba(0,0,0,.25)}
@@ -100,7 +105,7 @@
     @media(prefers-reduced-motion:reduce){.bubble{animation:none}}
 
     /* ── מאגר תמונות ── */
-    .drop{border:2.5px dashed rgba(37,99,235,.38);border-radius:var(--r);padding:1.1rem 1rem;text-align:center;background:rgba(255,255,255,.6)}
+    .drop{border:2.5px dashed color-mix(in srgb,var(--c-primary) 38%,transparent);border-radius:var(--r);padding:1.1rem 1rem;text-align:center;background:rgba(255,255,255,.6)}
     .drop.over{border-color:var(--purple);background:#EDE9FE}
     .drop .hint{font-size:.88rem;margin-top:.5rem}
     .phead{display:flex;align-items:center;gap:.5rem;justify-content:space-between;flex-wrap:wrap}
@@ -110,7 +115,7 @@
     .ph canvas{width:100%;height:100%;display:block}
     .ph .del{position:absolute;top:3px;left:3px;width:30px;height:30px;border-radius:50%;background:rgba(15,23,42,.72);color:#fff;font-size:.95rem;font-weight:900;line-height:30px;text-align:center}
     .prog{margin-top:.8rem}
-    .bar{height:10px;border-radius:99px;background:rgba(37,99,235,.12);overflow:hidden}
+    .bar{height:10px;border-radius:99px;background:color-mix(in srgb,var(--c-primary) 12%,transparent);overflow:hidden}
     .bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--purple));transition:width .2s}
     .prog .lbl{margin-top:.35rem;font-size:.9rem;color:var(--muted);text-align:center}
     .fails{margin-top:.6rem;background:#FEF3C7;color:#92400E;border-radius:.8rem;padding:.6rem .8rem;font-size:.9rem;line-height:1.5}
@@ -133,13 +138,13 @@
     .intro p{color:var(--muted);font-size:1.02rem;margin-top:.25rem}
     .stage{position:relative;margin:.8rem auto 0;max-width:640px;border-radius:1.5rem;overflow:hidden;padding:1rem;display:flex;justify-content:center;align-items:center;min-height:220px;box-shadow:0 18px 40px rgba(30,27,75,.18)}
     /* G-30: צבעים עמוקים ומזמינים במקום פסטל חיוור */
-    .st-print{background:linear-gradient(150deg,#4F46E5 0%,#7C3AED 55%,#A855F7 100%)}
+    .st-print{background:var(--grad-print)}
     .st-gifts{background:linear-gradient(150deg,#F43F5E 0%,#FB923C 60%,#FBBF24 100%)}
     .st-phone{background:linear-gradient(150deg,#0D9488 0%,#10B981 60%,#84CC16 100%)}
-    .stage .tag{color:#1A1733}
+    .stage .tag{color:var(--c-ink-dark)}
     .stage img{display:block;width:100%;max-width:560px;height:auto;border-radius:1rem;box-shadow:0 14px 30px rgba(20,10,80,.22)}
     .st-gifts img{max-width:320px;box-shadow:none;border-radius:.8rem}
-    .phone-frame{display:block;width:172px;padding:8px;border-radius:26px;background:#1A1733;box-shadow:0 14px 30px rgba(20,10,80,.3);transform:rotate(-4deg)}
+    .phone-frame{display:block;width:172px;padding:8px;border-radius:26px;background:var(--c-ink-dark);box-shadow:0 14px 30px rgba(20,10,80,.3);transform:rotate(-4deg)}
     .phone-frame img{border-radius:18px;box-shadow:none}
     .stage .tag{position:absolute;bottom:12px;right:12px;padding:.4rem .75rem;border-radius:.8rem;font-size:.85rem;font-weight:700;color:var(--text);
       background:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.95);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
@@ -160,12 +165,12 @@
     .s3d-nav{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center}
     .s3d-nav button{min-height:44px;padding:.4rem .9rem;border-radius:999px;font-weight:700;font-size:.95rem;color:var(--text);
       background:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.95);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
-    .s3d-nav button[aria-pressed="true"]{background:#1A1733;color:#fff;border-color:#1A1733}
+    .s3d-nav button[aria-pressed="true"]{background:var(--c-ink-dark);color:#fff;border-color:var(--c-ink-dark)}
     .s3d-nav .s3d-pause{min-width:44px;padding:.4rem}
     .s3d-nav .s3d-arrow{min-width:48px;font-size:1.6rem;line-height:1;padding:.2rem .6rem}
     .s3d-dots{display:flex;gap:.4rem;align-items:center;padding:0 .3rem}
     .s3d-dots i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.55)}
-    .s3d-dots i.on{background:#1A1733;width:22px;border-radius:4px}
+    .s3d-dots i.on{background:var(--c-ink-dark);width:22px;border-radius:4px}
     .s3d-nav{align-items:center}
     .s3d-nav button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
     /* G-26: מתג משחקים / מתנות / בטלפון */
@@ -300,7 +305,7 @@
     .zk-modal{position:fixed;inset:0;z-index:60;background:rgba(15,23,42,.62);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:12px}
     /* G-50: חלון מבצע + פס מבצע + מחיר מחוק */
     .zk-price s,.zk-cp s,.hub .price s{opacity:.6;font-weight:600;font-size:.82em;margin-inline-end:.25em}
-    .sale-strip{display:flex;align-items:center;justify-content:center;gap:.4rem;width:100%;margin:.6rem 0 0;padding:.55rem .8rem;border-radius:999px;background:linear-gradient(135deg,#1E3A8A,#4C1D95);color:#FDE68A;font-weight:800;font-size:.95rem;min-height:44px;box-shadow:0 4px 14px rgba(30,58,138,.3)}
+    .sale-strip{display:flex;align-items:center;justify-content:center;gap:.4rem;width:100%;margin:.6rem 0 0;padding:.55rem .8rem;border-radius:999px;background:var(--grad-sale);color:var(--c-on-sale);font-weight:800;font-size:.95rem;min-height:44px;box-shadow:0 4px 14px rgba(30,58,138,.3)}
     .sale-modal{position:fixed;inset:0;z-index:70;background:rgba(15,23,42,.66);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:16px}
     .sale-box{position:relative;width:min(420px,100%);border-radius:24px;padding:1.6rem 1.3rem 1.3rem;text-align:center;color:#fff;background:radial-gradient(120% 90% at 50% 0%,#3B2A8C 0%,#1E2A6B 55%,#111B4D 100%);box-shadow:0 24px 60px rgba(0,0,0,.45);border:2px solid #FACC15;animation:salein .35s ease-out}
     @keyframes salein{from{transform:translateY(18px) scale(.94);opacity:0}to{transform:none;opacity:1}}
