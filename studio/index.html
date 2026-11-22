@@ -53,7 +53,7 @@ body.focus-min header.top{display:flex;justify-content:space-between;align-items
 body.focus-min .brand{display:contents}body.focus-min .brand h1,body.focus-min .ver{display:none}
 body.focus-min nav.tabs{order:-1;margin:0;overflow:visible}body.focus-min nav.tabs button{display:none}
 body.focus-min .share-top,body.focus-min nav.tabs a.tab-all{margin:0;color:#fff;font-weight:700;font-size:.95rem;border:1.5px solid rgba(255,255,255,.55);background:rgba(20,41,77,.6);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border-radius:999px;padding:.4rem 1rem;min-height:40px;display:inline-flex;align-items:center;text-decoration:none}
-@media(max-width:899px){body.focus-min header.top{position:fixed;top:0;left:0;right:0;z-index:30;background:transparent;pointer-events:none}body.focus-min .share-top,body.focus-min nav.tabs{pointer-events:auto}} /* S-164: בטלפון הסרגל שקוף וצף על התצוגה — לא תופס מקום */
+@media(max-width:899px){body.focus-min header.top{position:fixed;top:0;left:0;right:0;z-index:30;background:transparent;pointer-events:none}body.focus-min .share-top,body.focus-min nav.tabs{pointer-events:auto}body.focus-min #how:not([hidden]){margin-top:50px}body.focus-min .mgbar{top:52px}} /* S-166: בורר בית/חנות לא מתחבא מתחת לכפתורים הצפים */ /* S-164: בטלפון הסרגל שקוף וצף על התצוגה — לא תופס מקום */
 nav.tabs a.tab-all{flex:0 0 auto;color:#C9D5E8;padding:10px 14px 11px;text-decoration:none;font-size:.9rem;margin-inline-start:auto}
 main{display:grid;grid-template-columns:minmax(0,1fr);min-height:0}
 main>*{min-width:0}
@@ -355,7 +355,7 @@ body.admin .cust{display:none!important}
 <script>
 const NETS={"d4":{"faces":4,"sides":3,"pos":[[[1.2247,0.9659],[0.2588,1.2247],[0.5176,0.2588]],[[0,2.1907],[0.2588,1.2247],[0.9659,1.9319]],[[0.9659,1.9319],[0.2588,1.2247],[1.2247,0.9659]],[[1.2247,0.9659],[0.5176,0.2588],[1.4836,0]]],"tabs":[{"e":[[0.2588,1.2247],[0.5176,0.2588]],"f":0,"d":0.28,"t":0.25},{"e":[[0.9659,1.9319],[0,2.1907]],"f":1,"d":0.28,"t":0.25},{"e":[[1.2247,0.9659],[0.9659,1.9319]],"f":2,"d":0.28,"t":0.25}],"cuts":[[[0,2.1907],[0.2588,1.2247]],[[0.5176,0.2588],[1.4836,0]],[[1.4836,0],[1.2247,0.9659]]],"folds":[[[1.2247,0.9659],[0.2588,1.2247]],[[0.5176,0.2588],[1.2247,0.9659]],[[0.2588,1.2247],[0.9659,1.9319]]],"w":1.4836,"h":2.3964,"opp":[-1,-1,-1,-1],"maxEdge":104.3},"d6":{"faces":6,"sides":4,"pos":[[[1.1953,4.1008],[0.2557,3.7588],[0.5977,2.8191],[1.5374,3.1611]],[[0,1.5374],[0.342,0.5977],[1.2817,0.9397],[0.9397,1.8794]],[[1.2817,0.9397],[1.6237,0],[2.5634,0.342],[2.2214,1.2817]],[[1.5374,3.1611],[0.5977,2.8191],[0.9397,1.8794],[1.8794,2.2214]],[[2.8191,2.5634],[2.4771,3.5031],[1.5374,3.1611],[1.8794,2.2214]],[[0.9397,1.8794],[1.2817,0.9397],[2.2214,1.2817],[1.8794,2.2214]]],"tabs":[{"e":[[1.1953,4.1008],[0.2557,3.7588]],"f":0,"d":0.28,"t":0.25},{"e":[[0.2557,3.7588],[0.5977,2.8191]],"f":0,"d":0.28,"t":0.25},{"e":[[1.5374,3.1611],[1.1953,4.1008]],"f":0,"d":0.28,"t":0.25},{"e":[[0.342,0.5977],[1.2817,0.9397]],"f":1,"d":0.28,"t":0.25},{"e":[[0.9397,1.8794],[0,1.5374]],"f":1,"d":0.28,"t":0.25},{"e":[[2.5634,0.342],[2.2214,1.2817]],"f":2,"d":0.28,"t":0.25},{"e":[[1.8794,2.2214],[2.8191,2.5634]],"f":4,"d":0.28,"t":0.25}],"cuts":[[[1.6237,0],[2.5634,0.342]],[[0,1.5374],[0.342,0.5977]],[[2.4771,3.5031],[1.5374,3.1611]],[[1.2817,0.9397],[1.6237,0]],[[0.5977,2.8191],[0.9397,1.8794]],[[2.8191,2.5634],[2.4771,3.5031]],[[2.2214,1.2817],[1.8794,2.2214]]],"folds":[[[0.5977,2.8191],[1.5374,3.1611]],[[1.2817,0.9397],[0.9397,1.8794]],[[2.2214,1.2817],[1.2817,0.9397]],[[0.9397,1.8794],[1.8794,2.2214]],[[1.8794,2.2214],[1.5374,3.1611]]],"w":2.8191,"h":4.2784,"opp":[5,4,3,2,1,0],"maxEdge":58.4},"d8":{"faces":8,"sides":3,"pos":[[[0.684,1.172],[1.3268,1.9381],[0.342,2.1117]],[[0.342,2.1117],[1.3268,1.9381],[0.9848,2.8778]],[[1.6688,0.9984],[1.3268,1.9381],[0.684,1.172]],[[0.9848,2.8778],[1.3268,1.9381],[1.9696,2.7041]],[[0.0413,0.406],[1.0261,0.2323],[0.684,1.172]],[[0.9848,2.8778],[0,3.0514],[0.342,2.1117]],[[0.684,1.172],[1.0261,0.2323],[1.6688,0.9984]],[[1.6688,0.9984],[1.0261,0.2323],[2.0109,0.0587]]],"tabs":[{"e":[[0.342,2.1117],[0.684,1.172]],"f":0,"d":0.28,"t":0.25},{"e":[[1.6688,0.9984],[1.3268,1.9381]],"f":2,"d":0.28,"t":0.25},{"e":[[1.9696,2.7041],[0.9848,2.8778]],"f":3,"d":0.28,"t":0.25},{"e":[[0.0413,0.406],[1.0261,0.2323]],"f":4,"d":0.28,"t":0.25},{"e":[[0.9848,2.8778],[0,3.0514]],"f":5,"d":0.28,"t":0.25}],"cuts":[[[0.684,1.172],[0.0413,0.406]],[[1.3268,1.9381],[1.9696,2.7041]],[[2.0109,0.0587],[1.6688,0.9984]],[[0,3.0514],[0.342,2.1117]],[[1.0261,0.2323],[2.0109,0.0587]]],"folds":[[[0.684,1.172],[1.3268,1.9381]],[[1.3268,1.9381],[0.342,2.1117]],[[1.3268,1.9381],[0.9848,2.8778]],[[0.9848,2.8778],[0.342,2.1117]],[[0.684,1.172],[1.6688,0.9984]],[[1.0261,0.2323],[0.684,1.172]],[[1.0261,0.2323],[1.6688,0.9984]]],"w":2.0109,"h":3.2837,"opp":[7,6,5,4,3,2,1,0],"maxEdge":76.1},"d12":{"faces":12,"sides":5,"pos":[[[2.9967,3.8222],[3.0491,4.8209],[2.1155,5.1792],[1.4862,4.4021],[2.0308,3.5634]],[[3.1337,6.4367],[2.1678,6.1778],[2.1155,5.1792],[3.0491,4.8209],[3.6784,5.598]],[[0.5526,4.7604],[1.4862,4.4021],[2.1155,5.1792],[1.5708,6.0179],[0.6049,5.7591]],[[3.5414,2.9836],[2.9967,3.8222],[2.0308,3.5634],[1.9785,2.5648],[2.912,2.2064]],[[1.0125,2.306],[1.9785,2.5648],[2.0308,3.5634],[1.0972,3.9218],[0.4679,3.1446]],[[3.5414,2.9836],[4.5073,3.2424],[4.5596,4.241],[3.626,4.5994],[2.9967,3.8222]],[[3.7631,7.2138],[3.1337,6.4367],[3.6784,5.598],[4.6443,5.8568],[4.6966,6.8554]],[[4.4226,1.6266],[4.4749,2.6252],[3.5414,2.9836],[2.912,2.2064],[3.4567,1.3677]],[[1.3491,1.7876],[0.3832,1.5288],[0.3309,0.5302],[1.2645,0.1718],[1.8938,0.949]],[[0.6896,7.3749],[0.0603,6.5977],[0.6049,5.7591],[1.5708,6.0179],[1.6232,7.0165]],[[2.912,2.2064],[1.9785,2.5648],[1.3491,1.7876],[1.8938,0.949],[2.8597,1.2078]],[[3.4043,0.3691],[4.3379,0.0107],[4.9672,0.7879],[4.4226,1.6266],[3.4567,1.3677]]],"tabs":[{"e":[[2.9967,3.8222],[3.0491,4.8209]],"f":0,"d":0.22,"t":0.3},{"e":[[1.4862,4.4021],[2.0308,3.5634]],"f":0,"d":0.22,"t":0.3},{"e":[[3.1337,6.4367],[2.1678,6.1778]],"f":1,"d":0.28,"t":0.25},{"e":[[2.1678,6.1778],[2.1155,5.1792]],"f":1,"d":0.22,"t":0.3},{"e":[[3.0491,4.8209],[3.6784,5.598]],"f":1,"d":0.28,"t":0.25},{"e":[[0.5526,4.7604],[1.4862,4.4021]],"f":2,"d":0.28,"t":0.25},{"e":[[0.6049,5.7591],[0.5526,4.7604]],"f":2,"d":0.28,"t":0.25},{"e":[[1.0125,2.306],[1.9785,2.5648]],"f":4,"d":0.22,"t":0.3},{"e":[[0.4679,3.1446],[1.0125,2.306]],"f":4,"d":0.28,"t":0.25},{"e":[[3.5414,2.9836],[4.5073,3.2424]],"f":5,"d":0.22,"t":0.3},{"e":[[4.5073,3.2424],[4.5596,4.241]],"f":5,"d":0.28,"t":0.25},{"e":[[3.7631,7.2138],[3.1337,6.4367]],"f":6,"d":0.28,"t":0.25},{"e":[[4.6443,5.8568],[4.6966,6.8554]],"f":6,"d":0.28,"t":0.25},{"e":[[4.6966,6.8554],[3.7631,7.2138]],"f":6,"d":0.28,"t":0.25},{"e":[[2.912,2.2064],[3.4567,1.3677]],"f":7,"d":0.22,"t":0.3},{"e":[[0.3309,0.5302],[1.2645,0.1718]],"f":8,"d":0.28,"t":0.25},{"e":[[1.2645,0.1718],[1.8938,0.949]],"f":8,"d":0.28,"t":0.25},{"e":[[0.6896,7.3749],[0.0603,6.5977]],"f":9,"d":0.28,"t":0.25},{"e":[[1.8938,0.949],[2.8597,1.2078]],"f":10,"d":0.28,"t":0.25}],"cuts":[[[3.626,4.5994],[2.9967,3.8222]],[[2.0308,3.5634],[1.0972,3.9218]],[[1.5708,6.0179],[1.6232,7.0165]],[[2.1155,5.1792],[1.5708,6.0179]],[[4.5596,4.241],[3.626,4.5994]],[[1.0972,3.9218],[0.4679,3.1446]],[[0.3832,1.5288],[0.3309,0.5302]],[[1.9785,2.5648],[1.3491,1.7876]],[[1.3491,1.7876],[0.3832,1.5288]],[[4.4749,2.6252],[3.5414,2.9836]],[[3.6784,5.598],[4.6443,5.8568]],[[1.6232,7.0165],[0.6896,7.3749]],[[4.4226,1.6266],[4.4749,2.6252]],[[4.9672,0.7879],[4.4226,1.6266]],[[2.8597,1.2078],[2.912,2.2064]],[[0.0603,6.5977],[0.6049,5.7591]],[[3.4043,0.3691],[4.3379,0.0107]],[[4.3379,0.0107],[4.9672,0.7879]],[[3.4567,1.3677],[3.4043,0.3691]]],"folds":[[[3.0491,4.8209],[2.1155,5.1792]],[[2.1155,5.1792],[1.4862,4.4021]],[[2.0308,3.5634],[2.9967,3.8222]],[[3.6784,5.598],[3.1337,6.4367]],[[1.5708,6.0179],[0.6049,5.7591]],[[3.5414,2.9836],[2.9967,3.8222]],[[2.0308,3.5634],[1.9785,2.5648]],[[1.9785,2.5648],[2.912,2.2064]],[[2.912,2.2064],[3.5414,2.9836]],[[3.4567,1.3677],[4.4226,1.6266]],[[1.8938,0.949],[1.3491,1.7876]]],"w":4.9672,"h":7.3856,"opp":[11,10,7,9,6,8,4,2,5,3,1,0],"maxEdge":33.6},"d20":{"faces":20,"sides":3,"pos":[[[2.0234,2.2854],[1.0386,2.1117],[1.6814,1.3457]],[[1.6814,1.3457],[1.0386,2.1117],[0.6966,1.172]],[[1.3806,3.0514],[1.0386,2.1117],[2.0234,2.2854]],[[0.7378,3.8175],[0.3958,2.8778],[1.3806,3.0514]],[[0.6966,1.172],[1.0386,2.1117],[0.0538,1.9381]],[[2.0234,2.2854],[1.6814,1.3457],[2.6662,1.5193]],[[2.6662,1.5193],[1.6814,1.3457],[2.3242,0.5796]],[[1.3394,0.406],[1.6814,1.3457],[0.6966,1.172]],[[2.3654,3.2251],[2.0234,2.2854],[3.0082,2.459]],[[1.3806,3.0514],[2.0234,2.2854],[2.3654,3.2251]],[[2.6662,1.5193],[2.3242,0.5796],[3.309,0.7533]],[[0.3546,0.2323],[1.3394,0.406],[0.6966,1.172]],[[2.7075,4.1648],[3.0495,5.1044],[2.0647,4.9308]],[[2.7075,4.1648],[2.3654,3.2251],[3.3502,3.3987]],[[1.3806,3.0514],[2.3654,3.2251],[1.7226,3.9911]],[[1.7226,3.9911],[2.3654,3.2251],[2.7075,4.1648]],[[0.7378,3.8175],[1.3806,3.0514],[1.7226,3.9911]],[[1.0799,4.7571],[0.095,4.5835],[0.7378,3.8175]],[[1.0799,4.7571],[0.7378,3.8175],[1.7226,3.9911]],[[1.7226,3.9911],[2.7075,4.1648],[2.0647,4.9308]]],"tabs":[{"e":[[1.3806,3.0514],[1.0386,2.1117]],"f":2,"d":0.28,"t":0.25},{"e":[[0.7378,3.8175],[0.3958,2.8778]],"f":3,"d":0.28,"t":0.25},{"e":[[0.0538,1.9381],[0.6966,1.172]],"f":4,"d":0.28,"t":0.25},{"e":[[2.6662,1.5193],[2.0234,2.2854]],"f":5,"d":0.28,"t":0.25},{"e":[[1.6814,1.3457],[2.3242,0.5796]],"f":6,"d":0.28,"t":0.25},{"e":[[3.0082,2.459],[2.3654,3.2251]],"f":8,"d":0.28,"t":0.25},{"e":[[2.3242,0.5796],[3.309,0.7533]],"f":10,"d":0.28,"t":0.25},{"e":[[3.309,0.7533],[2.6662,1.5193]],"f":10,"d":0.28,"t":0.25},{"e":[[0.3546,0.2323],[1.3394,0.406]],"f":11,"d":0.28,"t":0.25},{"e":[[0.6966,1.172],[0.3546,0.2323]],"f":11,"d":0.28,"t":0.25},{"e":[[1.7226,3.9911],[1.0799,4.7571]],"f":18,"d":0.28,"t":0.25}],"cuts":[[[0.3958,2.8778],[1.3806,3.0514]],[[1.0386,2.1117],[0.0538,1.9381]],[[0.095,4.5835],[0.7378,3.8175]],[[2.0234,2.2854],[3.0082,2.459]],[[1.3394,0.406],[1.6814,1.3457]],[[2.3654,3.2251],[3.3502,3.3987]],[[2.7075,4.1648],[3.0495,5.1044]],[[3.3502,3.3987],[2.7075,4.1648]],[[3.0495,5.1044],[2.0647,4.9308]],[[1.0799,4.7571],[0.095,4.5835]],[[2.0647,4.9308],[1.7226,3.9911]]],"folds":[[[2.0234,2.2854],[1.0386,2.1117]],[[1.0386,2.1117],[1.6814,1.3457]],[[1.6814,1.3457],[2.0234,2.2854]],[[1.0386,2.1117],[0.6966,1.172]],[[0.6966,1.172],[1.6814,1.3457]],[[2.0234,2.2854],[1.3806,3.0514]],[[1.3806,3.0514],[0.7378,3.8175]],[[1.6814,1.3457],[2.6662,1.5193]],[[2.3242,0.5796],[2.6662,1.5193]],[[0.6966,1.172],[1.3394,0.406]],[[2.3654,3.2251],[2.0234,2.2854]],[[2.3654,3.2251],[1.3806,3.0514]],[[2.0647,4.9308],[2.7075,4.1648]],[[2.7075,4.1648],[2.3654,3.2251]],[[2.3654,3.2251],[1.7226,3.9911]],[[1.7226,3.9911],[1.3806,3.0514]],[[2.7075,4.1648],[1.7226,3.9911]],[[1.7226,3.9911],[0.7378,3.8175]],[[0.7378,3.8175],[1.0799,4.7571]]],"w":3.3628,"h":5.1044,"opp":[19,15,12,10,13,18,16,14,17,11,3,9,2,4,7,1,6,8,5,0],"maxEdge":49}};
 'use strict';
-const VERSION='studio-v1.60';
+const VERSION='studio-v1.61';
 // ═══════════ קבצים משותפים מהריפו (פונטים, עיצובי גב) ═══════════
 // נעוץ לקומיט ספציפי — שינוי בריפו לא ישבור את הקובץ הזה בלי שנעדכן כאן במכוון.
 const SHARED_COMMIT='f196a73a41a063231ba207a4296395f889aac265';
@@ -643,18 +643,31 @@ const PANEL=new Map();
 function panel(cls,key,title,open,kids){const d=el('details',{class:cls,'data-key':key,on:{toggle:()=>PANEL.set(key,d.open)}},el('summary',{},title),el('div',{class:'body'},...kids));
   if(PANEL.has(key)?PANEL.get(key):open)d.open=true;return d;}
 function closePanel(key){if(key)PANEL.set(key,false);}
-function pickDone(node){const d=node&&node.closest&&node.closest('details');if(d){closePanel(d.dataset.key);d.open=false;}}
+function pickDone(node){const d=node&&node.closest&&node.closest('details');if(d&&!d.classList.contains('flat')){ /* S-166: באשף השלב לא נסגר */closePanel(d.dataset.key);d.open=false;}}
 function sec(title,open,...kids){return panel('sec','sec:'+title,title,open,kids);}
 // S-161: אשף שלבים כללי — שלב אחרי שלב, והתצוגה של התוצאה תמיד למעלה. WZ[id]={step,n}. wzPanel מחזיר [סרגל שלבים, כותרת השלב, סעיפי השלב, הקודם/הבא].
 // הכפתור הקבוע למטה (שלח הזמנה) הופך ל"הבא" עד השלב האחרון — ראו wzBarLabel/wzOrder. מוצר שרוצה אשף: panel(){return wzPanel('id',[{ic,t,h,secs:()=>[...]},…],{onGo})}
 const WZ={};
 function wzGo(id,i,quiet){const z=WZ[id];if(!z)return;z.step=Math.max(0,Math.min(z.n-1,i));if(z.onGo)z.onGo(z.step);if(quiet)return;rebuild();ctrls.scrollTop=0;window.scrollTo(0,0);}
 function wzPanel(id,steps,o){const z=WZ[id]||(WZ[id]={step:0});z.n=steps.length;z.names=steps.map(s=>s.t);z.onGo=o&&o.onGo;z.step=Math.min(z.step,steps.length-1);const st=z.step;if(!z.init){z.init=1;if(z.onGo)z.onGo(st);}
-  const nav=el('nav',{class:'shsteps wz','aria-label':'שלבים'},steps.map((s,i)=>el('button',{type:'button','aria-current':i===st?'step':undefined,class:st>i?'done':'',on:{click:()=>wzGo(id,i)}},el('b',{},String(i+1)),el('i',{},s.ic),el('span',{class:'wzt'},s.t))));
+  const nav=el('nav',{class:'shsteps wz','aria-label':'שלבים'},steps.map((s,i)=>el('button',{type:'button','aria-current':i===st?'step':undefined,class:st>i?'done':'',on:{click:()=>wzGo(id,i)}},el('b',{},String(i+1)),s.ic?el('i',{},s.ic):null,el('span',{class:'wzt'},s.t))));
   const secs=steps[st].secs().filter(Boolean);secs.forEach(d=>{if(d.tagName==='DETAILS'){d.open=true;d.classList.add('flat');}}); // S-162: בלי כותרות מתקפלות — השלב מוצג שטוח
   return[nav,el('h2',{class:'shh'},wzTitle(steps[st])),...secs];}
-const wzTitle=S=>S.ic+' '+(S.h||S.t);
-const wzEarly=()=>{const z=cur.wz&&WZ[cur.id];return !!z&&z.step<z.n-1;}; // לפני השלב האחרון בלי חלקים נוספים מתחת לשלב
+const wzTitle=S=>(S.ic?S.ic+' ':'')+(S.h||S.t);
+// S-166: אשף אוטומטי לכל שאר המוצרים — כל חלק (sec) בהגדרות = שלב. מה שאינו חלק (רמזים, עורך) נצמד לשלב שאחריו; בסוף — שלב "סיום" עם שאר החלקים.
+const AUTO_WZ=new Set(['stickers','cards','memory','quartets','trivia','bingo','domino','dice','puzzle','tangram','ludo','blessing','subl']);
+const isWz=()=>!!(cur.wz||AUTO_WZ.has(cur.id));
+const WZ_MAX=6;
+function autoWz(id,items){const groups=[];let pend=[];
+  items.forEach(n=>{if(n&&n.tagName==='DETAILS'){const t=((n.querySelector(':scope>summary')||{}).textContent||'').trim();
+      if(groups.length&&/איך משחקים|^🔒/.test(t)){groups[groups.length-1].kids.push(...pend,n);pend=[];return;} // הסבר/מנהל — לא שלב בפני עצמו
+      groups.push({t,kids:[...pend,n]});pend=[];}else pend.push(n);});
+  if(!groups.length)return items;if(pend.length)groups[groups.length-1].kids.push(...pend);
+  while(groups.length>WZ_MAX){const g=groups.pop();groups[groups.length-1].kids.push(...g.kids);groups[groups.length-1].more=1;} // עודף חלקים — מתקבצים בשלב האחרון
+  if(groups.length>1){const l=groups[groups.length-1];if(l.more)l.t='✅ סיום';}
+  const steps=groups.map(g=>{const m=g.t.match(/^([^\p{L}\p{N}\s]+)\s*(.*)$/u),ic=m&&m[1]?m[1]:'',t=((m?m[2]:g.t)||g.t).replace(/\s*\(.*?\)\s*/g,' ').trim(),w=t.split(/\s+/);let short=w.slice(0,2).join(' ');if(short.length<7&&w.length>2)short=w.slice(0,3).join(' ');return{ic,t:short||'שלב',h:t,secs:()=>g.kids};});
+  return wzPanel(id,steps);}
+const wzEarly=()=>{const z=isWz()&&WZ[cur.id];return !!z&&z.step<z.n-1;}; // לפני השלב האחרון בלי חלקים נוספים מתחת לשלב
 const wzNow=()=>{const z=WZ[cur.id];return z&&z.n>1?z:null;};
 const wzBarLabel=()=>{const z=wzNow();return z&&z.step<z.n-1?'הבא: '+z.names[z.step+1]+' ←':null;}; // null = הכפתור הרגיל (שלח הזמנה)
 function wzOrder(){const z=wzNow();if(z&&z.step<z.n-1)wzGo(cur.id,z.step+1);else openOrder();}
@@ -698,7 +711,7 @@ function thumbCanvas(src,S=64){const c=el('canvas',{width:S,height:S,class:'chk'
 // edit:true → לחיצה על תמונה פותחת חיתוך והסרת רקע (openImageEditor); התמונה מוחלפת בחיתוכים שלה, באותו מקום ברשימה.
 function filesInput(o,k,label,{max=60,after,edit=true}={}){
   const thumbs=el('div',{class:'files'});
-  const changed=()=>{draw();after&&after();rerender();};
+  const changed=()=>{draw();updPick();after&&after();rerender();};
   const replace=(f,out)=>{const L=o[k]||[],j=L.indexOf(f);if(j<0)return;const nl=L.slice(0,j).concat(out,L.slice(j+1));
     if(nl.length>max)toast('נשמרו רק '+max+' תמונות — זה המקסימום כאן');o[k]=nl.slice(0,max);changed();};
   const draw=()=>{thumbs.innerHTML='';const L=o[k]||[],lim=edit?L.length:24;
@@ -707,9 +720,11 @@ function filesInput(o,k,label,{max=60,after,edit=true}={}){
       thumbs.append(el('div',{class:'tb'},el('button',{type:'button',class:'open','aria-label':'חיתוך והסרת רקע: '+(f.name||''),on:{click:()=>f.faceSrc&&f.faceRect?openImageEditor(f.faceSrc,out=>replace(f,out),{preset:[f.faceRect],keepSrc:f.faceSrc}):openImageEditor(f,out=>replace(f,out))}},c),
         el('button',{type:'button',class:'x','aria-label':'הסרת התמונה',on:{click:()=>{o[k]=(o[k]||[]).filter(x=>x!==f);changed();}}},'×')));});
     if(L.length>lim)thumbs.append(el('span',{class:'hint'},'+'+(L.length-lim)));};
-  const inp=el('input',{type:'file',accept:'image/*',multiple:'','aria-label':'בחירת תמונות',on:{change:async e=>{const add=await readImages(e.target.files,max);o[k]=(o[k]||[]).concat(add).slice(0,max);if(max<=4&&add.length)pickDone(e.target);changed();e.target.value='';}}}); // תמונה לדמות/פאזל: החלון נסגר; גלריה גדולה נשארת פתוחה
+  const inp=el('input',{type:'file',accept:'image/*',multiple:max>1?'':undefined,hidden:'','aria-label':'בחירת תמונות',on:{change:async e=>{const add=await readImages(e.target.files,max);o[k]=(o[k]||[]).concat(add).slice(0,max);if(max<=4&&add.length)pickDone(e.target);changed();e.target.value='';}}}); // תמונה לדמות/פאזל: החלון נסגר; גלריה גדולה נשארת פתוחה
   const clr=el('button',{type:'button',class:'btn ghost',on:{click:()=>{o[k]=[];changed();}}},'נקה תמונות');
-  draw();return el('div',{},el('label',{class:'hint'},label),el('div',{class:'inline'},inp,clr),
+  const pick=el('button',{type:'button',class:'btn gold shbig',on:{click:()=>inp.click()}}); // S-166: כפתור גדול במקום שדה הקובץ של הדפדפן
+  function updPick(){const n=(o[k]||[]).length;pick.textContent=n?(max>1?'📷 להוסיף תמונות':'📷 להחליף תמונה'):(max>1?'📷 לבחור תמונות':'📷 לבחור תמונה');clr.hidden=!n;}
+  draw();updPick();return el('div',{},el('label',{class:'hint'},label),inp,pick,clr,
     edit?el('p',{class:'hint'},(max===1?'✂️ לחיצה על התמונה: חיתוך והסרת רקע.':'✂️ לחיצה על תמונה: חיתוך פרצופים (גם כמה מתמונה קבוצתית אחת) והסרת רקע.')+' התמונות נשמרות במכשיר הזה גם אחרי רענון.'):null,thumbs);}
 // ═══════════ עריכת תמונה: חיתוך פרצופים מתמונה + הסרת רקע ═══════════
 // הועתק מהדאבל (dobble.html — openCropModal, removeBackground, cutComputeMask, cutMorphCleanup,
@@ -4147,7 +4162,7 @@ function shEffRow(k,label,min,max){return row(label,el('input',{type:'range',min
 // S-156: טוען את כל הפונטים של החולצה (שני הצדדים + כיתובים נוספים) ורק אז מצייר מחדש — גם בפתיחת הזמנה במנהל. SH3.fv נכנס לחתימת התלת־ממד כדי שהמרקם ייבנה שוב עם הפונט האמיתי
 function shFontsEnsure(){const fs=Tshirt.fonts(),k=fs.join('|');if(SH._fk===k)return;SH._fk=k;Promise.all(fs.map(loadFont)).then(()=>document.fonts.ready).then(()=>{SH3.fv=(SH3.fv||0)+1;rerender();});}
 const SH_FILTERS=[['none','מקורי'],['auto','✨ אוטומטי'],['bw','שחור-לבן'],['sepia','ספיה'],['vintage','וינטג\''],['warm','חם'],['cool','קר'],['pop','פופ'],['vivid','עז'],['drama','דרמטי']];
-const Tshirt={id:'tshirt',label:'👕 חולצה',
+const Tshirt={id:'tshirt',wz:true,label:'👕 חולצה',
   intro:'חולצה לבנה עם התמונה והכיתוב שלכם — מעצבים, רואים בתלת־ממד ומזמינים. ההדפסה בסובלימציה: נכנסת לתוך הבד ולא יורדת בכביסה.',
   fonts:()=>{const f=new Set();['front','back'].forEach(sd=>withSide(sd,()=>{f.add(SH.font);(SH.ex||[]).forEach(E=>{if(E.k==='text')f.add(E.font);});}));return[...f].filter(Boolean);}, // S-156: גם הצד השני והכיתובים הנוספים
   build(){shFontsEnsure();const L=shLayers(),s=Math.min(194/297,281/420),it={w:297*s,h:420*s,draw(x){x.save();x.scale(s,s);x.fillStyle='#fff';x.fillRect(0,0,297,420);
@@ -4156,8 +4171,9 @@ const Tshirt={id:'tshirt',label:'👕 חולצה',
     requestAnimationFrame(()=>{shDrawEditor();shSyncInputs();});
     return{pages:[page],summary:shKind().label+(SH.sleeve==='long'?' · שרוול ארוך':' · שרוול קצר')};},
   panel(){const st=SH.step||1,go=shGo,B=(t,f,a,cls)=>el('button',{type:'button',class:cls,'aria-label':a,on:{click:f}},t);
-    const bar=el('nav',{class:'shsteps','aria-label':'שלבים'},[[1,'🖼️','התמונה'],[2,'👕','על החולצה'],[3,'✅','סיום']].map(([n,ic,t])=>el('button',{type:'button','aria-current':st===n?'step':undefined,class:st>n?'done':'',on:{click:()=>go(n)}},el('b',{},n),' '+ic+' '+t)));
-    const next=(n,t)=>el('button',{type:'button',class:'btn gold shnext',on:{click:()=>go(n)}},t);
+    // S-166: האשף הכללי (WZ) — 4 שלבים, הכפתור הקבוע למטה = הבא/הקודם. SH.step 1–4 נשאר מקור האמת
+    const SHN=[['🖼️','התמונה'],['👕','מסדרים'],['✏️','כיתוב'],['✅','סיום']],z=WZ.tshirt||(WZ.tshirt={});z.n=4;z.names=SHN.map(x=>x[1]);z.step=st-1;z.init=1;z.onGo=shStepSet;
+    const bar=el('nav',{class:'shsteps wz','aria-label':'שלבים'},SHN.map(([ic,t],i)=>el('button',{type:'button','aria-current':st===i+1?'step':undefined,class:st>i+1?'done':'',on:{click:()=>go(i+1)}},el('b',{},String(i+1)),el('i',{},ic),el('span',{class:'wzt'},t))));
     const f=SH.img[0];
     if(st===1){const inp=el('input',{type:'file',accept:'image/*',hidden:'',on:{change:async e=>{const t=e.target,sd=SH.side||'front',a=await readImages(t.files,1,4000);t.value='';if(a[0]){withSide(sd,()=>{SH.img=[a[0]];SH.eff={};SH.ih=null;});SH_UNDO.length=0;rebuild();}}}});
       return[bar,shSideTabs(),el('h2',{class:'shh'},SH.side==='back'?'🖼️ תמונה לגב החולצה':'🖼️ בוחרים תמונה ומסדרים אותה'),inp,
@@ -4169,19 +4185,21 @@ const Tshirt={id:'tshirt',label:'👕 חולצה',
             el('div',{class:'seg'},SH_FILTERS.map(([v,t])=>el('button',{type:'button','aria-pressed':String(((SH.eff||{}).filter||'none')===v),on:{click:()=>{shSnap();SH.eff=Object.assign({},SH.eff,{filter:v});rebuild();}}},t))),
             B('↺ לחזור למקור',()=>{shSnap();SH.eff={};rebuild();},'','btn ghost'))]:null,
         el('p',{class:'hint'},f?'התמונה כבר על החולצה. כשמסיימים — ממשיכים להזיז ולהגדיל אותה.':'אפשר גם בלי תמונה — רק כיתוב.'),
-        f?el('button',{type:'button',class:'btn ghost shbig',on:{click:()=>{shGo(2);setTimeout(()=>{const i=document.getElementById('shText');if(i){i.scrollIntoView({block:'center'});i.focus();}},120);}}},'✏️ להוסיף גם כיתוב'):null,
-        next(2,f?'✓ להדביק על החולצה ←':'רק כיתוב, בלי תמונה ←')];}
+        f?el('button',{type:'button',class:'btn ghost shbig',on:{click:()=>{shGo(3);setTimeout(()=>{const i=document.getElementById('shText');if(i){i.scrollIntoView({block:'center'});i.focus();}},120);}}},'✏️ להוסיף גם כיתוב'):null];}
     if(st===2){const sel=(v,t)=>el('button',{type:'button','data-shsel':v,'aria-pressed':String(shSel()===v),on:{click:()=>{SHE=SHE||{c:null,sel:v};SHE.sel=v;shSelUi();}}},t);
       const sw=['#14294D','#000000','#FFFFFF','#E11D48','#2563EB','#16A34A','#F59E0B','#7C3AED','#DB2777'];
       return[bar,shSideTabs(),el('h2',{class:'shh'},SH.side==='back'?'🔙 מסדרים על הגב':'👕 מסדרים על החולצה'),
         SH.side==='back'&&!SH.img.length&&!SH.text?el('p',{class:'hint shempty'},'הגב עדיין ריק. מוסיפים תמונה (חוזרים לצעד 1) או כיתוב כאן למטה — או משאירים ריק.'):null,
         el('p',{class:'hint'},'גוררים את התמונה למקום. כדי לשנות גודל: צובטים בשתי אצבעות, או מושכים את הנקודה הכחולה בפינה. הנקודות בצדדים — רק רוחב או רק גובה.'),
         el('p',{class:'hint',id:'shWarn',hidden:'',role:'status',style:'color:#B42318;font-weight:600'}),el('p',{class:'hint',id:'shLow',hidden:'',style:'color:#B42318'}),
-        SH.text?el('div',{class:'seg',role:'group','aria-label':'מה מזיזים'},sel('img','🖼️ התמונה'),sel('text','🔤 הכיתוב')):el('button',{type:'button',class:'btn ghost shbig',on:{click:()=>{const i=document.getElementById('shText');if(i){i.scrollIntoView({block:'center'});i.focus();}}}},'✏️ להוסיף כיתוב על החולצה'),
+        SH.text?el('div',{class:'seg',role:'group','aria-label':'מה מזיזים'},sel('img','🖼️ התמונה'),sel('text','🔤 הכיתוב')):null,
         el('div',{class:'shpad',role:'group','aria-label':'הזזה וגודל'},B('▲',()=>shNudge(0,-5),'למעלה'),B('▼',()=>shNudge(0,5),'למטה'),B('▶',()=>shNudge(5,0),'ימינה'),B('◀',()=>shNudge(-5,0),'שמאלה'),
           B('➕',()=>shScale(1.08),'להגדיל'),B('➖',()=>shScale(1/1.08),'להקטין'),el('button',{type:'button',id:'shUndo','aria-label':'ביטול',on:{click:shUndo}},'↺')),
         el('div',{class:'seg'},B('⇔ לאמצע',shCenterX),B('⬆ הכי גדול',()=>{shSnap();SH.ih=null;SH.iw=SH_MAX.w;SH.ix=null;SH.iy=null;shCommit();}),
           B('♥ סמל בצד הלב',()=>{shSnap();const K=shKind();SH.ih=null;SH.iw=95*K.k;SH.ix=105*K.k-SH.iw/2;SH.iy=(SH_NECK.front+45)*K.k;if(SH.text)SH.ts=Math.min(SH.ts,14);shCommit();}),B('↺ לחזור לאמצע',()=>{shSnap();SH.ix=SH.iy=null;shCommit();})),
+        el('p',{class:'hint',id:'shInfo'})];}
+    if(st===3){const sw=['#14294D','#000000','#FFFFFF','#E11D48','#2563EB','#16A34A','#F59E0B','#7C3AED','#DB2777'];
+      return[bar,shSideTabs(),el('h2',{class:'shh'},'✏️ כיתוב (לא חובה)'),
         sec('✏️ כיתוב על החולצה',true,
           row('מה לכתוב',el('input',{type:'text',id:'shText',value:SH.text||'',placeholder:'למשל: נועה בת 5',on:{focus:shSnap,input:e=>{const had=!!SH.text;SH.text=e.target.value;if(!had&&SH.text&&SHE)SHE.sel='text';rerender();},change:()=>rebuild()}})),
           el('p',{class:'hint'},'איפה הכיתוב:'),seg(SH,'tfree',[[false,'🖼️ על התמונה'],[true,'👕 בכל מקום על החולצה']],{after:()=>{shSnap();SH.tx=SH.ty=null;if(SHE)SHE.sel='text';}}),
@@ -4190,9 +4208,7 @@ const Tshirt={id:'tshirt',label:'👕 חולצה',
           el('div',{class:'swatches',role:'group','aria-label':'צבע הכיתוב'},sw.map((cl,i)=>el('button',{type:'button','aria-label':'צבע '+['כחול כהה','שחור','לבן','אדום','כחול','ירוק','כתום','סגול','ורוד'][i],'aria-pressed':String(SH.color===cl),style:'background:'+cl,on:{click:()=>{shSnap();SH.color=cl;rebuild();}}})),
             el('label',{class:'swmore'},'🎨',el('input',{type:'color',value:SH.color,'aria-label':'צבע אחר',on:{input:e=>{SH.color=e.target.value;rerender();}}}))),
           el('p',{class:'hint'},'קו מסביב לאותיות — כדי שיקרא על התמונה:'),seg(SH,'outline',[['none','בלי'],['#FFFFFF','לבן'],['#14294D','כהה']])),
-        shXSec(sw),
-        el('p',{class:'hint',id:'shInfo'}),
-        el('div',{class:'inline'},B('→ חזרה לתמונה',()=>go(1),'','btn ghost'),next(3,'✓ סיום ←'))];}
+        shXSec(sw)];}
     // צעד 3 — רשימת הזמנה: כמה חולצות, מידות ושרוולים שונים, אותה הדפסה. לוחצים על שורה כדי לראות אותה בתלת־ממד
     shOrderInit();const O=SH.order,tot=O.reduce((a,r)=>a+(r.qty|0),0);
     const opt=(v,t)=>{const o=el('option',{value:v},t);return o;},sizeSel=(r,i)=>{const s2=el('select',{'aria-label':'מידה לשורה '+(i+1),on:{change:e=>{r.size=e.target.value;shOrderPick(i);}}},
@@ -4209,8 +4225,6 @@ const Tshirt={id:'tshirt',label:'👕 חולצה',
       el('button',{type:'button',class:'btn ghost shbig',on:{click:()=>{const l=O[O.length-1]||{size:'L',sleeve:'short'};O.push({size:l.size,sleeve:l.sleeve,qty:1});shOrderPick(O.length-1);}}},'➕ עוד חולצה (מידה אחרת)'),
       el('div',{class:'shsum',role:'status'},el('b',{},'סיכום: '+tot+' '+(tot===1?'חולצה':'חולצות')),el('ul',{},Object.entries(groups).map(([k,n])=>el('li',{},n+' × '+k)))),
       el('p',{class:'hint'},'חולצות לבנות מבד פוליאסטר נעים — ההדפסה נכנסת לתוך הבד ולא יורדת בכביסה.'),
-      el('button',{type:'button',class:'btn gold shbig',on:{click:shConfirm}},'✓ אישור ההזמנה'),
-      el('div',{class:'inline'},B('→ חזרה לעריכה',()=>go(2),'','btn ghost')),
       isAdmin?sec('🔒 למנהל — קבצים',true,el('p',{class:'hint',id:'shInfo'}),tog(SH,'mirror','הפוך במראה — רק אם המדפסת לא הופכת לבד (ה-F500 הופכת לבד בהגדרות ההדפסה)'),
         el('button',{type:'button',class:'btn gold',on:{click:shirtSubPDF}},'⬇️ קבצי A3 להדפסה (לכל המידות)'),el('button',{type:'button',class:'btn ghost',on:{click:shirtWorkPDF}},'📋 דף עבודה — סיכום ההזמנה וציור החולצה')):null];}
 };
@@ -4230,8 +4244,9 @@ function shOrderPages(){shOrderInit();const s0=SH.size,l0=SH.sleeve,pages=[],see
   try{SH.order.forEach(r=>{SH.size=r.size;SH.sleeve=r.sleeve;['front','back'].filter(shSideUsed).forEach(sd=>withSide(sd,()=>{const L=shLayers(),sig=sd+'|'+[L.iw,L.ih,L.t&&L.t.ts,L.t&&L.t.x-L.ix,L.t&&L.t.y-L.iy].map(v=>v==null?'':Math.round(v*10)).join(',');
     if(!seen[sig]){seen[sig]={side:sd,sizes:[],where:{}};pages.push(seen[sig]);}const pg=seen[sig];if(!pg.sizes.includes(r.size))pg.sizes.push(r.size);pg.where[r.size]=shWhere(L);}));});}
   finally{SH.size=s0;SH.sleeve=l0;}return pages;}
-function shGo(n){if(n===3)shOrderInit();SH.step=n;shView=n===2?'2d':'3d';shPage=false;rebuild();window.scrollTo(0,0);}
-function shBarBtn(){const st=SH.step||1;if(st<3)shGo(st+1);else shConfirm();} // הכפתור הקבוע למטה = הצעד הבא
+function shStepSet(i){if(i===3)shOrderInit();SH.step=i+1;shView=(i===1||i===2)?'2d':'3d';shPage=false;} // S-166: i = 0..3 (WZ)
+function shGo(n){if(!WZ.tshirt)WZ.tshirt={n:4,onGo:shStepSet};wzGo('tshirt',n-1);}
+function shBarBtn(){const st=SH.step||1;if(st<4)shGo(st+1);else shConfirm();} // הכפתור הקבוע למטה = הצעד הבא
 // ── התלת־ממד של החולצה ──
 // ── S-121: מתנות מזיקית בתלת־ממד (js/subl-3d.js) — המוצר עצמו, בגודל אמיתי, עם העיצוב של הלקוח. מוצר בלי מודל = הדף השטוח כמו קודם
 const SUBL3D_IDS=new Set(["7318-4", "7331-3", "7331-2", "7318-7", "7324-1", "7324-2", "7324-4", "7324-5", "7622", "7410-13", "7410-16", "7410-14", "7410-11", "7410-23", "7410-22", "7410-24", "7410-25", "7410-32", "7410-33", "8501", "8517", "8672", "8671", "8678", "7611", "6442","8724-3","8514","8503-1","8510","8714-1","8714-3","8715-1","8706-1","8703-2","8703-1","8582","8589","8360-4","6452","6458","6424","8022-3","6101-H20","8707-3","9172-1","8670-1","8381","8609","9608","7603","7410-17","7413"]); /* S-131: המתנות מזיקית עם תמונה נקייה — js/print-fit.js */let sbView='edit';const sbV=()=>sbView==='3d'&&!sb3dOk()?'edit':sbView;const SB3={st:null,key:'',t:0,p:null};
@@ -5524,8 +5539,9 @@ let _raf=0;
 rerender=()=>{if(SUBL.busy)return;cancelAnimationFrame(_raf);_raf=requestAnimationFrame(()=>{
   try{built=cur.build();}catch(e){console.error(e);built={pages:[],summary:'שגיאה: '+e.message};}
   if(curPage>=built.pages.length)curPage=0;renderHow();sizeCanvas();drawPreview();showStage();drawPagebar();updateOrderBtn();updateExportBtns();save();});};
-rebuild=()=>{if(SUBL.busy)return;syncShareUrl();document.body.classList.toggle('wz',!!cur.wz);const y=ctrls.scrollTop,wy=window.scrollY;ctrls.innerHTML='';
-  ctrls.append(...(cur.wz?[]:[el('p',{class:'intro'},cur.intro)]),...[].concat(cur.panel()).flat().filter(Boolean),...(wzEarly()?[]:[shopSection()]).filter(Boolean),...(!['admin','ocr'].includes(cur.id)&&!(cur.id==='ad'&&adLocked())&&!wzEarly()?[saveLoadSection()]:[]),el('div',{class:'foot'},installBtn(),(isAdmin||!/[?&]admin\b/.test(location.search))?'':el('button',{type:'button',on:{click:openLogin}},'כניסת מנהל')));ctrls.scrollTop=y;window.scrollTo(0,wy);rerender();};
+rebuild=()=>{if(SUBL.busy)return;syncShareUrl();document.body.classList.toggle('wz',isWz());const y=ctrls.scrollTop,wy=window.scrollY;ctrls.innerHTML='';
+  const _items=[].concat(cur.panel()).flat().filter(Boolean);
+  ctrls.append(...(isWz()?[]:[el('p',{class:'intro'},cur.intro)]),...(!cur.wz&&AUTO_WZ.has(cur.id)?autoWz(cur.id,_items):_items),...(wzEarly()?[]:[shopSection()]).filter(Boolean),...(!['admin','ocr'].includes(cur.id)&&!(cur.id==='ad'&&adLocked())&&!wzEarly()?[saveLoadSection()]:[]),el('div',{class:'foot'},installBtn(),(isAdmin||!/[?&]admin\b/.test(location.search))?'':el('button',{type:'button',on:{click:openLogin}},'כניסת מנהל')));ctrls.scrollTop=y;window.scrollTo(0,wy);rerender();};
 // S-165: מחזיקי מפתחות — בתצוגה רק מחזיק אחד בדו־ממד (לא דף ההדפסה). SE.kidIdx = איזה שם מוצג
 function kcDrawOne(ctx){const W=cv.width,H=cv.height,names=lines(KC.names),i=names.length?Math.min(SE.kidIdx|0,names.length-1):0,ph=KC.photo||[],it=kcItem(names.length?names[i]:KC.text,ph.length?ph[i%ph.length]:null),
     k=Math.min(W*.8/it.w,H*.8/it.h),P=pathOf(it.pts);ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,W,H);
@@ -5869,7 +5885,7 @@ const isDlOnly=()=>cur.id in DL_ONLY&&!(cur.id==='subl'&&!isAdmin); // S-99: ס�
 const DL_ONLY={ad:'⬇️ הורדת הפרסומת',ocr:'⬇️ הורדת הטקסט',photo:'⬇️ הורדת התמונה',blessing:'⬇️ הורדת PDF',tshirt:'⬇️ קובץ A3 לסובלימציה',subl:'⬇️ קובץ לסובלימציה'}; // מוצרים בלי הזמנה/הדפסה — רק הורדה (עריכת תמונות, מדבקת ברכה)
 function updateExportBtns(){const ps=!!cur.printShop,isPh=isDlOnly();{const z=wzNow();document.querySelectorAll('[data-act="wzback"]').forEach(x=>x.hidden=!(z&&z.step>0));}
   cv.style.touchAction=cur.id==='blessing'?'none':'';
-  document.querySelectorAll('[data-act="order"],[data-act="pdf"],[data-act="svg"]').forEach(x=>x.hidden=isPh||(x.dataset.act==='order'&&HOW_OK.has(cur.id)&&G.how==='home'));document.querySelectorAll('[data-act="phdl"]').forEach(x=>{x.hidden=!isPh;if(isPh)x.textContent=cur.id==='tshirt'?['','✓ להדביק על החולצה ←','✓ סיום ←','✓ אישור ההזמנה'][SH.step||1]:DL_ONLY[cur.id];});
+  document.querySelectorAll('[data-act="order"],[data-act="pdf"],[data-act="svg"]').forEach(x=>x.hidden=isPh||(x.dataset.act==='order'&&HOW_OK.has(cur.id)&&G.how==='home'));document.querySelectorAll('[data-act="phdl"]').forEach(x=>{x.hidden=!isPh;if(isPh)x.textContent=cur.id!=='tshirt'&&wzBarLabel()?wzBarLabel():cur.id==='tshirt'?['','הבא: מסדרים ←','הבא: כיתוב ←','הבא: סיום ←','✓ אישור ההזמנה'][Math.min(4,SH.step||1)]:DL_ONLY[cur.id];});
   document.querySelectorAll('[data-act="pdf"]').forEach(x=>x.textContent=ps?'הורד גיליון לבית דפוס':'הורד PDF להדפסה');
   document.querySelectorAll('[data-act="pdfa4"]').forEach(x=>x.hidden=!ps||isPh);}
 async function exportPDF(){if(cur.printShop)return exportPrintShopPDF();return exportA4PDF();}
@@ -5885,7 +5901,7 @@ async function exportSVG(){
   if(cutPages.length===1){download(new Blob([cutSvg(cutPages[0])],{type:'image/svg+xml'}),`${cur.id}-cut-${stamp()}.svg`);toast('קובץ חיתוך מוכן');return;}
   if(!window.JSZip){cutPages.forEach((p,i)=>download(new Blob([cutSvg(p)],{type:'image/svg+xml'}),`${cur.id}-cut-${i+1}.svg`));return;}
   const z=new JSZip();cutPages.forEach((p,i)=>z.file(`${cur.id}-cut-${i+1}.svg`,cutSvg(p)));download(await z.generateAsync({type:'blob'}),`${cur.id}-cut-${stamp()}.zip`);toast(cutPages.length+' קבצי חיתוך בקובץ ZIP');}
-document.querySelectorAll('[data-act]').forEach(b=>b.addEventListener('click',()=>({pdf:exportPDF,pdfa4:exportA4PDF,svg:exportSVG,wzback:()=>{const z=wzNow();if(z&&z.step>0)wzGo(cur.id,z.step-1);},order:wzOrder,phdl:()=>cur.id==='subl'?sublimationSheetsPDF(subPieces(),'sublimation-'+subItem().id,{mirror:!!SB.mirror,auto:true}):cur.id==='tshirt'?shBarBtn():cur.id==='blessing'?blDownload():cur.id==='ocr'?ocDownload():cur.id==='ad'?adDownload():phDownload(),home:homeDownload})[b.dataset.act]()));
+document.querySelectorAll('[data-act]').forEach(b=>b.addEventListener('click',()=>({pdf:exportPDF,pdfa4:exportA4PDF,svg:exportSVG,wzback:()=>{const z=wzNow();if(z&&z.step>0)wzGo(cur.id,z.step-1);},order:wzOrder,phdl:()=>cur.id!=='tshirt'&&wzBarLabel()?wzOrder():cur.id==='subl'?sublimationSheetsPDF(subPieces(),'sublimation-'+subItem().id,{mirror:!!SB.mirror,auto:true}):cur.id==='tshirt'?shBarBtn():cur.id==='blessing'?blDownload():cur.id==='ocr'?ocDownload():cur.id==='ad'?adDownload():phDownload(),home:homeDownload})[b.dataset.act]()));
 
 // ═══════════ הזמנות ומנהל ═══════════
 // הלקוח לא מוריד קבצים — הוא שולח הזמנה. המחיר האמיתי נקבע בשרת (studio_price); כאן רק תצוגה.
