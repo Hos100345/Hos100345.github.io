@@ -1,0 +1,28 @@
+# בדיקת האתר לפני פרסום (S-171) — הכללים ב-DESIGN.md
+# רצה על כל PR ועל כל push ל-main. כדי שהיא תחסום פרסום: Settings → Branches → כלל ל-main → "Require status checks" → site-check
+name: site-check
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: site-check-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  site-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: התקנת כלי הבדיקה
+        run: |
+          npm i --no-save --no-package-lock playwright@1 axe-core@4
+          npx playwright install --with-deps chromium
+      - name: בדיקת האתר
+        run: node tools/site-check.mjs
