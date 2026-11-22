@@ -12,11 +12,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="משחק עיצובישי">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../css/tokens.css?v=2">
-  <script>/* S-174: תצוגה מקדימה של נושא צבעים — store/?theme=logo / 144 / sky (לא נשמר, לא משפיע על לקוחות) */
-  (function(){var t=new URLSearchParams(location.search).get('theme');if(t!=='logo'&&t!=='144'&&t!=='sky')return;document.documentElement.classList.add('theme-'+t);
-   var l=document.createElement('link');l.rel='stylesheet';l.href='https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Rubik:wght@400;500;700&display=swap';document.head.appendChild(l);})();</script>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Rubik:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/tokens.css?v=3">
   <!-- ⛔ js/play-engine.js נוצר ע"י tools/build-play-engine.py מתוך dobble.html — לא לערוך ידנית.
        משמש כאן רק את "מצא את הזהה" (genDeck/drawCard…), כך שהקלף זהה למחולל. שינוי בו = להעלות ?v= כאן וב-sw.js. -->
   <script src="../js/play-engine.js?v=10"></script>
@@ -52,6 +49,7 @@
     [hidden]{display:none!important}
 
     .scr{padding:max(14px,env(safe-area-inset-top)) 16px max(18px,env(safe-area-inset-bottom));max-width:820px;margin:0 auto}
+    h1,h2,h3{font-family:var(--font-display)}
     h1{font-size:1.6rem;font-weight:900;line-height:1.2}
     h2{font-size:1.15rem;font-weight:800;margin:1.3rem 0 .6rem}
     .muted{color:var(--muted)}
@@ -67,7 +65,7 @@
     .btn-block{width:100%}
 
     /* ── עיצוב אתר הבית (css/style.css — "הושעיה אמן בלונים"): כותרת כהה, הירו עם בלונים, פוטר כהה ── */
-    .site-top{position:sticky;top:0;z-index:30;background:rgba(15,16,53,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    .site-top{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--c-brand) 94%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
       padding:max(8px,env(safe-area-inset-top)) 16px 8px;border-bottom:1px solid rgba(255,255,255,.08)}
     .site-top .in{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:.6rem}
     .site-top .brand{display:flex;align-items:center;gap:.55rem;color:#fff;text-decoration:none;font-weight:800}
@@ -93,10 +91,10 @@
     @keyframes floatUp{0%,100%{transform:translateY(0) rotate(0) scale(1)}33%{transform:translateY(-18px) rotate(4deg) scale(1.03)}66%{transform:translateY(-10px) rotate(-3deg) scale(.98)}}
     #scr-home h2{text-align:center;font-size:clamp(1.35rem,4vw,1.8rem);font-weight:800;margin:2.4rem 0 1rem}
     #scr-home h2::after{content:'';display:block;width:56px;height:4px;margin:.55rem auto 0;border-radius:999px;background:linear-gradient(90deg,var(--blue),var(--purple))}
-    .site-foot{background:var(--navy);color:rgba(255,255,255,.75);padding:2.2rem 16px calc(2.2rem + env(safe-area-inset-bottom));margin-top:2.5rem;text-align:center}
+    .site-foot{background:var(--navy);color:rgba(255,255,255,.88);padding:2.2rem 16px calc(2.2rem + env(safe-area-inset-bottom));margin-top:2.5rem;text-align:center}
     .site-foot img{width:48px;height:48px;border-radius:50%;background:#fff;padding:3px;object-fit:contain;margin:0 auto .8rem;display:block}
     .site-foot p{font-size:.9rem;line-height:1.6}
-    .site-foot .sub{font-size:.8rem;opacity:.65;margin-top:.2rem}
+    .site-foot .sub{font-size:.8rem;color:rgba(255,255,255,.8);margin-top:.2rem}
     .site-foot a{color:inherit}
     .site-foot .soc{display:flex;gap:.7rem;justify-content:center;margin-top:1rem}
     .site-foot .soc a{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.85)}
@@ -342,7 +340,7 @@
 <div id="scr-home">
 <header class="site-top">
   <div class="in">
-    <a class="brand" href="../"><img src="../images/logo.jpg" alt="לוגו הושעיה" width="42" height="42"><span>הושעיה אמן בלונים</span></a>
+    <a class="brand" href="./"><img src="../images/brand/itzuvishi-logo-192.webp" alt="" width="42" height="42"><span>עיצובישי</span></a>
     <a class="home" href="../">לאתר הבית ←</a>
   </div>
 </header>
