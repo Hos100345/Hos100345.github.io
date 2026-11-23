@@ -1,3 +1,6 @@
+/* W-71: השפה העיצובית האחידה (DESIGN.md) — צבעים וגופנים מ-tokens.css. אתר הבלונים ועיצובישי באותו סגנון, שתי קטגוריות נפרדות */
+@import url('tokens.css?v=5');
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Rubik:wght@400;500;600;700;800&display=swap');
 /* =====================================================
    הושעיה אמן בלונים — stylesheet
    RTL Hebrew · Mobile-first · 2026
@@ -7,14 +10,14 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --blue:         #2563EB;
-  --blue-dark:    #1D4ED8;
-  --blue-light:   #DBEAFE;
-  --indigo:       #4338CA;
-  --purple:       #7C3AED;
-  --purple-dark:  #5B21B6;
-  --purple-light: #EDE9FE;
-  --gold:         #F59E0B;
+  --blue:         var(--c-primary);
+  --blue-dark:    var(--c-primary-2);
+  --blue-light:   var(--c-primary-soft);
+  --indigo:       var(--c-brand);
+  --purple:       var(--c-primary);
+  --purple-dark:  var(--c-primary-2);
+  --purple-light: var(--c-primary-soft);
+  --gold:         var(--c-accent);
   --wa:           #25D366;
   --wa-dark:      #0A6430;   /* W-35: hover — כהה יותר מ-wa-deep */
   --wa-deep:      #0E7C3A;   /* W-35: רקע לטקסט לבן וטקסט על לבן — ניגודיות 5.2:1 (#25D366 היה 1.98) */
@@ -22,12 +25,12 @@
   --ig-start:     #E1306C;
   --ig-end:       #833AB4;
 
-  --bg:           #FAFAF8;
-  --bg-alt:       #EFF6FF;
+  --bg:           var(--c-bg);
+  --bg-alt:       var(--c-primary-soft);
   --white:        #FFFFFF;
-  --text:         #0F172A;
-  --muted:        #6B7280;
-  --border:       #E5E7EB;
+  --text:         var(--c-text);
+  --muted:        var(--c-muted);
+  --border:       var(--c-line);
 
   --radius:       1.15rem;
   --radius-sm:    0.6rem;
@@ -52,7 +55,7 @@ html {
 }
 
 body {
-  font-family: 'Heebo', 'Segoe UI', Tahoma, sans-serif;
+  font-family: var(--font-ui);
   background:
     radial-gradient(ellipse 65% 50% at 12%  5%, rgba(37,99,235,.20)  0%, transparent 55%),
     radial-gradient(ellipse 55% 55% at 90% 12%, rgba(124,58,237,.18) 0%, transparent 55%),
@@ -333,12 +336,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: linear-gradient(145deg,
-    #0F1035 0%,
-    #1E3A8A 28%,
-    #3730A3 58%,
-    #7C3AED 100%
-  );
+  background: var(--grad-deep);
   padding-block: calc(var(--nav-h) + 3rem) 4rem;
 }
 
@@ -590,7 +588,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   border-radius: var(--radius);
   overflow: hidden;
   box-shadow: var(--shadow-lg);
-  background: linear-gradient(135deg, #0F1035, #1E3A8A, #4338CA, #7C3AED);
+  background: var(--grad-deep);
   padding: 3rem 2rem;
   text-align: center;
   color: var(--white);
@@ -1178,8 +1176,8 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
    BALLOON HERO BUTTON
    ===================================================== */
 .btn-balloon-hero {
-  background: linear-gradient(135deg, #F59E0B 0%, #EF4444 100%);
-  color: var(--white);
+  background: var(--c-accent);
+  color: var(--c-brand);
   font-weight: 700;
   font-size: 1rem;
   padding: 0.9rem 1.75rem;
@@ -1207,12 +1205,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 
 .balloon-cta-card {
   position: relative;
-  background: linear-gradient(135deg,
-    #0F1035 0%,
-    #1E3A8A 35%,
-    #3730A3 65%,
-    #7C3AED 100%
-  );
+  background: var(--grad-deep);
   border-radius: 1.5rem;
   padding: 3.5rem 2rem;
   text-align: center;
@@ -1285,8 +1278,8 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
-  background: linear-gradient(135deg, #F59E0B, #EF4444);
-  color: var(--white);
+  background: var(--c-accent);
+  color: var(--c-brand);
   font-weight: 800;
   font-size: 1.1rem;
   padding: 1rem 2.5rem;
@@ -1497,7 +1490,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   overflow: hidden;
   text-align: center;
   color: var(--white);
-  background: linear-gradient(145deg, #0F1035 0%, #1E3A8A 35%, #3730A3 70%, #7C3AED 100%);
+  background: var(--grad-deep);
   padding-block: calc(var(--nav-h) + 4rem) 4rem;
 }
 .page-hero .hero-title    { font-size: clamp(2rem, 5.5vw, 3.2rem); }
@@ -1654,7 +1647,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 
 /* ---- רצועת קריאה לפעולה ---- */
 .cta-band {
-  background: linear-gradient(135deg, #1E3A8A 0%, #4338CA 55%, #7C3AED 100%);
+  background: var(--grad-deep);
   border-radius: var(--radius);
   color: var(--white);
   text-align: center;
@@ -1857,3 +1850,6 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .skip-link { position: absolute; top: -100px; right: 1rem; z-index: 10000; background: var(--blue); color: #fff; padding: .6rem 1rem; border-radius: 8px; font-weight: 700; text-decoration: none; }
 .skip-link:focus { top: .5rem; }
 main:focus { outline: none; }
+
+/* W-71: כותרות בגופן העגול של הלוגו */
+h1, h2, h3, .hero-title, .section-title { font-family: var(--font-display); }

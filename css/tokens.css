@@ -29,6 +29,7 @@
   --c-ink-dark:#0A2A5C;
   --grad-hero:linear-gradient(150deg,#005A9E 0%,#0070C5 45%,#5BB8F0 100%);
   --grad-print:linear-gradient(150deg,#0070C5 0%,#3AA2E8 60%,#7CC8F5 100%);
+  --grad-deep:linear-gradient(145deg,#0A2A5C 0%,#00498A 45%,#0070C5 100%); /* רקע כהה לטקסט לבן (5:1 גם בקצה הבהיר) — פתיח, באנרים */
   --grad-sale:linear-gradient(135deg,#C3141B,#8E0E13); --c-on-sale:#FFFFFF;
 
   /* ── טיפוגרפיה: Fredoka (עגול ועבה כמו בלוגו) לכותרות, Rubik לטקסט ── */
