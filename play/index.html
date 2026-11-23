@@ -11,7 +11,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="משחקי מאצ׳טו">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Rubik:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/tokens.css?v=5">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <!-- ⛔ js/play-engine.js נוצר ע"י tools/build-play-engine.py מתוך dobble.html — לא לערוך ידנית.
        שינוי בו = להעלות את ?v= כאן. -->
@@ -19,10 +20,11 @@
   <script src="../js/play-engine.js?v=10"></script>
   <style>
     :root{
-      --indigo:#4338CA;--purple:#7C3AED;--purple-light:#EDE9FE;
-      --gold:#F59E0B;--gold-light:#FEF3C7;--green:#059669;--red:#DC2626;
-      --text:#0F172A;--muted:#5B6472;--card:#fff;--line:rgba(15,23,42,.1);
-      --r:1.1rem;--sh:0 8px 28px rgba(30,27,75,.12),0 1.5px 4px rgba(30,27,75,.06);
+      /* D-107: השפה העיצובית האחידה (DESIGN.md) — מ-css/tokens.css. השמות הישנים = כינויים */
+      --indigo:var(--c-brand);--purple:var(--c-primary);--purple-light:var(--c-primary-soft);
+      --gold:var(--c-accent);--gold-light:var(--c-accent-soft);--green:var(--c-ok);--red:var(--c-bad);
+      --text:var(--c-text);--muted:var(--c-muted);--card:#fff;--line:var(--c-line);
+      --r:1.1rem;--sh:0 8px 28px color-mix(in srgb,var(--c-brand) 12%,transparent),0 1.5px 4px color-mix(in srgb,var(--c-brand) 6%,transparent);
       --cs:200px;
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -30,9 +32,9 @@
     #scr-game,#scr-game .card,#scr-game .card canvas{touch-action:manipulation}   /* D-83: בלי הגדלה בלחיצה כפולה מהירה על הקלפים */
     body{
       touch-action:manipulation;
-      font-family:'Heebo',system-ui,sans-serif;color:var(--text);direction:rtl;
+      font-family:var(--font-ui);color:var(--text);direction:rtl;
       background:
-        radial-gradient(ellipse 65% 50% at 12% 5%,rgba(37,99,235,.18) 0%,transparent 55%),
+        radial-gradient(ellipse 65% 50% at 12% 5%,color-mix(in srgb,var(--c-primary) 18%,transparent) 0%,transparent 55%),
         radial-gradient(ellipse 55% 55% at 90% 12%,rgba(124,58,237,.16) 0%,transparent 55%),
         radial-gradient(ellipse 70% 45% at 50% 100%,rgba(245,158,11,.12) 0%,transparent 55%),
         #EEF1FB;
@@ -52,7 +54,7 @@
     .btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;min-height:48px;padding:.6rem 1.1rem;
       border-radius:999px;font-weight:800;font-size:1rem;transition:transform .15s,box-shadow .15s}
     .btn:active{transform:scale(.97)}
-    .btn-main{background:linear-gradient(135deg,var(--indigo),var(--purple));color:#fff;box-shadow:0 6px 18px rgba(67,56,202,.35)}
+    .btn-main{background:linear-gradient(135deg,var(--indigo),var(--purple));color:#fff;box-shadow:0 6px 18px color-mix(in srgb,var(--c-brand) 35%,transparent)}
     .btn-sec{background:#fff;border:1.5px solid var(--line)}
     .btn-sm{min-height:40px;padding:.35rem .9rem;font-size:.92rem}
     .btn-block{width:100%}
@@ -61,7 +63,7 @@
     .hero{text-align:center;padding:1.4rem 0 1rem}
     .hero .big{font-size:3.2rem;line-height:1}
     .hero p{margin-top:.5rem;font-size:1.02rem;line-height:1.55}
-    .drop{border:2.5px dashed rgba(67,56,202,.35);border-radius:var(--r);padding:1.4rem 1rem;text-align:center;background:rgba(255,255,255,.6)}
+    .drop{border:2.5px dashed color-mix(in srgb,var(--c-brand) 35%,transparent);border-radius:var(--r);padding:1.4rem 1rem;text-align:center;background:rgba(255,255,255,.6)}
     .drop.over{border-color:var(--purple);background:var(--purple-light)}
     .login .lrow{display:flex;flex-direction:column;gap:.5rem;margin:.6rem 0 .4rem}
     .login input:not([type=checkbox]){font:inherit;font-size:16px;min-height:48px;border-radius:.8rem;border:1.5px solid var(--line);padding:.5rem .8rem;background:#fff;width:100%}
@@ -74,7 +76,7 @@
     .steps b{color:var(--indigo)}
     .err{margin-top:.8rem;background:#FEE2E2;color:#991B1B;border-radius:.8rem;padding:.7rem .9rem;font-weight:600;line-height:1.5}
     .prog{margin-top:.9rem}
-    .bar{height:10px;border-radius:99px;background:rgba(67,56,202,.12);overflow:hidden}
+    .bar{height:10px;border-radius:99px;background:color-mix(in srgb,var(--c-brand) 12%,transparent);overflow:hidden}
     .bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--indigo),var(--purple));transition:width .2s}
     .prog .lbl{margin-top:.35rem;font-size:.9rem;color:var(--muted);text-align:center}
 
@@ -118,7 +120,7 @@
     .board{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;position:relative}
 
     .card{width:var(--cs);height:var(--cs);border-radius:50%;background:transparent;position:relative;flex:none;
-      box-shadow:0 6px 20px rgba(30,27,75,.16);transition:transform .2s,box-shadow .2s;touch-action:manipulation}
+      box-shadow:0 6px 20px color-mix(in srgb,var(--c-brand) 16%,transparent);transition:transform .2s,box-shadow .2s;touch-action:manipulation}
     .card.sq{border-radius:9%}
     .card canvas{width:100%;height:100%;display:block}
     .card.tap{cursor:pointer}
@@ -169,7 +171,7 @@
 
     /* ── מי מצא? ── */
     .who{position:fixed;inset-inline:0;bottom:0;z-index:40;text-align:center;background:rgba(255,255,255,.96);
-      border-radius:1.3rem 1.3rem 0 0;box-shadow:0 -8px 30px rgba(30,27,75,.18);padding:.7rem 16px max(14px,env(safe-area-inset-bottom))}
+      border-radius:1.3rem 1.3rem 0 0;box-shadow:0 -8px 30px color-mix(in srgb,var(--c-brand) 18%,transparent);padding:.7rem 16px max(14px,env(safe-area-inset-bottom))}
     .who .q{font-weight:900;margin-bottom:.35rem}
     .who .row{display:flex;flex-wrap:wrap;gap:.45rem;justify-content:center}
     .who .pb{min-height:50px;padding:.35rem 1.1rem;border-radius:999px;font-weight:900;font-size:1.05rem;background:var(--pc);color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.12)}
@@ -193,7 +195,12 @@
 
     .toast{position:fixed;top:max(64px,calc(env(safe-area-inset-top) + 56px));left:50%;transform:translateX(-50%) translateY(-16px);opacity:0;pointer-events:none;background:#0F172A;color:#fff;border-radius:999px;padding:.6rem 1.1rem;font-weight:700;z-index:60;transition:transform .25s,opacity .25s;max-width:calc(100% - 32px);text-align:center}
     .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
-  </style>
+  
+    h1,h2,h3{font-family:var(--font-display)}
+    .p-flow{display:flex;gap:.4rem;justify-content:center;flex-wrap:wrap;list-style:none;padding:0;margin:.8rem 0 .2rem;counter-reset:pf}
+    .p-flow li{counter-increment:pf;display:flex;align-items:center;gap:.35rem;background:#fff;border:1.5px solid var(--c-line);border-radius:var(--r-pill);padding:.35rem .8rem;font-size:.86rem;font-weight:600;color:var(--c-brand)}
+    .p-flow li::before{content:counter(pf);display:grid;place-items:center;width:1.4rem;height:1.4rem;border-radius:50%;background:var(--c-primary);color:#fff;font-size:.78rem}
+    </style>
 </head>
 <body>
 
@@ -202,7 +209,12 @@
   <div class="hero">
     <div class="big">🎴</div>
     <h1>מאצ׳טו בטלפון</h1>
-    <p class="muted">משחקים במאצ׳טו שיצרתם במחולל — יחד על מסך אחד, בלי להדפיס.</p>
+    <p class="muted"><b>הנגן של מחולל מאצ׳טו.</b> הקלפים שעיצבתם במחולל — משחקים בהם כאן, יחד על מסך אחד, בלי להדפיס.</p>
+    <ol class="p-flow" aria-label="איך זה עובד">
+      <li>מעצבים קלפים <a href="../matchito.html">במחולל מאצ׳טו</a></li>
+      <li>נכנסים לכאן עם אותו קוד ואימייל</li>
+      <li>משחקים 🎉</li>
+    </ol>
     <p class="muted" style="font-size:.9rem">עוד לא יצרתם משחק? <a href="../store/#photos" style="font-weight:700">מעלים תמונות ומשחקים מיד</a> — זיכרון, פאזל, מצא את הזהה ועוד.</p>
     <button type="button" class="btn btn-sec btn-sm" style="margin-top:.6rem" data-share data-share-keep="demo" data-share-text="משחקי מאצ׳טו בטלפון — יש גם משחק חנוכה מוכן, בלי הרשמה 🕎">📤 שלחו לחבר</button>
   </div>

@@ -981,7 +981,7 @@ const I18N={
     'onboard.step2Title':'שלב 2 — יצירה ועיצוב',
     'onboard.step2Desc':'המערכת מחשבת קלפים אוטומטית לפי מתמטיקה מדויקת. ניתן לעצב מסגרת, רקע ופריסת סמלים',
     'onboard.step3Title':'שלב 3 — ייצוא',
-    'onboard.step3Desc':'PDF מוכן להדפסה בבית או ZIP של PNG בודדים — ואפשר גם להזמין הדפסה מקצועית בבית דפוס עם משלוח עד הבית (בתוספת תשלום)',
+    'onboard.step3Desc':'PDF מוכן להדפסה בבית או ZIP של PNG בודדים — ואפשר גם להזמין הדפסה מקצועית בבית דפוס עם משלוח עד הבית (בתוספת תשלום) · או משחקים בטלפון בנגן, בלי להדפיס 📱',
     'onboard.contactLabel':'💬 יש שאלה? אנחנו זמינים',
     'onboard.contactBtn':'📱 שאלות בוואטסאפ',
     'onboard.startBtn':'🚀 בואו נתחיל!',
@@ -1153,6 +1153,8 @@ const I18N={
     'edit.backToUploadBtn':'← חזרה להעלאה',
     'edit.goExportBtn':'ייצא / הדפס →',
     'export.title':'ייצוא והדפסה',
+    'export.playHtml':'<b>📱 רוצים לשחק בלי להדפיס?</b> הקלפים שעיצבתם כאן עוברים ל<b>נגן מאצ׳טו</b> בטלפון. נכנסים לנגן עם <b>אותו קוד ואותו אימייל</b> — והמשחק האחרון ששמרתם כאן נפתח מיד. (בלי קוד? שומרים קובץ ב״📦 גיבוי לקובץ״ ופותחים אותו בנגן.)',
+    'export.playBtn':'📱 לפתוח את הנגן ←',
     'export.desc':'בחרו פריסה ואפשרויות הדפסה, ואז לחצו על הפקת הקובץ.',
     'export.cardSizeTitle':'גודל קלף',
     'export.perA4Title':'קלפים בדף A4',
@@ -1838,7 +1840,7 @@ const I18N={
     'onboard.step2Title':'Step 2 — Create and design',
     'onboard.step2Desc':'The system calculates cards automatically using precise math. You can design the frame, background and symbol layout',
     'onboard.step3Title':'Step 3 — Export',
-    'onboard.step3Desc':'A print-ready PDF at home, or a ZIP of individual PNGs — you can also order professional printing with home delivery (for an extra fee)',
+    'onboard.step3Desc':'A print-ready PDF at home, or a ZIP of individual PNGs — you can also order professional printing with home delivery (for an extra fee) · or play on your phone in the Player, no printing 📱',
     'onboard.contactLabel':'💬 Have a question? We are here',
     'onboard.contactBtn':'📱 Questions on WhatsApp',
     'onboard.startBtn':'🚀 Let’s get started!',
@@ -2010,6 +2012,8 @@ const I18N={
     'edit.backToUploadBtn':'← Back to upload',
     'edit.goExportBtn':'Export / Print →',
     'export.title':'Export & print',
+    'export.playHtml':'<b>📱 Want to play without printing?</b> The cards you designed here go to the <b>Matchito Player</b> on your phone. Sign in to the Player with <b>the same code and email</b> — your last saved game opens right away. (No code? Save a file under “📦 Backup to file” and open it in the Player.)',
+    'export.playBtn':'📱 Open the Player ←',
     'export.desc':'Choose a layout and print options, then click to generate the file.',
     'export.cardSizeTitle':'Card size',
     'export.perA4Title':'Cards per A4 sheet',
@@ -3054,7 +3058,7 @@ window.applyI18n=applyI18n;
       </div>
       <div class="ob-step">
         <div class="ob-ico">📥</div>
-        <div><strong data-i18n="onboard.step3Title" style="color:#065F46">שלב 3 — ייצוא</strong><div data-i18n="onboard.step3Desc" class="ob-s">PDF מוכן להדפסה בבית או ZIP של PNG בודדים — ואפשר גם להזמין הדפסה מקצועית בבית דפוס עם משלוח עד הבית (בתוספת תשלום)</div></div>
+        <div><strong data-i18n="onboard.step3Title" style="color:#065F46">שלב 3 — ייצוא</strong><div data-i18n="onboard.step3Desc" class="ob-s">PDF מוכן להדפסה בבית או ZIP של PNG בודדים — ואפשר גם להזמין הדפסה מקצועית בבית דפוס עם משלוח עד הבית (בתוספת תשלום) · או משחקים בטלפון בנגן, בלי להדפיס 📱</div></div>
       </div>
     </div>
     <div data-i18n-html="onboard.packageInfoHtml" style="background:rgba(238,236,251,.7);border:1.5px solid #c7d2fe;border-radius:10px;padding:.7rem 1rem;text-align:center;margin-bottom:.7rem;font-size:.78rem;color:var(--indigo);line-height:1.6">
@@ -3387,6 +3391,11 @@ window.applyI18n=applyI18n;
   <div class="box">
     <h2 data-i18n="export.title" class="box-h">ייצוא והדפסה</h2>
     <p data-i18n="export.desc" class="box-s">בחרו פריסה ואפשרויות הדפסה, ואז לחצו על הפקת הקובץ.</p>
+    <!-- D-107: הקשר בין המחולל לנגן — אותו קוד ואימייל, אותו משחק -->
+    <div class="play-link" style="display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1rem;background:var(--c-primary-soft);border:1.5px solid var(--c-primary);border-radius:var(--r-md);padding:.8rem 1rem;margin:.2rem 0 1rem;font-size:.92rem;line-height:1.6;color:var(--c-text)">
+      <div data-i18n-html="export.playHtml" style="flex:1 1 260px"><b>📱 רוצים לשחק בלי להדפיס?</b> הקלפים שעיצבתם כאן עוברים ל<b>נגן מאצ׳טו</b> בטלפון. נכנסים לנגן עם <b>אותו קוד ואותו אימייל</b> — והמשחק האחרון ששמרתם כאן נפתח מיד. (בלי קוד? שומרים קובץ ב״📦 גיבוי לקובץ״ ופותחים אותו בנגן.)</div>
+      <a data-i18n="export.playBtn" class="btn btn-pri" href="play/" target="_blank" rel="noopener" style="text-decoration:none">📱 לפתוח את הנגן ←</a>
+    </div>
 
     <div class="exp-grid">
       <div>
