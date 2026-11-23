@@ -129,6 +129,9 @@
     .hub b{display:block;font-weight:900;margin-top:.35rem;font-size:1rem}
     .hub span{display:block;font-size:.84rem;color:var(--muted);line-height:1.4;margin-top:.15rem}
     .hub a.new{border-color:var(--gold);background:var(--gold-light)}
+    .mk-link{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1rem;margin:1rem 0 0;padding:1rem 1.1rem;border-radius:var(--r-lg);background:linear-gradient(135deg,#14294D,#1F3A68);color:#fff;text-decoration:none;box-shadow:var(--sh-2)}
+    .mk-link .mk-ic{font-size:2rem}.mk-link .mk-tx{flex:1 1 220px;line-height:1.55}.mk-link .mk-tx b{display:block;font-family:var(--font-display);font-size:1.12rem;color:#F3E8C4}.mk-link .mk-tx span{font-size:.9rem;color:rgba(255,255,255,.9)}
+    .mk-link .mk-go{background:#C6A135;color:#14294D;font-weight:800;border-radius:var(--r-pill);padding:.55rem 1.1rem;min-height:44px;display:inline-flex;align-items:center}
     .hub a.wa{background:#DCFCE7;border-color:#22C55E}
     /* G-27: ראש עמוד קצר + במה לכל לשונית (כמו ההדמיה) */
     .intro{text-align:center;padding:1.3rem 16px 0}
@@ -377,15 +380,15 @@
     <a href="../studio/?p=ludo&amp;what=pieces"><img src="../images/games/ludo-pieces.webp" alt="חיילי משחק עם הפנים של בני המשפחה" width="800" height="600" loading="lazy"><i>♟️</i><b>חיילים עם הפנים שלכם</b><span>ללודו שיש בבית או לכל משחק לוח</span></a>
     <a href="../studio/?p=snakes"><img src="../images/games/snakes.webp" alt="לוחות סולמות וחבלים מאוירים — ג׳ונגל, ממתקים וחלל" width="800" height="600" loading="lazy"><i>🪜</i><b>סולמות וחבלים</b><span>הלוח נבנה לפי המשפחה: זמן, שחקנים ואופי המשחק — עם קלפי שאלות ומשימות</span></a>
     <a href="../matchito.html"><img src="../images/games/matchito.webp" alt="קלפי מאצ׳טו עם פרצופי המשפחה" width="800" height="600" loading="lazy"><i>👀</i><b>מאצ׳טו — מצא את הזהה</b><span>קלפי "מי מוצא ראשון?" להדפסה</span></a>
-    <a href="../studio/?p=quartets&amp;set=mikdash" class="new"><i>🕍</i><b>🆕 רביעיות המקדש</b><span>ביכורים, קורבנות, כלי המקדש ובגדי הכהן הגדול — 14 סדרות מוכנות</span></a>
-    <a href="../studio/?p=memory&amp;set=mikdash" class="new"><i>🧠</i><b>🆕 זיכרון המקדש</b><span>זוגות של כלי המקדש, ביכורים וקורבנות — גם תמונה + שם ללימוד</span></a>
-    <a href="../studio/?p=bingo&amp;set=mikdash" class="new"><i>🎯</i><b>🆕 בינגו המקדש</b><span>לוחות בינגו עם עבודת המקדש וקלפי קריאה</span></a>
-    <a href="../studio/?p=domino&amp;set=mikdash" class="new"><i>🁫</i><b>🆕 דומינו שבעת המינים</b><span>28 אבנים עם שבעת המינים, כלי המקדש ועבודת המקדש</span></a>
-    <a href="../studio/?p=puzzle&amp;set=mikdash" class="new"><i>🧩</i><b>🆕 פאזל בית המקדש</b><span>ציור של בית המקדש כפאזל — קרטון או עץ</span></a>
-    <a href="../studio/?p=ludo&amp;set=mikdash" class="new"><i>🎲</i><b>🆕 לודו עולים לרגל</b><span>בית המקדש במרכז הלוח — מי מגיע ראשון?</span></a>
-    <a href="../studio/?p=snakes&amp;set=mikdash" class="new"><i>🪜</i><b>🆕 סולמות וחבלים — עלייה להר הבית</b><span>לוח בדרך אל בית המקדש, עם סולמות זהב וסמלי המקדש</span></a>
     <a href="../card-games.html"><i>🃏</i><b>כל משחקי הקלפים</b><span>הסבר, תמונות ודוגמאות לכל משחק</span></a>
   </nav>
+  <!-- S-180: מוצרי המקדש עברו לחנות שלהם — כאן רק קישור עם הסבר -->
+  <a class="mk-link" href="../mikdash/">
+    <span class="mk-ic" aria-hidden="true">🕍</span>
+    <span class="mk-tx"><b>משחקים ומתנות של בית המקדש</b>
+      <span>רביעיות, זיכרון, בינגו, דומינו, פאזל, לודו וסולמות — עם כלי המקדש, הביכורים והקורבנות. מוכנים מראש, ואפשר להוסיף שמות ותמונות. כולם בחנות נפרדת: חנות מוצרי המקדש.</span></span>
+    <span class="mk-go">לחנות המקדש ←</span>
+  </a>
   </section>
 
   <section class="tabpanel" id="pan-gifts" role="tabpanel" aria-labelledby="tab-gifts" hidden>
