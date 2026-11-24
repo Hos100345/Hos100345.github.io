@@ -70,6 +70,10 @@
     .site-top .in{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:.6rem}
     .site-top .brand{display:flex;align-items:center;gap:.55rem;color:#fff;text-decoration:none;font-weight:800}
     .site-top .brand img{width:42px;height:42px;border-radius:50%;background:#fff;padding:2px;object-fit:contain}
+    .site-top .acts{display:flex;align-items:center;gap:.5rem}
+    .site-top .cart{display:inline-flex;align-items:center;gap:.35rem;color:#fff;text-decoration:none;font-weight:700;padding:.35rem .8rem;min-height:44px;min-width:44px;border-radius:999px;border:1.5px solid rgba(255,255,255,.55)}
+    .site-top .cart[hidden]{display:none}
+    .site-top .cart-n{background:var(--c-accent);color:var(--c-brand);border-radius:999px;min-width:1.5em;padding:0 .35em;font-size:.85rem;line-height:1.5;text-align:center;font-weight:800}
     .site-top .home{color:rgba(255,255,255,.9);text-decoration:none;font-weight:700;font-size:.92rem;padding:.45rem .9rem;border-radius:999px;border:1.5px solid rgba(255,255,255,.35)}
     .hero{position:relative;overflow:hidden;text-align:center;color:#fff;padding:2.6rem 16px 2.8rem;
       background:var(--grad-hero)}
@@ -344,7 +348,7 @@
 <header class="site-top">
   <div class="in">
     <a class="brand" href="./"><img src="../images/brand/itzuvishi-logo-192.webp" alt="" width="42" height="42"><span>עיצובישי</span></a>
-    <a class="home" href="../">לאתר הבית ←</a>
+    <div class="acts"><a class="cart" id="cartLink" href="../studio/?p=cards&amp;cart=1" hidden aria-label="הסל">🛒<span class="cart-n" aria-hidden="true">0</span></a><a class="home" href="../">לאתר הבית ←</a></div>
   </div>
 </header>
 <section class="intro" aria-label="משחק עיצובישי">
@@ -1312,6 +1316,20 @@ const GAMES=[
   }).catch(function(){});
 })();
 </script>
+<script>/* S-188: תג הסל — הסל של הסטודיו (IndexedDB 'studio-cart', אותו אתר). אינדקס קטן ב-localStorage 'studio.cart' = [{id,p}] לתצוגה מיידית;
+   הלינק פותח את הסטודיו על המוצר האחרון בסל עם ?cart=1 (הסל נפתח לבד) */
+(function(){var L=document.getElementById('cartLink');if(!L)return;
+  function show(a){var n=a.length;L.hidden=!n;L.querySelector('.cart-n').textContent=String(n);L.setAttribute('aria-label','הסל — '+n+(n===1?' מוצר':' מוצרים'));
+    var last=a[n-1];if(last&&last.p)L.href='../studio/?p='+encodeURIComponent(last.p)+'&cart=1';}
+  function idx(){try{var a=JSON.parse(localStorage.getItem('studio.cart')||'[]');return Array.isArray(a)?a:[];}catch(e){return[];}}
+  function fromDb(){try{var r=indexedDB.open('studio-cart',1),t=setTimeout(function(){t=0;},5000);
+    r.onupgradeneeded=function(){var d=r.result;if(!d.objectStoreNames.contains('items'))d.createObjectStore('items',{keyPath:'id'});};
+    r.onsuccess=function(){var d=r.result;try{var q=d.transaction('items','readonly').objectStore('items').getAll();
+      q.onsuccess=function(){if(t){clearTimeout(t);show((q.result||[]).filter(function(x){return x&&x.id&&x.zip;}).sort(function(a,b){return a.t-b.t;}).map(function(x){return{id:x.id,p:x.product};}));}d.close();};
+      q.onerror=function(){d.close();};}catch(e){d.close();}};}catch(e){}}
+  show(idx());fromDb();
+  addEventListener('storage',function(e){if(e.key==='studio.cart')show(idx());});
+  addEventListener('pageshow',function(e){if(e.persisted){show(idx());fromDb();}});})();</script>
 <script src="../js/share-link.js?v=1"></script>
 </body>
 </html>

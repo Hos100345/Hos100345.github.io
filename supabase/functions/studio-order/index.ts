@@ -6,6 +6,8 @@
 // שני שלבים, כי PDF של כמה דפים גדול מדי לגוף בקשה אחד:
 //   action=create   → ולידציה + שורת הזמנה (status=uploading) + קישורי העלאה חתומים
 //   action=finalize → בדיקה שהקבצים באמת עלו → status=new
+//   action=cart     → S-188: סל — עד 10 מוצרים בבת אחת (RPC create_studio_cart: הזמנה לכל מוצר עם cart_code משותף,
+//                     סל = יחידה אחת במגבלת 5 ביום). מחזיר קישורי העלאה לכל מוצר; finalize לכל מוצר בנפרד כמו תמיד.
 // הזמנה שלא הושלמה נשארת 'uploading' ומופיעה למנהל ככזו.
 // ============================================================
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -13,6 +15,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const BUCKET = 'studio-orders';
 const PRODUCTS = ['stickers', 'cards', 'memory', 'quartets', 'domino', 'dice', 'puzzle', 'bingo', 'tangram', 'ludo', 'tshirt', 'mug', 'subl', 'snakes', 'keychains']; // keychains = S-154 (v12, מחזיקי מפתחות — מחיר מ-studio_keychain_price) · snakes = S-100 (v10, סולמות וחבלים — הצעת מחיר, או studio_blank_prices snakes-8805) · subl = S-98 (v9, מתנות מזיקית — הצעת מחיר, או מחיר מ-studio_blank_prices subl-<מק"ט>) · mug = S-91 (v8) · tshirt = S-85 (v7, מחיר לפי כמות החולצות) · quartets = S-31 (v3) · bingo = S-55 (v4) · tangram/ludo = S-65 (v5, הצעת מחיר — מחיר 0 עד שנקבע)
 const MAX_DESIGN_BYTES = 256 * 1024;
+const MAX_CART_ITEMS = 10, MAX_CART_BYTES = 1536 * 1024; // S-188
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -101,6 +104,64 @@ Deno.serve(async (req) => {
       }
       console.log('STUDIO_ORDER_MANUAL', row.code, product, 'sheets=', sheets, 'price=', price);
       return json({ ok: true, id: row.id, code: row.code });
+    }
+
+    // S-188: סל קניות. כל מוצר נבדק כמו create; שורות ההזמנה נוצרות בטרנזקציה אחת (מוצר אחד לא תקין = כלום לא נוצר).
+    if (body.action === 'cart') {
+      const phone = validatePhone(body.phone);
+      if (!phone) return fail('invalid_phone', 400);
+      const raw = body.items;
+      if (!Array.isArray(raw) || raw.length < 1 || raw.length > MAX_CART_ITEMS) return fail('invalid_items', 400);
+      const enc = new TextEncoder();
+      let bytes = 0;
+      const items: { product: string; sheets: number; design: Record<string, unknown>; summary: string | null; cutExt: string }[] = [];
+      for (const it of raw as Record<string, unknown>[]) {
+        if (!it || typeof it !== 'object') return fail('invalid_items', 400);
+        const product = String(it.product ?? '');
+        if (!PRODUCTS.includes(product)) return fail('invalid_product', 400);
+        const sheets = Number(it.sheets);
+        if (!Number.isInteger(sheets) || sheets < 1 || sheets > 40) return fail('invalid_sheets', 400);
+        const design = it.design;
+        if (!design || typeof design !== 'object' || Array.isArray(design)) return fail('invalid_design', 400);
+        const n = enc.encode(JSON.stringify(design)).length;
+        if (n >= MAX_DESIGN_BYTES) return fail('design_too_large', 400);
+        bytes += n;
+        items.push({ product, sheets, design: design as Record<string, unknown>, summary: truncate(it.summary, 200), cutExt: it.cutExt === 'zip' ? 'zip' : 'svg' });
+      }
+      if (bytes >= MAX_CART_BYTES) return fail('design_too_large', 400);
+
+      const { data, error } = await admin.rpc('create_studio_cart', { p: {
+        customer_phone: phone, customer_name: truncate(body.name, 80), customer_note: truncate(body.note, 300), coupon: truncate(body.coupon, 30),
+        items: items.map(({ product, sheets, design, summary }) => ({ product, sheets, design, summary })),
+      } });
+      if (error || !data) {
+        const m = String(error?.message || '');
+        if (m.includes('rate_limited')) return fail('rate_limited', 429);
+        if (m.includes('invalid_qty')) return fail('invalid_qty', 400);
+        if (m.includes('invalid_items')) return fail('invalid_items', 400);
+        console.error('CART_RPC_ERROR', JSON.stringify(error));
+        return fail('server_error', 500);
+      }
+      const res = data as { cart_code: string; total: number; items: { id: string; code: string; price: number; price_before: number | null; coupon: string | null }[] };
+      if (!Array.isArray(res.items) || res.items.length !== items.length) { console.error('CART_RPC_SHAPE', JSON.stringify(data)); return fail('server_error', 500); }
+      const ids = res.items.map((o) => o.id);
+      try {
+        const out = await Promise.all(res.items.map(async (o, i) => {
+          const uploads: Record<string, string> = {};
+          for (const n of ['print.pdf', 'preview.jpg', `cut.${items[i].cutExt}`, 'design.zip']) {
+            const { data: s, error: e } = await admin.storage.from(BUCKET).createSignedUploadUrl(`${o.id}/${n}`);
+            if (e || !s) throw new Error('SIGN_ERROR ' + n + ' ' + JSON.stringify(e));
+            uploads[n] = s.signedUrl;
+          }
+          return { id: o.id, code: o.code, price: o.price, price_before: o.price_before, coupon: o.coupon, uploads };
+        }));
+        console.log('STUDIO_CART_CREATED', res.cart_code, 'items=', out.length, 'total=', res.total, out.map((o) => o.code).join(','));
+        return json({ ok: true, cart_code: res.cart_code, total: res.total, items: out });
+      } catch (e) {
+        console.error('CART_SIGN_ERROR', String((e as Error)?.message || e));
+        await admin.from('studio_orders').delete().in('id', ids);
+        return fail('server_error', 500);
+      }
     }
 
     if (body.action === 'finalize') {
