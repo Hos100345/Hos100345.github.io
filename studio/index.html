@@ -5108,7 +5108,7 @@ function adDraw(){if(!ADE||!ADE.c||!document.body.contains(ADE.c)||ADE.c.hidden)
   const ab=document.getElementById('adbar'),ph=adTabbed(),top=ph?58:Math.max(64,ab&&!ab.hidden?ab.offsetHeight+18:0),bot=ph?24:34; // הסרגל יכול להיות בשתי שורות בטלפון. S-195: בטלפון הסרגל עבר מתחת למודעה — רק הכפתורים הצפים למעלה
   const W0=adW(),H0=adH(),s0=Math.min(cw*.92/W0,(ch-top-bot)/H0),ox0=(cw-W0*s0)/2,oy0=top+Math.max(0,(ch-top-bot-H0*s0)/2);
   // S-195: זום בתצוגה בלבד (לא בהורדה). ADE.z = פי כמה, ADE.cx/cy = נקודת המודעה שבמרכז. ADE.v נשאר המיפוי היחיד מסך↔מודעה — הגרירה נכונה בכל זום
-  adZClamp();const scx=ox0+W0*s0/2,scy=oy0+H0*s0/2,s=s0*ADE.z,ox=scx-ADE.cx*s,oy=scy-ADE.cy*s;ADE.v={s,ox,oy};ADE.b={s0,scx,scy};
+  adZClamp();const scx=ox0+W0*s0/2,scy=oy0+H0*s0/2,s=s0*ADE.z,ox=scx-ADE.cx*s,oy=scy-ADE.cy*s;ADE.v={s,ox,oy,tb:ph?52:(ab&&!ab.hidden?ab.offsetHeight+8:0)};ADE.b={s0,scx,scy}; // tb: הידיות לא נכנסות מתחת לסרגל העליון (S-196)
   const cutOn=adCutOn();c.style.touchAction=ADE.z>1||cutOn?'none':'';c.style.cursor=cutOn?'crosshair':'';adZoomUi();
   c.width=Math.round(cw*dpr);c.height=Math.round(ch*dpr);const x=c.getContext('2d');x.scale(dpr,dpr);x.save();x.translate(ox,oy);x.scale(s,s);
   const L0=adSel();
@@ -5489,7 +5489,7 @@ const adDrawSoon=()=>{if(!_adRaf)_adRaf=requestAnimationFrame(()=>{_adRaf=0;adDr
 function adState(){return{L:JSON.stringify(AD.layers),img:(AD.img||[]).slice(),fmt:AD.fmt,bg:AD.bg};}
 function adSnap(){const u=adState();u.rd=AD_REDO.splice(0);AD_UNDO.push(u);if(AD_UNDO.length>40)AD_UNDO.shift();} // עריכה חדשה מוחקת את ↷ (אבל ביטול-snap מחזיר אותו)
 function adSnapCancel(){const u=AD_UNDO.pop();if(u&&u.rd&&u.rd.length&&!AD_REDO.length)AD_REDO.push(...u.rd);}
-function adHistClear(){adHistClear();AD_REDO.length=0;}
+function adHistClear(){AD_UNDO.length=0;AD_REDO.length=0;}
 function adApplyState(u){let imgCh=u.img.length!==(AD.img||[]).length||u.img.some((f,i)=>f!==AD.img[i]);if(u.fmt&&u.fmt!==AD.fmt){AD.fmt=u.fmt;imgCh=true;}if(u.bg!==undefined&&u.bg!==AD.bg){AD.bg=u.bg;imgCh=true;}
   AD.layers=JSON.parse(u.L);AD.img=u.img;if(ADE){if(!adSel())ADE.sel=null;if(ADE.wm){const L=AD.layers.find(o=>o.id===ADE.wm.id);if(!L||(L.mask||null)!==ADE.wm.key)ADE.wm=null;}}
   imgCh?rebuild():(adCommit(),adPanelSync());}
@@ -5524,7 +5524,7 @@ function adLayerSrc(L,f){const wm=ADE&&ADE.wm,live=wm&&wm.id===L.id&&wm.key===(L
   let C=_adComp.get(L.id);if(C&&C.sig===sig)return C.c;if(!C){C={c:document.createElement('canvas')};_adComp.set(L.id,C);}
   const c=C.c;C.sig=sig;c.width=d[0];c.height=d[1];const x=c.getContext('2d');
   if(mc)x.drawImage(mc,0,0,d[0],d[1]);else{x.fillStyle='#000';x.fillRect(0,0,d[0],d[1]);}
-  if(L.shape){x.globalCompositeOperation='destination-in';x.fillStyle='#000';x.fill(adShapePath(L.shape,d[0],d[1]));}
+  if(L.shape){x.globalCompositeOperation='destination-in';x.fillStyle='#000';x.fill(adShapePath(L.shape,d[0],d[1]));x.globalCompositeOperation='source-over';}
   if(L.mf>0&&!fast)adFeather(c,+L.mf);
   x.globalCompositeOperation='source-in';x.drawImage(f.img,0,0,d[0],d[1]);x.globalCompositeOperation='source-over';return c;}
 // המסכה שעובדים עליה (של השכבה הנבחרת) — עותק חי; כל משיכה שמסתיימת נשמרת כמפתח חדש (↶ חוזר למפתח הקודם)
