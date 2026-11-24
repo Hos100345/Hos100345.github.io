@@ -269,6 +269,24 @@ details.face>.body{padding:0 12px 12px;display:grid;gap:8px}
 .adtabs button{flex:1 1 0;min-width:0;min-height:48px;border:1.5px solid var(--line,#D8E0EA);border-radius:12px;background:#fff;font:inherit;font-size:.86rem;font-weight:700;color:var(--c-brand,#0A2A5C);cursor:pointer;padding:2px;line-height:1.15}
 .adtabs button[aria-selected=true]{background:var(--c-brand,#0A2A5C);border-color:var(--c-brand,#0A2A5C);color:#fff}
 @media(min-width:900px){.adq .adqtools{display:none}}
+/* S-196: עורך הפרסומת כמו אפליקציית עריכה — סרגל עליון, סרגל כלים תחתון שנגלל לרוחב, פקדים מעל הסרגל, כפתורים צפים ליד התמונה */
+.adtop{position:absolute;z-index:4;top:6px;inset-inline:6px;display:flex;align-items:center;gap:4px;pointer-events:none}.adtop[hidden]{display:none}.adtop>*{pointer-events:auto}.adtop .adtsp{flex:1;pointer-events:none}
+.adtop button{min-width:44px;min-height:44px;border:0;border-radius:999px;background:rgba(255,255,255,.96);box-shadow:0 3px 12px rgba(20,41,77,.2);color:var(--c-brand,#0A2A5C);font:inherit;font-size:1.15rem;font-weight:700;cursor:pointer;display:inline-grid;place-items:center;position:relative;padding:0 10px}
+.adtop button:disabled{opacity:.45;cursor:default}.adtop .adtsave{font-size:.95rem;background:var(--c-brand,#0A2A5C);color:#fff}.adtop .adtok{background:#16A34A;color:#fff;font-size:1.25rem}.adtop .adtm{font-size:1.4rem;padding:0}
+.adbadge{position:absolute;top:-3px;inset-inline-end:-3px;min-width:18px;height:18px;border-radius:9px;background:#E11D74;color:#fff;font-size:.68rem;line-height:18px;padding:0 4px;font-weight:700}
+.adq .adqctx{display:grid;gap:2px;min-width:0}.adq .adqctx:empty{display:none}
+.adqscroll{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain}.adqscroll::-webkit-scrollbar{display:none}
+.adstrip{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain;border-top:1px solid var(--mat-line);padding-top:3px;margin-top:2px;scroll-snap-type:x proximity}.adstrip::-webkit-scrollbar{display:none}
+.adq .adstrip .adtool{flex:1 0 64px;min-width:64px;min-height:56px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-radius:12px;color:#334155;font-size:.76rem;font-weight:600;scroll-snap-align:start;padding:2px 4px}
+.adq .adstrip .adtool.on{background:none;color:#E11D74}.adq .adstrip .adtool.on .adic{background:#FDE7F1;border-radius:10px}.adic{display:inline-grid;place-items:center;width:36px;height:28px}
+.adsl{display:grid;grid-template-columns:auto 1fr 2.6em;align-items:center;gap:10px;min-height:44px;padding:0 6px}.adsl label{font-size:.86rem;font-weight:700;color:#334155;min-width:4.2em}.adsl input[type=range]{width:100%;accent-color:#E11D74;min-height:36px}.adsl output{font-size:.85rem;color:#475569;text-align:center;font-variant-numeric:tabular-nums}
+.adq .adstk button{width:52px;padding:0}.adq .adstk canvas{width:40px;height:40px}.adq .adstk .emo{font-size:1.7rem}.adq .adgo{background:#E11D74;color:#fff;font-weight:700;padding:0 14px}.adq .adgo:hover{background:#BE185D}
+.adq .labar{margin:2px 6px}
+.adfl{position:absolute;z-index:3;inset-inline-end:8px;top:50%;transform:translateY(-50%);display:grid;gap:8px}.adfl[hidden]{display:none}
+.adfl button{width:44px;height:44px;border-radius:12px;border:0;background:rgba(255,255,255,.96);box-shadow:0 3px 12px rgba(20,41,77,.25);font-size:1.25rem;cursor:pointer;display:grid;place-items:center;touch-action:none;-webkit-user-select:none;user-select:none}.adfl button.on{background:#E11D74}
+.adflsw i{width:26px;height:26px;border-radius:6px;border:1.5px solid #94A3B8;display:block;background:conic-gradient(#D5D9E0 25%,#fff 0 50%,#D5D9E0 0 75%,#fff 0) 0 0/13px 13px}.adflsw[data-v=dark] i{background:#1F2430}.adflsw[data-v=light] i{background:#fff}.adflsw[data-v=ad] i{background:linear-gradient(135deg,#0A2A5C,#FDC010)}
+.admenu{display:grid;gap:6px}.admi{min-height:48px;border:1px solid var(--line,#D8E0EA);border-radius:12px;background:#fff;font:inherit;font-size:1rem;font-weight:600;color:var(--c-brand,#0A2A5C);text-align:start;padding:0 14px;cursor:pointer}.admi:hover{background:#F4F7FC}.admi.main{background:var(--c-brand,#0A2A5C);color:#fff}
+@media(max-width:899px){body.adph.focus-min .share-top,body.adph.focus-min .cart-top,body.adph.focus-min nav.tabs a.tab-all{display:none}} /* בטלפון — בתפריט ⋮ */
 @media(max-width:899px){body.adph .preview{height:auto}body.adph .preview .stage{flex:none;height:42vh;min-height:240px;padding:0}body.adph .pagebar{display:none}body.adph #adbar{display:none}
  body.adph .controls>.intro{display:none}body.adph .st-tab{top:auto;bottom:84px}}
 @media(max-width:899px) and (max-height:700px){body.adph .preview .stage{height:36vh;min-height:200px}}
@@ -424,7 +442,7 @@ body.focus-min .cart-top{gap:5px;padding:.4rem .8rem}body.focus-min .cart-top[hi
 <script>
 const NETS={"d4":{"faces":4,"sides":3,"pos":[[[1.2247,0.9659],[0.2588,1.2247],[0.5176,0.2588]],[[0,2.1907],[0.2588,1.2247],[0.9659,1.9319]],[[0.9659,1.9319],[0.2588,1.2247],[1.2247,0.9659]],[[1.2247,0.9659],[0.5176,0.2588],[1.4836,0]]],"tabs":[{"e":[[0.2588,1.2247],[0.5176,0.2588]],"f":0,"d":0.28,"t":0.25},{"e":[[0.9659,1.9319],[0,2.1907]],"f":1,"d":0.28,"t":0.25},{"e":[[1.2247,0.9659],[0.9659,1.9319]],"f":2,"d":0.28,"t":0.25}],"cuts":[[[0,2.1907],[0.2588,1.2247]],[[0.5176,0.2588],[1.4836,0]],[[1.4836,0],[1.2247,0.9659]]],"folds":[[[1.2247,0.9659],[0.2588,1.2247]],[[0.5176,0.2588],[1.2247,0.9659]],[[0.2588,1.2247],[0.9659,1.9319]]],"w":1.4836,"h":2.3964,"opp":[-1,-1,-1,-1],"maxEdge":104.3},"d6":{"faces":6,"sides":4,"pos":[[[1.1953,4.1008],[0.2557,3.7588],[0.5977,2.8191],[1.5374,3.1611]],[[0,1.5374],[0.342,0.5977],[1.2817,0.9397],[0.9397,1.8794]],[[1.2817,0.9397],[1.6237,0],[2.5634,0.342],[2.2214,1.2817]],[[1.5374,3.1611],[0.5977,2.8191],[0.9397,1.8794],[1.8794,2.2214]],[[2.8191,2.5634],[2.4771,3.5031],[1.5374,3.1611],[1.8794,2.2214]],[[0.9397,1.8794],[1.2817,0.9397],[2.2214,1.2817],[1.8794,2.2214]]],"tabs":[{"e":[[1.1953,4.1008],[0.2557,3.7588]],"f":0,"d":0.28,"t":0.25},{"e":[[0.2557,3.7588],[0.5977,2.8191]],"f":0,"d":0.28,"t":0.25},{"e":[[1.5374,3.1611],[1.1953,4.1008]],"f":0,"d":0.28,"t":0.25},{"e":[[0.342,0.5977],[1.2817,0.9397]],"f":1,"d":0.28,"t":0.25},{"e":[[0.9397,1.8794],[0,1.5374]],"f":1,"d":0.28,"t":0.25},{"e":[[2.5634,0.342],[2.2214,1.2817]],"f":2,"d":0.28,"t":0.25},{"e":[[1.8794,2.2214],[2.8191,2.5634]],"f":4,"d":0.28,"t":0.25}],"cuts":[[[1.6237,0],[2.5634,0.342]],[[0,1.5374],[0.342,0.5977]],[[2.4771,3.5031],[1.5374,3.1611]],[[1.2817,0.9397],[1.6237,0]],[[0.5977,2.8191],[0.9397,1.8794]],[[2.8191,2.5634],[2.4771,3.5031]],[[2.2214,1.2817],[1.8794,2.2214]]],"folds":[[[0.5977,2.8191],[1.5374,3.1611]],[[1.2817,0.9397],[0.9397,1.8794]],[[2.2214,1.2817],[1.2817,0.9397]],[[0.9397,1.8794],[1.8794,2.2214]],[[1.8794,2.2214],[1.5374,3.1611]]],"w":2.8191,"h":4.2784,"opp":[5,4,3,2,1,0],"maxEdge":58.4},"d8":{"faces":8,"sides":3,"pos":[[[0.684,1.172],[1.3268,1.9381],[0.342,2.1117]],[[0.342,2.1117],[1.3268,1.9381],[0.9848,2.8778]],[[1.6688,0.9984],[1.3268,1.9381],[0.684,1.172]],[[0.9848,2.8778],[1.3268,1.9381],[1.9696,2.7041]],[[0.0413,0.406],[1.0261,0.2323],[0.684,1.172]],[[0.9848,2.8778],[0,3.0514],[0.342,2.1117]],[[0.684,1.172],[1.0261,0.2323],[1.6688,0.9984]],[[1.6688,0.9984],[1.0261,0.2323],[2.0109,0.0587]]],"tabs":[{"e":[[0.342,2.1117],[0.684,1.172]],"f":0,"d":0.28,"t":0.25},{"e":[[1.6688,0.9984],[1.3268,1.9381]],"f":2,"d":0.28,"t":0.25},{"e":[[1.9696,2.7041],[0.9848,2.8778]],"f":3,"d":0.28,"t":0.25},{"e":[[0.0413,0.406],[1.0261,0.2323]],"f":4,"d":0.28,"t":0.25},{"e":[[0.9848,2.8778],[0,3.0514]],"f":5,"d":0.28,"t":0.25}],"cuts":[[[0.684,1.172],[0.0413,0.406]],[[1.3268,1.9381],[1.9696,2.7041]],[[2.0109,0.0587],[1.6688,0.9984]],[[0,3.0514],[0.342,2.1117]],[[1.0261,0.2323],[2.0109,0.0587]]],"folds":[[[0.684,1.172],[1.3268,1.9381]],[[1.3268,1.9381],[0.342,2.1117]],[[1.3268,1.9381],[0.9848,2.8778]],[[0.9848,2.8778],[0.342,2.1117]],[[0.684,1.172],[1.6688,0.9984]],[[1.0261,0.2323],[0.684,1.172]],[[1.0261,0.2323],[1.6688,0.9984]]],"w":2.0109,"h":3.2837,"opp":[7,6,5,4,3,2,1,0],"maxEdge":76.1},"d12":{"faces":12,"sides":5,"pos":[[[2.9967,3.8222],[3.0491,4.8209],[2.1155,5.1792],[1.4862,4.4021],[2.0308,3.5634]],[[3.1337,6.4367],[2.1678,6.1778],[2.1155,5.1792],[3.0491,4.8209],[3.6784,5.598]],[[0.5526,4.7604],[1.4862,4.4021],[2.1155,5.1792],[1.5708,6.0179],[0.6049,5.7591]],[[3.5414,2.9836],[2.9967,3.8222],[2.0308,3.5634],[1.9785,2.5648],[2.912,2.2064]],[[1.0125,2.306],[1.9785,2.5648],[2.0308,3.5634],[1.0972,3.9218],[0.4679,3.1446]],[[3.5414,2.9836],[4.5073,3.2424],[4.5596,4.241],[3.626,4.5994],[2.9967,3.8222]],[[3.7631,7.2138],[3.1337,6.4367],[3.6784,5.598],[4.6443,5.8568],[4.6966,6.8554]],[[4.4226,1.6266],[4.4749,2.6252],[3.5414,2.9836],[2.912,2.2064],[3.4567,1.3677]],[[1.3491,1.7876],[0.3832,1.5288],[0.3309,0.5302],[1.2645,0.1718],[1.8938,0.949]],[[0.6896,7.3749],[0.0603,6.5977],[0.6049,5.7591],[1.5708,6.0179],[1.6232,7.0165]],[[2.912,2.2064],[1.9785,2.5648],[1.3491,1.7876],[1.8938,0.949],[2.8597,1.2078]],[[3.4043,0.3691],[4.3379,0.0107],[4.9672,0.7879],[4.4226,1.6266],[3.4567,1.3677]]],"tabs":[{"e":[[2.9967,3.8222],[3.0491,4.8209]],"f":0,"d":0.22,"t":0.3},{"e":[[1.4862,4.4021],[2.0308,3.5634]],"f":0,"d":0.22,"t":0.3},{"e":[[3.1337,6.4367],[2.1678,6.1778]],"f":1,"d":0.28,"t":0.25},{"e":[[2.1678,6.1778],[2.1155,5.1792]],"f":1,"d":0.22,"t":0.3},{"e":[[3.0491,4.8209],[3.6784,5.598]],"f":1,"d":0.28,"t":0.25},{"e":[[0.5526,4.7604],[1.4862,4.4021]],"f":2,"d":0.28,"t":0.25},{"e":[[0.6049,5.7591],[0.5526,4.7604]],"f":2,"d":0.28,"t":0.25},{"e":[[1.0125,2.306],[1.9785,2.5648]],"f":4,"d":0.22,"t":0.3},{"e":[[0.4679,3.1446],[1.0125,2.306]],"f":4,"d":0.28,"t":0.25},{"e":[[3.5414,2.9836],[4.5073,3.2424]],"f":5,"d":0.22,"t":0.3},{"e":[[4.5073,3.2424],[4.5596,4.241]],"f":5,"d":0.28,"t":0.25},{"e":[[3.7631,7.2138],[3.1337,6.4367]],"f":6,"d":0.28,"t":0.25},{"e":[[4.6443,5.8568],[4.6966,6.8554]],"f":6,"d":0.28,"t":0.25},{"e":[[4.6966,6.8554],[3.7631,7.2138]],"f":6,"d":0.28,"t":0.25},{"e":[[2.912,2.2064],[3.4567,1.3677]],"f":7,"d":0.22,"t":0.3},{"e":[[0.3309,0.5302],[1.2645,0.1718]],"f":8,"d":0.28,"t":0.25},{"e":[[1.2645,0.1718],[1.8938,0.949]],"f":8,"d":0.28,"t":0.25},{"e":[[0.6896,7.3749],[0.0603,6.5977]],"f":9,"d":0.28,"t":0.25},{"e":[[1.8938,0.949],[2.8597,1.2078]],"f":10,"d":0.28,"t":0.25}],"cuts":[[[3.626,4.5994],[2.9967,3.8222]],[[2.0308,3.5634],[1.0972,3.9218]],[[1.5708,6.0179],[1.6232,7.0165]],[[2.1155,5.1792],[1.5708,6.0179]],[[4.5596,4.241],[3.626,4.5994]],[[1.0972,3.9218],[0.4679,3.1446]],[[0.3832,1.5288],[0.3309,0.5302]],[[1.9785,2.5648],[1.3491,1.7876]],[[1.3491,1.7876],[0.3832,1.5288]],[[4.4749,2.6252],[3.5414,2.9836]],[[3.6784,5.598],[4.6443,5.8568]],[[1.6232,7.0165],[0.6896,7.3749]],[[4.4226,1.6266],[4.4749,2.6252]],[[4.9672,0.7879],[4.4226,1.6266]],[[2.8597,1.2078],[2.912,2.2064]],[[0.0603,6.5977],[0.6049,5.7591]],[[3.4043,0.3691],[4.3379,0.0107]],[[4.3379,0.0107],[4.9672,0.7879]],[[3.4567,1.3677],[3.4043,0.3691]]],"folds":[[[3.0491,4.8209],[2.1155,5.1792]],[[2.1155,5.1792],[1.4862,4.4021]],[[2.0308,3.5634],[2.9967,3.8222]],[[3.6784,5.598],[3.1337,6.4367]],[[1.5708,6.0179],[0.6049,5.7591]],[[3.5414,2.9836],[2.9967,3.8222]],[[2.0308,3.5634],[1.9785,2.5648]],[[1.9785,2.5648],[2.912,2.2064]],[[2.912,2.2064],[3.5414,2.9836]],[[3.4567,1.3677],[4.4226,1.6266]],[[1.8938,0.949],[1.3491,1.7876]]],"w":4.9672,"h":7.3856,"opp":[11,10,7,9,6,8,4,2,5,3,1,0],"maxEdge":33.6},"d20":{"faces":20,"sides":3,"pos":[[[2.0234,2.2854],[1.0386,2.1117],[1.6814,1.3457]],[[1.6814,1.3457],[1.0386,2.1117],[0.6966,1.172]],[[1.3806,3.0514],[1.0386,2.1117],[2.0234,2.2854]],[[0.7378,3.8175],[0.3958,2.8778],[1.3806,3.0514]],[[0.6966,1.172],[1.0386,2.1117],[0.0538,1.9381]],[[2.0234,2.2854],[1.6814,1.3457],[2.6662,1.5193]],[[2.6662,1.5193],[1.6814,1.3457],[2.3242,0.5796]],[[1.3394,0.406],[1.6814,1.3457],[0.6966,1.172]],[[2.3654,3.2251],[2.0234,2.2854],[3.0082,2.459]],[[1.3806,3.0514],[2.0234,2.2854],[2.3654,3.2251]],[[2.6662,1.5193],[2.3242,0.5796],[3.309,0.7533]],[[0.3546,0.2323],[1.3394,0.406],[0.6966,1.172]],[[2.7075,4.1648],[3.0495,5.1044],[2.0647,4.9308]],[[2.7075,4.1648],[2.3654,3.2251],[3.3502,3.3987]],[[1.3806,3.0514],[2.3654,3.2251],[1.7226,3.9911]],[[1.7226,3.9911],[2.3654,3.2251],[2.7075,4.1648]],[[0.7378,3.8175],[1.3806,3.0514],[1.7226,3.9911]],[[1.0799,4.7571],[0.095,4.5835],[0.7378,3.8175]],[[1.0799,4.7571],[0.7378,3.8175],[1.7226,3.9911]],[[1.7226,3.9911],[2.7075,4.1648],[2.0647,4.9308]]],"tabs":[{"e":[[1.3806,3.0514],[1.0386,2.1117]],"f":2,"d":0.28,"t":0.25},{"e":[[0.7378,3.8175],[0.3958,2.8778]],"f":3,"d":0.28,"t":0.25},{"e":[[0.0538,1.9381],[0.6966,1.172]],"f":4,"d":0.28,"t":0.25},{"e":[[2.6662,1.5193],[2.0234,2.2854]],"f":5,"d":0.28,"t":0.25},{"e":[[1.6814,1.3457],[2.3242,0.5796]],"f":6,"d":0.28,"t":0.25},{"e":[[3.0082,2.459],[2.3654,3.2251]],"f":8,"d":0.28,"t":0.25},{"e":[[2.3242,0.5796],[3.309,0.7533]],"f":10,"d":0.28,"t":0.25},{"e":[[3.309,0.7533],[2.6662,1.5193]],"f":10,"d":0.28,"t":0.25},{"e":[[0.3546,0.2323],[1.3394,0.406]],"f":11,"d":0.28,"t":0.25},{"e":[[0.6966,1.172],[0.3546,0.2323]],"f":11,"d":0.28,"t":0.25},{"e":[[1.7226,3.9911],[1.0799,4.7571]],"f":18,"d":0.28,"t":0.25}],"cuts":[[[0.3958,2.8778],[1.3806,3.0514]],[[1.0386,2.1117],[0.0538,1.9381]],[[0.095,4.5835],[0.7378,3.8175]],[[2.0234,2.2854],[3.0082,2.459]],[[1.3394,0.406],[1.6814,1.3457]],[[2.3654,3.2251],[3.3502,3.3987]],[[2.7075,4.1648],[3.0495,5.1044]],[[3.3502,3.3987],[2.7075,4.1648]],[[3.0495,5.1044],[2.0647,4.9308]],[[1.0799,4.7571],[0.095,4.5835]],[[2.0647,4.9308],[1.7226,3.9911]]],"folds":[[[2.0234,2.2854],[1.0386,2.1117]],[[1.0386,2.1117],[1.6814,1.3457]],[[1.6814,1.3457],[2.0234,2.2854]],[[1.0386,2.1117],[0.6966,1.172]],[[0.6966,1.172],[1.6814,1.3457]],[[2.0234,2.2854],[1.3806,3.0514]],[[1.3806,3.0514],[0.7378,3.8175]],[[1.6814,1.3457],[2.6662,1.5193]],[[2.3242,0.5796],[2.6662,1.5193]],[[0.6966,1.172],[1.3394,0.406]],[[2.3654,3.2251],[2.0234,2.2854]],[[2.3654,3.2251],[1.3806,3.0514]],[[2.0647,4.9308],[2.7075,4.1648]],[[2.7075,4.1648],[2.3654,3.2251]],[[2.3654,3.2251],[1.7226,3.9911]],[[1.7226,3.9911],[1.3806,3.0514]],[[2.7075,4.1648],[1.7226,3.9911]],[[1.7226,3.9911],[0.7378,3.8175]],[[0.7378,3.8175],[1.0799,4.7571]]],"w":3.3628,"h":5.1044,"opp":[19,15,12,10,13,18,16,14,17,11,3,9,2,4,7,1,6,8,5,0],"maxEdge":49}};
 'use strict';
-const VERSION='studio-v1.78';
+const VERSION='studio-v1.79';
 // ═══════════ קבצים משותפים מהריפו (פונטים, עיצובי גב) ═══════════
 // נעוץ לקומיט ספציפי — שינוי בריפו לא ישבור את הקובץ הזה בלי שנעדכן כאן במכוון.
 const SHARED_COMMIT='f196a73a41a063231ba207a4296395f889aac265';
@@ -4072,7 +4090,7 @@ const Admin={id:'admin',label:'מנהל',
       el('p',{class:'hint'},'ברירת מחדל זהה למחולל המדבקות (15.9 / 20 / 1.3 / 5). ב-Studio: סימני רישום → Restore Defaults.')),
     printSection(),
     sec('גרסה וקבצים משותפים',false,el('p',{class:'hint'},'v0.99 — 🪜 סולמות וחבלים (מנהל בלבד): לוח לפי סטטיסטיקה — למי, שחקנים, משך והפתעות → כמות ואורך סולמות וחבלים; שאלות/משימות עם חוקים, קובייה אחת/שתיים, חוק סיום; תמונה על הלוח/באמצע ועקיפת פנים; נחשים/מגלשות/חבלים, פלטות, מספרים; קלפי שאלה/משימה/פעילות לפי אירוע; לוח לודו 8805 או A4. v0.98 — ❓ טריוויה משפחתית (מנהל בלבד): "כמה אתם מכירים את…" — שאלה ותשובה, או אמריקאית עם א–ד; תשובה בגב או הפוכה למטה; שאלות מוכנות ב-5 נושאים; תמונה לכל קלף. · v0.97 — 🎯 בינגו: אין יותר לוחות כפולים. כשאין מספיק תמונות ללוחות שונים — הודעה כמה צריך. · v0.96 — ☕ ספל: עד 3 תמונות וכמה כיתובים, גרירה, גודל וסיבוב (גם באלכסון) · v0.95 — ☕ ספל 36 ₪ · v0.94 — ☕ ספל עם התמונה שלכם (פתוח ללקוחות, ?p=mug): תמונה וכיתוב על פס העטיפה, תלת־ממד שמסתובב, כמות והזמנה (הצעת מחיר עד שיש מחיר). v0.93 — 🎨 לשונית סובלימציה (מנהל): 26 מוצרים מוכנים מזיקית — תיקים, בית ומטבח, תחתיות, ספלים, פותחנים, רכב וזכוכית; תמונה, כיתוב וקובץ בגודל אמיתי (דף A4/A3 לפי המוצר). v0.92 — 🔑 מחלץ טקסט: הלקוח רואה גם כמה שילם וכמה נשאר לתשלום. v0.91 — 🔑 מחלץ טקסט עם קוד ללקוח (studio/?p=ocr): כל דף נספר לקוד, מילים לא בטוחות מסומנות בצהוב; במנהל — יצירת קודים, הודעה מוכנה, מונה וחשבון. v0.90 — 👕 כיתוב על החולצה: תמיד גלוי בצעד 2 (פונט, צבע, קו), כפתור "להוסיף כיתוב" בצעדים 1–2, ואפשר כיתוב חופשי בכל מקום על החולצה (לא רק על התמונה). v0.89 — 📝 מחלץ טקסט (מנהל בלבד): צילום של דף, גם בכתב יד בעברית → טקסט לעריכה, העתקה והורדה. v0.88 — 👕 החולצה פתוחה לכל הלקוחות (?p=tshirt + אריח בעמוד המשחקים): הזמנה אמיתית — מחיר לפי כמות (100 / 120 עם גב), קוד הנחה, קבצי A3 ודף עבודה נשלחים עם ההזמנה. v0.87 — 🎟️ קוד הנחה בשליחת הזמנה (נבדק בשרת); מחירי "הדפסה אצלנו" עודכנו עם מחיר מינימום למוצר; מחיר חולצה נשמר (100 / 120 עם גב). v0.86 — 👕 רשימת הזמנה: כמה חולצות במידות ושרוולים שונים, סיכום ואישור; מידה קטנה נראית קטנה יותר בתצוגה; קובץ A3 לכל המידות + סיכום הזמנה בדף העבודה. v0.85 — 👕 הדפסה על הגב (קדימה/גב, כל צד עם תמונה וכיתוב משלו; קובץ ודף עבודה לכל צד) + כתפיים מעוגלות בשרוול ארוך. v0.84 — 👕 התלת־ממד מההתחלה: גדול בצעדים 1 ו-3, ובצעד 2 קטן בפינה ומתעדכן חי (לחיצה מגדילה). v0.83 — 👕 מסלול לקוח בשלושה צעדים: תמונה (חיתוך, הסרת רקע, אור וצבע) → על החולצה (מסגרת, צביטה, חצים, ביטול) → סיום (מידה, שרוול, תלת־ממד); דף עבודה למנהל; שרוול ארוך חדש. v0.82 — 👕 הדפסה בכל מקום על החולצה (בתוך גבול הדף), דף לאורך או לרוחב, כפתורי הזזה/גודל ומקלדת, גלילה בטלפון מעל העורך, שרוול ארוך עבה יותר. v0.81 — 👕 שרוול קצר/ארוך (במקום גופייה). תמונה: רוחב וגובה נפרדים (חיתוך בלי מתיחה), "הכי גדול"; כיתוב על התמונה עם קו מתאר. v0.80 — 👕 עריכה ישירה: גוררים תמונה וכיתוב על החולצה בתלת־ממד ובעורך שטוח; מידות ילדים 2–16 ומבוגרים S–3XL; עם/בלי שרוולים; שטח הדפסה עד 29.7×40. v0.79 — 👕 חולצה אמיתית יותר: קפלים, פתחים בצווארון/שרוולים/שוליים, צללים וברק של בד. v0.78 — 👕 חולצה (מנהל בלבד): תמונה על חולצה לבנה בתלת־ממד + קובץ A3 לסובלימציה. v0.77 — אנימציה בתלת־ממד: החלקים והקלפים נוחתים על השולחן אחד אחרי השני, גם בדפדוף. v0.76 — תיקון: בתלת־ממד פאזל לב/חמסה/עיגול הופיע על ריבוע לבן. v0.75 — דפדוף בתלת־ממד: רואים את כל הקלפים, האבנים ולוחות הבינגו. v0.74 — בכל מוצר בחירה: 🏠 מדפיסים בבית (דף A4 והורדה) או 🖨️ הדפסה אצלנו (תלת־ממד והזמנה). v0.73 — 🧊 "איך זה ייראה": תצוגה בתלת־ממד של המשחק עם התמונות של הלקוח (פאזל, דומינו, טנגרם, לודו, קלפים, זיכרון, רביעיות, בינגו). v0.72 — צילומי המחשה למוצרים המוכנים (פאזלים, דומינו עץ, טנגרם, לודו). v0.71 — מחיר קבוע לכל מוצר מוכן מזיקית (פאזלים, דומינו עץ, טנגרם, לודו); הזמנות בינגו/טנגרם/לודו שולחות את העיצוב המלא. v0.70 — לודו: אפשר רק חיילים (גם ללודו שיש בבית) או רק לוח; בחירת פאזל מוכן בציור. v0.69 — לפי הקטלוג המלא: פאזל 9313-80 (80 חלקים, לא 60), חיילי לודו בצורת קשת, תמונה על מכסה הדומינו. v0.68 — פאזל מוכן: קווי החלקים בתצוגה, כדי למקם את התמונה בלי לחתוך פנים. v0.67 — לשוניות חדשות: טנגרם (עץ 20×20 מוכן או לחיתוך) ולודו (לוח בשני חלקים + 16 חיילים עם תמונות השחקנים), עם קובץ סובלימציה. v0.66 — דומינו עץ מוכן לסובלימציה (28 אבנים 5×3 + מכסה), קובץ סובלימציה משותף. v0.65 — פאזל על מוצר מוכן לסובלימציה (קרטון ועץ מקטלוג זיקית): שטח הדפסה מדויק, זום והזזה, קובץ בגודל אמיתי עם בליד והיפוך מראה. v0.64 — דומינו משולשים: עיגול פינות. זיכרון: 6 צורות חיתוך חדשות (משולש, מתומן, בית, פרח, טיפה, מגן). v0.63 — 🖨️ לבית דפוס — כל הפורמטים של מאצ׳טו (מנהל): PDF עמוד לכל חלק עם בליד 3/4/5 וגב בסוף או אחרי כל חלק, ZIP של PNG, חיתוך צורני ב-3 קבצים (CMYK), גיליון גדול — בקלפים, זיכרון, רביעיות, בינגו ודומינו בכל הגרסאות; גב מעוצב גם לדומינו משולשים. v0.62 — רביעיות: לחיצה שנייה על רעיון מסירה אותו. v0.61 — זיהוי פנים עם תיקון, גם ברביעיות ובבינגו. v0.60 — רביעיות: 4 סגנונות ומצב רק תמונות. v0.59 — זיכרון: מצא פנים בכל התמונות. v0.58 — רביעיות: ציורים מוכנים. v0.57 — בינגו: לוחות 3×3 עד 5×5 מתמונות או מילים, כל לוח שונה, קלפי קריאה. v0.52 — מדבקת ברכה: איורי קו שקוף, שדה ושביל. v0.51 — משפטים מוכנים. v0.50 — מדבקת ברכה: סגנון 🔲 רקע שקוף — רק כיתוב (PNG ו-PDF שקופים). v0.49 — מדבקת ברכה: 7 סגנונות (הרים, זר פרחים, ים, מדבר, לילה וכוכבים, צבעי מים, תמונה שלי), כיתובים נוספים בלי הגבלה, גרירת כיתוב בתצוגה, מסגרת זהב. v0.48 — לשונית מדבקת ברכה: נוף בצבעי מים ופסוק, בורר פונטים עם הטקסט, גודל PDF לבחירה (מדבקה אחת או דף A4 מלא). v0.34 — רביעיות: 💡 מאגר רעיונות לסדרות — 10 נושאים (דרכי חשיבה, רביעיות מוכנות, משפחה, גן, כיתה, לימודי, בר/בת מצווה, זוגיות, עבודה, חגים), לחיצה מוסיפה שורה. v0.33 — לשונית חדשה: רביעיות — כל 4 תמונות סדרה, שמות לכל סדרה, רשימת בני הסדרה על כל קלף, גב מעוצב, הזמנה. v0.32 — הפילטרים (מראות צילום ואמנותיים) עברו לקובץ משותף js/photo-filters.js, כדי שגם הדאבל יוכל להשתמש בהם. בלי שינוי בתוצאה. v0.31 — 26 מראות צילום (CSSgram, MIT) + 8 פילטרים אמנותיים (ציור שמן, פופ-ארט, עפרונות צבעוניים, תבליט, גליץ\', ניאון, תרמי, הדפס כחול). רקע מטושטש עובד גם בספארי. v0.30 — 🙂 מצא פנים בחיתוך (YuNet, MIT), 🖌️ 4 סגנונות אמנות (Apache) + 🔒 גשם ואנימה למנהל, ✨ הסרת רקע מדויקת (IS-Net), רקע לבן/צבע/מטושטש, הגדלה לציורים (Real-ESRGAN anime, BSD). v0.29 — 🧽 מחיקת חפץ (MI-GAN, MIT), 🎨 צביעת שחור-לבן (DDColor, Apache), 🔒 תיקון פנים למנהל בלבד (RestoreFormer++ — FFHQ לא-מסחרי). v0.28 — בינה מלאכותית: הסרת רקע אוטומטית (MODNet/U²-Net, Apache-2.0) והגדלה ×4 (Real-ESRGAN, BSD-3), js/ai-image.js משותף. v0.27 — לשונית "עריכת תמונות": העלאה, עריכה (חיתוך, רקע, קווים, אור/צבע, 17 פילטרים, יישור, צורה, מסגרת, כיתוב) והורדה בפורמט/גודל/משקל. 🔒 = מנהל בלבד. v0.26 — עריכה מתקדמת ← ציור קווים (js/lineart.js משותף, Informative Drawings MIT), נשמר כנגזרת עם חזרה למקור. v0.25 — 125 אייקונים חינמיים לקלף (Phosphor/Bootstrap, MIT) בקטגוריות + העלאת תמונה כאייקון עם חיתוך והסרת רקע. v0.24 — עריכה חופשית על קלף גדול בסגנון "✏️ שלי" (גרירה וידיות), בנוסף לסליידרים. v0.23 — אייקון חופשי לכל צורה (סמל/אימוג\'י), מסגרת מהספרייה בין השפה לאייקונים, חלונות שזוכרים מצב ונסגרים לבד אחרי בחירת אייקון/תמונה. v0.22 — סגנון חפיסה "✏️ שלי": מעצבים קלף אחד (צבעים, פינה, צורות, אס, דמויות, מסגרת) וכל החפיסה נבנית לפיו. v0.21 — חיתוך תמונה: סליידר מריבוע לעיגול במקום שני כפתורים, מלבן ואליפסה, מתיחה מכל צד ופינה. v0.20 — ההזמנה שולחת גם את העיצוב המלא (design.zip); במנהל "פתח בסטודיו" ואז בוחרים גיליון לבית דפוס או A4. v0.19 — גיליון לבית דפוס כמו בדאבל (33×48.8 ס"מ, שוליים 12, רווח 6, בליד 3, גב במקומות המראה להיפוך על הצלע הארוכה) במקום עמוד לכל קלף. v0.18 — הורדת קבצי הזמנות במנהל עובדת באפליקציה; PDF לבית דפוס כברירת מחדל בקלפים/זיכרון/דומינו (עמוד לכל קלף, בליד 4 מ"מ, 300 DPI, גב בסוף — כמו בדאבל); דפי A4 כאפשרות שנייה. v0.17 — כניסת מנהל כשהאפליקציה כבר פתוחה (הקישור מגיע כשינוי # בלי טעינה). v0.16 — ג\'וקר "ליצן רוקד" מ-Wikimedia (CC0) לסטים האנגליים, ג\'וקר צרפתי בלי כיתוב; בחירת ליצן לג\'וקר; תמונה על האס. v0.15 — קלפי מלחמה: מסגרת אחידה לכל החפיסה; דמויות = תמונה בתוך המסגרת, מתיקיית תמונות (3 סטים) או של הלקוח; סט אחד לכל החפיסה. v0.14 — קלפים חזרו לגרסה 0.12 (בקשת הושעיה); שמירה ופתיחה של עיצוב בקובץ ZIP נשארה. v0.12 — כניסת מנהל מזוהה גם כשהקישור נפתח בכרום (בדיקה חוזרת בכל חזרה לאפליקציה), הודעה על קישור שכבר שומש. v0.11 — קלפי מלחמה: סגנון וינטג\' עם ציורים קלאסיים, פונט וגודל צורות, פילטרים לתמונה, תמונה כפולה כמו קלף קלאסי. v0.10 — קלפי מלחמה: 4 סגנונות חפיסה, נסיך/מלכה/מלך/אס/ג\'וקר בתמונה או אימוג\'י, עורך שכבות לגב. v0.9 — הסטודיו עבר לתיקייה משלו (/studio/) — מבנה אפליקציה סטנדרטי; studio.html מפנה לשם. v0.8 — מדבקות: עורך שכבות (טקסט בכמה שורות, אימוג\'י, סמל, תמונה — גרירה, גודל, סיבוב), התאמה לכל ילד. v0.7 — אפשר להתקין כאפליקציה מכרום (אייקון, מסך מלא, נפתח גם בלי רשת). v0.6 — תמונות נשמרות במכשיר (IndexedDB) ושורדות רענון; חיתוך והסרת רקע בכל מקום שמעלים תמונה. v0.5 — עריכת תמונות מהדאבל: חיתוך פרצופים מתמונה קבוצתית, הסרת רקע מהירה ומדויקת; בדומינו — כמה תמונות להעלות. v0.4 — דומינו: ארבע גרסאות (קלאסי, חסום, רכבת מקסיקנית, משולשים) עם הסבר; ניסוח טקסטים ללקוח. v0.3 — הזמנות: לקוח שולח הזמנה ולא מוריד קבצים; מנהל נכנס עם קישור במייל ומוריד. v0.2 — גלריית פונטים עם הטקסט של הלקוח, קבוצות מדבקות על אותו דף, פאזל. v0.1 — בנייה ראשונית: מדבקות, קלפים, זיכרון, דומינו, קוביות.'),el('p',{class:'hint'},VERSION+' · פונטים ועיצובי גב נטענים מהריפו, נעוצים לקומיט '+SHARED_COMMIT.slice(0,7)+'.'),st,
-      el('button',{type:'button',class:'btn ghost',on:{click:async()=>{try{localStorage.removeItem('studio.v1');}catch(e){}await clearSavedImages();location.reload();}}},'איפוס כל ההגדרות והתמונות'))];}
+      el('button',{type:'button',class:'btn ghost',on:{click:async()=>{try{localStorage.removeItem('studio.v1');['studio_ad_layout','studio_ad_view'].forEach(k=>localStorage.removeItem(k));}catch(e){}await clearSavedImages();location.reload();}}},'איפוס כל ההגדרות והתמונות'))];}
 };
 
 // ── S-76: חולצה בסובלימציה — מנהל בלבד. מעלים תמונה, רואים אותה על חולצה לבנה בתלת־ממד, ומורידים קובץ A3 הפוך במראה.
@@ -5074,6 +5092,7 @@ function adNewImg(f,i,first){const im=f.img,a=im?natW(im)/natH(im):1;
 const adNewText=(t='כיתוב')=>({id:adLid(),k:'text',text:t,font:'Secular One',color:'#FFFFFF',outline:'#14294D',x:adW()/2,y:adH()*.15,fs:Math.min(adW(),adH())*.11,rot:0});
 // מסנכרן שכבות מול רשימת התמונות — כמו בספל: תמונה חדשה = שכבה; תמונה שהוחלפה (חיתוך/רקע) שומרת מקום; תמונה שנמחקה — השכבה יורדת
 function adEnsure(){
+  adLayRestore(); // S-196: המודעה שורדת רענון
   if(!Array.isArray(AD.layers))AD.layers=[adNewText('כותרת הפרסומת')];
   if(!_imgReady)return;
   const imgs=AD.img||[],ids=imgs.map(phId),used=new Set();
@@ -5081,35 +5100,36 @@ function adEnsure(){
     const j=L.si|0;if(j<imgs.length&&!used.has(ids[j])&&!AD.layers.some(o=>o.src===ids[j])){L.src=ids[j];used.add(ids[j]);return true;}return false;});
   imgs.forEach((f,i)=>{if(used.has(ids[i]))return;const first=!AD.layers.some(L=>L.k==='img'),L=adNewImg(f,i,first);
     let at=0;AD.layers.forEach((o,j)=>{if(o.k==='img')at=j+1;});AD.layers.splice(at,0,L);used.add(ids[i]);if(ADE)ADE.sel=L.id;});}
-function adArt(ctx){adEnsure();ctx.fillStyle=AD.bg||'#FFFFFF';ctx.fillRect(0,0,adW(),adH());AD.layers.forEach(L=>adDrawLayer(ctx,L));}
+function adArt(ctx){adEnsure();ctx.fillStyle=adBgFill(ctx);ctx.fillRect(0,0,adW(),adH());AD.layers.forEach(L=>adDrawLayer(ctx,L));}
 // החלפת פורמט: שומרים על מיקום יחסי לגובה, וכיתובים לא חורגים
 function adSetFmt(f){if(f===AD.fmt||!AD_FMTS[f])return;adEnsure();const h0=adH();AD.fmt=f;const k=adH()/h0;
-  AD.layers.forEach(L=>{L.y*=k;if(L.k==='text')L.fs=Math.min(L.fs,adH()*.3);});AD_UNDO.length=0;rebuild();}
+  AD.layers.forEach(L=>{L.y*=k;if(L.k==='text')L.fs=Math.min(L.fs,adH()*.3);});adHistClear();rebuild();}
 function adDraw(){if(!ADE||!ADE.c||!document.body.contains(ADE.c)||ADE.c.hidden)return;adEnsure();const c=ADE.c,dpr=Math.min(2,window.devicePixelRatio||1),cw=c.clientWidth||320,ch=c.clientHeight||420;
-  const ab=document.getElementById('adbar'),ph=adTabbed(),top=ph?(document.body.classList.contains('focus-min')?58:10):Math.max(64,ab&&!ab.hidden?ab.offsetHeight+18:0),bot=ph?24:34; // הסרגל יכול להיות בשתי שורות בטלפון. S-195: בטלפון הסרגל עבר מתחת למודעה — רק הכפתורים הצפים למעלה
+  const ab=document.getElementById('adbar'),ph=adTabbed(),top=ph?58:Math.max(64,ab&&!ab.hidden?ab.offsetHeight+18:0),bot=ph?24:34; // הסרגל יכול להיות בשתי שורות בטלפון. S-195: בטלפון הסרגל עבר מתחת למודעה — רק הכפתורים הצפים למעלה
   const W0=adW(),H0=adH(),s0=Math.min(cw*.92/W0,(ch-top-bot)/H0),ox0=(cw-W0*s0)/2,oy0=top+Math.max(0,(ch-top-bot-H0*s0)/2);
   // S-195: זום בתצוגה בלבד (לא בהורדה). ADE.z = פי כמה, ADE.cx/cy = נקודת המודעה שבמרכז. ADE.v נשאר המיפוי היחיד מסך↔מודעה — הגרירה נכונה בכל זום
   adZClamp();const scx=ox0+W0*s0/2,scy=oy0+H0*s0/2,s=s0*ADE.z,ox=scx-ADE.cx*s,oy=scy-ADE.cy*s;ADE.v={s,ox,oy};ADE.b={s0,scx,scy};
-  c.style.touchAction=ADE.z>1?'none':'';adZoomUi();
+  const cutOn=adCutOn();c.style.touchAction=ADE.z>1||cutOn?'none':'';c.style.cursor=cutOn?'crosshair':'';adZoomUi();
   c.width=Math.round(cw*dpr);c.height=Math.round(ch*dpr);const x=c.getContext('2d');x.scale(dpr,dpr);x.save();x.translate(ox,oy);x.scale(s,s);
   const L0=adSel();
   if(L0){x.save();x.globalAlpha=.22;adDrawLayer(x,L0);x.restore();} // מה שיוצא מהגבול נראה חלש — לא נכנס להורדה
   x.save();x.shadowColor='rgba(60,40,10,.2)';x.shadowBlur=16;x.shadowOffsetY=5;x.fillStyle='#fff';x.fillRect(0,0,W0,H0);x.restore();
-  x.save();x.beginPath();x.rect(0,0,W0,H0);x.clip();adArt(x);x.restore();
+  x.save();x.beginPath();x.rect(0,0,W0,H0);x.clip();adArt(x);if(L0&&L0.k==='img'&&AD_BACKDROP.has(ADE.tool))adBackdrop(x,L0,s);x.restore(); // S-196: משבצות שקיפות מאחורי השכבה בזמן חיתוך
   x.strokeStyle='#D6CFC2';x.lineWidth=1/s;x.strokeRect(0,0,W0,H0);
   x.fillStyle='#8A8170';x.font=`${12/s}px Rubik`;x.textAlign='center';x.textBaseline='top';x.direction='rtl';x.fillText(adFmt().label.replace(/^\S+\s/,'')+' · '+adPx(),W0/2,H0+8/s);
   const G=ADE.guide;if(G){x.strokeStyle='#E11D74';x.lineWidth=1/s;x.setLineDash([4/s,3/s]);x.beginPath();if(G.v){x.moveTo(W0/2,0);x.lineTo(W0/2,H0);}if(G.h){x.moveTo(0,H0/2);x.lineTo(W0,H0/2);}x.stroke();x.setLineDash([]);}
   if(!(AD.img||[]).length&&!AD.layers.some(o=>o.text)){x.fillStyle='#9AA5B1';x.font=`${15/s}px Rubik`;x.textAlign='center';x.textBaseline='middle';x.fillText('מעלים תמונה או כותבים כיתוב — והם מופיעים כאן',W0/2,H0/2);}
-  if(L0&&(L0.k==='img'||L0.text)){const[w,h]=adSize(L0),Hd=adHandles(L0);x.save();x.translate(L0.x,L0.y);x.rotate((L0.rot||0)*Math.PI/180);x.strokeStyle='#2563EB';x.lineWidth=2/s;x.strokeRect(-w/2,-h/2,w,h);x.restore();
+  if(L0&&cutOn){const[w,h]=adSize(L0);x.save();x.translate(L0.x,L0.y);x.rotate((L0.rot||0)*Math.PI/180);x.strokeStyle='rgba(37,99,235,.7)';x.setLineDash([5/s,4/s]);x.lineWidth=1.5/s;x.strokeRect(-w/2,-h/2,w,h);x.restore();}
+  else if(L0&&(L0.k==='img'||L0.text)){const[w,h]=adSize(L0),Hd=adHandles(L0);x.save();x.translate(L0.x,L0.y);x.rotate((L0.rot||0)*Math.PI/180);x.strokeStyle='#2563EB';x.lineWidth=2/s;x.strokeRect(-w/2,-h/2,w,h);x.restore();
     x.strokeStyle='#2563EB';x.lineWidth=1.5/s;x.beginPath();x.moveTo(...Hd.top);x.lineTo(...Hd.rot);x.stroke();
     const dot=(p,r,fill,stroke,glyph)=>{x.fillStyle=fill;x.strokeStyle=stroke;x.lineWidth=2/s;x.beginPath();x.arc(p[0],p[1],r/s,0,7);x.fill();x.stroke();if(glyph){x.fillStyle=stroke;x.font=`700 ${13/s}px Rubik`;x.textAlign='center';x.textBaseline='middle';x.fillText(glyph,p[0],p[1]+.5/s);}};
     dot(Hd.scale,11,'#fff','#2563EB','⤡');dot(Hd.rot,12,'#fff','#2563EB','↻');dot(Hd.del,11,'#fff','#DC2626','×');
     if(G&&G.rot){x.fillStyle='#2563EB';x.font=`700 ${13/s}px Rubik`;x.textAlign='center';x.textBaseline='bottom';x.fillText(Math.round(L0.rot)+'°',Hd.rot[0],Hd.rot[1]-15/s);}}
-  x.restore();adBar();adQ();}
+  x.restore();if(ADE.cur||ADE.paint)adCutOverlay(x);adBar();adQ();adViewSave();adLaySave();}
 // הורדה: PNG בגודל האמיתי של הפורמט (A4 = 2480×3508, ‏300 DPI)
 // S-190: הקנבס של המודעה בגודל ההורדה — משותף להורדה ולשמירה בדרייב
 async function adCanvas(){if(adLocked()){toast('קודם נכנסים עם קוד');return null;}adEnsure();if(!(AD.img||[]).length&&!AD.layers.some(o=>o.text)){toast('אין עדיין מה להוריד');return null;}
-  await ensureFonts();const[pw,ph]=adFmt().px,c=document.createElement('canvas');c.width=pw;c.height=ph;const x=c.getContext('2d');x.scale(pw/adW(),pw/adW());adArt(x);return c;}
+  await ensureFonts();await adMasksReady();const[pw,ph]=adFmt().px,c=document.createElement('canvas');c.width=pw;c.height=ph;const x=c.getContext('2d');x.scale(pw/adW(),pw/adW());adArt(x);return c;}
 async function adDownload(){const c=await adCanvas();if(!c)return;
   c.toBlob(b=>{if(!b){toast('ההורדה נכשלה — נסו שוב');return;}download(b,`ad-${AD.fmt}-${stamp()}.png`);toast('התמונה מוכנה · '+adPx());},'image/png');}
 // S-190: 💾 שמירה לתיקיית "מודעות עיצובישי" בדרייב, דרך Edge Function ads-drive (← Apps Script בחשבון של הושעיה).
@@ -5193,9 +5213,11 @@ async function adTplImgData(f){try{const r=await adAssetBlob(f);if(/^image\/(png
 async function adTplPack(title){adEnsure();const imgs=AD.img||[],files=[],byId={};
   for(let i=0;i<imgs.length;i++){const f=imgs[i],d=await adTplImgData(f),file=String(i+1).padStart(2,'0')+'-'+adSafeName(adAssetName(f,i))+'.'+d.ext;files.push({file,name:f.name||'',qr:f.qr||undefined,w:natW(f.img),h:natH(f.img),data:d.data});byId[phId(f)]=file;}
   const layers=AD.layers.filter(L=>L.k==='text'||(L.k==='img'&&byId[L.src])).map(L=>{const o=JSON.parse(JSON.stringify(L));delete o.id;if(o.k==='img'){o.file=byId[L.src];delete o.src;delete o.si;}return o;});
+  const masks=[]; // S-196: מסכת שקיפות של שכבה = קובץ PNG משלה בתבנית (mask-01.png), השכבה מצביעה עליו ב-maskFile
+  layers.forEach(o=>{if(!o.mask)return;const m=ADM.get(o.mask);if(m&&m.url){let x=masks.find(q=>q.key===o.mask);if(!x){x={key:o.mask,file:'mask-'+String(masks.length+1).padStart(2,'0')+'.png',data:m.url};masks.push(x);}o.maskFile=x.file;}delete o.mask;});
   return{json:{version:1,kind:'itzuvishi-ad-template',title,fmt:AD.fmt,bg:AD.bg||'#FFFFFF',units:{w:adW(),h:Math.round(adH()*1000)/1000},layers,
-    files:files.map(({data,...r})=>r),fonts:[...new Set(layers.filter(o=>o.k==='text').map(o=>o.font).filter(Boolean))],created:new Date().toISOString(),app:VERSION},files};}
-async function adTplPreview(){await ensureFonts();const W=adW(),H=adH(),k=600/Math.max(W,H),c=document.createElement('canvas');c.width=Math.round(W*k);c.height=Math.round(H*k);
+    files:files.map(({data,...r})=>r),masks:masks.map(m=>({file:m.file})),fonts:[...new Set(layers.filter(o=>o.k==='text').map(o=>o.font).filter(Boolean))],created:new Date().toISOString(),app:VERSION},files:files.concat(masks.map(m=>({file:m.file,data:m.data})))};}
+async function adTplPreview(){await ensureFonts();await adMasksReady();const W=adW(),H=adH(),k=600/Math.max(W,H),c=document.createElement('canvas');c.width=Math.round(W*k);c.height=Math.round(H*k);
   const x=c.getContext('2d');x.scale(c.width/W,c.width/W);adArt(x);return c.toDataURL('image/jpeg',.85);}
 // שמירה בכמה קריאות: begin (תיקייה זמנית) → file לכל תמונה → finish (template.json + preview + השם הסופי). מחזיר 'rename' אם המשתמש צריך שם אחר
 async function adTplSave(title,folderId,say){say('מכין את התבנית…');const P=await adTplPack(title);let ow=false;
@@ -5212,8 +5234,10 @@ async function adTplApply(json,get){if(!json||!Array.isArray(json.layers))throw 
   files.forEach((f,i)=>{const o={img:ims[i],name:f.name||f.file};if(f.qr)o.qr=f.qr;imgs.push(o);byFile[f.file]=o;});
   const layers=[];for(const o of json.layers){const L=JSON.parse(JSON.stringify(o));L.id=adLid();if(L.k==='img'){const f=byFile[L.file];if(!f)continue;L.src=phId(f);L.si=imgs.indexOf(f);delete L.file;}else if(L.k!=='text')continue;layers.push(L);}
   await Promise.all(layers.filter(L=>L.k==='text').map(L=>loadFont(L.font)));
+  const mk={};await Promise.all((json.masks||[]).map(async m=>{try{const im=await get(m),c=document.createElement('canvas');c.width=natW(im);c.height=natH(im);c.getContext('2d').drawImage(im,0,0);const key=adMaskKey();ADM.set(key,{url:c.toDataURL('image/png'),c});mk[m.file]=key;}catch(e){}})); // S-196
+  layers.forEach(L=>{if(L.maskFile){if(mk[L.maskFile])L.mask=mk[L.maskFile];delete L.maskFile;}});
   adEnsure();adSnap();AD.fmt=AD_FMTS[json.fmt]?json.fmt:'post';AD.bg=json.bg||'#FFFFFF';AD.img=imgs;AD.layers=layers;if(ADE)ADE.sel=null;
-  AD_DOC=null;adDocSave();} // תבנית = עיצוב חדש: "שמירה בענן" לא דורסת עיצוב קודם
+  adViewReset();AD_DOC=null;adDocSave();} // תבנית = עיצוב חדש: "שמירה בענן" לא דורסת עיצוב קודם
 async function adTplOpen(t){if(AD_TPL.busy)return;
   if(adHasContent()&&!await adAsk('לפתוח את התבנית "'+t.title+'"? מה שעל המסך עכשיו יוחלף (↶ מחזיר אותו).','📑 לפתוח'))return;
   AD_TPL.busy='פותח את "'+t.title+'"…';rebuild();
@@ -5310,15 +5334,12 @@ function adSize(L){
   _adM.font=adFont(L);_adM.direction='rtl';const t=L.text||'';return[Math.max(L.fs,_adM.measureText(t).width)+L.fs*.3,L.fs*1.3];}
 // מסנכרן שכבות מול רשימת התמונות: תמונה חדשה = שכבה חדשה; תמונה שהוחלפה (חיתוך/רקע) שומרת מקום, גודל וסיבוב; תמונה שנמחקה — השכבה שלה יורדת
 function adDrawLayer(ctx,L){const[w,h]=adSize(L);ctx.save();ctx.translate(L.x,L.y);ctx.rotate((L.rot||0)*Math.PI/180);
-  if(L.k==='img'){const f=adImgOf(L);if(f&&f.img)ctx.drawImage(f.img,-w/2,-h/2,w,h);}
+  if(L.k==='img'){const f=adImgOf(L);if(f&&f.img){const im=adLayerSrc(L,f);if(im)ctx.drawImage(im,-w/2,-h/2,w,h);}} // S-196: מסכה/צורה/החלקה
   else if(L.text){ctx.font=adFont(L);ctx.textAlign='center';ctx.textBaseline='middle';ctx.direction='rtl';
     if(L.outline&&L.outline!=='none'){ctx.lineJoin='round';ctx.lineWidth=L.fs*.18;ctx.strokeStyle=L.outline;ctx.strokeText(L.text,0,L.fs*.04);}
     ctx.fillStyle=L.color||'#14294D';ctx.fillText(L.text,0,L.fs*.04);}
   ctx.restore();}
 const adSel=()=>ADE&&AD.layers&&AD.layers.find(L=>L.id===ADE.sel)||null;
-function adSnap(){AD_UNDO.push({L:JSON.stringify(AD.layers),img:(AD.img||[]).slice(),fmt:AD.fmt,bg:AD.bg});if(AD_UNDO.length>40)AD_UNDO.shift();} // S-193: גם פורמט ורקע (פתיחת תבנית)
-function adUndo(){const u=AD_UNDO.pop();if(!u)return;let imgCh=u.img.length!==(AD.img||[]).length||u.img.some((f,i)=>f!==AD.img[i]);if(u.fmt&&u.fmt!==AD.fmt){AD.fmt=u.fmt;imgCh=true;}if(u.bg!==undefined&&u.bg!==AD.bg){AD.bg=u.bg;imgCh=true;}AD.layers=JSON.parse(u.L);AD.img=u.img;
-  if(ADE&&!adSel())ADE.sel=null;imgCh?rebuild():(adCommit(),adPanelSync());}
 let _adT=0;function adCommit(){adDraw();adLayersDraw();clearTimeout(_adT);_adT=setTimeout(rerender,40);}
 function adRemove(L){if(!L)return;adSnap();AD.layers=AD.layers.filter(o=>o!==L);
   if(L.k==='img'&&!AD.layers.some(o=>o.src===L.src)){AD.img=(AD.img||[]).filter(f=>phId(f)!==L.src);}
@@ -5334,16 +5355,18 @@ function adSelect(id){if(!ADE)return;ADE.sel=id;adDraw();adLayersDraw();adPanelS
 function adPanelSync(){const one=document.querySelectorAll('[data-adl]').length===1;document.querySelectorAll('[data-adl]').forEach(n=>{const on=one||!!ADE&&n.dataset.adl===ADE.sel;n.classList.toggle('sel',on);const m=n.querySelector('.mgmore');if(m)m.hidden=!on;});}
 // ── העורך: הפרסומת בגודל מלא. אצבע על תמונה/כיתוב = עריכה; בכל מקום אחר = גלילה רגילה של הדף
 function adEditor(){const c=el('canvas',{class:'sheditor mged',id:'ad2d',tabindex:'0',role:'application','aria-label':'עריכת הפרסומת. לוחצים על תמונה או כיתוב ואז גוררים. הפינה הכחולה משנה גודל, העיגול שלמעלה מסובב. שתי אצבעות או הקשה כפולה: זום בתצוגה (שתי אצבעות על מה שנבחר: גודל וסיבוב). במקלדת: N בוחר את הבא, חיצים מזיזים, פלוס ומינוס גודל, סוגריים [ ] מסובבים, Delete מוחק, Z מבטל'});
-  ADE={c,sel:ADE?ADE.sel:null,drag:null,pinch:null,v:null,z:ADE?ADE.z:1,cx:ADE?ADE.cx:null,cy:ADE?ADE.cy:null};
+  const V0=ADE?null:adViewLoad(); // S-196: אחרי רענון — אותו זום, אותה נקודה, אותו כלי ואותה בחירה
+  ADE={c,sel:ADE?ADE.sel:(V0.sel||null),drag:null,pinch:null,v:null,z:ADE?ADE.z:(+V0.z||1),cx:ADE?ADE.cx:(V0.cx!=null?+V0.cx:null),cy:ADE?ADE.cy:(V0.cy!=null?+V0.cy:null),tool:ADE?ADE.tool:(V0.tool||'move'),wm:null};
   const toMm=e=>{const r=c.getBoundingClientRect(),v=ADE.v;return v?[(e.clientX-r.left-v.ox)/v.s,(e.clientY-r.top-v.oy)/v.s]:[0,0];};
   const loc=e=>{const r=c.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top];};
   const dist=(a,b)=>Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY),ang=(a,b)=>Math.atan2(b.clientY-a.clientY,b.clientX-a.clientX)*180/Math.PI;
   // S-195: שתי אצבעות = זום והזזה של התצוגה. רק כששתיהן על השכבה שנבחרה (ולא הרקע) — גודל וסיבוב של השכבה, כמו קודם
-  c.addEventListener('touchstart',e=>{if(e.touches.length===2){e.preventDefault();const t0=e.touches[0],t1=e.touches[1],p1=toMm(t0),p2=toMm(t1),S=adSel(),D=ADE.drag;clearTimeout(ADE.editT);ADE.tap=null;ADE.vpan=null;
-      if(S&&!adIsBgL(S)&&adIn(S,p1)&&adIn(S,p2)){if(!D)adSnap();ADE.drag=null;ADE.pinch={L:S,d0:dist(t0,t1),a0:ang(t0,t1),w:S.w,fs:S.fs,rot:S.rot||0};adPanelSync();return;}
-      if(D){Object.assign(D.L,{x:D.o.x,y:D.o.y,w:D.o.w,fs:D.o.fs,rot:D.o.rot});AD_UNDO.pop();ADE.drag=null;ADE.guide=null;} // האצבע הראשונה לא הזיזה כלום — זה זום
+  c.addEventListener('touchstart',e=>{if(e.touches.length===2){e.preventDefault();if(ADE.paint)adCutCancel(); /* S-196: אצבע שנייה = זום, המשיכה שהתחילה מתבטלת */const t0=e.touches[0],t1=e.touches[1],p1=toMm(t0),p2=toMm(t1),S=adSel(),D=ADE.drag;clearTimeout(ADE.editT);ADE.tap=null;ADE.vpan=null;
+      if(S&&!adIsBgL(S)&&!adCutOn()&&adIn(S,p1)&&adIn(S,p2)){if(!D)adSnap();ADE.drag=null;ADE.pinch={L:S,d0:dist(t0,t1),a0:ang(t0,t1),w:S.w,fs:S.fs,rot:S.rot||0};adPanelSync();return;}
+      if(D){Object.assign(D.L,{x:D.o.x,y:D.o.y,w:D.o.w,fs:D.o.fs,rot:D.o.rot});adSnapCancel();ADE.drag=null;ADE.guide=null;} // האצבע הראשונה לא הזיזה כלום — זה זום
       const r=c.getBoundingClientRect(),mx=(t0.clientX+t1.clientX)/2-r.left,my=(t0.clientY+t1.clientY)/2-r.top,v=ADE.v;
       ADE.vp={z0:ADE.z,d0:dist(t0,t1)||1,ax:(mx-v.ox)/v.s,ay:(my-v.oy)/v.s};adDraw();return;}
+    if(adCutOn()&&e.touches.length===1){e.preventDefault();return;}
     const t=e.touches[0];if(!t)return;const[x,y]=toMm(t),L=adHitLayer(x,y);if(adHitHandle(x,y)||L&&!(adIsBgL(L)&&L.id!==ADE.sel))e.preventDefault();},{passive:false});
   c.addEventListener('touchmove',e=>{if(ADE.vp&&e.touches.length>=2){e.preventDefault();const P=ADE.vp,t0=e.touches[0],t1=e.touches[1],r=c.getBoundingClientRect();
       adZoomAt(P.z0*dist(t0,t1)/P.d0,(t0.clientX+t1.clientX)/2-r.left,(t0.clientY+t1.clientY)/2-r.top,[P.ax,P.ay]);return;}
@@ -5351,6 +5374,7 @@ function adEditor(){const c=el('canvas',{class:'sheditor mged',id:'ad2d',tabinde
     if(L.k==='img')L.w=Math.max(8,Math.min(adW()*3,P.w*f));else L.fs=Math.max(3,Math.min(adH(),P.fs*f));L.rot=adSnapRot(P.rot+ang(e.touches[0],e.touches[1])-P.a0);adCommit();},{passive:false});
   c.addEventListener('touchend',e=>{if(e.touches.length<2){if(ADE.vp){ADE.vp=null;ADE.tap=null;adDraw();}if(ADE.pinch){ADE.pinch=null;ADE.drag=null;ADE.guide=null;adDraw();}}});
   c.addEventListener('pointerdown',e=>{if(ADE.pinch||ADE.vp||!e.isPrimary)return;ADE.touch=e.pointerType!=='mouse';
+    if(adCutOn()){if(e.button>0)return;adCutDown(e);return;} // S-196: כלי חיתוך — אצבע אחת עובדת על המסכה
     const now=Date.now(),T=ADE.tap;
     if(T&&now-T.t<350&&Math.hypot(e.clientX-T.x,e.clientY-T.y)<30){ADE.tap=null;clearTimeout(ADE.editT);e.preventDefault();const[mx,my]=loc(e); // S-195: הקשה כפולה = פי 2 בנקודה, ושוב = חזרה
       adZoomAt(ADE.z>1.05?1:2,mx,my);return;}
@@ -5362,7 +5386,7 @@ function adEditor(){const c=el('canvas',{class:'sheditor mged',id:'ad2d',tabinde
       if(ADE.sel){ADE.sel=null;adDraw();adPanelSync();}ADE.tap={t:now,x:e.clientX,y:e.clientY};return;}
     e.preventDefault();c.setPointerCapture(e.pointerId);adSnap();const was=ADE.sel===L.id;ADE.sel=L.id;adPanelSync();
     ADE.drag={mode:hd||'move',L,x0:x,y0:y,o:{x:L.x,y:L.y,w:L.w,fs:L.fs,rot:L.rot||0},moved:false,was,t:Date.now()};adDraw();});
-  c.addEventListener('pointermove',e=>{const V=ADE.vpan;if(V&&e.isPrimary){const dx=e.clientX-V.x,dy=e.clientY-V.y;if(Math.hypot(dx,dy)>6)V.moved=true;
+  c.addEventListener('pointermove',e=>{if(ADE.paint){adCutMove(e);return;}if(e.pointerType==='mouse'&&adCutOn()&&ADE.tool!=='magic'){const r=c.getBoundingClientRect();ADE.cur=[e.clientX-r.left,e.clientY-r.top,e.clientX-r.left,e.clientY-r.top];adDrawSoon();return;}const V=ADE.vpan;if(V&&e.isPrimary){const dx=e.clientX-V.x,dy=e.clientY-V.y;if(Math.hypot(dx,dy)>6)V.moved=true;
       if(V.view&&V.moved){ADE.cx=V.cx-dx/ADE.v.s;ADE.cy=V.cy-dy/ADE.v.s;adDraw();}return;}
     const D=ADE.drag;if(!D||ADE.pinch||ADE.vp)return;const[x,y]=toMm(e),L=D.L;
     if(Math.hypot(x-D.x0,y-D.y0)*ADE.v.s>3)D.moved=true;if(!D.moved)return;
@@ -5371,18 +5395,19 @@ function adEditor(){const c=el('canvas',{class:'sheditor mged',id:'ad2d',tabinde
     else if(D.mode==='scale'){const r0=Math.hypot(D.x0-D.o.x,D.y0-D.o.y)||1,f=Math.hypot(x-L.x,y-L.y)/r0;if(L.k==='img')L.w=Math.max(8,Math.min(adW()*3,D.o.w*f));else L.fs=Math.max(3,Math.min(adH(),D.o.fs*f));}
     else if(D.mode==='rot'){const a0=Math.atan2(D.y0-L.y,D.x0-L.x),a=Math.atan2(y-L.y,x-L.x);L.rot=adSnapRot(D.o.rot+(a-a0)*180/Math.PI);ADE.guide={rot:1};}
     adCommit();});
-  const up=e=>{const V=ADE.vpan;if(V){ADE.vpan=null;if(e.type==='pointerup'&&!V.moved){if(V.sel)adSelect(V.sel);else if(ADE.sel){ADE.sel=null;adDraw();adPanelSync();}ADE.tap={t:Date.now(),x:e.clientX,y:e.clientY};}return;}
+  const up=e=>{if(ADE.paint){if(e.type==='pointercancel')adCutCancel();else adCutUp(e);return;}const V=ADE.vpan;if(V){ADE.vpan=null;if(e.type==='pointerup'&&!V.moved){if(V.sel)adSelect(V.sel);else if(ADE.sel){ADE.sel=null;adDraw();adPanelSync();}ADE.tap={t:Date.now(),x:e.clientX,y:e.clientY};}return;}
     const D=ADE.drag;if(!D)return;ADE.drag=null;ADE.guide=null;
-    if(!D.moved){AD_UNDO.pop();if(e.type==='pointerup')ADE.tap={t:Date.now(),x:e.clientX,y:e.clientY};
+    if(!D.moved){adSnapCancel();if(e.type==='pointerup')ADE.tap={t:Date.now(),x:e.clientX,y:e.clientY};
       if(D.was&&D.L.k==='text'&&D.mode==='move'){if(ADE.touch){clearTimeout(ADE.editT);ADE.editT=setTimeout(()=>{if(adSel()===D.L)adQEdit(true);},360);} // בטלפון: עריכה בסרגל שמתחת למודעה (אחרי שבודקים שזו לא הקשה כפולה)
         else{const inp=document.querySelector(`[data-adl="${D.L.id}"] input[type=text]`);if(inp){inp.focus();inp.select();}}}}
     adDraw();if(D.moved)adSay(adName(D.L)+(D.mode==='rot'?' · סיבוב '+Math.round(D.L.rot)+'°':''));};
-  c.addEventListener('pointerup',up);c.addEventListener('pointercancel',up);
+  c.addEventListener('pointerup',up);c.addEventListener('pointercancel',up);c.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse'&&ADE.cur&&!ADE.paint){ADE.cur=null;adDraw();}});
   // S-195: במחשב — Ctrl+גלגלת (או צביטה במשטח המגע) = זום; כשמוגדל, גלגלת = הזזת התצוגה
   c.addEventListener('wheel',e=>{if(!e.ctrlKey&&!(ADE.z>1))return;e.preventDefault();const[mx,my]=loc(e);
     if(e.ctrlKey)adZoomAt(ADE.z*Math.exp(-e.deltaY*.01),mx,my);else{ADE.cx+=e.deltaX/ADE.v.s;ADE.cy+=e.deltaY/ADE.v.s;adDraw();}},{passive:false});
   c.addEventListener('keydown',e=>{const L=adSel(),s=e.shiftKey?5:1,m={ArrowLeft:[-s,0],ArrowRight:[s,0],ArrowUp:[0,-s],ArrowDown:[0,s]}[e.key];
     if('nNמ'.includes(e.key)&&AD.layers.length){const vis=AD.layers.filter(o=>o.k==='img'||o.text),i=vis.indexOf(L);const n=vis[(i+1)%vis.length];if(n)adSelect(n.id);e.preventDefault();return;}
+    if('yYט'.includes(e.key)||(e.key==='z'||e.key==='Z')&&e.shiftKey){adRedo();e.preventDefault();return;} // S-196: ↷
     if('zZז'.includes(e.key)){adUndo();e.preventDefault();return;}
     if(!L)return;if(m){adMove(L,...m);e.preventDefault();}else if(e.key==='+'||e.key==='='){adScale(L,1.05);e.preventDefault();}else if(e.key==='-'){adScale(L,1/1.05);e.preventDefault();}
     else if(e.key===']'){adRot(L,5);e.preventDefault();}else if(e.key==='['){adRot(L,-5);e.preventDefault();}else if(e.key==='Delete'||e.key==='Backspace'){adRemove(L);e.preventDefault();}});
@@ -5418,9 +5443,9 @@ function adHitHandle(x,y){const L=adSel();if(!L||!ADE.v)return null;const H=adHa
 // סרגל קטן מעל הפרסומת — מופיע רק כשמשהו נבחר
 function adBar(){const st=ADE&&ADE.c&&ADE.c.parentElement;if(!st)return;let b=document.getElementById('adbar');
   if(!b){b=el('div',{class:'mgbar',id:'adbar',role:'toolbar','aria-label':'פעולות על מה שנבחר'});st.append(b);}
-  const L=adSel(),show=!ADE.c.hidden&&(L||AD_UNDO.length);b.hidden=!show;if(!show)return;const k=(L?L.id:'')+'|'+AD_UNDO.length+'|'+(L?L.k:'');if(b._k===k)return;b._k=k;b.innerHTML='';
+  const L=adSel(),show=!ADE.c.hidden&&(L||AD_UNDO.length||AD_REDO.length);b.hidden=!show;if(!show)return;const k=(L?L.id:'')+'|'+AD_UNDO.length+'|'+AD_REDO.length+'|'+(L?L.k:'');if(b._k===k)return;b._k=k;b.innerHTML='';
   const B=(t,a,f,dis)=>el('button',{type:'button','aria-label':a,title:a,disabled:dis?'':null,on:{click:()=>{f();ADE.c.focus({preventScroll:true});}}},t);
-  b.append(B('↶','ביטול',adUndo,!AD_UNDO.length));
+  b.append(B('↶','ביטול',adUndo,!AD_UNDO.length),B('↷','חזרה על מה שבוטל',adRedo,!AD_REDO.length));
   if(L)b.append(B('⟲','סיבוב שמאלה',()=>adRot(adSel(),-15)),B('ישר','ישר — בלי סיבוב',()=>adRot(adSel(),null)),B('⟳','סיבוב ימינה',()=>adRot(adSel(),15)),
     B('−','הקטנה',()=>adScale(adSel(),1/1.1)),B('+','הגדלה',()=>adScale(adSel(),1.1)),B('⧉','שכפול',()=>adDup(adSel())),B('⬆','להעביר מעל השאר',()=>adFront(adSel())),
     ...(L.k==='img'?[B('✂️','חיתוך ועריכת התמונה',()=>adEditImg(adImgsSel())),B('🪄','שינוי חלק מהתמונה ב-AI',()=>openAdAI(adImgsSel()))]:[]),B('🗑','מחיקה',()=>adRemove(adSel())));
@@ -5429,7 +5454,6 @@ function adBar(){const st=ADE&&ADE.c&&ADE.c.parentElement;if(!st)return;let b=do
 // כיתוב: צבע הכתב / צבע הקו (צבעי המותג + הצבעים שכבר במודעה + 🎨 כל צבע), A−/A+, ✏️ עריכת הטקסט במקום. תמונה: 🎨 צביעה לצבע אחד (רק כשיש שקיפות).
 // בטלפון גם שורת הכלים (↶ − + ⟳ ⧉ ⬆ 🗑) — הסרגל הצף שמעל המודעה מוסתר שם כדי לפנות מקום למודעה. כל שינוי נכנס ל-↶.
 const AD_BRAND=[['#0A2A5C','כחול כהה'],['#0070C5','כחול'],['#5BB8F0','תכלת'],['#FDC010','צהוב'],['#C3141B','אדום'],['#FFFFFF','לבן'],['#000000','שחור']];
-const ADQ={mode:'fill',edit:false,tint:false};
 function adColorsInAd(){const seen=new Set(AD_BRAND.map(c=>c[0].toUpperCase())),out=[];
   [...(AD.layers||[]).flatMap(L=>L.k==='text'?[L.color,L.outline]:[]),AD.bg].forEach(c=>{if(!adHex(c))return;const u=c.toUpperCase();if(seen.has(u))return;seen.add(u);out.push(c);});return out.slice(0,6);}
 let _adQR=0;const adQRebuild=()=>{clearTimeout(_adQR);_adQR=setTimeout(()=>{if(cur===Ad&&!document.activeElement?.closest?.('.adq'))rebuild();},700);}; // הפאנל למטה מתעדכן אחרי רגע (בלי לגנוב פוקוס)
@@ -5443,40 +5467,286 @@ function adOpaque(f){if(f._opq!=null)return f._opq;try{const c=document.createEl
 function adTint(L,color){const f=adImgOf(L);if(!f||!f.img)return;const im=f.img,c=document.createElement('canvas');c.width=natW(im);c.height=natH(im);const x=c.getContext('2d');
   x.drawImage(im,0,0);x.globalCompositeOperation='source-in';x.fillStyle=color;x.fillRect(0,0,c.width,c.height);
   const n={img:c,name:String(f.name||'תמונה').replace(/ — צבוע.*$/,'')+' — צבוע',_opq:false};if(f.qr)n.qr=f.qr;adReplaceImg(f,[n]);adSay('נצבע. ↶ מחזיר את המקור');}
-function adQEdit(on){ADQ.edit=on;const q=document.getElementById('adq');if(q)q._k='';adQ();if(on)setTimeout(()=>{const i=document.getElementById('adqText');if(i){i.focus();i.select();}},30);}
+// ── S-196: 📱✂️ עורך הפרסומת כמו אפליקציית עריכה בטלפון (בקשת הושעיה 24/11 + צילומי מסך של מוחק-רקע) ──
+// • סרגל עליון (טלפון): ⋮ עוד · 💾 שמירה · ↶ ↷ (עם מונה) · ? עזרה · ✓ סיום. • סרגל כלים תחתון שנגלל לרוחב, והפקדים של הכלי הפעיל ממש מעליו.
+// • בלי בחירה: ➕ הוספה · T כיתוב · 😀 מדבקות · 🎨 רקע · ⬚ יחס. כיתוב: הזזה · כיתוב · צבע. תמונה: הזזה · מחק · שחזור · קסם · אוטומטי · לאסו · צורה · החלקה · צביעה · חיתוך · AI.
+// • כל כלי החיתוך לא הורסים: הפיקסלים המקוריים נשארים, ולשכבה יש מסכת שקיפות (L.mask = מפתח ל-ADM: dataURL של PNG, רק השקיפות קובעת),
+//   צורה (L.shape) והחלקה (L.mf). adDrawLayer מרכיב אותם — אז ההורדה, התבנית, הענן והתצוגה כולם מקבלים אותה תוצאה. מסכה = עד 2048 בצד הארוך.
+// • מכחול: נקודת המחיקה מעל האצבע ב"הרחקה" פיקסלים (עיגול + קו לאצבע). המיפוי מסך→מודעה→שכבה (סיבוב)→מסכה עובר דרך ADE.v — נכון בכל זום.
+//   שתי אצבעות = זום/הזזה גם כשמכחול פעיל (המשיכה שהתחילה מתבטלת). ↶/↷ — כל משיכה נכנסת להיסטוריה.
+// • הזום, ההזזה, הלשונית, הכלי והבחירה נשמרים ברענון (localStorage, studio_ad_view); וגם המודעה עצמה (studio_ad_layout + מסכות ב-IndexedDB).
+const AD_REDO=[];
+const ADT=(()=>{const d={size:44,off:48,hard:70,tol:28,lasso:'erase',bgv:'checker',auto:'object'};try{return Object.assign(d,JSON.parse(localStorage.getItem('studio_ad_tools')||'{}'));}catch(e){return d;}})();
+const adToolsSave=()=>{try{localStorage.setItem('studio_ad_tools',JSON.stringify(ADT));}catch(e){}};
+const AD_CUT=new Set(['erase','repair','magic','lasso']); // אצבע אחת על המודעה = עבודה על המסכה (לא הזזה)
+const AD_IMG_T=['move','erase','repair','magic','auto','lasso','shape','smooth','tint'];
+const AD_BACKDROP=new Set(['erase','repair','magic','auto','lasso','shape','smooth']); // משבצות שקיפות מאחורי השכבה
+const ADM=new Map(); // מפתח מסכה → {url, c (מפוענח), p (בפענוח)}
+const AD_MASK_MAX=2048;
+let _adMkLoad=null,_adRaf=0;
+const adDrawSoon=()=>{if(!_adRaf)_adRaf=requestAnimationFrame(()=>{_adRaf=0;adDraw();});};
+// ── היסטוריה: ↶ ו-↷ ──
+function adState(){return{L:JSON.stringify(AD.layers),img:(AD.img||[]).slice(),fmt:AD.fmt,bg:AD.bg};}
+function adSnap(){const u=adState();u.rd=AD_REDO.splice(0);AD_UNDO.push(u);if(AD_UNDO.length>40)AD_UNDO.shift();} // עריכה חדשה מוחקת את ↷ (אבל ביטול-snap מחזיר אותו)
+function adSnapCancel(){const u=AD_UNDO.pop();if(u&&u.rd&&u.rd.length&&!AD_REDO.length)AD_REDO.push(...u.rd);}
+function adHistClear(){adHistClear();AD_REDO.length=0;}
+function adApplyState(u){let imgCh=u.img.length!==(AD.img||[]).length||u.img.some((f,i)=>f!==AD.img[i]);if(u.fmt&&u.fmt!==AD.fmt){AD.fmt=u.fmt;imgCh=true;}if(u.bg!==undefined&&u.bg!==AD.bg){AD.bg=u.bg;imgCh=true;}
+  AD.layers=JSON.parse(u.L);AD.img=u.img;if(ADE){if(!adSel())ADE.sel=null;if(ADE.wm){const L=AD.layers.find(o=>o.id===ADE.wm.id);if(!L||(L.mask||null)!==ADE.wm.key)ADE.wm=null;}}
+  imgCh?rebuild():(adCommit(),adPanelSync());}
+function adUndo(){const u=AD_UNDO.pop();if(!u)return;AD_REDO.push(adState());adApplyState(u);adSay('בוטל. ↷ מחזיר');}
+function adRedo(){const u=AD_REDO.pop();if(!u)return;AD_UNDO.push(adState());adApplyState(u);adSay('הוחזר');}
+// ── מסכות ──
+const adMaskKey=()=>'k'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+function adMaskDims(L){const f=adImgOf(L),im=f&&f.img;if(!im)return null;const W=natW(im),H=natH(im),k=Math.min(1,AD_MASK_MAX/Math.max(W,H));return[Math.max(1,Math.round(W*k)),Math.max(1,Math.round(H*k))];}
+function adMaskGet(key){const m=ADM.get(key);if(!m)return null;if(m.c)return m.c;
+  if(!m.p&&!m.bad)m.p=new Promise(ok=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;c.getContext('2d').drawImage(im,0,0);m.c=c;m.p=null;ok(c);if(ADE)adDrawSoon();};
+    im.onerror=()=>{m.bad=true;m.p=null;ok(null);};im.src=m.url;});
+  return null;}
+const adMaskPending=k=>!!k&&(ADM.has(k)?!ADM.get(k).c&&!ADM.get(k).bad:!!_adMkLoad);
+async function adMasksReady(){if(_adMkLoad)await _adMkLoad;for(const L of AD.layers||[]){if(!L.mask||!ADM.has(L.mask))continue;const m=ADM.get(L.mask);if(!m.c){adMaskGet(L.mask);if(m.p)await m.p;}}}
+function adMaskUrls(){const o={};(AD.layers||[]).forEach(L=>{const m=L.mask&&ADM.get(L.mask);if(m&&m.url)o[L.mask]=m.url;});return o;}
+function adMaskAdd(o,c){for(const k in o||{})if(!ADM.has(k)&&/^data:image\//.test(o[k]))ADM.set(k,{url:o[k]});}
+function adShapePath(sh,w,h){const sq=['circle','heart','star','hex'].includes(sh),m=Math.min(w,h),W=sq?m:w,H=sq?m:h,dx=(w-W)/2,dy=(h-H)/2;
+  return pathOf(shapePts(sh==='circle'?'oval':sh,W,H,Math.min(W,H)*.14).map(p=>[p[0]+dx,p[1]+dy]));}
+// החלקת קצה המסכה: טשטוש קופסה (3 מעברים ≈ גאוסיאני) על השקיפות בלבד, ברזולוציה מוקטנת. מחוץ לתמונה = שקוף, כך שגם קצה התמונה מתרכך
+function adFeather(c,mf){const W=c.width,H=c.height,k=Math.min(1,768/Math.max(W,H)),w=Math.max(1,Math.round(W*k)),h=Math.max(1,Math.round(H*k)),r=Math.max(1,Math.round(mf/100*Math.min(w,h)*.06));
+  const t=document.createElement('canvas');t.width=w;t.height=h;const tx=t.getContext('2d',{willReadFrequently:true});tx.drawImage(c,0,0,w,h);const id=tx.getImageData(0,0,w,h),d=id.data,n=w*h;
+  let a=new Float32Array(n),b=new Float32Array(n);for(let i=0;i<n;i++)a[i]=d[i*4+3];const q=2*r+1;
+  for(let p=0;p<3;p++){for(let y=0;y<h;y++){const R=y*w;let s=0;for(let x=0;x<=r&&x<w;x++)s+=a[R+x];for(let x=0;x<w;x++){b[R+x]=s/q;const o=x-r,i2=x+r+1;if(o>=0)s-=a[R+o];if(i2<w)s+=a[R+i2];}}
+    for(let x=0;x<w;x++){let s=0;for(let y=0;y<=r&&y<h;y++)s+=b[y*w+x];for(let y=0;y<h;y++){a[y*w+x]=s/q;const o=y-r,i2=y+r+1;if(o>=0)s-=b[o*w+x];if(i2<h)s+=b[i2*w+x];}}}
+  for(let i=0;i<n;i++){d[i*4]=d[i*4+1]=d[i*4+2]=0;d[i*4+3]=a[i];}tx.putImageData(id,0,0);const x=c.getContext('2d');x.clearRect(0,0,W,H);x.imageSmoothingQuality='high';x.drawImage(t,0,0,W,H);}
+const _adComp=new Map(); // מזהה שכבה → {sig,c}: התמונה אחרי מסכה/צורה/החלקה, נבנית מחדש רק כשמשהו השתנה
+function adLayerSrc(L,f){const wm=ADE&&ADE.wm,live=wm&&wm.id===L.id&&wm.key===(L.mask||null)&&wm.ver>0?wm:null;
+  if(ADE&&ADE.cmp&&ADE.sel===L.id)return f.img; // 👁 לחיצה ארוכה = המקור
+  if(!live&&!L.mask&&!L.shape&&!(L.mf>0))return f.img;
+  let mc=null;if(live)mc=live.c;else if(L.mask){mc=adMaskGet(L.mask);if(!mc&&adMaskPending(L.mask))return null;} // המסכה עוד נטענת — רגע בלי השכבה (ולא המקור בלי מחיקות)
+  const d=adMaskDims(L);if(!d)return f.img;const fast=!!(ADE&&ADE.paint&&live),sig=[phId(f),L.mask||'',L.shape||'',fast?0:(+L.mf||0),live?live.ver:0,d[0],mc?1:0].join('|');
+  let C=_adComp.get(L.id);if(C&&C.sig===sig)return C.c;if(!C){C={c:document.createElement('canvas')};_adComp.set(L.id,C);}
+  const c=C.c;C.sig=sig;c.width=d[0];c.height=d[1];const x=c.getContext('2d');
+  if(mc)x.drawImage(mc,0,0,d[0],d[1]);else{x.fillStyle='#000';x.fillRect(0,0,d[0],d[1]);}
+  if(L.shape){x.globalCompositeOperation='destination-in';x.fillStyle='#000';x.fill(adShapePath(L.shape,d[0],d[1]));}
+  if(L.mf>0&&!fast)adFeather(c,+L.mf);
+  x.globalCompositeOperation='source-in';x.drawImage(f.img,0,0,d[0],d[1]);x.globalCompositeOperation='source-over';return c;}
+// המסכה שעובדים עליה (של השכבה הנבחרת) — עותק חי; כל משיכה שמסתיימת נשמרת כמפתח חדש (↶ חוזר למפתח הקודם)
+function adWm(L){const W=ADE.wm;if(W&&W.id===L.id&&W.key===(L.mask||null))return W;const d=adMaskDims(L);if(!d)return null;
+  let src=null;if(L.mask){src=adMaskGet(L.mask);if(!src&&adMaskPending(L.mask)){toast('רגע — המסכה נטענת');return null;}}
+  const c=document.createElement('canvas');c.width=d[0];c.height=d[1];const x=c.getContext('2d',{willReadFrequently:true});
+  if(src)x.drawImage(src,0,0,d[0],d[1]);else{x.fillStyle='#000';x.fillRect(0,0,d[0],d[1]);}
+  ADE.wm={id:L.id,key:L.mask||null,c,x,ver:0,px:null};return ADE.wm;}
+function adWmCommit(L,msg){const W=ADE.wm;if(!W)return;const key=adMaskKey();ADM.set(key,{url:W.c.toDataURL('image/png')});W.key=key;W.ver++;L.mask=key;ADE.paint=null;adCommit();if(msg)adSay(msg);}
+function adSetMask(L,c,msg){adSnap();const key=adMaskKey();ADM.set(key,{url:c.toDataURL('image/png'),c});L.mask=key;if(ADE&&ADE.wm&&ADE.wm.id===L.id)ADE.wm=null;adCommit();adQForce();if(msg)adSay(msg);}
+function adFree(){if(!ADE)return;ADE.wm=null;ADE.bk=null;ADE.paint=null;ADE.cur=null;const ids=new Set((AD.layers||[]).map(o=>o.id)),keys=new Set((AD.layers||[]).map(o=>o.mask).filter(Boolean));
+  for(const k of _adComp.keys())if(!ids.has(k))_adComp.delete(k);for(const [k,m] of ADM)if(!keys.has(k)&&m.c&&m.url)m.c=null;} // הזיכרון משתחרר כשיוצאים מהכלי
+// ── מכחול / לאסו / קסם ──
+const adCutOn=()=>{const L=adSel();return!!L&&L.k==='img'&&AD_CUT.has(ADE.tool);};
+function adBrushPt(e,noOff){const r=ADE.c.getBoundingClientRect(),fx=e.clientX-r.left,fy=e.clientY-r.top,off=noOff||e.pointerType==='mouse'?0:ADT.off;return[fx,fy-off,fx,fy];}
+function adScr2Mask(L,sx,sy){const v=ADE.v,[lx,ly]=adLocal(L,(sx-v.ox)/v.s,(sy-v.oy)/v.s),[w,h]=adSize(L),W=ADE.wm;return[(lx+w/2)/w*W.c.width,(ly+h/2)/h*W.c.height];}
+const adBrushR=L=>Math.max(.5,ADT.size/2/ADE.v.s/adSize(L)[0]*ADE.wm.c.width);
+function adStamp(L,p){const W=ADE.wm,x=W.x,r=adBrushR(L),h=Math.min(.99,ADT.hard/100);x.globalCompositeOperation=ADE.tool==='erase'?'destination-out':'source-over';
+  if(h>=.97)x.fillStyle='#000';else{const g=x.createRadialGradient(p[0],p[1],r*h,p[0],p[1],r);g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;}
+  x.beginPath();x.arc(p[0],p[1],r,0,Math.PI*2);x.fill();x.globalCompositeOperation='source-over';W.ver++;}
+function adStrokeTo(L,p){const S=ADE.paint,a=S.last,r=adBrushR(L),step=Math.max(.7,r*.22),n=Math.ceil(Math.hypot(p[0]-a[0],p[1]-a[1])/step);for(let i=1;i<=n;i++)adStamp(L,[a[0]+(p[0]-a[0])*i/n,a[1]+(p[1]-a[1])*i/n]);S.last=p;}
+// קסם: מוחק את מה שמחובר לנקודה ובצבע דומה (מילוי לפי הפיקסלים המקוריים). סובלנות 0–100
+function adMagic(L,mp){const W=ADE.wm,w=W.c.width,h=W.c.height,X=Math.floor(mp[0]),Y=Math.floor(mp[1]);if(X<0||Y<0||X>=w||Y>=h)return 0;
+  if(!W.px){const t=document.createElement('canvas');t.width=w;t.height=h;const tx=t.getContext('2d',{willReadFrequently:true});tx.drawImage(adImgOf(L).img,0,0,w,h);W.px=tx.getImageData(0,0,w,h).data;}
+  const P=W.px,md=W.x.getImageData(0,0,w,h),M=md.data,s0=(Y*w+X)*4,r0=P[s0],g0=P[s0+1],b0=P[s0+2],T=ADT.tol*2.55,seen=new Uint8Array(w*h),st=new Int32Array(w*h);
+  const ok=j=>{const q=j*4;return P[q+3]>8&&Math.abs(P[q]-r0)<=T&&Math.abs(P[q+1]-g0)<=T&&Math.abs(P[q+2]-b0)<=T;};
+  let sp=0,n=0;const j0=Y*w+X;if(!ok(j0)||M[j0*4+3]===0&&ADT.tol<1)return 0;seen[j0]=1;st[sp++]=j0;
+  while(sp){const j=st[--sp];M[j*4+3]=0;n++;const x=j%w;
+    if(x>0&&!seen[j-1]){seen[j-1]=1;if(ok(j-1))st[sp++]=j-1;}if(x<w-1&&!seen[j+1]){seen[j+1]=1;if(ok(j+1))st[sp++]=j+1;}
+    if(j>=w&&!seen[j-w]){seen[j-w]=1;if(ok(j-w))st[sp++]=j-w;}if(j+w<w*h&&!seen[j+w]){seen[j+w]=1;if(ok(j+w))st[sp++]=j+w;}}
+  W.x.putImageData(md,0,0);W.ver++;return n;}
+function adCutDown(e){const L=adSel(),W=adWm(L);if(!W)return;e.preventDefault();try{ADE.c.setPointerCapture(e.pointerId);}catch(_){}
+  const T=ADE.tool,[bx,by,fx,fy]=adBrushPt(e,T==='magic');
+  if(T==='magic'){adSnap();const n=adMagic(L,adScr2Mask(L,bx,by));if(n)adWmCommit(L,'נמחק אזור בצבע דומה ('+n+' פיקסלים). ↶ מבטל');else{adSnapCancel();adSay('כאן אין מה למחוק — נסו סובלנות גבוהה יותר');}adQ();return;}
+  const bk=ADE.bk||(ADE.bk=document.createElement('canvas'));bk.width=W.c.width;bk.height=W.c.height;bk.getContext('2d').drawImage(W.c,0,0); // לביטול כשנוחתת אצבע שנייה
+  adSnap();const mp=adScr2Mask(L,bx,by);ADE.paint={L,id:e.pointerId,last:mp,lasso:T==='lasso'?[[bx,by]]:null,lm:T==='lasso'?[mp]:null};ADE.cur=[bx,by,fx,fy];
+  if(T!=='lasso')adStamp(L,mp);adDrawSoon();}
+function adCutMove(e){const P=ADE.paint;if(!P||e.pointerId!==P.id)return;e.preventDefault();const L=P.L,[bx,by,fx,fy]=adBrushPt(e);ADE.cur=[bx,by,fx,fy];const mp=adScr2Mask(L,bx,by);
+  if(P.lasso){const q=P.lasso[P.lasso.length-1];if(Math.hypot(bx-q[0],by-q[1])>2){P.lasso.push([bx,by]);P.lm.push(mp);}}else adStrokeTo(L,mp);adDrawSoon();}
+function adCutUp(e){const P=ADE.paint;if(!P||e.pointerId!==P.id)return;const L=P.L;ADE.cur=e.pointerType==='mouse'?ADE.cur:null;
+  if(P.lasso){if(P.lm.length<3){ADE.paint=null;adSnapCancel();adDraw();adSay('מקיפים באצבע את האזור');return;}
+    const x=ADE.wm.x,p=new Path2D();P.lm.forEach((q,i)=>i?p.lineTo(q[0],q[1]):p.moveTo(q[0],q[1]));p.closePath();
+    x.globalCompositeOperation=ADT.lasso==='keep'?'destination-in':'destination-out';x.fillStyle='#000';x.fill(p);x.globalCompositeOperation='source-over';ADE.wm.ver++;
+    adWmCommit(L,ADT.lasso==='keep'?'נשאר רק מה שבתוך הלאסו':'נמחק מה שבתוך הלאסו');return;}
+  adWmCommit(L,ADE.tool==='erase'?'נמחק. ↶ מבטל':'שוחזר');}
+function adCutCancel(){const P=ADE.paint;if(!P)return;const W=ADE.wm;if(W&&ADE.bk){W.x.globalCompositeOperation='copy';W.x.drawImage(ADE.bk,0,0);W.x.globalCompositeOperation='source-over';W.ver++;}
+  ADE.paint=null;ADE.cur=null;adSnapCancel();adDraw();}
+// מה שמצוירים מעל המודעה בזמן כלי חיתוך: רקע (משבצות/כהה/בהיר) מאחורי השכבה, העיגול של המכחול, קו הלאסו
+let _adChk=null;function adChkPat(x){if(!_adChk){_adChk=document.createElement('canvas');_adChk.width=_adChk.height=16;const t=_adChk.getContext('2d');t.fillStyle='#FFFFFF';t.fillRect(0,0,16,16);t.fillStyle='#D5D9E0';t.fillRect(0,0,8,8);t.fillRect(8,8,8,8);}return x.createPattern(_adChk,'repeat');}
+function adBackdrop(x,L,s){if(ADT.bgv==='ad')return;const[w,h]=adSize(L);x.save();x.translate(L.x,L.y);x.rotate((L.rot||0)*Math.PI/180);
+  if(ADT.bgv==='checker'){const p=adChkPat(x);try{p.setTransform(new DOMMatrix().scale(1/s));}catch(e){}x.fillStyle=p;}else x.fillStyle=ADT.bgv==='dark'?'#1F2430':'#FFFFFF';
+  x.fillRect(-w/2,-h/2,w,h);x.restore();adDrawLayer(x,L);}
+function adCutOverlay(x){const P=ADE.paint;
+  if(P&&P.lasso&&P.lasso.length>1){x.save();x.beginPath();P.lasso.forEach((q,i)=>i?x.lineTo(q[0],q[1]):x.moveTo(q[0],q[1]));x.closePath();x.fillStyle=ADT.lasso==='keep'?'rgba(37,99,235,.12)':'rgba(225,29,72,.16)';x.fill();
+    x.lineWidth=2;x.strokeStyle='#fff';x.stroke();x.setLineDash([6,5]);x.strokeStyle='#E11D74';x.stroke();x.restore();}
+  const C=ADE.cur;if(!C||ADE.tool==='magic')return;const L=adSel();if(!L)return;const r=ADE.tool==='lasso'?5:ADT.size/2;x.save();
+  if(Math.abs(C[3]-C[1])>2){x.strokeStyle='rgba(255,255,255,.95)';x.lineWidth=3;x.beginPath();x.moveTo(C[0],C[1]+r);x.lineTo(C[2],C[3]);x.stroke();x.strokeStyle='#E11D74';x.lineWidth=1.5;x.stroke();
+    x.fillStyle='#E11D74';x.beginPath();x.arc(C[2],C[3],4,0,7);x.fill();}
+  x.lineWidth=3;x.strokeStyle='rgba(255,255,255,.95)';x.beginPath();x.arc(C[0],C[1],r,0,7);x.stroke();x.lineWidth=1.5;x.strokeStyle=ADE.tool==='repair'?'#16A34A':'#E11D74';x.stroke();x.restore();}
+// תצוגה מקדימה של המכחול כשמזיזים סליידר (גודל/הרחקה) — באמצע המודעה, לשנייה
+let _adCurT=0;function adCurPreview(){if(!ADE||!ADE.c)return;const cw=ADE.c.clientWidth,ch=ADE.c.clientHeight;ADE.cur=[cw/2,ch/2-ADT.off*.5,cw/2,ch/2+ADT.off*.5];adDrawSoon();clearTimeout(_adCurT);_adCurT=setTimeout(()=>{if(ADE&&!ADE.paint){ADE.cur=null;adDraw();}},1100);}
+// ── 🤖 אוטומטי: הסרת רקע עם js/ai-image.js (אותו קובץ ואותה טעינה עצלה כמו בעריכת התמונה). שום הורדה בלי לחיצה; התקדמות, ביטול, הודעה ו"נסו שוב" ──
+const AD_AUTO={busy:false,ac:null,msg:'',pct:0,err:''};
+function adAutoUi(){const m=document.getElementById('adAutoMsg'),b=document.getElementById('adAutoBar');if(m)m.textContent=AD_AUTO.msg;if(b){b.hidden=!AD_AUTO.busy;const f=b.firstChild;if(AD_AUTO.pct>=0){b.classList.remove('busy');f.style.width=AD_AUTO.pct+'%';}else b.classList.add('busy');}}
+async function adAutoRun(){const L=adSel();if(!L||L.k!=='img'||AD_AUTO.busy)return;const f=adImgOf(L);if(!f||!f.img)return;
+  Object.assign(AD_AUTO,{busy:true,err:'',msg:'מכין…',pct:-1,ac:new AbortController()});adQForce();adAutoUi();const t0=performance.now(),ac=AD_AUTO.ac;
+  const setP=p=>{if(ac!==AD_AUTO.ac)return;if(p.phase==='download'){AD_AUTO.pct=p.total?Math.round(p.loaded/p.total*100):0;AD_AUTO.msg='מוריד את המנוע — '+AD_AUTO.pct+'%'+(p.total?' ('+Math.round(p.total/1048576)+'MB, פעם אחת בלבד)':'');}
+    else if(p.phase==='init'){AD_AUTO.pct=100;AD_AUTO.msg='מכין את המנוע…';}else{AD_AUTO.pct=-1;AD_AUTO.msg='מסיר את הרקע… (בטלפון זה יכול לקחת כמה שניות)';}adAutoUi();};
+  const mode=ADT.auto==='precise'&&!preciseAllowed()?'object':ADT.auto;
+  try{await loadAI();const r=await AIImage.removeBg(f.img,{mode,onProgress:setP,signal:ac.signal});if(ac.signal.aborted||ac!==AD_AUTO.ac)return;
+    const d=adMaskDims(L),c=document.createElement('canvas');c.width=d[0];c.height=d[1];c.getContext('2d').drawImage(r.canvas,0,0,d[0],d[1]);
+    Object.assign(AD_AUTO,{busy:false,ac:null,msg:'✓ הרקע הוסר. מתקנים עם 🩹 שחזור או מחק · ↶ מבטל'});adSetMask(L,c,'הרקע הוסר');
+    aiTrack('ai-bg','ok · ad-cutout · '+(r.model||mode)+' · '+(r.ms||0)+'ms · '+Math.round(performance.now()-t0)+'ms total');}
+  catch(e){if(ac!==AD_AUTO.ac)return;const ab=e&&e.name==='AbortError';Object.assign(AD_AUTO,{busy:false,ac:null,msg:ab?'בוטל — התמונה לא השתנתה':'',err:ab?'':'⚠️ '+heMsgSafe(e)});
+    if(!ab)aiTrack('ai-bg','fail · ad-cutout · '+String(e&&e.message||e).slice(0,80));adQForce();}}
+function adAutoStop(){if(AD_AUTO.ac){AD_AUTO.ac.abort();try{window.AIImage&&AIImage.cancelAll&&AIImage.cancelAll();}catch(e){}}Object.assign(AD_AUTO,{busy:false,ac:null,msg:'בוטל — התמונה לא השתנתה',err:''});adQForce();}
+// ── שמירה מקומית: המודעה (שכבות, פורמט, רקע) + המסכות + התצוגה ──
+const AD_VIEW_K='studio_ad_view',AD_LAY_K='studio_ad_layout';
+const adViewLoad=()=>{try{return JSON.parse(localStorage.getItem(AD_VIEW_K)||'null')||{};}catch(e){return{};}};
+let _adVT=0;function adViewSave(){clearTimeout(_adVT);_adVT=setTimeout(()=>{if(!ADE)return;try{localStorage.setItem(AD_VIEW_K,JSON.stringify({z:Math.round(ADE.z*1000)/1000,cx:ADE.cx,cy:ADE.cy,tab:AD_TAB,tool:ADE.tool||'move',sel:ADE.sel||null,fmt:AD.fmt}));}catch(e){}},250);}
+function adViewReset(){if(ADE){ADE.z=1;ADE.cx=null;ADE.cy=null;ADE.tool='move';adFree();}ADQ.open=null;try{localStorage.removeItem(AD_VIEW_K);}catch(e){}} // מודעה/תבנית אחרת = מתחילים מהתאמה למסך
+let _adLayT=0,_adLayLast='',_adMkLast='';
+function adLaySave(){clearTimeout(_adLayT);_adLayT=setTimeout(()=>{if(!Array.isArray(AD.layers))return;
+  try{const s=JSON.stringify({v:1,fmt:AD.fmt,bg:AD.bg,layers:AD.layers});if(s!==_adLayLast){localStorage.setItem(AD_LAY_K,s);_adLayLast=s;}}catch(e){}
+  if(_adMkLoad)return;const o=adMaskUrls(),sig=Object.keys(o).sort().join();if(sig!==_adMkLast){_adMkLast=sig;idbTx('meta','readwrite',st=>st.put(o,'ad_masks')).catch(()=>{_adMkLast='';});}},600);}
+let _adLR=false;
+function adLayRestore(){if(_adLR)return;_adLR=true;
+  _adMkLoad=idbTx('meta','readonly',st=>st.get('ad_masks')).then(o=>{adMaskAdd(o);},()=>{}).finally(()=>{_adMkLoad=null;if(ADE)adDrawSoon();});
+  if(Array.isArray(AD.layers))return;try{const s=JSON.parse(localStorage.getItem(AD_LAY_K)||'null');if(s&&Array.isArray(s.layers)&&s.layers.length){AD.layers=s.layers;if(AD_FMTS[s.fmt])AD.fmt=s.fmt;if(s.bg)AD.bg=s.bg;_adLayLast=JSON.stringify(s);}}catch(e){}}
+// ── רקע: צבע, מעבר צבעים ('lg:#a,#b') או תמונה ──
+function adBgFill(x){const b=AD.bg||'#FFFFFF';if(/^lg:/.test(b)){const[c1,c2]=b.slice(3).split(','),g=x.createLinearGradient(0,0,0,adH());g.addColorStop(0,c1||'#fff');g.addColorStop(1,c2||c1||'#fff');return g;}return b;}
+const AD_GRAD=[['lg:#0A2A5C,#0070C5','כחול לילה'],['lg:#FDC010,#C3141B','שקיעה'],['lg:#5BB8F0,#FFFFFF','שמיים'],['lg:#1F2430,#5B21B6','סגול ערב'],['lg:#FFF7E0,#F5D7A1','קרם']];
+function adSetBg(v){if(AD.bg===v)return;adSnap();AD.bg=v;adCommit();adQForce();adSay('רקע חדש');}
+function adPickImg(asBg){if((AD.img||[]).length>=AD_MAXIMG){toast('יש כבר '+AD_MAXIMG+' תמונות — מחקו אחת קודם');return;}
+  const inp=el('input',{type:'file',accept:'image/*',multiple:asBg?null:'',hidden:'',on:{change:async e=>{const out=await readImages(e.target.files,AD_MAXIMG-(AD.img||[]).length,2400);inp.remove();if(!out.length)return;
+    adEnsure();adSnap();AD.img=(AD.img||[]).concat(out);adEnsure();
+    if(asBg){const f=out[0],L=AD.layers.find(o=>o.src===phId(f));if(L){const a=natW(f.img)/natH(f.img);AD.layers=[L].concat(AD.layers.filter(o=>o!==L));Object.assign(L,{x:adW()/2,y:adH()/2,w:Math.max(adW(),adH()*a),rot:0});if(ADE)ADE.sel=null;}}
+    ADQ.open=null;rebuild();toast(asBg?'🖼️ תמונת רקע — ממלאת את כל המודעה':'נוסף — גוררים למקום');}}});document.body.append(inp);inp.click();}
+// ── 😀 מדבקות: אימוג'י, צורות בצבעי המותג, תגיות "מבצע", לוגואים — כל אחת נכנסת כשכבת תמונה שקופה ──
+const AD_EMOJI=['⭐','❤️','🎉','🎈','🎁','✨','🔥','👍','😀','🥳','🌸','☀️','🕯️','📣','💯','✅','🛒','📍','📞','🎂','🍰','🧸','🎨','✂️'];
+const AD_BADGES=[['burst','#C3141B','מבצע!','#FFFFFF'],['circle','#FDC010','חדש!','#0A2A5C'],['heart','#C3141B','',''],['star','#FDC010','',''],['circle','#0070C5','',''],['burst','#0A2A5C','-20%','#FDC010']];
+function adStickerCanvas(kind,a,b,c){const cv=document.createElement('canvas');cv.width=cv.height=512;const x=cv.getContext('2d');x.textAlign='center';x.textBaseline='middle';
+  if(kind==='emoji'){x.font='400px "Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",sans-serif';x.fillText(a,256,280);return cv;}
+  const pts=a==='burst'?(()=>{const P=[];for(let i=0;i<32;i++){const r=i%2?.82:1,t=-Math.PI/2+i*Math.PI/16;P.push([256+Math.cos(t)*r*240,256+Math.sin(t)*r*240]);}return P;})():shapePts(a==='circle'?'oval':a,480,480,30).map(p=>[p[0]+16,p[1]+16]);
+  x.fillStyle=b;x.fill(pathOf(pts));if(c){x.fillStyle=arguments[4]||'#fff';x.font='700 '+(c.length>4?120:150)+'px "Secular One",Rubik,sans-serif';x.direction='rtl';x.fillText(c,256,266);}return cv;}
+function adAddSticker(cv,name,fw){if((AD.img||[]).length>=AD_MAXIMG){toast('יש כבר '+AD_MAXIMG+' תמונות — מחקו אחת קודם');return;}
+  const f={img:cv,name,edited:true,_opq:false};adEnsure();adSnap();AD.img=(AD.img||[]).concat([f]);
+  const L={id:adLid(),k:'img',name,src:phId(f),si:AD.img.length-1,x:adW()/2,y:adH()/2,w:adW()*(fw||.24),rot:0};AD.layers.push(L);if(ADE){ADE.sel=L.id;ADE.tool='move';}ADQ.open=null;rebuild();adSay('נוספה מדבקה: '+name);}
+// ── אייקונים (קו מתאר, 24×24) ──
+const AD_IC={move:'M12 3v18M3 12h18M12 3 9.5 5.5M12 3l2.5 2.5M12 21l-2.5-2.5M12 21l2.5-2.5M3 12l2.5-2.5M3 12l2.5 2.5M21 12l-2.5-2.5M21 12l-2.5 2.5',
+  erase:'M15.5 3.5 20.5 8.5 11 18H6.2L3.5 15.3zM10.5 8.5l5 5M9 21h11',repair:'M4 20c2.8 0 4-1.2 4-4l9.5-9.5-3-3L5 13c-2.8 0-4 1.2-4 4M13 5l6 6M19 15.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z',
+  magic:'M4 20 15 9M13.5 7.5l3 3M18 2.5v3M16.5 4h3M20.5 8v2M19.5 9h2M8.5 3v2M7.5 4h2',auto:'M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M18.5 3l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9z',
+  lasso:'M12 4c4.9 0 8 2.2 8 5s-3.6 5-8 5-8-2.2-8-5 3.1-5 8-5zM7 13.4c-1.2 1.8-.4 3.9 1.8 3.9 2.2 0 2.4 2.6.4 3.7',shape:'M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.5l-5.3 2.9 1.2-6-4.5-4.1 6-.7z',
+  smooth:'M12 3c3 4 6 7 6 11a6 6 0 0 1-12 0c0-4 3-7 6-11zM9 14.5a3 3 0 0 0 3 3',tint:'M12 3a9 9 0 1 0 0 18c1 0 1.6-.8 1.6-1.6 0-1.2-1-1.4-1-2.4s.8-1.6 1.8-1.6H17a4 4 0 0 0 4-4C21 6.7 17 3 12 3zM7.5 11.5h.01M9.5 7.5h.01M14.5 7.5h.01',
+  crop:'M6 2v16h16M2 6h16v16',ai:'M12 3l1.8 4.7 4.7 1.8-4.7 1.8L12 16l-1.8-4.7-4.7-1.8 4.7-1.8zM19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z',
+  add:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 8v8M8 12h8',text:'M5 7V4.5h14V7M12 4.5v15M9 19.5h6',sticker:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM8.5 14.5c1.8 2 5.2 2 7 0M9 9.5h.01M15 9.5h.01',
+  bg:'M3 5h18v14H3zM3 15.5l5-5 5 5 3-3 5 5',ratio:'M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4M8.5 8.5h7v7h-7z',color:'M6 17 12 4l6 13M8.3 12h7.4M4 21h16',
+  undo:'M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11',redo:'M15 14l5-5-5-5M20 9H9.5a5.5 5.5 0 0 0 0 11H13'};
+function adIc(n){const s=el('span',{class:'adic','aria-hidden':'true'});s.innerHTML='<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="'+AD_IC[n]+'"/></svg>';return s;}
+// ── סרגל עליון (טלפון): ⋮ · 💾 שמירה · ↶ ↷ · ? · ✓ ──
+function adTopDone(){const L=adSel();if(ADQ.open){ADQ.open=null;}else if(L&&ADE.tool!==(L.k==='text'?'color':'move')){ADE.tool=L.k==='text'?'color':'move';adFree();}else if(L){ADE.sel=null;adFree();adPanelSync();}adQForce();adDraw();}
+function adTop(){const st=ADE&&ADE.c&&ADE.c.parentElement;if(!st)return;let t=document.getElementById('adtop');const show=!ADE.c.hidden&&cur===Ad&&!adLocked()&&adTabbed();
+  if(!t){t=el('div',{class:'adtop',id:'adtop',role:'toolbar','aria-label':'פעולות כלליות'});st.append(t);}t.hidden=!show;if(!show)return;
+  const L=adSel(),done=!!(L||ADQ.open),k=[AD_UNDO.length,AD_REDO.length,done].join('|');if(t._k===k)return;t._k=k;t.innerHTML='';
+  const B=(c,a,f,cls,dis)=>el('button',{type:'button',class:cls||null,'aria-label':a,title:a,disabled:dis?'':null,on:{click:f}},...[].concat(c));
+  const cnt=n=>n?el('span',{class:'adbadge','aria-hidden':'true'},String(n>99?'99+':n)):null;
+  t.append(B('⋮','עוד — תבניות, נכסים, דרייב, חזרה לחנות',adMenu,'adtm'),B('💾 שמירה','שמירה, הורדה ושליחה',adSaveSheet,'adtsave'),el('span',{class:'adtsp'}),
+    B([adIc('undo'),cnt(AD_UNDO.length)],'ביטול ('+AD_UNDO.length+')',()=>adUndo(),null,!AD_UNDO.length),B([adIc('redo'),cnt(AD_REDO.length)],'חזרה על מה שבוטל ('+AD_REDO.length+')',()=>adRedo(),null,!AD_REDO.length),
+    B('?','עזרה — איך עובדים',adHelp,'adthelp'),done?B('✓','סיום — סגירת הכלי / ביטול הבחירה',adTopDone,'adtok'):null);}
+function adMenu(){const back=document.querySelector('nav.tabs a.tab-all'),share=document.querySelector('.share-top'),cart=document.getElementById('cartTop');let m;
+  const B=(t,f)=>el('button',{type:'button',class:'admi',on:{click:()=>{m._close();f();}}},t);
+  const go=t=>()=>{AD_TAB=t;rebuild();setTimeout(()=>{const tb=document.querySelector('.adtabs');if(tb){const y=tb.getBoundingClientRect().top+scrollY-(parseFloat(getComputedStyle(tb).top)||0);window.scrollTo(0,Math.max(0,y));}},80);};
+  m=adDlg('adMenu','⋮ עוד',80,[el('div',{class:'admenu'},B('📑 תבניות מוכנות ושלי',go('tpl')),B('📂 הדרייב של עיצובישי',adBrOpen),B('📦 הנכסים במודעה',go('assets')),B('▦ קוד QR',go('assets')),
+    B('🏷️ לוגואים',go('assets')),B('🪄 תמונה מ-AI · שינוי במילים',go('assets')),B('✏️ כיתובים, שכבות ופורמט',go('edit')),B('☁️ העיצובים שלי בענן',go('out')),
+    share?B('📤 שלחו לחבר',()=>share.click()):null,cart&&!cart.hidden?B('🛒 הסל',()=>cart.click()):null,back?B(back.textContent.trim(),()=>{location.href=back.href;}):null)]);adFocus(m,'.obody button');}
+function adSaveSheet(){let m;const B=(t,f,cls)=>el('button',{type:'button',class:'admi'+(cls?' '+cls:''),on:{click:e=>{m._close();f(e);}}},t);
+  m=adDlg('adSave','💾 שמירה ושליחה',80,[el('div',{class:'admenu'},B('⬇️ הורדה כתמונה · '+adPx(),adDownload,'main'),B('🟢 שליחה בוואטסאפ',()=>adWhatsApp()),B('☁️ שמירה בענן (העיצובים שלי)',()=>adCloudSave()),
+    B('💾 שמירה לדרייב',()=>adSaveDlg('ad')),B('📑 שמירה כתבנית',()=>adSaveDlg('tpl')),B('⬇️ עוד אפשרויות הורדה',()=>{AD_TAB='out';rebuild();}))]);adFocus(m,'.obody button');}
+function adHelp(){const P=(a,b)=>el('p',{style:'margin:0 0 8px'},el('b',{},a),' — '+b);
+  const m=adDlg('adHelpDlg','? איך עובדים',85,[P('👆 בחירה','נוגעים בכיתוב או בתמונה. גוררים להזזה, ⤡ בפינה לגודל, ↻ לסיבוב.'),P('🔍 זום','שתי אצבעות או הקשה כפולה. גם כשמכחול פעיל — שתי אצבעות מגדילות ומזיזות.'),
+    P('✂️ כלים לתמונה','מחק · שחזור (מחזיר את המקור) · קסם (נוגעים בצבע ונמחק כל מה שדומה ומחובר) · אוטומטי (הסרת רקע במכשיר) · לאסו (מקיפים אזור) · צורה (עיגול, לב, כוכב…) · החלקה (קצה רך).'),
+    P('🎯 הרחקה','העיגול של המכחול מופיע מעל האצבע — כדי לראות בדיוק מה נמחק. הסליידר "הרחקה" קובע כמה.'),P('👁 השוואה','לוחצים לחיצה ארוכה על העין ורואים את התמונה המקורית. הריבוע הקטן מחליף רקע: משבצות / כהה / בהיר / המודעה.'),
+    P('↶ ↷','ביטול וחזרה. שום כלי לא הורס את התמונה — אפשר תמיד לשחזר.'),P('💾','הורדה, וואטסאפ, ענן, דרייב ותבנית. ⋮ — תבניות, נכסים, QR, לוגואים וחזרה לחנות.')]);adFocus(m,'.obody button,.fhead button');}
+// ── כפתורים צפים ליד התמונה: ריבוע הרקע + 👁 השוואה (לחיצה ארוכה) ──
+const AD_BGV=[['checker','משבצות שקיפות'],['dark','רקע כהה'],['light','רקע בהיר'],['ad','בתוך המודעה']];
+function adFloat(){const st=ADE&&ADE.c&&ADE.c.parentElement;if(!st)return;let b=document.getElementById('adfl');const L=adSel(),show=!ADE.c.hidden&&cur===Ad&&!!L&&L.k==='img'&&AD_BACKDROP.has(ADE.tool);
+  if(!b){const sw=el('button',{type:'button',id:'adflBg',class:'adflsw',on:{click:()=>{const i=AD_BGV.findIndex(v=>v[0]===ADT.bgv);ADT.bgv=AD_BGV[(i+1)%AD_BGV.length][0];adToolsSave();adFloat();adDraw();adSay('רקע לתצוגה: '+AD_BGV.find(v=>v[0]===ADT.bgv)[1]);}}},el('i',{}));
+    const eye=el('button',{type:'button',id:'adflEye','aria-label':'לחיצה ארוכה: השוואה עם התמונה המקורית',title:'לחיצה ארוכה: המקור'},'👁');
+    const on=e=>{e.preventDefault();ADE.cmp=true;eye.classList.add('on');adDraw();},off=()=>{if(!ADE.cmp)return;ADE.cmp=false;eye.classList.remove('on');adDraw();};
+    eye.addEventListener('pointerdown',on);['pointerup','pointercancel','pointerleave'].forEach(t=>eye.addEventListener(t,off));eye.addEventListener('contextmenu',e=>e.preventDefault());
+    eye.addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter'){if(!ADE.cmp)on(e);}});eye.addEventListener('keyup',off);
+    b=el('div',{class:'adfl',id:'adfl',role:'group','aria-label':'תצוגה בזמן חיתוך'},sw,eye);st.append(b);}
+  b.hidden=!show;if(!show)return;const v=AD_BGV.find(x=>x[0]===ADT.bgv)||AD_BGV[0],sw=b.querySelector('#adflBg');sw.dataset.v=v[0];sw.setAttribute('aria-label','רקע לתצוגה: '+v[1]+' — לחיצה מחליפה');sw.title=v[1];}
+// ── הסרגל התחתון + הפקדים של הכלי ──
+const ADQ={mode:'fill',open:null,tint:false};
+const adQForce=()=>{const q=document.getElementById('adq');if(q)q._k='';adQ();};
+function adToolFix(L){if(!ADE)return'move';if(!ADE.tool)ADE.tool='move';if(!L)return ADE.tool;const ok=L.k==='img'?AD_IMG_T:['move','text','color'];
+  if(!ok.includes(ADE.tool))ADE.tool=L.k==='text'?'color':'move';if(L.k==='img'&&ADQ.open)ADQ.open=null;if(ADE.wm&&!ADE.paint&&(!AD_CUT.has(ADE.tool)||ADE.wm.id!==L.id))adFree();return ADE.tool;}
+function adSetTool(t){const L=adSel();if(!L)return;if(t==='crop'){adEditImg(adImgsSel());return;}if(t==='ai'){openAdAI(adImgsSel());return;}
+  ADE.tool=t;adToolFix(L);if(AD_CUT.has(t))adWm(L);adQForce();adDraw();adViewSave();
+  if(t==='text')setTimeout(()=>{const i=document.getElementById('adqText');if(i){i.focus();i.select();}},30);
+  const n={move:'הזזה',erase:'מחק — מעבירים אצבע על מה שרוצים למחוק',repair:'שחזור — מעבירים אצבע כדי להחזיר את המקור',magic:'קסם — נוגעים בצבע שרוצים למחוק',auto:'אוטומטי — הסרת רקע',lasso:'לאסו — מקיפים אזור',shape:'צורה',smooth:'החלקת הקצה',tint:'צביעה',text:'עריכת הטקסט',color:'צבע'}[t];if(n)adSay(n);}
+function adQEdit(on){if(!ADE)return;ADE.tool=on?'text':'color';adQForce();if(on)setTimeout(()=>{const i=document.getElementById('adqText');if(i){i.focus();i.select();}},30);}
+function adSl(id,label,min,max,val,unit,onIn,onCh){const out=el('output',{for:id},val+(unit||''));
+  const inp=el('input',{type:'range',id,min,max,step:1,value:val,'aria-label':label,on:{input:e=>{out.textContent=e.target.value+(unit||'');onIn(+e.target.value);},change:e=>{if(onCh)onCh(+e.target.value);}}});
+  return el('div',{class:'adsl sl-lock','data-sl-lock':id},el('label',{for:id},label),inp,out);} // כלל סליידרים: כל סליידר בשורה משלו עם data-sl-lock
+function adSeg(label,opts,val,f){const g=el('div',{class:'adqseg',role:'group','aria-label':label},opts.map(([v,t])=>el('button',{type:'button','aria-pressed':String(v===val),class:v===val?'on':null,on:{click:()=>f(v)}},t)));return g;}
 function adQ(){const pv=document.querySelector('.preview'),st=ADE&&ADE.c&&ADE.c.parentElement;if(!pv||!st)return;let q=document.getElementById('adq');
-  if(!q){q=el('div',{class:'adq',id:'adq',role:'toolbar','aria-label':'עריכה מהירה של מה שנבחר'});st.after(q);}
-  const L=adSel(),ph=adTabbed(),show=!ADE.c.hidden&&cur===Ad&&!adLocked()&&(ph||!!L);q.hidden=!show;if(!show)return;
-  if(L&&L.k!=='text'){ADQ.edit=false;}if(!L){ADQ.edit=false;ADQ.tint=false;}
-  const f=L&&L.k==='img'?adImgOf(L):null,k=[L?L.id:'',L&&L.k,L&&L.color,L&&L.outline,ADQ.mode,ADQ.edit,ADQ.tint,AD_UNDO.length,f?phId(f):'',ph,adColorsInAd().join()].join('|');if(q._k===k)return;
-  if(q.contains(document.activeElement)&&document.activeElement.type==='color')return; // בוחר הצבעים פתוח — לא בונים מתחתיו
-  q._k=k;q.innerHTML='';
+  if(!q){q=el('div',{class:'adq',id:'adq'});st.after(q);}
+  const L=adSel(),ph=adTabbed(),show=!ADE.c.hidden&&cur===Ad&&!adLocked()&&(ph||!!L);q.hidden=!show;adTop();adFloat();if(!show)return;
+  const T=adToolFix(L),kind=L?L.k:'none',f=L&&L.k==='img'?adImgOf(L):null;if(!L)ADQ.tint=false;
+  const k=[L?L.id:'',kind,T,ADQ.open,ADQ.mode,L&&L.color,L&&L.outline,L&&L.shape,f?phId(f):'',ph,adColorsInAd().join(),AD.fmt,AD.bg,AD_AUTO.busy,AD_AUTO.err,ADT.lasso,ADT.auto,ADT.hard,AD_UNDO.length&&!ph?1:0].join('|');if(q._k===k)return;
+  if(q.contains(document.activeElement)&&(document.activeElement.type==='color'||document.activeElement.type==='range'))return; // בוחר צבע / סליידר פעיל — לא בונים מתחתיו
+  const sx=q.querySelector('.adstrip')?.scrollLeft;q._k=k;q.innerHTML='';
   const B=(t,a,fn,dis,cls)=>el('button',{type:'button','aria-label':a,title:a,class:cls||null,disabled:dis?'':null,on:{click:()=>{fn();}}},t);
-  q.append(el('div',{class:'adqrow adqtools'},B('↶','ביטול',adUndo,!AD_UNDO.length),B('−','הקטנה',()=>adScale(adSel(),1/1.1),!L),B('+','הגדלה',()=>adScale(adSel(),1.1),!L),
-    B('⟳','סיבוב',()=>adRot(adSel(),15),!L),B('⧉','שכפול',()=>adDup(adSel()),!L),B('⬆','להעביר מעל השאר',()=>adFront(adSel()),!L),
-    ...(L&&L.k==='img'?[B('✂️','חיתוך ועריכת התמונה',()=>adEditImg(adImgsSel()))]:[B('✏️','עריכת הטקסט',()=>adQEdit(!ADQ.edit),!L,ADQ.edit?'on':null)]),B('🗑','מחיקה',()=>adRemove(adSel()),!L)));
-  if(!L){q.append(el('p',{class:'adqhint'},'👆 לוחצים על כיתוב או תמונה במודעה כדי לערוך · שתי אצבעות או הקשה כפולה = זום'));return;}
-  if(L.k==='text'){
-    if(ADQ.edit){const inp=el('input',{type:'text',id:'adqText',dir:'auto',value:L.text||'','aria-label':'הטקסט של הכיתוב',enterkeyhint:'done'});let sn=false;
-      inp.addEventListener('input',()=>{if(!sn){adSnap();sn=true;}L.text=inp.value;adFit(L);adCommit();});
-      inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();adQEdit(false);adQRebuild();}});
-      q.append(el('div',{class:'adqrow'},inp,B('✓','סיום עריכת הטקסט',()=>{adQEdit(false);adQRebuild();})));return;} // בזמן הקלדה — בלי שורת הצבעים, שהשורה לא תיכנס מתחת למקלדת
-    const ln=ADQ.mode==='line',k2=ln?'outline':'color',curC=String(L[k2]||'').toUpperCase(),set=c=>adSetCol(adSel(),k2,c);
+  const ctx=el('div',{class:'adqctx'}),add=(...n)=>ctx.append(...n.filter(Boolean)),hint=t=>el('p',{class:'adqhint'},t);
+  // הסרגל: כלים לפי מה שנבחר
+  const tools=!L?[['add','הוספה'],['text','כיתוב'],['sticker','מדבקות'],['bg','רקע'],['ratio','יחס']]:L.k==='text'?[['move','הזזה'],['text','כיתוב'],['color','צבע']]
+    :[['move','הזזה'],['erase','מחק'],['repair','שחזור'],['magic','קסם'],['auto','אוטומטי'],['lasso','לאסו'],['shape','צורה'],['smooth','החלקה'],['tint','צביעה'],['crop','חיתוך'],['ai','AI']];
+  const icon={add:'add',text:'text',sticker:'sticker',bg:'bg',ratio:'ratio',move:'move',color:'color',erase:'erase',repair:'repair',magic:'magic',auto:'auto',lasso:'lasso',shape:'shape',smooth:'smooth',tint:'tint',crop:'crop',ai:'ai'};
+  const act=id=>!L?ADQ.open===id:T===id;
+  const strip=el('div',{class:'adstrip',role:'toolbar','aria-label':!L?'הוספה למודעה':L.k==='text'?'כלים לכיתוב':'כלים לתמונה'},tools.map(([id,t])=>el('button',{type:'button',class:'adtool'+(act(id)?' on':''),'aria-pressed':['crop','ai'].includes(id)?null:String(act(id)),'data-tool':id,
+    on:{click:()=>{if(!L){if(id==='text'){adAddText();setTimeout(()=>adQEdit(true),120);return;}ADQ.open=ADQ.open===id?null:id;adQForce();return;}adSetTool(id);}}},adIc(icon[id]),el('span',{},t))));
+  if(!L){const O=ADQ.open;
+    if(O==='add')add(el('div',{class:'adqrow adqscroll'},B('🖼️ תמונה','הוספת תמונה מהטלפון',()=>adPickImg(false)),B('📂 מהדרייב','תמונה מהדרייב של עיצובישי',adBrOpen),B('▦ QR','קוד QR',()=>{AD_TAB='assets';ADQ.open=null;rebuild();}),
+      ...AD_LOGOS.map(([id,name,fw])=>B('🏷️ '+name,'לוגו '+name,()=>{ADQ.open=null;adAddLogo(id,name,fw);})),B('📑 תבנית','תבניות מוכנות',()=>{AD_TAB='tpl';ADQ.open=null;rebuild();})));
+    else if(O==='sticker')add(el('div',{class:'adqrow adqscroll adstk',role:'group','aria-label':'מדבקות'},...AD_BADGES.map(([s,c,t,tc])=>{const cv=adStickerCanvas('shape',s,c,t,tc);const b=B('',(t?'תגית '+t:{heart:'לב',star:'כוכב',circle:'עיגול',burst:'פיצוץ'}[s]),()=>adAddSticker(adStickerCanvas('shape',s,c,t,tc),t||'צורה',.3));b.append(cv);return b;}),
+      ...AD_EMOJI.map(e=>B(e,'מדבקה '+e,()=>adAddSticker(adStickerCanvas('emoji',e),'מדבקה '+e,.2),false,'emo'))));
+    else if(O==='bg'){const cb=String(AD.bg||'').toUpperCase();add(el('div',{class:'adqrow adqscroll',role:'group','aria-label':'רקע המודעה'},...AD_BRAND.map(([c,n])=>adQSw(c,'רקע '+n,cb===c,()=>adSetBg(c))),
+      ...AD_GRAD.map(([g,n])=>{const[c1,c2]=g.slice(3).split(',');const b=adQSw(c1,'מעבר צבעים: '+n,AD.bg===g,()=>adSetBg(g));b.querySelector('i').style.background='linear-gradient('+c1+','+c2+')';return b;}),
+      adQMore('צבע רקע אחר',adHex(AD.bg)?AD.bg:'#0A2A5C',(c,first)=>{if(first)adSnap();AD.bg=c;adCommit();}),B('🖼️ תמונה','תמונת רקע מהטלפון',()=>adPickImg(true))));}
+    else if(O==='ratio')add(el('div',{class:'adqrow adqscroll',role:'group','aria-label':'גודל ויחס המודעה'},Object.entries(AD_FMTS).map(([key,v])=>B(v.label,v.label+' '+v.sub,()=>{adSetFmt(key);adQForce();},false,AD.fmt===key?'on':null))));
+    else add(hint('👆 נוגעים בכיתוב או בתמונה כדי לערוך · שתי אצבעות או הקשה כפולה = זום'));}
+  else if(T==='move')add(el('div',{class:'adqrow adqtools'},B('−','הקטנה',()=>adScale(adSel(),1/1.1)),B('+','הגדלה',()=>adScale(adSel(),1.1)),B('⟲','סיבוב שמאלה',()=>adRot(adSel(),-15)),B('⟳','סיבוב ימינה',()=>adRot(adSel(),15)),
+      B('⧉','שכפול',()=>adDup(adSel())),B('⬆','להעביר מעל השאר',()=>adFront(adSel())),B('🗑','מחיקה',()=>adRemove(adSel()))),L.k==='img'&&!ph?hint('✂️ כלי חיתוך: מחק, שחזור, קסם, אוטומטי, לאסו, צורה והחלקה — בסרגל למטה'):null);
+  else if(T==='text'){const inp=el('input',{type:'text',id:'adqText',dir:'auto',value:L.text||'','aria-label':'הטקסט של הכיתוב',enterkeyhint:'done'});let sn=false;
+    inp.addEventListener('input',()=>{if(!sn){adSnap();sn=true;}L.text=inp.value;adFit(L);adCommit();});
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();adQEdit(false);adQRebuild();}});
+    add(el('div',{class:'adqrow'},inp,B('✓','סיום עריכת הטקסט',()=>{adQEdit(false);adQRebuild();})));}
+  else if(T==='color'){const ln=ADQ.mode==='line',k2=ln?'outline':'color',curC=String(L[k2]||'').toUpperCase(),set=c=>adSetCol(adSel(),k2,c);
     const sw=AD_BRAND.map(([c,n])=>adQSw(c,(ln?'קו ':'כתב ')+n,curC===c,()=>set(c))).concat(adColorsInAd().map(c=>adQSw(c,(ln?'קו':'כתב')+' בצבע שכבר במודעה '+c,curC===c.toUpperCase(),()=>set(c))));
     if(ln)sw.unshift(adQSw('none','בלי קו',!L.outline||L.outline==='none',()=>set('none')));
-    q.append(el('div',{class:'adqrow',role:'group','aria-label':ln?'צבע הקו של הכיתוב':'צבע הכתב'},
-      el('div',{class:'adqseg',role:'group','aria-label':'מה צובעים'},B('כתב','צובעים את הכתב',()=>{ADQ.mode='fill';adQ();},false,ln?null:'on'),B('קו','צובעים את הקו מסביב לכתב',()=>{ADQ.mode='line';adQ();},false,ln?'on':null)),
-      ...sw,adQMore(ln?'צבע קו אחר':'צבע כתב אחר',ln?L.outline:L.color,(c,first)=>{const T=adSel();if(!T)return;if(first)adSnap();T[k2]=c;adCommit();})));
-    q.querySelectorAll('.adqseg button').forEach(b=>b.setAttribute('aria-pressed',String(b.classList.contains('on'))));
-    return;}
-  // תמונה
-  const opq=f&&f.img?adOpaque(f):true;
-  if(!ADQ.tint||opq){q.append(el('div',{class:'adqrow'},B('🎨 צביעה','צביעת התמונה לצבע אחד',()=>{ADQ.tint=true;adQ();},opq),B('🪄 שינוי ב-AI','שינוי חלק מהתמונה ב-AI',()=>openAdAI(adImgsSel())),
-    el('p',{class:'adqhint'},opq?'צביעה — רק לתמונה עם רקע שקוף (כיתוב או לוגו)':'🎨 צביעה: כיתוב או לוגו שבתוך התמונה — לצבע אחד')));return;}
-  q.append(el('div',{class:'adqrow',role:'group','aria-label':'צביעת התמונה לצבע אחד'},B('✕','סגירת הצביעה',()=>{ADQ.tint=false;adQ();}),
-    ...AD_BRAND.map(([c,n])=>adQSw(c,'לצבוע ב'+n,false,()=>adTint(adSel(),c))),...adColorsInAd().map(c=>adQSw(c,'לצבוע בצבע שכבר במודעה '+c,false,()=>adTint(adSel(),c))),
-    el('label',{class:'adsw more',title:'צבע אחר לצביעה'},'🎨 עוד',el('input',{type:'color',value:'#0A2A5C','aria-label':'צבע אחר לצביעה',on:{change:e=>adTint(adSel(),e.target.value)}}))),
-    el('p',{class:'adqhint'},'🎨 ניסיוני: כל מה שלא שקוף בתמונה נצבע בצבע אחד (מתאים לכיתוב/לוגו על רקע שקוף). ↶ מחזיר את המקור.'));}
+    add(el('div',{class:'adqrow adqscroll',role:'group','aria-label':ln?'צבע הקו של הכיתוב':'צבע הכתב'},adSeg('מה צובעים',[['fill','כתב'],['line','קו']],ADQ.mode,v=>{ADQ.mode=v;adQForce();}),
+      ...sw,adQMore(ln?'צבע קו אחר':'צבע כתב אחר',ln?L.outline:L.color,(c,first)=>{const Tx=adSel();if(!Tx)return;if(first)adSnap();Tx[k2]=c;adCommit();})));}
+  else if(T==='erase'||T==='repair'){add(adSl('adslSize','גודל',6,160,ADT.size,'',v=>{ADT.size=v;adCurPreview();},adToolsSave),adSl('adslOff','הרחקה',0,140,ADT.off,'',v=>{ADT.off=v;adCurPreview();},adToolsSave),
+      el('div',{class:'adqrow'},adSeg('קצה המכחול',[[35,'רך'],[70,'בינוני'],[100,'חד']],ADT.hard,v=>{ADT.hard=v;adToolsSave();adQForce();}),hint(T==='erase'?'העיגול מעל האצבע מוחק':'העיגול מעל האצבע מחזיר את המקור')));}
+  else if(T==='magic')add(adSl('adslTol','סובלנות',0,100,ADT.tol,'',v=>{ADT.tol=v;},adToolsSave),hint('👆 נוגעים בצבע שרוצים למחוק — נמחק כל מה שדומה ומחובר. סובלנות גבוהה = יותר צבעים.'));
+  else if(T==='lasso')add(el('div',{class:'adqrow'},adSeg('מה עושה הלאסו',[['erase','מוחק את מה שבפנים'],['keep','משאיר רק את מה שבפנים']],ADT.lasso,v=>{ADT.lasso=v;adToolsSave();adQForce();})),hint('מקיפים באצבע את האזור ומרימים'));
+  else if(T==='auto'){const allowP=preciseAllowed(),modes=[['person','🙂 אנשים'],['object','📦 חפצים וחיות']].concat(allowP?[['precise','✨ מדויק (88MB)']]:[]);if(ADT.auto==='precise'&&!allowP)ADT.auto='object';
+    const bar=el('div',{class:'labar',id:'adAutoBar',hidden:AD_AUTO.busy?null:''},el('div',{class:'lafill'}));
+    add(el('div',{class:'adqrow'},adSeg('סוג התמונה',modes,ADT.auto,v=>{ADT.auto=v;adToolsSave();adQForce();})),
+      el('div',{class:'adqrow'},AD_AUTO.busy?B('✕ עצירה','עצירת הסרת הרקע',adAutoStop):B(AD_AUTO.err?'🔄 נסו שוב':'✨ להסיר את הרקע','הסרת רקע אוטומטית',adAutoRun,false,'adgo'),el('p',{class:'adqhint',id:'adAutoMsg',role:'status'},AD_AUTO.err||AD_AUTO.msg||'רץ במכשיר — התמונה לא נשלחת. בפעם הראשונה יורד מנוע (פעם אחת).')),bar);
+    setTimeout(adAutoUi,0);}
+  else if(T==='shape')add(el('div',{class:'adqrow adqscroll',role:'group','aria-label':'צורת התמונה'},[['','▭ בלי'],['circle','⚪ עיגול'],['oval','⬭ אליפסה'],['rounded','▢ מעוגל'],['heart','♥ לב'],['star','★ כוכב'],['hex','⬡ משושה']].map(([v,t])=>
+    B(t,'צורה: '+t.slice(2),()=>{const Lx=adSel();if((Lx.shape||'')===v)return;adSnap();if(v)Lx.shape=v;else delete Lx.shape;adCommit();adQForce();adSay(v?'צורה: '+t.slice(2):'בלי צורה');},false,(L.shape||'')===v?'on':null))));
+  else if(T==='smooth'){let sn=false;add(adSl('adslSmooth','החלקה',0,100,Math.round(+L.mf||0),'',v=>{const Lx=adSel();if(!Lx)return;if(!sn){adSnap();sn=true;}Lx.mf=v;adDrawSoon();},()=>{sn=false;adCommit();}),
+    el('div',{class:'adqrow'},B('↺ להחזיר את כל התמונה','ביטול כל המחיקות, הצורה וההחלקה',()=>{const Lx=adSel();if(!Lx.mask&&!Lx.shape&&!Lx.mf)return;adSnap();delete Lx.mask;delete Lx.shape;delete Lx.mf;adFree();adCommit();adQForce();adSay('התמונה המלאה חזרה. ↶ מבטל');}),hint('קצה רך למה שנשאר')));}
+  else if(T==='tint'){const opq=f&&f.img?adOpaque(f)&&!L.mask&&!L.shape:true;
+    if(opq)add(hint('🎨 צביעה — רק לתמונה עם רקע שקוף (כיתוב או לוגו). מחקו קודם את הרקע עם ✨ אוטומטי או קסם.'));
+    else add(el('div',{class:'adqrow adqscroll',role:'group','aria-label':'צביעת התמונה לצבע אחד'},...AD_BRAND.map(([c,n])=>adQSw(c,'לצבוע ב'+n,false,()=>adTint(adSel(),c))),...adColorsInAd().map(c=>adQSw(c,'לצבוע בצבע שכבר במודעה '+c,false,()=>adTint(adSel(),c))),
+      el('label',{class:'adsw more',title:'צבע אחר לצביעה'},'🎨 עוד',el('input',{type:'color',value:'#0A2A5C','aria-label':'צבע אחר לצביעה',on:{change:e=>adTint(adSel(),e.target.value)}}))),hint('כל מה שלא שקוף נצבע בצבע אחד. ↶ מחזיר את המקור.'));}
+  q.append(ctx,strip);if(sx){strip.scrollLeft=sx;}else{const a=strip.querySelector('.on');if(a&&a.scrollIntoView&&strip.scrollWidth>strip.clientWidth)strip.scrollLeft=Math.max(0,a.offsetLeft-strip.clientWidth/2);}}
 const adTexts=()=>{adEnsure();return AD.layers.filter(L=>L.k==='text');};
 function adTextCard(L,i){const t=txt(L,'text',adTexts().length>1?'כיתוב '+(i+1):'כיתוב','מבצע לחנוכה'),inp=t.querySelector('input');inp.addEventListener('focus',()=>adSelect(L.id));inp.addEventListener('input',()=>adFit(L));inp.addEventListener('keydown',e=>{if(e.key==='Enter')inp.blur();});
   const on=!!ADE&&ADE.sel===L.id||adTexts().length===1;
@@ -5505,7 +5775,7 @@ async function adOpenReady(dir,title){
     adSnap();
     for(const it of d.items){const im=await withTimeout(dataImg(base+it.file+'?v=2'),20000,'תמונה');const f={img:im,name:it.name};imgs.push(f);
       layers.push({id:adLid(),k:'img',name:AD_RNAME(it.name),src:phId(f),si:imgs.length-1,x:(it.x+it.w/2)*k,y:(it.y+it.h/2)*k,w:it.w*k,rot:0});}
-    AD.fmt=d.fmt||'a4';AD.bg=d.bg||'#0b2a5b';AD.img=imgs;AD.layers=layers;ADE&&(ADE.sel=null);AD_UNDO.length=0;
+    adViewReset();AD.fmt=d.fmt||'a4';AD.bg=d.bg||'#0b2a5b';AD.img=imgs;AD.layers=layers;ADE&&(ADE.sel=null);adHistClear();
     toast('נפתח: '+title+' — לוחצים על חלק כדי להזיז');rebuild();}
   catch(e){toast('⚠ '+e.message);}}
 const adReadySec=()=>sec('📦 מודעות מוכנות',true,el('div',{class:'inline'},AD_READY.map(([id,t])=>el('button',{type:'button',class:'btn ghost',on:{click:()=>adOpenReady(id,t)}},t))),el('p',{class:'hint'},'פותח מודעה מוכנה כשכבות נפרדות: לוחצים על חלק (תמונה, כותרת, מספר, QR, לוגו) וגוררים. מחליפים תמונה עם "החלפת תמונה".'));
@@ -5602,7 +5872,7 @@ function adQrSec(){const tg=adQrTarget(),tn=tg?adAssetName(tg,(AD.img||[]).index
   return sec('➕ QR חדש',false,row('קישור / טקסט',inp),el('div',{class:'inline'},col(AD_QR,'dark','צבע הקוד'),col(AD_QR,'light','צבע הרקע')),
     el('div',{class:'adasgo'},tg?el('button',{type:'button',class:'btn gold',on:{click:()=>adQrGo('replace')}},'🔄 להחליף את: '+tn):null,el('button',{type:'button',class:'btn ghost',on:{click:()=>adQrGo('add')}},'➕ להוסיף כשכבה חדשה')),
     el('p',{class:'hint'},'ההחלפה נכנסת בדיוק למקום ולגודל של ה-QR הקיים (או של התמונה שבחרתם במודעה). כדאי לסרוק מהטלפון לפני שמפרסמים.'));}
-const AD_TABS=[['edit','✏️ עריכה'],['tpl','📑 תבניות'],['assets','📦 נכסים'],['out','⬇️ הורדה']];let AD_TAB='edit'; // S-195
+const AD_TABS=[['edit','✏️ עריכה'],['tpl','📑 תבניות'],['assets','📦 נכסים'],['out','⬇️ הורדה']];let AD_TAB=(()=>{const t=adViewLoad().tab;return['edit','tpl','assets','out'].includes(t)?t:'edit';})(); // S-195. S-196: הלשונית שורדת רענון
 const AD_TAB_SHUT=new Set(['sec:📐 גודל','sec:🗂️ שכבות — מה מעל מה','sec:✂️ עריכת תמונה','sec:💬 מה לשנות? (במילים)','sec:🪄 תמונה חדשה מ-AI']);
 const Ad={id:'ad',printShop:false,label:'📣 פרסומת', // S-115: לא adminOnly — שותף נכנס ב-studio/?p=ad עם קוד (studio_ai_codes)
   intro:'📣 עורך פרסומות — לפוסט, לסטורי או להדפסה. כל תמונה וכל כיתוב הם שכבה נפרדת: מזיזים, מגדילים, מסובבים ומחליפים פונט בלי לבנות הכול מחדש. בסוף — הורדה כתמונה בגודל האמיתי.',
@@ -5624,7 +5894,7 @@ const Ad={id:'ad',printShop:false,label:'📣 פרסומת', // S-115: לא admi
     const T=AD_TABS.find(t=>t[0]===AD_TAB)?AD_TAB:'edit',parts={edit:()=>[texts(),pics(),adLayersSec(),fmt(),adImgToolsSec()],tpl:()=>[adTplSec(),adDriveSec()],
       assets:()=>[adAssetsSec(),adQrSec(),adLogosSec(),adGenSec(),adCmdSec()],out:()=>[out(),adCloudSec(),adCodesSec(),adModelSec(),adReqSec()]}[T]().filter(Boolean);
     parts.forEach(d=>{const k=d&&d.dataset&&d.dataset.key;if(k&&AD_TAB_SHUT.has(k)&&!PANEL.has(k))d.open=false;}); // כלים שפחות צריך — סגורים בהתחלה
-    const tabs=el('div',{class:'adtabs',role:'tablist','aria-label':'חלקי העורך'},AD_TABS.map(([id,t])=>el('button',{type:'button',role:'tab',id:'adtab-'+id,'aria-selected':String(id===T),'aria-controls':'controls',on:{click:()=>{if(AD_TAB===id)return;AD_TAB=id;rebuild();
+    const tabs=el('div',{class:'adtabs',role:'tablist','aria-label':'חלקי העורך'},AD_TABS.map(([id,t])=>el('button',{type:'button',role:'tab',id:'adtab-'+id,'aria-selected':String(id===T),'aria-controls':'controls',on:{click:()=>{if(AD_TAB===id)return;AD_TAB=id;adViewSave();rebuild();
       const tb=document.querySelector('.adtabs');if(tb){const y=tb.getBoundingClientRect().top+scrollY-(parseFloat(getComputedStyle(tb).top)||0);if(scrollY>y)window.scrollTo(0,y);}document.getElementById('adtab-'+id)?.focus({preventScroll:true});}}},t)));
     return[adAcct(),tabs,...parts];}
 };
@@ -5800,7 +6070,7 @@ function adApplyOps(ops){const byId=id=>AD.layers.find(L=>L.id===id),fonts=new S
         if(x!=null)t.x=x;if(y!=null)t.y=y;if(s)t.fs=s;if(adHex(o.color))t.color=o.color;if(o.font&&fonts.has(o.font)){t.font=o.font;loadFont(o.font);}AD.layers.push(t);if(ADE)ADE.sel=t.id;n++;break;}
       case'bg':if(!adHex(o.color))return;AD.bg=o.color;n++;break;
       case'format':if(AD_FMTS[o.fmt]){fmt=o.fmt;n++;}break;}}catch(e){console.warn('op',o,e);}});
-  if(!n)AD_UNDO.pop();
+  if(!n)adSnapCancel();
   if(fmt)adSetFmt(fmt);else rebuild(); // adSetFmt מנקה את הביטולים — אז פורמט רק בסוף
   return n;}
 async function adCommand(){const t=AD_CMD.text.trim();if(!t){toast('כתבו מה לשנות');return;}if(AD_CMD.busy)return;
@@ -5852,7 +6122,7 @@ async function adCloudSave(status){if(AD_CLOUD.busy)return;adEnsure();const imgs
       const j=await adCall({action:'design_img',img_id:phId(f),data:adImgData(f),for_code:part});f._up=j.path;f._upOwner=owner;}
     AD_CLOUD.busy='שומר…';rebuild();
     const title=(AD_CLOUD.title||(AD_DOC&&AD_DOC.title)||((AD.layers.find(L=>L.k==='text'&&L.text)||{}).text)||'עיצוב').slice(0,80);
-    const state={fmt:AD.fmt,bg:AD.bg,layers:AD.layers,imgs:imgs.map(f=>({id:phId(f),name:f.name||'',path:f._up||''}))};
+    const state={fmt:AD.fmt,bg:AD.bg,layers:AD.layers,masks:adMaskUrls(),imgs:imgs.map(f=>({id:phId(f),name:f.name||'',path:f._up||''}))};
     const j=await adCall({action:'design_save',id:AD_DOC&&AD_DOC.code===owner?AD_DOC.id:undefined,title,status,state,for_code:part});
     AD_DOC={id:j.id,code:owner,title,status,label:AD_DOC&&AD_DOC.code===owner?AD_DOC.label:''};adDocSave();AD_CLOUD.title='';AD_CLOUD.list=null;
     toast(status==='sent'?'📤 נשלח להושעיה':status==='returned'?'↩️ הוחזר — הוא יראה את זה ב"העיצובים שלי"':'☁️ נשמר בענן');}
@@ -5866,13 +6136,13 @@ async function adCloudOpen(d){if(AD_CLOUD.busy)return;if((AD.img||[]).length||AD
   AD_CLOUD.busy='פותח…';rebuild();
   try{const j=await adCall({action:'design_load',id:d.id,for_code:''}),D=j.design,S=D.state||{},imgs=[];
     for(const g of S.imgs||[]){if(!g.url)continue;const im=await adLoadImg(g.url);imgs.push({img:im,name:g.name,id:g.id,_up:g.path,_upOwner:D.code});}
-    AD.fmt=AD_FMTS[S.fmt]?S.fmt:'post';AD.bg=S.bg||'#14294D';AD.img=imgs;AD.layers=Array.isArray(S.layers)?S.layers:null;AD_UNDO.length=0;if(ADE)ADE.sel=null;
+    adMaskAdd(S.masks);adViewReset();AD.fmt=AD_FMTS[S.fmt]?S.fmt:'post';AD.bg=S.bg||'#14294D';AD.img=imgs;AD.layers=Array.isArray(S.layers)?S.layers:null;adHistClear();if(ADE)ADE.sel=null;
     (AD.layers||[]).forEach(L=>{if(L.k==='text')loadFont(L.font);});
     AD_DOC={id:D.id,code:D.code,title:D.title,status:D.status,label:d.label||''};adDocSave();AD_CLOUD.list=null;
     toast('נפתח: '+D.title);}
   catch(e){toast('⚠ '+e.message);}
   AD_CLOUD.busy='';rebuild();}
-function adCloudNew(){if(!confirm('להתחיל עיצוב חדש? מה שעל המסך יימחק מהמסך (מה ששמור בענן נשאר).'))return;AD.img=[];AD.layers=null;AD_UNDO.length=0;AD_DOC=null;adDocSave();rebuild();}
+function adCloudNew(){if(!confirm('להתחיל עיצוב חדש? מה שעל המסך יימחק מהמסך (מה ששמור בענן נשאר).'))return;AD.img=[];AD.layers=null;adHistClear();adViewReset();AD_DOC=null;adDocSave();rebuild();}
 function adCloudSec(){const B=(t,f,cls='btn ghost',dis)=>el('button',{type:'button',class:cls,disabled:dis||AD_CLOUD.busy?'':null,on:{click:f}},t);
   const part=adForPartner(),D=AD_DOC;
   const ti=el('input',{type:'text',dir:'auto','aria-label':'שם העיצוב',placeholder:(D&&D.title)||'שם העיצוב (רשות)',on:{input:e=>{AD_CLOUD.title=e.target.value;}}});ti.value=AD_CLOUD.title;
@@ -6403,7 +6673,7 @@ function giftMkInit(){
 const MK3D=new Set(['snakes','stickers','blessing']);
 function mk3d(){return MIKDASH&&(MK3D.has(cur.id)||(HOW_OK.has(cur.id)&&V3_OK.has(cur.id)))&&!!(built&&built.pages.length);}
 function showStage(){const shb=document.getElementById('sh3d'),mgb=document.getElementById('mg3d');document.body.classList.toggle('lay',(cur.id==='mug'&&mgView==='edit')||(cur.id==='subl'&&sbV()==='edit'));
-  if(cur.id!=='ad'){const ae=document.getElementById('ad2d'),abar=document.getElementById('adbar');if(ae)ae.hidden=true;if(abar)abar.hidden=true;['adq','adzoom'].forEach(i=>{const n=document.getElementById(i);if(n)n.hidden=true;});}
+  if(cur.id!=='ad'){const ae=document.getElementById('ad2d'),abar=document.getElementById('adbar');if(ae)ae.hidden=true;if(abar)abar.hidden=true;['adq','adzoom','adtop','adfl'].forEach(i=>{const n=document.getElementById(i);if(n)n.hidden=true;});}
   document.body.classList.toggle('adph',cur.id==='ad'&&adTabbed()&&!adLocked()); // S-195
   const me=document.getElementById('mg2d'),mbar=document.getElementById('mgbar');
   if(cur.id!=='subl'){const se=document.getElementById('sg2d'),sbar=document.getElementById('sgbar'),sbb=document.getElementById('sb3d');if(se)se.hidden=true;if(sbar)sbar.hidden=true;sbb.classList.remove('inset');sbb.style.cssText='';}
