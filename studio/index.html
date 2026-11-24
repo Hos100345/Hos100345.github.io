@@ -5253,7 +5253,7 @@ function adBrRender(focus){const box=document.getElementById('adBrBody');if(!box
     on:{click:()=>{if(f.template){adBrClose();adTplOpen({id:f.id,title:f.title,canDelete:f.canDelete});}else adBrLoad(f.id);}}},el('span',{class:'ph','aria-hidden':'true'},f.template?'📑':'📁'),el('span',{},f.template?f.title:f.name)))));
   AD_BR.files.forEach(x=>grid.append(el('div',{role:'listitem',class:'adbrc'+(AD_BR.pick===x?' sel':'')},el('button',{type:'button',class:'adbrt','aria-label':'תמונה: '+x.name+' — פעולות','aria-pressed':String(AD_BR.pick===x),
     on:{click:()=>{AD_BR.pick=AD_BR.pick===x?null:x;adBrRender();const a=document.getElementById('adBrAct');if(a)a.querySelector('button').focus();}}},
-    x.thumb?el('img',{src:x.thumb,alt:'',decoding:'async'}):el('span',{class:'ph','aria-hidden':'true'},'🖼'),el('span',{},x.name)))));
+    x.thumb?el('img',{src:x.thumb,alt:'',decoding:'async'}):el('span',{class:'ph','aria-hidden':'true'},'🖼'),el('span',{dir:'auto'},adBrBase(x.name))))));
   if(AD_BR.busy&&!AD_BR.files.length&&!AD_BR.folders.length)box.append(el('p',{class:'hint',role:'status'},'⏳ טוען…'));
   else if(!AD_BR.busy&&!AD_BR.err&&!AD_BR.files.length&&!AD_BR.folders.length)box.append(el('p',{class:'hint'},'התיקייה ריקה.'));
   box.append(grid);
@@ -5262,7 +5262,7 @@ function adBrRender(focus){const box=document.getElementById('adBrBody');if(!box
   const x=AD_BR.pick;if(x){const L=adSel(),tg=L&&L.k==='img'?adImgOf(L):null,tn=tg?adAssetName(tg,(AD.img||[]).indexOf(tg)):'';
     const st=el('p',{class:'hint',role:'status','aria-live':'polite',style:'margin:0;min-height:1.2em'});
     const act=async(fn,busyTxt)=>{st.textContent='⏳ '+busyTxt;try{const r=await adBrGet(x);await fn(r);}catch(e){st.textContent=adDrvMsg(e);}};
-    box.append(el('div',{class:'adbract',id:'adBrAct',role:'group','aria-label':'פעולות על '+x.name},el('b',{style:'overflow:hidden;text-overflow:ellipsis;white-space:nowrap'},x.name),
+    box.append(el('div',{class:'adbract',id:'adBrAct',role:'group','aria-label':'פעולות על '+x.name},el('b',{dir:'auto',style:'overflow:hidden;text-overflow:ellipsis;white-space:nowrap'},adBrBase(x.name)),
       B('➕ להוסיף למודעה כשכבה',()=>act(r=>adBrAdd(x,r.img),'מביא את התמונה…'),'btn gold'),
       tg?B('🔄 להחליף את: '+tn,()=>act(r=>{adAssetSwap(tg,{img:r.img,name:adBrBase(x.name)});adBrClose();toast('✓ הוחלף באותו מקום — ↶ מבטל');},'מביא את התמונה…'))
         :el('p',{class:'hint',style:'margin:0'},'🔄 להחלפה: סוגרים, בוחרים תמונה במודעה ופותחים שוב את הדרייב.'),
