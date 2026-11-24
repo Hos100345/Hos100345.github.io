@@ -5616,7 +5616,18 @@ function kcDrawOne(ctx){const W=cv.width,H=cv.height,names=lines(KC.names),i=nam
     k=Math.min(W*.8/it.w,H*.8/it.h),P=pathOf(it.pts);ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,W,H);
   ctx.save();ctx.translate((W-it.w*k)/2,(H-it.h*k)/2);ctx.scale(k,k);ctx.save();ctx.shadowColor='rgba(20,41,77,.28)';ctx.shadowBlur=18/k*(W/420);ctx.shadowOffsetY=6/k*(W/420);ctx.fillStyle='#fff';ctx.fill(P);ctx.restore();
   ctx.save();ctx.clip(P);ctx.fillStyle='#fff';ctx.fill(P);it.draw(ctx,k);ctx.restore();ctx.restore();}
-function drawPreview(){const ctx=cv.getContext('2d'),pg=built.pages[curPage];
+// S-182: גרירה של תמונת פאזל מוכן בתוך הצורה (בתצוגה השטוחה) — מזיזה את PZ.ox/PZ.oy, בדיוק כמו הסליידרים.
+let PZDRAG=null;
+function pzDragInfo(){if(cur.id!=='puzzle'||v3Page||!built||!built.pages[curPage])return null;const pl=built.pages[curPage].placed;const it=pl&&pl[0]&&pl[0].item;return it&&it.pzDrag?it.pzDrag:null;}
+function pzOverflow(d){const z=Math.max(1,PZ.zoom/100),img=d.img,s0=Math.max(d.W/img.width,d.H/img.height)*z;return{mx:(img.width*s0-d.W)/2,my:(img.height*s0-d.H)/2};} // כמו pzDrawImg: כמה מ"מ התמונה בולטת מכל צד
+cv.addEventListener('pointerdown',e=>{const d=pzDragInfo();if(!d)return;e.preventDefault();cv.setPointerCapture(e.pointerId);PZDRAG={x:e.clientX,y:e.clientY,ox:+PZ.ox||0,oy:+PZ.oy||0,d};});
+cv.addEventListener('pointermove',e=>{if(!PZDRAG)return;const k=210/cv.getBoundingClientRect().width,{mx,my}=pzOverflow(PZDRAG.d),sc=PZDRAG.d.s,c=v=>Math.max(-100,Math.min(100,Math.round(v)));
+  if(mx>0)PZ.ox=c(PZDRAG.ox+(e.clientX-PZDRAG.x)*k/sc/mx*100); // k = מ"מ בדף לכל פיקסל מסך; sc = הקטנת הפאזל בדף
+  if(my>0)PZ.oy=c(PZDRAG.oy+(e.clientY-PZDRAG.y)*k/sc/my*100);
+  drawPreview();});
+const pzDragEnd=()=>{if(!PZDRAG)return;PZDRAG=null;rebuild();}; // סיום: מעדכנים את הסליידרים לערכים החדשים
+cv.addEventListener('pointerup',pzDragEnd);cv.addEventListener('pointercancel',pzDragEnd);
+function drawPreview(){const ctx=cv.getContext('2d'),pg=built.pages[curPage];cv.style.touchAction=pzDragInfo()?'none':'';
   cv.style.background=cur.id==='keychains'?'transparent':'';cv.style.boxShadow=cur.id==='keychains'?'none':'';
   if(cur.id==='keychains'){kcDrawOne(ctx);return;}
   if(!pg){ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#fff';ctx.fillRect(0,0,cv.width,cv.height);ctx.fillStyle='#5B6878';ctx.textAlign='center';ctx.font=`${cv.width*.045}px Rubik`;
