@@ -282,7 +282,7 @@ details.face>.body{padding:0 12px 12px;display:grid;gap:8px}
 .adsl{display:grid;grid-template-columns:auto 1fr 2.6em;align-items:center;gap:10px;min-height:44px;padding:0 6px}.adsl label{font-size:.86rem;font-weight:700;color:#334155;min-width:4.2em}.adsl input[type=range]{width:100%;accent-color:#E11D74;min-height:36px}.adsl output{font-size:.85rem;color:#475569;text-align:center;font-variant-numeric:tabular-nums}
 .adq .adstk button{width:52px;padding:0}.adq .adstk canvas{width:40px;height:40px}.adq .adstk .emo{font-size:1.7rem}.adq .adgo{background:#E11D74;color:#fff;font-weight:700;padding:0 14px}.adq .adgo:hover{background:#BE185D}
 .adq .labar{margin:2px 6px}
-.adfl{position:absolute;z-index:3;inset-inline-end:8px;top:50%;transform:translateY(-50%);display:grid;gap:8px}.adfl[hidden]{display:none}
+.adfl{position:absolute;z-index:3;inset-inline-end:8px;top:50%;transform:translateY(-50%);display:grid;gap:8px}.adfl[hidden]{display:none}@media(min-width:900px){.adfl{top:32%}}
 .adfl button{width:44px;height:44px;border-radius:12px;border:0;background:rgba(255,255,255,.96);box-shadow:0 3px 12px rgba(20,41,77,.25);font-size:1.25rem;cursor:pointer;display:grid;place-items:center;touch-action:none;-webkit-user-select:none;user-select:none}.adfl button.on{background:#E11D74}
 .adflsw i{width:26px;height:26px;border-radius:6px;border:1.5px solid #94A3B8;display:block;background:conic-gradient(#D5D9E0 25%,#fff 0 50%,#D5D9E0 0 75%,#fff 0) 0 0/13px 13px}.adflsw[data-v=dark] i{background:#1F2430}.adflsw[data-v=light] i{background:#fff}.adflsw[data-v=ad] i{background:linear-gradient(135deg,#0A2A5C,#FDC010)}
 .admenu{display:grid;gap:6px}.admi{min-height:48px;border:1px solid var(--line,#D8E0EA);border-radius:12px;background:#fff;font:inherit;font-size:1rem;font-weight:600;color:var(--c-brand,#0A2A5C);text-align:start;padding:0 14px;cursor:pointer}.admi:hover{background:#F4F7FC}.admi.main{background:var(--c-brand,#0A2A5C);color:#fff}
@@ -5588,7 +5588,7 @@ function adCutOverlay(x){const P=ADE.paint;
 let _adCurT=0;function adCurPreview(){if(!ADE||!ADE.c)return;const cw=ADE.c.clientWidth,ch=ADE.c.clientHeight;ADE.cur=[cw/2,ch/2-ADT.off*.5,cw/2,ch/2+ADT.off*.5];adDrawSoon();clearTimeout(_adCurT);_adCurT=setTimeout(()=>{if(ADE&&!ADE.paint){ADE.cur=null;adDraw();}},1100);}
 // ── 🤖 אוטומטי: הסרת רקע עם js/ai-image.js (אותו קובץ ואותה טעינה עצלה כמו בעריכת התמונה). שום הורדה בלי לחיצה; התקדמות, ביטול, הודעה ו"נסו שוב" ──
 const AD_AUTO={busy:false,ac:null,msg:'',pct:0,err:''};
-function adAutoUi(){const m=document.getElementById('adAutoMsg'),b=document.getElementById('adAutoBar');if(m)m.textContent=AD_AUTO.msg;if(b){b.hidden=!AD_AUTO.busy;const f=b.firstChild;if(AD_AUTO.pct>=0){b.classList.remove('busy');f.style.width=AD_AUTO.pct+'%';}else b.classList.add('busy');}}
+function adAutoUi(){const m=document.getElementById('adAutoMsg'),b=document.getElementById('adAutoBar');if(m&&(AD_AUTO.msg||AD_AUTO.err))m.textContent=AD_AUTO.err||AD_AUTO.msg;if(b){b.hidden=!AD_AUTO.busy;const f=b.firstChild;if(AD_AUTO.pct>=0){b.classList.remove('busy');f.style.width=AD_AUTO.pct+'%';}else b.classList.add('busy');}}
 async function adAutoRun(){const L=adSel();if(!L||L.k!=='img'||AD_AUTO.busy)return;const f=adImgOf(L);if(!f||!f.img)return;
   Object.assign(AD_AUTO,{busy:true,err:'',msg:'מכין…',pct:-1,ac:new AbortController()});adQForce();adAutoUi();const t0=performance.now(),ac=AD_AUTO.ac;
   const setP=p=>{if(ac!==AD_AUTO.ac)return;if(p.phase==='download'){AD_AUTO.pct=p.total?Math.round(p.loaded/p.total*100):0;AD_AUTO.msg='מוריד את המנוע — '+AD_AUTO.pct+'%'+(p.total?' ('+Math.round(p.total/1048576)+'MB, פעם אחת בלבד)':'');}
@@ -5629,7 +5629,7 @@ const AD_BADGES=[['burst','#C3141B','מבצע!','#FFFFFF'],['circle','#FDC010','
 function adStickerCanvas(kind,a,b,c){const cv=document.createElement('canvas');cv.width=cv.height=512;const x=cv.getContext('2d');x.textAlign='center';x.textBaseline='middle';
   if(kind==='emoji'){x.font='400px "Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",sans-serif';x.fillText(a,256,280);return cv;}
   const pts=a==='burst'?(()=>{const P=[];for(let i=0;i<32;i++){const r=i%2?.82:1,t=-Math.PI/2+i*Math.PI/16;P.push([256+Math.cos(t)*r*240,256+Math.sin(t)*r*240]);}return P;})():shapePts(a==='circle'?'oval':a,480,480,30).map(p=>[p[0]+16,p[1]+16]);
-  x.fillStyle=b;x.fill(pathOf(pts));if(c){x.fillStyle=arguments[4]||'#fff';x.font='700 '+(c.length>4?120:150)+'px "Secular One",Rubik,sans-serif';x.direction='rtl';x.fillText(c,256,266);}return cv;}
+  x.fillStyle=b;x.fill(pathOf(pts));if(c){x.fillStyle=arguments[4]||'#fff';x.font='700 '+(c.length>4?120:150)+'px "Secular One",Rubik,sans-serif';x.direction=/[\u0590-\u05FF]/.test(c)?'rtl':'ltr';x.fillText(c,256,266);}return cv;}
 function adAddSticker(cv,name,fw){if((AD.img||[]).length>=AD_MAXIMG){toast('יש כבר '+AD_MAXIMG+' תמונות — מחקו אחת קודם');return;}
   const f={img:cv,name,edited:true,_opq:false};adEnsure();adSnap();AD.img=(AD.img||[]).concat([f]);
   const L={id:adLid(),k:'img',name,src:phId(f),si:AD.img.length-1,x:adW()/2,y:adH()/2,w:adW()*(fw||.24),rot:0};AD.layers.push(L);if(ADE){ADE.sel=L.id;ADE.tool='move';}ADQ.open=null;rebuild();adSay('נוספה מדבקה: '+name);}
@@ -5736,7 +5736,7 @@ function adQ(){const pv=document.querySelector('.preview'),st=ADE&&ADE.c&&ADE.c.
   else if(T==='auto'){const allowP=preciseAllowed(),modes=[['person','🙂 אנשים'],['object','📦 חפצים וחיות']].concat(allowP?[['precise','✨ מדויק (88MB)']]:[]);if(ADT.auto==='precise'&&!allowP)ADT.auto='object';
     const bar=el('div',{class:'labar',id:'adAutoBar',hidden:AD_AUTO.busy?null:''},el('div',{class:'lafill'}));
     add(el('div',{class:'adqrow'},adSeg('סוג התמונה',modes,ADT.auto,v=>{ADT.auto=v;adToolsSave();adQForce();})),
-      el('div',{class:'adqrow'},AD_AUTO.busy?B('✕ עצירה','עצירת הסרת הרקע',adAutoStop):B(AD_AUTO.err?'🔄 נסו שוב':'✨ להסיר את הרקע','הסרת רקע אוטומטית',adAutoRun,false,'adgo'),el('p',{class:'adqhint',id:'adAutoMsg',role:'status'},AD_AUTO.err||AD_AUTO.msg||'רץ במכשיר — התמונה לא נשלחת. בפעם הראשונה יורד מנוע (פעם אחת).')),bar);
+      el('div',{class:'adqrow'},AD_AUTO.busy?B('✕ עצירה','עצירת הסרת הרקע',adAutoStop):B(AD_AUTO.err?'🔄 נסו שוב':'✨ להסיר את הרקע','הסרת רקע אוטומטית',adAutoRun,false,'adgo')),el('p',{class:'adqhint',id:'adAutoMsg',role:'status'},AD_AUTO.err||AD_AUTO.msg||'רץ במכשיר — התמונה לא נשלחת. בפעם הראשונה יורד מנוע (פעם אחת).'),bar);
     setTimeout(adAutoUi,0);}
   else if(T==='shape')add(el('div',{class:'adqrow adqscroll',role:'group','aria-label':'צורת התמונה'},[['','▭ בלי'],['circle','⚪ עיגול'],['oval','⬭ אליפסה'],['rounded','▢ מעוגל'],['heart','♥ לב'],['star','★ כוכב'],['hex','⬡ משושה']].map(([v,t])=>
     B(t,'צורה: '+t.slice(2),()=>{const Lx=adSel();if((Lx.shape||'')===v)return;adSnap();if(v)Lx.shape=v;else delete Lx.shape;adCommit();adQForce();adSay(v?'צורה: '+t.slice(2):'בלי צורה');},false,(L.shape||'')===v?'on':null))));
