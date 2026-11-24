@@ -269,6 +269,18 @@ details.face>.body{padding:0 12px 12px;display:grid;gap:8px}
 .adtabs button{flex:1 1 0;min-width:0;min-height:48px;border:1.5px solid var(--line,#D8E0EA);border-radius:12px;background:#fff;font:inherit;font-size:.86rem;font-weight:700;color:var(--c-brand,#0A2A5C);cursor:pointer;padding:2px;line-height:1.15}
 .adtabs button[aria-selected=true]{background:var(--c-brand,#0A2A5C);border-color:var(--c-brand,#0A2A5C);color:#fff}
 @media(min-width:900px){.adq .adqtools{display:none}}
+/* S-196 (ליטוש): בטלפון — מסך אפליקציה. התצוגה ממלאת את המסך, סרגל הכלים קבוע בתחתית והפקדים מעליו. הפאנל הישן נפתח כגיליון מ-⋮ / 💾 / הסרגל */
+@media(max-width:899px){body.adph{overflow:hidden;overscroll-behavior:none}
+ body.adph main>.preview{position:fixed;inset:0;height:auto;z-index:5;border:0;background:#E9EDF3}body.adph main>.preview>.stage{flex:1 1 auto;height:auto;min-height:0}
+ body.adph .adq{padding-bottom:max(4px,env(safe-area-inset-bottom))}
+ body.adph .controls{display:none}body.adph>.actions{display:none}body.adph .st-tab{display:none}
+ body.adph .toast{bottom:calc(var(--adqh,150px) + 10px)}
+ body.adph.adsheet .controls{display:block;position:fixed;inset:6vh 0 0 0;z-index:50;overflow-y:auto;overscroll-behavior:contain;background:var(--panel,#EEF4FB);border-radius:18px 18px 0 0;box-shadow:0 -8px 30px rgba(10,42,92,.3);padding:0 12px 24px}
+ body.adph.adsheet::after{content:"";position:fixed;inset:0;z-index:45;background:rgba(10,20,40,.35)}
+ body.adph .adtabs{top:56px}}
+.adsheethd{position:sticky;top:0;z-index:6;display:flex;align-items:center;gap:8px;background:var(--panel,#EEF4FB);padding:6px 0;margin:0 0 4px;min-height:56px}.adsheethd b{flex:1;font-size:1.05rem;color:var(--c-brand,#0A2A5C)}
+.adsheethd button{min-width:44px;min-height:44px;border:0;border-radius:999px;background:#fff;box-shadow:0 2px 8px rgba(20,41,77,.15);font:inherit;font-weight:700;color:var(--c-brand,#0A2A5C);cursor:pointer;padding:0 14px}
+.admenu .ocacct{font-size:.82rem;margin:0 0 4px;padding:6px 8px;border-radius:10px;background:#F4F7FC;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 /* S-196: עורך הפרסומת כמו אפליקציית עריכה — סרגל עליון, סרגל כלים תחתון שנגלל לרוחב, פקדים מעל הסרגל, כפתורים צפים ליד התמונה */
 .adtop{position:absolute;z-index:4;top:6px;inset-inline:6px;display:flex;align-items:center;gap:4px;pointer-events:none}.adtop[hidden]{display:none}.adtop>*{pointer-events:auto}.adtop .adtsp{flex:1;pointer-events:none}
 .adtop button{min-width:44px;min-height:44px;border:0;border-radius:999px;background:rgba(255,255,255,.96);box-shadow:0 3px 12px rgba(20,41,77,.2);color:var(--c-brand,#0A2A5C);font:inherit;font-size:1.15rem;font-weight:700;cursor:pointer;display:inline-grid;place-items:center;position:relative;padding:0 10px}
@@ -5246,7 +5258,7 @@ async function adTplOpen(t){if(AD_TPL.busy)return;
       get=f=>withTimeout(dataImg(base+f.file+'?v='+AD_TPL_V),20000,'תמונה בתבנית לא נטענה');}
     else{const j=await adDriveCall({action:'template_get',id:t.id}),by={};json=j.template;(j.files||[]).forEach(x=>by[x.name]=x);
       get=async f=>{const x=by[f.file];if(!x)throw new Error('חסרה תמונה בתבנית: '+f.file);const g=await adDriveCall({action:'file_get',id:x.id});return withTimeout(dataImg('data:'+g.mime+';base64,'+g.data),20000,'תמונה בתבנית לא נפתחה');};}
-    await adTplApply(json,get);AD_TPL.busy='';toast('📑 נפתח: '+t.title+' — לוחצים על חלק כדי לערוך');}
+    await adTplApply(json,get);AD_TPL.busy='';adSheetClose();toast('📑 נפתח: '+t.title+' — לוחצים על חלק כדי לערוך');}
   catch(e){toast(e.noconf?'⚠ החיבור לדרייב עוד לא הוגדר':adDrvMsg(e));}
   AD_TPL.busy='';rebuild();}
 async function adTplList(){AD_TPL.busy='טוען תבניות מהדרייב…';rebuild();
@@ -5653,16 +5665,19 @@ function adTop(){const st=ADE&&ADE.c&&ADE.c.parentElement;if(!st)return;let t=do
   const cnt=n=>n?el('span',{class:'adbadge','aria-hidden':'true'},String(n>99?'99+':n)):null;
   t.append(B('⋮','עוד — תבניות, נכסים, דרייב, חזרה לחנות',adMenu,'adtm'),B('💾 שמירה','שמירה, הורדה ושליחה',adSaveSheet,'adtsave'),el('span',{class:'adtsp'}),
     B([adIc('undo'),cnt(AD_UNDO.length)],'ביטול ('+AD_UNDO.length+')',()=>adUndo(),null,!AD_UNDO.length),B([adIc('redo'),cnt(AD_REDO.length)],'חזרה על מה שבוטל ('+AD_REDO.length+')',()=>adRedo(),null,!AD_REDO.length),
-    B('?','עזרה — איך עובדים',adHelp,'adthelp'),done?B('✓','סיום — סגירת הכלי / ביטול הבחירה',adTopDone,'adtok'):null);}
+    B('?','עזרה — איך עובדים',adHelp,'adthelp'),...(done?[B('✓','סיום — סגירת הכלי / ביטול הבחירה',adTopDone,'adtok')]:[]));}
+function adSheet(t){if(t)AD_TAB=t;document.body.classList.add('adsheet');rebuild();const c=document.getElementById('controls');if(c){c.scrollTop=0;setTimeout(()=>{const b=c.querySelector('.adsheethd button');if(b)b.focus({preventScroll:true});},60);}adViewSave();}
+function adSheetClose(){if(!document.body.classList.contains('adsheet'))return;document.body.classList.remove('adsheet');if(ADE&&ADE.c)requestAnimationFrame(adDraw);}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.classList.contains('adsheet')&&!document.querySelector('.fmodal.addlg'))adSheetClose();});
 function adMenu(){const back=document.querySelector('nav.tabs a.tab-all'),share=document.querySelector('.share-top'),cart=document.getElementById('cartTop');let m;
   const B=(t,f)=>el('button',{type:'button',class:'admi',on:{click:()=>{m._close();f();}}},t);
-  const go=t=>()=>{AD_TAB=t;rebuild();setTimeout(()=>{const tb=document.querySelector('.adtabs');if(tb){const y=tb.getBoundingClientRect().top+scrollY-(parseFloat(getComputedStyle(tb).top)||0);window.scrollTo(0,Math.max(0,y));}},80);};
-  m=adDlg('adMenu','⋮ עוד',80,[el('div',{class:'admenu'},B('📑 תבניות מוכנות ושלי',go('tpl')),B('📂 הדרייב של עיצובישי',adBrOpen),B('📦 הנכסים במודעה',go('assets')),B('▦ קוד QR',go('assets')),
+  const go=t=>()=>adSheet(t),stt=document.querySelector('.st-tab');
+  m=adDlg('adMenu','⋮ עוד',80,[el('div',{class:'admenu'},adAcct(),B('📑 תבניות מוכנות ושלי',go('tpl')),B('📂 הדרייב של עיצובישי',adBrOpen),B('📦 הנכסים במודעה',go('assets')),B('▦ קוד QR',go('assets')),
     B('🏷️ לוגואים',go('assets')),B('🪄 תמונה מ-AI · שינוי במילים',go('assets')),B('✏️ כיתובים, שכבות ופורמט',go('edit')),B('☁️ העיצובים שלי בענן',go('out')),
-    share?B('📤 שלחו לחבר',()=>share.click()):null,cart&&!cart.hidden?B('🛒 הסל',()=>cart.click()):null,back?B(back.textContent.trim(),()=>{location.href=back.href;}):null)]);adFocus(m,'.obody button');}
+    stt?B('🎬 סרטון הסבר',()=>stt.click()):null,share?B('📤 שלחו לחבר',()=>share.click()):null,cart&&!cart.hidden?B('🛒 הסל',()=>cart.click()):null,back?B(back.textContent.trim(),()=>{location.href=back.href;}):null)]);adFocus(m,'.obody button');}
 function adSaveSheet(){let m;const B=(t,f,cls)=>el('button',{type:'button',class:'admi'+(cls?' '+cls:''),on:{click:e=>{m._close();f(e);}}},t);
   m=adDlg('adSave','💾 שמירה ושליחה',80,[el('div',{class:'admenu'},B('⬇️ הורדה כתמונה · '+adPx(),adDownload,'main'),B('🟢 שליחה בוואטסאפ',()=>adWhatsApp()),B('☁️ שמירה בענן (העיצובים שלי)',()=>adCloudSave()),
-    B('💾 שמירה לדרייב',()=>adSaveDlg('ad')),B('📑 שמירה כתבנית',()=>adSaveDlg('tpl')),B('⬇️ עוד אפשרויות הורדה',()=>{AD_TAB='out';rebuild();}))]);adFocus(m,'.obody button');}
+    B('💾 שמירה לדרייב',()=>adSaveDlg('ad')),B('📑 שמירה כתבנית',()=>adSaveDlg('tpl')),B('⬇️ עוד אפשרויות הורדה',()=>adSheet('out')))]);adFocus(m,'.obody button');}
 function adHelp(){const P=(a,b)=>el('p',{style:'margin:0 0 8px'},el('b',{},a),' — '+b);
   const m=adDlg('adHelpDlg','? איך עובדים',85,[P('👆 בחירה','נוגעים בכיתוב או בתמונה. גוררים להזזה, ⤡ בפינה לגודל, ↻ לסיבוב.'),P('🔍 זום','שתי אצבעות או הקשה כפולה. גם כשמכחול פעיל — שתי אצבעות מגדילות ומזיזות.'),
     P('✂️ כלים לתמונה','מחק · שחזור (מחזיר את המקור) · קסם (נוגעים בצבע ונמחק כל מה שדומה ומחובר) · אוטומטי (הסרת רקע במכשיר) · לאסו (מקיפים אזור) · צורה (עיגול, לב, כוכב…) · החלקה (קצה רך).'),
@@ -5693,7 +5708,7 @@ function adSl(id,label,min,max,val,unit,onIn,onCh){const out=el('output',{for:id
   return el('div',{class:'adsl sl-lock','data-sl-lock':id},el('label',{for:id},label),inp,out);} // כלל סליידרים: כל סליידר בשורה משלו עם data-sl-lock
 function adSeg(label,opts,val,f){const g=el('div',{class:'adqseg',role:'group','aria-label':label},opts.map(([v,t])=>el('button',{type:'button','aria-pressed':String(v===val),class:v===val?'on':null,on:{click:()=>f(v)}},t)));return g;}
 function adQ(){const pv=document.querySelector('.preview'),st=ADE&&ADE.c&&ADE.c.parentElement;if(!pv||!st)return;let q=document.getElementById('adq');
-  if(!q){q=el('div',{class:'adq',id:'adq'});st.after(q);}
+  if(!q){q=el('div',{class:'adq',id:'adq'});st.after(q);try{new ResizeObserver(()=>document.documentElement.style.setProperty('--adqh',q.offsetHeight+'px')).observe(q);}catch(e){}}
   const L=adSel(),ph=adTabbed(),show=!ADE.c.hidden&&cur===Ad&&!adLocked()&&(ph||!!L);q.hidden=!show;adTop();adFloat();if(!show)return;
   const T=adToolFix(L),kind=L?L.k:'none',f=L&&L.k==='img'?adImgOf(L):null;if(!L)ADQ.tint=false;
   const k=[L?L.id:'',kind,T,ADQ.open,ADQ.mode,L&&L.color,L&&L.outline,L&&L.shape,f?phId(f):'',ph,adColorsInAd().join(),AD.fmt,AD.bg,AD_AUTO.busy,AD_AUTO.err,ADT.lasso,ADT.auto,ADT.hard,AD_UNDO.length&&!ph?1:0].join('|');if(q._k===k)return;
@@ -5707,15 +5722,17 @@ function adQ(){const pv=document.querySelector('.preview'),st=ADE&&ADE.c&&ADE.c.
   const icon={add:'add',text:'text',sticker:'sticker',bg:'bg',ratio:'ratio',move:'move',color:'color',erase:'erase',repair:'repair',magic:'magic',auto:'auto',lasso:'lasso',shape:'shape',smooth:'smooth',tint:'tint',crop:'crop',ai:'ai'};
   const act=id=>!L?ADQ.open===id:T===id;
   const strip=el('div',{class:'adstrip',role:'toolbar','aria-label':!L?'הוספה למודעה':L.k==='text'?'כלים לכיתוב':'כלים לתמונה'},tools.map(([id,t])=>el('button',{type:'button',class:'adtool'+(act(id)?' on':''),'aria-pressed':['crop','ai'].includes(id)?null:String(act(id)),'data-tool':id,
-    on:{click:()=>{if(!L){if(id==='text'){adAddText();setTimeout(()=>adQEdit(true),120);return;}ADQ.open=ADQ.open===id?null:id;adQForce();return;}adSetTool(id);}}},adIc(icon[id]),el('span',{},t))));
+    on:{click:()=>{if(!L){if(id==='text'&&!ph){adAddText();setTimeout(()=>adQEdit(true),120);return;}ADQ.open=ADQ.open===id?null:id;adQForce();return;}adSetTool(id);}}},adIc(icon[id]),el('span',{},t))));
   if(!L){const O=ADQ.open;
-    if(O==='add')add(el('div',{class:'adqrow adqscroll'},B('🖼️ תמונה','הוספת תמונה מהטלפון',()=>adPickImg(false)),B('📂 מהדרייב','תמונה מהדרייב של עיצובישי',adBrOpen),B('▦ QR','קוד QR',()=>{AD_TAB='assets';ADQ.open=null;rebuild();}),
-      ...AD_LOGOS.map(([id,name,fw])=>B('🏷️ '+name,'לוגו '+name,()=>{ADQ.open=null;adAddLogo(id,name,fw);})),B('📑 תבנית','תבניות מוכנות',()=>{AD_TAB='tpl';ADQ.open=null;rebuild();})));
+    if(O==='add')add(el('div',{class:'adqrow adqscroll'},B('🖼️ תמונה','הוספת תמונה מהטלפון',()=>adPickImg(false)),B('📂 מהדרייב','תמונה מהדרייב של עיצובישי',adBrOpen),B('▦ QR','קוד QR',()=>{ADQ.open=null;adSheet('assets');}),
+      ...AD_LOGOS.map(([id,name,fw])=>B('🏷️ '+name,'לוגו '+name,()=>{ADQ.open=null;adAddLogo(id,name,fw);})),B('📑 תבנית','תבניות מוכנות',()=>{ADQ.open=null;adSheet('tpl');})));
     else if(O==='sticker')add(el('div',{class:'adqrow adqscroll adstk',role:'group','aria-label':'מדבקות'},...AD_BADGES.map(([s,c,t,tc])=>{const cv=adStickerCanvas('shape',s,c,t,tc);const b=B('',(t?'תגית '+t:{heart:'לב',star:'כוכב',circle:'עיגול',burst:'פיצוץ'}[s]),()=>adAddSticker(adStickerCanvas('shape',s,c,t,tc),t||'צורה',.3));b.append(cv);return b;}),
       ...AD_EMOJI.map(e=>B(e,'מדבקה '+e,()=>adAddSticker(adStickerCanvas('emoji',e),'מדבקה '+e,.2),false,'emo'))));
     else if(O==='bg'){const cb=String(AD.bg||'').toUpperCase();add(el('div',{class:'adqrow adqscroll',role:'group','aria-label':'רקע המודעה'},...AD_BRAND.map(([c,n])=>adQSw(c,'רקע '+n,cb===c,()=>adSetBg(c))),
       ...AD_GRAD.map(([g,n])=>{const[c1,c2]=g.slice(3).split(',');const b=adQSw(c1,'מעבר צבעים: '+n,AD.bg===g,()=>adSetBg(g));b.querySelector('i').style.background='linear-gradient('+c1+','+c2+')';return b;}),
       adQMore('צבע רקע אחר',adHex(AD.bg)?AD.bg:'#0A2A5C',(c,first)=>{if(first)adSnap();AD.bg=c;adCommit();}),B('🖼️ תמונה','תמונת רקע מהטלפון',()=>adPickImg(true))));}
+    else if(O==='text')add(el('div',{class:'adqrow adqscroll',role:'group','aria-label':'כיתובים'},B('➕ כיתוב חדש','הוספת כיתוב',()=>{ADQ.open=null;adAddText();setTimeout(()=>adQEdit(true),150);},false,'adgo'),
+      ...adTexts().filter(o=>o.text).map(o=>B('✏️ '+(o.text.length>14?o.text.slice(0,13)+'…':o.text),'עריכת הכיתוב: '+o.text,()=>{ADQ.open=null;adSelect(o.id);adQEdit(true);})),B('📋 כל הכיתובים','כל הכיתובים, פונטים וגודל',()=>{ADQ.open=null;adSheet('edit');})));
     else if(O==='ratio')add(el('div',{class:'adqrow adqscroll',role:'group','aria-label':'גודל ויחס המודעה'},Object.entries(AD_FMTS).map(([key,v])=>B(v.label,v.label+' '+v.sub,()=>{adSetFmt(key);adQForce();},false,AD.fmt===key?'on':null))));
     else add(hint('👆 נוגעים בכיתוב או בתמונה כדי לערוך · שתי אצבעות או הקשה כפולה = זום'));}
   else if(T==='move')add(el('div',{class:'adqrow adqtools'},B('−','הקטנה',()=>adScale(adSel(),1/1.1)),B('+','הגדלה',()=>adScale(adSel(),1.1)),B('⟲','סיבוב שמאלה',()=>adRot(adSel(),-15)),B('⟳','סיבוב ימינה',()=>adRot(adSel(),15)),
@@ -5756,7 +5773,7 @@ function adTextCard(L,i){const t=txt(L,'text',adTexts().length>1?'כיתוב '+(
 // כשמקלידים כיתוב ארוך — הוא מתכווץ כדי להישאר בתוך הרוחב (הגדלה ידנית ב-⤡ עדיין אפשרית)
 function adFit(L){if(L.k!=='text'||(L.rot||0)%180)return;const m=adW()*.94,w=adSize(L)[0];if(w>m)L.fs=Math.max(3,L.fs*m/w);}
 function adAddText(){adSnap();n=adNewText('כיתוב');if(adTexts().some(o=>Math.abs(o.y-n.y)<adH()*.15))n.y=adH()*.2;AD.layers.push(n);if(ADE)ADE.sel=n.id;rebuild();
-  setTimeout(()=>{const inp=document.querySelector(`[data-adl="${n.id}"] input[type=text]`);if(inp){inp.focus();inp.select();}},80);}
+  if(!adTabbed())setTimeout(()=>{const inp=document.querySelector(`[data-adl="${n.id}"] input[type=text]`);if(inp){inp.focus();inp.select();}},80);}
 // S-157: לוגואים מוכנים לפרסומת — כל לוגו נכנס כשכבת תמונה רגילה (גוררים, ⤡ מגדיל, ↻ מסובב), לא כרקע גם כשזו התמונה הראשונה
 const AD_LOGOS=[['itzuvishi','עיצובישי',.26],['laga-baetz','לגעת בעץ',.26],['studio','אצלנו בסטודיו',.42]];
 async function adAddLogo(id,name,fw){
@@ -5896,7 +5913,8 @@ const Ad={id:'ad',printShop:false,label:'📣 פרסומת', // S-115: לא admi
     parts.forEach(d=>{const k=d&&d.dataset&&d.dataset.key;if(k&&AD_TAB_SHUT.has(k)&&!PANEL.has(k))d.open=false;}); // כלים שפחות צריך — סגורים בהתחלה
     const tabs=el('div',{class:'adtabs',role:'tablist','aria-label':'חלקי העורך'},AD_TABS.map(([id,t])=>el('button',{type:'button',role:'tab',id:'adtab-'+id,'aria-selected':String(id===T),'aria-controls':'controls',on:{click:()=>{if(AD_TAB===id)return;AD_TAB=id;adViewSave();rebuild();
       const tb=document.querySelector('.adtabs');if(tb){const y=tb.getBoundingClientRect().top+scrollY-(parseFloat(getComputedStyle(tb).top)||0);if(scrollY>y)window.scrollTo(0,y);}document.getElementById('adtab-'+id)?.focus({preventScroll:true});}}},t)));
-    return[adAcct(),tabs,...parts];}
+    const hd=el('div',{class:'adsheethd'},el('b',{},'⚙️ עוד אפשרויות'),el('button',{type:'button','aria-label':'סגירה — חזרה לעריכה',on:{click:adSheetClose}},'✕ חזרה לעריכה')); // S-196: בטלפון הפאנל = גיליון שנפתח מ-⋮ / 💾
+    return[hd,adAcct(),tabs,...parts];}
 };
 // ── S-115: בינה מלאכותית בעורך הפרסומת + גישה עם קוד (לשותף, בלי חשבון מנהל) ──
 // שרת: Edge Function ai-image ← המודל לכל משימה מ-public.ai_tasks ← OpenRouter. קודים: studio_ai_codes (נספר רק מה שהצליח).
@@ -6675,6 +6693,7 @@ function mk3d(){return MIKDASH&&(MK3D.has(cur.id)||(HOW_OK.has(cur.id)&&V3_OK.ha
 function showStage(){const shb=document.getElementById('sh3d'),mgb=document.getElementById('mg3d');document.body.classList.toggle('lay',(cur.id==='mug'&&mgView==='edit')||(cur.id==='subl'&&sbV()==='edit'));
   if(cur.id!=='ad'){const ae=document.getElementById('ad2d'),abar=document.getElementById('adbar');if(ae)ae.hidden=true;if(abar)abar.hidden=true;['adq','adzoom','adtop','adfl'].forEach(i=>{const n=document.getElementById(i);if(n)n.hidden=true;});}
   document.body.classList.toggle('adph',cur.id==='ad'&&adTabbed()&&!adLocked()); // S-195
+  if(cur.id!=='ad'||adLocked())document.body.classList.remove('adsheet');
   const me=document.getElementById('mg2d'),mbar=document.getElementById('mgbar');
   if(cur.id!=='subl'){const se=document.getElementById('sg2d'),sbar=document.getElementById('sgbar'),sbb=document.getElementById('sb3d');if(se)se.hidden=true;if(sbar)sbar.hidden=true;sbb.classList.remove('inset');sbb.style.cssText='';}
   if(cur.id==='mug'){document.getElementById('v3In').hidden=true;shb.hidden=true;const e2=document.getElementById('sh2d');if(e2)e2.hidden=true;
