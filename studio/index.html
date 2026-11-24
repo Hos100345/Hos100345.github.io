@@ -154,7 +154,7 @@ details.face>.body{padding:0 12px 12px;display:grid;gap:8px}
 .adtpl .adasb .btn{min-height:48px}
 .adwarn{background:#FFF7E0;border:1px solid #E8C77A;border-radius:10px;padding:8px 10px;color:var(--ink)}
 .adwarn a{color:var(--navy);font-weight:700}
-.adm .fsheet{max-height:92vh}.adbrsheet{max-width:900px;height:92vh}
+.addlg .fsheet{max-height:92vh}.adbrsheet{max-width:900px;height:92vh}
 .adcrumb{display:flex;flex-wrap:wrap;gap:4px;align-items:center}.adcrumb .btn{min-height:44px;padding:4px 10px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.adcrumb .btn[disabled]{opacity:1;font-weight:700}
 .adbr{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px}
 .adbrc{min-width:0}.adbrc.sel .adbrt{outline:3px solid var(--navy);outline-offset:1px}
@@ -5113,7 +5113,7 @@ const adTitle=()=>String(((AD.layers||[]).find(o=>o.k==='text'&&o.text&&String(o
 // חלון קטן: מיקוד נכנס, Tab נשאר בפנים, Esc סוגר, המיקוד חוזר למקום. z: 80 = הדפדפן, 90 = שאלה מעליו
 function adDlg(id,title,z,kids,onClose){let m=document.getElementById(id);if(m)m.remove();const back=document.activeElement,hid=id+'H';
   const close=()=>{m.remove();if(onClose)onClose();if(back&&back.focus&&document.body.contains(back))back.focus({preventScroll:true});};
-  m=el('div',{class:'fmodal adm',id,style:'z-index:'+z,role:'dialog','aria-modal':'true','aria-labelledby':hid},el('div',{class:'fsheet'},
+  m=el('div',{class:'fmodal addlg',id,style:'z-index:'+z,role:'dialog','aria-modal':'true','aria-labelledby':hid},el('div',{class:'fsheet'},
     el('div',{class:'fhead'},el('h2',{id:hid},title),el('span',{style:'flex:1'}),el('button',{type:'button','aria-label':'סגירה',on:{click:()=>close()}},'✕')),el('div',{class:'obody'},...kids)));
   m.addEventListener('click',e=>{if(e.target===m)close();});
   m.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();close();return;}if(e.key!=='Tab')return;
