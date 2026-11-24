@@ -75,6 +75,34 @@ Deno.serve(async (req) => {
       return json({ ok: true, id, code, price, price_before, coupon, uploads });
     }
 
+    // הזמנה ידנית מלשונית המנהל. רק למנהל (בודקים את ה-JWT כאן, כי verify_jwt=false).
+    // לא עוברת דרך create_studio_order — בלי הגבלת 5 ביום לטלפון, בלי קבצים, בלי קופון.
+    // שורה ב-status='new' עם מחיר וסימון שולם שהמנהל קובע.
+    if (body.action === 'manual') {
+      const tok = (req.headers.get('authorization') ?? '').replace(/^Bearer\s+/i, '');
+      const { data: u, error: ue } = await admin.auth.getUser(tok);
+      if (ue || !u?.user || String(u.user.email ?? '').toLowerCase() !== 'hoshaya@gmail.com') return fail('forbidden', 403);
+      const phone = validatePhone(body.phone);
+      if (!phone) return fail('invalid_phone', 400);
+      const product = String(body.product ?? '');
+      if (!PRODUCTS.includes(product)) return fail('invalid_product', 400);
+      const sheets = Number(body.sheets);
+      if (!Number.isInteger(sheets) || sheets < 1 || sheets > 40) return fail('invalid_sheets', 400);
+      const price = Number(body.price_ils);
+      if (!Number.isInteger(price) || price < 0 || price > 100000) return fail('invalid_price', 400);
+      const { data: row, error } = await admin.from('studio_orders').insert({
+        product, customer_name: truncate(body.name, 80), customer_phone: phone,
+        customer_note: truncate(body.note, 300), sheets, price_ils: price, design: {},
+        summary: truncate(body.summary, 200), status: 'new', files: [], paid: body.paid === true,
+      }).select('id,code').single();
+      if (error || !row) {
+        console.error('MANUAL_INSERT_ERROR', JSON.stringify(error));
+        return fail('server_error', 500);
+      }
+      console.log('STUDIO_ORDER_MANUAL', row.code, product, 'sheets=', sheets, 'price=', price);
+      return json({ ok: true, id: row.id, code: row.code });
+    }
+
     if (body.action === 'finalize') {
       const id = String(body.id ?? ''), code = String(body.code ?? '');
       if (!UUID_RE.test(id) || !/^ST-\d{4,}$/.test(code)) return fail('invalid_order', 400);
