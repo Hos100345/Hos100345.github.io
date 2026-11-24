@@ -722,13 +722,14 @@ let WZA=null;const WZA_MS=400,wzReduced=()=>matchMedia('(prefers-reduced-motion:
 function wzStepInfo(){const kids=[...ctrls.children].filter(n=>!(n.matches&&(n.matches('nav.wz,.foot,h2.shh'))));
   const q=sel=>kids.flatMap(n=>[...(n.matches(sel)?[n]:[]),...n.querySelectorAll(sel)]);
   const fields=q('input,select,textarea').length,btns=q('button').filter(b=>!b.closest('[data-wz-filter]')),pr=btns.filter(b=>b.hasAttribute('aria-pressed')&&!b.closest('[data-wz-filter]')),groups=new Set(pr.map(b=>b.parentElement));
-  return{fields,other:btns.length-pr.length,groups:groups.size,pr};}
+  const multi=pr.some(b=>b.closest('[data-wz-multi]'))||[...groups].some(g=>[...g.children].filter(x=>x.getAttribute&&x.getAttribute('aria-pressed')==='true').length>1); // בחירה מרובה (✓ כמה סדרות) — לא שלב בחירה אחת
+  return{fields,other:btns.length-pr.length,groups:groups.size,pr,multi};}
 document.addEventListener('click',e=>{if(!e.isTrusted||!document.body.classList.contains('wz'))return;const b=e.target.closest&&e.target.closest('button[aria-pressed]');
-  if(!b||!ctrls.contains(b)||b.closest('nav.wz,.foot,.fmodal,[data-wz-filter]'))return; /* data-wz-filter = סינון (קטגוריה), לא בחירה */const z=wzNow();if(!z||z!==WZ[cur.id]||z.step>=z.n-1||z.auto===false||(!z.auto&&!z.detect))return;
+  if(!b||!ctrls.contains(b)||b.closest('nav.wz,.foot,.fmodal,[data-wz-filter],[data-wz-multi]'))return; /* data-wz-filter = סינון (קטגוריה), לא בחירה */const z=wzNow();if(!z||z!==WZ[cur.id]||z.step>=z.n-1||z.auto===false||(!z.auto&&!z.detect))return;
   if(b.getAttribute('aria-pressed')==='true'){WZA=null;return;} // אותה בחירה שוב — לא מקפיצים
   const a=WZA={id:cur.id,step:z.step,z};
   setTimeout(()=>{if(WZA!==a||cur.id!==a.id||a.z.step!==a.step)return;const I=wzStepInfo();
-    if(I.fields||I.groups!==1||(!a.z.auto&&I.other)){WZA=null;return;} // הבחירה חשפה שדות/עוד בחירות — הלקוח ממשיך בעצמו
+    if(I.fields||I.groups!==1||I.multi||(!a.z.auto&&I.other)){WZA=null;return;} // הבחירה חשפה שדות/עוד בחירות — הלקוח ממשיך בעצמו
     const on=I.pr.find(x=>x.getAttribute('aria-pressed')==='true');if(on&&!wzReduced())on.classList.add('wzpick');
     setTimeout(()=>{if(WZA!==a||cur.id!==a.id||a.z.step!==a.step||!document.body.classList.contains('wz'))return;WZA=null;wzGo(a.id,a.step+1);
       const fh=()=>{const h=ctrls.querySelector('h2.shh'),t=h&&h.offsetParent?h:ctrls.querySelector('nav.wz [aria-current=step]');if(t&&document.activeElement!==t){if(t===h)h.tabIndex=-1;t.focus({preventScroll:true});}return h;},h=fh(),lv=document.getElementById('wzLive');setTimeout(()=>{if(WZ[a.id]&&WZ[a.id].step===a.step+1&&(document.activeElement===document.body||!document.activeElement))fh();},200); // בטלפון השלב נבנה שוב רגע אחרי — המיקוד חוזר לכותרת החדשה
@@ -2279,7 +2280,7 @@ function qtIdeas(){const cat=QT_IDEAS.find(c=>c.id===QT.ideaCat)||QT_IDEAS[0],ha
     el('p',{class:'hint'},'בחרו נושא ולחצו על רעיון — הוא נכנס לתיבת השמות. לחיצה נוספת מסירה אותו. אחר כך מחליפים לשמות שלכם ומעלים תמונות.'),
     el('div',{class:'qt-cats'},...QT_IDEAS.map(c=>el('button',{type:'button',class:'qt-cat'+(c===cat?' on':''),on:{click:()=>{QT.ideaCat=c.id;rebuild();}}},c.t))),
     el('div',{class:'rules'},cat.tip),
-    el('div',{class:'qt-ideas'},...cat.items.map(s=>{const[line,note]=s.split('|'),i=line.indexOf(':'),name=line.slice(0,i).trim(),cards=line.slice(i+1).trim(),added=have.has(name);
+    el('div',{class:'qt-ideas','data-wz-multi':''},...cat.items.map(s=>{const[line,note]=s.split('|'),i=line.indexOf(':'),name=line.slice(0,i).trim(),cards=line.slice(i+1).trim(),added=have.has(name);
       return el('button',{type:'button',class:'qt-idea'+(added?' added':''),'aria-pressed':added?'true':'false',disabled:(!added&&full)?'':null,title:added?'לחצו שוב כדי להסיר':null,on:{click:()=>added?qtRemoveIdea(name):qtAddIdea(line)}},
         el('b',{},(added?'✓ ':'+ ')+name),el('span',{},cards),note?el('i',{},note):null,added?el('i',{class:'qt-rm'},'✕ לחצו שוב להסרה'):null);})),
     full?el('p',{class:'hint'},'הגעתם למקסימום — '+QT_MAX+' סדרות.'):null);}
@@ -2318,7 +2319,7 @@ function qtMkInit(){qtMkImg(QT_MK_BACK);QT.back=defDeco({bg:{mode:'radial',c1:'#
   text:{main:'רביעיות',sub:'בית המקדש',font:'Secular One',color:'#E9C46A',size:26,dy:0}});QT.front=defDeco({frame:{id:'single',color:'#C6A135',w:.8}});qtMkApply();}
 function qtMkSec(){const n=QT_MK.on.filter(Boolean).length;
   return sec('🕍 סדרות המקדש',true,el('p',{class:'hint'},'בחרו אילו סדרות ייכנסו לחפיסה ('+n+' סדרות · '+(n*4)+' קלפים). כל סדרה — 4 קלפים.'),
-    el('div',{style:'display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px'},QT_MK_SETS.map((x,i)=>{const on=QT_MK.on[i];
+    el('div',{'data-wz-multi':'',style:'display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px'},QT_MK_SETS.map((x,i)=>{const on=QT_MK.on[i];
       return el('button',{type:'button','aria-pressed':String(on),style:'display:flex;gap:6px;align-items:center;border:2px solid '+(on?'#C6A135':'#E2D8C4')+';background:'+(on?'#FFF9E8':'#fff')+';border-radius:10px;padding:5px;cursor:pointer;font:inherit;font-size:.78rem;text-align:start;opacity:'+(on?1:.6),
         on:{click:()=>{if(on&&n<=2){toast('צריך לפחות 2 סדרות');return;}QT_MK.on[i]=!on;qtMkApply();rebuild();rerender();}}},
         el('img',{src:x.c[0][0],alt:'',style:'width:38px;height:38px;object-fit:cover;border-radius:6px;flex:none'}),el('span',{},(on?'✓ ':'')+x.n));})));}
@@ -2331,7 +2332,7 @@ function mmMkInit(){qtMkImg(QT_MK_BACK);MM.backs=true;MM.front=defDeco({frame:{i
 function mmMkSec(){const n=MM_MK.on.filter(Boolean).length;
   return sec('🕍 נושאי המקדש',true,el('p',{class:'hint'},'בחרו נושאים ('+n+' נושאים · '+(n*4)+' זוגות · '+(n*8)+' קלפים). כל נושא — 4 זוגות.'),
     seg(MM,'mode',[['same','שני קלפים זהים'],['imageName','תמונה + שם (ללימוד)']]),
-    el('div',{style:'display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px'},QT_MK_SETS.map((x,i)=>{const on=MM_MK.on[i];
+    el('div',{'data-wz-multi':'',style:'display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px'},QT_MK_SETS.map((x,i)=>{const on=MM_MK.on[i];
       return el('button',{type:'button','aria-pressed':String(on),style:'display:flex;gap:6px;align-items:center;border:2px solid '+(on?'#C6A135':'#E2D8C4')+';background:'+(on?'#FFF9E8':'#fff')+';border-radius:10px;padding:5px;cursor:pointer;font:inherit;font-size:.78rem;text-align:start;opacity:'+(on?1:.6),
         on:{click:()=>{if(on&&n<=1){toast('צריך לפחות נושא אחד');return;}MM_MK.on[i]=!on;mmMkApply();rebuild();rerender();}}},
         el('img',{src:x.c[0][0],alt:'',style:'width:38px;height:38px;object-fit:cover;border-radius:6px;flex:none'}),el('span',{},(on?'✓ ':'')+x.n));})),
@@ -2345,7 +2346,7 @@ function bgMkInit(){BG.title='בינגו המקדש';BG.color='#14294D';BG.bg='#
 function bgMkSec(pool,k,shortMsg){const n=BG_MK.on.filter(Boolean).length;
   return sec('🕍 נושאי המקדש',true,el('p',{class:'hint'},'בחרו נושאים ('+n+' נושאים · '+(n*4)+' פריטים במאגר).'),
     el('p',{class:'hint'},'מה במשבצת:'),seg(BG,'mode',[['img','רק תמונה'],['both','תמונה + שם'],['name','רק מילה']]),
-    el('div',{style:'display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px'},QT_MK_SETS.map((x,i)=>{const on=BG_MK.on[i];
+    el('div',{'data-wz-multi':'',style:'display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px'},QT_MK_SETS.map((x,i)=>{const on=BG_MK.on[i];
       return el('button',{type:'button','aria-pressed':String(on),style:'display:flex;gap:6px;align-items:center;border:2px solid '+(on?'#C6A135':'#E2D8C4')+';background:'+(on?'#FFF9E8':'#fff')+';border-radius:10px;padding:5px;cursor:pointer;font:inherit;font-size:.78rem;text-align:start;opacity:'+(on?1:.6),
         on:{click:()=>{if(on&&n<=1){toast('צריך לפחות נושא אחד');return;}BG_MK.on[i]=!on;bgMkApply();rebuild();rerender();}}},
         el('img',{src:x.c[0][0],alt:'',style:'width:38px;height:38px;object-fit:cover;border-radius:6px;flex:none'}),el('span',{},(on?'✓ ':'')+x.n));})),
@@ -2477,7 +2478,7 @@ function tvIdeas(){const cat=TV_IDEAS.find(c=>c.id===TV.ideaCat)||TV_IDEAS[0],ha
     el('p',{class:'hint'},'בחרו נושא ולחצו על שאלה — היא נכנסת לרשימה עם השם שכתבתם למעלה, ונשאר רק למלא תשובה. לחיצה נוספת מסירה אותה.'),
     el('div',{class:'qt-cats'},...TV_IDEAS.map(c=>el('button',{type:'button',class:'qt-cat'+(c===cat?' on':''),on:{click:()=>{TV.ideaCat=c.id;rebuild();}}},c.t))),
     el('div',{class:'rules'},cat.tip.replace(/\{מי\}/g,'"על מי"')),
-    el('div',{class:'qt-ideas'},...cat.items.map(s=>{const[raw,note]=s.split('|'),t=tvFill(raw),added=have.has(t);
+    el('div',{class:'qt-ideas','data-wz-multi':''},...cat.items.map(s=>{const[raw,note]=s.split('|'),t=tvFill(raw),added=have.has(t);
       return el('button',{type:'button',class:'qt-idea'+(added?' added':''),'aria-pressed':added?'true':'false',on:{click:()=>tvAddIdea(raw)}},
         el('b',{},(added?'✓ ':'+ ')+t),note?el('i',{},note):null,added?el('i',{class:'qt-rm'},'✕ לחצו שוב להסרה'):null);})),
     el('div',{class:'inline'},tvBtn('+ כל השאלות בנושא',()=>{let n=0;cat.items.forEach(s=>{const t=tvFill(s.split('|')[0]);if(!have.has(t)&&TV.items.length<TV_MAX){TV.items.push({q:t,a:'',w1:'',w2:'',w3:''});n++;}});toast(n?'נוספו '+n+' שאלות':'כל השאלות בנושא כבר ברשימה');rebuild();})));}
