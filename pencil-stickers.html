@@ -10,7 +10,7 @@
 <!-- אין <link> קבוע לפונטים כאן בכוונה — הוא סתר טעינה עצלה. js/hebrew-fonts.js
      טוען כל משפחה רק כשהיא נבחרת בפועל (HebrewFonts.load), ומטמון ה-Map הפנימי
      שלו מונע טעינה כפולה של אותה משפחה. -->
-<script src="js/hebrew-fonts.js"></script>
+<script src="js/hebrew-fonts.js?v=1"></script>
 <!-- סמלי גב הקלף (ציור וקטורי) — משותפים עם dobble.html, ראה js/back-assets.js -->
 <script src="js/back-assets.js?v=1"></script>
 <script src="js/a11y-modal.js?v=1"></script>
@@ -31,6 +31,9 @@
   .slider-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px}
   .slider-box label{display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:6px}
   input[type="range"]{width:100%;height:24px;accent-color:#0f172a}
+  /* עוטף של שורת סליידר לנעילה במגע (data-sl-lock) — כמו במחולל (matchito.html). קופסה אמיתית: כשהסליידר נעול,
+     נגיעה עליו נוחתת על העוטף ומשחררת אותו (display:contents היה מעביר את הנגיעה החוצה). */
+  .sl-lock{display:block}
   input[type="text"],select,textarea{width:100%;padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;font-family:inherit;background:#fff}
   input[type="text"]:focus,select:focus,textarea:focus{border-color:#0f172a}
   input[type="number"]{width:100%;padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;font-family:inherit;background:#fff}
@@ -131,7 +134,7 @@
           </select>
         </div>
 
-        <div class="slider-box" id="radius-box">
+        <div class="slider-box" id="radius-box" data-sl-lock="radius">
           <label><span>עיגול פינות</span><span id="radius-val">3 מ"מ</span></label>
           <input type="range" id="radius" min="0" max="10" value="3" step="0.5">
         </div>
@@ -3039,6 +3042,65 @@ drawSheet();
 // כמעט מיד, והתצוגה הראשונה הייתה נופלת בשקט לפונט גיבוי.
 if(window.HebrewFonts) HebrewFonts.load(getLayer(selectedId)?.font || 'Heebo').catch(()=>{});
 document.fonts.ready.then(() => { invalidateTile(); drawSingle(); drawSheet(); });
+
+// ── נעילת סליידרים מפני הזזה בטעות (D-108, אותו מנגנון כמו ב-matchito.html) ──
+// גלילה בדף מעל סליידר מזיזה אותו בטעות בנייד, והעיצוב משתנה בלי
+// שהמשתמש יודע. הסליידר נעול (pointer-events:none) עד נגיעה מכוונת בשורה
+// שלו; נגיעה מחוץ לשורה או גלילת הדף נועלות אותו מחדש. המקלדת לא מושפעת
+// (pointer-events לא נוגע ב-focus/חצים), והנגיעה בשורה גם ממקדת אותו.
+(function(){
+  // כלל קבוע: כל input type=range חדש — בתוך data-sl-lock. האצלת אירועים על document,
+  // כך שגם שורות שנוספות אחר כך או יושבות בחלונות נכללות. השורה = האלמנט הקטן ביותר שמכיל את הסליידר,
+  // התווית שלו וכפתורי −/+ (אם אין כזה — עוטף .sl-lock).
+  const rows=()=>document.querySelectorAll('[data-sl-lock]');
+  const input=row=>document.getElementById(row.dataset.slLock);
+  // הבעיה קיימת רק במגע — עכבר לא גולל דף בגרירה. במכשיר בלי מצביע גס
+  // הנעילה רק מוסיפה חיכוך (לחיצה ראשונה משחררת, שנייה גוררת), אז משחררים לצמיתות.
+  if(!(window.matchMedia&&matchMedia('(any-pointer:coarse)').matches)){
+    rows().forEach(r=>{const el=input(r);if(el)el.style.pointerEvents='auto';});
+    return;
+  }
+  function lockAll(except){
+    rows().forEach(r=>{if(r!==except){const el=input(r);if(el){el.style.pointerEvents='none';el.style.outline='';}}});
+  }
+  lockAll(null);
+  // capture — גם כשחלון עוצר את האירוע בדרך (stopPropagation), הנעילה/השחרור עדיין רואים אותו.
+  // השחרור קורה רק אחרי שהנגיעה הסתיימה כולה: אחרי הרמת האצבע הדפדפן שולח mousedown/click "תאימות",
+  // ואם הסליידר כבר פתוח הם מקפיצים את הערך למקום הנגיעה. לכן: pointerup מסמן, click באותה שורה משחרר
+  // אחרי setTimeout 0, ואם click לא הגיע — אחרי 400ms. נגיעה שהפכה לגלילה = pointercancel, לא משחררת.
+  let pend=null,upT=0;
+  const open=row=>{
+    clearTimeout(upT);upT=0;
+    const el=input(row);if(!el||!row.isConnected)return;
+    lockAll(row);
+    el.style.pointerEvents='auto';
+    el.style.outline='2px solid var(--indigo,#4f46e5)';
+    el.style.outlineOffset='3px';
+    el.focus({preventScroll:true});
+  };
+  document.addEventListener('pointerdown',e=>{
+    const row=e.target&&e.target.closest&&e.target.closest('[data-sl-lock]');
+    clearTimeout(upT);upT=0;
+    if(!row){pend=null;lockAll(null);return;}
+    const el=input(row);if(!el)return;
+    if(el.style.pointerEvents==='auto'){pend=null;return;}   // כבר משוחרר — זו הגרירה עצמה
+    lockAll(row);pend=row;
+  },true);
+  document.addEventListener('pointerup',e=>{
+    const row=pend;
+    if(!row)return;
+    if(!(e.target&&e.target.closest&&e.target.closest('[data-sl-lock]')===row)){pend=null;return;}
+    upT=setTimeout(()=>{if(pend===row){pend=null;open(row);}},400);
+  },true);
+  document.addEventListener('click',e=>{
+    const row=pend;
+    if(!row||!(e.target&&e.target.closest&&e.target.closest('[data-sl-lock]')===row))return;
+    pend=null;setTimeout(()=>open(row),0);
+  },true);
+  document.addEventListener('pointercancel',()=>{pend=null;clearTimeout(upT);upT=0;},true);
+  // גלילה — של הדף או בתוך חלון/פאנל (scroll לא מבעבע, ולכן capture) — נועלת מחדש
+  document.addEventListener('scroll',()=>lockAll(null),{capture:true,passive:true});
+})();
 </script>
 </body>
 </html>
