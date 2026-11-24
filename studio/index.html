@@ -79,6 +79,9 @@ details.sec>summary::after{content:"";margin-inline-start:auto;width:8px;height:
 details.sec[open]>summary::after{transform:rotate(135deg)}
 .sec .body{padding:0 14px 14px;display:grid;gap:10px}
 .row{display:grid;grid-template-columns:118px 1fr;align-items:center;gap:10px}
+/* S-185: עוטף של שורת סליידר לנעילה במגע (data-sl-lock) — כמו במחולל. קופסה אמיתית: נגיעה על סליידר נעול נוחתת על העוטף ומשחררת אותו */
+.sl-lock{display:block}.slends{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);margin-inline-start:128px;margin-top:2px}
+@media (any-pointer:coarse){[data-sl-lock] input[type=range]{pointer-events:none}} /* נעול כברירת מחדל — גם שורה שנבנתה מחדש ב-rebuild */
 .row>label{font-size:.88rem;color:var(--muted)}
 .row input[type=number],.row input[type=text],.row select,textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:#fff;min-height:40px}
 textarea{resize:vertical;line-height:1.5}
@@ -710,6 +713,7 @@ const wzBarLabel=()=>{const z=wzNow();return z&&z.step<z.n-1?'הבא: '+z.names[
 function wzOrder(){const z=wzNow();if(z&&z.step<z.n-1)wzGo(cur.id,z.step+1);else openOrder();}
 function row(label,input){const id=input.id||(input.id=uid());return el('div',{class:'row'},el('label',{for:id},label),input);}
 function num(o,k,label,{min=0,max=999,step=1,after}={}){return row(label,el('input',{type:'number',min,max,step,value:o[k],inputmode:'decimal',on:{input:e=>{const v=parseFloat(e.target.value);if(!isNaN(v)){o[k]=Math.min(max,Math.max(min,v));rerender();after&&after();}}}}));}
+function slLockRow(r){const i=r.querySelector('input[type=range]');if(i)r.setAttribute('data-sl-lock',i.id);return r;} // S-185: שורת סליידר לנעילה במגע (כלל סליידרים)
 function rng(o,k,label,min,max,step=1){return row(label,el('input',{type:'range',min,max,step,value:o[k],on:{input:e=>{o[k]=+e.target.value;rerender();}}}));}
 function col(o,k,label){return row(label,el('input',{type:'color',value:o[k],on:{input:e=>{o[k]=e.target.value;rerender();}}}));}
 function sel(o,k,label,opts,{rebuildOnChange=false}={}){const s=el('select',{on:{change:e=>{o[k]=e.target.value;rebuildOnChange?rebuild():rerender();}}},opts.map(([v,t])=>el('option',{value:v},t)));s.value=o[k];return row(label,s);}
@@ -1307,13 +1311,14 @@ function drawTextLayer(ctx,text,{family,color,outline,x,y,w,h}){
 function layerFor(l,kid,firstEmojiId){if(!kid)return l;const o={...l};
   if(l.type==='text'&&l.bind){if(kid.font)o.font=kid.font;if(kid.scale){o.sw=l.sw*kid.scale;o.sh=l.sh*kid.scale;}}
   if(l.type==='emoji'&&l.id===firstEmojiId&&kid.emoji)o.emoji=kid.emoji;return o;}
+const photoRound=l=>l.pr==null||!isFinite(+l.pr)?1:Math.max(0,Math.min(1,+l.pr)); // S-185: עיגול הפינות של שכבת תמונה, 0..1
 function paintLayer(ctx,l,D,name,photo){const W=D.w,H=D.h,w=l.sw*W,h=l.sh*H;
   ctx.save();ctx.translate(l.x*W,l.y*H);if(l.rot)ctx.rotate(l.rot*Math.PI/180);
   if(l.type==='text')drawTextLayer(ctx,l.bind?name:l.text,{family:l.font,color:l.color,outline:l.outline,x:-w/2,y:-h/2,w,h});
   else if(l.type==='emoji'){const s=Math.min(w,h);ctx.font=`${s*.86}px "Noto Color Emoji","Apple Color Emoji","Segoe UI Emoji",sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(l.emoji||'⭐',0,s*.04);}
   else if(l.type==='symbol'){const s=Math.min(w,h);drawSymbolAt(ctx,l.sym,0,0,s*.46,l.color);}
-  else if(l.type==='photo'&&photo){if((l.ps||'circle')==='circle'){const s=Math.min(w,h);ctx.beginPath();ctx.arc(0,0,s/2,0,7);ctx.clip();drawCover(ctx,photo.img,-s/2,-s/2,s,s);} // ברירת מחדל = עיגול (עיצובים והזמנות קיימים לא משתנים)
-    else{ctx.translate(-w/2,-h/2);ctx.clip(l.ps==='rounded'?pathOf(shapePts('rounded',w,h,Math.min(w,h)*.18)):pathOf(shapePts('rect',w,h)));drawCover(ctx,photo.img,0,0,w,h);}} // S-185: l.ps = 'square' (כל המלבן w×h) / 'rounded'
+  else if(l.type==='photo'&&photo){const pr=photoRound(l);if(pr>=1){const s=Math.min(w,h);ctx.beginPath();ctx.arc(0,0,s/2,0,7);ctx.clip();drawCover(ctx,photo.img,-s/2,-s/2,s,s);} // 1 (ברירת מחדל) = עיגול כמו תמיד — עיצובים והזמנות קיימים לא משתנים
+    else{ctx.translate(-w/2,-h/2);ctx.clip(pathOf(shapePts('rounded',w,h,pr*Math.min(w,h)/2)));drawCover(ctx,photo.img,0,0,w,h);}} // S-185: 0 = ריבוע/מלבן חד, באמצע = פינות מעוגלות ברדיוס pr·min(w,h)/2
   ctx.restore();}
 function stickerItem(name,photo,D=ST){
   const {w,h,r,shape}=D;const pts=shapePts(shape,w,h,r),L=ensureLayers(D),kid=D.kid[String(name||'').trim()],fe=(L.find(l=>l.type==='emoji')||{}).id;
@@ -1413,9 +1418,12 @@ function layerPanel(l){const up=()=>{seDraw();rerender();};
   else if(l.type==='emoji')body=[row('אימוג\'י',el('button',{type:'button',class:'btn ghost',style:'font-size:1.4rem',on:{click:()=>openEmojiPicker(em=>{l.emoji=em;rebuild();})}},l.emoji+' החלפה'))];
   else if(l.type==='symbol')body=[sel(l,'sym','סמל',symbols().map(s=>[s.id,s.he||s.id])),col(l,'color','צבע')];
   else if(l.type==='photo')body=[filesInput(T().photoOwner(),'photo',T().photoLabel,{max:200,after:()=>seDraw()}),
-    el('div',{},el('p',{class:'hint',id:'psLbl'},'צורת התמונה'),el('div',{class:'seg',role:'group','aria-labelledby':'psLbl'},[['circle','⚪ עיגול'],['square','⬛ ריבוע'],['rounded','▢ ריבוע מעוגל']].map(([v,tx])=>
-      el('button',{type:'button','aria-pressed':String((l.ps||'circle')===v),on:{click:()=>{if(v==='circle')delete l.ps;else l.ps=v;rebuild();}}},tx)))),
-    l.ps?rng(l,'sw','רוחב התמונה',.1,1.2,.01):null,l.ps?rng(l,'sh','גובה התמונה',.1,1.2,.01):null]; // S-185: בריבוע — רוחב וגובה בנפרד (הידית ⤡ משנה את שניהם יחד)
+    (()=>{const inp=el('input',{type:'range',id:'slPhotoRound',min:0,max:100,step:1,value:Math.round(photoRound(l)*100),
+        'aria-valuetext':'',on:{input:e=>{const v=+e.target.value/100;if(v>=1)delete l.pr;else l.pr=v;e.target.setAttribute('aria-valuetext',prTxt(v));}, // input מבעבע ל-up() של הפאנל (ציור מחדש)
+        change:()=>{if((photoRound(l)<1)!==wh0)rebuild();}}}),wh0=photoRound(l)<1,prTxt=v=>v>=1?'עיגול':v<=0?'ריבוע':'ריבוע מעוגל '+Math.round(v*100)+'%';inp.setAttribute('aria-valuetext',prTxt(photoRound(l)));
+      return el('div',{class:'sl-lock','data-sl-lock':'slPhotoRound'},row('צורת התמונה: ריבוע ↔ עיגול',inp),
+        el('div',{class:'slends',id:'slPhotoRoundEnds','aria-hidden':'true'},el('span',{},'⬛ ריבוע'),el('span',{},'⚪ עיגול')));})(),
+    photoRound(l)<1?slLockRow(rng(l,'sw','רוחב התמונה',.1,1.2,.01)):null,photoRound(l)<1?slLockRow(rng(l,'sh','גובה התמונה',.1,1.2,.01)):null]; // S-185: כשלא עיגול — רוחב וגובה בנפרד (הידית ⤡ משנה את שניהם יחד)
   const box=el('div',{class:'lpanel'},...body,...common);box.addEventListener('input',up);return box;}
 // ── התאמה לכל ילד (מתקדם): פונט/גודל/אימוג'י לילד אחד, בלי לגעת בשאר ──
 function kidsSection(){const names=[...new Set(lines(ST.names))];if(!names.length)return null;ensureLayers(ST);
@@ -6299,6 +6307,28 @@ function ordersSection(){
     addEventListener('storage',e=>{if(!e.key||e.key.startsWith('sb-'))chk();});}
   new ResizeObserver(()=>{sizeCanvas();drawPreview();}).observe(cv.parentElement);
   document.fonts.ready.then(rerender);[ST.font,'Secular One'].forEach(f=>loadFont(f).then(rerender));
+})();
+// ── S-185: נעילת סליידרים מפני הזזה בטעות במגע (אותו מנגנון כמו matchito.html / pencil-stickers.html) ──
+// האצבע שגוללת נוחתת על סליידר והעיצוב משתנה בלי שיודעים. כל input type=range חדש — בתוך [data-sl-lock="<id>"].
+// כאן הנעילה היא ב-CSS (@media any-pointer:coarse) ולא בקוד: הפאנלים נבנים מחדש בכל rebuild, ושורה חדשה נולדת נעולה.
+// נגיעה מכוונת בשורה משחררת (אחרי שהנגיעה הסתיימה — click), נגיעה מחוץ לשורה או גלילה נועלות מחדש. המקלדת לא מושפעת.
+(function(){
+  if(!(window.matchMedia&&matchMedia('(any-pointer:coarse)').matches))return;
+  const rows=()=>document.querySelectorAll('[data-sl-lock]'),input=row=>document.getElementById(row.dataset.slLock);
+  const lockAll=except=>rows().forEach(r=>{if(r!==except){const el=input(r);if(el){el.style.pointerEvents='';el.style.outline='';}}});
+  let pend=null,upT=0;
+  const open=row=>{clearTimeout(upT);upT=0;const el=input(row);if(!el||!row.isConnected)return;lockAll(row);
+    el.style.pointerEvents='auto';el.style.outline='2px solid var(--c-primary,#2563EB)';el.style.outlineOffset='3px';el.focus({preventScroll:true});};
+  const rowOf=e=>e.target&&e.target.closest&&e.target.closest('[data-sl-lock]');
+  document.addEventListener('pointerdown',e=>{const row=rowOf(e);clearTimeout(upT);upT=0;
+    if(!row){pend=null;lockAll(null);return;}const el=input(row);if(!el)return;
+    if(el.style.pointerEvents==='auto'){pend=null;return;} // כבר משוחרר — זו הגרירה עצמה
+    lockAll(row);pend=row;},true);
+  document.addEventListener('pointerup',e=>{const row=pend;if(!row)return;if(rowOf(e)!==row){pend=null;return;}
+    upT=setTimeout(()=>{if(pend===row){pend=null;open(row);}},400);},true);
+  document.addEventListener('click',e=>{const row=pend;if(!row||rowOf(e)!==row)return;pend=null;setTimeout(()=>open(row),0);},true);
+  document.addEventListener('pointercancel',()=>{pend=null;clearTimeout(upT);upT=0;},true);
+  document.addEventListener('scroll',()=>lockAll(null),{capture:true,passive:true});
 })();
 </script>
 <script src="../js/share-link.js?v=1"></script>
