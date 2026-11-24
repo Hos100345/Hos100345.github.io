@@ -252,6 +252,25 @@ details.face>.body{padding:0 12px 12px;display:grid;gap:8px}
 .mgbar{position:absolute;z-index:3;top:8px;left:50%;transform:translateX(-50%);display:flex;gap:1px;background:rgba(255,255,255,.95);border-radius:999px;box-shadow:0 4px 14px rgba(20,41,77,.18);padding:3px;max-width:calc(100% - 12px)}.mgbar[hidden]{display:none}
 .mgbar .brk{display:none}.mgbar.two{flex-wrap:wrap;justify-content:center;border-radius:24px;width:max-content}.mgbar.two .brk{display:block;flex-basis:100%;height:0}
 .mgbar button{min-width:36px;min-height:40px;padding:0 6px;border:0;background:none;border-radius:999px;font:inherit;font-size:1.02rem;color:var(--navy);cursor:pointer}.mgbar button:hover{background:#EEF2FF}.mgbar button:disabled{opacity:.35;cursor:default}
+/* S-195: עורך הפרסומת בטלפון — זום בתצוגה, סרגל מהיר מתחת למודעה (צבעים/גודל/עריכה), לשוניות במקום גלילה ארוכה */
+.adzoom{position:absolute;z-index:3;bottom:6px;inset-inline-end:6px;display:flex;align-items:center;gap:1px;background:rgba(255,255,255,.95);border-radius:999px;box-shadow:0 3px 12px rgba(20,41,77,.2);padding:2px}.adzoom[hidden]{display:none}
+.adzoom button{min-width:44px;min-height:44px;padding:0 6px;border:0;background:none;border-radius:999px;font:inherit;font-size:1.15rem;color:var(--c-brand,#0A2A5C);cursor:pointer}.adzoom button:hover{background:#EEF2FF}.adzoom button:disabled{opacity:.35;cursor:default}
+.adzoom output{min-width:2.9em;text-align:center;font-size:.78rem;color:#334155;font-variant-numeric:tabular-nums}
+.adq{flex:none;background:#fff;border-top:1px solid var(--mat-line);padding:3px 6px 4px;display:grid;gap:2px;position:relative;z-index:2}.adq[hidden]{display:none}
+.adqrow{display:flex;gap:2px;align-items:center;overflow-x:auto;scrollbar-width:thin;min-width:0}
+.adq button,.adq .adsw{flex:0 0 auto;min-width:44px;min-height:44px;padding:0 6px;border:0;background:none;border-radius:12px;font:inherit;font-size:1.05rem;color:var(--c-brand,#0A2A5C);cursor:pointer;display:inline-grid;place-items:center;position:relative}
+.adq button:hover{background:#EEF2FF}.adq button:disabled{opacity:.35;cursor:default}.adq button.on{background:var(--c-brand,#0A2A5C);color:#fff}
+.adq .adqseg{display:flex;flex:0 0 auto;border:1.5px solid var(--c-brand,#0A2A5C);border-radius:12px;overflow:hidden;margin-inline-end:4px}.adq .adqseg button{border-radius:0;font-size:.85rem;font-weight:700;padding:0 8px}
+.adq .adsw{padding:0;width:44px}.adq .adsw i{width:28px;height:28px;border-radius:50%;border:1px solid rgba(10,42,92,.35);display:block;box-shadow:inset 0 0 0 2px #fff}
+.adq .adsw[aria-pressed=true] i{outline:3px solid #FDC010;outline-offset:1px}.adq .adsw.none i{background:linear-gradient(135deg,#fff 44%,#C3141B 44%,#C3141B 56%,#fff 56%)}
+.adq .adsw.more{width:auto;padding:0 8px;font-size:.88rem;font-weight:700;gap:4px;display:inline-flex;align-items:center}.adq .adsw.more input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:0;padding:0}
+.adq .adqhint{font-size:.8rem;color:#475569;margin:0;padding:2px 4px;line-height:1.35}.adq input[type=text]{flex:1;min-width:0;min-height:44px;font-size:1rem}
+.adtabs{display:flex;gap:4px;margin:0 0 10px;position:sticky;top:var(--adpv,0px);z-index:4;background:var(--panel);padding:6px 0}
+.adtabs button{flex:1 1 0;min-width:0;min-height:48px;border:1.5px solid var(--line,#D8E0EA);border-radius:12px;background:#fff;font:inherit;font-size:.86rem;font-weight:700;color:var(--c-brand,#0A2A5C);cursor:pointer;padding:2px;line-height:1.15}
+.adtabs button[aria-selected=true]{background:var(--c-brand,#0A2A5C);border-color:var(--c-brand,#0A2A5C);color:#fff}
+@media(min-width:900px){.adq .adqtools{display:none}}
+@media(max-width:899px){body.adph .preview{height:auto}body.adph .preview .stage{flex:none;height:42vh;min-height:240px;padding:0}body.adph .pagebar{display:none}body.adph #adbar{display:none}
+ body.adph .controls>.intro{display:none}body.adph .st-tab{top:auto;bottom:84px}}
 .mgtext{border:1px solid #E2DACB;border-radius:12px;padding:.5rem .6rem;margin:.45rem 0}.mgmore[hidden]{display:none}.mgtext.sel{border-color:#2563EB;box-shadow:0 0 0 2px rgba(37,99,235,.15)}.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 /* S-186: בחירה שמעבירה לבד לשלב הבא — הבחירה מסומנת רגע לפני המעבר */
 .wzpick{animation:wzpick .4s ease-out}@keyframes wzpick{0%{transform:scale(.96)}60%{transform:scale(1.03)}100%{transform:none}}
@@ -5066,8 +5085,11 @@ function adArt(ctx){adEnsure();ctx.fillStyle=AD.bg||'#FFFFFF';ctx.fillRect(0,0,a
 function adSetFmt(f){if(f===AD.fmt||!AD_FMTS[f])return;adEnsure();const h0=adH();AD.fmt=f;const k=adH()/h0;
   AD.layers.forEach(L=>{L.y*=k;if(L.k==='text')L.fs=Math.min(L.fs,adH()*.3);});AD_UNDO.length=0;rebuild();}
 function adDraw(){if(!ADE||!ADE.c||!document.body.contains(ADE.c)||ADE.c.hidden)return;adEnsure();const c=ADE.c,dpr=Math.min(2,window.devicePixelRatio||1),cw=c.clientWidth||320,ch=c.clientHeight||420;
-  const ab=document.getElementById('adbar'),top=Math.max(64,ab&&!ab.hidden?ab.offsetHeight+18:0); // הסרגל יכול להיות בשתי שורות בטלפון
-  const W0=adW(),H0=adH(),s=Math.min(cw*.92/W0,(ch-top-34)/H0),W=W0*s,H=H0*s,ox=(cw-W)/2,oy=top+Math.max(0,(ch-top-34-H)/2);ADE.v={s,ox,oy};
+  const ab=document.getElementById('adbar'),ph=adTabbed(),top=ph?(document.body.classList.contains('focus-min')?58:10):Math.max(64,ab&&!ab.hidden?ab.offsetHeight+18:0),bot=ph?24:34; // הסרגל יכול להיות בשתי שורות בטלפון. S-195: בטלפון הסרגל עבר מתחת למודעה — רק הכפתורים הצפים למעלה
+  const W0=adW(),H0=adH(),s0=Math.min(cw*.92/W0,(ch-top-bot)/H0),ox0=(cw-W0*s0)/2,oy0=top+Math.max(0,(ch-top-bot-H0*s0)/2);
+  // S-195: זום בתצוגה בלבד (לא בהורדה). ADE.z = פי כמה, ADE.cx/cy = נקודת המודעה שבמרכז. ADE.v נשאר המיפוי היחיד מסך↔מודעה — הגרירה נכונה בכל זום
+  adZClamp();const scx=ox0+W0*s0/2,scy=oy0+H0*s0/2,s=s0*ADE.z,ox=scx-ADE.cx*s,oy=scy-ADE.cy*s;ADE.v={s,ox,oy};ADE.b={s0,scx,scy};
+  c.style.touchAction=ADE.z>1?'none':'';adZoomUi();
   c.width=Math.round(cw*dpr);c.height=Math.round(ch*dpr);const x=c.getContext('2d');x.scale(dpr,dpr);x.save();x.translate(ox,oy);x.scale(s,s);
   const L0=adSel();
   if(L0){x.save();x.globalAlpha=.22;adDrawLayer(x,L0);x.restore();} // מה שיוצא מהגבול נראה חלש — לא נכנס להורדה
@@ -5082,7 +5104,7 @@ function adDraw(){if(!ADE||!ADE.c||!document.body.contains(ADE.c)||ADE.c.hidden)
     const dot=(p,r,fill,stroke,glyph)=>{x.fillStyle=fill;x.strokeStyle=stroke;x.lineWidth=2/s;x.beginPath();x.arc(p[0],p[1],r/s,0,7);x.fill();x.stroke();if(glyph){x.fillStyle=stroke;x.font=`700 ${13/s}px Rubik`;x.textAlign='center';x.textBaseline='middle';x.fillText(glyph,p[0],p[1]+.5/s);}};
     dot(Hd.scale,11,'#fff','#2563EB','⤡');dot(Hd.rot,12,'#fff','#2563EB','↻');dot(Hd.del,11,'#fff','#DC2626','×');
     if(G&&G.rot){x.fillStyle='#2563EB';x.font=`700 ${13/s}px Rubik`;x.textAlign='center';x.textBaseline='bottom';x.fillText(Math.round(L0.rot)+'°',Hd.rot[0],Hd.rot[1]-15/s);}}
-  x.restore();adBar();}
+  x.restore();adBar();adQ();}
 // הורדה: PNG בגודל האמיתי של הפורמט (A4 = 2480×3508, ‏300 DPI)
 // S-190: הקנבס של המודעה בגודל ההורדה — משותף להורדה ולשמירה בדרייב
 async function adCanvas(){if(adLocked()){toast('קודם נכנסים עם קוד');return null;}adEnsure();if(!(AD.img||[]).length&&!AD.layers.some(o=>o.text)){toast('אין עדיין מה להוריד');return null;}
@@ -5311,32 +5333,53 @@ function adSelect(id){if(!ADE)return;ADE.sel=id;adDraw();adLayersDraw();adPanelS
 function adPanelSync(){const one=document.querySelectorAll('[data-adl]').length===1;document.querySelectorAll('[data-adl]').forEach(n=>{const on=one||!!ADE&&n.dataset.adl===ADE.sel;n.classList.toggle('sel',on);const m=n.querySelector('.mgmore');if(m)m.hidden=!on;});}
 // ── העורך: הפרסומת בגודל מלא. אצבע על תמונה/כיתוב = עריכה; בכל מקום אחר = גלילה רגילה של הדף
 function adEditor(){const c=el('canvas',{class:'sheditor mged',id:'ad2d',tabindex:'0',role:'application','aria-label':'עריכת הפרסומת. לוחצים על תמונה או כיתוב ואז גוררים. הפינה הכחולה משנה גודל, העיגול שלמעלה מסובב. שתי אצבעות: גודל וסיבוב. במקלדת: N בוחר את הבא, חיצים מזיזים, פלוס ומינוס גודל, סוגריים [ ] מסובבים, Delete מוחק, Z מבטל'});
-  ADE={c,sel:ADE?ADE.sel:null,drag:null,pinch:null,v:null};
+  ADE={c,sel:ADE?ADE.sel:null,drag:null,pinch:null,v:null,z:ADE?ADE.z:1,cx:ADE?ADE.cx:null,cy:ADE?ADE.cy:null};
   const toMm=e=>{const r=c.getBoundingClientRect(),v=ADE.v;return v?[(e.clientX-r.left-v.ox)/v.s,(e.clientY-r.top-v.oy)/v.s]:[0,0];};
+  const loc=e=>{const r=c.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top];};
   const dist=(a,b)=>Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY),ang=(a,b)=>Math.atan2(b.clientY-a.clientY,b.clientX-a.clientX)*180/Math.PI;
-  c.addEventListener('touchstart',e=>{if(e.touches.length===2){const[p1,p2]=[toMm(e.touches[0]),toMm(e.touches[1])],m=[(p1[0]+p2[0])/2,(p1[1]+p2[1])/2];
-      const L=adHitLayer(m[0],m[1])||adHitLayer(p1[0],p1[1])||adHitLayer(p2[0],p2[1])||adSel();
-      if(L){e.preventDefault();if(!ADE.drag)adSnap();ADE.drag=null;ADE.sel=L.id;ADE.pinch={L,d0:dist(e.touches[0],e.touches[1]),a0:ang(e.touches[0],e.touches[1]),w:L.w,fs:L.fs,rot:L.rot||0};adPanelSync();}return;}
-    const t=e.touches[0];if(!t)return;const[x,y]=toMm(t);if(adHitHandle(x,y)||adHitLayer(x,y))e.preventDefault();},{passive:false});
-  c.addEventListener('touchmove',e=>{const P=ADE.pinch;if(!P||e.touches.length<2)return;e.preventDefault();const f=dist(e.touches[0],e.touches[1])/P.d0,L=P.L;
+  // S-195: שתי אצבעות = זום והזזה של התצוגה. רק כששתיהן על השכבה שנבחרה (ולא הרקע) — גודל וסיבוב של השכבה, כמו קודם
+  c.addEventListener('touchstart',e=>{if(e.touches.length===2){e.preventDefault();const t0=e.touches[0],t1=e.touches[1],p1=toMm(t0),p2=toMm(t1),S=adSel(),D=ADE.drag;clearTimeout(ADE.editT);ADE.tap=null;ADE.vpan=null;
+      if(S&&!adIsBgL(S)&&adIn(S,p1)&&adIn(S,p2)){if(!D)adSnap();ADE.drag=null;ADE.pinch={L:S,d0:dist(t0,t1),a0:ang(t0,t1),w:S.w,fs:S.fs,rot:S.rot||0};adPanelSync();return;}
+      if(D){Object.assign(D.L,{x:D.o.x,y:D.o.y,w:D.o.w,fs:D.o.fs,rot:D.o.rot});AD_UNDO.pop();ADE.drag=null;ADE.guide=null;} // האצבע הראשונה לא הזיזה כלום — זה זום
+      const r=c.getBoundingClientRect(),mx=(t0.clientX+t1.clientX)/2-r.left,my=(t0.clientY+t1.clientY)/2-r.top,v=ADE.v;
+      ADE.vp={z0:ADE.z,d0:dist(t0,t1)||1,ax:(mx-v.ox)/v.s,ay:(my-v.oy)/v.s};adDraw();return;}
+    const t=e.touches[0];if(!t)return;const[x,y]=toMm(t),L=adHitLayer(x,y);if(adHitHandle(x,y)||L&&!(adIsBgL(L)&&L.id!==ADE.sel))e.preventDefault();},{passive:false});
+  c.addEventListener('touchmove',e=>{if(ADE.vp&&e.touches.length>=2){e.preventDefault();const P=ADE.vp,t0=e.touches[0],t1=e.touches[1],r=c.getBoundingClientRect();
+      adZoomAt(P.z0*dist(t0,t1)/P.d0,(t0.clientX+t1.clientX)/2-r.left,(t0.clientY+t1.clientY)/2-r.top,[P.ax,P.ay]);return;}
+    const P=ADE.pinch;if(!P||e.touches.length<2)return;e.preventDefault();const f=dist(e.touches[0],e.touches[1])/P.d0,L=P.L;
     if(L.k==='img')L.w=Math.max(8,Math.min(adW()*3,P.w*f));else L.fs=Math.max(3,Math.min(adH(),P.fs*f));L.rot=adSnapRot(P.rot+ang(e.touches[0],e.touches[1])-P.a0);adCommit();},{passive:false});
-  c.addEventListener('touchend',e=>{if(ADE.pinch&&e.touches.length<2){ADE.pinch=null;ADE.drag=null;ADE.guide=null;adDraw();}});
-  c.addEventListener('pointerdown',e=>{if(ADE.pinch)return;const[x,y]=toMm(e),hd=adHitHandle(x,y);
+  c.addEventListener('touchend',e=>{if(e.touches.length<2){if(ADE.vp){ADE.vp=null;ADE.tap=null;adDraw();}if(ADE.pinch){ADE.pinch=null;ADE.drag=null;ADE.guide=null;adDraw();}}});
+  c.addEventListener('pointerdown',e=>{if(ADE.pinch||ADE.vp||!e.isPrimary)return;ADE.touch=e.pointerType!=='mouse';
+    const now=Date.now(),T=ADE.tap;
+    if(T&&now-T.t<350&&Math.hypot(e.clientX-T.x,e.clientY-T.y)<30){ADE.tap=null;clearTimeout(ADE.editT);e.preventDefault();const[mx,my]=loc(e); // S-195: הקשה כפולה = פי 2 בנקודה, ושוב = חזרה
+      adZoomAt(ADE.z>1.05?1:2,mx,my);return;}
+    const[x,y]=toMm(e),hd=adHitHandle(x,y);
     if(hd==='del'){e.preventDefault();adRemove(adSel());return;}
-    const L=hd?adSel():adHitLayer(x,y);if(!L){if(ADE.sel){ADE.sel=null;adDraw();adPanelSync();}return;}
+    const L=hd?adSel():adHitLayer(x,y),passive=!!L&&!hd&&L.id!==ADE.sel&&adIsBgL(L)&&(ADE.touch||ADE.z>1); // S-195: רקע שלא נבחר לא זז באצבע — האצבע גוללת/מזיזה את התצוגה; הקשה בוחרת אותו
+    if(!L||passive){
+      if(ADE.z>1||passive){if(ADE.z>1){e.preventDefault();c.setPointerCapture(e.pointerId);}ADE.vpan={x:e.clientX,y:e.clientY,cx:ADE.cx,cy:ADE.cy,moved:false,sel:passive?L.id:null,view:ADE.z>1};return;}
+      if(ADE.sel){ADE.sel=null;adDraw();adPanelSync();}ADE.tap={t:now,x:e.clientX,y:e.clientY};return;}
     e.preventDefault();c.setPointerCapture(e.pointerId);adSnap();const was=ADE.sel===L.id;ADE.sel=L.id;adPanelSync();
     ADE.drag={mode:hd||'move',L,x0:x,y0:y,o:{x:L.x,y:L.y,w:L.w,fs:L.fs,rot:L.rot||0},moved:false,was,t:Date.now()};adDraw();});
-  c.addEventListener('pointermove',e=>{const D=ADE.drag;if(!D||ADE.pinch)return;const[x,y]=toMm(e),L=D.L;
+  c.addEventListener('pointermove',e=>{const V=ADE.vpan;if(V&&e.isPrimary){const dx=e.clientX-V.x,dy=e.clientY-V.y;if(Math.hypot(dx,dy)>6)V.moved=true;
+      if(V.view&&V.moved){ADE.cx=V.cx-dx/ADE.v.s;ADE.cy=V.cy-dy/ADE.v.s;adDraw();}return;}
+    const D=ADE.drag;if(!D||ADE.pinch||ADE.vp)return;const[x,y]=toMm(e),L=D.L;
     if(Math.hypot(x-D.x0,y-D.y0)*ADE.v.s>3)D.moved=true;if(!D.moved)return;
     if(D.mode==='move'){let nx=D.o.x+x-D.x0,ny=D.o.y+y-D.y0;const tol=6/ADE.v.s;ADE.guide={};
       if(Math.abs(nx-adW()/2)<tol){nx=adW()/2;ADE.guide.v=1;}if(Math.abs(ny-adH()/2)<tol){ny=adH()/2;ADE.guide.h=1;}L.x=nx;L.y=ny;}
     else if(D.mode==='scale'){const r0=Math.hypot(D.x0-D.o.x,D.y0-D.o.y)||1,f=Math.hypot(x-L.x,y-L.y)/r0;if(L.k==='img')L.w=Math.max(8,Math.min(adW()*3,D.o.w*f));else L.fs=Math.max(3,Math.min(adH(),D.o.fs*f));}
     else if(D.mode==='rot'){const a0=Math.atan2(D.y0-L.y,D.x0-L.x),a=Math.atan2(y-L.y,x-L.x);L.rot=adSnapRot(D.o.rot+(a-a0)*180/Math.PI);ADE.guide={rot:1};}
     adCommit();});
-  const up=()=>{const D=ADE.drag;if(!D)return;ADE.drag=null;ADE.guide=null;
-    if(!D.moved){AD_UNDO.pop();if(D.was&&D.L.k==='text'&&D.mode==='move'){const inp=document.querySelector(`[data-adl="${D.L.id}"] input[type=text]`);if(inp){inp.focus();inp.select();}}}
+  const up=e=>{const V=ADE.vpan;if(V){ADE.vpan=null;if(e.type==='pointerup'&&!V.moved){if(V.sel)adSelect(V.sel);else if(ADE.sel){ADE.sel=null;adDraw();adPanelSync();}ADE.tap={t:Date.now(),x:e.clientX,y:e.clientY};}return;}
+    const D=ADE.drag;if(!D)return;ADE.drag=null;ADE.guide=null;
+    if(!D.moved){AD_UNDO.pop();if(e.type==='pointerup')ADE.tap={t:Date.now(),x:e.clientX,y:e.clientY};
+      if(D.was&&D.L.k==='text'&&D.mode==='move'){if(ADE.touch){clearTimeout(ADE.editT);ADE.editT=setTimeout(()=>{if(adSel()===D.L)adQEdit(true);},360);} // בטלפון: עריכה בסרגל שמתחת למודעה (אחרי שבודקים שזו לא הקשה כפולה)
+        else{const inp=document.querySelector(`[data-adl="${D.L.id}"] input[type=text]`);if(inp){inp.focus();inp.select();}}}}
     adDraw();if(D.moved)adSay(adName(D.L)+(D.mode==='rot'?' · סיבוב '+Math.round(D.L.rot)+'°':''));};
   c.addEventListener('pointerup',up);c.addEventListener('pointercancel',up);
+  // S-195: במחשב — Ctrl+גלגלת (או צביטה במשטח המגע) = זום; כשמוגדל, גלגלת = הזזת התצוגה
+  c.addEventListener('wheel',e=>{if(!e.ctrlKey&&!(ADE.z>1))return;e.preventDefault();const[mx,my]=loc(e);
+    if(e.ctrlKey)adZoomAt(ADE.z*Math.exp(-e.deltaY*.01),mx,my);else{ADE.cx+=e.deltaX/ADE.v.s;ADE.cy+=e.deltaY/ADE.v.s;adDraw();}},{passive:false});
   c.addEventListener('keydown',e=>{const L=adSel(),s=e.shiftKey?5:1,m={ArrowLeft:[-s,0],ArrowRight:[s,0],ArrowUp:[0,-s],ArrowDown:[0,s]}[e.key];
     if('nNמ'.includes(e.key)&&AD.layers.length){const vis=AD.layers.filter(o=>o.k==='img'||o.text),i=vis.indexOf(L);const n=vis[(i+1)%vis.length];if(n)adSelect(n.id);e.preventDefault();return;}
     if('zZז'.includes(e.key)){adUndo();e.preventDefault();return;}
@@ -5345,9 +5388,29 @@ function adEditor(){const c=el('canvas',{class:'sheditor mged',id:'ad2d',tabinde
   c.addEventListener('focus',()=>{if(!adSel()){const n=AD.layers.find(o=>o.k==='img'||o.text);if(n)adSelect(n.id);}});
   new ResizeObserver(()=>adDraw()).observe(c);return c;}
 // סיבוב נצמד ל-0°, 45°, 90°… כשמתקרבים (4°) — כך קל לקבל "ישר" או "אלכסון" מדויק
+// ── S-195: זום בתצוגה ── z בין 1 ל-8; במרכז תמיד נקודה מתוך המודעה (לא בורחים לריק)
+const AD_ZMAX=8;
+function adZClamp(){if(!ADE)return;const W0=adW(),H0=adH();let z=+ADE.z||1;z=Math.max(1,Math.min(AD_ZMAX,z));if(z<1.02){z=1;ADE.cx=W0/2;ADE.cy=H0/2;}ADE.z=z;
+  ADE.cx=Math.max(0,Math.min(W0,ADE.cx==null?W0/2:ADE.cx));ADE.cy=Math.max(0,Math.min(H0,ADE.cy==null?H0/2:ADE.cy));}
+// זום ל-z כך שהנקודה a במודעה (ברירת מחדל: מה שמתחת ל-mx,my) נשארת מתחת ל-mx,my (פיקסלים בתוך הקנבס)
+function adZoomAt(z,mx,my,a){if(!ADE||!ADE.v||!ADE.b)return;const v=ADE.v,B=ADE.b;if(mx==null){mx=B.scx;my=B.scy;}
+  const ax=a?a[0]:(mx-v.ox)/v.s,ay=a?a[1]:(my-v.oy)/v.s;ADE.z=Math.max(1,Math.min(AD_ZMAX,z));const s=B.s0*ADE.z;ADE.cx=ax+(B.scx-mx)/s;ADE.cy=ay+(B.scy-my)/s;adDraw();
+  if(!a)adSay(ADE.z>1?'זום '+Math.round(ADE.z*100)+'%':'התאמה למסך');}
+function adZoomStep(f){if(!ADE||!ADE.b)return;const v=ADE.v,B=ADE.b,mx=B.scx,my=B.scy;adZoomAt(ADE.z*f,mx,my);}
+function adZoomUi(){const st=ADE&&ADE.c&&ADE.c.parentElement;if(!st)return;let b=document.getElementById('adzoom');
+  if(!b){const B=(t,a,f,id)=>el('button',{type:'button','aria-label':a,title:a,id,on:{click:()=>{f();ADE.c.focus({preventScroll:true});}}},t);
+    b=el('div',{class:'adzoom',id:'adzoom',role:'group','aria-label':'זום בתצוגה — לא משנה את ההורדה'},B('−','הקטנת התצוגה',()=>adZoomStep(1/1.5),'adzOut'),el('output',{id:'adzPct','aria-live':'off'},'100%'),B('+','הגדלת התצוגה (זום)',()=>adZoomStep(1.5),'adzIn'),B('⤢','התאמה למסך',()=>adZoomAt(1),'adzFit'));st.append(b);}
+  b.hidden=ADE.c.hidden;const z=ADE.z||1;b.querySelector('#adzPct').textContent=Math.round(z*100)+'%';b.querySelector('#adzOut').disabled=z<=1;b.querySelector('#adzFit').disabled=z<=1;b.querySelector('#adzIn').disabled=z>=AD_ZMAX;}
+// גובה התצוגה הדביקה — כדי שהלשוניות בפאנל ייצמדו מתחתיה
+function adPvWatch(){const pv=document.querySelector('.preview');if(!pv||pv._adro)return;pv._adro=new ResizeObserver(()=>document.documentElement.style.setProperty('--adpv',pv.offsetHeight+'px'));pv._adro.observe(pv);}
+try{matchMedia('(max-width:899px)').addEventListener('change',()=>{if(typeof cur!=='undefined'&&cur===Ad){const q=document.getElementById('adq');if(q)q._k='';rebuild();}});}catch(e){}
+const adTabbed=()=>{try{return matchMedia('(max-width:899px)').matches;}catch(e){return innerWidth<900;}};
+// הרקע = התמונה התחתונה שממלאת את רוחב המודעה. בטלפון היא לא זזה עד שבוחרים אותה (אחרת כל נגיעה במודעה מזיזה את הרקע)
+const adIsBgL=L=>!!L&&L.k==='img'&&AD.layers.find(o=>o.k==='img')===L&&AD.layers.indexOf(L)===0&&L.w>=adW()*.9;
+function adIn(L,p){const[w,h]=adSize(L),[lx,ly]=adLocal(L,p[0],p[1]),pad=12/ADE.v.s;return Math.abs(lx)<=w/2+pad&&Math.abs(ly)<=h/2+pad;}
 function adSnapRot(r){r=((r%360)+540)%360-180;const q=Math.round(r/45)*45;return Math.abs(r-q)<4?q:Math.round(r);}
 function adLocal(L,x,y){const a=-(L.rot||0)*Math.PI/180,dx=x-L.x,dy=y-L.y;return[dx*Math.cos(a)-dy*Math.sin(a),dx*Math.sin(a)+dy*Math.cos(a)];}
-function adHitLayer(x,y){const pad=ADE&&ADE.v?6/ADE.v.s:2;for(let i=AD.layers.length-1;i>=0;i--){const L=AD.layers[i];if(L.k==='text'&&!L.text)continue;const[w,h]=adSize(L),[lx,ly]=adLocal(L,x,y);if(Math.abs(lx)<=Math.max(w/2+pad,pad*3.6)&&Math.abs(ly)<=Math.max(h/2+pad,pad*3.6))return L;}return null;}
+function adHitLayer(x,y){const pad=ADE&&ADE.v?(ADE.touch?10:6)/ADE.v.s:2; /* S-195: באצבע — שוליים רחבים יותר, כיתוב קטן תופס */for(let i=AD.layers.length-1;i>=0;i--){const L=AD.layers[i];if(L.k==='text'&&!L.text)continue;const[w,h]=adSize(L),[lx,ly]=adLocal(L,x,y);if(Math.abs(lx)<=Math.max(w/2+pad,pad*3.6)&&Math.abs(ly)<=Math.max(h/2+pad,pad*3.6))return L;}return null;}
 function adHandles(L){const[w,h]=adSize(L),s=ADE.v.s,a=(L.rot||0)*Math.PI/180,P=(lx,ly)=>[L.x+lx*Math.cos(a)-ly*Math.sin(a),L.y+lx*Math.sin(a)+ly*Math.cos(a)];
   /* S-140: הידיות מחוץ לתיבה — כיתוב קטן נשאר פנוי לגרירה; ידית שנופלת מתחת לסרגל העליון יורדת לתחתית */const o=16/s,lim=((ADE.v.tb||0)+14-ADE.v.oy)/s;let rot=P(0,-h/2-o-28/s),top=P(0,-h/2),del=P(-w/2-o,-h/2-o);if(rot[1]<lim){rot=P(0,h/2+o+28/s);top=P(0,h/2);}if(del[1]<lim)del=P(-w/2-o,h/2+o);return{scale:P(w/2+o,h/2+o),rot,del,top};}
 function adHitHandle(x,y){const L=adSel();if(!L||!ADE.v)return null;const H=adHandles(L),r=22/ADE.v.s;{const[w,h]=adSize(L),[lx,ly]=adLocal(L,x,y);if(Math.abs(lx)<=w/2&&Math.abs(ly)<=h/2)return null;}for(const k of['del','rot','scale'])if(Math.hypot(x-H[k][0],y-H[k][1])<r)return k;return null;}
@@ -5361,6 +5424,58 @@ function adBar(){const st=ADE&&ADE.c&&ADE.c.parentElement;if(!st)return;let b=do
     B('−','הקטנה',()=>adScale(adSel(),1/1.1)),B('+','הגדלה',()=>adScale(adSel(),1.1)),B('⧉','שכפול',()=>adDup(adSel())),B('⬆','להעביר מעל השאר',()=>adFront(adSel())),
     ...(L.k==='img'?[B('✂️','חיתוך ועריכת התמונה',()=>adEditImg(adImgsSel())),B('🪄','שינוי חלק מהתמונה ב-AI',()=>openAdAI(adImgsSel()))]:[]),B('🗑','מחיקה',()=>adRemove(adSel())));
   if(b._h!==b.offsetHeight){b._h=b.offsetHeight;requestAnimationFrame(adDraw);}}
+// ── S-195: סרגל מהיר מתחת למודעה — מופיע כשלוחצים על כיתוב/תמונה, בלי לגלול למטה.
+// כיתוב: צבע הכתב / צבע הקו (צבעי המותג + הצבעים שכבר במודעה + 🎨 כל צבע), A−/A+, ✏️ עריכת הטקסט במקום. תמונה: 🎨 צביעה לצבע אחד (רק כשיש שקיפות).
+// בטלפון גם שורת הכלים (↶ − + ⟳ ⧉ ⬆ 🗑) — הסרגל הצף שמעל המודעה מוסתר שם כדי לפנות מקום למודעה. כל שינוי נכנס ל-↶.
+const AD_BRAND=[['#0A2A5C','כחול כהה'],['#0070C5','כחול'],['#5BB8F0','תכלת'],['#FDC010','צהוב'],['#C3141B','אדום'],['#FFFFFF','לבן'],['#000000','שחור']];
+const ADQ={mode:'fill',edit:false,tint:false};
+function adColorsInAd(){const seen=new Set(AD_BRAND.map(c=>c[0].toUpperCase())),out=[];
+  [...(AD.layers||[]).flatMap(L=>L.k==='text'?[L.color,L.outline]:[]),AD.bg].forEach(c=>{if(!adHex(c))return;const u=c.toUpperCase();if(seen.has(u))return;seen.add(u);out.push(c);});return out.slice(0,6);}
+let _adQR=0;const adQRebuild=()=>{clearTimeout(_adQR);_adQR=setTimeout(()=>{if(cur===Ad&&!document.activeElement?.closest?.('.adq'))rebuild();},700);}; // הפאנל למטה מתעדכן אחרי רגע (בלי לגנוב פוקוס)
+function adSetCol(L,k,c){if(!L||L[k]===c)return;adSnap();L[k]=c;adCommit();adQRebuild();adSay((k==='color'?'צבע הכתב':'צבע הקו')+': '+c);}
+function adQSw(c,name,on,f){return el('button',{type:'button',class:'adsw'+(c==='none'?' none':''),'aria-pressed':String(!!on),'aria-label':name,title:name,on:{click:f}},el('i',{style:c==='none'?'':'background:'+c}));}
+function adQMore(label,val,onPick){let snapped=false;const inp=el('input',{type:'color',value:adHex(val)?val:'#0A2A5C','aria-label':label,on:{input:e=>onPick(e.target.value,!snapped&&(snapped=true)),change:()=>{snapped=false;adQRebuild();}}});
+  return el('label',{class:'adsw more',title:label},'🎨 עוד',inp);}
+function adOpaque(f){if(f._opq!=null)return f._opq;try{const c=document.createElement('canvas'),im=f.img,k=Math.min(1,96/Math.max(natW(im),natH(im)));c.width=Math.max(1,Math.round(natW(im)*k));c.height=Math.max(1,Math.round(natH(im)*k));
+  const x=c.getContext('2d');x.drawImage(im,0,0,c.width,c.height);const d=x.getImageData(0,0,c.width,c.height).data;let t=0;for(let i=3;i<d.length;i+=4)if(d[i]<200)t++;f._opq=t<d.length/4*.02;}catch(e){f._opq=false;}return f._opq;}
+// 🎨 צביעה: כל פיקסל שאינו שקוף מקבל את הצבע, השקיפות נשמרת (כיתוב/לוגו שנאפה לתוך PNG). נכנס ל-↶ כמו כל החלפת תמונה
+function adTint(L,color){const f=adImgOf(L);if(!f||!f.img)return;const im=f.img,c=document.createElement('canvas');c.width=natW(im);c.height=natH(im);const x=c.getContext('2d');
+  x.drawImage(im,0,0);x.globalCompositeOperation='source-in';x.fillStyle=color;x.fillRect(0,0,c.width,c.height);
+  const n={img:c,name:String(f.name||'תמונה').replace(/ — צבוע.*$/,'')+' — צבוע',_opq:false};if(f.qr)n.qr=f.qr;adReplaceImg(f,[n]);adSay('נצבע. ↶ מחזיר את המקור');}
+function adQEdit(on){ADQ.edit=on;const q=document.getElementById('adq');if(q)q._k='';adQ();if(on)setTimeout(()=>{const i=document.getElementById('adqText');if(i){i.focus();i.select();}},30);}
+function adQ(){const pv=document.querySelector('.preview'),st=ADE&&ADE.c&&ADE.c.parentElement;if(!pv||!st)return;let q=document.getElementById('adq');
+  if(!q){q=el('div',{class:'adq',id:'adq',role:'toolbar','aria-label':'עריכה מהירה של מה שנבחר'});st.after(q);}
+  const L=adSel(),ph=adTabbed(),show=!ADE.c.hidden&&cur===Ad&&!adLocked()&&(ph||!!L);q.hidden=!show;if(!show)return;
+  if(L&&L.k!=='text'){ADQ.edit=false;}if(!L){ADQ.edit=false;ADQ.tint=false;}
+  const f=L&&L.k==='img'?adImgOf(L):null,k=[L?L.id:'',L&&L.k,L&&L.color,L&&L.outline,ADQ.mode,ADQ.edit,ADQ.tint,AD_UNDO.length,f?phId(f):'',ph,adColorsInAd().join()].join('|');if(q._k===k)return;
+  if(q.contains(document.activeElement)&&document.activeElement.type==='color')return; // בוחר הצבעים פתוח — לא בונים מתחתיו
+  q._k=k;q.innerHTML='';
+  const B=(t,a,fn,dis,cls)=>el('button',{type:'button','aria-label':a,title:a,class:cls||null,disabled:dis?'':null,on:{click:()=>{fn();}}},t);
+  q.append(el('div',{class:'adqrow adqtools'},B('↶','ביטול',adUndo,!AD_UNDO.length),B('−','הקטנה',()=>adScale(adSel(),1/1.1),!L),B('+','הגדלה',()=>adScale(adSel(),1.1),!L),
+    B('⟳','סיבוב',()=>adRot(adSel(),15),!L),B('⧉','שכפול',()=>adDup(adSel()),!L),B('⬆','להעביר מעל השאר',()=>adFront(adSel()),!L),
+    ...(L&&L.k==='img'?[B('✂️','חיתוך ועריכת התמונה',()=>adEditImg(adImgsSel()))]:[B('✏️','עריכת הטקסט',()=>adQEdit(!ADQ.edit),!L,ADQ.edit?'on':null)]),B('🗑','מחיקה',()=>adRemove(adSel()),!L)));
+  if(!L){q.append(el('p',{class:'adqhint'},'👆 לוחצים על כיתוב או תמונה במודעה כדי לערוך · שתי אצבעות או הקשה כפולה = זום'));return;}
+  if(L.k==='text'){
+    if(ADQ.edit){const inp=el('input',{type:'text',id:'adqText',dir:'auto',value:L.text||'','aria-label':'הטקסט של הכיתוב',enterkeyhint:'done'});let sn=false;
+      inp.addEventListener('input',()=>{if(!sn){adSnap();sn=true;}L.text=inp.value;adFit(L);adCommit();});
+      inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();adQEdit(false);adQRebuild();}});
+      q.append(el('div',{class:'adqrow'},inp,B('✓','סיום עריכת הטקסט',()=>{adQEdit(false);adQRebuild();})));}
+    const ln=ADQ.mode==='line',k2=ln?'outline':'color',curC=String(L[k2]||'').toUpperCase(),set=c=>adSetCol(adSel(),k2,c);
+    const sw=AD_BRAND.map(([c,n])=>adQSw(c,(ln?'קו ':'כתב ')+n,curC===c,()=>set(c))).concat(adColorsInAd().map(c=>adQSw(c,(ln?'קו':'כתב')+' בצבע שכבר במודעה '+c,curC===c.toUpperCase(),()=>set(c))));
+    if(ln)sw.unshift(adQSw('none','בלי קו',!L.outline||L.outline==='none',()=>set('none')));
+    q.append(el('div',{class:'adqrow',role:'group','aria-label':ln?'צבע הקו של הכיתוב':'צבע הכתב'},
+      el('div',{class:'adqseg',role:'group','aria-label':'מה צובעים'},B('כתב','צובעים את הכתב',()=>{ADQ.mode='fill';adQ();},false,ln?null:'on'),B('קו','צובעים את הקו מסביב לכתב',()=>{ADQ.mode='line';adQ();},false,ln?'on':null)),
+      ...sw,adQMore(ln?'צבע קו אחר':'צבע כתב אחר',ln?L.outline:L.color,(c,first)=>{const T=adSel();if(!T)return;if(first)adSnap();T[k2]=c;adCommit();})));
+    q.querySelectorAll('.adqseg button').forEach(b=>b.setAttribute('aria-pressed',String(b.classList.contains('on'))));
+    return;}
+  // תמונה
+  const opq=f&&f.img?adOpaque(f):true;
+  if(!ADQ.tint||opq){q.append(el('div',{class:'adqrow'},B('🎨 צביעה','צביעת התמונה לצבע אחד',()=>{ADQ.tint=true;adQ();},opq),B('🪄 שינוי ב-AI','שינוי חלק מהתמונה ב-AI',()=>openAdAI(adImgsSel())),
+    el('p',{class:'adqhint'},opq?'צביעה — רק לתמונה עם רקע שקוף (כיתוב או לוגו)':'🎨 צביעה: כיתוב או לוגו שבתוך התמונה — לצבע אחד')));return;}
+  q.append(el('div',{class:'adqrow',role:'group','aria-label':'צביעת התמונה לצבע אחד'},B('✕','סגירת הצביעה',()=>{ADQ.tint=false;adQ();}),
+    ...AD_BRAND.map(([c,n])=>adQSw(c,'לצבוע ב'+n,false,()=>adTint(adSel(),c))),...adColorsInAd().map(c=>adQSw(c,'לצבוע בצבע שכבר במודעה '+c,false,()=>adTint(adSel(),c))),
+    el('label',{class:'adsw more',title:'צבע אחר לצביעה'},'🎨 עוד',el('input',{type:'color',value:'#0A2A5C','aria-label':'צבע אחר לצביעה',on:{change:e=>adTint(adSel(),e.target.value)}}))),
+    el('p',{class:'adqhint'},'🎨 ניסיוני: כל מה שלא שקוף בתמונה נצבע בצבע אחד (מתאים לכיתוב/לוגו על רקע שקוף). ↶ מחזיר את המקור.'));}
 const adTexts=()=>{adEnsure();return AD.layers.filter(L=>L.k==='text');};
 function adTextCard(L,i){const t=txt(L,'text',adTexts().length>1?'כיתוב '+(i+1):'כיתוב','מבצע לחנוכה'),inp=t.querySelector('input');inp.addEventListener('focus',()=>adSelect(L.id));inp.addEventListener('input',()=>adFit(L));inp.addEventListener('keydown',e=>{if(e.key==='Enter')inp.blur();});
   const on=!!ADE&&ADE.sel===L.id||adTexts().length===1;
@@ -5486,22 +5601,31 @@ function adQrSec(){const tg=adQrTarget(),tn=tg?adAssetName(tg,(AD.img||[]).index
   return sec('➕ QR חדש',false,row('קישור / טקסט',inp),el('div',{class:'inline'},col(AD_QR,'dark','צבע הקוד'),col(AD_QR,'light','צבע הרקע')),
     el('div',{class:'adasgo'},tg?el('button',{type:'button',class:'btn gold',on:{click:()=>adQrGo('replace')}},'🔄 להחליף את: '+tn):null,el('button',{type:'button',class:'btn ghost',on:{click:()=>adQrGo('add')}},'➕ להוסיף כשכבה חדשה')),
     el('p',{class:'hint'},'ההחלפה נכנסת בדיוק למקום ולגודל של ה-QR הקיים (או של התמונה שבחרתם במודעה). כדאי לסרוק מהטלפון לפני שמפרסמים.'));}
+const AD_TABS=[['edit','✏️ עריכה'],['tpl','📑 תבניות'],['assets','📦 נכסים'],['out','⬇️ הורדה']];let AD_TAB='edit'; // S-195
+const AD_TAB_SHUT=new Set(['sec:📐 גודל','sec:🗂️ שכבות — מה מעל מה','sec:✂️ עריכת תמונה','sec:💬 מה לשנות? (במילים)','sec:🪄 תמונה חדשה מ-AI']);
 const Ad={id:'ad',printShop:false,label:'📣 פרסומת', // S-115: לא adminOnly — שותף נכנס ב-studio/?p=ad עם קוד (studio_ai_codes)
   intro:'📣 עורך פרסומות — לפוסט, לסטורי או להדפסה. כל תמונה וכל כיתוב הם שכבה נפרדת: מזיזים, מגדילים, מסובבים ומחליפים פונט בלי לבנות הכול מחדש. בסוף — הורדה כתמונה בגודל האמיתי.',
   fonts:()=>{adEnsure();return AD.layers.filter(L=>L.k==='text').map(L=>L.font);},
   build(){const U=usable(),W0=adW(),H0=adH(),s=Math.min(U.w/W0,U.h/H0),w=W0*s,h=H0*s;
     const item={w,h,draw(ctx){ctx.save();ctx.scale(s,s);ctx.beginPath();ctx.rect(0,0,W0,H0);ctx.clip();adArt(ctx);ctx.restore();}};
     return{pages:[{kind:'front',label:'הפרסומת',cut:false,placed:[{X:U.x+(U.w-w)/2,Y:U.y,rot:0,item}]}],summary:adFmt().label.replace(/^\S+\s/,'')+' · '+adPx()};},
-  panel(){if(adLocked())return[adLoginSec()];return[adAcct(),adCloudSec(),adCmdSec(),
-    sec('📐 גודל',true,el('div',{class:'seg'},Object.entries(AD_FMTS).map(([k,v])=>el('button',{type:'button','aria-pressed':String(AD.fmt===k),on:{click:()=>adSetFmt(k)}},v.label+' · '+v.sub))),
-      el('p',{class:'hint'},'החלפת גודל שומרת את מה שכבר עיצבתם — רק בודקים שהכול עדיין בפנים.')),
-    sec('🖼️ תמונות',true,filesInput(AD,'img','עד '+AD_MAXIMG+' תמונות',{max:AD_MAXIMG,edit:true}),col(AD,'bg','צבע רקע'),
-      el('p',{class:'hint'},'התמונה הראשונה ממלאת את כל הפרסומת (רקע). לוחצים על תמונה וגוררים. ⤡ בפינה — גודל, ↻ למעלה — סיבוב. בטלפון: שתי אצבעות. ⬆ בסרגל מעביר שכבה מעל השאר.')),
-    adTplSec(),adDriveSec(),adLayersSec(),adAssetsSec(),adQrSec(),adImgToolsSec(),adGenSec(),adLogosSec(),
-    sec('✏️ כיתובים',true,...adTexts().map(adTextCard),el('button',{type:'button','class':'btn ghost',on:{click:adAddText}},'➕ עוד כיתוב')),
-    sec('⬇️ הורדה',true,el('p',{class:'hint'},'PNG בגודל '+adPx()+'. מה שיוצא מהגבול לא נכנס לתמונה.'),el('button',{type:'button',class:'btn gold',on:{click:adDownload}},'⬇️ הורדת הפרסומת'),
+  panel(){if(adLocked())return[adLoginSec()];
+    const fmt=()=>sec('📐 גודל',true,el('div',{class:'seg'},Object.entries(AD_FMTS).map(([k,v])=>el('button',{type:'button','aria-pressed':String(AD.fmt===k),on:{click:()=>adSetFmt(k)}},v.label+' · '+v.sub))),
+      el('p',{class:'hint'},'החלפת גודל שומרת את מה שכבר עיצבתם — רק בודקים שהכול עדיין בפנים.'));
+    const pics=()=>sec('🖼️ תמונות',true,filesInput(AD,'img','עד '+AD_MAXIMG+' תמונות',{max:AD_MAXIMG,edit:true}),col(AD,'bg','צבע רקע'),
+      el('p',{class:'hint'},'התמונה הראשונה ממלאת את כל הפרסומת (רקע). לוחצים על תמונה וגוררים. ⤡ בפינה — גודל, ↻ למעלה — סיבוב. ⬆ מעביר שכבה מעל השאר.'+(adTabbed()?' בטלפון: שתי אצבעות או הקשה כפולה — זום; הרקע זז רק אחרי שלוחצים עליו.':'')));
+    const texts=()=>sec('✏️ כיתובים',true,...adTexts().map(adTextCard),el('button',{type:'button','class':'btn ghost',on:{click:adAddText}},'➕ עוד כיתוב'));
+    const out=()=>sec('⬇️ הורדה',true,el('p',{class:'hint'},'PNG בגודל '+adPx()+'. מה שיוצא מהגבול לא נכנס לתמונה.'),el('button',{type:'button',class:'btn gold',on:{click:adDownload}},'⬇️ הורדת הפרסומת'),
       el('button',{type:'button',class:'btn ghost',on:{click:e=>adWhatsApp(e.currentTarget)}},'🟢 שליחה בוואטסאפ'),
-      el('div',{class:'inline'},el('button',{type:'button',class:'btn ghost',on:{click:()=>adSaveDlg('ad')}},'💾 שמירה לדרייב'),el('button',{type:'button',class:'btn ghost',on:{click:()=>adSaveDlg('tpl')}},'💾 שמירה כתבנית'))),adCodesSec(),adModelSec(),adReqSec()];}
+      el('div',{class:'inline'},el('button',{type:'button',class:'btn ghost',on:{click:()=>adSaveDlg('ad')}},'💾 שמירה לדרייב'),el('button',{type:'button',class:'btn ghost',on:{click:()=>adSaveDlg('tpl')}},'💾 שמירה כתבנית')));
+    if(!adTabbed())return[adAcct(),adCloudSec(),adCmdSec(),fmt(),pics(),adTplSec(),adDriveSec(),adLayersSec(),adAssetsSec(),adQrSec(),adImgToolsSec(),adGenSec(),adLogosSec(),texts(),out(),adCodesSec(),adModelSec(),adReqSec()];
+    // S-195: בטלפון — לשוניות במקום 15 חלקים ברצף. המודעה והסרגל המהיר נשארים למעלה; כאן רק החלק שבחרו
+    const T=AD_TABS.find(t=>t[0]===AD_TAB)?AD_TAB:'edit',parts={edit:()=>[texts(),pics(),adLayersSec(),fmt(),adImgToolsSec()],tpl:()=>[adTplSec(),adDriveSec()],
+      assets:()=>[adAssetsSec(),adQrSec(),adLogosSec(),adGenSec(),adCmdSec()],out:()=>[out(),adCloudSec(),adCodesSec(),adModelSec(),adReqSec()]}[T]().filter(Boolean);
+    parts.forEach(d=>{const k=d&&d.dataset&&d.dataset.key;if(k&&AD_TAB_SHUT.has(k)&&!PANEL.has(k))d.open=false;}); // כלים שפחות צריך — סגורים בהתחלה
+    const tabs=el('div',{class:'adtabs',role:'tablist','aria-label':'חלקי העורך'},AD_TABS.map(([id,t])=>el('button',{type:'button',role:'tab',id:'adtab-'+id,'aria-selected':String(id===T),'aria-controls':'controls',on:{click:()=>{if(AD_TAB===id)return;AD_TAB=id;rebuild();
+      const tb=document.querySelector('.adtabs');if(tb){const y=tb.getBoundingClientRect().top+scrollY-(parseFloat(getComputedStyle(tb).top)||0);if(scrollY>y)window.scrollTo(0,y);}document.getElementById('adtab-'+id)?.focus({preventScroll:true});}}},t)));
+    return[adAcct(),tabs,...parts];}
 };
 // ── S-115: בינה מלאכותית בעורך הפרסומת + גישה עם קוד (לשותף, בלי חשבון מנהל) ──
 // שרת: Edge Function ai-image ← המודל לכל משימה מ-public.ai_tasks ← OpenRouter. קודים: studio_ai_codes (נספר רק מה שהצליח).
@@ -5953,7 +6077,7 @@ rerender=()=>{if(SUBL.busy)return;cancelAnimationFrame(_raf);_raf=requestAnimati
   if(curPage>=built.pages.length)curPage=0;renderHow();sizeCanvas();drawPreview();showStage();drawPagebar();updateOrderBtn();updateExportBtns();save();});};
 rebuild=()=>{if(SUBL.busy)return;syncShareUrl();document.body.classList.toggle('wz',isWz());const y=ctrls.scrollTop,wy=window.scrollY;ctrls.innerHTML='';
   const _items=[].concat(cur.panel()).flat().filter(Boolean);
-  ctrls.append(...(isWz()?[]:[el('p',{class:'intro'},cur.intro)]),...(!cur.wz&&AUTO_WZ.has(cur.id)?autoWz(cur.id,_items):_items),...(wzEarly()?[]:[shopSection()]).filter(Boolean),...(!['admin','ocr'].includes(cur.id)&&!(cur.id==='ad'&&adLocked())&&!wzEarly()?[saveLoadSection()]:[]),el('div',{class:'foot'},installBtn(),(isAdmin||!/[?&]admin\b/.test(location.search))?'':el('button',{type:'button',on:{click:openLogin}},'כניסת מנהל')));ctrls.scrollTop=y;window.scrollTo(0,wy);rerender();};
+  ctrls.append(...(isWz()?[]:[el('p',{class:'intro'},cur.intro)]),...(!cur.wz&&AUTO_WZ.has(cur.id)?autoWz(cur.id,_items):_items),...(wzEarly()?[]:[shopSection()]).filter(Boolean),...(!['admin','ocr'].includes(cur.id)&&!(cur.id==='ad'&&(adLocked()||adTabbed()&&AD_TAB!=='out'))&&!wzEarly()?[saveLoadSection()]:[]),el('div',{class:'foot'},installBtn(),(isAdmin||!/[?&]admin\b/.test(location.search))?'':el('button',{type:'button',on:{click:openLogin}},'כניסת מנהל')));ctrls.scrollTop=y;window.scrollTo(0,wy);rerender();};
 // S-165: מחזיקי מפתחות — בתצוגה רק מחזיק אחד בדו־ממד (לא דף ההדפסה). SE.kidIdx = איזה שם מוצג
 function kcDrawOne(ctx){const W=cv.width,H=cv.height,names=lines(KC.names),i=names.length?Math.min(SE.kidIdx|0,names.length-1):0,ph=KC.photo||[],it=kcItem(names.length?names[i]:KC.text,ph.length?ph[i%ph.length]:null),
     k=Math.min(W*.8/it.w,H*.8/it.h),P=pathOf(it.pts);ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,W,H);
@@ -6278,7 +6402,8 @@ function giftMkInit(){
 const MK3D=new Set(['snakes','stickers','blessing']);
 function mk3d(){return MIKDASH&&(MK3D.has(cur.id)||(HOW_OK.has(cur.id)&&V3_OK.has(cur.id)))&&!!(built&&built.pages.length);}
 function showStage(){const shb=document.getElementById('sh3d'),mgb=document.getElementById('mg3d');document.body.classList.toggle('lay',(cur.id==='mug'&&mgView==='edit')||(cur.id==='subl'&&sbV()==='edit'));
-  if(cur.id!=='ad'){const ae=document.getElementById('ad2d'),abar=document.getElementById('adbar');if(ae)ae.hidden=true;if(abar)abar.hidden=true;}
+  if(cur.id!=='ad'){const ae=document.getElementById('ad2d'),abar=document.getElementById('adbar');if(ae)ae.hidden=true;if(abar)abar.hidden=true;['adq','adzoom'].forEach(i=>{const n=document.getElementById(i);if(n)n.hidden=true;});}
+  document.body.classList.toggle('adph',cur.id==='ad'&&adTabbed()&&!adLocked()); // S-195
   const me=document.getElementById('mg2d'),mbar=document.getElementById('mgbar');
   if(cur.id!=='subl'){const se=document.getElementById('sg2d'),sbar=document.getElementById('sgbar'),sbb=document.getElementById('sb3d');if(se)se.hidden=true;if(sbar)sbar.hidden=true;sbb.classList.remove('inset');sbb.style.cssText='';}
   if(cur.id==='mug'){document.getElementById('v3In').hidden=true;shb.hidden=true;const e2=document.getElementById('sh2d');if(e2)e2.hidden=true;
@@ -6293,7 +6418,7 @@ function showStage(){const shb=document.getElementById('sh3d'),mgb=document.getE
   {let ae=document.getElementById('ad2d');const abar=document.getElementById('adbar'); // S-110: עורך הפרסומת תמיד גלוי, בלי תלת־ממד
     if(cur.id==='ad'){document.getElementById('v3In').hidden=true;shb.hidden=true;const e2=document.getElementById('sh2d');if(e2)e2.hidden=true;
       if(!ae){ae=adEditor();mgb.after(ae);ae.parentElement.append(el('div',{id:'adLive',class:'vh','aria-live':'polite'}));}
-      cv.hidden=true;ae.hidden=false;requestAnimationFrame(adDraw);return;}
+      cv.hidden=true;ae.hidden=false;adPvWatch();requestAnimationFrame(adDraw);return;}
     }
   let ed=document.getElementById('sh2d');
   if(cur.id==='tshirt'){const in3=!shPage&&shView==='3d',in2=!shPage&&!in3;document.getElementById('v3In').hidden=true;shb.classList.toggle('inset',!!in2);
