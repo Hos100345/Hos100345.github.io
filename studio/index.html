@@ -5161,7 +5161,7 @@ async function adSaveDlg(kind,preFolder){if(adLocked()){toast('קודם נכנס
 // ── 📑 תבניות: שמירה / פתיחה ──
 const AD_TPL={list:null,busy:'',lastName:''};
 const AD_TPL_V=1; // ⛔ שינוי בקבצים של studio/ads/templates = להעלות
-const AD_BUILTIN=[['product-qr','מוצר + כותרת + QR','a4'],['story','סטורי — מוצר חדש','story'],['sale','מבצע — אחוזים גדולים','post'],
+const AD_BUILTIN=[['product-qr','מוצר + כותרת + QR','a4'],['story','סטורי — מוצר חדש','story'],['sale','מבצע — אחוזים גדולים','post'],['photo-post','התמונה שלכם + כיתוב','post'],
   ['shabbat-ideas','שבת ארגון – רעיונות 1','a4'],['shabbat-ideas2','שבת ארגון – סטודיו בהיר','a4'],['shabbat-ideas3','שבת ארגון – ערב חגיגי','a4'],['shabbat-ideas4','שבת ארגון – צבעוני לילדים','a4']];
 // התמונה לשמירה: הקובץ המקורי כשיש (בלי איבוד איכות), אחרת מהקנבס — PNG כשיש שקיפות/QR, JPEG 95% לתמונה גדולה
 async function adTplImgData(f){try{const r=await adAssetBlob(f);if(/^image\/(png|jpeg|webp)$/.test(r.blob.type)&&r.blob.size<20e6)return{data:await adBlobUrl(r.blob),ext:r.ext==='jpeg'?'jpg':r.ext};}catch(e){}
