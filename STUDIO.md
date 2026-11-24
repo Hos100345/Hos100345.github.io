@@ -77,6 +77,8 @@
 - **Edge Function `studio-order`** (verify_jwt=false, מקור ב-`supabase/functions/studio-order/index.ts`):
   - `action=create` → ולידציה (טלפון, מוצר, דפים 1–40, design ≤256KB) → RPC `create_studio_order` → שורה עם `status='uploading'` → מחזיר `id, code, price` + קישורי העלאה חתומים ל-`print.pdf`, `preview.jpg`, `cut.svg|zip`.
   - `action=finalize` → בודק שהקבצים באמת ב-Storage → `status='new'`.
+  - `action=cart` (S-188, **ממתין לפריסה + SQL `2026-11-24_studio_cart.sql`**) → עד 10 מוצרים: ולידציה כמו create לכל מוצר → RPC `create_studio_cart` (הזמנה לכל מוצר עם `cart_code` משותף `CART-0001…`, סל = יחידה אחת במגבלת 5 ביום, קוד הנחה לכל הסל ונספר פעם אחת, הכול בטרנזקציה אחת) → קישורי העלאה לכל מוצר. finalize — לכל מוצר בנפרד.
+  - **סל בצד הלקוח (S-188):** IndexedDB `studio-cart` (פריט = design.zip של המוצר + תמונת תלת־ממד + מחיר), `buildOrderFiles(live)` משותף להזמנה בודדת ולסל. שרת בלי `cart` → הודעה והסל נשמר.
 - **טבלה `studio_orders`:** קוד `ST-0001…`, `product`, `sheets`, `price_ils`, `design` (state בלי תמונות), `status` (uploading/new/in_progress/done/cancelled), `files`, `paid`, `printed`.
 - **RLS:** קריאה/עדכון/מחיקה רק כש-`auth.jwt()->>'email' = 'hoshaya@gmail.com'` — אותו כלל כמו `sticker_orders`.
 - **Bucket פרטי `studio-orders`:** עד 25MB לקובץ; pdf/svg/zip/jpeg בלבד.
