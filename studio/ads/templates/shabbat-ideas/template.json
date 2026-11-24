@@ -1,0 +1,239 @@
+{
+ "version": 1,
+ "kind": "itzuvishi-ad-template",
+ "title": "שבת ארגון – רעיונות 1",
+ "fmt": "a4",
+ "bg": "#0b2a5b",
+ "units": {
+  "w": 200,
+  "h": 282.903
+ },
+ "layers": [
+  {
+   "k": "img",
+   "name": "התמונה הראשית",
+   "x": 100,
+   "y": 100,
+   "w": 200,
+   "rot": 0,
+   "file": "../../shabbat-irgun/ideas/pic.jpg"
+  },
+  {
+   "k": "img",
+   "name": "רצועת הרעיונות",
+   "x": 100,
+   "y": 184.13098236775818,
+   "w": 200,
+   "rot": 0,
+   "file": "../../shabbat-irgun/ideas/band.png"
+  },
+  {
+   "k": "img",
+   "name": "הכותרת",
+   "x": 145.5919395465995,
+   "y": 25.944584382871536,
+   "w": 108.816120906801,
+   "rot": 0,
+   "file": "../../shabbat-irgun/ideas/title.png"
+  },
+  {
+   "k": "img",
+   "name": "מספר 1",
+   "x": 18.639798488664987,
+   "y": 99.49622166246851,
+   "w": 8.564231738035264,
+   "rot": 0,
+   "file": "../../shabbat-irgun/ideas/m1.png"
+  },
+  {
+   "k": "img",
+   "name": "מספר 2",
+   "x": 46.095717884130984,
+   "y": 130.9823677581864,
+   "w": 8.564231738035264,
+   "rot": 0,
+   "file": "../../shabbat-irgun/ideas/m2.png"
+  },
+  {
+   "k": "img",
+   "name": "מספר 3",
+   "x": 72.29219143576826,
+   "y": 89.92443324937028,
+   "w": 8.564231738035264,
+   "rot": 0,
+   "file": "../../shabbat-irgun/ideas/m3.png"
+  },
+  {
+   "k": "img",
+   "name": "מספר 4",
+   "x": 88.16120906801008,
+   "y": 133.50125944584383,
+   "w": 8.564231738035264,
+   "rot": 0,
+   "file": "../../shabbat-irgun/ideas/m4.png"
+  },
+  {
+   "k": "img",
+   "name": "מספר 5",
+   "x": 128.2115869017632,
+   "y": 148.6146095717884,
+   "w": 8.564231738035264,
+   "rot": 0,
+   "file": "../../shabbat-irgun/ideas/m5.png"
+  },
+  {
+   "k": "img",
+   "name": "מספר 6",
+   "x": 138.5390428211587,
+   "y": 105.79345088161209,
+   "w": 8.564231738035264,
+   "rot": 0,
+   "file": "../../shabbat-irgun/ideas/m6.png"
+  },
+  {
+   "k": "img",
+   "name": "מספר 7",
+   "x": 185.8942065491184,
+   "y": 149.1183879093199,
+   "w": 8.564231738035264,
+   "rot": 0,
+   "file": "../../shabbat-irgun/ideas/m7.png"
+  },
+  {
+   "k": "img",
+   "name": "הפס האדום",
+   "x": 100,
+   "y": 210.7052896725441,
+   "w": 184.88664987405542,
+   "rot": 0,
+   "file": "../../shabbat-irgun/ideas/bar.png"
+  },
+  {
+   "k": "img",
+   "name": "קוד QR",
+   "x": 118.13602015113351,
+   "y": 246.59949622166246,
+   "w": 42.821158690176325,
+   "rot": 0,
+   "file": "../../shabbat-irgun/ideas/qr.png"
+  },
+  {
+   "k": "img",
+   "name": "\"הזמנות דרך האתר\"",
+   "x": 50.12594458438287,
+   "y": 228.08564231738035,
+   "w": 85.13853904282117,
+   "rot": 0,
+   "file": "../../shabbat-irgun/ideas/info1.png"
+  },
+  {
+   "k": "img",
+   "name": "מיקום (מצפה יריחו)",
+   "x": 50.12594458438287,
+   "y": 245.088161209068,
+   "w": 85.13853904282117,
+   "rot": 0,
+   "file": "../../shabbat-irgun/ideas/info2.png"
+  },
+  {
+   "k": "img",
+   "name": "טלפון ואתר",
+   "x": 50.12594458438287,
+   "y": 265.4911838790932,
+   "w": 85.13853904282117,
+   "rot": 0,
+   "file": "../../shabbat-irgun/ideas/info3.png"
+  },
+  {
+   "k": "img",
+   "name": "לוגואים: לגעת בעץ + סטודיו",
+   "x": 168.51385390428212,
+   "y": 246.59949622166246,
+   "w": 47.858942065491185,
+   "rot": 0,
+   "file": "../../shabbat-irgun/ideas/logos.png"
+  },
+  {
+   "k": "img",
+   "name": "לוגו עיצובישי",
+   "x": 23.67758186397985,
+   "y": 22.670025188916878,
+   "w": 42.31738035264484,
+   "rot": 0,
+   "file": "../../shabbat-irgun/ideas/logo.png"
+  }
+ ],
+ "files": [
+  {
+   "file": "../../shabbat-irgun/ideas/pic.jpg",
+   "name": "pic"
+  },
+  {
+   "file": "../../shabbat-irgun/ideas/band.png",
+   "name": "band"
+  },
+  {
+   "file": "../../shabbat-irgun/ideas/title.png",
+   "name": "title"
+  },
+  {
+   "file": "../../shabbat-irgun/ideas/m1.png",
+   "name": "m1"
+  },
+  {
+   "file": "../../shabbat-irgun/ideas/m2.png",
+   "name": "m2"
+  },
+  {
+   "file": "../../shabbat-irgun/ideas/m3.png",
+   "name": "m3"
+  },
+  {
+   "file": "../../shabbat-irgun/ideas/m4.png",
+   "name": "m4"
+  },
+  {
+   "file": "../../shabbat-irgun/ideas/m5.png",
+   "name": "m5"
+  },
+  {
+   "file": "../../shabbat-irgun/ideas/m6.png",
+   "name": "m6"
+  },
+  {
+   "file": "../../shabbat-irgun/ideas/m7.png",
+   "name": "m7"
+  },
+  {
+   "file": "../../shabbat-irgun/ideas/bar.png",
+   "name": "bar"
+  },
+  {
+   "file": "../../shabbat-irgun/ideas/qr.png",
+   "name": "qr"
+  },
+  {
+   "file": "../../shabbat-irgun/ideas/info1.png",
+   "name": "info1"
+  },
+  {
+   "file": "../../shabbat-irgun/ideas/info2.png",
+   "name": "info2"
+  },
+  {
+   "file": "../../shabbat-irgun/ideas/info3.png",
+   "name": "info3"
+  },
+  {
+   "file": "../../shabbat-irgun/ideas/logos.png",
+   "name": "logos"
+  },
+  {
+   "file": "../../shabbat-irgun/ideas/logo.png",
+   "name": "logo"
+  }
+ ],
+ "fonts": [],
+ "created": "2026-11-24T00:00:00.000Z",
+ "app": "studio-v1.76"
+}

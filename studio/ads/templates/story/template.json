@@ -1,0 +1,151 @@
+{
+ "version": 1,
+ "kind": "itzuvishi-ad-template",
+ "title": "סטורי — מוצר חדש",
+ "fmt": "story",
+ "bg": "#0070C5",
+ "units": {
+  "w": 200,
+  "h": 355.556
+ },
+ "layers": [
+  {
+   "k": "img",
+   "file": "01-bg.jpg",
+   "name": "רקע",
+   "x": 100,
+   "y": 177.8,
+   "w": 200,
+   "rot": 0
+  },
+  {
+   "k": "img",
+   "file": "02-logo.png",
+   "name": "לוגו עיצובישי",
+   "x": 100,
+   "y": 40,
+   "w": 52,
+   "rot": 0
+  },
+  {
+   "k": "text",
+   "text": "חדש באתר!",
+   "font": "Fredoka",
+   "color": "#FFFFFF",
+   "outline": "none",
+   "x": 100,
+   "y": 92,
+   "fs": 30,
+   "rot": 0
+  },
+  {
+   "k": "text",
+   "text": "ספל עם התמונה שלכם",
+   "font": "Rubik",
+   "color": "#FFFFFF",
+   "outline": "none",
+   "x": 100,
+   "y": 117,
+   "fs": 14,
+   "rot": 0
+  },
+  {
+   "k": "img",
+   "file": "03-card.png",
+   "name": "מסגרת לבנה",
+   "x": 100,
+   "y": 202,
+   "w": 172,
+   "rot": 0
+  },
+  {
+   "k": "img",
+   "file": "04-photo.webp",
+   "name": "תמונת המוצר — החליפו",
+   "x": 100,
+   "y": 199,
+   "w": 152,
+   "rot": 0
+  },
+  {
+   "k": "text",
+   "text": "מתנה אישית לכל אירוע",
+   "font": "Rubik",
+   "color": "#FFFFFF",
+   "outline": "none",
+   "x": 100,
+   "y": 286,
+   "fs": 12,
+   "rot": 0
+  },
+  {
+   "k": "img",
+   "file": "05-pill.png",
+   "name": "כפתור צהוב",
+   "x": 100,
+   "y": 313,
+   "w": 150,
+   "rot": 0
+  },
+  {
+   "k": "text",
+   "text": "להזמנה באתר",
+   "font": "Fredoka",
+   "color": "#0A2A5C",
+   "outline": "none",
+   "x": 100,
+   "y": 313.5,
+   "fs": 15,
+   "rot": 0
+  },
+  {
+   "k": "text",
+   "text": "www.hoshaya.co.il",
+   "font": "Rubik",
+   "color": "#DCEBF7",
+   "outline": "none",
+   "x": 100,
+   "y": 340,
+   "fs": 10,
+   "rot": 0
+  }
+ ],
+ "files": [
+  {
+   "file": "01-bg.jpg",
+   "name": "רקע",
+   "w": 1080,
+   "h": 1920
+  },
+  {
+   "file": "02-logo.png",
+   "name": "לוגו עיצובישי",
+   "w": 512,
+   "h": 512
+  },
+  {
+   "file": "03-card.png",
+   "name": "מסגרת לבנה",
+   "w": 1100,
+   "h": 900
+  },
+  {
+   "file": "04-photo.webp",
+   "name": "תמונת המוצר — החליפו",
+   "w": 800,
+   "h": 600
+  },
+  {
+   "file": "05-pill.png",
+   "name": "כפתור צהוב",
+   "w": 1000,
+   "h": 200
+  }
+ ],
+ "fonts": [
+  "Fredoka",
+  "Rubik"
+ ],
+ "created": "2026-11-24T00:00:00.000Z",
+ "app": "studio-v1.76"
+}

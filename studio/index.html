@@ -146,6 +146,23 @@ details.face>.body{padding:0 12px 12px;display:grid;gap:8px}
 .adasn{font-size:.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .adasb{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}.adasb .btn{min-height:44px;padding:4px;justify-content:center}
 .adasgo{display:grid;gap:8px}.adasgo .btn{min-height:48px;width:100%}
+/* S-193: 📂 הדרייב + 📑 תבניות */
+.btn.danger{background:#B3261E;color:#fff}
+.adh3{font-size:.95rem;margin:.4rem 0 0;color:var(--navy)}
+.adtplpv{width:100%;aspect-ratio:3/4;object-fit:contain;background:#EEF2F7;border-radius:8px;display:block}
+.adtplph{display:grid;place-items:center;aspect-ratio:3/4;background:#EEF2F7;border-radius:8px;font-size:2rem}
+.adtpl .adasb .btn{min-height:48px}
+.adwarn{background:#FFF7E0;border:1px solid #E8C77A;border-radius:10px;padding:8px 10px;color:var(--ink)}
+.adwarn a{color:var(--navy);font-weight:700}
+.addlg .fsheet{max-height:92vh}.addlg .obody{overflow-x:hidden;min-width:0}.adbrsheet{max-width:900px;height:92vh}
+.adcrumb{display:flex;flex-wrap:wrap;gap:4px;align-items:center}.adcrumb .btn{min-height:44px;padding:4px 10px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.adcrumb .btn[disabled]{opacity:1;font-weight:700}
+.adbr{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px}
+.adbrc{min-width:0}.adbrc.sel .adbrt{outline:3px solid var(--navy);outline-offset:1px}
+.adbrt{display:grid;grid-template-columns:minmax(0,1fr);gap:4px;align-content:start;width:100%;border:1px solid var(--line);border-radius:10px;padding:6px;background:#fff;cursor:pointer;font:inherit;color:inherit;text-align:center;min-width:0;min-height:48px}
+.adbrt img,.adbrt .ph{width:100%;aspect-ratio:1;object-fit:contain;background:#EEF2F7;border-radius:8px;display:grid;place-items:center;font-size:2.2rem}
+.adbrt span:last-child{font-size:.8rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.adbract{position:sticky;bottom:-14px;background:#fff;border-top:3px solid var(--navy);padding:10px 2px;margin:0 -2px -14px;display:grid;gap:8px;box-shadow:0 -6px 16px rgba(10,42,92,.12)}
+.adbract .btn{min-height:48px;width:100%}
 .files .tb .open{border:0;padding:0;background:none;cursor:pointer;border-radius:8px}
 .files .tb .open:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .files .tb .x,.cth .x,.cth .cut{position:absolute;width:28px;height:28px;border-radius:50%;border:2px solid #fff;color:#fff;cursor:pointer;font-size:.95rem;line-height:1;display:flex;align-items:center;justify-content:center;padding:0}
@@ -387,7 +404,7 @@ body.focus-min .cart-top{gap:5px;padding:.4rem .8rem}body.focus-min .cart-top[hi
 <script>
 const NETS={"d4":{"faces":4,"sides":3,"pos":[[[1.2247,0.9659],[0.2588,1.2247],[0.5176,0.2588]],[[0,2.1907],[0.2588,1.2247],[0.9659,1.9319]],[[0.9659,1.9319],[0.2588,1.2247],[1.2247,0.9659]],[[1.2247,0.9659],[0.5176,0.2588],[1.4836,0]]],"tabs":[{"e":[[0.2588,1.2247],[0.5176,0.2588]],"f":0,"d":0.28,"t":0.25},{"e":[[0.9659,1.9319],[0,2.1907]],"f":1,"d":0.28,"t":0.25},{"e":[[1.2247,0.9659],[0.9659,1.9319]],"f":2,"d":0.28,"t":0.25}],"cuts":[[[0,2.1907],[0.2588,1.2247]],[[0.5176,0.2588],[1.4836,0]],[[1.4836,0],[1.2247,0.9659]]],"folds":[[[1.2247,0.9659],[0.2588,1.2247]],[[0.5176,0.2588],[1.2247,0.9659]],[[0.2588,1.2247],[0.9659,1.9319]]],"w":1.4836,"h":2.3964,"opp":[-1,-1,-1,-1],"maxEdge":104.3},"d6":{"faces":6,"sides":4,"pos":[[[1.1953,4.1008],[0.2557,3.7588],[0.5977,2.8191],[1.5374,3.1611]],[[0,1.5374],[0.342,0.5977],[1.2817,0.9397],[0.9397,1.8794]],[[1.2817,0.9397],[1.6237,0],[2.5634,0.342],[2.2214,1.2817]],[[1.5374,3.1611],[0.5977,2.8191],[0.9397,1.8794],[1.8794,2.2214]],[[2.8191,2.5634],[2.4771,3.5031],[1.5374,3.1611],[1.8794,2.2214]],[[0.9397,1.8794],[1.2817,0.9397],[2.2214,1.2817],[1.8794,2.2214]]],"tabs":[{"e":[[1.1953,4.1008],[0.2557,3.7588]],"f":0,"d":0.28,"t":0.25},{"e":[[0.2557,3.7588],[0.5977,2.8191]],"f":0,"d":0.28,"t":0.25},{"e":[[1.5374,3.1611],[1.1953,4.1008]],"f":0,"d":0.28,"t":0.25},{"e":[[0.342,0.5977],[1.2817,0.9397]],"f":1,"d":0.28,"t":0.25},{"e":[[0.9397,1.8794],[0,1.5374]],"f":1,"d":0.28,"t":0.25},{"e":[[2.5634,0.342],[2.2214,1.2817]],"f":2,"d":0.28,"t":0.25},{"e":[[1.8794,2.2214],[2.8191,2.5634]],"f":4,"d":0.28,"t":0.25}],"cuts":[[[1.6237,0],[2.5634,0.342]],[[0,1.5374],[0.342,0.5977]],[[2.4771,3.5031],[1.5374,3.1611]],[[1.2817,0.9397],[1.6237,0]],[[0.5977,2.8191],[0.9397,1.8794]],[[2.8191,2.5634],[2.4771,3.5031]],[[2.2214,1.2817],[1.8794,2.2214]]],"folds":[[[0.5977,2.8191],[1.5374,3.1611]],[[1.2817,0.9397],[0.9397,1.8794]],[[2.2214,1.2817],[1.2817,0.9397]],[[0.9397,1.8794],[1.8794,2.2214]],[[1.8794,2.2214],[1.5374,3.1611]]],"w":2.8191,"h":4.2784,"opp":[5,4,3,2,1,0],"maxEdge":58.4},"d8":{"faces":8,"sides":3,"pos":[[[0.684,1.172],[1.3268,1.9381],[0.342,2.1117]],[[0.342,2.1117],[1.3268,1.9381],[0.9848,2.8778]],[[1.6688,0.9984],[1.3268,1.9381],[0.684,1.172]],[[0.9848,2.8778],[1.3268,1.9381],[1.9696,2.7041]],[[0.0413,0.406],[1.0261,0.2323],[0.684,1.172]],[[0.9848,2.8778],[0,3.0514],[0.342,2.1117]],[[0.684,1.172],[1.0261,0.2323],[1.6688,0.9984]],[[1.6688,0.9984],[1.0261,0.2323],[2.0109,0.0587]]],"tabs":[{"e":[[0.342,2.1117],[0.684,1.172]],"f":0,"d":0.28,"t":0.25},{"e":[[1.6688,0.9984],[1.3268,1.9381]],"f":2,"d":0.28,"t":0.25},{"e":[[1.9696,2.7041],[0.9848,2.8778]],"f":3,"d":0.28,"t":0.25},{"e":[[0.0413,0.406],[1.0261,0.2323]],"f":4,"d":0.28,"t":0.25},{"e":[[0.9848,2.8778],[0,3.0514]],"f":5,"d":0.28,"t":0.25}],"cuts":[[[0.684,1.172],[0.0413,0.406]],[[1.3268,1.9381],[1.9696,2.7041]],[[2.0109,0.0587],[1.6688,0.9984]],[[0,3.0514],[0.342,2.1117]],[[1.0261,0.2323],[2.0109,0.0587]]],"folds":[[[0.684,1.172],[1.3268,1.9381]],[[1.3268,1.9381],[0.342,2.1117]],[[1.3268,1.9381],[0.9848,2.8778]],[[0.9848,2.8778],[0.342,2.1117]],[[0.684,1.172],[1.6688,0.9984]],[[1.0261,0.2323],[0.684,1.172]],[[1.0261,0.2323],[1.6688,0.9984]]],"w":2.0109,"h":3.2837,"opp":[7,6,5,4,3,2,1,0],"maxEdge":76.1},"d12":{"faces":12,"sides":5,"pos":[[[2.9967,3.8222],[3.0491,4.8209],[2.1155,5.1792],[1.4862,4.4021],[2.0308,3.5634]],[[3.1337,6.4367],[2.1678,6.1778],[2.1155,5.1792],[3.0491,4.8209],[3.6784,5.598]],[[0.5526,4.7604],[1.4862,4.4021],[2.1155,5.1792],[1.5708,6.0179],[0.6049,5.7591]],[[3.5414,2.9836],[2.9967,3.8222],[2.0308,3.5634],[1.9785,2.5648],[2.912,2.2064]],[[1.0125,2.306],[1.9785,2.5648],[2.0308,3.5634],[1.0972,3.9218],[0.4679,3.1446]],[[3.5414,2.9836],[4.5073,3.2424],[4.5596,4.241],[3.626,4.5994],[2.9967,3.8222]],[[3.7631,7.2138],[3.1337,6.4367],[3.6784,5.598],[4.6443,5.8568],[4.6966,6.8554]],[[4.4226,1.6266],[4.4749,2.6252],[3.5414,2.9836],[2.912,2.2064],[3.4567,1.3677]],[[1.3491,1.7876],[0.3832,1.5288],[0.3309,0.5302],[1.2645,0.1718],[1.8938,0.949]],[[0.6896,7.3749],[0.0603,6.5977],[0.6049,5.7591],[1.5708,6.0179],[1.6232,7.0165]],[[2.912,2.2064],[1.9785,2.5648],[1.3491,1.7876],[1.8938,0.949],[2.8597,1.2078]],[[3.4043,0.3691],[4.3379,0.0107],[4.9672,0.7879],[4.4226,1.6266],[3.4567,1.3677]]],"tabs":[{"e":[[2.9967,3.8222],[3.0491,4.8209]],"f":0,"d":0.22,"t":0.3},{"e":[[1.4862,4.4021],[2.0308,3.5634]],"f":0,"d":0.22,"t":0.3},{"e":[[3.1337,6.4367],[2.1678,6.1778]],"f":1,"d":0.28,"t":0.25},{"e":[[2.1678,6.1778],[2.1155,5.1792]],"f":1,"d":0.22,"t":0.3},{"e":[[3.0491,4.8209],[3.6784,5.598]],"f":1,"d":0.28,"t":0.25},{"e":[[0.5526,4.7604],[1.4862,4.4021]],"f":2,"d":0.28,"t":0.25},{"e":[[0.6049,5.7591],[0.5526,4.7604]],"f":2,"d":0.28,"t":0.25},{"e":[[1.0125,2.306],[1.9785,2.5648]],"f":4,"d":0.22,"t":0.3},{"e":[[0.4679,3.1446],[1.0125,2.306]],"f":4,"d":0.28,"t":0.25},{"e":[[3.5414,2.9836],[4.5073,3.2424]],"f":5,"d":0.22,"t":0.3},{"e":[[4.5073,3.2424],[4.5596,4.241]],"f":5,"d":0.28,"t":0.25},{"e":[[3.7631,7.2138],[3.1337,6.4367]],"f":6,"d":0.28,"t":0.25},{"e":[[4.6443,5.8568],[4.6966,6.8554]],"f":6,"d":0.28,"t":0.25},{"e":[[4.6966,6.8554],[3.7631,7.2138]],"f":6,"d":0.28,"t":0.25},{"e":[[2.912,2.2064],[3.4567,1.3677]],"f":7,"d":0.22,"t":0.3},{"e":[[0.3309,0.5302],[1.2645,0.1718]],"f":8,"d":0.28,"t":0.25},{"e":[[1.2645,0.1718],[1.8938,0.949]],"f":8,"d":0.28,"t":0.25},{"e":[[0.6896,7.3749],[0.0603,6.5977]],"f":9,"d":0.28,"t":0.25},{"e":[[1.8938,0.949],[2.8597,1.2078]],"f":10,"d":0.28,"t":0.25}],"cuts":[[[3.626,4.5994],[2.9967,3.8222]],[[2.0308,3.5634],[1.0972,3.9218]],[[1.5708,6.0179],[1.6232,7.0165]],[[2.1155,5.1792],[1.5708,6.0179]],[[4.5596,4.241],[3.626,4.5994]],[[1.0972,3.9218],[0.4679,3.1446]],[[0.3832,1.5288],[0.3309,0.5302]],[[1.9785,2.5648],[1.3491,1.7876]],[[1.3491,1.7876],[0.3832,1.5288]],[[4.4749,2.6252],[3.5414,2.9836]],[[3.6784,5.598],[4.6443,5.8568]],[[1.6232,7.0165],[0.6896,7.3749]],[[4.4226,1.6266],[4.4749,2.6252]],[[4.9672,0.7879],[4.4226,1.6266]],[[2.8597,1.2078],[2.912,2.2064]],[[0.0603,6.5977],[0.6049,5.7591]],[[3.4043,0.3691],[4.3379,0.0107]],[[4.3379,0.0107],[4.9672,0.7879]],[[3.4567,1.3677],[3.4043,0.3691]]],"folds":[[[3.0491,4.8209],[2.1155,5.1792]],[[2.1155,5.1792],[1.4862,4.4021]],[[2.0308,3.5634],[2.9967,3.8222]],[[3.6784,5.598],[3.1337,6.4367]],[[1.5708,6.0179],[0.6049,5.7591]],[[3.5414,2.9836],[2.9967,3.8222]],[[2.0308,3.5634],[1.9785,2.5648]],[[1.9785,2.5648],[2.912,2.2064]],[[2.912,2.2064],[3.5414,2.9836]],[[3.4567,1.3677],[4.4226,1.6266]],[[1.8938,0.949],[1.3491,1.7876]]],"w":4.9672,"h":7.3856,"opp":[11,10,7,9,6,8,4,2,5,3,1,0],"maxEdge":33.6},"d20":{"faces":20,"sides":3,"pos":[[[2.0234,2.2854],[1.0386,2.1117],[1.6814,1.3457]],[[1.6814,1.3457],[1.0386,2.1117],[0.6966,1.172]],[[1.3806,3.0514],[1.0386,2.1117],[2.0234,2.2854]],[[0.7378,3.8175],[0.3958,2.8778],[1.3806,3.0514]],[[0.6966,1.172],[1.0386,2.1117],[0.0538,1.9381]],[[2.0234,2.2854],[1.6814,1.3457],[2.6662,1.5193]],[[2.6662,1.5193],[1.6814,1.3457],[2.3242,0.5796]],[[1.3394,0.406],[1.6814,1.3457],[0.6966,1.172]],[[2.3654,3.2251],[2.0234,2.2854],[3.0082,2.459]],[[1.3806,3.0514],[2.0234,2.2854],[2.3654,3.2251]],[[2.6662,1.5193],[2.3242,0.5796],[3.309,0.7533]],[[0.3546,0.2323],[1.3394,0.406],[0.6966,1.172]],[[2.7075,4.1648],[3.0495,5.1044],[2.0647,4.9308]],[[2.7075,4.1648],[2.3654,3.2251],[3.3502,3.3987]],[[1.3806,3.0514],[2.3654,3.2251],[1.7226,3.9911]],[[1.7226,3.9911],[2.3654,3.2251],[2.7075,4.1648]],[[0.7378,3.8175],[1.3806,3.0514],[1.7226,3.9911]],[[1.0799,4.7571],[0.095,4.5835],[0.7378,3.8175]],[[1.0799,4.7571],[0.7378,3.8175],[1.7226,3.9911]],[[1.7226,3.9911],[2.7075,4.1648],[2.0647,4.9308]]],"tabs":[{"e":[[1.3806,3.0514],[1.0386,2.1117]],"f":2,"d":0.28,"t":0.25},{"e":[[0.7378,3.8175],[0.3958,2.8778]],"f":3,"d":0.28,"t":0.25},{"e":[[0.0538,1.9381],[0.6966,1.172]],"f":4,"d":0.28,"t":0.25},{"e":[[2.6662,1.5193],[2.0234,2.2854]],"f":5,"d":0.28,"t":0.25},{"e":[[1.6814,1.3457],[2.3242,0.5796]],"f":6,"d":0.28,"t":0.25},{"e":[[3.0082,2.459],[2.3654,3.2251]],"f":8,"d":0.28,"t":0.25},{"e":[[2.3242,0.5796],[3.309,0.7533]],"f":10,"d":0.28,"t":0.25},{"e":[[3.309,0.7533],[2.6662,1.5193]],"f":10,"d":0.28,"t":0.25},{"e":[[0.3546,0.2323],[1.3394,0.406]],"f":11,"d":0.28,"t":0.25},{"e":[[0.6966,1.172],[0.3546,0.2323]],"f":11,"d":0.28,"t":0.25},{"e":[[1.7226,3.9911],[1.0799,4.7571]],"f":18,"d":0.28,"t":0.25}],"cuts":[[[0.3958,2.8778],[1.3806,3.0514]],[[1.0386,2.1117],[0.0538,1.9381]],[[0.095,4.5835],[0.7378,3.8175]],[[2.0234,2.2854],[3.0082,2.459]],[[1.3394,0.406],[1.6814,1.3457]],[[2.3654,3.2251],[3.3502,3.3987]],[[2.7075,4.1648],[3.0495,5.1044]],[[3.3502,3.3987],[2.7075,4.1648]],[[3.0495,5.1044],[2.0647,4.9308]],[[1.0799,4.7571],[0.095,4.5835]],[[2.0647,4.9308],[1.7226,3.9911]]],"folds":[[[2.0234,2.2854],[1.0386,2.1117]],[[1.0386,2.1117],[1.6814,1.3457]],[[1.6814,1.3457],[2.0234,2.2854]],[[1.0386,2.1117],[0.6966,1.172]],[[0.6966,1.172],[1.6814,1.3457]],[[2.0234,2.2854],[1.3806,3.0514]],[[1.3806,3.0514],[0.7378,3.8175]],[[1.6814,1.3457],[2.6662,1.5193]],[[2.3242,0.5796],[2.6662,1.5193]],[[0.6966,1.172],[1.3394,0.406]],[[2.3654,3.2251],[2.0234,2.2854]],[[2.3654,3.2251],[1.3806,3.0514]],[[2.0647,4.9308],[2.7075,4.1648]],[[2.7075,4.1648],[2.3654,3.2251]],[[2.3654,3.2251],[1.7226,3.9911]],[[1.7226,3.9911],[1.3806,3.0514]],[[2.7075,4.1648],[1.7226,3.9911]],[[1.7226,3.9911],[0.7378,3.8175]],[[0.7378,3.8175],[1.0799,4.7571]]],"w":3.3628,"h":5.1044,"opp":[19,15,12,10,13,18,16,14,17,11,3,9,2,4,7,1,6,8,5,0],"maxEdge":49}};
 'use strict';
-const VERSION='studio-v1.75';
+const VERSION='studio-v1.76';
 // ═══════════ קבצים משותפים מהריפו (פונטים, עיצובי גב) ═══════════
 // נעוץ לקומיט ספציפי — שינוי בריפו לא ישבור את הקובץ הזה בלי שנעדכן כאן במכוון.
 const SHARED_COMMIT='f196a73a41a063231ba207a4296395f889aac265';
@@ -5072,19 +5089,195 @@ async function adCanvas(){if(adLocked()){toast('קודם נכנסים עם קו�
   await ensureFonts();const[pw,ph]=adFmt().px,c=document.createElement('canvas');c.width=pw;c.height=ph;const x=c.getContext('2d');x.scale(pw/adW(),pw/adW());adArt(x);return c;}
 async function adDownload(){const c=await adCanvas();if(!c)return;
   c.toBlob(b=>{if(!b){toast('ההורדה נכשלה — נסו שוב');return;}download(b,`ad-${AD.fmt}-${stamp()}.png`);toast('התמונה מוכנה · '+adPx());},'image/png');}
-// S-190: 💾 שמירה לתיקיית "מודעות עיצובישי" בדרייב — מנהל בלבד, דרך Edge Function ads-drive (← Apps Script בחשבון של הושעיה)
+// S-190: 💾 שמירה לתיקיית "מודעות עיצובישי" בדרייב, דרך Edge Function ads-drive (← Apps Script בחשבון של הושעיה).
+// ── S-193: 📂 הדרייב + 📑 תבניות — גם לשותפים עם קוד. מנהל = JWT; שותף = code בגוף הבקשה (כמו adCall).
+// השרת קובע מי זה ושומר כל שמירה של שותף בשותפים/<השם שלו>/. מחיקה — רק מה שנוצר על ידי אותו אחד (או מנהל), נאכף ב-Code.gs.
+// תבנית = תיקייה "תבנית – <שם>" עם template.json + קובץ לכל תמונה + preview.jpg (tools/drive-ads/README.md). תבניות מוכנות בלי דרייב: studio/ads/templates/<id>/
 const AD_DRIVE_FOLDER='https://drive.google.com/drive/folders/1JydT_5VV_BSZYPqn9cRqofbnVdPc6Jmb';
-let adDriveBusy=false;
-async function adDriveCall(body,ms){const {data}=await sb.auth.getSession(),tok=data&&data.session&&data.session.access_token;if(!tok)throw new Error('צריך להיכנס כמנהל');
-  const r=await withTimeout(fetch(SB_URL+'/functions/v1/ads-drive',{method:'POST',headers:{'Content-Type':'application/json',apikey:SB_KEY,Authorization:'Bearer '+tok},body:JSON.stringify(body)}),ms||90000,'timeout');
-  const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||('שגיאת שרת '+r.status));return j;}
-async function adDriveSave(btn){if(adDriveBusy)return;const c=await adCanvas();if(!c)return;adDriveBusy=true;const t0=btn&&btn.textContent;if(btn){btn.disabled=true;btn.textContent='⏳ שומר בדרייב…';}
-  try{const ttl=((AD.layers||[]).find(o=>o.text&&String(o.text).trim())||{}).text||'מודעה';
-    const name=String(ttl).replace(/\s+/g,' ').trim().slice(0,60)+' · '+AD.fmt+' · '+new Date().toLocaleDateString('he-IL').replace(/\./g,'-');
-    const j=await adDriveCall({action:'save',name,dataUrl:c.toDataURL('image/png'),note:'עורך הפרסומת · '+adPx()});
-    toast('✅ נשמר בדרייב: '+(j.name||name));}
-  catch(e){toast('❌ '+(e.message==='timeout'?'הדרייב לא ענה — נסו שוב':e.message));}
-  finally{adDriveBusy=false;if(btn){btn.disabled=false;btn.textContent=t0;}}}
+const AD_DRV_README='https://github.com/Hos100345/Hos100345.github.io/blob/main/tools/drive-ads/README.md';
+let adDriveBusy=false;const AD_DRV={conf:null};
+async function adDriveCall(body,ms){const h={'Content-Type':'application/json',apikey:SB_KEY};
+  if(isAdmin){const {data}=await sb.auth.getSession(),tok=data&&data.session&&data.session.access_token;if(!tok)throw new Error('צריך להיכנס כמנהל');h.Authorization='Bearer '+tok;}
+  else{if(!AD_CODE)throw new Error('צריך קוד גישה');body=Object.assign({},body,{code:AD_CODE});}
+  let r;try{r=await withTimeout(fetch(SB_URL+'/functions/v1/ads-drive',{method:'POST',headers:h,body:JSON.stringify(body)}),ms||90000,'timeout');}
+  catch(e){throw new Error(e&&e.message==='timeout'?'הדרייב לא ענה — נסו שוב':'אין חיבור לשרת — בודקים את האינטרנט ומנסים שוב');}
+  const j=await r.json().catch(()=>({}));
+  if(r.status===503||j.configured===false||(r.status===404&&!j.reason)){if(AD_DRV.conf!==false){AD_DRV.conf=false;setTimeout(()=>{if(cur===Ad)rebuild();},0);}const e=new Error('החיבור לדרייב עוד לא הוגדר');e.noconf=true;throw e;}
+  AD_DRV.conf=true;
+  if(!r.ok||j.ok===false){const e=new Error(j.error||('שגיאת שרת '+r.status));e.info=j;e.status=r.status;throw e;}
+  return j;}
+const adDrvMsg=e=>'⚠ '+(e&&e.message||e);
+const adNoConf=()=>el('p',{class:'hint adwarn',role:'note'},'⚠️ החיבור לדרייב עוד לא הוגדר — הושעיה צריך להתקין אותו פעם אחת. ',el('a',{href:AD_DRV_README,target:'_blank',rel:'noopener'},'ההוראות'));
+const adHasContent=()=>(AD.img||[]).length||(AD.layers||[]).some(L=>L.text&&L.text!=='כותרת הפרסומת');
+const adTitle=()=>String(((AD.layers||[]).find(o=>o.k==='text'&&o.text&&String(o.text).trim())||{}).text||'מודעה').replace(/\s+/g,' ').trim().slice(0,60);
+// חלון קטן: מיקוד נכנס, Tab נשאר בפנים, Esc סוגר, המיקוד חוזר למקום. z: 80 = הדפדפן, 90 = שאלה מעליו
+function adDlg(id,title,z,kids,onClose){let m=document.getElementById(id);if(m)m.remove();const back=document.activeElement,hid=id+'H';
+  const close=()=>{m.remove();if(onClose)onClose();if(back&&back.focus&&document.body.contains(back))back.focus({preventScroll:true});};
+  m=el('div',{class:'fmodal addlg',id,style:'z-index:'+z,role:'dialog','aria-modal':'true','aria-labelledby':hid},el('div',{class:'fsheet'},
+    el('div',{class:'fhead'},el('h2',{id:hid},title),el('span',{style:'flex:1'}),el('button',{type:'button','aria-label':'סגירה',on:{click:()=>close()}},'✕')),el('div',{class:'obody'},...kids)));
+  m.addEventListener('click',e=>{if(e.target===m)close();});
+  m.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();close();return;}if(e.key!=='Tab')return;
+    const f=[...m.querySelectorAll('button,a[href],input,select,textarea,[tabindex="0"]')].filter(n=>!n.disabled&&n.offsetParent!==null);if(!f.length)return;
+    if(e.shiftKey&&document.activeElement===f[0]){e.preventDefault();f[f.length-1].focus();}else if(!e.shiftKey&&document.activeElement===f[f.length-1]){e.preventDefault();f[0].focus();}});
+  document.body.append(m);m._close=close;return m;}
+const adFocus=(m,sel)=>setTimeout(()=>{const n=m.querySelector(sel||'.obody input,.obody button,.obody a');if(n)n.focus();},30);
+// שאלה בתוך הדף (לא window.confirm): מחזיר true/false
+function adAsk(text,ok,danger){return new Promise(res=>{let done=false;const fin=v=>{if(done)return;done=true;m._close();res(v);};
+  const m=adDlg('adAsk','❓ רגע לפני',90,[el('p',{style:'margin:0;font-size:1.05rem'},text),el('div',{class:'adasgo'},el('button',{type:'button',class:'btn '+(danger?'danger':'gold'),on:{click:()=>fin(true)}},ok||'כן'),el('button',{type:'button',class:'btn ghost',on:{click:()=>fin(false)}},'ביטול'))],()=>{if(!done){done=true;res(false);}});
+  adFocus(m,'.obody .btn');});}
+// כמה בקשות במקביל (תמונות של תבנית) — לא יותר מ-n בבת אחת
+async function adPool(list,n,fn){const out=new Array(list.length);let i=0;await Promise.all(Array.from({length:Math.min(n,list.length)},async()=>{while(i<list.length){const k=i++;out[k]=await fn(list[k],k);}}));return out;}
+const adB64Blob=(b64,mime)=>{const s=atob(b64),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return new Blob([u],{type:mime});};
+const adBlobUrl=b=>new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=()=>no(new Error('read'));r.readAsDataURL(b);});
+
+// ── 💾 שמירה לדרייב: המודעה הגמורה (PNG) או התבנית (שכבות). מנהל בוחר תיקייה; שותף — תמיד התיקייה שלו ──
+async function adDriveSave(btn){return adSaveDlg('ad');}
+async function adSaveDlg(kind,preFolder){if(adLocked()){toast('קודם נכנסים עם קוד');return;}adEnsure();
+  if(!(AD.img||[]).length&&!AD.layers.some(o=>o.text)){toast('אין עדיין מה לשמור');return;}
+  const tpl=kind==='tpl',name=el('input',{type:'text',dir:'auto',maxlength:'60',autocomplete:'off','aria-label':tpl?'שם התבנית':'שם הקובץ',value:tpl?(AD_TPL.lastName||adTitle()):adTitle()+' · '+AD.fmt});
+  const where=el('select',{'aria-label':'איפה לשמור'},el('option',{value:''},'📁 מודעות עיצובישי (התיקייה הראשית)'));
+  const st=el('p',{class:'hint',role:'status','aria-live':'polite',style:'min-height:1.2em;margin:0'});
+  const go=el('button',{type:'button',class:'btn gold',on:{click:()=>run()}},tpl?'💾 שמירה כתבנית':'💾 שמירה לדרייב');
+  const m=adDlg('adSave',tpl?'💾 שמירה כתבנית':'💾 שמירת המודעה לדרייב',85,[
+    row(tpl?'שם התבנית':'שם הקובץ',name),
+    isAdmin?row('איפה לשמור',where):el('p',{class:'hint',style:'margin:0'},'נשמר בתיקייה שלכם בדרייב של עיצובישי (שותפים/השם שלכם). כולם יכולים לראות, ורק אתם (והושעיה) יכולים למחוק.'),
+    el('p',{class:'hint',style:'margin:0'},tpl?'התבנית שומרת את כל השכבות — תמונות, כיתובים, מיקום, גודל, סיבוב וסדר — ונפתחת לעריכה מכל מכשיר.':'נשמר כתמונה גמורה בגודל '+adPx()+'.'),
+    st,el('div',{class:'adasgo'},go)]);
+  name.addEventListener('keydown',e=>{if(e.key==='Enter')run();});adFocus(m,'input');
+  if(isAdmin)adDriveCall({action:'browse',folderId:''}).then(j=>{(j.folders||[]).filter(f=>!f.template).forEach(f=>where.append(el('option',{value:f.id},'📁 '+f.name)));
+      if(preFolder&&![...where.options].some(o=>o.value===preFolder.id))where.append(el('option',{value:preFolder.id},'📁 '+preFolder.name));if(preFolder)where.value=preFolder.id;})
+    .catch(e=>{st.textContent=adDrvMsg(e);if(e.noconf){st.textContent='';st.append(adNoConf());}});
+  let busy=false;
+  async function run(){if(busy)return;const nm=name.value.replace(/\s+/g,' ').trim();if(!nm){st.textContent='כתבו שם';name.focus();return;}busy=true;go.disabled=true;
+    try{const fid=isAdmin?where.value:'';
+      if(tpl){const r=await adTplSave(nm,fid,t=>{st.textContent='⏳ '+t;});if(r==='rename'){st.textContent='בחרו שם אחר';name.focus();name.select();return;}AD_TPL.lastName=nm;}
+      else{st.textContent='⏳ שומר בדרייב…';const c=await adCanvas();if(!c)return;
+        const j=await adDriveCall({action:'save',name:nm+' · '+new Date().toLocaleDateString('he-IL').replace(/\./g,'-'),dataUrl:c.toDataURL('image/png'),note:'עורך הפרסומת · '+adPx(),folderId:fid});
+        toast('✅ נשמר בדרייב: '+(j.name||nm));}
+      m._close();}
+    catch(e){st.textContent='';if(e.noconf)st.append(adNoConf());else st.textContent=adDrvMsg(e);}
+    finally{busy=false;go.disabled=false;}}}
+
+// ── 📑 תבניות: שמירה / פתיחה ──
+const AD_TPL={list:null,busy:'',lastName:''};
+const AD_TPL_V=1; // ⛔ שינוי בקבצים של studio/ads/templates = להעלות
+const AD_BUILTIN=[['product-qr','מוצר + כותרת + QR','a4'],['story','סטורי — מוצר חדש','story'],['sale','מבצע — אחוזים גדולים','post'],['photo-post','התמונה שלכם + כיתוב','post'],
+  ['shabbat-ideas','שבת ארגון – רעיונות 1','a4'],['shabbat-ideas2','שבת ארגון – סטודיו בהיר','a4'],['shabbat-ideas3','שבת ארגון – ערב חגיגי','a4'],['shabbat-ideas4','שבת ארגון – צבעוני לילדים','a4']];
+// התמונה לשמירה: הקובץ המקורי כשיש (בלי איבוד איכות), אחרת מהקנבס — PNG כשיש שקיפות/QR, JPEG 95% לתמונה גדולה
+async function adTplImgData(f){try{const r=await adAssetBlob(f);if(/^image\/(png|jpeg|webp)$/.test(r.blob.type)&&r.blob.size<20e6)return{data:await adBlobUrl(r.blob),ext:r.ext==='jpeg'?'jpg':r.ext};}catch(e){}
+  const d=adImgData(f);return{data:d,ext:/^data:image\/png/.test(d)?'png':'jpg'};}
+// הכול מה שהעורך יודע: פורמט, רקע, וכל שכבה עם כל השדות שלה (כיתוב, פונט, צבע, קו, מיקום, גודל, סיבוב, צורה, שם…) בסדר מלמטה למעלה
+async function adTplPack(title){adEnsure();const imgs=AD.img||[],files=[],byId={};
+  for(let i=0;i<imgs.length;i++){const f=imgs[i],d=await adTplImgData(f),file=String(i+1).padStart(2,'0')+'-'+adSafeName(adAssetName(f,i))+'.'+d.ext;files.push({file,name:f.name||'',qr:f.qr||undefined,w:natW(f.img),h:natH(f.img),data:d.data});byId[phId(f)]=file;}
+  const layers=AD.layers.filter(L=>L.k==='text'||(L.k==='img'&&byId[L.src])).map(L=>{const o=JSON.parse(JSON.stringify(L));delete o.id;if(o.k==='img'){o.file=byId[L.src];delete o.src;delete o.si;}return o;});
+  return{json:{version:1,kind:'itzuvishi-ad-template',title,fmt:AD.fmt,bg:AD.bg||'#FFFFFF',units:{w:adW(),h:Math.round(adH()*1000)/1000},layers,
+    files:files.map(({data,...r})=>r),fonts:[...new Set(layers.filter(o=>o.k==='text').map(o=>o.font).filter(Boolean))],created:new Date().toISOString(),app:VERSION},files};}
+async function adTplPreview(){await ensureFonts();const W=adW(),H=adH(),k=600/Math.max(W,H),c=document.createElement('canvas');c.width=Math.round(W*k);c.height=Math.round(H*k);
+  const x=c.getContext('2d');x.scale(c.width/W,c.width/W);adArt(x);return c.toDataURL('image/jpeg',.85);}
+// שמירה בכמה קריאות: begin (תיקייה זמנית) → file לכל תמונה → finish (template.json + preview + השם הסופי). מחזיר 'rename' אם המשתמש צריך שם אחר
+async function adTplSave(title,folderId,say){say('מכין את התבנית…');const P=await adTplPack(title);let ow=false;
+  const begin=()=>adDriveCall({action:'template_save',step:'begin',title,folderId,overwrite:ow}).catch(e=>{if(e.info&&e.info.exists)return e.info;throw e;});
+  let b=await begin();
+  if(b.exists){if(!b.canOverwrite){toast('יש כבר תבנית בשם הזה שנשמרה על ידי מישהו אחר — בחרו שם אחר');return'rename';}
+    if(!await adAsk('יש כבר תבנית בשם "'+title+'". לשמור במקומה? (הישנה עוברת לפח של הדרייב)','💾 כן, לשמור במקומה'))return'rename';ow=true;b=await begin();}
+  for(let i=0;i<P.files.length;i++){say('מעלה תמונה '+(i+1)+' מתוך '+P.files.length+'…');const f=P.files[i];await adDriveCall({action:'template_save',step:'file',folderId:b.folderId,name:f.file,dataUrl:f.data},120000);}
+  say('מסיים…');const j=await adDriveCall({action:'template_save',step:'finish',folderId:b.folderId,json:P.json,preview:await adTplPreview(),overwrite:ow});
+  AD_TPL.list=null;toast('✅ נשמר כתבנית: '+title);if(cur===Ad)rebuild();return j;}
+// פתיחה: json + פונקציה שמחזירה תמונה לכל קובץ. נכנס ל-↶ (כולל הפורמט והרקע)
+async function adTplApply(json,get){if(!json||!Array.isArray(json.layers))throw new Error('קובץ התבנית לא תקין');
+  const files=json.files||[],ims=await adPool(files,4,f=>get(f)),imgs=[],byFile={};
+  files.forEach((f,i)=>{const o={img:ims[i],name:f.name||f.file};if(f.qr)o.qr=f.qr;imgs.push(o);byFile[f.file]=o;});
+  const layers=[];for(const o of json.layers){const L=JSON.parse(JSON.stringify(o));L.id=adLid();if(L.k==='img'){const f=byFile[L.file];if(!f)continue;L.src=phId(f);L.si=imgs.indexOf(f);delete L.file;}else if(L.k!=='text')continue;layers.push(L);}
+  await Promise.all(layers.filter(L=>L.k==='text').map(L=>loadFont(L.font)));
+  adEnsure();adSnap();AD.fmt=AD_FMTS[json.fmt]?json.fmt:'post';AD.bg=json.bg||'#FFFFFF';AD.img=imgs;AD.layers=layers;if(ADE)ADE.sel=null;
+  AD_DOC=null;adDocSave();} // תבנית = עיצוב חדש: "שמירה בענן" לא דורסת עיצוב קודם
+async function adTplOpen(t){if(AD_TPL.busy)return;
+  if(adHasContent()&&!await adAsk('לפתוח את התבנית "'+t.title+'"? מה שעל המסך עכשיו יוחלף (↶ מחזיר אותו).','📑 לפתוח'))return;
+  AD_TPL.busy='פותח את "'+t.title+'"…';rebuild();
+  try{let json,get;
+    if(t.builtin){const base='ads/templates/'+t.id+'/';json=await withTimeout(fetch(base+'template.json?v='+AD_TPL_V).then(r=>{if(!r.ok)throw new Error('התבנית לא נמצאה');return r.json();}),20000,'התבנית לא נטענה');
+      get=f=>withTimeout(dataImg(base+f.file+'?v='+AD_TPL_V),20000,'תמונה בתבנית לא נטענה');}
+    else{const j=await adDriveCall({action:'template_get',id:t.id}),by={};json=j.template;(j.files||[]).forEach(x=>by[x.name]=x);
+      get=async f=>{const x=by[f.file];if(!x)throw new Error('חסרה תמונה בתבנית: '+f.file);const g=await adDriveCall({action:'file_get',id:x.id});return withTimeout(dataImg('data:'+g.mime+';base64,'+g.data),20000,'תמונה בתבנית לא נפתחה');};}
+    await adTplApply(json,get);AD_TPL.busy='';toast('📑 נפתח: '+t.title+' — לוחצים על חלק כדי לערוך');}
+  catch(e){toast(e.noconf?'⚠ החיבור לדרייב עוד לא הוגדר':adDrvMsg(e));}
+  AD_TPL.busy='';rebuild();}
+async function adTplList(){AD_TPL.busy='טוען תבניות מהדרייב…';rebuild();
+  try{AD_TPL.list=(await adDriveCall({action:'templates'})).templates||[];}catch(e){if(!e.noconf)toast(adDrvMsg(e));}
+  AD_TPL.busy='';rebuild();}
+async function adTplDel(t){if(!await adAsk('למחוק את התבנית "'+t.title+'"? היא עוברת לפח של הדרייב.','🗑 למחוק',true))return;
+  try{await adDriveCall({action:'template_delete',id:t.id});AD_TPL.list=(AD_TPL.list||[]).filter(x=>x.id!==t.id);toast('נמחק: '+t.title);rebuild();}catch(e){toast(adDrvMsg(e));}}
+const adWhere=t=>t.mine?'שלי':t.where?'של '+t.where:'של הושעיה';
+function adTplCard(t,img,acts){return el('div',{class:'adasc adtpl'},el('button',{type:'button',class:'adasth','aria-label':'פתיחת התבנית: '+t.title,on:{click:()=>adTplOpen(t)}},img),
+  el('span',{class:'adasn'},t.title),acts?el('span',{class:'hint',style:'margin:0;font-size:.78rem'},acts):null,
+  el('div',{class:'adasb',style:'grid-template-columns:'+(t.canDelete?'1fr auto':'1fr')},el('button',{type:'button',class:'btn ghost',on:{click:()=>adTplOpen(t)}},'📑 פתיחה'),
+    t.canDelete?el('button',{type:'button',class:'btn ghost','aria-label':'מחיקת התבנית: '+t.title,title:'מחיקה',on:{click:()=>adTplDel(t)}},'🗑'):null));}
+function adTplSec(){const B=(t,f,cls='btn ghost')=>el('button',{type:'button',class:cls,disabled:AD_TPL.busy?'':null,on:{click:f}},t);
+  const pv=src=>el('img',{src,alt:'',loading:'lazy',decoding:'async',class:'adtplpv'});
+  const L=AD_TPL.list;
+  return sec('📑 תבניות',true,el('p',{class:'hint'},'תבנית = מודעה מוכנה שכל החלקים בה נשארים לעריכה: מחליפים תמונה, משנים כיתוב — ומורידים. "שמירה כתבנית" שומרת את המודעה שעל המסך לדרייב, לשימוש חוזר.'),
+    el('h3',{class:'adh3'},'תבניות מוכנות'),
+    el('div',{class:'adas'},AD_BUILTIN.map(([id,title,fmt])=>adTplCard({builtin:true,id,title},pv('ads/templates/'+id+'/preview.jpg?v='+AD_TPL_V),(AD_FMTS[fmt]||{}).label))),
+    el('h3',{class:'adh3'},'תבניות בדרייב'),
+    AD_DRV.conf===false?adNoConf():L?(L.length?el('div',{class:'adas'},L.map(t=>adTplCard(t,t.preview?pv(t.preview):el('span',{class:'adtplph','aria-hidden':'true'},'📑'),adWhere(t))))
+      :el('p',{class:'hint'},'אין עדיין תבניות בדרייב. שומרים מודעה עם "💾 שמירה כתבנית".')):B('📥 טעינת התבניות מהדרייב',adTplList),
+    AD_TPL.busy?el('p',{class:'hint',role:'status'},'⏳ '+AD_TPL.busy):null,
+    el('div',{class:'adasgo'},B('💾 שמירה כתבנית',()=>adSaveDlg('tpl'),'btn gold'),L?B('🔄 רענון הרשימה',adTplList):null));}
+
+// ── 📂 דפדפן הדרייב: תיקיות + תמונות קטנות (מגיעות מהשרת — לא צריך חשבון גוגל). לוחצים על תמונה → ➕ / 🔄 / ⬇️ / 🗑 ──
+const AD_BR={path:[],folders:[],files:[],next:null,busy:false,err:'',folder:null,pick:null,myFolder:null,cache:new Map()};
+async function adBrGet(x){let p=AD_BR.cache.get(x.id);
+  if(!p){p=adDriveCall({action:'file_get',id:x.id}).then(g=>({g,img:null}));AD_BR.cache.set(x.id,p);p.catch(()=>AD_BR.cache.delete(x.id));if(AD_BR.cache.size>12)AD_BR.cache.delete(AD_BR.cache.keys().next().value);}
+  const r=await p;if(!r.img)r.img=await withTimeout(dataImg('data:'+r.g.mime+';base64,'+r.g.data),20000,'התמונה לא נפתחה');return r;}
+const adBrBase=n=>String(n||'תמונה').replace(/\.[a-z0-9]{2,5}$/i,'');
+function adBrOpen(){if(adLocked()){toast('קודם נכנסים עם קוד');return;}AD_BR.pick=null;const m=adDlg('adDrv','📂 הדרייב של עיצובישי',80,[el('div',{id:'adBrBody',style:'display:grid;gap:10px'})]);m.querySelector('.fsheet').classList.add('adbrsheet');
+  adBrRender();adBrLoad(AD_BR.folder?AD_BR.folder.id:'');}
+const adBrClose=()=>{const m=document.getElementById('adDrv');if(m)m._close();};
+async function adBrLoad(folderId,more){AD_BR.busy=true;AD_BR.err='';AD_BR.pick=null;adBrRender();
+  try{const j=await adDriveCall({action:'browse',folderId:folderId||'',pageToken:more?AD_BR.next:undefined});
+    if(more)AD_BR.files=AD_BR.files.concat(j.files||[]);else{AD_BR.path=j.path||[];AD_BR.folders=j.folders||[];AD_BR.files=j.files||[];AD_BR.folder=j.folder||null;}
+    AD_BR.next=j.next||null;if(j.myFolder)AD_BR.myFolder=j.myFolder;}
+  catch(e){AD_BR.err=e.noconf?'noconf':adDrvMsg(e);}
+  AD_BR.busy=false;adBrRender(true);}
+function adBrRender(focus){const box=document.getElementById('adBrBody');if(!box)return;box.innerHTML='';const B=(t,f,cls='btn ghost',a)=>el('button',{type:'button',class:cls,'aria-label':a||null,on:{click:f}},t);
+  if(AD_BR.err==='noconf'){box.append(adNoConf());return;}
+  const crumbs=el('nav',{class:'adcrumb','aria-label':'מיקום בדרייב'},...AD_BR.path.flatMap((p,i)=>{const last=i===AD_BR.path.length-1;return[i?el('span',{'aria-hidden':'true'},'‹'):null,
+    el('button',{type:'button',class:'btn ghost','aria-current':last?'location':null,disabled:last?'':null,on:{click:()=>adBrLoad(p.id)}},i?p.name:'🏠 '+p.name)];}).filter(Boolean));
+  const tools=el('div',{class:'inline'},AD_BR.myFolder&&(!AD_BR.folder||AD_BR.folder.id!==AD_BR.myFolder.id)?B('📁 התיקייה שלי',()=>adBrLoad(AD_BR.myFolder.id)):null,
+    B(isAdmin?'💾 לשמור את המודעה כאן':'💾 לשמור את המודעה בתיקייה שלי',()=>adSaveDlg('ad',isAdmin&&AD_BR.folder&&AD_BR.path.length>1?{id:AD_BR.folder.id,name:AD_BR.path[AD_BR.path.length-1].name}:null)),
+    isAdmin&&AD_BR.folder?el('a',{href:AD_BR.folder.url||AD_DRIVE_FOLDER,target:'_blank',rel:'noopener',class:'btn ghost'},'↗ בגוגל דרייב'):null);
+  box.append(crumbs,tools);
+  if(AD_BR.err)box.append(el('p',{class:'hint adwarn',role:'alert'},AD_BR.err,' ',B('🔄 לנסות שוב',()=>adBrLoad(AD_BR.folder?AD_BR.folder.id:''))));
+  const grid=el('div',{class:'adbr',role:'list','aria-label':'תיקיות ותמונות'});
+  AD_BR.folders.forEach(f=>grid.append(el('div',{role:'listitem',class:'adbrc'},el('button',{type:'button',class:'adbrt','aria-label':(f.template?'תבנית: '+f.title+' — פתיחה בעורך':'תיקייה: '+f.name),
+    on:{click:()=>{if(f.template){adBrClose();adTplOpen({id:f.id,title:f.title,canDelete:f.canDelete});}else adBrLoad(f.id);}}},el('span',{class:'ph','aria-hidden':'true'},f.template?'📑':'📁'),el('span',{},f.template?f.title:f.name)))));
+  AD_BR.files.forEach(x=>grid.append(el('div',{role:'listitem',class:'adbrc'+(AD_BR.pick===x?' sel':'')},el('button',{type:'button',class:'adbrt','aria-label':'תמונה: '+x.name+' — פעולות','aria-pressed':String(AD_BR.pick===x),
+    on:{click:()=>{AD_BR.pick=AD_BR.pick===x?null:x;adBrRender();const a=document.getElementById('adBrAct');if(a)a.querySelector('button').focus();}}},
+    x.thumb?el('img',{src:x.thumb,alt:'',decoding:'async'}):el('span',{class:'ph','aria-hidden':'true'},'🖼'),el('span',{dir:'auto'},adBrBase(x.name))))));
+  if(AD_BR.busy&&!AD_BR.files.length&&!AD_BR.folders.length)box.append(el('p',{class:'hint',role:'status'},'⏳ טוען…'));
+  else if(!AD_BR.busy&&!AD_BR.err&&!AD_BR.files.length&&!AD_BR.folders.length)box.append(el('p',{class:'hint'},'התיקייה ריקה.'));
+  box.append(grid);
+  if(AD_BR.next)box.append(B(AD_BR.busy?'⏳ טוען…':'⬇ עוד תמונות',()=>{if(!AD_BR.busy)adBrLoad(AD_BR.folder&&AD_BR.folder.id,true);}));
+  else if(AD_BR.busy&&AD_BR.files.length)box.append(el('p',{class:'hint',role:'status'},'⏳ טוען…'));
+  const x=AD_BR.pick;if(x){const L=adSel(),tg=L&&L.k==='img'?adImgOf(L):null,tn=tg?adAssetName(tg,(AD.img||[]).indexOf(tg)):'';
+    const st=el('p',{class:'hint',role:'status','aria-live':'polite',style:'margin:0;min-height:1.2em'});
+    const act=async(fn,busyTxt)=>{st.textContent='⏳ '+busyTxt;try{const r=await adBrGet(x);await fn(r);}catch(e){st.textContent=adDrvMsg(e);}};
+    box.append(el('div',{class:'adbract',id:'adBrAct',role:'group','aria-label':'פעולות על '+x.name},el('b',{dir:'auto',style:'overflow:hidden;text-overflow:ellipsis;white-space:nowrap'},adBrBase(x.name)),
+      B('➕ להוסיף למודעה כשכבה',()=>act(r=>adBrAdd(x,r.img),'מביא את התמונה…'),'btn gold'),
+      tg?B('🔄 להחליף את: '+tn,()=>act(r=>{adAssetSwap(tg,{img:r.img,name:adBrBase(x.name)});adBrClose();toast('✓ הוחלף באותו מקום — ↶ מבטל');},'מביא את התמונה…'))
+        :el('p',{class:'hint',style:'margin:0'},'🔄 להחלפה: סוגרים, בוחרים תמונה במודעה ופותחים שוב את הדרייב.'),
+      B('⬇️ שמירה לטלפון',()=>act(r=>{st.textContent='';return adSaveFile(adB64Blob(r.g.data,r.g.mime),x.name);},'מביא את הקובץ…')),
+      x.canDelete?B('🗑 מחיקה מהדרייב',async()=>{if(!await adAsk('למחוק את "'+x.name+'" מהדרייב? הקובץ עובר לפח.','🗑 למחוק',true))return;
+        try{await adDriveCall({action:'file_delete',id:x.id});AD_BR.files=AD_BR.files.filter(y=>y!==x);AD_BR.pick=null;adBrRender();toast('נמחק: '+x.name);}catch(e){st.textContent=adDrvMsg(e);}}):null,
+      st,B('✕ סגירת הפעולות',()=>{AD_BR.pick=null;adBrRender();})));}
+  const m=document.getElementById('adDrv');if(m&&!m.contains(document.activeElement)){const a=document.getElementById('adBrAct'),n=(a&&a.querySelector('button'))||box.querySelector('.adbrt')||m.querySelector('.fhead button');if(n)n.focus({preventScroll:true});}} // המיקוד לא הולך לאיבוד כשהרשימה נבנית מחדש
+function adBrAdd(x,im){if((AD.img||[]).length>=AD_MAXIMG){toast('יש כבר '+AD_MAXIMG+' תמונות — מחקו אחת קודם');return;}
+  adEnsure();adSnap();const n={img:im,name:adBrBase(x.name)};AD.img=(AD.img||[]).concat([n]);const a=natW(im)/natH(im),w=Math.min(adW()*.5,adH()*.4*a);
+  const L={id:adLid(),k:'img',name:n.name,src:phId(n),si:AD.img.length-1,x:adW()/2,y:adH()/2,w,rot:0};AD.layers.push(L);if(ADE)ADE.sel=L.id;adBrClose();rebuild();toast('✓ נוסף למודעה — גוררים למקום');}
+function adDriveSec(){return sec('📂 הדרייב',true,AD_DRV.conf===false?adNoConf():null,
+  el('p',{class:'hint'},isAdmin?'כל הקבצים בתיקייה "מודעות עיצובישי" — גם מה שהשותפים שמרו (שותפים/…). לוחצים על תמונה: ➕ למודעה, 🔄 במקום התמונה שבחרתם, ⬇️ לטלפון.':'כל הקבצים של עיצובישי בדרייב: מודעות, תמונות ונכסים. לוחצים על תמונה: ➕ למודעה, 🔄 במקום התמונה שבחרתם, ⬇️ לטלפון. מה ששומרים נכנס לתיקייה שלכם.'),
+  el('div',{class:'adasgo'},el('button',{type:'button',class:'btn gold',on:{click:adBrOpen}},'📂 פתיחת הדרייב'),el('button',{type:'button',class:'btn ghost',on:{click:()=>adSaveDlg('ad')}},'💾 שמירת המודעה לדרייב (תמונה)'),
+    isAdmin?el('a',{href:AD_DRIVE_FOLDER,target:'_blank',rel:'noopener',class:'btn ghost'},'↗ התיקייה בגוגל דרייב'):null));}
 const adLid=()=>'L'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const adImgOf=L=>(AD.img||[]).find(f=>phId(f)===L.src);
 const _adM=document.createElement('canvas').getContext('2d');
@@ -5100,8 +5293,8 @@ function adDrawLayer(ctx,L){const[w,h]=adSize(L);ctx.save();ctx.translate(L.x,L.
     ctx.fillStyle=L.color||'#14294D';ctx.fillText(L.text,0,L.fs*.04);}
   ctx.restore();}
 const adSel=()=>ADE&&AD.layers&&AD.layers.find(L=>L.id===ADE.sel)||null;
-function adSnap(){AD_UNDO.push({L:JSON.stringify(AD.layers),img:(AD.img||[]).slice()});if(AD_UNDO.length>40)AD_UNDO.shift();}
-function adUndo(){const u=AD_UNDO.pop();if(!u)return;const imgCh=u.img.length!==(AD.img||[]).length||u.img.some((f,i)=>f!==AD.img[i]);AD.layers=JSON.parse(u.L);AD.img=u.img;
+function adSnap(){AD_UNDO.push({L:JSON.stringify(AD.layers),img:(AD.img||[]).slice(),fmt:AD.fmt,bg:AD.bg});if(AD_UNDO.length>40)AD_UNDO.shift();} // S-193: גם פורמט ורקע (פתיחת תבנית)
+function adUndo(){const u=AD_UNDO.pop();if(!u)return;let imgCh=u.img.length!==(AD.img||[]).length||u.img.some((f,i)=>f!==AD.img[i]);if(u.fmt&&u.fmt!==AD.fmt){AD.fmt=u.fmt;imgCh=true;}if(u.bg!==undefined&&u.bg!==AD.bg){AD.bg=u.bg;imgCh=true;}AD.layers=JSON.parse(u.L);AD.img=u.img;
   if(ADE&&!adSel())ADE.sel=null;imgCh?rebuild():(adCommit(),adPanelSync());}
 let _adT=0;function adCommit(){adDraw();adLayersDraw();clearTimeout(_adT);_adT=setTimeout(rerender,40);}
 function adRemove(L){if(!L)return;adSnap();AD.layers=AD.layers.filter(o=>o!==L);
@@ -5214,11 +5407,11 @@ function adLayersDraw(force){const box=document.getElementById('adLayers');if(!b
   box.append(el('div',{class:'inline'},el('button',{type:'button',class:'btn ghost',disabled:AD_UNDO.length?null:'',on:{click:()=>adUndo()}},'↶ חזרה צעד אחורה'+(AD_UNDO.length?' ('+AD_UNDO.length+')':''))));
   vis.slice().reverse().forEach(L=>{const on=ADE&&ADE.sel===L.id,i=AD.layers.indexOf(L);
     box.append(el('div',{class:'adlrow'+(on?' sel':''),style:'display:flex;align-items:center;gap:6px;padding:4px;margin:3px 0;border-radius:8px;'+(on?'background:#e8eefc;outline:2px solid #1d4ed8':'background:#f4f6f9')},
-      el('button',{type:'button',class:'btn ghost',style:'flex:1;display:flex;align-items:center;gap:8px;text-align:right;padding:2px 6px;min-width:0',on:{click:()=>adSelect(L.id)}},L.k==='img'?adThumb(L):el('b',{},'T'),el('span',{style:'overflow:hidden;text-overflow:ellipsis;white-space:nowrap'},adName(L))),
+      el('button',{type:'button',class:'btn ghost',style:'flex:1;display:flex;align-items:center;gap:8px;text-align:right;padding:2px 6px;min-width:0',on:{click:()=>adSelect(L.id)}},L.k==='img'?adThumb(L):el('b',{},'T'),el('span',{style:'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0'},adName(L))),
       el('button',{type:'button',class:'btn ghost','aria-label':'להעלות מעל',title:'להעלות מעל',disabled:i>=AD.layers.length-1?'':null,on:{click:()=>adStep(L,1)}},'⬆'),
       el('button',{type:'button',class:'btn ghost','aria-label':'להוריד מתחת',title:'להוריד מתחת',disabled:i<=0?'':null,on:{click:()=>adStep(L,-1)}},'⬇'),
       el('button',{type:'button',class:'btn ghost','aria-label':'מחיקה',title:'מחיקה',on:{click:()=>adRemove(L)}},'🗑')));});}
-const adLayersSec=()=>sec('🗂️ שכבות — מה מעל מה',true,el('p',{class:'hint'},'הראשון ברשימה הוא העליון. לוחצים על שם כדי לבחור אותו במודעה, ⬆ ו-⬇ מעלים ומורידים.'),el('div',{id:'adLayers'}));
+const adLayersSec=()=>sec('🗂️ שכבות — מה מעל מה',true,el('p',{class:'hint'},'הראשון ברשימה הוא העליון. לוחצים על שם כדי לבחור אותו במודעה, ⬆ ו-⬇ מעלים ומורידים.'),el('div',{id:'adLayers',style:'min-width:0'}));
 // ── S-191: 📦 הנכסים במודעה — הורדה של כל תמונה/לוגו/QR לטלפון, החלפה מהמכשיר באותו מקום, ➕ QR חדש ──
 // החלפה = adReplaceImg (נכנס ל-↶). התמונה החדשה נכנסת לאותה מסגרת: רקע מלא — חיתוך cover, כל השאר — contain עם שוליים שקופים, כך שהמיקום/גודל/סיבוב/סדר לא זזים.
 const adAssetLayer=f=>(AD.layers||[]).find(L=>L.k==='img'&&L.src===phId(f))||null;
@@ -5292,10 +5485,10 @@ const Ad={id:'ad',printShop:false,label:'📣 פרסומת', // S-115: לא admi
       el('p',{class:'hint'},'החלפת גודל שומרת את מה שכבר עיצבתם — רק בודקים שהכול עדיין בפנים.')),
     sec('🖼️ תמונות',true,filesInput(AD,'img','עד '+AD_MAXIMG+' תמונות',{max:AD_MAXIMG,edit:true}),col(AD,'bg','צבע רקע'),
       el('p',{class:'hint'},'התמונה הראשונה ממלאת את כל הפרסומת (רקע). לוחצים על תמונה וגוררים. ⤡ בפינה — גודל, ↻ למעלה — סיבוב. בטלפון: שתי אצבעות. ⬆ בסרגל מעביר שכבה מעל השאר.')),
-    adReadySec(),adLayersSec(),adAssetsSec(),adQrSec(),adImgToolsSec(),adGenSec(),adLogosSec(),
+    adTplSec(),adDriveSec(),adLayersSec(),adAssetsSec(),adQrSec(),adImgToolsSec(),adGenSec(),adLogosSec(),
     sec('✏️ כיתובים',true,...adTexts().map(adTextCard),el('button',{type:'button','class':'btn ghost',on:{click:adAddText}},'➕ עוד כיתוב')),
     sec('⬇️ הורדה',true,el('p',{class:'hint'},'PNG בגודל '+adPx()+'. מה שיוצא מהגבול לא נכנס לתמונה.'),el('button',{type:'button',class:'btn gold',on:{click:adDownload}},'⬇️ הורדת הפרסומת'),
-      isAdmin?el('div',{class:'inline'},el('button',{type:'button',class:'btn ghost',on:{click:e=>adDriveSave(e.currentTarget)}},'💾 שמירה לדרייב'),el('a',{href:AD_DRIVE_FOLDER,target:'_blank',rel:'noopener',class:'btn ghost'},'📁 תיקיית המודעות')):null),adCodesSec(),adModelSec(),adReqSec()];}
+      el('div',{class:'inline'},el('button',{type:'button',class:'btn ghost',on:{click:()=>adSaveDlg('ad')}},'💾 שמירה לדרייב'),el('button',{type:'button',class:'btn ghost',on:{click:()=>adSaveDlg('tpl')}},'💾 שמירה כתבנית'))),adCodesSec(),adModelSec(),adReqSec()];}
 };
 // ── S-115: בינה מלאכותית בעורך הפרסומת + גישה עם קוד (לשותף, בלי חשבון מנהל) ──
 // שרת: Edge Function ai-image ← המודל לכל משימה מ-public.ai_tasks ← OpenRouter. קודים: studio_ai_codes (נספר רק מה שהצליח).

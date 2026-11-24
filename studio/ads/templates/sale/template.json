@@ -1,0 +1,151 @@
+{
+ "version": 1,
+ "kind": "itzuvishi-ad-template",
+ "title": "מבצע — אחוזים גדולים",
+ "fmt": "post",
+ "bg": "#0A2A5C",
+ "units": {
+  "w": 200,
+  "h": 200
+ },
+ "layers": [
+  {
+   "k": "img",
+   "file": "01-bg.jpg",
+   "name": "רקע",
+   "x": 100,
+   "y": 100,
+   "w": 200,
+   "rot": 0
+  },
+  {
+   "k": "text",
+   "text": "מבצע סוף שנה",
+   "font": "Fredoka",
+   "color": "#FFFFFF",
+   "outline": "none",
+   "x": 100,
+   "y": 24,
+   "fs": 22,
+   "rot": 0
+  },
+  {
+   "k": "img",
+   "file": "02-card.png",
+   "name": "מסגרת לבנה",
+   "x": 136,
+   "y": 100,
+   "w": 112,
+   "rot": 4
+  },
+  {
+   "k": "img",
+   "file": "03-photo.webp",
+   "name": "תמונת המוצר — החליפו",
+   "x": 136,
+   "y": 98,
+   "w": 98,
+   "rot": 4
+  },
+  {
+   "k": "img",
+   "file": "04-burst.png",
+   "name": "כוכב המבצע",
+   "x": 52,
+   "y": 98,
+   "w": 92,
+   "rot": -8
+  },
+  {
+   "k": "text",
+   "text": "30%",
+   "font": "Fredoka",
+   "color": "#0A2A5C",
+   "outline": "none",
+   "x": 52,
+   "y": 93,
+   "fs": 31,
+   "rot": -8
+  },
+  {
+   "k": "text",
+   "text": "הנחה",
+   "font": "Rubik",
+   "color": "#0A2A5C",
+   "outline": "none",
+   "x": 54,
+   "y": 116,
+   "fs": 12,
+   "rot": -8
+  },
+  {
+   "k": "text",
+   "text": "על כל החולצות המודפסות",
+   "font": "Rubik",
+   "color": "#FFFFFF",
+   "outline": "none",
+   "x": 100,
+   "y": 160,
+   "fs": 12,
+   "rot": 0
+  },
+  {
+   "k": "text",
+   "text": "עד 31.12 · hoshaya.co.il",
+   "font": "Rubik",
+   "color": "#DCEBF7",
+   "outline": "none",
+   "x": 100,
+   "y": 178,
+   "fs": 8.5,
+   "rot": 0
+  },
+  {
+   "k": "img",
+   "file": "05-logo.png",
+   "name": "לוגו עיצובישי",
+   "x": 180,
+   "y": 180,
+   "w": 28,
+   "rot": 0
+  }
+ ],
+ "files": [
+  {
+   "file": "01-bg.jpg",
+   "name": "רקע",
+   "w": 1080,
+   "h": 1080
+  },
+  {
+   "file": "02-card.png",
+   "name": "מסגרת לבנה",
+   "w": 1100,
+   "h": 900
+  },
+  {
+   "file": "03-photo.webp",
+   "name": "תמונת המוצר — החליפו",
+   "w": 800,
+   "h": 600
+  },
+  {
+   "file": "04-burst.png",
+   "name": "כוכב המבצע",
+   "w": 800,
+   "h": 800
+  },
+  {
+   "file": "05-logo.png",
+   "name": "לוגו עיצובישי",
+   "w": 512,
+   "h": 512
+  }
+ ],
+ "fonts": [
+  "Fredoka",
+  "Rubik"
+ ],
+ "created": "2026-11-24T00:00:00.000Z",
+ "app": "studio-v1.76"
+}
