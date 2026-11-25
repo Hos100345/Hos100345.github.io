@@ -288,6 +288,7 @@ details.face>.body{padding:0 12px 12px;display:grid;gap:8px}
 .adbadge{position:absolute;top:-3px;inset-inline-end:-3px;min-width:18px;height:18px;border-radius:9px;background:#E11D74;color:#fff;font-size:.68rem;line-height:18px;padding:0 4px;font-weight:700}
 .adq .adqctx{display:grid;gap:2px;min-width:0}.adq .adqctx:empty{display:none}
 .adq .adchip,.adqrchips .adchip{flex:0 0 auto;min-height:44px;padding:0 12px;border:1.5px solid var(--c-brand,#0A2A5C);border-radius:999px;background:#fff;color:var(--c-brand,#0A2A5C);font:inherit;font-size:.9rem;font-weight:700;white-space:nowrap;cursor:pointer}.adq .adchip:hover,.adqrchips .adchip:hover{background:#EEF2FF}
+.adexft{flex-wrap:nowrap}.adexft .adqhint{flex:1;min-width:0}
 .adqrchips{display:flex;gap:6px;padding:2px 0}.adqrlead bdi{font-weight:700;color:#0A2A5C}.adqrus{display:grid;gap:4px;margin:6px 0}.adqru{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:.88rem}.adqru .btn{min-height:44px;min-width:44px;padding:0 8px}
 .adqscroll{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain}.adqscroll::-webkit-scrollbar{display:none}
 .adstrip{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain;border-top:1px solid var(--mat-line);padding-top:3px;margin-top:2px;scroll-snap-type:x proximity}.adstrip::-webkit-scrollbar{display:none}
@@ -6024,7 +6025,7 @@ async function adQrScanF(f,quiet){if(!f||f._qrBusy)return f&&f._qrs;f._qrBusy=1;
 // בהעלאה: בודקים כל תמונה חדשה (בלי QR שנוצר כאן) — ואם יש קוד, אומרים לאן הוא מוביל
 function adQrAuto(f){if(!f||f.qr||f._qrs!==undefined)return;setTimeout(async()=>{if(!(AD.img||[]).includes(f))return;const r=await adQrScanF(f,true);
   if(r&&!adQrWhole(f))toast('🔍 נמצא QR בתמונה — מוביל ל-'+adQrShort(r.text).slice(0,40)+' · "QR" בסרגל מחליף אותו');},350);}
-const adQrWhole=f=>{const r=f&&f._qrs;if(f&&f.qr)return true;if(!r)return false;const q=r.quad,s=Math.hypot(q[1][0]-q[0][0],q[1][1]-q[0][1]);return s*s>.45*natW(f.img)*natH(f.img);}; // ה-QR הוא כל התמונה = נכס QR
+const adQrWhole=f=>{const r=f&&f._qrs;if(f&&(f.qr||!r&&adQrNamed(f)))return true;if(!r)return false;const q=r.quad,s=Math.hypot(q[1][0]-q[0][0],q[1][1]-q[0][1]);return s*s>.45*natW(f.img)*natH(f.img);}; // ה-QR הוא כל התמונה = נכס QR
 const adQrOf=f=>f?(f.qr||(f._qrs&&f._qrs.text)||''):'';
 // פיקסל בתמונה ← נקודה במודעה (דרך המיקום, הגודל והסיבוב של השכבה)
 function adImg2Ad(L,f,px,py){const[w,h]=adSize(L),lx=(px/natW(f.img)-.5)*w,ly=(py/natH(f.img)-.5)*h,a=(L.rot||0)*Math.PI/180;return[L.x+lx*Math.cos(a)-ly*Math.sin(a),L.y+lx*Math.sin(a)+ly*Math.cos(a)];}
@@ -6053,8 +6054,9 @@ async function adQrReplaceIn(L,f,text){const R=f._qrs;if(!R)return false;const q
   const NL={id:adLid(),k:'img',name:nm,src:phId(n),si:imgs.length-1,x:X,y:Y,w:side*L.w/W,rot:(()=>{const rr=(L.rot||0)+a*180/Math.PI,q9=Math.round(rr/90)*90;return Math.abs(rr-q9)<.6?q9:rr;})()};AD.layers.splice(AD.layers.indexOf(L)+1,0,NL);
   if(ADE){ADE.sel=NL.id;ADE.tool='move';ADE.ex=null;}rebuild();toast('✓ ה-QR הוחלף — מוביל ל-'+adQrShort(text).slice(0,40)+' · ↶ מבטל');adSay('ה-QR הוחלף');return true;}
 // לחיצה על QR מוכן: מחליף את ה-QR שנבחר / שזוהה בתמונה שנבחרה; בלי בחירה — הראשון שנמצא; אם אין — נוסף QR חדש
-function adQrTargetL(){const S=adSel();if(S&&S.k==='img'){const f=adImgOf(S);if(f&&(f.qr||f._qrs))return{L:S,f};}
-  for(const L of[...(AD.layers||[])].reverse()){if(L.k!=='img'||L.hid)continue;const f=adImgOf(L);if(f&&(f.qr||f._qrs))return{L,f};}return null;}
+const adQrNamed=f=>!!f&&f._qrs!==null&&/^QR\b/i.test(String(f.name||''));
+function adQrTargetL(){const is=f=>f&&(f.qr||f._qrs||adQrNamed(f)),S=adSel();if(S&&S.k==='img'){const f=adImgOf(S);if(is(f))return{L:S,f};}
+  for(const L of[...(AD.layers||[])].reverse()){if(L.k!=='img'||L.hid)continue;const f=adImgOf(L);if(is(f))return{L,f};}return null;}
 async function adQrUse(text){adEnsure();AD_QR.text=text;const T=adQrTargetL();
   if(T&&!adQrWhole(T.f))return adQrReplaceIn(T.L,T.f,text);
   if(T){if(ADE)ADE.sel=T.L.id;return adQrGo('replace');}
@@ -6103,7 +6105,7 @@ function adDT(m,w,h){const n=w*h,d=new Float32Array(n),I=1e9;for(let i=0;i<n;i++
   for(let y=h-1;y>=0;y--)for(let x=w-1;x>=0;x--){const i=y*w+x;let v=d[i];if(!v)continue;if(x<w-1)v=Math.min(v,d[i+1]+3);if(y<h-1){v=Math.min(v,d[i+w]+3);if(x<w-1)v=Math.min(v,d[i+w+1]+4);if(x>0)v=Math.min(v,d[i+w-1]+4);}d[i]=v;}
   for(let i=0;i<n;i++)d[i]/=3;return d;}
 // ── ✂️ חילוץ אובייקט ──
-Object.assign(ADT,Object.assign({exMode:'frame',exBorder:true,exOp:'new',exTol:24,exGrow:1,exFea:1},(()=>{const o={};for(const k of['exMode','exBorder','exOp','exTol','exGrow','exFea'])if(k in ADT)o[k]=ADT[k];return o;})()));
+Object.assign(ADT,Object.assign({exMode:'frame',exBorder:false,exOp:'new',exTol:24,exGrow:1,exFea:1},(()=>{const o={};for(const k of['exMode','exBorder','exOp','exTol','exGrow','exFea'])if(k in ADT)o[k]=ADT[k];return o;})()));
 const AD_EX_MAX=2600; // צלע ארוכה לעבודה (מעל — מקטינים לבחירה ומגדילים בחזרה בחילוץ)
 function adExGet(L){const f=adImgOf(L);if(!f||!f.img)return null;const E=ADE.ex,id=phId(f);if(E&&E.lid===L.id&&E.fid===id)return E;
   const W=natW(f.img),H=natH(f.img),k=Math.min(1,AD_EX_MAX/Math.max(W,H)),w=Math.max(1,Math.round(W*k)),h=Math.max(1,Math.round(H*k)),c=document.createElement('canvas');c.width=w;c.height=h;
@@ -6137,12 +6139,13 @@ function adExObj(E,x0,y0,T,border){const{w,h,px:P}=E,n=w*h;let R=adExFlood(E,x0,
     if(m){const col=hist.map(H=>{let s=0;for(let v=0;v<256;v++){s+=H[v];if(s*2>=m)return v;}return 0;}),band=Math.max(4,Math.round(Math.min(w,h)*.03)),D=new Uint16Array(n),st=new Int32Array(n);let sp=0;
       const ok=j=>{const q=j*4;return P[q+3]>=8&&Math.abs(P[q]-col[0])<=T*1.4&&Math.abs(P[q+1]-col[1])<=T*1.4&&Math.abs(P[q+2]-col[2])<=T*1.4;};
       for(let j=0;j<n;j++)if(R[j]){D[j]=1;st[sp++]=j;}
-      const B=R.slice();let head=0;const qq=st;while(head<sp){const j=qq[head++],x=j%w,dv=D[j];if(dv>band)continue;
-        for(const k of[x>0?j-1:-1,x<w-1?j+1:-1,j>=w?j-w:-1,j+w<n?j+w:-1]){if(k<0||D[k])continue;if(ok(k)){D[k]=dv+1;B[k]=1;qq[sp++]=k;}else D[k]=65535;}}
-      R=adExEdge(B,w,h)?B:adExHoles(B,w,h);}}
+      const B=R.slice(),r0=sp;let head=0,leak=0;const qq=st;while(head<sp){const j=qq[head++],x=j%w,dv=D[j];
+        for(const k of[x>0?j-1:-1,x<w-1?j+1:-1,j>=w?j-w:-1,j+w<n?j+w:-1]){if(k<0||D[k])continue;if(ok(k)){if(dv>=band){leak++;continue;}D[k]=dv+1;B[k]=1;qq[sp++]=k;}else D[k]=65535;}}
+      // הצבע שמסביב ממשיך גם אחרי רוחב של מסגרת = זה הרקע, לא מסגרת — לא מוסיפים
+      if(leak<m*.05&&sp>r0)R=adExEdge(B,w,h)?B:adExHoles(B,w,h);else E.noBorder=true;}}
   return R;}
 function adExRecalc(E){const{w,h}=E,n=w*h,T=ADT.exTol*2.55;let S=null;E.msg='';
-  E.lastBad=false;for(const sd of E.seeds){const R=sd.mode==='frame'?adExFrame(E,sd.x,sd.y,T,sd.rad):adExObj(E,sd.x,sd.y,T,sd.border);
+  E.lastBad=false;E.noBorder=false;for(const sd of E.seeds){const R=sd.mode==='frame'?adExFrame(E,sd.x,sd.y,T,sd.rad):adExObj(E,sd.x,sd.y,T,sd.border);
     if(!R){E.msg=sd.mode==='frame'?'לא נמצאה כאן מסגרת סגורה — נוגעים בקו עצמו (אפשר להגדיל בזום), או עוברים ל"צבע האובייקט"':'כאן אין מה לבחור — נסו סובלנות גבוהה יותר';if(sd===E.seeds[E.seeds.length-1])E.lastBad=true;continue;}
     if(!S||sd.op==='new'){S=R;continue;}if(sd.op==='add'){for(let i=0;i<n;i++)if(R[i])S[i]=1;}else{for(let i=0;i<n;i++)if(R[i])S[i]=0;}}
   E.sel=S;E.n=S?adExCount(S):0;if(E.n>n*.9)E.msg='נבחרה כמעט כל התמונה — נסו סובלנות נמוכה יותר';adExFinal(E);}
@@ -6203,12 +6206,13 @@ function adExCtx(L){const E=ADE.ex&&ADE.ex.lid===L.id?ADE.ex:null,has=!!(E&&E.fi
   const out=[el('div',{class:'adqrow'},adSeg('איך מזהים',[['frame','🔲 לפי המסגרת'],['obj','🎨 לפי האובייקט']],ADT.exMode,v=>set('exMode',v)),
       ADT.exMode==='obj'?el('button',{type:'button','aria-pressed':String(!!ADT.exBorder),class:ADT.exBorder?'on':null,'aria-label':'כולל המסגרת שמסביב',title:'כולל המסגרת שמסביב',on:{click:()=>set('exBorder',!ADT.exBorder)}},(ADT.exBorder?'☑':'☐')+' כולל המסגרת'):null),
     el('div',{class:'adqrow'},adSeg('מה עושה הנגיעה',[['new','👆 חדש'],['add','➕ הוספה'],['sub','➖ הסרה']],ADT.exOp,v=>set('exOp',v)),
-      adQB('✂️ הפוך לשכבה','הפוך את האזור המסומן לשכבה נפרדת',adExCommit,!has,'adgo'),has?adQB('✕','ניקוי הבחירה',adExClear):null),
+      adQB('✂️ הפוך לשכבה','הפוך את האזור המסומן לשכבה נפרדת',adExCommit,!has,'adgo')),
     adSl('adslExTol','סובלנות',0,100,ADT.exTol,'',v=>{ADT.exTol=v;adExSoon();},adToolsSave)];
-  if(has)out.push(adSl('adslExGrow','הרחבה',-4,12,ADT.exGrow,'',v=>{ADT.exGrow=v;const E2=ADE.ex;if(E2){adExFinal(E2);adDrawSoon();}},adToolsSave),
+  if(has&&ADQ.exMore)out.push(adSl('adslExGrow','הרחבה',-4,12,ADT.exGrow,'',v=>{ADT.exGrow=v;const E2=ADE.ex;if(E2){adExFinal(E2);adDrawSoon();}},adToolsSave),
     adSl('adslExFea','ריכוך',0,8,ADT.exFea,'',v=>{ADT.exFea=v;const E2=ADE.ex;if(E2){adExFinal(E2);adDrawSoon();}},adToolsSave));
-  out.push(h(E&&E.msg?E.msg:has?'✓ מסומן '+E.fin.tb[2]+'×'+E.fin.tb[3]+' — ➕/➖ ונגיעה מתקנים · "✂️ הפוך לשכבה" מפריד אותו מהתמונה':
-    ADT.exMode==='frame'?'👆 נוגעים בקו המסגרת (הגלולה, המסגרת הלבנה…) — נבחר כל מה שבתוכה, כולל הטקסט. זום עוזר לפגוע בקו דק':'👆 נוגעים באובייקט — נבחר כל מה שמחובר ובצבע דומה, עם מה שבתוכו'));
+  out.push(el('div',{class:'adqrow adexft'},has?el('button',{type:'button','aria-pressed':String(!!ADQ.exMore),class:ADQ.exMore?'on':null,'aria-label':'הרחבה וריכוך של הקצה',title:'הרחבה וריכוך של הקצה',on:{click:()=>{ADQ.exMore=!ADQ.exMore;adQForce();}}},'⚙️'):null,
+    has?adQB('✕','ניקוי הבחירה',adExClear):null,h(E&&E.msg?E.msg:has?(E.noBorder?'אין כאן מסגרת בצבע אחר מהרקע — נבחר בלי מסגרת. ':'')+'✓ מסומן '+E.fin.tb[2]+'×'+E.fin.tb[3]+' — ➕/➖ ונגיעה מתקנים · "✂️ הפוך לשכבה" מפריד אותו מהתמונה':
+    ADT.exMode==='frame'?'👆 נוגעים בקו המסגרת (הגלולה, המסגרת הלבנה…) — נבחר כל מה שבתוכה, כולל הטקסט. זום עוזר לפגוע בקו דק':'👆 נוגעים באובייקט — נבחר כל מה שמחובר ובצבע דומה, עם מה שבתוכו')));
   return out;}
 function adQrCtx(L,f){const t=adQrOf(f),st=adQrStatus(f),out=[];
   if(t)out.push(adQrLead(t));else if(st)out.push(el('p',{class:'adqhint',role:'status'},st));
@@ -6618,7 +6622,7 @@ function saveImages(){
     for(const s of imageSlots())lists[s.path]=s.o[s.k].map(f=>{if(!f.id)f.id=newImgId();live.set(f.id,f);return f.id;});
     const sig=JSON.stringify(lists),fresh=[...live.values()].filter(f=>!f._stored);
     if(sig===_imgLast&&!fresh.length)return;
-    for(const f of fresh){f._blob=f._blob||await imgBlob(f);await idbTx('images','readwrite',st=>st.put({blob:f._blob,name:f.name||'',edited:!!f.edited,la:f.la||null},f.id));f._stored=true;}
+    for(const f of fresh){f._blob=f._blob||await imgBlob(f);await idbTx('images','readwrite',st=>st.put({blob:f._blob,name:f.name||'',edited:!!f.edited,la:f.la||null,qr:f.qr||null},f.id));f._stored=true;}
     await idbTx('meta','readwrite',st=>st.put(lists,'lists'));_imgLast=sig;
     const keys=await idbTx('images','readonly',st=>st.getAllKeys()),dead=(keys||[]).filter(k=>!live.has(k));
     if(dead.length)await idbTx('images','readwrite',st=>{dead.forEach(k=>st.delete(k));});
@@ -6633,7 +6637,7 @@ function loadImages(){return _imgLoadOnce||(_imgLoadOnce=(async()=>{
     await idbTx('images','readonly',st=>{ids.forEach(id=>{const r=st.get(id);r.onsuccess=()=>{if(r.result)recs[id]=r.result;};});});
     const objs={};
     await Promise.all(ids.filter(id=>recs[id]).map(async id=>{const r=recs[id];
-      try{objs[id]={id,img:await withTimeout(blobToImg(r.blob),15000,'decode'),name:r.name,edited:r.edited,_blob:r.blob,_stored:true};if(r.la)objs[id].la=r.la;}catch(e){}}));
+      try{objs[id]={id,img:await withTimeout(blobToImg(r.blob),15000,'decode'),name:r.name,edited:r.edited,_blob:r.blob,_stored:true};if(r.la)objs[id].la=r.la;if(r.qr)objs[id].qr=r.qr;}catch(e){}}));
     const used=new Set();for(const path in lists){const arr=lists[path].map(id=>objs[id]).filter(Boolean);if(arr.length&&setSlot(path,arr))arr.forEach(f=>used.add(f.id));}
     _imgLast='';_imgReady=true;return used.size;
   }catch(e){console.warn('טעינת תמונות נכשלה — השמירה כבויה בביקור הזה',e);return 0;}})());}
