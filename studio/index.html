@@ -5849,7 +5849,7 @@ function adLayRename(L,v){if(ADE)ADE.ren=null;v=String(v||'').replace(/\s+/g,' '
 let ADLD=null,_adLF=null;const _adLScr={};
 function adLayersDraw(force){const boxes=document.querySelectorAll('.adlayers');if(!boxes.length||!AD.layers||ADLD)return;const ae=document.activeElement;
   const key=AD.layers.map(L=>[L.id,L.k,L.text,L.nm,L.name,L.hid?1:0,L.lock?1:0,L.src,L.mask,adMaskPending(L.mask)?1:0,L.shape,L.mf,L.color,L.outline,L.font,(adImgOf(L)||{}).img?1:0].join('~')).join(',')+'|'+(ADE&&ADE.sel)+'|'+(ADE&&ADE.ren)+'|'+AD.bg+'|'+AD.fmt+'|'+adTabbed();
-  boxes.forEach(box=>{if(!force&&box._k===key&&box.childNodes.length)return;if(ae&&box.contains(ae)&&ae.tagName==='INPUT')return;
+  boxes.forEach(box=>{if(!force&&box._k===key&&box.childNodes.length)return;if(ae&&box.contains(ae)&&ae.tagName==='INPUT'&&ADE&&ADE.ren)return; // מקלידים שם — לא בונים מתחת לאצבע
     const kind=box.dataset.kind||'side',selCh=box._sel!==(ADE&&ADE.sel);box._k=key;box._sel=ADE&&ADE.sel;box.innerHTML='';adLayersFill(box);
     box.scrollTop=_adLScr[kind]||0;if(!box._scr){box._scr=1;box.addEventListener('scroll',()=>{if(!ADLD)_adLScr[box.dataset.kind||'side']=box.scrollTop;},{passive:true});}
     const sr=box.querySelector('.adlrow.sel');if(sr&&selCh&&box.scrollHeight>box.clientHeight){const t=sr.offsetTop-box.offsetTop;if(t<box.scrollTop||t+sr.offsetHeight>box.scrollTop+box.clientHeight)box.scrollTop=Math.max(0,t-box.clientHeight/3);}
