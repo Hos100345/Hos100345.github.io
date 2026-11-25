@@ -37,7 +37,7 @@ export async function sha256hex(data: string | Uint8Array): Promise<string> {
 export const codeHash = (code: unknown) => sha256hex("dl:" + norm(code));
 export function cleanText(s: unknown, max: number): string {
   // eslint-disable-next-line no-control-regex
-  return String(s ?? "").replace(/[\u0000-\u001f\u007f‎‏‪-‮]/g, " ").replace(/\s+/g, " ").trim().slice(0, max);
+  return String(s ?? "").replace(/[\u0000-\u001f\u007f\u200e\u200f\u202a-\u202e]/g, " ").replace(/\s+/g, " ").trim().slice(0, max);
 }
 export function sniff(b: Uint8Array): "png" | "jpeg" | "webp" | null {
   if (b.length > 8 && b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47 && b[4] === 0x0d && b[5] === 0x0a && b[6] === 0x1a && b[7] === 0x0a) return "png";
