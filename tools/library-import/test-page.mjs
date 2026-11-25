@@ -66,11 +66,19 @@ async function stub(page, st) {
       if (b.code && b.code !== 'ITZ-TEST') return J({ error: 'הקוד לא נכון. בדקו את הקוד שקיבלתם מהושעיה', reason: 'bad_code' }, 403);
       return J({ ok: true, id: 'new', duplicate: false });
     }
+    if (b.action === 'tag') {
+      if (!b.code && auth !== 'Bearer tok.admin.x') return J({ error: 'חסר קוד שותף', reason: 'no_code' }, 401);
+      if (b.code && b.code !== 'ITZ-TEST') return J({ error: 'הקוד לא נכון', reason: 'bad_code' }, 403);
+      const it = st.items.find((x) => x.id === b.id) || st.pending.find((x) => x.id === b.id); it.tags = it.tags || {};
+      it.tags[b.tag] = Math.max(0, (it.tags[b.tag] || 0) + (b.on === false ? -1 : 1)); if (!it.tags[b.tag]) delete it.tags[b.tag];
+      return J({ ok: true, tag: b.tag, on: b.on !== false, tags: it.tags });
+    }
     if (b.action.startsWith('admin_')) {
       if (auth !== 'Bearer tok.admin.x') return J({ error: 'מנהל בלבד' }, 401);
       if (b.action === 'admin_list') return J({ items: b.status === 'pending' ? st.pending : [], more: false, counts: { pending: st.pending.length, approved: st.items.length, rejected: 0 }, code: { active: true, label: 'שותפים', created_at: '2026-11-20T00:00:00Z' } });
       if (b.action === 'admin_review') { if (b.status && b.status !== 'pending') st.pending = st.pending.filter((x) => x.id !== b.id); return J({ ok: true, item: {} }); }
       if (b.action === 'admin_set_code') return J({ ok: true, label: b.label || 'שותפים' });
+      if (b.action === 'admin_untag') { const it = st.pending.find((x) => x.id === b.id) || st.items.find((x) => x.id === b.id); delete (it.tags || {})[b.tag]; return J({ ok: true, tags: it.tags || {} }); }
       if (b.action === 'admin_delete') { st.pending = st.pending.filter((x) => x.id !== b.id); return J({ ok: true }); }
     }
     return J({ error: 'פעולה לא מוכרת' }, 400);
@@ -296,6 +304,34 @@ await t('שגיאת שרת / בלי רשת: הודעה ברורה + נסו שו�
   await page.waitForSelector('#grid .empty');
   assert.match(await page.textContent('#grid .empty'), /הספרייה עוד ריקה/);
   await ctx.close();
+});
+
+await t('W-76 תיוגים: קוד, תיוג מוכן, תיוג חדש, הסרה, מנהל', async () => {
+  const { ctx, page, st, errs } = await open(PIXEL);
+  await page.locator('#grid .card').first().click();
+  const box = page.locator('#vTagBox .tagbox');
+  await box.getByRole('button', { name: /^(✓ )?בת( |$)/ }).click();
+  await box.getByLabel('קוד שותף לתיוג').fill('ITZ-TEST'); await box.getByRole('button', { name: '🔑 שמירת הקוד' }).click();
+  await page.waitForFunction(() => /תויג/.test(document.querySelector('#vTagBox .msg').textContent));
+  assert.equal(await box.getByRole('button', { name: /^(✓ )?בת( |$)/ }).getAttribute('aria-pressed'), 'true');
+  await box.getByLabel('תיוג חדש').fill('#הבוסית של הבית'); await box.getByLabel('תיוג חדש').press('Enter');
+  await page.waitForFunction(() => /הבוסית של הבית/.test(document.querySelector('#vTagBox .msg').textContent));
+  const tc = st.calls.filter((c) => c.action === 'tag');
+  assert.equal(tc.length, 2); assert.equal(tc[1].tag, 'הבוסית של הבית'); assert.equal(tc[0].code, 'ITZ-TEST');
+  await box.getByRole('button', { name: /^(✓ )?בת( |$)/ }).click();
+  await page.waitForFunction(() => /הוסר/.test(document.querySelector('#vTagBox .msg').textContent));
+  assert.equal(st.items[0].tags['בת'], undefined);
+  await shot(page, 'tags'); await noHScroll(page);
+  assert.deepEqual(realErrs(errs), []); await ctx.close();
+  const A = await open({ viewport: { width: 1366, height: 900 } }, { admin: true });
+  await A.page.getByRole('button', { name: /ממתינים/ }).first().click();
+  const q = A.page.locator('.qi').first(); await q.waitFor();
+  await q.getByLabel('תיוג חדש').fill('סבתא'); await q.getByRole('button', { name: '➕ הוספה' }).click();
+  await A.page.waitForFunction(() => /תויג/.test(document.querySelector('.qi .tagbox .msg').textContent));
+  const ac = A.st.calls.find((c) => c.action === 'tag'); assert.equal(ac.code, undefined); assert.equal(ac._auth, 'Bearer tok.admin.x');
+  await q.getByRole('button', { name: 'למחוק את התיוג "סבתא" מהעיצוב' }).click();
+  await A.page.waitForFunction(() => /נמחק/.test(document.querySelector('.qi .tagbox .msg').textContent));
+  assert.deepEqual(realErrs(A.errs), []); await A.ctx.close();
 });
 
 await browser.close(); server.close();

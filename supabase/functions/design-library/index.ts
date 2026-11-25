@@ -11,13 +11,14 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 
 export const BUCKET = "design-library";
 export const CATS = ["כוסות", "מזוזות", "תמונות", "מחזיקי מפתחות", "אחר"];
-export const LIMITS = { uploadsPerCodeHour: 30, uploadsPerDay: 300, ratesPerHour: 60, badCodes15m: 20 };
+export const LIMITS = { uploadsPerCodeHour: 30, uploadsPerDay: 300, ratesPerHour: 60, badCodes15m: 20, tagsPerHour: 300 };
 export const MAX_IMAGE = 10 * 1024 * 1024;
 const MAX_BODY = 29 * 1024 * 1024; // שתי תמונות של 10MB ב-base64 (+33%)
 const SIGN_TTL = 3600;
 const T = "design_library", LOG = "design_library_log", CODES = "design_library_codes", RATINGS = "design_ratings";
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const PUBLIC_COLS = "id,created_at,title,category,contributor,rating_avg,rating_count,width,height,asset_path";
+const PUBLIC_COLS = "id,created_at,title,category,contributor,rating_avg,rating_count,width,height,asset_path,tags";
+const TAGS = "design_tag_votes";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -140,8 +141,12 @@ async function sign(db: any, rows: any[], withCut = false) {
 const pub = (r: any) => ({
   id: r.id, created_at: r.created_at, title: r.title || "", category: r.category, contributor: r.contributor || "",
   rating_avg: Number(r.rating_avg) || 0, rating_count: r.rating_count || 0, width: r.width || null, height: r.height || null,
-  url: r.url, thumb: r.thumb,
+  url: r.url, thumb: r.thumb, tags: (r.tags && typeof r.tags === "object") ? r.tags : {},
 });
+// W-76: תיוג — "בן", "בת", "בוס"… בלי # ובלי סימנים, עד 24 תווים
+export function cleanTag(s: unknown): string {
+  return cleanText(s, 40).replace(/^#+/, "").replace(/[<>"'`{}\[\]\\]/g, "").trim().slice(0, 24);
+}
 
 async function isAdmin(db: any, req: Request, env: (k: string) => string | undefined): Promise<boolean> {
   const jwt = (req.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "").trim();
@@ -210,6 +215,40 @@ export async function handle(req: Request, db: any, env: (k: string) => string |
       await writeLog(db, voter, "rate");
       const { data: r2 } = await db.from(T).select("rating_avg,rating_count").eq("id", id).maybeSingle();
       return json({ ok: true, stars, rating_avg: Number(r2?.rating_avg) || 0, rating_count: r2?.rating_count || 0 });
+    }
+
+    // ── tag: תיוג עיצוב מאושר (W-76). קוד שותף (כמו העלאה) או מנהל. הצבעה לכל מכשיר; on=false מוריד את התיוג שלי ──
+    if (action === "tag") {
+      const id = String(body.id || ""), tag = cleanTag(body.tag), on = body.on !== false, device = String(body.device || "");
+      if (!UUID_RE.test(id)) return json({ error: "חסר מזהה" }, 400);
+      if (!tag) return json({ error: "כתבו מילה לתיוג" }, 400);
+      if (!/^[A-Za-z0-9_-]{8,64}$/.test(device)) return json({ error: "בקשה לא תקינה" }, 400);
+      let base = "admin";
+      const code = norm(body.code);
+      if (!code) {
+        if (!(await isAdmin(db, req, env))) return json({ error: "חסר קוד שותף", reason: "no_code" }, 401);
+      } else {
+        const ipHash = await sha256hex("dli:" + ip);
+        const bad = await countLog(db, "bad_code", ipHash, 15 * 60e3);
+        if (bad !== null && bad > LIMITS.badCodes15m) return json({ error: "יותר מדי ניסיונות — נסו שוב בעוד רבע שעה" }, 429);
+        const h = await codeHash(code);
+        const { data: c, error: ce } = await db.from(CODES).select("code_hash,active").eq("code_hash", h).maybeSingle();
+        if (ce) throw new Error(ce.message);
+        if (!c || !c.active) { await writeLog(db, ipHash, "bad_code", false); return json({ error: "הקוד לא נכון. בדקו את הקוד שקיבלתם מהושעיה", reason: "bad_code" }, 403); }
+        base = h;
+      }
+      const who = await sha256hex("dlt:" + base + "|" + device);
+      const n = await countLog(db, "tag", who, 3600e3);
+      if (n !== null && n >= LIMITS.tagsPerHour) return json({ error: "תייגתם הרבה בשעה האחרונה — נסו שוב מאוחר יותר" }, 429);
+      const { data: row } = await db.from(T).select("id,status").eq("id", id).maybeSingle();
+      if (!row || (row.status !== "approved" && base !== "admin")) return json({ error: "העיצוב לא נמצא" }, 404);
+      const r = on
+        ? await db.from(TAGS).upsert({ design_id: id, tag, who_hash: who }, { onConflict: "design_id,tag,who_hash", ignoreDuplicates: true })
+        : await db.from(TAGS).delete().eq("design_id", id).eq("tag", tag).eq("who_hash", who);
+      if (r.error) throw new Error(r.error.message);
+      await writeLog(db, who, "tag");
+      const { data: r2 } = await db.from(T).select("tags").eq("id", id).maybeSingle();
+      return json({ ok: true, tag, on, tags: r2?.tags || {} });
     }
 
     // ── upload: קוד שותף (או מנהל) → pending ──
@@ -343,6 +382,16 @@ export async function handle(req: Request, db: any, env: (k: string) => string |
       }
       const [s] = await sign(db, [upd || { ...row, ...patch }], true);
       return json({ ok: true, item: { ...pub(s), status: s.status, cut: s.cut, correction: s.correction || "", duplicate_of: s.duplicate_of || null } });
+    }
+
+    // W-76: מנהל מוחק תיוג מעיצוב (כל ההצבעות עליו)
+    if (action === "admin_untag") {
+      const id = String(body.id || ""), tag = cleanTag(body.tag);
+      if (!UUID_RE.test(id) || !tag) return json({ error: "חסר מזהה או תיוג" }, 400);
+      const { error } = await db.from(TAGS).delete().eq("design_id", id).eq("tag", tag);
+      if (error) throw new Error(error.message);
+      const { data: r2 } = await db.from(T).select("tags").eq("id", id).maybeSingle();
+      return json({ ok: true, tags: r2?.tags || {} });
     }
 
     if (action === "admin_delete") {
