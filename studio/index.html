@@ -287,6 +287,8 @@ details.face>.body{padding:0 12px 12px;display:grid;gap:8px}
 .adtop button:disabled{opacity:.45;cursor:default}.adtop .adtsave{font-size:.95rem;background:var(--c-brand,#0A2A5C);color:#fff}.adtop .adtok{background:#16A34A;color:#fff;font-size:1.25rem}.adtop .adtm{font-size:1.4rem;padding:0}
 .adbadge{position:absolute;top:-3px;inset-inline-end:-3px;min-width:18px;height:18px;border-radius:9px;background:#E11D74;color:#fff;font-size:.68rem;line-height:18px;padding:0 4px;font-weight:700}
 .adq .adqctx{display:grid;gap:2px;min-width:0}.adq .adqctx:empty{display:none}
+.adq .adchip,.adqrchips .adchip{flex:0 0 auto;min-height:44px;padding:0 12px;border:1.5px solid var(--c-brand,#0A2A5C);border-radius:999px;background:#fff;color:var(--c-brand,#0A2A5C);font:inherit;font-size:.9rem;font-weight:700;white-space:nowrap;cursor:pointer}.adq .adchip:hover,.adqrchips .adchip:hover{background:#EEF2FF}
+.adqrchips{display:flex;gap:6px;padding:2px 0}.adqrlead bdi{font-weight:700;color:#0A2A5C}.adqrus{display:grid;gap:4px;margin:6px 0}.adqru{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:.88rem}.adqru .btn{min-height:44px;min-width:44px;padding:0 8px}
 .adqscroll{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain}.adqscroll::-webkit-scrollbar{display:none}
 .adstrip{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain;border-top:1px solid var(--mat-line);padding-top:3px;margin-top:2px;scroll-snap-type:x proximity}.adstrip::-webkit-scrollbar{display:none}
 .adq .adstrip .adtool{flex:1 0 64px;min-width:64px;min-height:56px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-radius:12px;color:#334155;font-size:.76rem;font-weight:600;scroll-snap-align:start;padding:2px 4px}
@@ -5133,7 +5135,7 @@ function adEnsure(){
   AD.layers=AD.layers.filter(L=>{if(L.k!=='img')return true;if(ids.includes(L.src)){used.add(L.src);L.si=ids.indexOf(L.src);return true;}
     const j=L.si|0;if(j<imgs.length&&!used.has(ids[j])&&!AD.layers.some(o=>o.src===ids[j])){L.src=ids[j];used.add(ids[j]);return true;}return false;});
   imgs.forEach((f,i)=>{if(used.has(ids[i]))return;const first=!AD.layers.some(L=>L.k==='img'),L=adNewImg(f,i,first);
-    let at=0;AD.layers.forEach((o,j)=>{if(o.k==='img')at=j+1;});AD.layers.splice(at,0,L);used.add(ids[i]);if(ADE)ADE.sel=L.id;});}
+    let at=0;AD.layers.forEach((o,j)=>{if(o.k==='img')at=j+1;});AD.layers.splice(at,0,L);used.add(ids[i]);if(ADE)ADE.sel=L.id;adQrAuto(f);});} // S-198: QR בתמונה חדשה — מזהים ואומרים לאן הוא מוביל
 function adArt(ctx){adEnsure();ctx.fillStyle=adBgFill(ctx);ctx.fillRect(0,0,adW(),adH());AD.layers.forEach(L=>adDrawLayer(ctx,L));}
 // החלפת פורמט: שומרים על מיקום יחסי לגובה, וכיתובים לא חורגים
 function adSetFmt(f){if(f===AD.fmt||!AD_FMTS[f])return;adEnsure();const h0=adH();AD.fmt=f;const k=adH()/h0;
@@ -5148,7 +5150,7 @@ function adDraw(){if(!ADE||!ADE.c||!document.body.contains(ADE.c)||ADE.c.hidden)
   const L0=adSel();
   if(L0){x.save();x.globalAlpha=.22;adDrawLayer(x,L0);x.restore();} // מה שיוצא מהגבול נראה חלש — לא נכנס להורדה
   x.save();x.shadowColor='rgba(60,40,10,.2)';x.shadowBlur=16;x.shadowOffsetY=5;x.fillStyle='#fff';x.fillRect(0,0,W0,H0);x.restore();
-  x.save();x.beginPath();x.rect(0,0,W0,H0);x.clip();adArt(x);if(L0&&L0.k==='img'&&AD_BACKDROP.has(ADE.tool))adBackdrop(x,L0,s);x.restore(); // S-196: משבצות שקיפות מאחורי השכבה בזמן חיתוך
+  x.save();x.beginPath();x.rect(0,0,W0,H0);x.clip();adArt(x);if(L0&&L0.k==='img'&&AD_BACKDROP.has(ADE.tool))adBackdrop(x,L0,s);if(L0&&L0.k==='img'&&ADE.tool==='extract')adExOverlay(x,L0,s);if(L0&&L0.k==='img'&&ADE.tool==='qr')adQrOverlay(x,L0,s);x.restore(); // S-196: משבצות שקיפות מאחורי השכבה בזמן חיתוך
   x.strokeStyle='#D6CFC2';x.lineWidth=1/s;x.strokeRect(0,0,W0,H0);
   x.fillStyle='#8A8170';x.font=`${12/s}px Rubik`;x.textAlign='center';x.textBaseline='top';x.direction='rtl';x.fillText(adFmt().label.replace(/^\S+\s/,'')+' · '+adPx(),W0/2,H0+8/s);
   const G=ADE.guide;if(G){x.strokeStyle='#E11D74';x.lineWidth=1/s;x.setLineDash([4/s,3/s]);x.beginPath();if(G.v){x.moveTo(W0/2,0);x.lineTo(W0/2,H0);}if(G.h){x.moveTo(0,H0/2);x.lineTo(W0,H0/2);}x.stroke();x.setLineDash([]);}
@@ -5396,7 +5398,7 @@ function adEditor(){const c=el('canvas',{class:'sheditor mged',id:'ad2d',tabinde
   const loc=e=>{const r=c.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top];};
   const dist=(a,b)=>Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY),ang=(a,b)=>Math.atan2(b.clientY-a.clientY,b.clientX-a.clientX)*180/Math.PI;
   // S-195: שתי אצבעות = זום והזזה של התצוגה. רק כששתיהן על השכבה שנבחרה (ולא הרקע) — גודל וסיבוב של השכבה, כמו קודם
-  c.addEventListener('touchstart',e=>{if(e.touches.length===2){e.preventDefault();if(ADE.paint)adCutCancel(); /* S-196: אצבע שנייה = זום, המשיכה שהתחילה מתבטלת */const t0=e.touches[0],t1=e.touches[1],p1=toMm(t0),p2=toMm(t1),S=adSel(),D=ADE.drag;clearTimeout(ADE.editT);ADE.tap=null;ADE.vpan=null;
+  c.addEventListener('touchstart',e=>{if(e.touches.length===2){e.preventDefault();if(ADE.paint)adCutCancel(); /* S-196: אצבע שנייה = זום, המשיכה שהתחילה מתבטלת */ADE.exT=null;const t0=e.touches[0],t1=e.touches[1],p1=toMm(t0),p2=toMm(t1),S=adSel(),D=ADE.drag;clearTimeout(ADE.editT);ADE.tap=null;ADE.vpan=null;
       if(S&&!S.lock&&!S.hid&&!adIsBgL(S)&&!adCutOn()&&adIn(S,p1)&&adIn(S,p2)){if(!D)adSnap();ADE.drag=null;ADE.pinch={L:S,d0:dist(t0,t1),a0:ang(t0,t1),w:S.w,fs:S.fs,rot:S.rot||0};adPanelSync();return;}
       if(D){Object.assign(D.L,{x:D.o.x,y:D.o.y,w:D.o.w,fs:D.o.fs,rot:D.o.rot});adSnapCancel();ADE.drag=null;ADE.guide=null;} // האצבע הראשונה לא הזיזה כלום — זה זום
       const r=c.getBoundingClientRect(),mx=(t0.clientX+t1.clientX)/2-r.left,my=(t0.clientY+t1.clientY)/2-r.top,v=ADE.v;
@@ -5421,7 +5423,7 @@ function adEditor(){const c=el('canvas',{class:'sheditor mged',id:'ad2d',tabinde
       if(ADE.sel){ADE.sel=null;adDraw();adPanelSync();}ADE.tap={t:now,x:e.clientX,y:e.clientY};return;}
     e.preventDefault();c.setPointerCapture(e.pointerId);adSnap();const was=ADE.sel===L.id;ADE.sel=L.id;adPanelSync();
     ADE.drag={mode:hd||'move',L,x0:x,y0:y,o:{x:L.x,y:L.y,w:L.w,fs:L.fs,rot:L.rot||0},moved:false,was,t:Date.now()};adDraw();});
-  c.addEventListener('pointermove',e=>{if(ADE.paint){adCutMove(e);return;}if(e.pointerType==='mouse'&&adCutOn()&&ADE.tool!=='magic'){const r=c.getBoundingClientRect();ADE.cur=[e.clientX-r.left,e.clientY-r.top,e.clientX-r.left,e.clientY-r.top];adDrawSoon();return;}const V=ADE.vpan;if(V&&e.isPrimary){const dx=e.clientX-V.x,dy=e.clientY-V.y;if(Math.hypot(dx,dy)>6)V.moved=true;
+  c.addEventListener('pointermove',e=>{if(ADE.exT){adExMove(e);return;}if(ADE.paint){adCutMove(e);return;}if(e.pointerType==='mouse'&&adCutOn()&&ADE.tool!=='magic'&&ADE.tool!=='extract'){const r=c.getBoundingClientRect();ADE.cur=[e.clientX-r.left,e.clientY-r.top,e.clientX-r.left,e.clientY-r.top];adDrawSoon();return;}const V=ADE.vpan;if(V&&e.isPrimary){const dx=e.clientX-V.x,dy=e.clientY-V.y;if(Math.hypot(dx,dy)>6)V.moved=true;
       if(V.view&&V.moved){ADE.cx=V.cx-dx/ADE.v.s;ADE.cy=V.cy-dy/ADE.v.s;adDraw();}return;}
     const D=ADE.drag;if(!D||ADE.pinch||ADE.vp)return;const[x,y]=toMm(e),L=D.L;
     if(Math.hypot(x-D.x0,y-D.y0)*ADE.v.s>3)D.moved=true;if(!D.moved)return;
@@ -5430,7 +5432,7 @@ function adEditor(){const c=el('canvas',{class:'sheditor mged',id:'ad2d',tabinde
     else if(D.mode==='scale'){const r0=Math.hypot(D.x0-D.o.x,D.y0-D.o.y)||1,f=Math.hypot(x-L.x,y-L.y)/r0;if(L.k==='img')L.w=Math.max(8,Math.min(adW()*3,D.o.w*f));else L.fs=Math.max(3,Math.min(adH(),D.o.fs*f));}
     else if(D.mode==='rot'){const a0=Math.atan2(D.y0-L.y,D.x0-L.x),a=Math.atan2(y-L.y,x-L.x);L.rot=adSnapRot(D.o.rot+(a-a0)*180/Math.PI);ADE.guide={rot:1};}
     adCommit();});
-  const up=e=>{if(ADE.paint){if(e.type==='pointercancel')adCutCancel();else adCutUp(e);return;}const V=ADE.vpan;if(V){ADE.vpan=null;if(e.type==='pointerup'&&!V.moved){if(V.sel)adSelect(V.sel);else if(ADE.sel){ADE.sel=null;adDraw();adPanelSync();}ADE.tap={t:Date.now(),x:e.clientX,y:e.clientY};}return;}
+  const up=e=>{if(ADE.exT){adExUp(e);return;}if(ADE.paint){if(e.type==='pointercancel')adCutCancel();else adCutUp(e);return;}const V=ADE.vpan;if(V){ADE.vpan=null;if(e.type==='pointerup'&&!V.moved){if(V.sel)adSelect(V.sel);else if(ADE.sel){ADE.sel=null;adDraw();adPanelSync();}ADE.tap={t:Date.now(),x:e.clientX,y:e.clientY};}return;}
     const D=ADE.drag;if(!D)return;ADE.drag=null;ADE.guide=null;
     if(!D.moved){adSnapCancel();if(e.type==='pointerup')ADE.tap={t:Date.now(),x:e.clientX,y:e.clientY};
       if(D.was&&D.L.k==='text'&&D.mode==='move'){if(ADE.touch){clearTimeout(ADE.editT);ADE.editT=setTimeout(()=>{if(adSel()===D.L)adQEdit(true);},360);} // בטלפון: עריכה בסרגל שמתחת למודעה (אחרי שבודקים שזו לא הקשה כפולה)
@@ -5514,8 +5516,8 @@ function adTint(L,color){const f=adImgOf(L);if(!f||!f.img)return;const im=f.img,
 const AD_REDO=[];
 const ADT=(()=>{const d={size:44,off:48,hard:70,tol:28,lasso:'erase',bgv:'checker',auto:'object'};try{return Object.assign(d,JSON.parse(localStorage.getItem('studio_ad_tools')||'{}'));}catch(e){return d;}})();
 const adToolsSave=()=>{try{localStorage.setItem('studio_ad_tools',JSON.stringify(ADT));}catch(e){}};
-const AD_CUT=new Set(['erase','repair','magic','lasso']); // אצבע אחת על המודעה = עבודה על המסכה (לא הזזה)
-const AD_IMG_T=['move','erase','repair','magic','auto','lasso','shape','smooth','tint'];
+const AD_CUT=new Set(['erase','repair','magic','lasso','extract']); // אצבע אחת על המודעה = עבודה על המסכה (לא הזזה)
+const AD_IMG_T=['move','extract','qr','erase','repair','magic','auto','lasso','shape','smooth','tint'];
 const AD_BACKDROP=new Set(['erase','repair','magic','auto','lasso','shape','smooth']); // משבצות שקיפות מאחורי השכבה
 const ADM=new Map(); // מפתח מסכה → {url, c (מפוענח), p (בפענוח)}
 const AD_MASK_MAX=2048;
@@ -5592,7 +5594,7 @@ function adMagic(L,mp){const W=ADE.wm,w=W.c.width,h=W.c.height,X=Math.floor(mp[0
     if(x>0&&!seen[j-1]){seen[j-1]=1;if(ok(j-1))st[sp++]=j-1;}if(x<w-1&&!seen[j+1]){seen[j+1]=1;if(ok(j+1))st[sp++]=j+1;}
     if(j>=w&&!seen[j-w]){seen[j-w]=1;if(ok(j-w))st[sp++]=j-w;}if(j+w<w*h&&!seen[j+w]){seen[j+w]=1;if(ok(j+w))st[sp++]=j+w;}}
   W.x.putImageData(md,0,0);W.ver++;return n;}
-function adCutDown(e){const L=adSel(),W=adWm(L);if(!W)return;e.preventDefault();try{ADE.c.setPointerCapture(e.pointerId);}catch(_){}
+function adCutDown(e){if(ADE.tool==='extract'){adExDown(e);return;} /* S-198 */const L=adSel(),W=adWm(L);if(!W)return;e.preventDefault();try{ADE.c.setPointerCapture(e.pointerId);}catch(_){}
   const T=ADE.tool,[bx,by,fx,fy]=adBrushPt(e,T==='magic');
   if(T==='magic'){adSnap();const n=adMagic(L,adScr2Mask(L,bx,by));if(n)adWmCommit(L,'נמחק אזור בצבע דומה ('+n+' פיקסלים). ↶ מבטל');else{adSnapCancel();adSay('כאן אין מה למחוק — נסו סובלנות גבוהה יותר');}adQ();return;}
   const bk=ADE.bk||(ADE.bk=document.createElement('canvas'));bk.width=W.c.width;bk.height=W.c.height;bk.getContext('2d').drawImage(W.c,0,0); // לביטול כשנוחתת אצבע שנייה
@@ -5678,7 +5680,8 @@ const AD_IC={move:'M12 3v18M3 12h18M12 3 9.5 5.5M12 3l2.5 2.5M12 21l-2.5-2.5M12 
   crop:'M6 2v16h16M2 6h16v16',ai:'M12 3l1.8 4.7 4.7 1.8-4.7 1.8L12 16l-1.8-4.7-4.7-1.8 4.7-1.8zM19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z',
   add:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 8v8M8 12h8',text:'M5 7V4.5h14V7M12 4.5v15M9 19.5h6',sticker:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM8.5 14.5c1.8 2 5.2 2 7 0M9 9.5h.01M15 9.5h.01',
   bg:'M3 5h18v14H3zM3 15.5l5-5 5 5 3-3 5 5',ratio:'M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4M8.5 8.5h7v7h-7z',color:'M6 17 12 4l6 13M8.3 12h7.4M4 21h16',
-  undo:'M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11',layers:'M12 3 2.5 8 12 13l9.5-5zM2.5 12.5 12 17.5l9.5-5M2.5 16.5 12 21.5l9.5-5',redo:'M15 14l5-5-5-5M20 9H9.5a5.5 5.5 0 0 0 0 11H13'};
+  undo:'M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11',layers:'M12 3 2.5 8 12 13l9.5-5zM2.5 12.5 12 17.5l9.5-5M2.5 16.5 12 21.5l9.5-5',redo:'M15 14l5-5-5-5M20 9H9.5a5.5 5.5 0 0 0 0 11H13',
+  extract:'M6 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM8.2 7.8 20 18M8.2 16.2 20 6M14 3.5h2M18 3.5h2M21 6.5v2',qr:'M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2.5v2.5H14zM17.5 17.5H20V20h-2.5zM14 20h1M20 14v1M6.5 6.5h1v1h-1zM16.5 6.5h1v1h-1zM6.5 16.5h1v1h-1z'};
 function adIc(n){const s=el('span',{class:'adic','aria-hidden':'true'});s.innerHTML='<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="'+AD_IC[n]+'"/></svg>';return s;}
 // ── סרגל עליון (טלפון): ⋮ · 💾 שמירה · ↶ ↷ · ? · ✓ ──
 function adTopDone(){const L=adSel();if(ADQ.lay){ADQ.lay=false;}else if(ADQ.open){ADQ.open=null;}else if(L&&ADE.tool!==(L.k==='text'?'color':'move')){ADE.tool=L.k==='text'?'color':'move';adFree();}else if(L){ADE.sel=null;adFree();adPanelSync();}adQForce();adDraw();}
@@ -5706,7 +5709,7 @@ function adHelp(){const P=(a,b)=>el('p',{style:'margin:0 0 8px'},el('b',{},a),' 
   const m=adDlg('adHelpDlg','? איך עובדים',85,[P('👆 בחירה','נוגעים בכיתוב או בתמונה. גוררים להזזה, ⤡ בפינה לגודל, ↻ לסיבוב.'),P('🔍 זום','שתי אצבעות או הקשה כפולה. גם כשמכחול פעיל — שתי אצבעות מגדילות ומזיזות.'),
     P('✂️ כלים לתמונה','מחק · שחזור (מחזיר את המקור) · קסם (נוגעים בצבע ונמחק כל מה שדומה ומחובר) · אוטומטי (הסרת רקע במכשיר) · לאסו (מקיפים אזור) · צורה (עיגול, לב, כוכב…) · החלקה (קצה רך).'),
     P('🎯 הרחקה','העיגול של המכחול מופיע מעל האצבע — כדי לראות בדיוק מה נמחק. הסליידר "הרחקה" קובע כמה.'),P('👁 השוואה','לוחצים לחיצה ארוכה על העין ורואים את התמונה המקורית. הריבוע הקטן מחליף רקע: משבצות / כהה / בהיר / המודעה.'),
-    P('↶ ↷','ביטול וחזרה. שום כלי לא הורס את התמונה — אפשר תמיד לשחזר.'),P('🗂 שכבות','בסרגל למטה: מה מעל מה. גוררים ב-⠿ או ⬆ ⬇, 👁 מסתיר (לא נכנס להורדה), 🔒 נועל (לא זז במודעה), ✏️ שם.'),P('💾','הורדה, וואטסאפ, ענן, דרייב ותבנית. ⋮ — תבניות, נכסים, QR, לוגואים וחזרה לחנות.')]);adFocus(m,'.obody button,.fhead button');}
+    P('↶ ↷','ביטול וחזרה. שום כלי לא הורס את התמונה — אפשר תמיד לשחזר.'),P('✂️ חילוץ','מודעה שטוחה? נוגעים בקו המסגרת של גלולה/מסגרת (או באובייקט עצמו) — הכול בפנים מסומן. ✂️ "הפוך לשכבה" מפריד אותו: אפשר להזיז, להגדיל ולצבוע, והמקום שלו מתמלא מהרקע.'),P('▦ QR','בוחרים תמונה ← QR: מזהה לאן הקוד מוביל, ולחיצה על QR מוכן מחליפה אותו באותו מקום. ⭐ שומרים קישורים משלכם כמוכנים.'),P('🗂 שכבות','בסרגל למטה: מה מעל מה. גוררים ב-⠿ או ⬆ ⬇, 👁 מסתיר (לא נכנס להורדה), 🔒 נועל (לא זז במודעה), ✏️ שם.'),P('💾','הורדה, וואטסאפ, ענן, דרייב ותבנית. ⋮ — תבניות, נכסים, QR, לוגואים וחזרה לחנות.')]);adFocus(m,'.obody button,.fhead button');}
 // ── כפתורים צפים ליד התמונה: ריבוע הרקע + 👁 השוואה (לחיצה ארוכה) ──
 const AD_BGV=[['checker','משבצות שקיפות'],['dark','רקע כהה'],['light','רקע בהיר'],['ad','בתוך המודעה']];
 function adFloat(){const st=ADE&&ADE.c&&ADE.c.parentElement;if(!st)return;let b=document.getElementById('adfl');const L=adSel(),show=!ADE.c.hidden&&cur===Ad&&!!L&&L.k==='img'&&AD_BACKDROP.has(ADE.tool);
@@ -5721,11 +5724,12 @@ function adFloat(){const st=ADE&&ADE.c&&ADE.c.parentElement;if(!st)return;let b=
 const ADQ={mode:'fill',open:null,tint:false,lay:false}; // lay = S-197: גיליון השכבות פתוח (טלפון)
 const adQForce=()=>{const q=document.getElementById('adq');if(q)q._k='';adQ();};
 function adToolFix(L){if(!ADE)return'move';if(!ADE.tool)ADE.tool='move';if(!L)return ADE.tool;const ok=L.k==='img'?AD_IMG_T:['move','text','color'];
-  if(!ok.includes(ADE.tool))ADE.tool=L.k==='text'?'color':'move';if(L.k==='img'&&ADQ.open)ADQ.open=null;if(ADE.wm&&!ADE.paint&&(!AD_CUT.has(ADE.tool)||ADE.wm.id!==L.id))adFree();return ADE.tool;}
+  if(!ok.includes(ADE.tool))ADE.tool=L.k==='text'?'color':'move';if(L.k==='img'&&ADQ.open)ADQ.open=null;if(ADE.wm&&!ADE.paint&&(!AD_CUT.has(ADE.tool)||ADE.wm.id!==L.id))adFree();if(ADE.ex&&(ADE.tool!=='extract'||ADE.ex.lid!==L.id))ADE.ex=null;return ADE.tool;}
 function adSetTool(t){const L=adSel();if(!L)return;ADQ.lay=false;if(t==='crop'){adEditImg(adImgsSel());return;}if(t==='ai'){openAdAI(adImgsSel());return;}
   ADE.tool=t;adToolFix(L);if(AD_CUT.has(t))adWm(L);adQForce();adDraw();adViewSave();
   if(t==='text')setTimeout(()=>{const i=document.getElementById('adqText');if(i){i.focus();i.select();}},30);
-  const n={move:'הזזה',erase:'מחק — מעבירים אצבע על מה שרוצים למחוק',repair:'שחזור — מעבירים אצבע כדי להחזיר את המקור',magic:'קסם — נוגעים בצבע שרוצים למחוק',auto:'אוטומטי — הסרת רקע',lasso:'לאסו — מקיפים אזור',shape:'צורה',smooth:'החלקת הקצה',tint:'צביעה',text:'עריכת הטקסט',color:'צבע'}[t];if(n)adSay(n);}
+  if(t==='qr'){const f=adImgOf(L);if(f&&!f.qr&&f._qrs===undefined)adQrScanF(f);}if(t==='extract')adExGet(L); // S-198
+  const n={extract:'חילוץ — נוגעים במסגרת או באובייקט',qr:'QR — מחליפים ב-QR מוכן',move:'הזזה',erase:'מחק — מעבירים אצבע על מה שרוצים למחוק',repair:'שחזור — מעבירים אצבע כדי להחזיר את המקור',magic:'קסם — נוגעים בצבע שרוצים למחוק',auto:'אוטומטי — הסרת רקע',lasso:'לאסו — מקיפים אזור',shape:'צורה',smooth:'החלקת הקצה',tint:'צביעה',text:'עריכת הטקסט',color:'צבע'}[t];if(n)adSay(n);}
 function adQEdit(on){if(!ADE)return;ADE.tool=on?'text':'color';adQForce();if(on)setTimeout(()=>{const i=document.getElementById('adqText');if(i){i.focus();i.select();}},30);}
 function adSl(id,label,min,max,val,unit,onIn,onCh){const out=el('output',{for:id},val+(unit||''));
   const inp=el('input',{type:'range',id,min,max,step:1,value:val,'aria-label':label,on:{input:e=>{out.textContent=e.target.value+(unit||'');onIn(+e.target.value);},change:e=>{if(onCh)onCh(+e.target.value);}}});
@@ -5742,16 +5746,17 @@ function adQ(){const pv=document.querySelector('.preview'),st=ADE&&ADE.c&&ADE.c.
   const ctx=el('div',{class:'adqctx'}),add=(...n)=>ctx.append(...n.filter(Boolean)),hint=t=>el('p',{class:'adqhint'},t);
   // הסרגל: כלים לפי מה שנבחר
   const tools=(!L?[['add','הוספה'],['text','כיתוב'],['sticker','מדבקות'],['bg','רקע'],['ratio','יחס']]:L.k==='text'?[['move','הזזה'],['text','כיתוב'],['color','צבע']]
-    :[['move','הזזה'],['erase','מחק'],['repair','שחזור'],['magic','קסם'],['auto','אוטומטי'],['lasso','לאסו'],['shape','צורה'],['smooth','החלקה'],['tint','צביעה'],['crop','חיתוך'],['ai','AI']]).concat(ph?[['layers','שכבות']]:[]); // S-197: 🗂 בטלפון (במחשב — בפאנל)
-  const icon={add:'add',text:'text',sticker:'sticker',bg:'bg',ratio:'ratio',move:'move',color:'color',erase:'erase',repair:'repair',magic:'magic',auto:'auto',lasso:'lasso',shape:'shape',smooth:'smooth',tint:'tint',crop:'crop',ai:'ai',layers:'layers'};
+    :[['move','הזזה'],['extract','חילוץ'],['qr','QR'],['erase','מחק'],['repair','שחזור'],['magic','קסם'],['auto','אוטומטי'],['lasso','לאסו'],['shape','צורה'],['smooth','החלקה'],['tint','צביעה'],['crop','חיתוך'],['ai','AI']]).concat(ph?[['layers','שכבות']]:[]); // S-197: 🗂 בטלפון (במחשב — בפאנל)
+  const icon={add:'add',text:'text',sticker:'sticker',bg:'bg',ratio:'ratio',move:'move',color:'color',erase:'erase',repair:'repair',magic:'magic',auto:'auto',lasso:'lasso',shape:'shape',smooth:'smooth',tint:'tint',crop:'crop',ai:'ai',layers:'layers',extract:'extract',qr:'qr'};
   const act=id=>id==='layers'?!!ADQ.lay:ADQ.lay?false:!L?ADQ.open===id:T===id;
   const strip=el('div',{class:'adstrip',role:'toolbar','aria-label':!L?'הוספה למודעה':L.k==='text'?'כלים לכיתוב':'כלים לתמונה'},tools.map(([id,t])=>el('button',{type:'button',class:'adtool'+(act(id)?' on':''),'aria-pressed':['crop','ai'].includes(id)?null:String(act(id)),'data-tool':id,
     on:{click:()=>{if(id==='layers'){ADQ.lay=!ADQ.lay;if(ADQ.lay){ADQ.open=null;if(L&&AD_CUT.has(ADE.tool)){ADE.tool='move';adFree();}}adQForce();adDraw();adSay(ADQ.lay?'השכבות פתוחות — הראשונה היא הקדמית':'השכבות נסגרו');return;}
       ADQ.lay=false;if(!L){if(id==='text'&&!ph){adAddText();setTimeout(()=>adQEdit(true),120);return;}ADQ.open=ADQ.open===id?null:id;adQForce();return;}adSetTool(id);}}},adIc(icon[id]),el('span',{},t))));
   if(ph&&ADQ.lay)add(adLaySheet());
   else if(!L){const O=ADQ.open;
-    if(O==='add')add(el('div',{class:'adqrow adqscroll'},B('🖼️ תמונה','הוספת תמונה מהטלפון',()=>adPickImg(false)),B('📂 מהדרייב','תמונה מהדרייב של עיצובישי',adBrOpen),B('▦ QR','קוד QR',()=>{ADQ.open=null;adSheet('assets');}),
+    if(O==='add')add(el('div',{class:'adqrow adqscroll'},B('🖼️ תמונה','הוספת תמונה מהטלפון',()=>adPickImg(false)),B('📂 מהדרייב','תמונה מהדרייב של עיצובישי',adBrOpen),B('▦ QR','קוד QR — מוכנים או קישור אחר',()=>{ADQ.open='qr';adQForce();adQrScanAll();}),
       ...AD_LOGOS.map(([id,name,fw])=>B('🏷️ '+name,'לוגו '+name,()=>{ADQ.open=null;adAddLogo(id,name,fw);})),B('📑 תבנית','תבניות מוכנות',()=>{ADQ.open=null;adSheet('tpl');})));
+    else if(O==='qr'){const T0=adQrTargetL(),t0=T0&&adQrOf(T0.f);add(t0?adQrLead(t0):hint(AD_QRS.busy?'🔍 מחפש QR בתמונות…':'▦ לוחצים על QR מוכן — הוא נוסף למודעה'),t0?hint('לוחצים על QR מוכן — הוא מחליף את זה שבמודעה, באותו מקום ובאותו גודל'):null,adQrChips());}
     else if(O==='sticker')add(el('div',{class:'adqrow adqscroll adstk',role:'group','aria-label':'מדבקות'},...AD_BADGES.map(([s,c,t,tc])=>{const cv=adStickerCanvas('shape',s,c,t,tc);const b=B('',(t?'תגית '+t:{heart:'לב',star:'כוכב',circle:'עיגול',burst:'פיצוץ'}[s]),()=>adAddSticker(adStickerCanvas('shape',s,c,t,tc),t||'צורה',.3));b.append(cv);return b;}),
       ...AD_EMOJI.map(e=>B(e,'מדבקה '+e,()=>adAddSticker(adStickerCanvas('emoji',e),'מדבקה '+e,.2),false,'emo'))));
     else if(O==='bg'){const cb=String(AD.bg||'').toUpperCase();add(el('div',{class:'adqrow adqscroll',role:'group','aria-label':'רקע המודעה'},...AD_BRAND.map(([c,n])=>adQSw(c,'רקע '+n,cb===c,()=>adSetBg(c))),
@@ -5762,7 +5767,7 @@ function adQ(){const pv=document.querySelector('.preview'),st=ADE&&ADE.c&&ADE.c.
     else if(O==='ratio')add(el('div',{class:'adqrow adqscroll',role:'group','aria-label':'גודל ויחס המודעה'},Object.entries(AD_FMTS).map(([key,v])=>B(v.label,v.label+' '+v.sub,()=>{adSetFmt(key);adQForce();},false,AD.fmt===key?'on':null))));
     else add(hint('👆 נוגעים בכיתוב או בתמונה כדי לערוך · שתי אצבעות או הקשה כפולה = זום'));}
   else if(T==='move')add(el('div',{class:'adqrow adqtools'},B('−','הקטנה',()=>adScale(adSel(),1/1.1)),B('+','הגדלה',()=>adScale(adSel(),1.1)),B('⟲','סיבוב שמאלה',()=>adRot(adSel(),-15)),B('⟳','סיבוב ימינה',()=>adRot(adSel(),15)),
-      B('⧉','שכפול',()=>adDup(adSel())),B('⬆','להעביר מעל השאר',()=>adFront(adSel())),B('🗑','מחיקה',()=>adRemove(adSel()))),L.k==='img'&&!ph?hint('✂️ כלי חיתוך: מחק, שחזור, קסם, אוטומטי, לאסו, צורה והחלקה — בסרגל למטה'):null);
+      B('⧉','שכפול',()=>adDup(adSel())),B('⬆','להעביר מעל השאר',()=>adFront(adSel())),B('🗑','מחיקה',()=>adRemove(adSel()))),L.k==='img'&&!ph?hint('✂️ חילוץ אובייקט, ▦ QR, ומחק/שחזור/קסם/אוטומטי/לאסו/צורה/החלקה — בסרגל למטה'):null,adSfRow(L));
   else if(T==='text'){const inp=el('input',{type:'text',id:'adqText',dir:'auto',value:L.text||'','aria-label':'הטקסט של הכיתוב',enterkeyhint:'done'});let sn=false;
     inp.addEventListener('input',()=>{if(!sn){adSnap();sn=true;}L.text=inp.value;adFit(L);adCommit();});
     inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();adQEdit(false);adQRebuild();}});
@@ -5772,6 +5777,8 @@ function adQ(){const pv=document.querySelector('.preview'),st=ADE&&ADE.c&&ADE.c.
     if(ln)sw.unshift(adQSw('none','בלי קו',!L.outline||L.outline==='none',()=>set('none')));
     add(el('div',{class:'adqrow adqscroll',role:'group','aria-label':ln?'צבע הקו של הכיתוב':'צבע הכתב'},adSeg('מה צובעים',[['fill','כתב'],['line','קו']],ADQ.mode,v=>{ADQ.mode=v;adQForce();}),
       ...sw,adQMore(ln?'צבע קו אחר':'צבע כתב אחר',ln?L.outline:L.color,(c,first)=>{const Tx=adSel();if(!Tx)return;if(first)adSnap();Tx[k2]=c;adCommit();})));}
+  else if(T==='extract')add(...adExCtx(L));
+  else if(T==='qr')add(...adQrCtx(L,f));
   else if(T==='erase'||T==='repair'){add(adSl('adslSize','גודל',6,160,ADT.size,'',v=>{ADT.size=v;adCurPreview();},adToolsSave),adSl('adslOff','הרחקה',0,140,ADT.off,'',v=>{ADT.off=v;adCurPreview();},adToolsSave),
       el('div',{class:'adqrow'},adSeg('קצה המכחול',[[35,'רך'],[70,'בינוני'],[100,'חד']],ADT.hard,v=>{ADT.hard=v;adToolsSave();adQForce();}),hint(T==='erase'?'העיגול מעל האצבע מוחק':'העיגול מעל האצבע מחזיר את המקור')));}
   else if(T==='magic')add(adSl('adslTol','סובלנות',0,100,ADT.tol,'',v=>{ADT.tol=v;},adToolsSave),hint('👆 נוגעים בצבע שרוצים למחוק — נמחק כל מה שדומה ומחובר. סובלנות גבוהה = יותר צבעים.'));
@@ -5971,9 +5978,248 @@ async function adQrGo(mode){const t=AD_QR.text.trim();if(!t){toast('כתבו ק�
   adEnsure();adSnap();AD.img=(AD.img||[]).concat([n]);const w=adW()*.3,L={id:adLid(),k:'img',name:nm,src:phId(n),si:AD.img.length-1,x:adW()/2,y:adH()/2,w,rot:0};AD.layers.push(L);if(ADE)ADE.sel=L.id;rebuild();toast('✓ נוסף QR באמצע — גוררים למקום');}
 function adQrSec(){const tg=adQrTarget(),tn=tg?adAssetName(tg,(AD.img||[]).indexOf(tg)):'';
   const inp=el('input',{type:'text',dir:'ltr',inputmode:'url',autocomplete:'off',value:AD_QR.text,placeholder:'https://…','aria-label':'הקישור או הטקסט ל-QR',on:{input:e=>{AD_QR.text=e.target.value;}}});
-  return sec('➕ QR חדש',false,row('קישור / טקסט',inp),el('div',{class:'inline'},col(AD_QR,'dark','צבע הקוד'),col(AD_QR,'light','צבע הרקע')),
+  const T0=adQrTargetL(),t0=T0&&adQrOf(T0.f),us=adQrUser(); // S-198: מוכנים + מה שזוהה
+  return sec('➕ QR חדש',false,t0?adQrLead(t0):null,el('h3',{class:'adh3'},'▦ QR מוכנים — לחיצה אחת'),adQrChips(),
+    us.length?el('div',{class:'adqrus'},us.map(p=>el('span',{class:'adqru'},el('span',{},'⭐ '+p.n+' · ',el('bdi',{dir:'ltr'},adQrShort(p.t).slice(0,32))),el('button',{type:'button',class:'btn ghost','aria-label':'מחיקת ה-QR המוכן '+p.n,title:'מחיקה',on:{click:()=>adQrUserDel(p)}},'🗑')))):null,
+    (AD.img||[]).some(f=>!f.qr&&f._qrs===undefined)?el('button',{type:'button',class:'btn ghost',on:{click:adQrScanAll}},'🔍 חיפוש QR בתמונות שבמודעה'):null,
+    el('h3',{class:'adh3'},'קישור אחר'),row('קישור / טקסט',inp),el('div',{class:'inline'},col(AD_QR,'dark','צבע הקוד'),col(AD_QR,'light','צבע הרקע')),
+    el('button',{type:'button',class:'btn ghost',on:{click:adQrSaveDlg}},'⭐ שמירה כמוכן'),
     el('div',{class:'adasgo'},tg?el('button',{type:'button',class:'btn gold',on:{click:()=>adQrGo('replace')}},'🔄 להחליף את: '+tn):null,el('button',{type:'button',class:'btn ghost',on:{click:()=>adQrGo('add')}},'➕ להוסיף כשכבה חדשה')),
     el('p',{class:'hint'},'ההחלפה נכנסת בדיוק למקום ולגודל של ה-QR הקיים (או של התמונה שבחרתם במודעה). כדאי לסרוק מהטלפון לפני שמפרסמים.'));}
+// ── S-198: ▦ QR מוכנים · 🔍 זיהוי QR בתמונה · ✂️ חילוץ אובייקט לשכבה (בקשת הושעיה 25/11: "מעלה מודעה כמעט גמורה — רק להחליף QR, לשנות טקסט, להזיז קצת") ──
+// • QR מוכנים: 4 קבועים + "⭐ שמירה כמוכן" (localStorage במכשיר, studio_ad_qr_presets). לחיצה אחת = QR בעיצוב של S-191 שמחליף את ה-QR שנבחר/שזוהה, או נוסף.
+// • זיהוי: vendor/jsQR.min.js (Apache-2.0, בלי CDN), נטען רק כשצריך, כמה גדלים. מחליפים "בתוך התמונה": מכסים את הקוד הישן מהסביבה (מילוי במכשיר)
+//   ושמים שכבת QR חדשה בדיוק מעליו — מיקום, גודל וסיבוב מארבע הפינות שהמפענח מחזיר. השוליים הבהירים נמדדים ונשמרים.
+// • חילוץ: נוגעים בנקודה — לפי צבע האובייקט (מילוי בצבע דומה, אפשר "כולל המסגרת") או לפי צבע המסגרת (כל מה שהמסגרת סוגרת, כולל חורים כמו טקסט).
+//   ➕/➖ מוסיפים/מורידים בנגיעות נוספות, הרחבה וריכוך. "✂️ הפוך לשכבה": שכבה חדשה עם הפיקסלים בדיוק (שקוף מסביב, באותו מקום),
+//   והם נמחקים מהבסיס במילוי הרמוני (פירמידה + ממוצע שכנים — מעבר צבעים ורקע חלק יוצאים נקיים). ✨ מילוי חכם = AIImage.inpaint (מחשב, בלחיצה).
+//   הכול פעולה אחת ב-↶/↷; התמונות החדשות נשמרות כמו כל תמונה (IndexedDB, תבנית, ענן, דרייב).
+const AD_QR_BUILTIN=[['🛒 חנות','https://www.hoshaya.co.il/store/'],['🟢 וואטסאפ','https://wa.me/972505918734'],['🎈 אתר הבלונים','https://www.hoshaya.co.il/'],['📱 משחקים בטלפון','https://www.hoshaya.co.il/play/']];
+const AD_QR_PK='studio_ad_qr_presets';
+function adQrUser(){try{const a=JSON.parse(localStorage.getItem(AD_QR_PK)||'[]');return Array.isArray(a)?a.filter(p=>p&&typeof p.t==='string'&&p.t&&typeof p.n==='string').slice(0,40):[];}catch(e){return[];}}
+function adQrUserSet(a){try{localStorage.setItem(AD_QR_PK,JSON.stringify(a));return true;}catch(e){toast('לא הצלחנו לשמור במכשיר הזה (אולי גלישה פרטית)');return false;}}
+const adQrPresets=()=>AD_QR_BUILTIN.map(([n,t])=>({n,t,b:1})).concat(adQrUser().map(p=>({n:'⭐ '+p.n,t:p.t})));
+const adQrShort=t=>String(t||'').replace(/^https?:\/\/(www\.)?/,'').replace(/\/$/,'');
+function adQrSaveDlg(){const t=(AD_QR.text||'').trim();if(!t){toast('כתבו קודם קישור או טקסט');return;}
+  const nm=el('input',{type:'text',maxlength:'30',autocomplete:'off',value:adQrShort(t).split('/')[0].slice(0,30),'aria-label':'שם ל-QR המוכן'});let m;
+  const go=()=>{const n=nm.value.trim();if(!n){nm.focus();return;}const a=adQrUser().filter(p=>p.t!==t&&p.n!==n);a.unshift({n,t});if(adQrUserSet(a.slice(0,40))){m._close();toast('⭐ נשמר כמוכן: '+n);adQForce();if(cur===Ad)rebuild();}};
+  nm.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();go();}});
+  m=adDlg('adQrSave','⭐ שמירה כ-QR מוכן',90,[el('p',{class:'hint',style:'margin:0 0 6px'},el('bdi',{dir:'ltr'},t)),row('שם',nm),el('div',{class:'adasgo'},el('button',{type:'button',class:'btn gold',on:{click:go}},'⭐ שמירה'))]);adFocus(m,'input');}
+async function adQrUserDel(p){if(!await adAsk('למחוק את ה-QR המוכן "'+p.n+'"?','🗑 למחוק',true))return;if(adQrUserSet(adQrUser().filter(x=>x.t!==p.t||x.n!==p.n))){adQForce();if(cur===Ad)rebuild();}}
+// ── 🔍 זיהוי ──
+let _jsqrP=null;
+function loadJsQR(){if(window.jsQR)return Promise.resolve();return _jsqrP||(_jsqrP=withTimeout(loadScript('../vendor/jsQR.min.js?v=1'),15000,'jsqr').catch(e=>{_jsqrP=null;throw e;}));}
+// f._qrs: undefined = לא נבדק · null = אין · {text,quad:[TL,TR,BR,BL] בפיקסלים של התמונה,n:מספר משבצות}
+async function adQrScan(f){if(!f||!f.img)return null;await loadJsQR();const im=f.img,W=natW(im),H=natH(im),M=Math.max(W,H),ks=[];
+  for(const s of[1200,800,1800,500]){const k=Math.min(1,s/M);if(!ks.some(q=>Math.abs(q-k)<.06))ks.push(k);}
+  for(const k of ks){const w=Math.max(1,Math.round(W*k)),h=Math.max(1,Math.round(H*k)),c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d',{willReadFrequently:true});
+    x.fillStyle='#fff';x.fillRect(0,0,w,h);x.drawImage(im,0,0,w,h);let r=null;try{r=jsQR(x.getImageData(0,0,w,h).data,w,h,{inversionAttempts:'attemptBoth'});}catch(e){}c.width=c.height=0;
+    if(r&&r.data){const Lc=r.location,q=['topLeftCorner','topRightCorner','bottomRightCorner','bottomLeftCorner'].map(n=>[Lc[n].x/k,Lc[n].y/k]);return{text:r.data,quad:q,n:17+4*(r.version||1)};}
+    await new Promise(ok=>setTimeout(ok,0));}
+  return null;}
+const AD_QRS={busy:0};
+async function adQrScanF(f,quiet){if(!f||f._qrBusy)return f&&f._qrs;f._qrBusy=1;AD_QRS.busy++;adQForce();
+  try{f._qrs=await adQrScan(f);}catch(e){f._qrs=undefined;if(!quiet)toast(/jsqr|timeout|Event/.test(String(e&&e.message||e))?'כלי זיהוי ה-QR לא נטען — נסו שוב':'הזיהוי נכשל — נסו שוב');}
+  finally{f._qrBusy=0;AD_QRS.busy--;adQForce();if(ADE)adDrawSoon();}return f._qrs;}
+// בהעלאה: בודקים כל תמונה חדשה (בלי QR שנוצר כאן) — ואם יש קוד, אומרים לאן הוא מוביל
+function adQrAuto(f){if(!f||f.qr||f._qrs!==undefined)return;setTimeout(async()=>{if(!(AD.img||[]).includes(f))return;const r=await adQrScanF(f,true);
+  if(r&&!adQrWhole(f))toast('🔍 נמצא QR בתמונה — מוביל ל-'+adQrShort(r.text).slice(0,40)+' · "QR" בסרגל מחליף אותו');},350);}
+const adQrWhole=f=>{const r=f&&f._qrs;if(f&&f.qr)return true;if(!r)return false;const q=r.quad,s=Math.hypot(q[1][0]-q[0][0],q[1][1]-q[0][1]);return s*s>.45*natW(f.img)*natH(f.img);}; // ה-QR הוא כל התמונה = נכס QR
+const adQrOf=f=>f?(f.qr||(f._qrs&&f._qrs.text)||''):'';
+// פיקסל בתמונה ← נקודה במודעה (דרך המיקום, הגודל והסיבוב של השכבה)
+function adImg2Ad(L,f,px,py){const[w,h]=adSize(L),lx=(px/natW(f.img)-.5)*w,ly=(py/natH(f.img)-.5)*h,a=(L.rot||0)*Math.PI/180;return[L.x+lx*Math.cos(a)-ly*Math.sin(a),L.y+lx*Math.sin(a)+ly*Math.cos(a)];}
+function adImgPx(f){const c=document.createElement('canvas');c.width=natW(f.img);c.height=natH(f.img);const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(f.img,0,0);return{c,x};}
+// QR בעיצוב של S-191 (H, צבעי AD_QR) עם שוליים בהירים לפי יחס (m = שוליים / צלע אזור הנתונים)
+async function adQrCanvas(text,m){await loadQR();qrcode.stringToBytes=qrcode.stringToBytesFuncs['UTF-8'];const q=qrcode(0,'H');q.addData(text,'Byte');q.make();
+  const n=q.getModuleCount(),cs=Math.ceil(1000/n),D=cs*n,mp=Math.max(0,Math.round(D*m)),c=document.createElement('canvas');c.width=c.height=D+2*mp;const x=c.getContext('2d');
+  x.fillStyle=AD_QR.light;x.fillRect(0,0,c.width,c.height);x.fillStyle=AD_QR.dark;for(let r=0;r<n;r++)for(let k=0;k<n;k++)if(q.isDark(r,k))x.fillRect(mp+k*cs,mp+r*cs,cs,cs);c._qr=1;return c;}
+// ההחלפה בתוך התמונה: מודדים את השוליים הבהירים, מכסים את הקוד מהסביבה, ומניחים QR חדש באותו ריבוע בדיוק
+async function adQrReplaceIn(L,f,text){const R=f._qrs;if(!R)return false;const q=R.quad,P=adImgPx(f),W=P.c.width,H=P.c.height,d=P.x.getImageData(0,0,W,H).data;
+  const C=[(q[0][0]+q[1][0]+q[2][0]+q[3][0])/4,(q[0][1]+q[1][1]+q[2][1]+q[3][1])/4],ux=q[1][0]-q[0][0],uy=q[1][1]-q[0][1],vx=q[3][0]-q[0][0],vy=q[3][1]-q[0][1];
+  const s=(Math.hypot(ux,uy)+Math.hypot(vx,vy)+Math.hypot(q[2][0]-q[3][0],q[2][1]-q[3][1])+Math.hypot(q[2][0]-q[1][0],q[2][1]-q[1][1]))/4,mod=s/R.n,a=Math.atan2(uy,ux);
+  const ca=Math.cos(a),sa=Math.sin(a),at=(e,t)=>{const X=Math.round(C[0]+e*ca-t*sa),Y=Math.round(C[1]+e*sa+t*ca);if(X<0||Y<0||X>=W||Y>=H)return null;const i=(Y*W+X)*4;return[d[i],d[i+1],d[i+2]];};
+  const ring=t=>{const o=[],h=s/2+t;for(let i=0;i<=24;i++){const u=-h+2*h*i/24;o.push(at(u,-h),at(u,h),at(-h,u),at(h,u));}return o;};
+  const lt=ring(mod*.5).filter(Boolean),med=k=>{const v=lt.map(p=>p[k]).sort((a,b)=>a-b);return v[v.length>>1]||255;},Lc=[med(0),med(1),med(2)];
+  let marg=0;for(let t=1;t<=mod*4;t++){const r=ring(t),ok=r.filter(p=>p&&Math.abs(p[0]-Lc[0])+Math.abs(p[1]-Lc[1])+Math.abs(p[2]-Lc[2])<90).length;if(ok<r.length*.97)break;marg=t;}
+  const lum=Lc[0]*.3+Lc[1]*.59+Lc[2]*.11;if(lum<140)marg=0; // אין שוליים בהירים (קוד על רקע צבעוני) — רק הקוד עצמו
+  let c;try{c=await adQrCanvas(text,marg/s);}catch(e){toast(/qr|timeout|Event/.test(String(e&&e.message||e))?'ספריית ה-QR לא נטענה — נסו שוב':'הטקסט ארוך מדי ל-QR');return true;}
+  // הבסיס: הריבוע של הקוד + חצי מהשוליים (לפחות משבצת) מתמלא מהסביבה — כך מסגרת לבנה נשארת לבנה, ובלי מסגרת — הרקע ממשיך
+  const hh=s/2+Math.max(1.5,Math.min(marg*.5,mod*1.2)),hole=document.createElement('canvas');hole.width=W;hole.height=H;const hx=hole.getContext('2d');hx.fillStyle='#000';hx.beginPath();
+  [[-hh,-hh],[hh,-hh],[hh,hh],[-hh,hh]].forEach(([e,t],i)=>{const X=C[0]+e*ca-t*sa,Y=C[1]+e*sa+t*ca;i?hx.lineTo(X,Y):hx.moveTo(X,Y);});hx.closePath();hx.fill();
+  const nb=adHoleFill(P.c,hole,0);P.c.width=P.c.height=0;
+  const side=s+2*marg,[X,Y]=adImg2Ad(L,f,C[0],C[1]),nm='QR — '+adQrShort(text).slice(0,30),n={img:c,name:nm,qr:text,edited:true};
+  const base={img:nb,name:f.name||'תמונה',edited:true};base._qrs=null;
+  adEnsure();adSnap();const imgs=(AD.img||[]).slice(),j=imgs.indexOf(f);imgs[j]=base;imgs.push(n);AD.img=imgs;L.src=phId(base);L.si=j;
+  const NL={id:adLid(),k:'img',name:nm,src:phId(n),si:imgs.length-1,x:X,y:Y,w:side*L.w/W,rot:(()=>{const rr=(L.rot||0)+a*180/Math.PI,q9=Math.round(rr/90)*90;return Math.abs(rr-q9)<.6?q9:rr;})()};AD.layers.splice(AD.layers.indexOf(L)+1,0,NL);
+  if(ADE){ADE.sel=NL.id;ADE.tool='move';ADE.ex=null;}rebuild();toast('✓ ה-QR הוחלף — מוביל ל-'+adQrShort(text).slice(0,40)+' · ↶ מבטל');adSay('ה-QR הוחלף');return true;}
+// לחיצה על QR מוכן: מחליף את ה-QR שנבחר / שזוהה בתמונה שנבחרה; בלי בחירה — הראשון שנמצא; אם אין — נוסף QR חדש
+function adQrTargetL(){const S=adSel();if(S&&S.k==='img'){const f=adImgOf(S);if(f&&(f.qr||f._qrs))return{L:S,f};}
+  for(const L of[...(AD.layers||[])].reverse()){if(L.k!=='img'||L.hid)continue;const f=adImgOf(L);if(f&&(f.qr||f._qrs))return{L,f};}return null;}
+async function adQrUse(text){adEnsure();AD_QR.text=text;const T=adQrTargetL();
+  if(T&&!adQrWhole(T.f))return adQrReplaceIn(T.L,T.f,text);
+  if(T){if(ADE)ADE.sel=T.L.id;return adQrGo('replace');}
+  const S=adSel();if(S&&S.k==='img'){const f=adImgOf(S);if(f&&f._qrs===undefined){const r=await adQrScanF(f);if(r)return adQrUse(text);}}
+  if(ADE)ADE.sel=null;return adQrGo('add');}
+function adQrChips(){const T=adQrTargetL(),lab=T?'החלפה ב-QR מוכן: ':'הוספת QR מוכן: ';
+  return el('div',{class:'adqrow adqscroll adqrchips',role:'group','aria-label':T?'QR מוכנים — לחיצה מחליפה':'QR מוכנים — לחיצה מוסיפה'},
+    ...adQrPresets().map(p=>el('button',{type:'button',class:'adchip','aria-label':lab+p.n+' ('+adQrShort(p.t)+')',title:p.t,on:{click:()=>adQrUse(p.t)}},p.n)),
+    el('button',{type:'button',class:'adchip','aria-label':'QR לקישור אחר',on:{click:adQrOther}},'✏️ קישור אחר'));}
+function adQrOther(){ADQ.open=null;if(adTabbed()){adSheet('assets');setTimeout(()=>{const i=document.querySelector('#controls input[aria-label="הקישור או הטקסט ל-QR"]');if(i){i.scrollIntoView({block:'center'});i.focus({preventScroll:true});}},120);return;}
+  const i=document.querySelector('input[aria-label="הקישור או הטקסט ל-QR"]');if(i){const d=i.closest('details');if(d)d.open=true;i.scrollIntoView({block:'center',behavior:'smooth'});i.focus({preventScroll:true});}}
+function adQrStatus(f){if(!f)return'';if(f._qrBusy)return'🔍 מחפש QR בתמונה…';const t=adQrOf(f);if(t)return null;return f._qrs===null?'לא נמצא QR בתמונה הזו. אפשר להוסיף QR מוכן כשכבה חדשה.':'';}
+function adQrLead(t){return el('p',{class:'adqhint adqrlead',role:'status'},'ה-QR מוביל ל-',el('bdi',{dir:'ltr'},t.length>60?t.slice(0,58)+'…':t));}
+// סימון הקוד שזוהה (ירוק) כשכלי ה-QR פתוח
+function adQrOverlay(x,L,s){const f=adImgOf(L),r=f&&f._qrs;if(!r||adQrWhole(f))return;x.save();x.beginPath();r.quad.forEach((p,i)=>{const q=adImg2Ad(L,f,p[0],p[1]);i?x.lineTo(q[0],q[1]):x.moveTo(q[0],q[1]);});x.closePath();
+  x.lineWidth=4/s;x.strokeStyle='#fff';x.stroke();x.lineWidth=2/s;x.setLineDash([6/s,4/s]);x.strokeStyle='#16A34A';x.stroke();x.restore();}
+// ── מילוי חור מהסביבה (במכשיר, בלי הורדה): פירמידה (ממוצע הידוע) ואז החלקה הרמונית בכל רמה. מעבר צבעים ליניארי יוצא מדויק, רקע חלק — חלק.
+// src = קנבס/תמונה; hole = קנבס באותו גודל, alpha>0 = למלא; grow = הרחבת החור בפיקסלים (שלא יישאר הילה של קצה)
+function adHoleFill(src,hole,grow){const W=natW(src),H=natH(src),hd=hole.getContext('2d',{willReadFrequently:true}).getImageData(0,0,W,H).data;
+  let x0=W,y0=H,x1=-1,y1=-1;for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(hd[(y*W+x)*4+3]>0){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;}
+  const out=document.createElement('canvas');out.width=W;out.height=H;const ox=out.getContext('2d',{willReadFrequently:true});ox.drawImage(src,0,0);if(x1<0)return out;
+  const g=Math.max(0,grow|0),pad=Math.max(8,Math.round(Math.max(x1-x0,y1-y0)*.12))+g,bx=Math.max(0,x0-pad),by=Math.max(0,y0-pad),bw=Math.min(W,x1+pad+1)-bx,bh=Math.min(H,y1+pad+1)-by,n=bw*bh;
+  let hm=new Uint8Array(n);for(let y=0;y<bh;y++)for(let x=0;x<bw;x++)hm[y*bw+x]=hd[((y+by)*W+x+bx)*4+3]>0?1:0;
+  if(g>0){const dt=adDT(hm,bw,bh);for(let i=0;i<n;i++)hm[i]=dt[i]<=g?1:0;}
+  const id=ox.getImageData(bx,by,bw,bh),d=id.data,ch=[0,1,2].map(c=>{const a=new Float32Array(n);for(let i=0;i<n;i++)a[i]=d[i*4+c];return a;});
+  const res=adHarmonic(ch,hm,bw,bh);for(let i=0;i<n;i++)if(hm[i]){d[i*4]=res[0][i];d[i*4+1]=res[1][i];d[i*4+2]=res[2][i];d[i*4+3]=255;}
+  ox.putImageData(id,bx,by);return out;}
+function adHarmonic(ch,hole,w,h){const lv=[];let cw=w,chh=h,S=ch.map(a=>{const b=new Float32Array(w*h);for(let i=0;i<w*h;i++)b[i]=hole[i]?0:a[i];return b;}),K=new Float32Array(w*h);for(let i=0;i<w*h;i++)K[i]=hole[i]?0:1;
+  lv.push({w,h,S,K});
+  while(cw>2||chh>2){const W2=Math.ceil(cw/2),H2=Math.ceil(chh/2),S2=[0,1,2].map(()=>new Float32Array(W2*H2)),K2=new Float32Array(W2*H2),P=lv[lv.length-1];
+    for(let y=0;y<chh;y++)for(let x=0;x<cw;x++){const i=y*cw+x,j=(y>>1)*W2+(x>>1);K2[j]+=P.K[i];for(let c=0;c<3;c++)S2[c][j]+=P.S[c][i];}
+    lv.push({w:W2,h:H2,S:S2,K:K2});cw=W2;chh=H2;let all=true;for(let i=0;i<K2.length;i++)if(!K2[i]){all=false;break;}if(all)break;}
+  let V=null;
+  for(let l=lv.length-1;l>=0;l--){const Lv=lv[l],w2=Lv.w,h2=Lv.h,n=w2*h2,v=[0,1,2].map(()=>new Float32Array(n)),unk=[];
+    for(let y=0;y<h2;y++)for(let x=0;x<w2;x++){const i=y*w2+x;
+      if(Lv.K[i]>0){for(let c=0;c<3;c++)v[c][i]=Lv.S[c][i]/Lv.K[i];}
+      else{unk.push(i);if(V){const U=lv[l+1],fx=Math.min(U.w-1,Math.max(0,(x+.5)/2-.5)),fy=Math.min(U.h-1,Math.max(0,(y+.5)/2-.5)),xa=Math.floor(fx),ya=Math.floor(fy),xb=Math.min(U.w-1,xa+1),yb=Math.min(U.h-1,ya+1),tx=fx-xa,ty=fy-ya;
+        for(let c=0;c<3;c++){const A=V[c];v[c][i]=(A[ya*U.w+xa]*(1-tx)+A[ya*U.w+xb]*tx)*(1-ty)+(A[yb*U.w+xa]*(1-tx)+A[yb*U.w+xb]*tx)*ty;}}}}
+    if(unk.length&&V){const it=l===0?80:40,om=1.8;for(let k=0;k<it;k++)for(const i of unk){const x=i%w2,y=(i-x)/w2,a=x>0?i-1:i,b=x<w2-1?i+1:i,cc=y>0?i-w2:i,dd=y<h2-1?i+w2:i;
+      for(let c=0;c<3;c++){const A=v[c],t=(A[a]+A[b]+A[cc]+A[dd])/4;A[i]+=om*(t-A[i]);}}}
+    V=v;}
+  return V;}
+// מרחק (צ'מפר 3-4) מכל פיקסל לפיקסל הקרוב שבו m=1; 0 בתוך
+function adDT(m,w,h){const n=w*h,d=new Float32Array(n),I=1e9;for(let i=0;i<n;i++)d[i]=m[i]?0:I;
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=y*w+x;let v=d[i];if(!v)continue;if(x>0)v=Math.min(v,d[i-1]+3);if(y>0){v=Math.min(v,d[i-w]+3);if(x>0)v=Math.min(v,d[i-w-1]+4);if(x<w-1)v=Math.min(v,d[i-w+1]+4);}d[i]=v;}
+  for(let y=h-1;y>=0;y--)for(let x=w-1;x>=0;x--){const i=y*w+x;let v=d[i];if(!v)continue;if(x<w-1)v=Math.min(v,d[i+1]+3);if(y<h-1){v=Math.min(v,d[i+w]+3);if(x<w-1)v=Math.min(v,d[i+w+1]+4);if(x>0)v=Math.min(v,d[i+w-1]+4);}d[i]=v;}
+  for(let i=0;i<n;i++)d[i]/=3;return d;}
+// ── ✂️ חילוץ אובייקט ──
+Object.assign(ADT,Object.assign({exMode:'frame',exBorder:true,exOp:'new',exTol:24,exGrow:1,exFea:1},(()=>{const o={};for(const k of['exMode','exBorder','exOp','exTol','exGrow','exFea'])if(k in ADT)o[k]=ADT[k];return o;})()));
+const AD_EX_MAX=2600; // צלע ארוכה לעבודה (מעל — מקטינים לבחירה ומגדילים בחזרה בחילוץ)
+function adExGet(L){const f=adImgOf(L);if(!f||!f.img)return null;const E=ADE.ex,id=phId(f);if(E&&E.lid===L.id&&E.fid===id)return E;
+  const W=natW(f.img),H=natH(f.img),k=Math.min(1,AD_EX_MAX/Math.max(W,H)),w=Math.max(1,Math.round(W*k)),h=Math.max(1,Math.round(H*k)),c=document.createElement('canvas');c.width=w;c.height=h;
+  const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(f.img,0,0,w,h);const px=x.getImageData(0,0,w,h).data;c.width=c.height=0;
+  return ADE.ex={lid:L.id,fid:id,W,H,k,w,h,px,seeds:[],sel:null,n:0,fin:null,ov:null,msg:''};}
+function adExFlood(E,x0,y0,T,col){const{w,h,px:P}=E,n=w*h,R=new Uint8Array(n),st=new Int32Array(n),j0=y0*w+x0;let r0,g0,b0;
+  if(col){[r0,g0,b0]=col;}else{const q=j0*4;if(P[q+3]<8)return R;r0=P[q];g0=P[q+1];b0=P[q+2];}
+  const ok=j=>{const q=j*4;return P[q+3]>=8&&Math.abs(P[q]-r0)<=T&&Math.abs(P[q+1]-g0)<=T&&Math.abs(P[q+2]-b0)<=T;};if(!ok(j0))return R;
+  let sp=0;R[j0]=1;st[sp++]=j0;while(sp){const j=st[--sp],x=j%w;
+    if(x>0&&!R[j-1]&&ok(j-1)){R[j-1]=1;st[sp++]=j-1;}if(x<w-1&&!R[j+1]&&ok(j+1)){R[j+1]=1;st[sp++]=j+1;}
+    if(j>=w&&!R[j-w]&&ok(j-w)){R[j-w]=1;st[sp++]=j-w;}if(j+w<n&&!R[j+w]&&ok(j+w)){R[j+w]=1;st[sp++]=j+w;}}
+  return R;}
+// כל מה ש-S סוגר (חורים כמו טקסט בתוך גלולה) — מה שלא מגיעים אליו מהקצה בלי לעבור דרך S
+function adExHoles(S,w,h){const n=w*h,O=new Uint8Array(n),st=new Int32Array(n);let sp=0;const push=j=>{if(!S[j]&&!O[j]){O[j]=1;st[sp++]=j;}};
+  for(let x=0;x<w;x++){push(x);push((h-1)*w+x);}for(let y=0;y<h;y++){push(y*w);push(y*w+w-1);}
+  while(sp){const j=st[--sp],x=j%w;if(x>0)push(j-1);if(x<w-1)push(j+1);if(j>=w)push(j-w);if(j+w<n)push(j+w);}
+  const R=new Uint8Array(n);let c=0;for(let i=0;i<n;i++)if(!O[i]){R[i]=1;c++;}R.cnt=c;return R;}
+const adExCount=R=>{let c=0;for(let i=0;i<R.length;i++)c+=R[i];return c;};
+const adExEdge=(R,w,h)=>{for(let x=0;x<w;x++)if(R[x]||R[(h-1)*w+x])return true;for(let y=0;y<h;y++)if(R[y*w]||R[y*w+w-1])return true;return false;};
+// מסגרת: הצבע של הקו שנגעו בו, מחובר ← וכל מה שהוא סוגר. קו דק קשה לפגוע בו באצבע — מחפשים צבע אחר קרוב שכן סוגר משהו
+function adExFrame(E,x0,y0,T,rad){const{w,h,px:P}=E,tries=[[x0,y0]],seen=new Set();
+  for(let r=1;r<=rad;r++)for(let a=0;a<16;a++){const t=a/16*Math.PI*2,x=Math.round(x0+Math.cos(t)*r),y=Math.round(y0+Math.sin(t)*r);if(x>=0&&y>=0&&x<w&&y<h)tries.push([x,y]);}
+  let n=0;for(const[x,y]of tries){const q=(y*w+x)*4,key=(P[q]>>5)+','+(P[q+1]>>5)+','+(P[q+2]>>5);if(seen.has(key)||P[q+3]<8)continue;seen.add(key);if(++n>8)break;
+    const B=adExFlood(E,x,y,T);if(adExEdge(B,w,h))continue;const R=adExHoles(B,w,h),b=adExCount(B);if(R.cnt>b*1.15&&R.cnt<w*h*.92)return R;}
+  return null;}
+// אובייקט: מילוי בצבע דומה + החורים שבתוכו; "כולל המסגרת" = גם הקו שמסביב (בצבע של מה שנוגע בו), עד רוחב מוגבל
+function adExObj(E,x0,y0,T,border){const{w,h,px:P}=E,n=w*h;let R=adExFlood(E,x0,y0,T);if(!adExCount(R))return null;
+  if(!adExEdge(R,w,h))R=adExHoles(R,w,h);
+  if(border){const hist=[0,1,2].map(()=>new Uint32Array(256));let m=0;
+    for(let j=0;j<n;j++){if(R[j])continue;const x=j%w;if(!((x>0&&R[j-1])||(x<w-1&&R[j+1])||(j>=w&&R[j-w])||(j+w<n&&R[j+w])))continue;const q=j*4;if(P[q+3]<8)continue;for(let c=0;c<3;c++)hist[c][P[q+c]]++;m++;}
+    if(m){const col=hist.map(H=>{let s=0;for(let v=0;v<256;v++){s+=H[v];if(s*2>=m)return v;}return 0;}),band=Math.max(4,Math.round(Math.min(w,h)*.03)),D=new Uint16Array(n),st=new Int32Array(n);let sp=0;
+      const ok=j=>{const q=j*4;return P[q+3]>=8&&Math.abs(P[q]-col[0])<=T*1.4&&Math.abs(P[q+1]-col[1])<=T*1.4&&Math.abs(P[q+2]-col[2])<=T*1.4;};
+      for(let j=0;j<n;j++)if(R[j]){D[j]=1;st[sp++]=j;}
+      const B=R.slice();let head=0;const qq=st;while(head<sp){const j=qq[head++],x=j%w,dv=D[j];if(dv>band)continue;
+        for(const k of[x>0?j-1:-1,x<w-1?j+1:-1,j>=w?j-w:-1,j+w<n?j+w:-1]){if(k<0||D[k])continue;if(ok(k)){D[k]=dv+1;B[k]=1;qq[sp++]=k;}else D[k]=65535;}}
+      R=adExEdge(B,w,h)?B:adExHoles(B,w,h);}}
+  return R;}
+function adExRecalc(E){const{w,h}=E,n=w*h,T=ADT.exTol*2.55;let S=null;E.msg='';
+  E.lastBad=false;for(const sd of E.seeds){const R=sd.mode==='frame'?adExFrame(E,sd.x,sd.y,T,sd.rad):adExObj(E,sd.x,sd.y,T,sd.border);
+    if(!R){E.msg=sd.mode==='frame'?'לא נמצאה כאן מסגרת סגורה — נוגעים בקו עצמו (אפשר להגדיל בזום), או עוברים ל"צבע האובייקט"':'כאן אין מה לבחור — נסו סובלנות גבוהה יותר';if(sd===E.seeds[E.seeds.length-1])E.lastBad=true;continue;}
+    if(!S||sd.op==='new'){S=R;continue;}if(sd.op==='add'){for(let i=0;i<n;i++)if(R[i])S[i]=1;}else{for(let i=0;i<n;i++)if(R[i])S[i]=0;}}
+  E.sel=S;E.n=S?adExCount(S):0;if(E.n>n*.9)E.msg='נבחרה כמעט כל התמונה — נסו סובלנות נמוכה יותר';adExFinal(E);}
+// הבחירה הסופית (הרחבה + ריכוך) בתוך מלבן סביבה: a = שקיפות 0..255, sd = מרחק חתום מהקצה (לקו המתאר)
+function adExFinal(E){E.fin=null;E.ov=null;if(!E.n)return;const{w,h,sel:S}=E,g=ADT.exGrow,fe=ADT.exFea,m=Math.max(0,g)+fe+3;let x0=w,y0=h,x1=-1,y1=-1;
+  for(let y=0;y<h;y++){const r=y*w;for(let x=0;x<w;x++)if(S[r+x]){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;}}
+  const bx=Math.max(0,x0-m),by=Math.max(0,y0-m),bw=Math.min(w,x1+m+1)-bx,bh=Math.min(h,y1+m+1)-by,n=bw*bh,In=new Uint8Array(n),Out=new Uint8Array(n);
+  for(let y=0;y<bh;y++)for(let x=0;x<bw;x++){const v=S[(y+by)*w+x+bx];In[y*bw+x]=v;Out[y*bw+x]=v?0:1;}
+  const dO=adDT(In,bw,bh),dI=adDT(Out,bw,bh),a=new Uint8ClampedArray(n),sd=new Float32Array(n);let x2=bw,y2=bh,x3=-1,y3=-1;
+  for(let i=0;i<n;i++){const s=(In[i]?.5-dI[i]:dO[i]-.5)-g;sd[i]=s;const v=fe>0?Math.max(0,Math.min(1,.5-s/fe)):(s<=0?1:0);a[i]=Math.round(v*255);
+    if(a[i]){const x=i%bw,y=(i-x)/bw;if(x<x2)x2=x;if(x>x3)x3=x;if(y<y2)y2=y;if(y>y3)y3=y;}}
+  E.fin=x3<0?null:{bx,by,bw,bh,a,sd,tb:[bx+x2,by+y2,x3-x2+1,y3-y2+1]};}
+// התצוגה: מילוי ורוד שקוף + קו מתאר לבן/ורוד בעובי קבוע על המסך (נבנה מחדש רק כשהזום משתנה הרבה)
+function adExOverlay(x,L,s){const E=ADE.ex;if(!E||E.lid!==L.id||!E.fin)return;const F=E.fin,f=adImgOf(L);if(!f)return;const[w,h]=adSize(L),pw=s*w/E.w,t=Math.max(1,Math.min(14,Math.round(2.2/pw)));
+  if(!E.ov||E.ov.t!==t){const c=document.createElement('canvas');c.width=F.bw;c.height=F.bh;const cx=c.getContext('2d'),id=cx.createImageData(F.bw,F.bh),d=id.data;
+    for(let i=0;i<F.a.length;i++){const s2=F.sd[i];if(s2>0)continue;const o=i*4;if(s2>-t/2){d[o]=d[o+1]=d[o+2]=255;d[o+3]=255;}else if(s2>-t){d[o]=225;d[o+1]=29;d[o+2]=116;d[o+3]=255;}else{d[o]=225;d[o+1]=29;d[o+2]=116;d[o+3]=90;}}
+    cx.putImageData(id,0,0);E.ov={t,c};}
+  x.save();x.translate(L.x,L.y);x.rotate((L.rot||0)*Math.PI/180);x.imageSmoothingEnabled=pw<1;x.drawImage(E.ov.c,-w/2+F.bx/E.w*w,-h/2+F.by/E.h*h,F.bw/E.w*w,F.bh/E.h*h);x.restore();}
+// נגיעה: אצבע אחת = נקודה (לא נגררת); כשמוגדל — גרירה מזיזה את התצוגה
+function adExDown(e){e.preventDefault();try{ADE.c.setPointerCapture(e.pointerId);}catch(_){}ADE.exT={id:e.pointerId,x:e.clientX,y:e.clientY,cx:ADE.cx,cy:ADE.cy,moved:false};}
+function adExMove(e){const T=ADE.exT;if(!T||e.pointerId!==T.id)return;e.preventDefault();const dx=e.clientX-T.x,dy=e.clientY-T.y;if(Math.hypot(dx,dy)>9)T.moved=true;if(T.moved&&ADE.z>1){ADE.cx=T.cx-dx/ADE.v.s;ADE.cy=T.cy-dy/ADE.v.s;adDraw();}}
+function adExUp(e){const T=ADE.exT;if(!T||e.pointerId!==T.id)return;ADE.exT=null;if(e.type!=='pointerup'||T.moved)return;const r=ADE.c.getBoundingClientRect(),v=ADE.v;adExTap(adSel(),(e.clientX-r.left-v.ox)/v.s,(e.clientY-r.top-v.oy)/v.s,e.pointerType!=='mouse');}
+function adExTap(L,ax,ay,touch){if(!L||L.k!=='img')return;const E=adExGet(L);if(!E)return;const[w,h]=adSize(L),[lx,ly]=adLocal(L,ax,ay),X=Math.floor((lx/w+.5)*E.w),Y=Math.floor((ly/h+.5)*E.h);
+  if(X<0||Y<0||X>=E.w||Y>=E.h){adSay('נוגעים בתוך התמונה');return;}
+  const op=E.seeds.length?ADT.exOp:'new',rad=Math.max(2,Math.round((touch?16:8)/(ADE.v.s*w/E.w)));if(op==='new')E.seeds=[];
+  E.seeds.push({x:X,y:Y,op,mode:ADT.exMode,border:!!ADT.exBorder,rad});E.msg='מחפש…';adQForce();
+  setTimeout(()=>{if(ADE.ex!==E)return;adExRecalc(E);if(E.lastBad){E.seeds.pop();E.lastBad=false;}adDraw();adQForce();
+    adSay(E.n?'נבחר אזור — '+(E.fin?E.fin.tb[2]+'×'+E.fin.tb[3]:'')+' פיקסלים. ✂️ "הפוך לשכבה" מפריד אותו':E.msg);
+  },16);}
+let _adExT=0;function adExSoon(){clearTimeout(_adExT);_adExT=setTimeout(()=>{const E=ADE&&ADE.ex;if(!E||!E.seeds.length)return;adExRecalc(E);adDraw();adQForce();},60);}
+function adExClear(){if(ADE&&ADE.ex){ADE.ex.seeds=[];ADE.ex.sel=null;ADE.ex.n=0;ADE.ex.fin=null;ADE.ex.ov=null;ADE.ex.msg='';}adDraw();adQForce();adSay('הבחירה נוקתה');}
+// ✂️ הפוך לשכבה: הפיקסלים בדיוק (שקוף מסביב) כשכבה חדשה באותו מקום, והבסיס מתמלא מהסביבה — פעולה אחת ב-↶
+function adExCommit(){const L=adSel(),E=ADE&&ADE.ex;if(!L||!E||!E.fin||E.lid!==L.id)return;const f=adImgOf(L);if(!f||phId(f)!==E.fid)return;
+  if((AD.img||[]).length>=AD_MAXIMG){toast('יש כבר '+AD_MAXIMG+' תמונות — מחקו אחת קודם');return;}
+  const F=E.fin,W=E.W,H=E.H,K=1/E.k,am=document.createElement('canvas');am.width=F.bw;am.height=F.bh;{const ax=am.getContext('2d'),id=ax.createImageData(F.bw,F.bh);for(let i=0;i<F.a.length;i++)id.data[i*4+3]=F.a[i];ax.putImageData(id,0,0);}
+  const hole=document.createElement('canvas');hole.width=W;hole.height=H;{const hx=hole.getContext('2d');hx.imageSmoothingEnabled=E.k<1;hx.drawImage(am,F.bx*K,F.by*K,F.bw*K,F.bh*K);}
+  const tb=F.tb,x0=Math.max(0,Math.floor(tb[0]*K)),y0=Math.max(0,Math.floor(tb[1]*K)),bw=Math.min(W,Math.ceil((tb[0]+tb[2])*K))-x0,bh=Math.min(H,Math.ceil((tb[1]+tb[3])*K))-y0;
+  const oc=document.createElement('canvas');oc.width=bw;oc.height=bh;const ox=oc.getContext('2d');ox.drawImage(f.img,-x0,-y0);ox.globalCompositeOperation='destination-in';ox.drawImage(hole,-x0,-y0);ox.globalCompositeOperation='source-over';
+  const nb=adHoleFill(f.img,hole,2+Math.ceil(ADT.exFea/2)),cnt=(AD.layers||[]).filter(o=>o.ex).length+1,nm='✂️ חלק '+cnt;
+  const n={img:oc,name:nm,edited:true,_opq:false},base={img:nb,name:f.name||'תמונה',edited:true},[X,Y]=adImg2Ad(L,f,x0+bw/2,y0+bh/2);
+  adSnap();const imgs=(AD.img||[]).slice(),j=imgs.indexOf(f);imgs[j]=base;imgs.push(n);AD.img=imgs;L.src=phId(base);L.si=j;
+  const NL={id:adLid(),k:'img',name:nm,ex:1,src:phId(n),si:imgs.length-1,x:X,y:Y,w:bw*L.w/W,rot:L.rot||0};AD.layers.splice(AD.layers.indexOf(L)+1,0,NL);
+  ADE.hole={lid:NL.id,fid:phId(base),src:f.img,mask:hole,name:f.name||'תמונה'};ADE.ex=null;ADE.sel=NL.id;ADE.tool='move';Object.assign(AD_SF,{busy:false,ac:null,msg:'',err:''});
+  rebuild();toast('✂️ הופרד לשכבה — גוררים כדי להזיז · ↶ מבטל');adSay('הופרד לשכבה חדשה: '+nm);}
+// ✨ מילוי חכם — AIImage.inpaint (MI-GAN במכשיר, כמו "🧽 למחוק בחינם"). רק בלחיצה; התקדמות, עצירה, "נסו שוב". בטלפון לא מוצע (S-123: איטי מדי)
+const AD_SF={busy:false,ac:null,msg:'',err:'',pct:0};
+function adSfUi(){const m=document.getElementById('adSfMsg'),b=document.getElementById('adSfBar');if(m)m.textContent=AD_SF.err||AD_SF.msg||'';if(b){b.hidden=!AD_SF.busy;const fl=b.firstChild;if(AD_SF.pct>=0){b.classList.remove('busy');fl.style.width=AD_SF.pct+'%';}else b.classList.add('busy');}}
+async function adSmartFill(){const Hh=ADE&&ADE.hole;if(!Hh||AD_SF.busy)return;const f=(AD.img||[]).find(x=>phId(x)===Hh.fid);if(!f){toast('הרקע השתנה מאז — המילוי החכם לא זמין');return;}
+  const ac=new AbortController();Object.assign(AD_SF,{busy:true,ac,err:'',msg:'מכין…',pct:-1});adQForce();adSfUi();
+  try{await loadAI();const r=await AIImage.inpaint(Hh.src,Hh.mask,{signal:ac.signal,onProgress:p=>{if(ac!==AD_SF.ac)return;if(p.phase==='download'){AD_SF.pct=p.total?Math.round(p.loaded/p.total*100):0;AD_SF.msg='מוריד את המנוע — '+AD_SF.pct+'% (פעם אחת בלבד)';}else{AD_SF.pct=-1;AD_SF.msg='ממלא את הרקע…';}adSfUi();}});
+    if(ac.signal.aborted||ac!==AD_SF.ac)return;const nb={img:r.canvas,name:Hh.name,edited:true};Object.assign(AD_SF,{busy:false,ac:null,msg:'✓ הרקע מולא מחדש. ↶ מחזיר את המילוי הקודם',err:''});
+    adReplaceImg(f,[nb]);Hh.fid=phId(nb);aiTrack('ai-inpaint','ok · ad-extract · '+(r.ms||0)+'ms');}
+  catch(e){if(ac!==AD_SF.ac)return;const ab=e&&e.name==='AbortError';Object.assign(AD_SF,{busy:false,ac:null,msg:ab?'בוטל — הרקע לא השתנה':'',err:ab?'':'⚠️ '+(window.AIImage?AIImage.heMessage(e):'הכלי לא נטען — בדקו חיבור ונסו שוב')});adQForce();adSfUi();}}
+function adSfStop(){if(AD_SF.ac){AD_SF.ac.abort();try{window.AIImage&&AIImage.cancelAll&&AIImage.cancelAll();}catch(e){}}Object.assign(AD_SF,{busy:false,ac:null,msg:'בוטל — הרקע לא השתנה',err:''});adQForce();}
+// ── הפקדים בסרגל (טלפון ומחשב) ──
+const adQB=(t,a,fn,dis,cls)=>el('button',{type:'button','aria-label':a,title:a,class:cls||null,disabled:dis?'':null,on:{click:()=>fn()}},t);
+function adExCtx(L){const E=ADE.ex&&ADE.ex.lid===L.id?ADE.ex:null,has=!!(E&&E.fin),h=t=>el('p',{class:'adqhint',id:'adExMsg',role:'status'},t),set=(k,v)=>{ADT[k]=v;adToolsSave();adQForce();};
+  const out=[el('div',{class:'adqrow'},adSeg('איך מזהים',[['frame','🔲 לפי המסגרת'],['obj','🎨 לפי האובייקט']],ADT.exMode,v=>set('exMode',v)),
+      ADT.exMode==='obj'?el('button',{type:'button','aria-pressed':String(!!ADT.exBorder),class:ADT.exBorder?'on':null,'aria-label':'כולל המסגרת שמסביב',title:'כולל המסגרת שמסביב',on:{click:()=>set('exBorder',!ADT.exBorder)}},(ADT.exBorder?'☑':'☐')+' כולל המסגרת'):null),
+    el('div',{class:'adqrow'},adSeg('מה עושה הנגיעה',[['new','👆 חדש'],['add','➕ הוספה'],['sub','➖ הסרה']],ADT.exOp,v=>set('exOp',v)),
+      adQB('✂️ הפוך לשכבה','הפוך את האזור המסומן לשכבה נפרדת',adExCommit,!has,'adgo'),has?adQB('✕','ניקוי הבחירה',adExClear):null),
+    adSl('adslExTol','סובלנות',0,100,ADT.exTol,'',v=>{ADT.exTol=v;adExSoon();},adToolsSave)];
+  if(has)out.push(adSl('adslExGrow','הרחבה',-4,12,ADT.exGrow,'',v=>{ADT.exGrow=v;const E2=ADE.ex;if(E2){adExFinal(E2);adDrawSoon();}},adToolsSave),
+    adSl('adslExFea','ריכוך',0,8,ADT.exFea,'',v=>{ADT.exFea=v;const E2=ADE.ex;if(E2){adExFinal(E2);adDrawSoon();}},adToolsSave));
+  out.push(h(E&&E.msg?E.msg:has?'✓ מסומן '+E.fin.tb[2]+'×'+E.fin.tb[3]+' — ➕/➖ ונגיעה מתקנים · "✂️ הפוך לשכבה" מפריד אותו מהתמונה':
+    ADT.exMode==='frame'?'👆 נוגעים בקו המסגרת (הגלולה, המסגרת הלבנה…) — נבחר כל מה שבתוכה, כולל הטקסט. זום עוזר לפגוע בקו דק':'👆 נוגעים באובייקט — נבחר כל מה שמחובר ובצבע דומה, עם מה שבתוכו'));
+  return out;}
+function adQrCtx(L,f){const t=adQrOf(f),st=adQrStatus(f),out=[];
+  if(t)out.push(adQrLead(t));else if(st)out.push(el('p',{class:'adqhint',role:'status'},st));
+  out.push(el('div',{class:'adqrow'},adQB(f&&f._qrBusy?'⏳ מחפש…':'🔍 חפש QR','חיפוש QR בתמונה',()=>{if(f){f._qrs=undefined;adQrScanF(f);}},!f||!!f._qrBusy),
+    el('p',{class:'adqhint'},t?(adQrWhole(f)?'לוחצים על QR מוכן — מחליף את התמונה הזו באותו מקום':'לוחצים על QR מוכן — הקוד הישן נמחק מהתמונה והחדש נכנס בדיוק במקומו'):'לוחצים על QR מוכן — נוסף כשכבה חדשה')),adQrChips());
+  return out;}
+function adSfRow(L){const Hh=ADE&&ADE.hole;if(!Hh||Hh.lid!==L.id||adPhone()||!(AD.img||[]).some(x=>phId(x)===Hh.fid))return null;
+  const bar=el('div',{class:'labar',id:'adSfBar',hidden:AD_SF.busy?null:''},el('div',{class:'lafill'}));setTimeout(adSfUi,0);
+  return el('div',{class:'adqctx'},el('div',{class:'adqrow'},AD_SF.busy?adQB('✕ עצירה','עצירת המילוי החכם',adSfStop):adQB(AD_SF.err?'🔄 נסו שוב':'✨ מילוי חכם לרקע','מילוי חכם של הרקע שמתחת (AI במכשיר, הורדה של ~27MB בפעם הראשונה)',adSmartFill,false,'adgo'),
+    el('p',{class:'adqhint',id:'adSfMsg',role:'status'},AD_SF.err||AD_SF.msg||'הרקע מולא מהסביבה. לתמונה מורכבת — ✨ מילוי חכם (במכשיר, ~27MB פעם אחת)')),bar);}
+function adQrScanAll(){(AD.img||[]).forEach(f=>{if(!f.qr&&f._qrs===undefined&&!f._qrBusy)adQrScanF(f,true);});}
 const AD_TABS=[['edit','✏️ עריכה'],['tpl','📑 תבניות'],['assets','📦 נכסים'],['out','⬇️ הורדה']];let AD_TAB=(()=>{const t=adViewLoad().tab;return['edit','tpl','assets','out'].includes(t)?t:'edit';})(); // S-195. S-196: הלשונית שורדת רענון
 const AD_TAB_SHUT=new Set(['sec:📐 גודל','sec:🗂️ שכבות','sec:✂️ עריכת תמונה','sec:💬 מה לשנות? (במילים)','sec:🪄 תמונה חדשה מ-AI']);
 const Ad={id:'ad',printShop:false,label:'📣 פרסומת', // S-115: לא adminOnly — שותף נכנס ב-studio/?p=ad עם קוד (studio_ai_codes)
