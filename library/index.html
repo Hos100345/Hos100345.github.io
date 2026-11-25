@@ -100,7 +100,7 @@
     .v-meta{color:var(--c-muted);margin-bottom:var(--sp-3)}
     .rate{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-2) var(--sp-4);background:var(--c-accent-soft);border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4);margin-bottom:var(--sp-3)}
     .rate .q{font-weight:800;color:var(--c-brand)}
-    .stars{display:flex;gap:2px;direction:ltr}
+    .stars{display:flex;gap:2px}
     .star{width:var(--tap);height:var(--tap);font-size:1.9rem;line-height:1;color:var(--c-muted);border-radius:var(--r-sm)}
     .star[data-on="1"]{color:var(--c-warn)}
     .star[aria-pressed="true"]{text-shadow:0 0 0 currentColor;outline:2px solid var(--c-brand);outline-offset:-2px}
@@ -695,7 +695,12 @@ function hasStoredSession(){
 }
 function initAdmin(){
   if(!hasStoredSession())return;
-  ensureSb().then(function(){return sb.auth.getSession();}).then(function(r){session=r.data.session;if(session)checkAdmin(false);}).catch(function(){});
+  ensureSb().then(function(){return sb.auth.getSession();}).then(function(r){
+    session=r.data.session;
+    // מנויי המחולל באותו דומיין מחוברים גם הם ל-Supabase — שואלים את השרת רק כשהמייל ברשימת המנהלים (ההרשאה האמיתית בשרת)
+    var em=(session&&session.user&&session.user.email||'').toLowerCase(),list=(CFG.adminEmails||[]).map(function(x){return String(x).toLowerCase();});
+    if(session&&(!list.length||list.indexOf(em)>=0))checkAdmin(false);
+  }).catch(function(){});
 }
 var QS={st:'pending',page:0,items:[],more:false,counts:{},code:null};
 function checkAdmin(loud){

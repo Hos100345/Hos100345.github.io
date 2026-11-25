@@ -79,7 +79,7 @@ async function stub(page, st) {
 const ADMIN_INIT = () => {
   localStorage.setItem('sb-test-auth-token', '{}');
   window.supabase = { createClient: () => ({ auth: {
-    getSession: async () => ({ data: { session: { access_token: 'tok.admin.x' } } }),
+    getSession: async () => ({ data: { session: { access_token: 'tok.admin.x', user: { email: 'hoshaya@gmail.com' } } } }),
     onAuthStateChange() {}, signOut: async () => ({}), signInWithOtp: async () => ({}), verifyOtp: async () => ({ data: {} }),
   } }) };
 };
