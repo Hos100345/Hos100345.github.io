@@ -106,6 +106,16 @@
     .star[aria-pressed="true"]{text-shadow:0 0 0 currentColor;outline:2px solid var(--c-brand);outline-offset:-2px}
     .rate .avg{font-size:var(--fs-sm);color:var(--c-muted);width:100%}
     .v-acts{display:flex;flex-wrap:wrap;gap:var(--sp-2)}
+    /* W-76: תיוגים */
+    .tagbox{background:var(--c-surface-2,var(--c-primary-soft));border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4);margin-bottom:var(--sp-3)}
+    .tagbox .q{font-weight:800;color:var(--c-brand);display:block;margin-bottom:var(--sp-2)}
+    .tagbox .q small{font-weight:500;color:var(--c-muted)}
+    .tagbox .chips{margin-bottom:var(--sp-2)}
+    .tagbox .chip[aria-pressed="true"]::before{content:"✓ "}
+    .tagbox .row{display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:center}
+    .tagbox .row .inp{flex:1;min-width:140px}
+    .tagbox .tx{min-width:var(--tap);min-height:var(--tap);border:0;background:none;color:var(--c-bad);font-size:1.1rem;cursor:pointer}
+    .qi .tagbox{margin-top:var(--sp-2)}
 
     /* ── טופס העלאה ── */
     .field{margin-bottom:var(--sp-4)}
@@ -276,6 +286,7 @@
       <div class="stars" id="stars" role="group" aria-labelledby="rateQ"></div>
       <p class="avg" id="vAvg" role="status" aria-live="polite"></p>
     </div>
+    <div id="vTagBox"></div>
     <div class="v-acts">
       <button type="button" class="ds-btn ds-btn--secondary sm" id="vShare" data-share>📤 שלחו לחבר</button>
       <a class="ds-btn ds-btn--primary sm" id="vDesign" href="../studio/?p=ad">🎨 עצבו בעצמכם</a>
@@ -507,7 +518,7 @@ function openView(it){
   $('vShare').setAttribute('data-share-url','./?d='+it.id);
   $('vDesign').href='../studio/?p=ad&lib='+encodeURIComponent(it.id); // S-200: העיצוב נפתח בעורך הפרסומת כרקע
   $('vShare').setAttribute('data-share-text',(it.title||'עיצוב')+' — מספריית העיצובים של עיצובישי ⭐');
-  drawStars();show($('dlgView'));
+  drawStars();var tb=$('vTagBox');tb.textContent='';tb.appendChild(tagBox(it,false));show($('dlgView'));
   try{history.replaceState(null,'','?d='+it.id);}catch(e){}
 }
 $('viewClose').addEventListener('click',function(){hide($('dlgView'));try{history.replaceState(null,'',location.pathname);}catch(e){}});
@@ -524,6 +535,63 @@ function rate(n){
     if(prev)votes[it.id]=prev;else delete votes[it.id];LS.set('dl_votes',JSON.stringify(votes));
     if(cur===it){drawStars();$('vAvg').textContent='⚠️ הדירוג לא נשמר: '+e.message;}
   });
+}
+
+// ════════ תיוגים (W-76) ════════
+// "למי זה מתאים?" — לוחצים על תיוג מוכן או מוסיפים חדש. כמה שרוצים. צריך את קוד השותף (נשמר בטלפון), או כניסת מנהל.
+var TAG_PRESETS=['בן','בת','בוס','בוסית','יפה','אמא','אבא','אישה','בעל','סבתא','סבא','מורה'];
+var myTags={};try{myTags=JSON.parse(LS.get('dl_tags')||'{}')||{};}catch(e){myTags={};}
+function tagBox(it,adminMode){
+  var box=el('div',{class:'tagbox'}),uid='tg'+it.id.slice(0,8);
+  box.appendChild(el('span',{class:'q',id:uid+'q'},['🏷️ למי זה מתאים? ',el('small',{text:adminMode?'(מנהל — ✕ מוחק תיוג מהעיצוב)':'לחצו על כמה שרוצים, או הוסיפו מילה משלכם'})]));
+  var chips=el('div',{class:'chips',role:'group','aria-labelledby':uid+'q'});box.appendChild(chips);
+  var inp=el('input',{class:'inp',id:uid+'i',maxlength:'24',placeholder:'תיוג חדש, למשל: סבתא',autocomplete:'off','aria-label':'תיוג חדש'});
+  var add=el('button',{type:'button',class:'ds-btn ds-btn--secondary sm',text:'➕ הוספה'});
+  box.appendChild(el('div',{class:'row'},[inp,add]));
+  var codeRow=el('div',{class:'row',hidden:true,style:'margin-top:var(--sp-2)'});
+  var cin=el('input',{class:'inp',id:uid+'c',maxlength:'40',autocomplete:'off',autocapitalize:'characters',spellcheck:'false',placeholder:'קוד שותף','aria-label':'קוד שותף לתיוג'});
+  var cok=el('button',{type:'button',class:'ds-btn ds-btn--primary sm',text:'🔑 שמירת הקוד'});
+  codeRow.appendChild(el('span',{text:'🔑 כדי לתייג צריך את הקוד שקיבלתם מהושעיה:'}));codeRow.appendChild(cin);codeRow.appendChild(cok);box.appendChild(codeRow);
+  var msg=el('p',{class:'msg',role:'status','aria-live':'polite'});box.appendChild(msg);
+  var pending=null;
+  function mine(){return myTags[it.id]||[];}
+  function draw(){
+    chips.textContent='';var t=it.tags||{},seen={};
+    var list=Object.keys(t).sort(function(a,b){return (t[b]||0)-(t[a]||0);});
+    TAG_PRESETS.forEach(function(x){if(list.indexOf(x)<0)list.push(x);});
+    list.forEach(function(tag){
+      if(seen[tag])return;seen[tag]=1;
+      var on=mine().indexOf(tag)>=0,n=t[tag]||0;
+      var b=el('button',{type:'button',class:'chip','aria-pressed':String(on),onclick:function(){send(tag,!on);}},[tag+' ']);
+      if(n)b.appendChild(el('small',{text:'('+n+')'}));
+      chips.appendChild(b);
+      if(adminMode&&n)chips.appendChild(el('button',{type:'button',class:'tx','aria-label':'למחוק את התיוג "'+tag+'" מהעיצוב',text:'✕',onclick:function(){untag(tag);}}));
+    });
+  }
+  function setMine(tag,on){var m=mine().filter(function(x){return x!==tag;});if(on)m.push(tag);if(m.length)myTags[it.id]=m;else delete myTags[it.id];LS.set('dl_tags',JSON.stringify(myTags));}
+  function send(tag,on){
+    tag=String(tag||'').replace(/^#+/,'').replace(/\s+/g,' ').trim().slice(0,24);if(!tag){say(msg,'כתבו מילה לתיוג','bad');inp.focus();return;}
+    var code=adminMode?'':(LS.get('dl_code')||'');
+    if(!code&&!isAdmin){pending=[tag,on];codeRow.hidden=false;say(msg,'');cin.focus();return;}
+    setMine(tag,on);draw();say(msg,'שומר…');
+    api({action:'tag',id:it.id,tag:tag,on:on,device:DEVICE,code:code||undefined},{admin:!code&&isAdmin}).then(function(j){
+      it.tags=j.tags||{};draw();say(msg,on?'✓ תויג: '+j.tag:'הוסר: '+j.tag,'ok');inp.value='';
+      if(LIB.byId[it.id]&&LIB.byId[it.id]!==it)LIB.byId[it.id].tags=it.tags;
+    },function(e){
+      setMine(tag,!on);draw();say(msg,'⚠️ '+e.message,'bad');
+      if(e.reason==='bad_code'||e.reason==='no_code'){LS.del('dl_code');pending=[tag,on];codeRow.hidden=false;cin.setAttribute('aria-invalid','true');cin.focus();}
+    });
+  }
+  function untag(tag){
+    say(msg,'מוחק…');
+    api({action:'admin_untag',id:it.id,tag:tag},{admin:true}).then(function(j){it.tags=j.tags||{};setMine(tag,false);draw();say(msg,'נמחק: '+tag,'ok');},function(e){say(msg,'⚠️ '+e.message,'bad');});
+  }
+  add.addEventListener('click',function(){send(inp.value,true);});
+  inp.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();send(inp.value,true);}});
+  function codeOk(){var v=cin.value.trim();if(!v){cin.setAttribute('aria-invalid','true');cin.focus();return;}cin.removeAttribute('aria-invalid');LS.set('dl_code',v);codeRow.hidden=true;if(pending){var p=pending;pending=null;send(p[0],p[1]);}}
+  cok.addEventListener('click',codeOk);
+  cin.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();codeOk();}});
+  draw();return box;
 }
 
 // ════════ הוספת עיצוב ════════
@@ -800,6 +868,7 @@ function qCard(it){
     el('div',null,[el('label',{for:uid+'c',text:'קטגוריה'}),ca]),
     el('div',{style:'grid-column:1/-1'},[el('label',{for:uid+'n',text:'הערה / תיקון (פנימי)'}),co])
   ]));
+  c.appendChild(tagBox(it,true)); // W-76
   var msg=el('p',{class:'msg',role:'status','aria-live':'polite'});
   function edits(){return {title:ti.value,category:ca.value,correction:co.value};}
   function act(patch,doneTxt,btn){
