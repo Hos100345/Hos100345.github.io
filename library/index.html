@@ -435,11 +435,12 @@ document.querySelectorAll('.seg button').forEach(function(b){
   });
 });
 function cardOf(it){
-  var b=el('button',{type:'button',class:'card','aria-label':(it.title||'עיצוב')+' · '+it.category+' · '+ratingLabel(it)});
+  var b=el('button',{type:'button',class:'card'});
   var ph=el('span',{class:'ph'},[imgWithFallback(it.thumb,it.url,'')]);
   b.appendChild(ph);
   b.appendChild(el('span',{class:'tt',text:it.title||'עיצוב'}));
-  var rt=el('span',{class:'rt'});
+  b.appendChild(el('span',{class:'sr-only',text:' · '+it.category+' · '+ratingLabel(it)}));
+  var rt=el('span',{class:'rt','aria-hidden':'true'});
   if(it.rating_count){rt.appendChild(el('span',{class:'stars-s',text:starsText(it.rating_avg),'aria-hidden':'true'}));rt.appendChild(document.createTextNode(' '+it.rating_avg.toFixed(1)+' ('+it.rating_count+')'));}
   else rt.textContent=ICON[it.category]+' '+it.category;
   b.appendChild(rt);
