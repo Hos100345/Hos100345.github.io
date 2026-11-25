@@ -82,6 +82,12 @@
     .empty .big{font-size:2.6rem;display:block;margin-bottom:var(--sp-2)}
     .empty p{margin-bottom:var(--sp-4)}
     .more{text-align:center;margin:var(--sp-5) 0}
+    @media(max-width:699px){
+      .intro{padding:var(--sp-5) var(--sp-4) var(--sp-6)}
+      #chips{flex-wrap:nowrap;overflow-x:auto;width:calc(100% + 2 * var(--sp-4));margin-inline:calc(-1 * var(--sp-4));padding:4px var(--sp-4);scrollbar-width:none}
+      #chips::-webkit-scrollbar{display:none}
+      #chips .chip{flex:none}
+    }
 
     /* ── חלונות ── */
     .modal-bg{position:fixed;inset:0;z-index:100;background:rgba(10,42,92,.55);display:flex;align-items:flex-end;justify-content:center}
@@ -176,7 +182,7 @@
 <div id="offline" class="offline" role="status" hidden>📡 אין חיבור לאינטרנט — העיצובים יחזרו כשהחיבור יחזור</div>
 <section class="intro" aria-labelledby="pageTitle">
   <h1 id="pageTitle">ספריית העיצובים של עיצובישי</h1>
-  <p>כאן אוספים את העיצובים הכי יפים — לכוסות, מזוזות, תמונות ומחזיקי מפתחות. לחצו על עיצוב כדי לדרג אותו ⭐, ואם יש לכם עיצוב משלכם — הוסיפו אותו. כל עיצוב חדש מופיע אחרי שהושעיה מאשר אותו.</p>
+  <p>עיצובים לכוסות, מזוזות, תמונות ומחזיקי מפתחות. לחצו על עיצוב כדי לדרג אותו ⭐, והוסיפו עיצובים משלכם — הם יופיעו אחרי אישור של הושעיה.</p>
   <div class="acts">
     <button type="button" class="ds-btn btn-add" id="addBtn">➕ הוסיפו עיצוב</button>
     <button type="button" class="ds-btn btn-share" data-share data-share-text="ספריית העיצובים של עיצובישי — בואו לדרג ולהוסיף עיצובים ⭐">📤 שלחו לחבר</button>
@@ -711,7 +717,7 @@ function drawCounts(){
 function refreshCounts(){return api({action:'admin_list',status:'pending',size:1},{admin:true}).then(function(j){QS.counts=j.counts;QS.code=j.code;drawCounts();}).catch(function(){});}
 function selectTab(t){
   document.querySelectorAll('.admin-bar .tab').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.tab===t));});
-  $('tab-lib').hidden=t!=='lib';$('tab-queue').hidden=t!=='queue';$('tab-code').hidden=t!=='code';
+  $('tab-lib').hidden=t!=='lib';document.querySelector('.intro').hidden=t!=='lib';$('tab-queue').hidden=t!=='queue';$('tab-code').hidden=t!=='code';
   if(t==='lib'&&!LIB.cats)loadLib(true);
   if(t==='queue')loadQueue(true);
   if(t==='code')drawCode();
@@ -778,7 +784,7 @@ function qCard(it){
     db.appendChild(el('div',{class:'imgs'},[fig(it.thumb,it.url,'החדש'),fig(it.dup.thumb,it.dup.url,'הקיים')]));
     c.appendChild(db);
   }
-  c.appendChild(el('p',{class:'meta',text:fmtDate(it.created_at)+(it.contributor?' · מאת '+it.contributor:'')+(it.width?' · '+it.width+'×'+it.height:'')+(it.rating_count?' · ⭐ '+it.rating_avg.toFixed(1)+' ('+it.rating_count+')':'')}));
+  c.appendChild(el('p',{class:'meta',text:fmtDate(it.created_at)+(it.contributor?' · מאת '+it.contributor:'')+(it.width?' · \u2066'+it.width+'×'+it.height+'\u2069':'')+(it.rating_count?' · ⭐ '+it.rating_avg.toFixed(1)+' ('+it.rating_count+')':'')}));
   var uid='q'+it.id.slice(0,8);
   var ti=el('input',{class:'inp',id:uid+'t',maxlength:'80',value:it.title||''});
   var ca=el('select',{class:'inp',id:uid+'c'});CATS.forEach(function(k){var o=el('option',{value:k,text:ICON[k]+' '+k});if(k===it.category)o.selected=true;ca.appendChild(o);});

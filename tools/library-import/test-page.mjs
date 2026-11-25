@@ -171,6 +171,7 @@ await t('Pixel 7: העלאה בלי חיתוך — ולידציה, קוד שגו
   await page.fill('#upCode', 'wrong'); await page.fill('#upName', 'רותי');
   await page.click('#upSend'); assert.match(await page.textContent('#upMsg'), /מאשרים/);
   await page.check('#upOk');
+  await page.$eval('#dlgUp .modal-card', (e) => { e.scrollTop = 0; });
   await shot(page, 3);
   await page.click('#upSend'); await page.waitForFunction(() => /הקוד לא נכון/.test(document.getElementById('upMsg').textContent));
   assert.equal(await page.getAttribute('#upCode', 'aria-invalid'), 'true');
