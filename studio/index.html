@@ -5151,7 +5151,7 @@ function adDraw(){if(!ADE||!ADE.c||!document.body.contains(ADE.c)||ADE.c.hidden)
   const L0=adSel();
   if(L0){x.save();x.globalAlpha=.22;adDrawLayer(x,L0);x.restore();} // מה שיוצא מהגבול נראה חלש — לא נכנס להורדה
   x.save();x.shadowColor='rgba(60,40,10,.2)';x.shadowBlur=16;x.shadowOffsetY=5;x.fillStyle='#fff';x.fillRect(0,0,W0,H0);x.restore();
-  x.save();x.beginPath();x.rect(0,0,W0,H0);x.clip();adArt(x);if(L0&&L0.k==='img'&&AD_BACKDROP.has(ADE.tool))adBackdrop(x,L0,s);if(L0&&L0.k==='img'&&ADE.tool==='extract')adExOverlay(x,L0,s);if(L0&&L0.k==='img'&&ADE.tool==='qr')adQrOverlay(x,L0,s);x.restore(); // S-196: משבצות שקיפות מאחורי השכבה בזמן חיתוך
+  x.save();x.beginPath();x.rect(0,0,W0,H0);x.clip();adArt(x);if(L0&&L0.k==='img'&&AD_BACKDROP.has(ADE.tool))adBackdrop(x,L0,s);if(L0&&L0.k==='img'&&ADE.tool==='extract')adExOverlay(x,L0,s);if(L0&&L0.k==='img'&&ADE.tool==='qr'){adQrOverlay(x,L0,s);adQmOverlay(x,L0,s);}x.restore(); // S-196: משבצות שקיפות מאחורי השכבה בזמן חיתוך
   x.strokeStyle='#D6CFC2';x.lineWidth=1/s;x.strokeRect(0,0,W0,H0);
   x.fillStyle='#8A8170';x.font=`${12/s}px Rubik`;x.textAlign='center';x.textBaseline='top';x.direction='rtl';x.fillText(adFmt().label.replace(/^\S+\s/,'')+' · '+adPx(),W0/2,H0+8/s);
   const G=ADE.guide;if(G){x.strokeStyle='#E11D74';x.lineWidth=1/s;x.setLineDash([4/s,3/s]);x.beginPath();if(G.v){x.moveTo(W0/2,0);x.lineTo(W0/2,H0);}if(G.h){x.moveTo(0,H0/2);x.lineTo(W0,H0/2);}x.stroke();x.setLineDash([]);}
@@ -5577,7 +5577,7 @@ function adSetMask(L,c,msg){adSnap();const key=adMaskKey();ADM.set(key,{url:c.to
 function adFree(){if(!ADE)return;ADE.wm=null;ADE.bk=null;ADE.paint=null;ADE.cur=null;const ids=new Set((AD.layers||[]).map(o=>o.id)),keys=new Set((AD.layers||[]).map(o=>o.mask).filter(Boolean));
   for(const k of _adComp.keys())if(!ids.has(k))_adComp.delete(k);for(const [k,m] of ADM)if(!keys.has(k)&&m.c&&m.url)m.c=null;} // הזיכרון משתחרר כשיוצאים מהכלי
 // ── מכחול / לאסו / קסם ──
-const adCutOn=()=>{const L=adSel();return!!L&&L.k==='img'&&!L.lock&&!L.hid&&AD_CUT.has(ADE.tool);};
+const adCutOn=()=>{const L=adSel();return!!L&&L.k==='img'&&!L.lock&&!L.hid&&(AD_CUT.has(ADE.tool)||adQmOn());};
 function adBrushPt(e,noOff){const r=ADE.c.getBoundingClientRect(),fx=e.clientX-r.left,fy=e.clientY-r.top,off=noOff||e.pointerType==='mouse'?0:ADT.off;return[fx,fy-off,fx,fy];}
 function adScr2Mask(L,sx,sy){const v=ADE.v,[lx,ly]=adLocal(L,(sx-v.ox)/v.s,(sy-v.oy)/v.s),[w,h]=adSize(L),W=ADE.wm;return[(lx+w/2)/w*W.c.width,(ly+h/2)/h*W.c.height];}
 const adBrushR=L=>Math.max(.5,ADT.size/2/ADE.v.s/adSize(L)[0]*ADE.wm.c.width);
@@ -5595,7 +5595,7 @@ function adMagic(L,mp){const W=ADE.wm,w=W.c.width,h=W.c.height,X=Math.floor(mp[0
     if(x>0&&!seen[j-1]){seen[j-1]=1;if(ok(j-1))st[sp++]=j-1;}if(x<w-1&&!seen[j+1]){seen[j+1]=1;if(ok(j+1))st[sp++]=j+1;}
     if(j>=w&&!seen[j-w]){seen[j-w]=1;if(ok(j-w))st[sp++]=j-w;}if(j+w<w*h&&!seen[j+w]){seen[j+w]=1;if(ok(j+w))st[sp++]=j+w;}}
   W.x.putImageData(md,0,0);W.ver++;return n;}
-function adCutDown(e){if(ADE.tool==='extract'){adExDown(e);return;} /* S-198 */const L=adSel(),W=adWm(L);if(!W)return;e.preventDefault();try{ADE.c.setPointerCapture(e.pointerId);}catch(_){}
+function adCutDown(e){if(ADE.tool==='extract'||ADE.tool==='qr'){adExDown(e);return;} /* S-198 */const L=adSel(),W=adWm(L);if(!W)return;e.preventDefault();try{ADE.c.setPointerCapture(e.pointerId);}catch(_){}
   const T=ADE.tool,[bx,by,fx,fy]=adBrushPt(e,T==='magic');
   if(T==='magic'){adSnap();const n=adMagic(L,adScr2Mask(L,bx,by));if(n)adWmCommit(L,'נמחק אזור בצבע דומה ('+n+' פיקסלים). ↶ מבטל');else{adSnapCancel();adSay('כאן אין מה למחוק — נסו סובלנות גבוהה יותר');}adQ();return;}
   const bk=ADE.bk||(ADE.bk=document.createElement('canvas'));bk.width=W.c.width;bk.height=W.c.height;bk.getContext('2d').drawImage(W.c,0,0); // לביטול כשנוחתת אצבע שנייה
@@ -5725,7 +5725,7 @@ function adFloat(){const st=ADE&&ADE.c&&ADE.c.parentElement;if(!st)return;let b=
 const ADQ={mode:'fill',open:null,tint:false,lay:false}; // lay = S-197: גיליון השכבות פתוח (טלפון)
 const adQForce=()=>{const q=document.getElementById('adq');if(q)q._k='';adQ();};
 function adToolFix(L){if(!ADE)return'move';if(!ADE.tool)ADE.tool='move';if(!L)return ADE.tool;const ok=L.k==='img'?AD_IMG_T:['move','text','color'];
-  if(!ok.includes(ADE.tool))ADE.tool=L.k==='text'?'color':'move';if(L.k==='img'&&ADQ.open)ADQ.open=null;if(ADE.wm&&!ADE.paint&&(!AD_CUT.has(ADE.tool)||ADE.wm.id!==L.id))adFree();if(ADE.ex&&(ADE.tool!=='extract'||ADE.ex.lid!==L.id))ADE.ex=null;return ADE.tool;}
+  if(!ok.includes(ADE.tool))ADE.tool=L.k==='text'?'color':'move';if(L.k==='img'&&ADQ.open)ADQ.open=null;if(ADE.wm&&!ADE.paint&&(!AD_CUT.has(ADE.tool)||ADE.wm.id!==L.id))adFree();if(ADE.ex&&(ADE.tool!=='extract'||ADE.ex.lid!==L.id))ADE.ex=null;if(ADE.qm&&(ADE.tool!=='qr'||ADE.qm.lid!==L.id))ADE.qm=null;return ADE.tool;}
 function adSetTool(t){const L=adSel();if(!L)return;ADQ.lay=false;if(t==='crop'){adEditImg(adImgsSel());return;}if(t==='ai'){openAdAI(adImgsSel());return;}
   ADE.tool=t;adToolFix(L);if(AD_CUT.has(t))adWm(L);adQForce();adDraw();adViewSave();
   if(t==='text')setTimeout(()=>{const i=document.getElementById('adqText');if(i){i.focus();i.select();}},30);
@@ -6057,18 +6057,18 @@ async function adQrReplaceIn(L,f,text){const R=f._qrs;if(!R)return false;const q
 const adQrNamed=f=>!!f&&f._qrs!==null&&/^QR\b/i.test(String(f.name||''));
 function adQrTargetL(){const is=f=>f&&(f.qr||f._qrs||adQrNamed(f)),S=adSel();if(S&&S.k==='img'){const f=adImgOf(S);if(is(f))return{L:S,f};}
   for(const L of[...(AD.layers||[])].reverse()){if(L.k!=='img'||L.hid)continue;const f=adImgOf(L);if(is(f))return{L,f};}return null;}
-async function adQrUse(text){adEnsure();AD_QR.text=text;const T=adQrTargetL();
+async function adQrUse(text){adEnsure();AD_QR.text=text;{const S=adSel(),Q=ADE&&ADE.qm,f=S&&adImgOf(S);if(Q&&Q.box&&S&&Q.lid===S.id&&f&&phId(f)===Q.fid)return adQmApply(S,f,text);}const T=adQrTargetL();
   if(T&&!adQrWhole(T.f))return adQrReplaceIn(T.L,T.f,text);
   if(T){if(ADE)ADE.sel=T.L.id;return adQrGo('replace');}
   const S=adSel();if(S&&S.k==='img'){const f=adImgOf(S);if(f&&f._qrs===undefined){const r=await adQrScanF(f);if(r)return adQrUse(text);}}
   if(ADE)ADE.sel=null;return adQrGo('add');}
-function adQrChips(){const T=adQrTargetL(),lab=T?'החלפה ב-QR מוכן: ':'הוספת QR מוכן: ';
+function adQrChips(){const T=adQrTargetL()||(ADE&&ADE.qm&&ADE.qm.box),lab=T?'החלפה ב-QR מוכן: ':'הוספת QR מוכן: ';
   return el('div',{class:'adqrow adqscroll adqrchips',role:'group','aria-label':T?'QR מוכנים — לחיצה מחליפה':'QR מוכנים — לחיצה מוסיפה'},
     ...adQrPresets().map(p=>el('button',{type:'button',class:'adchip','aria-label':lab+p.n+' ('+adQrShort(p.t)+')',title:p.t,on:{click:()=>adQrUse(p.t)}},p.n)),
     el('button',{type:'button',class:'adchip','aria-label':'QR לקישור אחר',on:{click:adQrOther}},'✏️ קישור אחר'));}
 function adQrOther(){ADQ.open=null;if(adTabbed()){adSheet('assets');setTimeout(()=>{const i=document.querySelector('#controls input[aria-label="הקישור או הטקסט ל-QR"]');if(i){i.scrollIntoView({block:'center'});i.focus({preventScroll:true});}},120);return;}
   const i=document.querySelector('input[aria-label="הקישור או הטקסט ל-QR"]');if(i){const d=i.closest('details');if(d)d.open=true;i.scrollIntoView({block:'center',behavior:'smooth'});i.focus({preventScroll:true});}}
-function adQrStatus(f){if(!f)return'';if(f._qrBusy)return'🔍 מחפש QR בתמונה…';const t=adQrOf(f);if(t)return null;return f._qrs===null?'לא נמצא QR בתמונה הזו. אפשר להוסיף QR מוכן כשכבה חדשה.':'';}
+function adQrStatus(f){if(!f)return'';if(f._qrBusy)return'🔍 מחפש QR בתמונה…';const t=adQrOf(f);if(t)return null;return f._qrs===null?'לא נמצא QR שאפשר לסרוק — ייתכן שה-QR בתמונה לא אמיתי. סמנו את האזור ונחליף אותו ב-QR עובד':'';}
 function adQrLead(t){return el('p',{class:'adqhint adqrlead',role:'status'},'ה-QR מוביל ל-',el('bdi',{dir:'ltr'},t.length>60?t.slice(0,58)+'…':t));}
 // סימון הקוד שזוהה (ירוק) כשכלי ה-QR פתוח
 function adQrOverlay(x,L,s){const f=adImgOf(L),r=f&&f._qrs;if(!r||adQrWhole(f))return;x.save();x.beginPath();r.quad.forEach((p,i)=>{const q=adImg2Ad(L,f,p[0],p[1]);i?x.lineTo(q[0],q[1]):x.moveTo(q[0],q[1]);});x.closePath();
@@ -6165,9 +6165,9 @@ function adExOverlay(x,L,s){const E=ADE.ex;if(!E||E.lid!==L.id||!E.fin)return;co
     cx.putImageData(id,0,0);E.ov={t,c};}
   x.save();x.translate(L.x,L.y);x.rotate((L.rot||0)*Math.PI/180);x.imageSmoothingEnabled=pw<1;x.drawImage(E.ov.c,-w/2+F.bx/E.w*w,-h/2+F.by/E.h*h,F.bw/E.w*w,F.bh/E.h*h);x.restore();}
 // נגיעה: אצבע אחת = נקודה (לא נגררת); כשמוגדל — גרירה מזיזה את התצוגה
-function adExDown(e){e.preventDefault();try{ADE.c.setPointerCapture(e.pointerId);}catch(_){}ADE.exT={id:e.pointerId,x:e.clientX,y:e.clientY,cx:ADE.cx,cy:ADE.cy,moved:false};}
-function adExMove(e){const T=ADE.exT;if(!T||e.pointerId!==T.id)return;e.preventDefault();const dx=e.clientX-T.x,dy=e.clientY-T.y;if(Math.hypot(dx,dy)>9)T.moved=true;if(T.moved&&ADE.z>1){ADE.cx=T.cx-dx/ADE.v.s;ADE.cy=T.cy-dy/ADE.v.s;adDraw();}}
-function adExUp(e){const T=ADE.exT;if(!T||e.pointerId!==T.id)return;ADE.exT=null;if(e.type!=='pointerup'||T.moved)return;const r=ADE.c.getBoundingClientRect(),v=ADE.v;adExTap(adSel(),(e.clientX-r.left-v.ox)/v.s,(e.clientY-r.top-v.oy)/v.s,e.pointerType!=='mouse');}
+function adExDown(e){e.preventDefault();try{ADE.c.setPointerCapture(e.pointerId);}catch(_){}ADE.exT={id:e.pointerId,x:e.clientX,y:e.clientY,cx:ADE.cx,cy:ADE.cy,moved:false,qm:ADE.tool==='qr',a0:adQmScr(e)};}
+function adExMove(e){const T=ADE.exT;if(!T||e.pointerId!==T.id)return;e.preventDefault();const dx=e.clientX-T.x,dy=e.clientY-T.y;if(Math.hypot(dx,dy)>9)T.moved=true;if(T.qm){if(T.moved)adQmDrag(T,e);return;}if(T.moved&&ADE.z>1){ADE.cx=T.cx-dx/ADE.v.s;ADE.cy=T.cy-dy/ADE.v.s;adDraw();}}
+function adExUp(e){const T=ADE.exT;if(!T||e.pointerId!==T.id)return;ADE.exT=null;if(T.qm){if(e.type!=='pointerup')return;if(T.moved){adQmDrag(T,e);adQmEnd(T);}else{const[ax,ay]=adQmScr(e);adQmTap(adSel(),ax,ay);}return;}if(e.type!=='pointerup'||T.moved)return;const r=ADE.c.getBoundingClientRect(),v=ADE.v;adExTap(adSel(),(e.clientX-r.left-v.ox)/v.s,(e.clientY-r.top-v.oy)/v.s,e.pointerType!=='mouse');}
 function adExTap(L,ax,ay,touch){if(!L||L.k!=='img')return;const E=adExGet(L);if(!E)return;const[w,h]=adSize(L),[lx,ly]=adLocal(L,ax,ay),X=Math.floor((lx/w+.5)*E.w),Y=Math.floor((ly/h+.5)*E.h);
   if(X<0||Y<0||X>=E.w||Y>=E.h){adSay('נוגעים בתוך התמונה');return;}
   const op=E.seeds.length?ADT.exOp:'new',rad=Math.max(2,Math.round((touch?16:8)/(ADE.v.s*w/E.w)));if(op==='new')E.seeds=[];
@@ -6214,16 +6214,48 @@ function adExCtx(L){const E=ADE.ex&&ADE.ex.lid===L.id?ADE.ex:null,has=!!(E&&E.fi
     has?adQB('✕','ניקוי הבחירה',adExClear):null,h(E&&E.msg?E.msg:has?(E.noBorder?'אין כאן מסגרת בצבע אחר מהרקע — נבחר בלי מסגרת. ':'')+'✓ מסומן '+E.fin.tb[2]+'×'+E.fin.tb[3]+' — ➕/➖ ונגיעה מתקנים · "✂️ הפוך לשכבה" מפריד אותו מהתמונה':
     ADT.exMode==='frame'?'👆 נוגעים בקו המסגרת (הגלולה, המסגרת הלבנה…) — נבחר כל מה שבתוכה, כולל הטקסט. זום עוזר לפגוע בקו דק':'👆 נוגעים באובייקט — נבחר כל מה שמחובר ובצבע דומה, עם מה שבתוכו')));
   return out;}
-function adQrCtx(L,f){const t=adQrOf(f),st=adQrStatus(f),out=[];
-  if(t)out.push(adQrLead(t));else if(st)out.push(el('p',{class:'adqhint',role:'status'},st));
+function adQrCtx(L,f){const t=adQrOf(f),st=adQrStatus(f),out=[],qo=adQmOn(),qb=qo&&ADE.qm.box;
+  if(qo)out.push(el('p',{class:'adqhint',role:'status'},qb?'✓ האזור סומן — לוחצים על QR מוכן והוא יחליף את מה שבפנים · אפשר לגרור שוב':'⬚ גוררים מלבן סביב ה-QR, או נוגעים בתוך המסגרת שלו (שתי אצבעות = זום)'));
+  else if(t)out.push(adQrLead(t));else if(st)out.push(el('p',{class:'adqhint',role:'status'},st));
+  if(f&&!adQrWhole(f))out.push(el('div',{class:'adqrow'},el('button',{type:'button',class:qo?'on':null,'aria-pressed':String(qo),'aria-label':'סימון אזור ה-QR ידנית',title:'סימון אזור ה-QR ידנית',on:{click:adQmToggle}},'⬚ סימון אזור ה-QR ידנית')));
   out.push(el('div',{class:'adqrow adexft'},adQB(f&&f._qrBusy?'⏳ מחפש…':'🔍 חפש QR','חיפוש QR בתמונה',()=>{if(f){f._qrs=undefined;adQrScanF(f);}},!f||!!f._qrBusy),
-    el('p',{class:'adqhint'},t?(adQrWhole(f)?'לוחצים על QR מוכן — מחליף את התמונה הזו באותו מקום':'לוחצים על QR מוכן — הקוד הישן נמחק מהתמונה והחדש נכנס בדיוק במקומו'):'לוחצים על QR מוכן — נוסף כשכבה חדשה')),adQrChips());
+    el('p',{class:'adqhint'},adQmOn()&&ADE.qm.box?'לוחצים על QR מוכן — מחליף את האזור המסומן':t?(adQrWhole(f)?'לוחצים על QR מוכן — מחליף את התמונה הזו באותו מקום':'לוחצים על QR מוכן — הקוד הישן נמחק מהתמונה והחדש נכנס בדיוק במקומו'):'לוחצים על QR מוכן — נוסף כשכבה חדשה')),adQrChips());
   return out;}
 function adSfRow(L){const Hh=ADE&&ADE.hole;if(!Hh||Hh.lid!==L.id||adPhone()||!(AD.img||[]).some(x=>phId(x)===Hh.fid))return null;
   const bar=el('div',{class:'labar',id:'adSfBar',hidden:AD_SF.busy?null:''},el('div',{class:'lafill'}));setTimeout(adSfUi,0);
   return el('div',{class:'adqctx'},el('div',{class:'adqrow'},AD_SF.busy?adQB('✕ עצירה','עצירת המילוי החכם',adSfStop):adQB(AD_SF.err?'🔄 נסו שוב':'✨ מילוי חכם לרקע','מילוי חכם של הרקע שמתחת (AI במכשיר, הורדה של ~27MB בפעם הראשונה)',adSmartFill,false,'adgo'),
     el('p',{class:'adqhint',id:'adSfMsg',role:'status'},AD_SF.err||AD_SF.msg||'הרקע מולא מהסביבה. לתמונה מורכבת — ✨ מילוי חכם (במכשיר, ~27MB פעם אחת)')),bar);}
 function adQrScanAll(){(AD.img||[]).forEach(f=>{if(!f.qr&&f._qrs===undefined&&!f._qrBusy)adQrScanF(f,true);});}
+// ── S-198ב: ⬚ סימון אזור ה-QR ידנית (מודעות מ-AI: "QR" מצויר שאי אפשר לסרוק). גוררים מלבן, או נוגעים בתוך המסגרת שלו (גדל לבד למסגרת — אותו מילוי של ✂️ חילוץ).
+// ההחלפה: האזור מתכסה בצבע הפנימי של המסגרת (חציון של פס הקצה), וה-QR המוכן נכנס כריבוע במרכז עם שוליים קטנים. ADE.qm = {lid,fid,on,box:[x,y,w,h] בפיקסלים של התמונה,mask?,col}
+const adQmOn=()=>{const L=adSel();return!!(ADE&&ADE.qm&&ADE.qm.on&&L&&ADE.qm.lid===L.id&&ADE.tool==='qr');};
+function adQmToggle(){const L=adSel(),f=L&&adImgOf(L);if(!f)return;if(adQmOn()){ADE.qm.on=false;}else ADE.qm={lid:L.id,fid:phId(f),on:true,box:null};adQForce();adDraw();adSay(adQmOn()?'גוררים מלבן סביב ה-QR, או נוגעים בתוך המסגרת שלו':'הסימון כבוי');}
+function adQmPx(L,ax,ay){const f=adImgOf(L),[w,h]=adSize(L),[lx,ly]=adLocal(L,ax,ay);return[Math.max(0,Math.min(natW(f.img),(lx/w+.5)*natW(f.img))),Math.max(0,Math.min(natH(f.img),(ly/h+.5)*natH(f.img)))];}
+function adQmScr(e){const r=ADE.c.getBoundingClientRect(),v=ADE.v;return[(e.clientX-r.left-v.ox)/v.s,(e.clientY-r.top-v.oy)/v.s];}
+function adQmDrag(T,e){const L=adSel();if(!L)return;const a=adQmPx(L,...T.a0),b=adQmPx(L,...adQmScr(e));ADE.qm.box=[Math.min(a[0],b[0]),Math.min(a[1],b[1]),Math.abs(b[0]-a[0]),Math.abs(b[1]-a[1])];ADE.qm.mask=null;adDrawSoon();}
+function adQmEnd(T){const Q=ADE.qm;if(Q.box&&(Q.box[2]<12||Q.box[3]<12)){Q.box=null;adSay('המלבן קטן מדי — גוררים סביב כל ה-QR');}else if(Q.box)adSay('האזור סומן — לוחצים על QR מוכן');adQForce();adDraw();}
+// נגיעה בתוך המסגרת: הצבע שנגעו בו + מה שבתוכו (הקוד המצויר, הלוגו) = כל הכרטיס
+function adQmTap(L,ax,ay){const f=adImgOf(L),E=adExGet(L);if(!E)return;const[X,Y]=adQmPx(L,ax,ay),x=Math.min(E.w-1,Math.floor(X*E.k)),y=Math.min(E.h-1,Math.floor(Y*E.k));
+  const R=adExObj(E,x,y,ADT.exTol*2.55,false);ADE.ex=null;if(!R||adExEdge(R,E.w,E.h)){adSay('לא נמצאה מסגרת סביב הנקודה — גוררים מלבן סביב ה-QR');toast('לא נמצאה מסגרת — גוררים מלבן סביב ה-QR');return;}
+  let x0=E.w,y0=E.h,x1=-1,y1=-1;for(let j=0;j<R.length;j++)if(R[j]){const xx=j%E.w,yy=(j-xx)/E.w;if(xx<x0)x0=xx;if(xx>x1)x1=xx;if(yy<y0)y0=yy;if(yy>y1)y1=yy;}
+  const K=1/E.k,m=document.createElement('canvas');m.width=E.w;m.height=E.h;{const mx=m.getContext('2d'),id=mx.createImageData(E.w,E.h),dI=adDT(R.map(v=>v?0:1),E.w,E.h),er=Math.max(2,Math.round(Math.min(x1-x0,y1-y0)*.015));
+    for(let j=0;j<R.length;j++)if(R[j]&&dI[j]>er)id.data[j*4+3]=255;mx.putImageData(id,0,0);}
+  ADE.qm.box=[x0*K,y0*K,(x1-x0+1)*K,(y1-y0+1)*K];ADE.qm.mask=m;adQForce();adDraw();adSay('המסגרת סומנה — לוחצים על QR מוכן');}
+// הצבע הפנימי: חציון של פס דק בתוך הקצה של האזור (בדרך כלל הלבן של המסגרת)
+function adQmColor(P,W,H,b){const v=[[],[],[]],t=Math.max(2,Math.round(Math.min(b[2],b[3])*.03)),add=(x,y)=>{x=Math.round(x);y=Math.round(y);if(x<0||y<0||x>=W||y>=H)return;const i=(y*W+x)*4;for(let c=0;c<3;c++)v[c].push(P[i+c]);};
+  for(let i=0;i<=40;i++){const u=b[0]+t+(b[2]-2*t)*i/40,w=b[1]+t+(b[3]-2*t)*i/40;add(u,b[1]+t);add(u,b[1]+b[3]-t);add(b[0]+t,w);add(b[0]+b[2]-t,w);}
+  return v.map(a=>{a.sort((p,q)=>p-q);return a[a.length>>1]||255;});}
+async function adQmApply(L,f,text){const Q=ADE.qm,b=Q.box,P=adImgPx(f),W=P.c.width,H=P.c.height,d=P.x.getImageData(0,0,W,H).data,col=adQmColor(d,W,H,b);
+  const hx='#'+col.map(v=>v.toString(16).padStart(2,'0')).join(''),light=adLum(hx)>.5?hx:AD_QR.light;let c;
+  const L0=AD_QR.light;AD_QR.light=light;try{c=await adQrCanvas(text,.07);}catch(e){toast(/qr|timeout|Event/.test(String(e&&e.message||e))?'ספריית ה-QR לא נטענה — נסו שוב':'הטקסט ארוך מדי ל-QR');return true;}finally{AD_QR.light=L0;}
+  P.x.fillStyle=hx;if(Q.mask){const t=document.createElement('canvas');t.width=W;t.height=H;const tx=t.getContext('2d');tx.drawImage(Q.mask,0,0,W,H);tx.globalCompositeOperation='source-in';tx.fillStyle=hx;tx.fillRect(0,0,W,H);P.x.drawImage(t,0,0);}
+  else P.x.fillRect(b[0],b[1],b[2],b[3]);
+  const side=Math.min(b[2],b[3])*(Q.mask?.84:.96),[X,Y]=adImg2Ad(L,f,b[0]+b[2]/2,b[1]+b[3]/2),nm='QR — '+adQrShort(text).slice(0,30),n={img:c,name:nm,qr:text,edited:true},base={img:P.c,name:f.name||'תמונה',edited:true};base._qrs=null;
+  adEnsure();adSnap();const imgs=(AD.img||[]).slice(),j=imgs.indexOf(f);imgs[j]=base;imgs.push(n);AD.img=imgs;L.src=phId(base);L.si=j;
+  const NL={id:adLid(),k:'img',name:nm,src:phId(n),si:imgs.length-1,x:X,y:Y,w:side*L.w/W,rot:L.rot||0};AD.layers.splice(AD.layers.indexOf(L)+1,0,NL);
+  ADE.qm=null;ADE.sel=NL.id;ADE.tool='move';rebuild();toast('✓ ה-QR הוחלף — מוביל ל-'+adQrShort(text).slice(0,40)+' · ↶ מבטל');adSay('ה-QR הוחלף');return true;}
+function adQmOverlay(x,L,s){const Q=ADE.qm;if(!Q||Q.lid!==L.id||!Q.box)return;const f=adImgOf(L);if(!f)return;const b=Q.box,p=[[b[0],b[1]],[b[0]+b[2],b[1]],[b[0]+b[2],b[1]+b[3]],[b[0],b[1]+b[3]]].map(q=>adImg2Ad(L,f,q[0],q[1]));
+  x.save();x.beginPath();p.forEach((q,i)=>i?x.lineTo(q[0],q[1]):x.moveTo(q[0],q[1]));x.closePath();x.fillStyle='rgba(234,88,12,.18)';x.fill();x.lineWidth=4/s;x.strokeStyle='#fff';x.stroke();x.lineWidth=2/s;x.setLineDash([7/s,4/s]);x.strokeStyle='#EA580C';x.stroke();x.restore();}
 const AD_TABS=[['edit','✏️ עריכה'],['tpl','📑 תבניות'],['assets','📦 נכסים'],['out','⬇️ הורדה']];let AD_TAB=(()=>{const t=adViewLoad().tab;return['edit','tpl','assets','out'].includes(t)?t:'edit';})(); // S-195. S-196: הלשונית שורדת רענון
 const AD_TAB_SHUT=new Set(['sec:📐 גודל','sec:🗂️ שכבות','sec:✂️ עריכת תמונה','sec:💬 מה לשנות? (במילים)','sec:🪄 תמונה חדשה מ-AI']);
 const Ad={id:'ad',printShop:false,label:'📣 פרסומת', // S-115: לא adminOnly — שותף נכנס ב-studio/?p=ad עם קוד (studio_ai_codes)
