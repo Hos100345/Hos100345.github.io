@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>ספריית העיצובים | עיצובישי</title>
+  <meta name="description" content="ספריית העיצובים של עיצובישי — כוסות, מזוזות, תמונות ומחזיקי מפתחות. מדרגים את מה שאוהבים ומוסיפים עיצובים משלכם.">
+  <meta property="og:title" content="ספריית העיצובים של עיצובישי">
+  <meta property="og:description" content="מדרגים עיצובים ומוסיפים משלכם ⭐">
+  <meta property="og:image" content="https://www.hoshaya.co.il/images/brand/itzuvishi-logo-512.webp">
+  <link rel="canonical" href="https://www.hoshaya.co.il/library/">
+  <meta name="theme-color" content="#0A2A5C">
+  <link rel="icon" href="../images/brand/itzuvishi-logo-192.webp">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Rubik:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/tokens.css?v=5">
+  <!-- W-75: ספריית העיצובים. כל הנתונים דרך Edge Function design-library (verify_jwt=false; ההרשאה נבדקת בשרת).
+       חברים: צפייה, דירוג, העלאה עם קוד שותף → ממתין לאישור. מנהל (Magic Link, ADMIN_EMAILS בשרת): אישור/דחייה/כפילות/קוד.
+       supabase-js נטען רק כשיש כניסת מנהל (או לחיצה על "כניסת מנהל") — חברים לא מורידים אותו. -->
+  <script src="../js/supabase-config.js?v=3"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{-webkit-text-size-adjust:100%}
+    body{font-family:var(--font-ui);color:var(--c-text);background:var(--c-bg);line-height:var(--lh-body);min-height:100vh;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+    button,input,select,textarea{font:inherit;color:inherit}
+    button{cursor:pointer;border:0;background:none}
+    img{max-width:100%;display:block}
+    [hidden]{display:none!important}
+    h1,h2,h3{font-family:var(--font-display);color:var(--c-brand);line-height:var(--lh-tight)}
+    a{color:var(--c-primary-2)}
+
+    /* ── כותרת עליונה (כמו store/) ── */
+    .site-top{position:sticky;top:0;z-index:30;background:var(--c-brand);padding:max(8px,env(safe-area-inset-top)) var(--sp-4) var(--sp-2)}
+    .site-top .in{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3)}
+    .site-top .brand{display:flex;align-items:center;gap:var(--sp-2);color:#fff;text-decoration:none;font-weight:800;min-height:var(--tap)}
+    .site-top .brand img{width:42px;height:42px;border-radius:50%;background:#fff;padding:2px;object-fit:contain}
+    .site-top .home{color:#fff;text-decoration:none;font-weight:700;font-size:var(--fs-sm);padding:var(--sp-2) var(--sp-4);min-height:var(--tap);display:inline-flex;align-items:center;border-radius:var(--r-pill);border:1.5px solid rgba(255,255,255,.55)}
+
+    .offline{background:var(--c-warn-soft);color:var(--c-warn);font-weight:700;text-align:center;padding:var(--sp-2) var(--sp-4);border-bottom:1px solid var(--c-line)}
+
+    /* ── פתיח ── */
+    .intro{background:var(--grad-deep);color:#fff;text-align:center;padding:var(--sp-6) var(--sp-4) var(--sp-7)}
+    .intro h1{color:#fff;font-size:clamp(1.6rem,6.5vw,2.6rem)}
+    .intro p{max-width:560px;margin:var(--sp-3) auto var(--sp-5);font-size:var(--fs-md);color:#fff}
+    .intro .acts{display:flex;flex-wrap:wrap;gap:var(--sp-3);justify-content:center}
+    .btn-add{font-size:var(--fs-lg);min-height:56px;padding:0 var(--sp-6);background:var(--c-accent);color:var(--c-brand);box-shadow:0 3px 0 rgba(0,0,0,.35)}
+    .btn-share{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.7)}
+
+    main{max-width:1100px;margin:0 auto;padding:var(--sp-4)}
+    /* ── מצב מנהל ── */
+    .admin-bar{max-width:1100px;margin:var(--sp-3) auto 0;padding:0 var(--sp-4);display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:center}
+    .admin-bar .lbl{font-weight:800;color:var(--c-brand);margin-inline-end:var(--sp-1)}
+    .tab{min-height:var(--tap);padding:0 var(--sp-4);border-radius:var(--r-pill);border:2px solid var(--c-brand);background:var(--c-surface);color:var(--c-brand);font-weight:700}
+    .tab[aria-pressed="true"]{background:var(--c-brand);color:#fff}
+    .admin-bar .out{margin-inline-start:auto}
+
+    /* ── סינון ומיון ── */
+    .tools{display:flex;flex-wrap:wrap;gap:var(--sp-3);align-items:center;justify-content:space-between;margin:var(--sp-2) 0 var(--sp-4)}
+    .chips{display:flex;flex-wrap:wrap;gap:var(--sp-2)}
+    .chip{min-height:var(--tap);padding:0 var(--sp-4);border-radius:var(--r-pill);border:2px solid var(--c-line);background:var(--c-surface);color:var(--c-text);font-weight:500;display:inline-flex;align-items:center;gap:var(--sp-1)}
+    .chip small{color:var(--c-muted);font-size:var(--fs-xs)}
+    .chip[aria-pressed="true"]{border-color:var(--c-accent-line);background:var(--c-primary-soft);font-weight:800;box-shadow:0 0 0 3px var(--c-accent)}
+    .seg{display:inline-flex;border:2px solid var(--c-brand);border-radius:var(--r-pill);overflow:hidden}
+    .seg button{min-height:40px;min-width:var(--tap);padding:0 var(--sp-4);color:var(--c-brand);font-weight:700;background:var(--c-surface)}
+    .seg button[aria-pressed="true"]{background:var(--c-brand);color:#fff}
+
+    /* ── רשת העיצובים ── */
+    .grid{list-style:none;display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:var(--sp-3)}
+    @media(min-width:700px){.grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:var(--sp-4)}}
+    .card{display:flex;flex-direction:column;width:100%;height:100%;text-align:start;background:var(--c-surface);border:1.5px solid var(--c-line);border-radius:var(--r-md);overflow:hidden;box-shadow:var(--sh-1);transition:transform var(--dur) var(--ease),box-shadow var(--dur) var(--ease)}
+    .card:hover{box-shadow:var(--sh-2);transform:translateY(-2px)}
+    .ph{display:block;aspect-ratio:1;background:repeating-conic-gradient(#f3f8fc 0% 25%,#fff 0% 50%) 50%/20px 20px;position:relative}
+    .ph img{width:100%;height:100%;object-fit:contain}
+    .card .tt{display:block;padding:var(--sp-2) var(--sp-3) 0;font-weight:700;font-size:var(--fs-sm);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--c-text)}
+    .card .rt{display:block;padding:0 var(--sp-3) var(--sp-2);font-size:var(--fs-xs);color:var(--c-muted)}
+    .stars-s{color:var(--c-warn);letter-spacing:1px}
+    .skel{border-radius:var(--r-md);aspect-ratio:.82;background:linear-gradient(90deg,var(--c-surface),var(--c-primary-soft),var(--c-surface));background-size:200% 100%;animation:sk 1.2s infinite linear}
+    @keyframes sk{to{background-position:-200% 0}}
+    .msg{margin:var(--sp-3) 0;font-weight:500}
+    .msg.bad{color:var(--c-bad)} .msg.ok{color:var(--c-ok)}
+    .empty{text-align:center;padding:var(--sp-7) var(--sp-4);background:var(--c-surface);border:1.5px dashed var(--c-line);border-radius:var(--r-lg)}
+    .empty .big{font-size:2.6rem;display:block;margin-bottom:var(--sp-2)}
+    .empty p{margin-bottom:var(--sp-4)}
+    .more{text-align:center;margin:var(--sp-5) 0}
+    @media(max-width:699px){
+      .intro{padding:var(--sp-5) var(--sp-4) var(--sp-6)}
+      #chips{flex-wrap:nowrap;overflow-x:auto;width:calc(100% + 2 * var(--sp-4));margin-inline:calc(-1 * var(--sp-4));padding:4px var(--sp-4);scrollbar-width:none}
+      #chips::-webkit-scrollbar{display:none}
+      #chips .chip{flex:none}
+    }
+
+    /* ── חלונות ── */
+    .modal-bg{position:fixed;inset:0;z-index:100;background:rgba(10,42,92,.55);display:flex;align-items:flex-end;justify-content:center}
+    .modal-card{background:var(--c-surface);width:100%;max-width:640px;max-height:94vh;max-height:94dvh;overflow:auto;border-radius:var(--r-lg) var(--r-lg) 0 0;padding:var(--sp-5) var(--sp-4) calc(var(--sp-5) + env(safe-area-inset-bottom));position:relative;box-shadow:var(--sh-3)}
+    @media(min-width:700px){.modal-bg{align-items:center}.modal-card{border-radius:var(--r-lg);max-height:90vh}}
+    .modal-x{position:absolute;top:var(--sp-2);inset-inline-end:var(--sp-2);width:var(--tap);height:var(--tap);border-radius:50%;font-size:1.3rem;color:var(--c-brand);background:var(--c-primary-soft)}
+    .modal-card h2{font-size:var(--fs-xl);margin-inline-end:52px;margin-bottom:var(--sp-3)}
+    .v-img{background:repeating-conic-gradient(#f3f8fc 0% 25%,#fff 0% 50%) 50%/24px 24px;border-radius:var(--r-md);overflow:hidden;margin-bottom:var(--sp-3)}
+    .v-img img{width:100%;max-height:58vh;object-fit:contain;margin:0 auto}
+    .v-meta{color:var(--c-muted);margin-bottom:var(--sp-3)}
+    .rate{display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-2) var(--sp-4);background:var(--c-accent-soft);border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4);margin-bottom:var(--sp-3)}
+    .rate .q{font-weight:800;color:var(--c-brand)}
+    .stars{display:flex;gap:2px}
+    .star{width:var(--tap);height:var(--tap);font-size:1.9rem;line-height:1;color:var(--c-muted);border-radius:var(--r-sm)}
+    .star[data-on="1"]{color:var(--c-warn)}
+    .star[aria-pressed="true"]{text-shadow:0 0 0 currentColor;outline:2px solid var(--c-brand);outline-offset:-2px}
+    .rate .avg{font-size:var(--fs-sm);color:var(--c-muted);width:100%}
+    .v-acts{display:flex;flex-wrap:wrap;gap:var(--sp-2)}
+
+    /* ── טופס העלאה ── */
+    .field{margin-bottom:var(--sp-4)}
+    .field>label,.field>.lbl{display:block;font-weight:700;margin-bottom:var(--sp-1);color:var(--c-brand)}
+    .field small{display:block;color:var(--c-muted);font-size:var(--fs-xs)}
+    .inp{width:100%;min-height:var(--tap);padding:var(--sp-2) var(--sp-3);border:2px solid var(--c-line);border-radius:var(--r-sm);background:var(--c-surface);font-size:var(--fs-md)}
+    .inp:focus{border-color:var(--c-primary)}
+    .inp[aria-invalid="true"]{border-color:var(--c-bad)}
+    .pick{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--sp-2);width:100%;min-height:160px;border:2.5px dashed var(--c-primary);border-radius:var(--r-md);background:var(--c-primary-soft);color:var(--c-brand);font-weight:800;font-size:var(--fs-lg);text-align:center;padding:var(--sp-4)}
+    .pick small{font-weight:400;font-size:var(--fs-sm);color:var(--c-muted)}
+    .prev{display:flex;gap:var(--sp-3);align-items:flex-start;flex-wrap:wrap}
+    .prev .ph{width:140px;flex:none;border-radius:var(--r-sm);overflow:hidden;border:1.5px solid var(--c-line)}
+    .prev .side{flex:1;min-width:150px;display:flex;flex-direction:column;gap:var(--sp-2)}
+    .cut{border:2px solid var(--c-line);border-radius:var(--r-md);padding:var(--sp-3);margin-top:var(--sp-3)}
+    .cut canvas{display:block;max-width:100%;touch-action:none;margin:0 auto var(--sp-2);border-radius:var(--r-sm);cursor:crosshair}
+    .cut .res{display:block;max-width:180px;max-height:180px;margin:var(--sp-2) auto;background:repeating-conic-gradient(#e4edf5 0% 25%,#fff 0% 50%) 50%/16px 16px;border-radius:var(--r-sm);border:1px solid var(--c-line)}
+    .row{display:flex;flex-wrap:wrap;gap:var(--sp-2);align-items:center}
+    .sl-lock{display:block;padding:var(--sp-2) 0}
+    .sl-lock input[type=range]{width:100%;min-height:var(--tap);accent-color:var(--c-primary)}
+    .chk{display:flex;gap:var(--sp-2);align-items:flex-start;min-height:var(--tap);font-weight:500}
+    .chk input{width:24px;height:24px;flex:none;margin-top:2px;accent-color:var(--c-primary)}
+    .cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:var(--sp-2)}
+    .cats .ds-choice{padding:var(--sp-2)}
+    .cats .ic{font-size:1.4rem}
+    .done{text-align:center;padding:var(--sp-5) 0}
+    .done .big{font-size:3rem;display:block}
+    .done h2{margin:var(--sp-2) 0}
+    .sticky-send{position:sticky;bottom:calc(-1 * var(--sp-5) - env(safe-area-inset-bottom));background:var(--c-surface);padding:var(--sp-3) 0 var(--sp-2);border-top:1px solid var(--c-line)}
+    .btn-wide{width:100%}
+
+    /* ── תור הניהול ── */
+    .q-list{display:grid;gap:var(--sp-4)}
+    @media(min-width:900px){.q-list{grid-template-columns:1fr 1fr}}
+    .qi{background:var(--c-surface);border:1.5px solid var(--c-line);border-radius:var(--r-lg);padding:var(--sp-4);box-shadow:var(--sh-1)}
+    .qi .imgs{display:flex;gap:var(--sp-2);flex-wrap:wrap;margin-bottom:var(--sp-3)}
+    .qi figure{flex:1;min-width:110px;max-width:220px}
+    .qi figure .ph{border-radius:var(--r-sm);overflow:hidden;border:1.5px solid var(--c-line)}
+    .qi figcaption{font-size:var(--fs-xs);color:var(--c-muted);text-align:center;margin-top:2px}
+    .qi .dupbox{border:2px solid var(--c-warn);background:var(--c-warn-soft);border-radius:var(--r-md);padding:var(--sp-2) var(--sp-3);margin-bottom:var(--sp-3);color:var(--c-warn);font-weight:700}
+    .qi .dupbox .imgs{margin:var(--sp-2) 0 0}
+    .qi .meta{font-size:var(--fs-xs);color:var(--c-muted);margin-bottom:var(--sp-2)}
+    .qi .grid2{display:grid;grid-template-columns:1fr;gap:var(--sp-2);margin-bottom:var(--sp-3)}
+    @media(min-width:520px){.qi .grid2{grid-template-columns:1fr 1fr}}
+    .qi .grid2 label{font-size:var(--fs-sm);font-weight:700;color:var(--c-brand)}
+    .qi .acts{display:flex;flex-wrap:wrap;gap:var(--sp-2)}
+    .ds-btn.ok{background:var(--c-ok);color:#fff}
+    .ds-btn.bad{background:var(--c-bad);color:#fff}
+    .ds-btn.sm{min-height:var(--tap);padding:0 var(--sp-4);font-size:var(--fs-sm)}
+    .picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:var(--sp-2);margin-top:var(--sp-2);max-height:300px;overflow:auto;padding:2px}
+    .picker button{border:2px solid var(--c-line);border-radius:var(--r-sm);overflow:hidden;background:var(--c-surface);font-size:var(--fs-xs);color:var(--c-text)}
+    .picker button span{display:block;padding:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .badge{display:inline-block;background:var(--c-accent);color:var(--c-brand);border-radius:var(--r-pill);padding:0 var(--sp-2);font-weight:800;min-width:1.6em;text-align:center}
+    .code-card{max-width:620px}
+    .code-card .now{background:var(--c-primary-soft);border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4);margin:var(--sp-3) 0 var(--sp-4);font-weight:500}
+    .code-card textarea{min-height:110px;resize:vertical}
+
+    /* ── תחתית (כמו store/) ── */
+    .site-foot{background:var(--c-brand);color:#fff;padding:var(--sp-6) var(--sp-4) calc(var(--sp-6) + env(safe-area-inset-bottom));margin-top:var(--sp-7);text-align:center}
+    .site-foot img{width:48px;height:48px;border-radius:50%;background:#fff;padding:3px;object-fit:contain;margin:0 auto var(--sp-3)}
+    .site-foot p{font-size:var(--fs-sm)}
+    .site-foot a,.site-foot .linkbtn{color:#fff;text-decoration:underline}
+    .site-foot .linkbtn{min-height:var(--tap);padding:0 var(--sp-3);margin-top:var(--sp-2)}
+    @media(prefers-reduced-motion:reduce){.skel{animation:none}}
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#main">דלגו לתוכן</a>
+<header class="site-top">
+  <div class="in">
+    <a class="brand" href="../store/"><img src="../images/brand/itzuvishi-logo-192.webp" alt="" width="42" height="42"><span>עיצובישי</span></a>
+    <a class="home" href="../store/">לחנות ←</a>
+  </div>
+</header>
+<div id="offline" class="offline" role="status" hidden>📡 אין חיבור לאינטרנט — העיצובים יחזרו כשהחיבור יחזור</div>
+<section class="intro" aria-labelledby="pageTitle">
+  <h1 id="pageTitle">ספריית העיצובים של עיצובישי</h1>
+  <p>עיצובים לכוסות, מזוזות, תמונות ומחזיקי מפתחות. לחצו על עיצוב כדי לדרג אותו ⭐, והוסיפו עיצובים משלכם — הם יופיעו אחרי אישור של הושעיה.</p>
+  <div class="acts">
+    <button type="button" class="ds-btn btn-add" id="addBtn">➕ הוסיפו עיצוב</button>
+    <button type="button" class="ds-btn btn-share" data-share data-share-text="ספריית העיצובים של עיצובישי — בואו לדרג ולהוסיף עיצובים ⭐">📤 שלחו לחבר</button>
+  </div>
+</section>
+
+<nav class="admin-bar" id="adminBar" aria-label="ניהול הספרייה" hidden>
+  <span class="lbl">🛠 ניהול:</span>
+  <button type="button" class="tab" data-tab="lib" aria-pressed="true">🖼 הספרייה</button>
+  <button type="button" class="tab" data-tab="queue" aria-pressed="false">⏳ ממתינים (<span id="qN">0</span>)</button>
+  <button type="button" class="tab" data-tab="code" aria-pressed="false">🔑 קוד שותף</button>
+  <button type="button" class="ds-btn ds-btn--ghost sm out" id="logoutBtn">יציאה</button>
+</nav>
+
+<main id="main">
+  <section id="tab-lib" aria-labelledby="libTitle">
+    <h2 id="libTitle" class="sr-only">העיצובים</h2>
+    <div class="tools">
+      <div class="chips" id="chips" role="group" aria-label="סינון לפי סוג"></div>
+      <div class="seg" role="group" aria-label="מיון">
+        <button type="button" data-sort="new" aria-pressed="true">🆕 חדשים</button>
+        <button type="button" data-sort="top" aria-pressed="false">❤️ הכי אהובים</button>
+      </div>
+    </div>
+    <p id="libMsg" class="msg" role="status" aria-live="polite"></p>
+    <ul class="grid" id="grid" aria-label="עיצובים" aria-busy="false"></ul>
+    <div class="more"><button type="button" class="ds-btn ds-btn--secondary" id="moreBtn" hidden>עוד עיצובים</button></div>
+  </section>
+
+  <section id="tab-queue" aria-labelledby="qTitle" hidden>
+    <h2 id="qTitle" class="ds-title">⏳ עיצובים שמחכים לאישור</h2>
+    <div class="tools">
+      <div class="chips" role="group" aria-label="סטטוס" id="qStatus">
+        <button type="button" class="chip" data-st="pending" aria-pressed="true">⏳ ממתינים <small id="cP"></small></button>
+        <button type="button" class="chip" data-st="approved" aria-pressed="false">✓ אושרו <small id="cA"></small></button>
+        <button type="button" class="chip" data-st="rejected" aria-pressed="false">✕ נדחו <small id="cR"></small></button>
+      </div>
+      <button type="button" class="ds-btn ds-btn--secondary sm" id="qReload">🔄 רענון</button>
+    </div>
+    <p id="qMsg" class="msg" role="status" aria-live="polite"></p>
+    <div class="q-list" id="queue"></div>
+    <div class="more"><button type="button" class="ds-btn ds-btn--secondary" id="qMore" hidden>עוד</button></div>
+  </section>
+
+  <section id="tab-code" aria-labelledby="cTitle" hidden>
+    <div class="ds-card code-card">
+      <h2 id="cTitle" class="ds-title">🔑 קוד השותפים</h2>
+      <p>קוד אחד לכל החברים. מי שיש לו את הקוד יכול להוסיף עיצובים (הם עדיין מחכים לאישור שלך). הקוד נשמר בשרת רק בצורה מוצפנת (hash) — אי אפשר לראות אותו אחר כך, רק להחליף.</p>
+      <p class="now" id="codeNow">טוען…</p>
+      <div class="field">
+        <label for="newCode">קוד חדש</label>
+        <div class="row"><input class="inp" id="newCode" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="40" style="flex:1;min-width:160px"><button type="button" class="ds-btn ds-btn--secondary sm" id="genCode">🎲 קוד אקראי</button></div>
+        <small>4–40 תווים: אותיות, ספרות, מקף. החלפת הקוד = הקוד הקודם מפסיק לעבוד.</small>
+      </div>
+      <div class="field">
+        <label for="codeLabel">שם פנימי (רשות)</label>
+        <input class="inp" id="codeLabel" maxlength="40" placeholder="שותפים">
+      </div>
+      <button type="button" class="ds-btn ds-btn--primary" id="saveCode">שמירת הקוד החדש</button>
+      <p id="codeMsg" class="msg" role="status" aria-live="polite"></p>
+      <div id="codeShare" hidden>
+        <div class="field">
+          <label for="shareTxt">ההודעה לחברים</label>
+          <textarea class="inp" id="shareTxt" readonly></textarea>
+        </div>
+        <div class="row">
+          <a class="ds-btn ds-btn--secondary sm" id="shareWa" target="_blank" rel="noopener noreferrer">💬 שליחה בוואטסאפ</a>
+          <button type="button" class="ds-btn ds-btn--secondary sm" id="copyTxt">📋 העתקה</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <img src="../images/brand/itzuvishi-logo-192.webp" alt="עיצובישי" width="48" height="48" loading="lazy">
+  <p>© 2026 עיצובישי · הושעיה וולמן · בקעת הירדן וצפון ים המלח</p>
+  <p><a href="../store/">לחנות</a> · <a href="../terms.html">תנאי שימוש</a> · <a href="../privacy.html">פרטיות</a> · <a href="../accessibility.html">הצהרת נגישות</a></p>
+  <button type="button" class="linkbtn" id="adminLogin">🔐 כניסת מנהל</button>
+</footer>
+
+<!-- ══ תצוגת עיצוב + דירוג ══ -->
+<div class="modal-bg" id="dlgView" data-esc="#viewClose" hidden>
+  <div class="modal-card">
+    <button type="button" class="modal-x" id="viewClose" aria-label="סגירה">✕</button>
+    <h2 id="vTitle"></h2>
+    <div class="v-img"><img id="vImg" alt=""></div>
+    <p class="v-meta" id="vMeta"></p>
+    <div class="rate">
+      <span class="q" id="rateQ">כמה אהבתם?</span>
+      <div class="stars" id="stars" role="group" aria-labelledby="rateQ"></div>
+      <p class="avg" id="vAvg" role="status" aria-live="polite"></p>
+    </div>
+    <div class="v-acts">
+      <button type="button" class="ds-btn ds-btn--secondary sm" id="vShare" data-share>📤 שלחו לחבר</button>
+      <a class="ds-btn ds-btn--primary sm" href="../studio/?p=ad">🎨 עצבו בעצמכם</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══ הוספת עיצוב ══ -->
+<div class="modal-bg" id="dlgUp" data-esc="#upClose" hidden>
+  <div class="modal-card">
+    <button type="button" class="modal-x" id="upClose" aria-label="סגירה">✕</button>
+    <div id="upForm">
+      <h2>➕ הוספת עיצוב לספרייה</h2>
+      <div class="field">
+        <input type="file" id="upFile" accept="image/*" class="sr-only" tabindex="-1" aria-hidden="true">
+        <button type="button" class="pick" id="upPick">📷 בחרו תמונה<small>מהגלריה או מהמצלמה · JPG, PNG או WEBP</small></button>
+        <div class="prev" id="upPrev" hidden>
+          <span class="ph"><img id="upImg" alt="התמונה שבחרתם"></span>
+          <div class="side">
+            <button type="button" class="ds-btn ds-btn--secondary sm" id="upChange">🔄 תמונה אחרת</button>
+            <button type="button" class="ds-btn ds-btn--secondary sm" id="cutBtn" aria-expanded="false" aria-controls="cutBox">✂️ חיתוך (רשות)</button>
+            <small id="cutState"></small>
+          </div>
+        </div>
+        <div class="cut" id="cutBox" hidden>
+          <p><strong>✂️ חיתוך:</strong> גררו אצבע על התמונה כדי לסמן את החלק החשוב. אפשר גם להסיר רקע לבן.</p>
+          <canvas id="cutCv" width="10" height="10" aria-label="סימון אזור החיתוך — גוררים על התמונה" role="img"></canvas>
+          <div class="row"><button type="button" class="ds-btn ds-btn--ghost sm" id="cutAll">⤢ כל התמונה</button></div>
+          <label class="chk"><input type="checkbox" id="cutWhite"> הסרת רקע לבן</label>
+          <div class="sl-lock" data-sl-lock="cutTol" id="tolRow" hidden>
+            <label for="cutTol">רגישות להסרת הרקע: <strong id="tolVal">30</strong></label>
+            <input type="range" id="cutTol" min="0" max="100" value="30">
+          </div>
+          <canvas class="res" id="cutRes" width="10" height="10" role="img" aria-label="התוצאה של החיתוך"></canvas>
+          <div class="row">
+            <button type="button" class="ds-btn ds-btn--secondary sm" id="cutSave">✓ שמירת החיתוך</button>
+            <button type="button" class="ds-btn ds-btn--ghost sm" id="cutDrop">ביטול החיתוך</button>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label for="upTitle">איך קוראים לעיצוב?</label>
+        <input class="inp" id="upTitle" maxlength="80" placeholder="למשל: כוס לסבתא עם פרחים">
+      </div>
+      <div class="field">
+        <span class="lbl" id="catLbl">על מה העיצוב?</span>
+        <div class="cats" id="upCats" role="group" aria-labelledby="catLbl"></div>
+      </div>
+      <div class="field">
+        <label for="upName">השם שלכם (רשות)</label>
+        <input class="inp" id="upName" maxlength="40" autocomplete="given-name" placeholder="יופיע ליד העיצוב">
+      </div>
+      <div class="field">
+        <label for="upCode">קוד שותף</label>
+        <input class="inp" id="upCode" maxlength="40" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="codeHelp">
+        <small id="codeHelp">הקוד שקיבלתם מהושעיה. נשמר בטלפון לפעם הבאה.</small>
+      </div>
+      <label class="chk"><input type="checkbox" id="upOk"> <span>מאשרים שהעיצוב שלכם או שיש לכם זכות לשתף אותו, לשימוש עיצובישי בלבד.</span></label>
+      <div class="sticky-send">
+        <p id="upMsg" class="msg" role="status" aria-live="assertive"></p>
+        <button type="button" class="ds-btn ds-btn--primary btn-wide" id="upSend">שליחה לאישור</button>
+      </div>
+    </div>
+    <div id="upDone" class="done" hidden>
+      <span class="big" aria-hidden="true">🎉</span>
+      <h2 id="doneTitle" tabindex="-1">נשלח! תודה</h2>
+      <p>העיצוב יופיע בספרייה אחרי שהושעיה יאשר אותו.</p>
+      <p id="doneDup" class="msg" hidden>נראה שהעיצוב הזה כבר נשלח קודם — הושעיה יבדוק.</p>
+      <div class="row" style="justify-content:center;margin-top:var(--sp-4)">
+        <button type="button" class="ds-btn ds-btn--primary" id="upAgain">➕ עוד עיצוב</button>
+        <button type="button" class="ds-btn ds-btn--secondary" id="upFinish">סגירה</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ כניסת מנהל ══ -->
+<div class="modal-bg" id="dlgLogin" data-esc="#loginClose" hidden>
+  <div class="modal-card">
+    <button type="button" class="modal-x" id="loginClose" aria-label="סגירה">✕</button>
+    <h2>🔐 כניסת מנהל</h2>
+    <p>רק להושעיה. נשלח קישור (וקוד) למייל.</p>
+    <div class="field">
+      <label for="lgEmail">מייל</label>
+      <input class="inp" id="lgEmail" type="email" autocomplete="email" dir="ltr">
+    </div>
+    <button type="button" class="ds-btn ds-btn--primary" id="lgSend">שליחת קישור</button>
+    <div class="field" id="lgCodeRow" hidden style="margin-top:var(--sp-4)">
+      <label for="lgCode">הקוד מהמייל</label>
+      <div class="row"><input class="inp" id="lgCode" inputmode="numeric" autocomplete="one-time-code" maxlength="10" dir="ltr" style="flex:1;min-width:120px"><button type="button" class="ds-btn ds-btn--secondary sm" id="lgVerify">כניסה</button></div>
+    </div>
+    <p id="lgMsg" class="msg" role="status" aria-live="polite"></p>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+var CFG=window.SUPABASE_CONFIG||{};
+var FN=window.DL_ENDPOINT||((CFG.url||'')+'/functions/v1/design-library');
+var CATS=['כוסות','מזוזות','תמונות','מחזיקי מפתחות','אחר'];
+var ICON={'כוסות':'☕','מזוזות':'📜','תמונות':'🖼️','מחזיקי מפתחות':'🔑','אחר':'✨'};
+var MAX=10*1024*1024;
+var $=function(id){return document.getElementById(id);};
+var LS={get:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},set:function(k,v){try{localStorage.setItem(k,v);}catch(e){}},del:function(k){try{localStorage.removeItem(k);}catch(e){}}};
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function el(tag,attrs,kids){var e=document.createElement(tag);if(attrs)for(var k in attrs){if(k==='text')e.textContent=attrs[k];else if(k==='html')e.innerHTML=attrs[k];else if(k.slice(0,2)==='on')e.addEventListener(k.slice(2),attrs[k]);else if(attrs[k]!=null&&attrs[k]!==false)e.setAttribute(k,attrs[k]===true?'':attrs[k]);}(kids||[]).forEach(function(c){if(c!=null)e.appendChild(typeof c==='string'?document.createTextNode(c):c);});return e;}
+function rndId(){try{return crypto.randomUUID().replace(/-/g,'');}catch(e){return Math.random().toString(36).slice(2)+Date.now().toString(36)+Math.random().toString(36).slice(2);}}
+var DEVICE=LS.get('dl_device');
+if(!DEVICE||!/^[A-Za-z0-9_-]{8,64}$/.test(DEVICE)){DEVICE='d'+rndId().slice(0,40);LS.set('dl_device',DEVICE);}
+var votes={};try{votes=JSON.parse(LS.get('dl_votes')||'{}')||{};}catch(e){votes={};}
+var session=null,isAdmin=false,sb=null;
+
+// ── קריאה לשרת: timeout, הודעות ברורות ──
+function api(body,opt){
+  opt=opt||{};
+  var ctl=new AbortController(),t=setTimeout(function(){ctl.abort();},opt.timeout||30000);
+  var h={'Content-Type':'application/json'};
+  if(CFG.anonKey)h.apikey=CFG.anonKey;
+  if(opt.admin&&session)h.Authorization='Bearer '+session.access_token;
+  return fetch(FN,{method:'POST',headers:h,body:JSON.stringify(body),signal:ctl.signal}).then(function(r){
+    return r.json().catch(function(){return {};}).then(function(j){
+      if(!r.ok||j.error){var e=new Error(j.error||('השרת החזיר שגיאה ('+r.status+') — נסו שוב'));e.status=r.status;e.reason=j.reason;throw e;}
+      return j;
+    });
+  },function(e){
+    var x=new Error(e&&e.name==='AbortError'?'השרת לא ענה בזמן — נסו שוב':(navigator.onLine===false?'אין חיבור לאינטרנט — נסו כשהחיבור יחזור':'אין חיבור לשרת — בדקו את האינטרנט ונסו שוב'));
+    x.status=0;throw x;
+  }).finally(function(){clearTimeout(t);});
+}
+function say(node,txt,kind){node.textContent=txt||'';node.className='msg'+(kind?' '+kind:'');}
+function starsText(avg){var r=Math.round(avg);return '★★★★★'.slice(0,r)+'☆☆☆☆☆'.slice(0,5-r);}
+function ratingLabel(it){return it.rating_count?('דירוג '+it.rating_avg.toFixed(1)+' מתוך 5 ('+it.rating_count+' '+(it.rating_count===1?'מדרג':'מדרגים')+')'):'עוד לא דורג';}
+function fmtDate(s){try{return new Date(s).toLocaleDateString('he-IL',{day:'numeric',month:'numeric',year:'2-digit'});}catch(e){return '';}}
+function imgWithFallback(src,full,alt){
+  var i=el('img',{src:src,alt:alt||'',loading:'lazy',decoding:'async'});
+  if(full&&full!==src)i.addEventListener('error',function f(){i.removeEventListener('error',f);i.src=full;});
+  return i;
+}
+
+// ── חיבור לאינטרנט ──
+function netState(){$('offline').hidden=navigator.onLine!==false;}
+addEventListener('online',function(){netState();if(!LIB.items.length)loadLib(true);});
+addEventListener('offline',netState);netState();
+
+// ════════ הספרייה ════════
+var LIB={cat:'',sort:'new',page:0,items:[],more:false,busy:false,cats:null,byId:{}};
+function drawChips(){
+  var c=$('chips');c.textContent='';
+  [''].concat(CATS).forEach(function(cat){
+    var n=LIB.cats?(cat?LIB.cats[cat]||0:Object.keys(LIB.cats).reduce(function(a,k){return a+LIB.cats[k];},0)):null;
+    var b=el('button',{type:'button',class:'chip','aria-pressed':String(LIB.cat===cat)},[(cat?ICON[cat]+' '+cat:'הכול')+' ']);
+    if(n!=null)b.appendChild(el('small',{text:'('+n+')'}));
+    b.addEventListener('click',function(){if(LIB.cat===cat)return;LIB.cat=cat;drawChips();loadLib(true);});
+    c.appendChild(b);
+  });
+}
+document.querySelectorAll('.seg button').forEach(function(b){
+  b.addEventListener('click',function(){
+    if(LIB.sort===b.dataset.sort)return;LIB.sort=b.dataset.sort;
+    document.querySelectorAll('.seg button').forEach(function(x){x.setAttribute('aria-pressed',String(x===b));});
+    loadLib(true);
+  });
+});
+function cardOf(it){
+  var b=el('button',{type:'button',class:'card'});
+  var ph=el('span',{class:'ph'},[imgWithFallback(it.thumb,it.url,'')]);
+  b.appendChild(ph);
+  b.appendChild(el('span',{class:'tt',text:it.title||'עיצוב'}));
+  b.appendChild(el('span',{class:'sr-only',text:' · '+it.category+' · '+ratingLabel(it)}));
+  var rt=el('span',{class:'rt','aria-hidden':'true'});
+  if(it.rating_count){rt.appendChild(el('span',{class:'stars-s',text:starsText(it.rating_avg),'aria-hidden':'true'}));rt.appendChild(document.createTextNode(' '+it.rating_avg.toFixed(1)+' ('+it.rating_count+')'));}
+  else rt.textContent=ICON[it.category]+' '+it.category;
+  b.appendChild(rt);
+  b.addEventListener('click',function(){openView(it);});
+  return el('li',null,[b]);
+}
+function drawGrid(){
+  var g=$('grid');g.textContent='';
+  LIB.items.forEach(function(it){g.appendChild(cardOf(it));});
+  $('moreBtn').hidden=!LIB.more;
+  if(!LIB.items.length){
+    var e=el('li',{class:'empty'});
+    e.appendChild(el('span',{class:'big','aria-hidden':'true',text:'🎨'}));
+    e.appendChild(el('p',{text:LIB.cat?'עוד אין עיצובים ב"'+LIB.cat+'". אולי שלכם יהיה הראשון?':'הספרייה עוד ריקה. היו הראשונים להוסיף עיצוב!'}));
+    e.appendChild(el('button',{type:'button',class:'ds-btn ds-btn--primary',text:'➕ הוסיפו עיצוב',onclick:openUpload}));
+    g.appendChild(e);
+  }
+}
+function skeleton(){var g=$('grid');g.textContent='';for(var i=0;i<8;i++)g.appendChild(el('li',{class:'skel','aria-hidden':'true'}));}
+var libSeq=0;
+function loadLib(reset){
+  if(reset){LIB.page=0;LIB.items=[];LIB.more=false;skeleton();}
+  var my=++libSeq;LIB.busy=true;$('grid').setAttribute('aria-busy','true');$('moreBtn').disabled=true;
+  say($('libMsg'),reset?'טוען עיצובים…':'טוען עוד…');
+  return api({action:'list',sort:LIB.sort,category:LIB.cat||undefined,page:LIB.page,size:24}).then(function(j){
+    if(my!==libSeq)return;
+    (j.items||[]).forEach(function(it){LIB.byId[it.id]=it;});
+    LIB.items=LIB.items.concat(j.items||[]);LIB.more=!!j.more;LIB.page++;
+    if(j.cats){LIB.cats=j.cats;drawChips();}
+    drawGrid();
+    say($('libMsg'),LIB.items.length?(LIB.items.length+' עיצובים'+(LIB.more?' — ויש עוד':'')):'');
+  },function(e){
+    if(my!==libSeq)return;
+    if(reset){$('grid').textContent='';}
+    var m=$('libMsg');say(m,'לא הצלחנו לטעון את העיצובים. '+e.message,'bad');
+    m.appendChild(document.createTextNode(' '));
+    m.appendChild(el('button',{type:'button',class:'ds-btn ds-btn--secondary sm',text:'🔄 נסו שוב',onclick:function(){loadLib(!LIB.items.length);}}));
+  }).finally(function(){if(my===libSeq){LIB.busy=false;$('grid').setAttribute('aria-busy','false');$('moreBtn').disabled=false;}});
+}
+$('moreBtn').addEventListener('click',function(){if(!LIB.busy)loadLib(false);});
+
+// ── תצוגה ודירוג ──
+var cur=null;
+function show(d){d.hidden=false;document.body.style.overflow='hidden';}
+function hide(d){d.hidden=true;if(!document.querySelector('.modal-bg:not([hidden])'))document.body.style.overflow='';}
+function drawStars(){
+  var box=$('stars');box.textContent='';var mine=votes[cur.id]||0;
+  for(var i=1;i<=5;i++)(function(n){
+    box.appendChild(el('button',{type:'button',class:'star','aria-label':n===1?'כוכב אחד':n+' כוכבים','aria-pressed':String(mine===n),'data-on':n<=mine?'1':'0',text:n<=mine?'★':'☆',onclick:function(){rate(n);}}));
+  })(i);
+  $('vAvg').textContent=(mine?'הדירוג שלכם: '+mine+' ⭐ · ':'')+(cur.rating_count?'ממוצע '+cur.rating_avg.toFixed(1)+' מתוך 5 ('+cur.rating_count+')':'עוד לא דורג — היו הראשונים');
+}
+function openView(it){
+  cur=it;
+  $('vTitle').textContent=it.title||'עיצוב';
+  var im=$('vImg');im.alt=it.title||'עיצוב מהספרייה';im.onerror=function(){if(im.src!==it.thumb)im.src=it.thumb;};im.src=it.url||it.thumb;
+  $('vMeta').textContent=ICON[it.category]+' '+it.category+(it.contributor?' · מאת '+it.contributor:'');
+  $('vShare').setAttribute('data-share-url','./?d='+it.id);
+  $('vShare').setAttribute('data-share-text',(it.title||'עיצוב')+' — מספריית העיצובים של עיצובישי ⭐');
+  drawStars();show($('dlgView'));
+  try{history.replaceState(null,'','?d='+it.id);}catch(e){}
+}
+$('viewClose').addEventListener('click',function(){hide($('dlgView'));try{history.replaceState(null,'',location.pathname);}catch(e){}});
+$('dlgView').addEventListener('click',function(e){if(e.target===this)$('viewClose').click();});
+function rate(n){
+  var it=cur,prev=votes[it.id]||0;if(prev===n)return;
+  votes[it.id]=n;LS.set('dl_votes',JSON.stringify(votes));drawStars();
+  $('vAvg').textContent='שומר את הדירוג…';
+  api({action:'rate',id:it.id,stars:n,device:DEVICE}).then(function(j){
+    it.rating_avg=j.rating_avg;it.rating_count=j.rating_count;
+    if(cur===it){drawStars();$('vAvg').textContent='תודה! הדירוג שלכם נשמר ⭐ · ממוצע '+it.rating_avg.toFixed(1)+' ('+it.rating_count+')';}
+    drawGrid();
+  },function(e){
+    if(prev)votes[it.id]=prev;else delete votes[it.id];LS.set('dl_votes',JSON.stringify(votes));
+    if(cur===it){drawStars();$('vAvg').textContent='⚠️ הדירוג לא נשמר: '+e.message;}
+  });
+}
+
+// ════════ הוספת עיצוב ════════
+var UP={file:null,dataUrl:'',img:null,cat:'',cut:null,sel:null,busy:false};
+function drawCats(){
+  var c=$('upCats');c.textContent='';
+  CATS.forEach(function(cat){
+    c.appendChild(el('button',{type:'button',class:'ds-choice','aria-pressed':String(UP.cat===cat),onclick:function(){UP.cat=cat;drawCats();}},[el('span',{class:'ic','aria-hidden':'true',text:ICON[cat]}),el('span',{text:cat})]));
+  });
+}
+function resetUpload(keepFields){
+  UP.file=null;UP.dataUrl='';UP.img=null;UP.cut=null;UP.sel=null;
+  $('upFile').value='';$('upPrev').hidden=true;$('upPick').hidden=false;$('cutBox').hidden=true;$('cutBtn').setAttribute('aria-expanded','false');$('cutState').textContent='';
+  if(!keepFields){$('upTitle').value='';UP.cat='';$('upOk').checked=false;}
+  $('upName').value=LS.get('dl_name')||'';$('upCode').value=LS.get('dl_code')||'';$('upCode').removeAttribute('aria-invalid');
+  drawCats();say($('upMsg'),'');$('upForm').hidden=false;$('upDone').hidden=true;
+}
+function openUpload(){resetUpload(false);show($('dlgUp'));}
+$('addBtn').addEventListener('click',openUpload);
+$('upClose').addEventListener('click',function(){if(UP.busy)return;hide($('dlgUp'));});
+$('upFinish').addEventListener('click',function(){hide($('dlgUp'));});
+$('upAgain').addEventListener('click',function(){resetUpload(false);$('upPick').focus();});
+$('upPick').addEventListener('click',function(){$('upFile').click();});
+$('upChange').addEventListener('click',function(){$('upFile').click();});
+
+function withTimeout(p,ms,msg){return Promise.race([p,new Promise(function(_,no){setTimeout(function(){no(new Error(msg));},ms);})]);}
+function loadImg(file){return withTimeout(new Promise(function(ok,no){var u=URL.createObjectURL(file),i=new Image();i.onload=function(){ok(i);};i.onerror=function(){URL.revokeObjectURL(u);no(new Error('bad'));};i.src=u;}),30000,'slow');}
+function readUrl(file){return new Promise(function(ok,no){var r=new FileReader();r.onload=function(){ok(r.result);};r.onerror=function(){no(r.error);};r.readAsDataURL(file);});}
+function encode(src,max){
+  var w=src.naturalWidth||src.width,h=src.naturalHeight||src.height,s=Math.min(1,max/Math.max(w,h));
+  var c=document.createElement('canvas');c.width=Math.max(1,Math.round(w*s));c.height=Math.max(1,Math.round(h*s));
+  var x=c.getContext('2d');x.imageSmoothingQuality='high';x.drawImage(src,0,0,c.width,c.height);
+  var d=c.toDataURL('image/webp',.9);if(d.indexOf('data:image/webp')!==0)d=c.toDataURL('image/jpeg',.9);
+  return d;
+}
+var bytesOf=function(d){return Math.floor((d.length-d.indexOf(',')-1)*3/4);};
+$('upFile').addEventListener('change',function(){
+  var f=this.files&&this.files[0];if(!f)return;
+  say($('upMsg'),'פותח את התמונה…');
+  loadImg(f).then(function(img){
+    var keep=/^image\/(png|jpeg|webp)$/.test(f.type)&&f.size<=MAX;
+    // תמונה רגילה עד 10MB נשלחת כמו שהיא (איכות מלאה, וזיהוי כפילות לפי הקובץ). אחרת — מקטינים בדפדפן.
+    return (keep?readUrl(f):Promise.resolve(null)).then(function(d){
+      if(!d){d=encode(img,3200);var m=2400;while(bytesOf(d)>MAX&&m>600){d=encode(img,m);m-=600;}}
+      UP.file=f;UP.img=img;UP.dataUrl=d;UP.cut=null;UP.sel=null;
+      $('upImg').src=img.src;$('upPrev').hidden=false;$('upPick').hidden=true;$('cutState').textContent='';
+      if(!$('upTitle').value)$('upTitle').value=(f.name||'').replace(/\.[^.]+$/,'').replace(/[_-]+/g,' ').replace(/^(IMG|DSC|PXL|Screenshot)\s*\d.*$/i,'').slice(0,80);
+      say($('upMsg'),'');
+      if(!$('cutBox').hidden)startCut();
+    });
+  }).catch(function(){
+    say($('upMsg'),'התמונה לא נפתחה. נסו תמונה אחרת, או צילום מסך שלה.','bad');
+  });
+});
+
+// ── ✂️ חיתוך פשוט: סימון מלבן + הסרת רקע לבן (מילוי מהשוליים) ──
+var CV=$('cutCv'),cx=CV.getContext('2d'),VIEW=1;
+function startCut(){
+  if(!UP.img)return;
+  var w=UP.img.naturalWidth,h=UP.img.naturalHeight,box=Math.min(560,$('cutBox').clientWidth-28||300);
+  VIEW=Math.min(1,box/w,420/h);CV.width=Math.max(1,Math.round(w*VIEW));CV.height=Math.max(1,Math.round(h*VIEW));
+  if(!UP.sel)UP.sel={x:0,y:0,w:1,h:1};
+  drawSel();schedCut();
+}
+function drawSel(){
+  var s=UP.sel,W=CV.width,H=CV.height;
+  cx.clearRect(0,0,W,H);cx.drawImage(UP.img,0,0,W,H);
+  cx.fillStyle='rgba(10,42,92,.5)';
+  cx.fillRect(0,0,W,s.y*H);cx.fillRect(0,(s.y+s.h)*H,W,H-(s.y+s.h)*H);
+  cx.fillRect(0,s.y*H,s.x*W,s.h*H);cx.fillRect((s.x+s.w)*W,s.y*H,W-(s.x+s.w)*W,s.h*H);
+  cx.setLineDash([6,4]);cx.lineWidth=2;cx.strokeStyle='#FDC010';cx.strokeRect(s.x*W+1,s.y*H+1,s.w*W-2,s.h*H-2);cx.setLineDash([]);
+}
+var drag=null;
+function pt(e){var r=CV.getBoundingClientRect();return {x:Math.min(1,Math.max(0,(e.clientX-r.left)/r.width)),y:Math.min(1,Math.max(0,(e.clientY-r.top)/r.height))};}
+CV.addEventListener('pointerdown',function(e){if(!UP.img)return;CV.setPointerCapture(e.pointerId);drag=pt(e);e.preventDefault();});
+CV.addEventListener('pointermove',function(e){
+  if(!drag)return;var p=pt(e);
+  UP.sel={x:Math.min(drag.x,p.x),y:Math.min(drag.y,p.y),w:Math.abs(p.x-drag.x),h:Math.abs(p.y-drag.y)};drawSel();
+});
+function endDrag(){if(!drag)return;drag=null;if(UP.sel.w<.03||UP.sel.h<.03)UP.sel={x:0,y:0,w:1,h:1};drawSel();schedCut();}
+CV.addEventListener('pointerup',endDrag);CV.addEventListener('pointercancel',endDrag);
+$('cutAll').addEventListener('click',function(){UP.sel={x:0,y:0,w:1,h:1};drawSel();schedCut();});
+$('cutWhite').addEventListener('change',function(){$('tolRow').hidden=!this.checked;schedCut();});
+$('cutTol').addEventListener('input',function(){$('tolVal').textContent=this.value;schedCut();});
+var cutT=0;function schedCut(){clearTimeout(cutT);cutT=setTimeout(function(){var c=makeCut();var r=$('cutRes');r.width=c.width;r.height=c.height;r.getContext('2d').drawImage(c,0,0);},120);}
+function makeCut(){
+  var img=UP.img,s=UP.sel||{x:0,y:0,w:1,h:1},W=img.naturalWidth,H=img.naturalHeight;
+  var sx=Math.round(s.x*W),sy=Math.round(s.y*H),sw=Math.max(1,Math.round(s.w*W)),sh=Math.max(1,Math.round(s.h*H));
+  var k=Math.min(1,2000/Math.max(sw,sh)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(sw*k));c.height=Math.max(1,Math.round(sh*k));
+  var x=c.getContext('2d',{willReadFrequently:true});x.drawImage(img,sx,sy,sw,sh,0,0,c.width,c.height);
+  if(!$('cutWhite').checked)return c;
+  var w=c.width,h=c.height,id=x.getImageData(0,0,w,h),d=id.data,thr=(+$('cutTol').value)*1.6;
+  var seen=new Uint8Array(w*h),q=new Int32Array(w*h),qh=0,qt=0;
+  var bg=function(p){var i=p*4;return d[i+3]<16||(255-Math.min(d[i],d[i+1],d[i+2]))<=thr;};
+  function push(p){if(!seen[p]&&bg(p)){seen[p]=1;q[qt++]=p;}}
+  for(var i=0;i<w;i++){push(i);push((h-1)*w+i);}
+  for(var j=0;j<h;j++){push(j*w);push(j*w+w-1);}
+  while(qh<qt){var p=q[qh++],px=p%w;d[p*4+3]=0;if(px>0)push(p-1);if(px<w-1)push(p+1);if(p>=w)push(p-w);if(p<w*(h-1))push(p+w);}
+  x.putImageData(id,0,0);
+  // חיתוך שוליים שקופים
+  var x0=w,y0=h,x1=-1,y1=-1;
+  for(var yy=0;yy<h;yy++)for(var xx=0;xx<w;xx++)if(d[(yy*w+xx)*4+3]>8){if(xx<x0)x0=xx;if(xx>x1)x1=xx;if(yy<y0)y0=yy;if(yy>y1)y1=yy;}
+  if(x1<0)return c;
+  var t=document.createElement('canvas');t.width=x1-x0+1;t.height=y1-y0+1;t.getContext('2d').drawImage(c,x0,y0,t.width,t.height,0,0,t.width,t.height);
+  return t;
+}
+$('cutBtn').addEventListener('click',function(){
+  var open=$('cutBox').hidden;$('cutBox').hidden=!open;this.setAttribute('aria-expanded',String(open));
+  if(open)startCut();
+});
+$('cutSave').addEventListener('click',function(){
+  var c=makeCut(),d=c.toDataURL('image/png');
+  if(bytesOf(d)>MAX){say($('upMsg'),'החיתוך גדול מדי — סמנו אזור קטן יותר','bad');return;}
+  UP.cut=d;$('cutBox').hidden=true;$('cutBtn').setAttribute('aria-expanded','false');
+  $('cutState').textContent='✓ החיתוך יישלח עם העיצוב';$('cutBtn').focus();
+});
+$('cutDrop').addEventListener('click',function(){UP.cut=null;UP.sel=null;$('cutWhite').checked=false;$('tolRow').hidden=true;$('cutBox').hidden=true;$('cutBtn').setAttribute('aria-expanded','false');$('cutState').textContent='';$('cutBtn').focus();});
+
+$('upSend').addEventListener('click',function(){
+  var m=$('upMsg');
+  if(UP.busy)return;
+  if(!UP.dataUrl){say(m,'בחרו קודם תמונה 📷','bad');$('upPick').focus();return;}
+  if(!UP.cat){say(m,'בחרו על מה העיצוב (כוסות, מזוזות…)','bad');var f=$('upCats').querySelector('button');if(f)f.focus();return;}
+  var code=$('upCode').value.trim();
+  if(!code&&!isAdmin){say(m,'כתבו את קוד השותף שקיבלתם מהושעיה','bad');$('upCode').setAttribute('aria-invalid','true');$('upCode').focus();return;}
+  if(!$('upOk').checked){say(m,'סמנו שאתם מאשרים לשתף את העיצוב','bad');$('upOk').focus();return;}
+  UP.busy=true;$('upSend').disabled=true;say(m,'שולח… (בתמונה גדולה זה לוקח כמה שניות)');
+  var body={action:'upload',code:code||undefined,title:$('upTitle').value.trim(),category:UP.cat,contributor:$('upName').value.trim()||undefined,image:UP.dataUrl,cut:UP.cut||undefined};
+  api(body,{timeout:120000,admin:isAdmin&&!code}).then(function(j){
+    if(code)LS.set('dl_code',code);
+    var nm=$('upName').value.trim();if(nm)LS.set('dl_name',nm);else LS.del('dl_name');
+    $('upForm').hidden=true;$('upDone').hidden=false;$('doneDup').hidden=!j.duplicate;$('doneTitle').focus();
+    if(isAdmin)refreshCounts();
+  },function(e){
+    if(e.reason==='bad_code'){LS.del('dl_code');$('upCode').setAttribute('aria-invalid','true');$('upCode').focus();}
+    say(m,'⚠️ '+e.message,'bad');
+  }).finally(function(){UP.busy=false;$('upSend').disabled=false;});
+});
+$('upCode').addEventListener('input',function(){this.removeAttribute('aria-invalid');});
+
+// ── נעילת סליידר במגע (כלל data-sl-lock, כמו במחולל): גלילה עם האצבע לא מזיזה אותו בטעות ──
+(function(){
+  var rows=function(){return document.querySelectorAll('[data-sl-lock]');},inp=function(r){return document.getElementById(r.dataset.slLock);};
+  if(!(window.matchMedia&&matchMedia('(any-pointer:coarse)').matches))return;
+  function lockAll(ex){rows().forEach(function(r){if(r!==ex){var e=inp(r);if(e){e.style.pointerEvents='none';e.style.outline='';}}});}
+  lockAll(null);
+  var pend=null,upT=0;
+  function open(r){clearTimeout(upT);upT=0;var e=inp(r);if(!e||!r.isConnected)return;lockAll(r);e.style.pointerEvents='auto';e.style.outline='2px solid var(--c-primary)';e.style.outlineOffset='3px';e.focus({preventScroll:true});}
+  document.addEventListener('pointerdown',function(e){var r=e.target.closest&&e.target.closest('[data-sl-lock]');clearTimeout(upT);upT=0;if(!r){pend=null;lockAll(null);return;}var x=inp(r);if(!x)return;if(x.style.pointerEvents==='auto'){pend=null;return;}lockAll(r);pend=r;},true);
+  document.addEventListener('pointerup',function(e){var r=pend;if(!r)return;if(!(e.target.closest&&e.target.closest('[data-sl-lock]')===r)){pend=null;return;}upT=setTimeout(function(){if(pend===r){pend=null;open(r);}},400);},true);
+  document.addEventListener('click',function(e){var r=pend;if(!r||!(e.target.closest&&e.target.closest('[data-sl-lock]')===r))return;pend=null;setTimeout(function(){open(r);},0);},true);
+  document.addEventListener('pointercancel',function(){pend=null;clearTimeout(upT);upT=0;},true);
+  document.addEventListener('scroll',function(){lockAll(null);},{capture:true,passive:true});
+})();
+
+// ════════ מנהל ════════
+function loadScript(src,ms){return withTimeout(new Promise(function(ok,no){var s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=function(){no(new Error('load'));};document.head.appendChild(s);}),ms,'timeout');}
+function ensureSb(){
+  if(sb)return Promise.resolve(sb);
+  var p=window.supabase?Promise.resolve():loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',15000);
+  return p.then(function(){
+    sb=window.supabase.createClient(CFG.url,CFG.anonKey);
+    sb.auth.onAuthStateChange(function(ev,s){var had=!!session;session=s;if(s&&!had)checkAdmin(true);if(!s&&had)setAdmin(false);});
+    return sb;
+  });
+}
+function hasStoredSession(){
+  try{for(var i=0;i<localStorage.length;i++)if(/^sb-.+-auth-token$/.test(localStorage.key(i)))return true;}catch(e){}
+  return /access_token=|[?&]code=/.test(location.hash+location.search);
+}
+function initAdmin(){
+  if(!hasStoredSession())return;
+  ensureSb().then(function(){return sb.auth.getSession();}).then(function(r){
+    session=r.data.session;
+    // מנויי המחולל באותו דומיין מחוברים גם הם ל-Supabase — שואלים את השרת רק כשהמייל ברשימת המנהלים (ההרשאה האמיתית בשרת)
+    var em=(session&&session.user&&session.user.email||'').toLowerCase(),list=(CFG.adminEmails||[]).map(function(x){return String(x).toLowerCase();});
+    if(session&&(!list.length||list.indexOf(em)>=0))checkAdmin(false);
+  }).catch(function(){});
+}
+var QS={st:'pending',page:0,items:[],more:false,counts:{},code:null};
+function checkAdmin(loud){
+  return api({action:'admin_list',status:'pending',size:1},{admin:true}).then(function(j){
+    QS.counts=j.counts||{};QS.code=j.code;setAdmin(true);hide($('dlgLogin'));
+  },function(e){
+    setAdmin(false);
+    if(loud){show($('dlgLogin'));say($('lgMsg'),e.status===401?'החשבון הזה לא מנהל של הספרייה':'⚠️ '+e.message,'bad');}
+  });
+}
+function setAdmin(on){
+  isAdmin=on;$('adminBar').hidden=!on;$('adminLogin').hidden=on;
+  if(on)drawCounts();else selectTab('lib');
+}
+function drawCounts(){
+  var c=QS.counts||{};$('qN').textContent=c.pending||0;
+  $('cP').textContent='('+(c.pending||0)+')';$('cA').textContent='('+(c.approved||0)+')';$('cR').textContent='('+(c.rejected||0)+')';
+}
+function refreshCounts(){return api({action:'admin_list',status:'pending',size:1},{admin:true}).then(function(j){QS.counts=j.counts;QS.code=j.code;drawCounts();}).catch(function(){});}
+function selectTab(t){
+  document.querySelectorAll('.admin-bar .tab').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.tab===t));});
+  $('tab-lib').hidden=t!=='lib';document.querySelector('.intro').hidden=t!=='lib';$('tab-queue').hidden=t!=='queue';$('tab-code').hidden=t!=='code';
+  if(t==='lib'&&!LIB.cats)loadLib(true);
+  if(t==='queue')loadQueue(true);
+  if(t==='code')drawCode();
+}
+document.querySelectorAll('.admin-bar .tab').forEach(function(b){b.addEventListener('click',function(){selectTab(b.dataset.tab);});});
+$('logoutBtn').addEventListener('click',function(){if(sb)sb.auth.signOut().catch(function(){});session=null;setAdmin(false);});
+$('adminLogin').addEventListener('click',function(){
+  say($('lgMsg'),'');$('lgCodeRow').hidden=true;show($('dlgLogin'));
+  ensureSb().catch(function(){say($('lgMsg'),'לא הצלחנו לטעון את מערכת הכניסה — בדקו את האינטרנט','bad');});
+});
+$('loginClose').addEventListener('click',function(){hide($('dlgLogin'));});
+$('lgSend').addEventListener('click',function(){
+  var email=$('lgEmail').value.trim(),m=$('lgMsg');
+  if(!/^\S+@\S+\.\S+$/.test(email)){say(m,'כתבו מייל תקין','bad');$('lgEmail').focus();return;}
+  $('lgSend').disabled=true;say(m,'שולח…');
+  ensureSb().then(function(){return sb.auth.signInWithOtp({email:email,options:{emailRedirectTo:location.origin+location.pathname,shouldCreateUser:false}});})
+  .then(function(r){
+    if(r.error)throw r.error;
+    say(m,'📩 נשלח קישור למייל. פתחו אותו במכשיר הזה'+(CFG.otpCode?', או כתבו כאן את הקוד מהמייל.':'.'),'ok');
+    if(CFG.otpCode){$('lgCodeRow').hidden=false;$('lgCode').focus();}
+  }).catch(function(){say(m,'לא נשלח — בדקו את המייל ונסו שוב','bad');}).finally(function(){$('lgSend').disabled=false;});
+});
+$('lgVerify').addEventListener('click',function(){
+  var m=$('lgMsg'),tok=$('lgCode').value.replace(/\D/g,'');
+  if(tok.length<6){say(m,'כתבו את הקוד מהמייל','bad');return;}
+  ensureSb().then(function(){return sb.auth.verifyOtp({email:$('lgEmail').value.trim(),token:tok,type:'email'});})
+  .then(function(r){if(r.error)throw r.error;session=r.data.session;return checkAdmin(true);})
+  .catch(function(){say(m,'הקוד לא נכון או שפג תוקפו','bad');});
+});
+
+// ── תור האישורים ──
+document.querySelectorAll('#qStatus .chip').forEach(function(b){b.addEventListener('click',function(){
+  QS.st=b.dataset.st;document.querySelectorAll('#qStatus .chip').forEach(function(x){x.setAttribute('aria-pressed',String(x===b));});loadQueue(true);
+});});
+$('qReload').addEventListener('click',function(){loadQueue(true);});
+$('qMore').addEventListener('click',function(){loadQueue(false);});
+var qSeq=0;
+function loadQueue(reset){
+  if(reset){QS.page=0;QS.items=[];$('queue').textContent='';}
+  var my=++qSeq;say($('qMsg'),'טוען…');
+  return api({action:'admin_list',status:QS.st,page:QS.page,size:30},{admin:true}).then(function(j){
+    if(my!==qSeq)return;
+    QS.items=QS.items.concat(j.items||[]);QS.more=!!j.more;QS.page++;QS.counts=j.counts||QS.counts;QS.code=j.code;
+    drawCounts();drawQueue();
+  },function(e){if(my===qSeq)say($('qMsg'),'⚠️ '+e.message,'bad');});
+}
+function drawQueue(){
+  var box=$('queue');box.textContent='';
+  QS.items.forEach(function(it){box.appendChild(qCard(it));});
+  $('qMore').hidden=!QS.more;
+  say($('qMsg'),QS.items.length?'':({pending:'אין עיצובים שמחכים לאישור 🎉',approved:'עוד לא אושרו עיצובים',rejected:'אין עיצובים שנדחו'})[QS.st]);
+}
+function fig(src,full,cap){
+  var a=el('a',{href:full||src,target:'_blank',rel:'noopener noreferrer','aria-label':'פתיחה בגודל מלא: '+cap},[el('span',{class:'ph'},[imgWithFallback(src,full,'')])]);
+  return el('figure',null,[a,el('figcaption',{text:cap})]);
+}
+function qCard(it){
+  var c=el('article',{class:'qi','aria-label':it.title||'עיצוב'});
+  var imgs=el('div',{class:'imgs'},[fig(it.thumb,it.url,'העיצוב')]);
+  if(it.cut)imgs.appendChild(fig(it.cut,it.cut,'✂️ החיתוך'));
+  c.appendChild(imgs);
+  if(it.dup){
+    var db=el('div',{class:'dupbox'},['🔁 חשד לכפילות — אותו קובץ כמו "'+(it.dup.title||'עיצוב')+'" ('+({pending:'ממתין',approved:'מאושר',rejected:'נדחה'})[it.dup.status]+')']);
+    db.appendChild(el('div',{class:'imgs'},[fig(it.thumb,it.url,'החדש'),fig(it.dup.thumb,it.dup.url,'הקיים')]));
+    c.appendChild(db);
+  }
+  c.appendChild(el('p',{class:'meta',text:fmtDate(it.created_at)+(it.contributor?' · מאת '+it.contributor:'')+(it.width?' · \u2066'+it.width+'×'+it.height+'\u2069':'')+(it.rating_count?' · ⭐ '+it.rating_avg.toFixed(1)+' ('+it.rating_count+')':'')}));
+  var uid='q'+it.id.slice(0,8);
+  var ti=el('input',{class:'inp',id:uid+'t',maxlength:'80',value:it.title||''});
+  var ca=el('select',{class:'inp',id:uid+'c'});CATS.forEach(function(k){var o=el('option',{value:k,text:ICON[k]+' '+k});if(k===it.category)o.selected=true;ca.appendChild(o);});
+  var co=el('input',{class:'inp',id:uid+'n',maxlength:'300',value:it.correction||'',placeholder:'למשל: לתקן איות'});
+  c.appendChild(el('div',{class:'grid2'},[
+    el('div',null,[el('label',{for:uid+'t',text:'שם'}),ti]),
+    el('div',null,[el('label',{for:uid+'c',text:'קטגוריה'}),ca]),
+    el('div',{style:'grid-column:1/-1'},[el('label',{for:uid+'n',text:'הערה / תיקון (פנימי)'}),co])
+  ]));
+  var msg=el('p',{class:'msg',role:'status','aria-live':'polite'});
+  function edits(){return {title:ti.value,category:ca.value,correction:co.value};}
+  function act(patch,doneTxt,btn){
+    var all=c.querySelectorAll('button');all.forEach(function(b){b.disabled=true;});say(msg,'שומר…');
+    var body=Object.assign({action:'admin_review',id:it.id},edits(),patch);
+    return api(body,{admin:true}).then(function(){
+      say(msg,doneTxt,'ok');
+      if(patch.status&&patch.status!==QS.st){setTimeout(function(){QS.items=QS.items.filter(function(x){return x!==it;});drawQueue();refreshCounts();},500);}
+      else{Object.assign(it,edits(),patch);all.forEach(function(b){b.disabled=false;});}
+      if(patch.status)LIB.cats=null; // הספרייה תתרענן בכניסה הבאה ללשונית
+    },function(e){say(msg,'⚠️ '+e.message,'bad');all.forEach(function(b){b.disabled=false;});});
+  }
+  var acts=el('div',{class:'acts'});
+  if(it.status!=='approved')acts.appendChild(el('button',{type:'button',class:'ds-btn ok sm',text:'✓ אישור',onclick:function(){act({status:'approved'},'✓ אושר — מופיע בספרייה');}}));
+  if(it.status!=='rejected')acts.appendChild(el('button',{type:'button',class:'ds-btn bad sm',text:'✕ דחייה',onclick:function(){act({status:'rejected'},'✕ נדחה');}}));
+  if(it.status!=='pending')acts.appendChild(el('button',{type:'button',class:'ds-btn ds-btn--secondary sm',text:'⏳ החזרה להמתנה',onclick:function(){act({status:'pending'},'הוחזר להמתנה');}}));
+  acts.appendChild(el('button',{type:'button',class:'ds-btn ds-btn--secondary sm',text:'💾 שמירה',onclick:function(){act({},'💾 נשמר');}}));
+  if(it.dup){
+    acts.appendChild(el('button',{type:'button',class:'ds-btn ds-btn--secondary sm',text:'🔁 זו כפילות — דחייה',onclick:function(){co.value=co.value||'כפילות';act({status:'rejected',duplicate_of:it.dup.id},'נדחה ככפילות');}}));
+    acts.appendChild(el('button',{type:'button',class:'ds-btn ds-btn--ghost sm',text:'לא כפילות',onclick:function(){act({duplicate_of:null},'סומן: לא כפילות').then(function(){it.dup=null;});}}));
+  }else{
+    var pk=el('div',{class:'picker',hidden:true,role:'group','aria-label':'בחרו את העיצוב המקורי'});
+    acts.appendChild(el('button',{type:'button',class:'ds-btn ds-btn--ghost sm',text:'🔁 סמן ככפילות…','aria-expanded':'false',onclick:function(){
+      var b=this,open=pk.hidden;pk.hidden=!open;b.setAttribute('aria-expanded',String(open));if(!open)return;
+      pk.textContent='טוען…';
+      approvedPool().then(function(list){
+        pk.textContent='';
+        list.filter(function(x){return x.id!==it.id;}).forEach(function(x){
+          pk.appendChild(el('button',{type:'button','aria-label':'המקור: '+(x.title||'עיצוב'),onclick:function(){co.value=co.value||'כפילות';act({status:'rejected',duplicate_of:x.id},'נדחה ככפילות של "'+(x.title||'עיצוב')+'"');}},[el('span',{class:'ph'},[imgWithFallback(x.thumb,x.url,'')]),el('span',{text:x.title||'עיצוב'})]));
+        });
+        if(!pk.children.length)pk.textContent='אין עדיין עיצובים מאושרים להשוואה';
+      },function(e){pk.textContent='⚠️ '+e.message;});
+    }}));
+    c.appendChild(acts);c.appendChild(pk);acts=null;
+  }
+  if(acts)c.appendChild(acts);
+  var del=el('button',{type:'button',class:'ds-btn ds-btn--ghost sm',text:'🗑 מחיקה'});
+  var armed=0;
+  del.addEventListener('click',function(){
+    if(!armed){armed=setTimeout(function(){armed=0;del.textContent='🗑 מחיקה';},4000);del.textContent='⚠️ בטוח? לחצו שוב למחיקה סופית';return;}
+    clearTimeout(armed);armed=0;del.disabled=true;say(msg,'מוחק…');
+    api({action:'admin_delete',id:it.id},{admin:true}).then(function(){QS.items=QS.items.filter(function(x){return x!==it;});drawQueue();refreshCounts();},function(e){del.disabled=false;say(msg,'⚠️ '+e.message,'bad');});
+  });
+  c.appendChild(el('div',{class:'acts',style:'margin-top:var(--sp-2)'},[del]));
+  c.appendChild(msg);
+  return c;
+}
+var pool=null;
+function approvedPool(){
+  if(pool)return Promise.resolve(pool);
+  return api({action:'list',sort:'new',size:48}).then(function(j){pool=j.items||[];setTimeout(function(){pool=null;},60000);return pool;});
+}
+
+// ── קוד שותף ──
+function drawCode(){
+  var c=QS.code;
+  $('codeNow').textContent=c&&c.active?('✓ יש קוד פעיל'+(c.label?' ("'+c.label+'")':'')+' מ-'+fmtDate(c.created_at)+'. חברים עם הקוד יכולים להוסיף עיצובים.'):'⚠️ עוד אין קוד פעיל — חברים לא יכולים להוסיף עיצובים. צרו קוד למטה.';
+}
+$('genCode').addEventListener('click',function(){
+  var A='ABCDEFGHJKMNPQRSTUVWXYZ23456789',s='',r=new Uint32Array(6);crypto.getRandomValues(r);
+  for(var i=0;i<6;i++)s+=A[r[i]%A.length];$('newCode').value='ITZ-'+s;
+});
+$('saveCode').addEventListener('click',function(){
+  var code=$('newCode').value.trim().toUpperCase().replace(/\s+/g,''),m=$('codeMsg');
+  if(!/^[A-Z0-9א-ת_-]{4,40}$/.test(code)){say(m,'קוד של 4–40 תווים: אותיות, ספרות, מקף','bad');$('newCode').focus();return;}
+  $('saveCode').disabled=true;say(m,'שומר…');
+  api({action:'admin_set_code',code:code,label:$('codeLabel').value.trim()||undefined},{admin:true}).then(function(j){
+    say(m,'✓ הקוד החדש פעיל. הקוד הקודם הפסיק לעבוד.','ok');
+    QS.code={active:true,label:j.label,created_at:new Date().toISOString()};drawCode();
+    var link=location.origin+location.pathname;
+    var txt='היי! 😊 זו ספריית העיצובים של עיצובישי — אפשר לדרג עיצובים ולהוסיף עיצובים משלכם:\n'+link+'\nהקוד להוספת עיצוב: '+code;
+    $('shareTxt').value=txt;$('shareWa').href='https://wa.me/?text='+encodeURIComponent(txt);$('codeShare').hidden=false;
+  },function(e){say(m,'⚠️ '+e.message,'bad');}).finally(function(){$('saveCode').disabled=false;});
+});
+$('copyTxt').addEventListener('click',function(){
+  var t=$('shareTxt');t.select();
+  (navigator.clipboard?navigator.clipboard.writeText(t.value):Promise.reject()).then(function(){say($('codeMsg'),'📋 הועתק','ok');},function(){try{document.execCommand('copy');say($('codeMsg'),'📋 הועתק','ok');}catch(e){}});
+});
+
+// ════════ התחלה ════════
+drawChips();drawCats();
+var deep=(new URLSearchParams(location.search).get('d')||'');
+loadLib(true).then(function(){
+  if(!/^[0-9a-f-]{36}$/i.test(deep))return;
+  if(LIB.byId[deep])return openView(LIB.byId[deep]);
+  api({action:'list',id:deep}).then(function(j){if(j.items&&j.items[0])openView(j.items[0]);}).catch(function(){});
+});
+initAdmin();
+window.__lib={LIB:LIB,QS:QS,UP:UP,makeCut:makeCut};
+})();
+</script>
+<script src="../js/a11y-modal.js?v=1"></script>
+<script src="../js/share-link.js?v=1"></script>
+</body>
+</html>
