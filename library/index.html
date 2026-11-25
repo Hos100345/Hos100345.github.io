@@ -278,7 +278,7 @@
     </div>
     <div class="v-acts">
       <button type="button" class="ds-btn ds-btn--secondary sm" id="vShare" data-share>📤 שלחו לחבר</button>
-      <a class="ds-btn ds-btn--primary sm" href="../studio/?p=ad">🎨 עצבו בעצמכם</a>
+      <a class="ds-btn ds-btn--primary sm" id="vDesign" href="../studio/?p=ad">🎨 עצבו בעצמכם</a>
     </div>
   </div>
 </div>
@@ -505,6 +505,7 @@ function openView(it){
   var im=$('vImg');im.alt=it.title||'עיצוב מהספרייה';im.onerror=function(){if(im.src!==it.thumb)im.src=it.thumb;};im.src=it.url||it.thumb;
   $('vMeta').textContent=ICON[it.category]+' '+it.category+(it.contributor?' · מאת '+it.contributor:'');
   $('vShare').setAttribute('data-share-url','./?d='+it.id);
+  $('vDesign').href='../studio/?p=ad&lib='+encodeURIComponent(it.id); // S-200: העיצוב נפתח בעורך הפרסומת כרקע
   $('vShare').setAttribute('data-share-text',(it.title||'עיצוב')+' — מספריית העיצובים של עיצובישי ⭐');
   drawStars();show($('dlgView'));
   try{history.replaceState(null,'','?d='+it.id);}catch(e){}
