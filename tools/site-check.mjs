@@ -87,7 +87,13 @@ catch (e) { err('setup', 'חסרים playwright / axe-core — npm i --no-save p
 
 if (chromium) {
   const browser = await chromium.launch(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH, args: ['--no-sandbox'] } : {});
-  const ctx = await browser.newContext({ viewport: { width: 390, height: 800 }, locale: 'he-IL' });
+  // reducedMotion: אלמנטי .reveal נכנסים מ-opacity:0 ל-1 תוך 0.7s (ועד 0.3s השהיה).
+  // axe מודד את הצבע *אחרי* המיזוג עם מה שמאחור, כך שכפתור שנתפס באמצע ההנפשה
+  // מקבל ניגודיות שקרית — למשל .btn-hero-phone ב-one-match.html: 1.86:1 במקום 5.07:1
+  // האמיתיים. ברץ עמוס ההנפשה מסתיימת אחרי ההמתנה למטה, ולכן אותו commit נכשל
+  // פעם ועובר פעם. `prefers-reduced-motion` מקוצר ל-0.01ms ב-css/tokens.css, כך
+  // שהדף מגיע מיד למצב הסופי — וזה גם המצב שהבדיקה אמורה לבדוק.
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 800 }, locale: 'he-IL', reducedMotion: 'reduce' });
   await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, rt => rt.abort()); // בלי רשת חיצונית — הבדיקה יציבה ומהירה
   for (const u of AXE_PAGES) {
     const pg = await ctx.newPage(); const jsErr = [];
@@ -95,6 +101,15 @@ if (chromium) {
     try {
       await pg.goto(BASE + u, { waitUntil: 'domcontentloaded', timeout: 30000 });
       await pg.waitForTimeout(1200);
+      // חגורה שנייה ל-reducedMotion: דף שלא טוען את css/tokens.css לא מקצר הנפשות,
+      // ואז עדיין אפשר לתפוס .reveal באמצע הדהייה. מחכים שכל מה שנראה על המסך
+      // יגיע ל-opacity סופי. מוגבל בזמן ולא מפיל את הבדיקה.
+      await pg.waitForFunction(() => [...document.querySelectorAll('.reveal')].every(el => {
+        const r = el.getBoundingClientRect();
+        if (r.bottom <= 0 || r.top >= innerHeight || r.width === 0) return true;
+        const o = getComputedStyle(el).opacity;
+        return o === '1' || o === '0';
+      }), null, { timeout: 4000 }).catch(() => {});
       await pg.addScriptTag({ content: AXE });
       const v = await pg.evaluate(async () => (await axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] } }))
         .violations.map(x => ({ id: x.id, impact: x.impact, help: x.help, n: x.nodes.length, at: x.nodes.slice(0, 2).map(n => n.target.join(' ')) })));
