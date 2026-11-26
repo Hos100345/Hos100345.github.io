@@ -387,8 +387,9 @@
 'use strict';
 var CFG=window.SUPABASE_CONFIG||{};
 var FN=window.DL_ENDPOINT||((CFG.url||'')+'/functions/v1/design-library');
-var CATS=['כוסות','מזוזות','תמונות','מחזיקי מפתחות','אחר'];
-var ICON={'כוסות':'☕','מזוזות':'📜','תמונות':'🖼️','מחזיקי מפתחות':'🔑','אחר':'✨'};
+var CATS=['כוסות','מזוזות','תמונות','מחזיקי מפתחות','אחר','קטלוג']; // W-77: 'קטלוג' — הקטלוג של הושעיה לדירוג המשפחה (לא בהעלאה של חברים)
+var UP_CATS=CATS.filter(function(c){return c!=='קטלוג';});
+var ICON={'כוסות':'☕','מזוזות':'📜','תמונות':'🖼️','מחזיקי מפתחות':'🔑','אחר':'✨','קטלוג':'📒'};
 var MAX=10*1024*1024;
 var $=function(id){return document.getElementById(id);};
 var LS={get:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},set:function(k,v){try{localStorage.setItem(k,v);}catch(e){}},del:function(k){try{localStorage.removeItem(k);}catch(e){}}};
@@ -598,7 +599,7 @@ function tagBox(it,adminMode){
 var UP={file:null,dataUrl:'',img:null,cat:'',cut:null,sel:null,busy:false};
 function drawCats(){
   var c=$('upCats');c.textContent='';
-  CATS.forEach(function(cat){
+  UP_CATS.forEach(function(cat){
     c.appendChild(el('button',{type:'button',class:'ds-choice','aria-pressed':String(UP.cat===cat),onclick:function(){UP.cat=cat;drawCats();}},[el('span',{class:'ic','aria-hidden':'true',text:ICON[cat]}),el('span',{text:cat})]));
   });
 }
@@ -860,7 +861,7 @@ function qCard(it){
   }
   c.appendChild(el('p',{class:'meta',text:fmtDate(it.created_at)+(it.contributor?' · מאת '+it.contributor:'')+(it.width?' · \u2066'+it.width+'×'+it.height+'\u2069':'')+(it.rating_count?' · ⭐ '+it.rating_avg.toFixed(1)+' ('+it.rating_count+')':'')}));
   var uid='q'+it.id.slice(0,8);
-  var ti=el('input',{class:'inp',id:uid+'t',maxlength:'80',value:it.title||''});
+  var ti=el('input',{class:'inp',id:uid+'t',maxlength:'160',value:it.title||''});
   var ca=el('select',{class:'inp',id:uid+'c'});CATS.forEach(function(k){var o=el('option',{value:k,text:ICON[k]+' '+k});if(k===it.category)o.selected=true;ca.appendChild(o);});
   var co=el('input',{class:'inp',id:uid+'n',maxlength:'300',value:it.correction||'',placeholder:'למשל: לתקן איות'});
   c.appendChild(el('div',{class:'grid2'},[

@@ -10,7 +10,7 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 export const BUCKET = "design-library";
-export const CATS = ["כוסות", "מזוזות", "תמונות", "מחזיקי מפתחות", "אחר"];
+export const CATS = ["כוסות", "מזוזות", "תמונות", "מחזיקי מפתחות", "אחר", "קטלוג"]; // W-77: קטלוג — הקטלוג של הושעיה לדירוג
 export const LIMITS = { uploadsPerCodeHour: 30, uploadsPerDay: 300, ratesPerHour: 60, badCodes15m: 20, tagsPerHour: 300 };
 export const MAX_IMAGE = 10 * 1024 * 1024;
 const MAX_BODY = 29 * 1024 * 1024; // שתי תמונות של 10MB ב-base64 (+33%)
@@ -271,7 +271,7 @@ export async function handle(req: Request, db: any, env: (k: string) => string |
         const g = await countLog(db, "upload", null, 24 * 3600e3);
         if (g !== null && g >= LIMITS.uploadsPerDay) return json({ error: "הספרייה קיבלה היום הרבה עיצובים — נסו שוב מחר" }, 429);
       }
-      const title = cleanText(body.title, 80) || "עיצוב חדש";
+      const title = cleanText(body.title, 160) || "עיצוב חדש";
       const category = CATS.includes(body.category) ? body.category : "אחר";
       const contributor = cleanText(body.contributor, 40) || null;
       const img = parseImage(body.image, ["png", "jpeg", "webp"]);
@@ -345,7 +345,7 @@ export async function handle(req: Request, db: any, env: (k: string) => string |
         if (!["pending", "approved", "rejected"].includes(body.status)) return json({ error: "סטטוס לא מוכר" }, 400);
         patch.status = body.status; patch.reviewed_at = new Date().toISOString();
       }
-      if (body.title !== undefined) patch.title = cleanText(body.title, 80) || row.title;
+      if (body.title !== undefined) patch.title = cleanText(body.title, 160) || row.title;
       if (body.category !== undefined) { if (!CATS.includes(body.category)) return json({ error: "קטגוריה לא מוכרת" }, 400); patch.category = body.category; }
       if (body.correction !== undefined) patch.correction = cleanText(body.correction, 300) || null;
       if (body.contributor !== undefined) patch.contributor = cleanText(body.contributor, 40) || null;

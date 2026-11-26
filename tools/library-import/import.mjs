@@ -14,7 +14,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../..');
-const CATS = ['כוסות', 'מזוזות', 'תמונות', 'מחזיקי מפתחות', 'אחר'];
+const CATS = ['כוסות', 'מזוזות', 'תמונות', 'מחזיקי מפתחות', 'אחר', 'קטלוג'];
 const MAX = 10 * 1024 * 1024;
 const args = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 const DRY = process.argv.includes('--dry-run');
