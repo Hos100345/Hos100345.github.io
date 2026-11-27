@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
     const tok = (req.headers.get("x-print-token") || "").trim();
     if (!/^[A-Za-z0-9_-]{24,100}$/.test(tok)) return json({ error: "no_token" }, 401);
     const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
-    const { data: ag } = await db.from("print_agents").select("id,active,dry_run,printer").eq("token_hash", await sha(tok)).maybeSingle();
+    const { data: ag } = await db.from("print_agents").select("id,active,dry_run,printer,printers").eq("token_hash", await sha(tok)).maybeSingle();
     if (!ag || !ag.active) return json({ error: "bad_token" }, 403);
     let body: any = {};
     try { body = JSON.parse((await req.text()) || "{}"); } catch { return json({ error: "bad_json" }, 400); }
@@ -52,24 +52,27 @@ Deno.serve(async (req) => {
       await db.from("print_agents").update({ last_seen: new Date().toISOString(), info: { printers, host: String(info.host || "").slice(0, 60), ver: String(info.ver || "").slice(0, 20) } }).eq("id", ag.id);
       const sh = shabbat();
       if (sh.hold) return json({ hold: "shabbat", until: sh.until });
-      if (!ag.dry_run && !ag.printer) return json({ hold: "no_printer" });
       const { data: jobs, error } = await db.rpc("print_claim", { p_agent: ag.id });
       if (error) throw new Error(error.message);
       const job = (jobs || [])[0];
       if (!job) return json({ job: null, dry_run: ag.dry_run });
+      // מדפסת לפי החומר של העבודה (פרופיל ומראה שונים בדרייבר), אחרת מדפסת ברירת המחדל של המחשב
+      const printer = ((ag.printers || {}) as Record<string, string>)[job.material] || ag.printer || "";
+      if (!ag.dry_run && !printer) { await db.from("print_jobs").update({ status: "failed", error: "לא נבחרה מדפסת לחומר: " + job.material }).eq("id", job.id); return json({ job: null, dry_run: ag.dry_run }); }
       const path = job.order_id ? `${job.order_id}/${job.file}` : job.file;
       const { data: s, error: se } = await db.storage.from("studio-orders").createSignedUrl(path, 3600);
       if (se || !s) { await db.from("print_jobs").update({ status: "failed", error: "הקובץ לא נמצא: " + path }).eq("id", job.id); return json({ job: null, dry_run: ag.dry_run }); }
-      return json({ job: { id: job.id, code: job.code || "", file: job.file, copies: job.copies }, url: s.signedUrl, dry_run: ag.dry_run, printer: ag.printer || "" });
+      return json({ job: { id: job.id, code: job.code || "", file: job.file.split("/").pop(), copies: job.copies, material: job.material }, url: s.signedUrl, dry_run: ag.dry_run, printer });
     }
 
     if (action === "report") {
       const id = String(body.id || ""), st = String(body.status || "");
       if (!/^[0-9a-f-]{36}$/i.test(id) || !["printed", "downloaded", "failed"].includes(st)) return json({ error: "bad_report" }, 400);
-      const { data: job } = await db.from("print_jobs").select("id,order_id,agent_id").eq("id", id).maybeSingle();
+      const { data: job } = await db.from("print_jobs").select("id,order_id,order_ids,agent_id").eq("id", id).maybeSingle();
       if (!job || job.agent_id !== ag.id) return json({ error: "not_yours" }, 403);
       await db.from("print_jobs").update({ status: st, error: st === "failed" ? String(body.error || "שגיאה").slice(0, 500) : null, done_at: new Date().toISOString() }).eq("id", id);
-      if (st === "printed" && job.order_id) await db.from("studio_orders").update({ status: "done", printed: true }).eq("id", job.order_id);
+      const ids = [job.order_id, ...(job.order_ids || [])].filter(Boolean);
+      if (st === "printed" && ids.length) await db.from("studio_orders").update({ status: "done", printed: true }).in("id", ids); // גליל = כמה הזמנות
       return json({ ok: true });
     }
     return json({ error: "unknown_action" }, 400);

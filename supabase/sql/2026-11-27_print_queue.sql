@@ -48,3 +48,15 @@ returns setof public.print_jobs language sql security definer set search_path = 
   returning j.*;
 $$;
 revoke all on function public.print_claim(uuid) from public, anon, authenticated;
+
+-- S-209 (המשך): גליל אחד מכמה הזמנות — העבודה זוכרת את ההזמנות שבתוכה; המנהל מעלה את קובץ הגליל ל-studio-orders/batch/
+alter table public.print_jobs add column if not exists order_ids uuid[];
+do $$ begin
+  if not exists (select 1 from pg_policies where schemaname='storage' and policyname='admin upload studio print batches') then
+    create policy "admin upload studio print batches" on storage.objects for insert to authenticated
+      with check (bucket_id='studio-orders' and name like 'batch/%' and lower(coalesce(auth.jwt()->>'email',''))='hoshaya@gmail.com');
+  end if;
+end $$;
+-- S-209: לכל עבודה חומר (עץ/מתכת/זכוכית/זכוכית מהגב/ספלים/בד/אחר) — ולכל מחשב מדפסת קבועה לכל חומר (פרופיל ומראה בדרייבר)
+alter table public.print_jobs add column if not exists material text not null default 'other';
+alter table public.print_agents add column if not exists printers jsonb not null default '{}'::jsonb;
